@@ -1,0 +1,6 @@
+simple_auto_aim:
+    ros__parameters:
+        debug: True
+        target_color: "blue"
+        camera_name: "front_camera"
+        autostart: True

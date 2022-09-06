@@ -1,0 +1,6 @@
+simple_power_rune:
+    ros__parameters:
+        debug: true
+        robot_color: "red"
+        camera_name: "front_camera"
+        auto_start: true
