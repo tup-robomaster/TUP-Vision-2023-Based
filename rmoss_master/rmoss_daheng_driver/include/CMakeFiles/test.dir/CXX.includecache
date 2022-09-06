@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/dishierweidu/Documents/auto/rmoss/src/rmoss_daheng_driver/include/DxImageProc.h
+stdafx.h
+/home/dishierweidu/Documents/auto/rmoss/src/rmoss_daheng_driver/include/stdafx.h
+stdlib.h
+-
+string.h
+-
+
+/home/dishierweidu/Documents/auto/rmoss/src/rmoss_daheng_driver/include/GxIAPI.h
+stdint.h
+-
+stdint.h
+-
+stdint.h
+-
+stddef.h
+-
+Windows.h
+-
+
+/home/dishierweidu/Documents/auto/rmoss/src/rmoss_daheng_driver/include/test.cpp
+DxImageProc.h
+/home/dishierweidu/Documents/auto/rmoss/src/rmoss_daheng_driver/include/DxImageProc.h
+GxIAPI.h
+/home/dishierweidu/Documents/auto/rmoss/src/rmoss_daheng_driver/include/GxIAPI.h
+iostream
+-
+
