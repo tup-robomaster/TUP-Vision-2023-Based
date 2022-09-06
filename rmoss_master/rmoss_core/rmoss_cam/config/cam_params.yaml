@@ -1,0 +1,14 @@
+usb_cam:
+    ros__parameters:
+        usb_cam_path: "/dev/video0"
+        camera_name: "front_camera"
+        width: 640
+        height: 480
+        fps: 20
+        autostart: true
+
+virtual_video_cam:
+    ros__parameters:
+        video_path : "~/test.avi"
+        camera_name: "front_camera"
+        autostart: true
