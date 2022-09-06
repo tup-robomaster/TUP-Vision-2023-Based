@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+    <!--include defination-->
+    <xmacro_include uri="model://rm21_armor_module/rm21_armor_module.def.xmacro" />
+    <!--rm21_armor_module example-->
+    <model name='rm21_armor_module'>
+        <pose>0 0 0.2 0 0 0</pose>
+        <link name="base_link">
+            <inertial>
+                <xmacro_block name="inertia_box" m="0.4" x="0.4" y="0.4" z="0.4" />
+            </inertial>
+            <visual name="visual">
+                <xmacro_block name="geometry_box" x="0.4" y="0.4" z="0.4" />
+                <material>
+                    <ambient>0.6 0.6 0.6 1</ambient>
+                    <diffuse>0.6 0.6 0.6 1</diffuse>
+                </material>
+            </visual>
+            <collision name="collision">
+                <xmacro_block name="geometry_box" x="0.4" y="0.4" z="0.4" />
+            </collision>
+        </link>
+        <xmacro_block name="small_armor" suffix="_1" parent="base_link"
+                sticker_type="" pose="0 -0.15 0.2 0 0 0"/>
+        <xmacro_block name="large_armor" suffix="_2" parent="base_link"
+                sticker_type="num1" pose="0 0.15 0.2 0 0 0"/>
+        <xmacro_block name="small_armor_with_support" suffix="_3" parent="base_link"
+                sticker_type="num2" pose="0.2 0 0 0 0 0"/>
+        <xmacro_block name="large_armor_with_support" suffix="_4" parent="base_link"
+                sticker_type="num2" pose="0 0.2 0 0 0 1.57"/>
+    </model>
+</sdf>

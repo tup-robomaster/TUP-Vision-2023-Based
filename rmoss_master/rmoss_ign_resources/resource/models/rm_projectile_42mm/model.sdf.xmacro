@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+    <xmacro_define_value name="projectile_r" value="0.021" />
+    <xmacro_define_value name="projectile_m" value="0.041" />
+    <xmacro_include uri="model://rm_projectile_17mm/rm_projectile.def.xmacro"/>
+    <model name="rm_projectile_42mm">
+        <xmacro_block name="rm_projectile" m="${projectile_m}" r="${projectile_r}"/>
+    </model>
+</sdf>

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+    <xmacro_define_block name="rm_projectile" params="m r">
+        <link name ='link'>
+            <inertial>
+                <xmacro_block name="inertia_sphere"  m="${m}" r="${r}"/>
+            </inertial>
+            <visual name ='visual'>
+                <xmacro_block name="geometry_sphere" r="${r}"/>
+                <material>
+                    <ambient>0 0.6 0 1</ambient>
+                    <diffuse>0 0.6 0 1</diffuse>
+                    <specular>1 1 1 1</specular>
+                    <emissive>0 0.6 0 1</emissive>
+                </material>
+            </visual>
+            <collision name ='collision'>
+                <xmacro_block name="geometry_sphere" r="${r}"/>
+            </collision>
+        </link>
+    </xmacro_define_block>
+</sdf>

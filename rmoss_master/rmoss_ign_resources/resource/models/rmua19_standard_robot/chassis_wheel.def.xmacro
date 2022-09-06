@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+    <!-- <xmacro_define_value name="wheel_mass" value="0.4" /> -->
+    <!-- <xmacro_define_value name="wheel_width" value="0.0452" /> -->
+    <!-- <xmacro_define_value name="wheel_radius" value="0.0758" /> -->
+    <!--macro defination: chassis_wheel-->
+    <xmacro_define_block name="chassis_wheel_l" params="prefix parent pose">
+        <joint name="${prefix}_wheel_joint" type="revolute">
+            <pose relative_to="${parent}">${pose}</pose>
+            <parent>${parent}</parent>
+            <child>${prefix}_wheel</child>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <lower>-1.79769e+308</lower>
+                    <upper>1.79769e+308</upper>
+                </limit>
+            </axis>
+        </joint>
+        <link name="${prefix}_wheel">
+            <pose relative_to="${prefix}_wheel_joint">0 0 0 0 0 0</pose>
+            <inertial>
+                <pose>0 0 0 1.5707 0 0</pose>
+                <xmacro_block name="inertia_cylinder"  m="0.4" r="0.0758" l="0.0452"/>
+            </inertial>
+            <visual name="${prefix}_wheel_visual">
+                <xmacro_block name="geometry_mesh" uri="model://rmua19_standard_robot/meshes/wheel_left.dae"/>
+            </visual>
+            <collision name="${prefix}_wheel_collision">
+                <pose>0 0 0 1.5707 0 0</pose>
+                <xmacro_block name="geometry_cylinder" r="0.0758" l="0.0452"/>
+                <surface>
+                    <friction>
+                        <ode>
+                            <mu>0.2</mu>
+                            <mu2>0.2</mu2>
+                        </ode>
+                    </friction>
+                </surface>
+            </collision>
+        </link>
+    </xmacro_define_block>
+    <!--macro defination: chassis_wheel-->
+    <xmacro_define_block name="chassis_wheel_r" params="prefix parent pose">
+        <joint name="${prefix}_wheel_joint" type="revolute">
+            <pose relative_to="${parent}">${pose}</pose>
+            <parent>${parent}</parent>
+            <child>${prefix}_wheel</child>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <lower>-1.79769e+308</lower>
+                    <upper>1.79769e+308</upper>
+                </limit>
+            </axis>
+        </joint>
+        <link name="${prefix}_wheel">
+            <pose relative_to="${prefix}_wheel_joint">0 0 0 0 0 0</pose>
+            <inertial>
+                <pose>0 0 0 1.5707 0 0</pose>
+                <xmacro_block name="inertia_cylinder"  m="0.4" r="0.0758" l="0.0452"/>
+            </inertial>
+            <visual name="${prefix}_wheel_visual">
+                <xmacro_block name="geometry_mesh" uri="model://rmua19_standard_robot/meshes/wheel_right.dae"/>
+            </visual>
+            <collision name="${prefix}_wheel_collision">
+                <pose>0 0 0 1.5707 0 0</pose>
+                <xmacro_block name="geometry_cylinder" r="0.0758" l="0.0452"/>
+                <surface>
+                    <friction>
+                        <ode>
+                            <mu>0.2</mu>
+                            <mu2>0.2</mu2>
+                        </ode>
+                    </friction>
+                </surface>
+            </collision>
+        </link>
+    </xmacro_define_block>
+</sdf>

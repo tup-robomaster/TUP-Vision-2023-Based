@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+    <!--video transmitter module-->
+    <xmacro_define_block name="video_transmitter" params="suffix parent pose fps">
+        <joint name="video_transmitter${suffix}_joint" type="fixed">
+            <pose relative_to="${parent}">${pose}</pose>
+            <parent>${parent}</parent>
+            <child>video_transmitter${suffix}</child>
+        </joint>
+        <link name="video_transmitter${suffix}">
+            <pose relative_to="video_transmitter${suffix}_joint">0 0 0 0 0 0</pose>
+            <inertial>
+                <pose>0 0 0.014 0 0 0</pose>
+                <xmacro_block name="inertia_box" m="0.1" x="0.1" y="0.05" z="0.028"/>
+            </inertial>
+            <visual name="visual">
+                <xmacro_block name="geometry_mesh" uri="model://rm21_video_transmitter_module/meshes/video_transmitter.stl"/>
+                <material>
+                    <ambient>0.1 0.1 0.1</ambient>
+                    <diffuse>0.05 0.05 0.05</diffuse>
+                    <specular>0.6 0.6 0.6</specular>
+                </material>
+            </visual>
+            <visual name="glass_visual">
+                <xmacro_block name="geometry_mesh" uri="model://rm21_video_transmitter_module/meshes/video_transmitter_glass.stl"/>
+                <material>
+                    <diffuse>1.0 1.0 1.0 0.4</diffuse>
+                    <specular>1.0 1.0 1.0 0.4</specular>
+                    <ambient>1.0 1.0 1.0 0.4</ambient>
+                </material>
+            </visual>
+            <collision name="collision">
+                <pose>0 0 0.014 0 0 0</pose>
+                <xmacro_block name="geometry_box" x="0.1" y="0.05" z="0.028"/>
+            </collision>
+            <sensor name="video_transmitter${suffix}" type="camera">
+                <pose>0.03 0 0.014 0 0 0</pose>
+                <always_on>1</always_on>
+                <update_rate>${fps}</update_rate>
+                <camera>
+                    <!--100 degree-->
+                    <horizontal_fov>1.745</horizontal_fov>
+                    <image>
+                        <width>1280</width>
+                        <height>720</height>
+                    </image>
+                    <clip>
+                        <near>0.1</near>
+                        <far>100</far>
+                    </clip>
+                </camera>
+            </sensor>
+        </link>
+    </xmacro_define_block>
+</sdf>

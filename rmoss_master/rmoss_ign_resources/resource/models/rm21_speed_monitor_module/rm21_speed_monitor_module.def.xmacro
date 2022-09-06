@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+    <!--speed monitor 17mm module-->
+    <xmacro_define_block name="speed_monitor_17mm" params="suffix parent pose">
+        <joint name="speed_monitor${suffix}_joint" type="fixed">
+            <pose relative_to="${parent}">${pose}</pose>
+            <parent>${parent}</parent>
+            <child>speed_monitor${suffix}</child>
+        </joint>
+        <link name="speed_monitor${suffix}">
+            <pose relative_to="speed_monitor${suffix}_joint">0 0 0 0 0 0</pose>
+            <inertial>
+                <pose>0.055 0 0 0 0 0</pose>
+                <xmacro_block name="inertia_box" m="0.1" x="0.11" y="0.043" z="0.041"/>
+            </inertial>
+            <visual name="visual">
+                <xmacro_block name="geometry_mesh" uri="model://rm21_speed_monitor_module/meshes/speed_monitor_17mm.dae"/>
+                <material>
+                    <ambient>0.1 0.1 0.1</ambient>
+                    <diffuse>0.05 0.05 0.05</diffuse>
+                    <specular>0.6 0.6 0.6</specular>
+                </material>
+            </visual>
+            <visual name="light_bar_visual">
+                <xmacro_block name="geometry_mesh" uri="model://rm21_speed_monitor_module/meshes/speed_monitor_17mm_light_bar.dae"/>
+                <material>
+                    <ambient>1.0 1.0 1.0</ambient>
+                    <diffuse>1.0 1.0 1.0</diffuse>
+                    <specular>0.5 0.5 0.5</specular>
+                </material>
+            </visual>
+            <collision name="collision">
+                <pose>0.055 0 0 0 0 0</pose>
+                <xmacro_block name="geometry_box" x="0.11" y="0.043" z="0.041"/>
+            </collision>
+        </link>
+    </xmacro_define_block>
+    <!--speed monitor 42mm module-->
+    <xmacro_define_block name="speed_monitor_42mm" params="suffix parent pose">
+        <joint name="speed_monitor${suffix}_joint" type="fixed">
+            <pose relative_to="${parent}">${pose}</pose>
+            <parent>${parent}</parent>
+            <child>speed_monitor${suffix}</child>
+        </joint>
+        <link name="speed_monitor${suffix}">
+            <pose relative_to="speed_monitor${suffix}_joint">0 0 0 0 0 0</pose>
+            <inertial>
+                <pose>0.061 0 0 0 0 0</pose>
+                <xmacro_block name="inertia_box" m="0.1" x="0.122" y="0.074" z="0.074"/>
+            </inertial>
+            <visual name="visual">
+                <xmacro_block name="geometry_mesh" uri="model://rm21_speed_monitor_module/meshes/speed_monitor_42mm.stl"/>
+                <material>
+                    <ambient>0.1 0.1 0.1</ambient>
+                    <diffuse>0.05 0.05 0.05</diffuse>
+                    <specular>0.6 0.6 0.6</specular>
+                </material>
+            </visual>
+            <visual name="light_bar_visual">
+                <xmacro_block name="geometry_mesh" uri="model://rm21_speed_monitor_module/meshes/speed_monitor_42mm_light_bar.stl"/>
+                <material>
+                    <ambient>1.0 1.0 1.0</ambient>
+                    <diffuse>1.0 1.0 1.0</diffuse>
+                    <specular>0.5 0.5 0.5</specular>
+                </material>
+            </visual>
+            <collision name="collision">
+                <pose>0.061 0 0 0 0 0</pose>
+                <xmacro_block name="geometry_box" x="0.122" y="0.074" z="0.074"/>
+            </collision>
+        </link>
+    </xmacro_define_block>
+</sdf>

@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+     <!--include defination-->
+    <xmacro_include uri="model://rm21_light_indicator_module/rm21_light_indicator_module.def.xmacro" />
+</sdf>
