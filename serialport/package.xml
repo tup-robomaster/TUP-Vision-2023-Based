@@ -25,6 +25,12 @@
   <depend>visualization_msgs</depend>
   <depend>angles</depend>
   <depend>robot_state_publisher</depend>
+  <depend>OpenCV</depend>
+
+  <!-- <build_depend>sensor_msgs</build_depend> -->
+
+  <depend>global_user</depend>
+  <depend>global_interface</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

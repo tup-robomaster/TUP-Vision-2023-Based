@@ -1,0 +1,46 @@
+.cover {
+	position:absolute;
+	left:0;
+	top:0;
+	z-index:999999999999999;
+	margin-right:60px;
+	margin-left:60px;
+	margin-top:90px;
+	margin-bottom:90px;
+	color:#965454;
+	display:block;
+	padding:2px 1px;
+	/* font-family:'宋体'; */
+	/* font-weight:bold; */
+	font-size:32px;
+	white-space:nowrap;
+	/* text-shadow: 1px 0 0 #eee; */
+	transform:rotate(45deg);
+	-ms-transform:rotate(45deg);
+	-moz-transform:rotate(45deg);
+	-webkit-transform:rotate(45deg);
+	-o-transform:rotate(45deg);
+	-moz-opacity:0.3; opacity:0.3;/*透明*/
+	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.7071067811865474, M12=-0.7071067811865477, M21=0.7071067811865477, M22=0.7071067811865474, SizingMethod='auto expand')";
+}
+.cover-Blink-area{ position:absolute;text-align: center;left:0;top:0;width:100%;height:100%;display:block;z-index:999999999999999; pointer-events: none;overflow: hidden;}
+.cover-Blink{
+	display:inline-block;
+	margin-right:60px;
+	margin-left:60px;
+	margin-top:90px;
+	margin-bottom:90px;
+	padding:2px 1px;
+	/* font-family:'宋体'; */
+	/* font-weight:bold; */
+	font-size:32px;
+	color:rgba(224, 205, 207, 0.3);/*透明*/
+	white-space:nowrap;
+	/* text-shadow: 1px 0 0 #eee; */
+	transform:rotate(45deg);
+	-ms-transform:rotate(45deg);
+	-moz-transform:rotate(45deg);
+	-webkit-transform:rotate(45deg);
+	-o-transform:rotate(45deg);
+
+}

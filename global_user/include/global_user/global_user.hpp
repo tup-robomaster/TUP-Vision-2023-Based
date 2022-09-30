@@ -2,15 +2,20 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2022-09-06 02:18:08
+ * @LastEditTime: 2022-09-28 15:54:53
  * @FilePath: /tup_2023/src/global_user/include/global_user/global_user.hpp
  */
+
+#ifndef GLOBAL_USER_HPP
+#define GLOBAL_USER_HPP
+
 #include <vector>
 #include <thread>
 #include <memory>
 #include <string>
 #include <iterator>
 #include <unistd.h>
+#include <string>
 
 #include <fstream>
 #include <yaml-cpp/yaml.h>
@@ -22,6 +27,8 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Core>
+
+// #include "rclcpp/rclcpp.hpp"
 
 namespace global_user
 {
@@ -102,3 +109,4 @@ namespace global_user
     Eigen::Matrix3d eulerToRotationMatrix(Eigen::Vector3d &theta);
 }
 
+#endif

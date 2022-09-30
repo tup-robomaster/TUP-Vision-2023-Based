@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2022-09-06 03:24:30
+ * @LastEditTime: 2022-09-26 22:32:35
  * @FilePath: /tup_2023/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -51,32 +51,32 @@ namespace coordsolver
 
         //初始化内参矩阵
         auto read_vector = config[param_name]["Intrinsic"].as<std::vector<float>>();
-        initMatrix(mat_intrinsic,read_vector);
+        ::global_user::initMatrix(mat_intrinsic,read_vector);
         eigen2cv(mat_intrinsic,intrinsic);
 
         //初始化畸变矩阵
         read_vector = config[param_name]["Coeff"].as<std::vector<float>>();
-        initMatrix(mat_coeff,read_vector);
+        ::global_user::initMatrix(mat_coeff,read_vector);
         eigen2cv(mat_coeff,dis_coeff);
 
         read_vector = config[param_name]["T_iw"].as<std::vector<float>>();
-        initMatrix(mat_t_iw,read_vector);
+        ::global_user::initMatrix(mat_t_iw,read_vector);
         t_iw = mat_t_iw.transpose();
 
         read_vector = config[param_name]["xyz_offset"].as<std::vector<float>>();
-        initMatrix(mat_xyz_offset,read_vector);
+        ::global_user::initMatrix(mat_xyz_offset,read_vector);
         xyz_offset = mat_xyz_offset.transpose();
 
         read_vector = config[param_name]["angle_offset"].as<std::vector<float>>();
-        initMatrix(mat_angle_offset,read_vector);
+        ::global_user::initMatrix(mat_angle_offset,read_vector);
         angle_offset = mat_angle_offset.transpose();
 
         read_vector = config[param_name]["T_ic"].as<std::vector<float>>();
-        initMatrix(mat_ic,read_vector);
+        ::global_user::initMatrix(mat_ic,read_vector);
         transform_ic = mat_ic;
 
         read_vector = config[param_name]["T_ci"].as<std::vector<float>>();
-        initMatrix(mat_ci,read_vector);
+        ::global_user::initMatrix(mat_ci,read_vector);
         transform_ci = mat_ci;
 
         return true;
@@ -90,14 +90,14 @@ namespace coordsolver
      * @param method PnP解算方法
      * @return PnPInfo 
      */
-    PnPInfo coordsolver::pnp(const std::vector<cv::Point2f> &points_pic, const Eigen::Matrix3d &rmat_imu, enum TargetType type, int method=SOLVEPNP_IPPE)
+    PnPInfo coordsolver::pnp(const std::vector<cv::Point2f> &points_pic, const Eigen::Matrix3d &rmat_imu, enum ::global_user::TargetType type, int method = cv::SOLVEPNP_IPPE)
     {
         std::vector<cv::Point3d> points_world;
 
         //长度为4进入装甲板模式
 
         //大于长宽比阈值使用大装甲板世界坐标
-        if (type == BIG)
+        if (type == ::global_user::BIG)
         {
             points_world = {
                 {-0.1125,0.027,0},
@@ -105,7 +105,7 @@ namespace coordsolver
                 {0.1125,-0.027,0},
                 {0.1125,0.027,0}};
         }
-        else if (type == SMALL)
+        else if (type == ::global_user::SMALL)
         {
             points_world = {
                 {-0.066,0.027,0},
@@ -114,7 +114,7 @@ namespace coordsolver
                 {0.066,0.027,0}};
         }
         //长度为5进入大符模式
-        else if (type == BUFF)
+        else if (type == ::global_user::BUFF)
         {
             points_world = {
             {-0.1125,0.027,0},
@@ -144,11 +144,11 @@ namespace coordsolver
         Rodrigues(rvec,rmat);
         cv2eigen(rmat, rmat_eigen);
         cv2eigen(tvec, tvec_eigen);
-        if (type == BIG || type == SMALL)
+        if (type == ::global_user::BIG || type == ::global_user::SMALL)
         {
             result.armor_cam = tvec_eigen;
             result.armor_world = camToWorld(result.armor_cam, rmat_imu);
-            result.euler = rotationMatrixToEulerAngles(rmat_eigen);
+            result.euler = ::global_user::rotationMatrixToEulerAngles(rmat_eigen);
         }
         else
         {
@@ -159,7 +159,7 @@ namespace coordsolver
             // result.euler = rotationMatrixToEulerAngles(transform_ci.block(0,0,2,2) * rmat_imu * rmat_eigen);
             Eigen::Matrix3d rmat_eigen_world = rmat_imu * (transform_ic.block(0, 0, 3, 3) * rmat_eigen);
             // result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
-            result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
+            result.euler = ::global_user::rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;
         }
         
@@ -281,7 +281,7 @@ namespace coordsolver
         // auto dist_horizonal = sqrt(xyz.squaredNorm() - dist_vertical * dist_vertical);
         auto pitch = atan(dist_vertical / dist_horizonal) * 180 / CV_PI;
         auto pitch_new = pitch;
-        auto pitch_offset = 0.0;
+        // auto pitch_offset = 0.0;
         //开始使用龙格库塔法求解弹道补偿
         for (int i = 0; i < max_iter; i++)
         {

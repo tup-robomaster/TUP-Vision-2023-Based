@@ -22,7 +22,6 @@
 #include "rmoss_base/fixed_packet_tool.hpp"
 #include "rmoss_interfaces/msg/gimbal_cmd.hpp"
 
-
 namespace rmoss_base
 {
 // Node wrapper for SimpleRobotBase

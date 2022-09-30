@@ -1,0 +1,88 @@
+
+<!DOCTYPE html
+  PUBLIC "" "about:legacy-compat">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:whc="http://www.daksys.com/webhelp/components" xml:lang="en-us" lang="en-us">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><meta name="description" content="" /><meta name="copyright" content="(C) Copyright 2005" /><meta name="DC.rights.owner" content="(C) Copyright 2005" /><meta name="DC.Type" content="concept" /><meta name="DC.Title" content="Camera Internal APIs" /><meta name="DC.Relation" scheme="URI" content="GUID-2FB95EE3-5E09-4831-9563-1A3548B28745.html" /><meta name="DC.Relation" scheme="URI" content="GUID-16CB9B80-9468-476A-9FA0-27EC9293C2D1.html" /><meta name="DC.Relation" scheme="URI" content="GUID-A4710612-704A-4D11-A7C4-D2C34BDAB2C9.html" /><meta name="DC.Relation" scheme="URI" content="GUID-617D85DD-55EC-4C3B-AAD7-2B2F156955CB.html" /><meta name="DC.Relation" scheme="URI" content="GUID-DAC2E13E-8EBE-4066-9373-950C6E7DFEE5.html" /><meta name="DC.Relation" scheme="URI" content="GUID-B7FEC8DE-E318-42EF-A726-6A72991748D1.html" /><meta name="DC.Relation" scheme="URI" content="GUID-26BEB70E-21DD-45EE-A7B1-02BA689982D1.html" /><meta name="DC.Relation" scheme="URI" content="GUID-06901961-A420-47E2-B26A-7DDE80B1A8CA.html" /><meta name="DC.Relation" scheme="URI" content="GUID-C5FAA1FA-F702-4127-BD67-DFD6F2F61E64.html" /><meta name="DC.Format" content="XHTML" /><meta name="DC.Identifier" content="GUID-21D0DD7B-674F-49FD-AE5B-A577203C2884" /><meta name="DC.Language" content="en-US" /><title>Camera Internal APIs</title><!--  Generated with dksgen version 19.0, build number 2017042020.  --><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="wh-path2root" content="index.html" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/commonltr.css?buildId=2017042020" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/webhelp_responsive_topic.css?buildId=2017042020" />
+		<!-- Latest compiled and minified Bootstrap CSS -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/bootstrap/css/bootstrap.min.css" />
+		<!-- Bootstrap Optional theme -->
+		<link rel="stylesheet" href="daksys-webhelp/resources/bootstrap/css/bootstrap-theme.min.css" />
+		<link rel="stylesheet" href="daksys-webhelp/resources/js/jquery-ui.min.css" />
+		<!-- Changes and comments, as side-notes  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/p-side-notes.css?buildId=2017042020" />
+		<!-- Template default styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_default.css?buildId=2017042020" />
+		<!-- Expand-collapse support styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_expand.css?buildId=2017042020" />
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-3.1.1.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/localization/strings.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/localization.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/parseuri.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.cookie.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-ui.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.highlight-3.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/browserDetect.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<script type="text/javascript" src="daksys-webhelp/resources/js/image-resize.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<!-- Skin resources -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/skin.css?buildId=2017042020" /><link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/watermark.css?buildId=2017042020" />
+		<!-- EXM-36950 - Expand the args.hdf parameter here -->
+		
+		<!-- EXM-36950 - webhelp.fragment.head :topic -->
+		
+	</head>
+	<body class="wh_topic_page frmBody" id="GUID-21D0DD7B-674F-49FD-AE5B-A577203C2884" onload="topicOnload()">
+		<input hidden="hidden" id="UDCode" value="" /><input hidden="hidden" id="UDTrademark" value="" /><input hidden="hidden" id="Trademark" value="" />
+		<div class="content_area" id="content_area">
+			<div id="container_body" class="container">
+				<div id="container_body_right">
+					<div class="row">
+						<div id="contentArea">
+							<div class=" wh_topic_content body ">
+    <h1 class="title topictitle1">Camera Internal APIs</h1>
+
+
+</div>
+							
+							
+							
+						</div>
+						<nav role="navigation" class="col-lg-4 col-md-4 col-sm-4 col-xs-12 navbar" id="wh_side_toc" style="display:none">
+							<div class=" wh_side_toc "><ul class="hidden-print"><li><span class="topicref"><a href="GUID-2FB95EE3-5E09-4831-9563-1A3548B28745.html">API Reference</a></span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-2F583C2F-A802-4E31-BEFB-4BB79B564CF7.html">General</a></span></li><li><span class="topicref"><a href="GUID-EFAB385E-355E-4FA2-A187-7B4CFBEED84F.html">Parameter Settings</a></span></li><li><span class="topicref"><a href="GUID-7D2DC338-115D-470A-8937-E6694384EFA2.html">Functional</a></span></li><li><span class="topicref"><a href="GUID-E63B2D53-01A2-4C3C-8EAB-C8F1B98CBE5B.html">Image Acquisition</a></span></li><li><span class="topicref"><a href="GUID-F0180BD4-C1B4-4AC8-9FCA-5AC8955FA31C.html">Image Processing</a></span></li><li class="active"><span class="topicref">Camera Internal APIs</span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-16CB9B80-9468-476A-9FA0-27EC9293C2D1.html">MV_CC_LocalUpgrade</a></span></li><li><span class="topicref"><a href="GUID-A4710612-704A-4D11-A7C4-D2C34BDAB2C9.html">MV_CC_GetUpgradeProcess</a></span></li><li><span class="topicref"><a href="GUID-617D85DD-55EC-4C3B-AAD7-2B2F156955CB.html">MV_XML_GetGenICamXML</a></span></li><li><span class="topicref"><a href="GUID-DAC2E13E-8EBE-4066-9373-950C6E7DFEE5.html">MV_XML_GetRootNode</a></span></li><li><span class="topicref"><a href="GUID-B7FEC8DE-E318-42EF-A726-6A72991748D1.html">MV_XML_GetChildren</a></span></li><li><span class="topicref"><a href="GUID-26BEB70E-21DD-45EE-A7B1-02BA689982D1.html">MV_XML_GetNodeFeature</a></span></li><li><span class="topicref"><a href="GUID-06901961-A420-47E2-B26A-7DDE80B1A8CA.html">MV_XML_RegisterUpdateCallBack</a></span></li><li><span class="topicref"><a href="GUID-C5FAA1FA-F702-4127-BD67-DFD6F2F61E64.html">MV_XML_UpdateNodeFeature</a></span></li></ul></li><li><span class="topicref"><a href="GUID-71A7CAEB-235A-4DCA-BC59-EF1D38D4C9F5.html">U3V APIs</a></span></li></ul></li></ul></div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div> 
+		<!-- Latest compiled and minified JavaScript -->
+		<script type="text/javascript" src="daksys-webhelp/resources/bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/hik_topic.js"></script>
+		<!-- <script type="text/javascript" src="${daksys-webhelp-template-dir}/resources/js/wt_default.js?buildId=${daksys-webhelp-build-number}" /> -->
+		<!-- Expand/collapse support -->
+		<script type="text/javascript" src="daksys-webhelp/template/resources/js/wt_expand.js?buildId=2017042020"></script>
+		
+		
+	</body>
+</html>

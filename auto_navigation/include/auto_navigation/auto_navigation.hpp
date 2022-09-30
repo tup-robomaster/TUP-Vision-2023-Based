@@ -2,14 +2,14 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 01:35:06
- * @LastEditTime: 2022-09-06 01:40:16
+ * @LastEditTime: 2022-09-06 13:50:24
  * @FilePath: /tup_2023/src/auto_navigation/include/auto_navigation/auto_navigation.hpp
  */
-#include "params_common/include/params_common/params_common.hpp"
+#include "global_user/include/global_user/global_user.hpp"
 
 namespace auto_navigation
 {
-    class auto_navigation : public robot_base::params_common
+    class auto_navigation : public global_user::global_user
     {
     public:
         auto_navigation();

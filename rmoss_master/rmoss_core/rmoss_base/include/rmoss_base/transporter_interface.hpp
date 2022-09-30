@@ -1,3 +1,10 @@
+/*
+ * @Description: This is a ros-based project!
+ * @Author: Liu Biao
+ * @Date: 2022-09-05 00:50:25
+ * @LastEditTime: 2022-09-11 02:14:02
+ * @FilePath: /tup_2023/src/rmoss_master/rmoss_core/rmoss_base/include/rmoss_base/transporter_interface.hpp
+ */
 // Copyright 2021 RoboMaster-OSS
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,9 +37,9 @@ public:
   virtual void close() = 0;
   virtual bool is_open() = 0;
   // return recv len>0, return <0 if error
-  virtual int read(void * buffer, size_t len) = 0;
+  virtual int read(void* buffer, size_t len) = 0;
   // return send len>0, return <0 if error
-  virtual int write(const void * buffer, size_t len) = 0;
+  virtual int write(const void* buffer, size_t len) = 0;
   // get error message when open() return false.
   virtual std::string error_message() = 0;
 };

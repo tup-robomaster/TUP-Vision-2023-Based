@@ -1,0 +1,35 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/opt/ros/galactic/include/**",
+        "/home/liubiao/tup_2023/src/arm_controller/include/**",
+        "/home/liubiao/tup_2023/src/auto_navigation/include/**",
+        "/home/liubiao/tup_2023/src/camera_driver/include/**",
+        "/home/liubiao/tup_2023/src/global_user/include/**",
+        "/home/liubiao/tup_2023/src/rmoss_master/rmoss_contrib/rmoss_auto_aim/include/**",
+        "/home/liubiao/tup_2023/src/rmoss_master/rmoss_core/rmoss_base/include/**",
+        "/home/liubiao/tup_2023/src/rmoss_master/rmoss_core/rmoss_cam/include/**",
+        "/home/liubiao/tup_2023/src/rmoss_master/rmoss_core/rmoss_projectile_motion/include/**",
+        "/home/liubiao/tup_2023/src/rmoss_master/rmoss_core/rmoss_util/include/**",
+        "/home/liubiao/tup_2023/src/rmoss_master/rmoss_daheng_driver/include/**",
+        "/home/liubiao/tup_2023/src/serialport/include/**",
+        "/home/liubiao/tup_2023/src/vehicle_system/autoaim/include/**",
+        "/home/liubiao/tup_2023/src/vehicle_system/binocular/include/**",
+        "/home/liubiao/tup_2023/src/vehicle_system/buff/include/**",
+        "/home/liubiao/tup_2023/src/vehicle_system/filter/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

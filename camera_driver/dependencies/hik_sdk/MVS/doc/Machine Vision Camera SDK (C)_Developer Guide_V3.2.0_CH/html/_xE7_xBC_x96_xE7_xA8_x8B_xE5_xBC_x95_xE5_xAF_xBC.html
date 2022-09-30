@@ -1,0 +1,268 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<link href="doxygen.css" rel="stylesheet" type="text/css"/>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<link href="custom-style.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+	<div style="overflow: hidden;">
+		<div style="height: 57px;min-width: 1039px;background-size: auto 100%;background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABwgAAAABCAYAAADKO/rAAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAABRSURBVFhH7dUxCoBADEXB5LK5/w1iIaLIrsgWNs50Sf/4WVUd8HOZGd1nCqMbGNMPrNMPrJv1cvz0A3OjfuwPvDPrxf7A7t7IlX7gmX74VsQGguw4S6+UnSYAAAAASUVORK5CYII=');">
+			<img src="titleleft.png" style="float: left;"/>
+			<img src="titleright.png" alt="" style="float: right;" />
+		</div>
+	</div>
+<!-- 制作者 Doxygen 1.8.15 -->
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>声明</span></a></li>
+      <li><a href="_xE9_xA6_x96_xE9_xA1_xB5.html"><span>首页</span></a></li>
+      <li><a href="_xE7_x8E_xAF_xE5_xA2_x83_xE9_x85_x8D_xE7_xBD_xAE.html"><span>环境配置</span></a></li>
+      <li><a href="_xE6_x9B_xB4_xE6_x96_xB0_xE8_xAE_xB0_xE5_xBD_x95.html"><span>更新记录</span></a></li>
+      <li><a href="_xE7_xBC_x96_xE7_xA8_x8B_xE5_xBC_x95_xE5_xAF_xBC.html"><span>编程引导</span></a></li>
+      <li><a href="modules.html"><span>接口函数</span></a></li>
+      <li><a href="annotated.html"><span>结构体定义</span></a></li>
+      <li><a href="_xE7_x9B_xB8_xE6_x9C_xBA_xE5_x8F_x82_xE6_x95_xB0_xE8_x8A_x82_xE7_x82_xB9_xE8_xA1_xA8.html"><span>相机参数节点表</span></a></li>
+      <li><a href="examples.html"><span>示例程序</span></a></li>
+      <li><a href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html"><span>错误码</span></a></li>
+      <li><a href="_xE5_xB8_xB8_xE8_xA7_x81_xE9_x97_xAE_xE9_xA2_x98.html"><span>常见问题</span></a></li>
+    </ul>
+  </div>
+</div><!-- top -->
+<div class="PageDoc"><div class="contents">
+<div class="textblock"><div class="header" style="margin-left:-12px;margin-top:-10px;margin-right:-8px;"> <div class="headertitle"> <div class="title">C接口取图流程和取图方式</div> </div> </div> <h2>一、设备连接接口流程</h2>
+<p>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;对设备进行操作，实现图像采集、参数配置等功能，需要先连接设备（打开设备），具体流程如下图所示。 </p>
+<p><br />
+<img src="CEquipmentconnectioninterfaceprocess.png" style="margin: 0 0 0 40px;" alt="" class="inline"/>
+<br />
+</p>
+<div style="margin: 0 0 0 40px;"> <h4>详细步骤：</h4>
+</div><div style="margin: 0 0 0 40px;"> <ol>
+<li>
+（可选）调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga88741869e2b3c12e47025e53e6a7b58b" title="枚举设备">MV_CC_EnumDevices()</a> 枚举子网内指定传输协议对应的所有设备。<br />
+ 可以通过pstDevList在结构 <a class="el" href="struct_m_v___c_c___d_e_v_i_c_e___i_n_f_o___l_i_s_t.html" title="设备信息列表">MV_CC_DEVICE_INFO_LIST</a> 中找到设备的信息。 </li>
+<li>
+（可选）在打开指定设备之前，调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga3c3ffcbd330529ee076433ef36d226f5" title="设备是否可达">MV_CC_IsDeviceAccessible()</a> 检查指定设备是否可访问。 </li>
+<li>
+调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#gab0a5b929b0bec89c1b2a66c7b30493ed" title="创建设备句柄">MV_CC_CreateHandle()</a> 以创建设备句柄。 </li>
+<li>
+调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga308c9a9869be7a457d27aadd94ce57dd" title="打开设备">MV_CC_OpenDevice()</a> 打开设备。 </li>
+<li>
+（可选）执行以下一个或多个操作： <table style="margin: 0 0 0 0;" class="doxtable">
+<tr>
+<td>获取设备信息 </td><td><a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#gaa20b5286abff02858bb4802f907c111d" title="获取设备信息，取流之前调用">MV_CC_GetDeviceInfo()</a>   </td></tr>
+<tr>
+<td>获得最佳包大小(仅对网口相机有效)&#160;&#160;&#160;&#160; </td><td><a class="el" href="group___gig_e_xE6_x8E_xA5_xE5_x8F_xA3_xE5_x87_xBD_xE6_x95_xB0.html#ga9df4e6a7acbd6e6a6952e01949efc18b" title="获取最佳的packet size，该接口目前只支持GigE相机">MV_CC_GetOptimalPacketSize()</a>   </td></tr>
+</table>
+</li>
+<li>
+（可选）其他操作，例如图像采集和显示、参数配置等。有关详细信息，请参阅后面的章节。 </li>
+<li>
+调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga33853bd328f46492102246ca8b645d57" title="关闭设备">MV_CC_CloseDevice()</a> 关闭设备。 </li>
+<li>
+调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga0f74372a22e8a19fa7e21dad45070428" title="销毁设备句柄">MV_CC_DestroyHandle()</a> 来销毁句柄并释放资源。 </li>
+</ol>
+</div><p> <br />
+</p>
+<dl class="section user"><dt>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;示例：</dt><dd><br />
+ 示例代码，仅供参考。 <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;MvCameraControl.h&quot;</span></div><div class="line"><span class="keywordtype">void</span> main()</div><div class="line">{</div><div class="line">    <span class="keywordtype">int</span> nRet = -1;</div><div class="line">    <span class="keywordtype">void</span>*  m_handle = NULL;</div><div class="line"></div><div class="line">    <span class="comment">//枚举子网内指定的传输协议对应的所有设备</span></div><div class="line">    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> <a class="code" href="namespace_connect_spec_camera.html#a739515c2886a1f6d6d30db3e4f58a8ff">nTLayerType</a> = MV_GIGE_DEVICE | MV_USB_DEVICE;</div><div class="line">    <a class="code" href="struct_m_v___c_c___d_e_v_i_c_e___i_n_f_o___l_i_s_t.html">MV_CC_DEVICE_INFO_LIST</a> m_stDevList = {0};</div><div class="line">    <span class="keywordtype">int</span> nRet = <a class="code" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga88741869e2b3c12e47025e53e6a7b58b">MV_CC_EnumDevices</a>(nTLayerType, &amp;m_stDevList);</div><div class="line">    <span class="keywordflow">if</span> (MV_OK != nRet)</div><div class="line">    {</div><div class="line">        printf(<span class="stringliteral">&quot;error: EnumDevices fail [%x]\n&quot;</span>, nRet);</div><div class="line">        <span class="keywordflow">return</span>;</div><div class="line">    }</div><div class="line"></div><div class="line">    <span class="keywordtype">int</span> i = 0;</div><div class="line">    <span class="keywordflow">if</span> (m_stDevList.<a class="code" href="struct_m_v___c_c___d_e_v_i_c_e___i_n_f_o___l_i_s_t.html#a757ade91f37b0c95b768035d0ec07fdc">nDeviceNum</a> == 0)</div><div class="line">    {</div><div class="line">        printf(<span class="stringliteral">&quot;no camera found!\n&quot;</span>);</div><div class="line">        <span class="keywordflow">return</span>;</div><div class="line">    }</div><div class="line"></div><div class="line">    <span class="comment">//选择查找到的第一台在线设备，创建设备句柄</span></div><div class="line">    <span class="keywordtype">int</span> nDeviceIndex = 0;</div><div class="line"></div><div class="line">    <a class="code" href="struct_m_v___c_c___d_e_v_i_c_e___i_n_f_o.html">MV_CC_DEVICE_INFO</a> m_stDevInfo = {0};</div><div class="line">    memcpy(&amp;m_stDevInfo, m_stDevList.<a class="code" href="struct_m_v___c_c___d_e_v_i_c_e___i_n_f_o___l_i_s_t.html#ac8a3f91cd4d9e7f09ff4abaac031dffc">pDeviceInfo</a>[nDeviceIndex], <span class="keyword">sizeof</span>(<a class="code" href="struct_m_v___c_c___d_e_v_i_c_e___i_n_f_o.html">MV_CC_DEVICE_INFO</a>));</div><div class="line"></div><div class="line">    nRet = <a class="code" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#gab0a5b929b0bec89c1b2a66c7b30493ed">MV_CC_CreateHandle</a>(&amp;m_handle, &amp;m_stDevInfo);</div><div class="line"></div><div class="line">    <span class="keywordflow">if</span> (MV_OK != nRet)</div><div class="line">    {</div><div class="line">        printf(<span class="stringliteral">&quot;error: CreateHandle fail [%x]\n&quot;</span>, nRet);</div><div class="line">        <span class="keywordflow">return</span>;</div><div class="line">    }</div><div class="line"></div><div class="line">    <span class="comment">//连接设备</span></div><div class="line">    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> nAccessMode = MV_ACCESS_Exclusive;</div><div class="line">    <span class="keywordtype">unsigned</span> <span class="keywordtype">short</span> nSwitchoverKey = 0;</div><div class="line">    nRet = <a class="code" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga308c9a9869be7a457d27aadd94ce57dd">MV_CC_OpenDevice</a>(m_handle, nAccessMode, nSwitchoverKey);</div><div class="line">    <span class="keywordflow">if</span> (MV_OK != nRet)</div><div class="line">    {</div><div class="line">        printf(<span class="stringliteral">&quot;error: OpenDevice fail [%x]\n&quot;</span>, nRet);</div><div class="line">        <span class="keywordflow">return</span>;</div><div class="line">    }</div><div class="line"></div><div class="line">    <span class="comment">//...其他处理</span></div><div class="line"></div><div class="line">    <span class="comment">//关闭设备，释放资源</span></div><div class="line">    nRet = <a class="code" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga33853bd328f46492102246ca8b645d57">MV_CC_CloseDevice</a>(m_handle);</div><div class="line">    <span class="keywordflow">if</span> (MV_OK != nRet)</div><div class="line">    {</div><div class="line">        printf(<span class="stringliteral">&quot;error: CloseDevice fail [%x]\n&quot;</span>, nRet);</div><div class="line">        <span class="keywordflow">return</span>;</div><div class="line">    } </div><div class="line">    </div><div class="line">    <span class="comment">//销毁句柄，释放资源</span></div><div class="line">    nRet = <a class="code" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga0f74372a22e8a19fa7e21dad45070428">MV_CC_DestroyHandle</a>(m_handle);</div><div class="line">    <span class="keywordflow">if</span> (MV_OK != nRet)</div><div class="line">    {</div><div class="line">        printf(<span class="stringliteral">&quot;error: DestroyHandle fail [%x]\n&quot;</span>, nRet);</div><div class="line">        <span class="keywordflow">return</span>;</div><div class="line">    }</div><div class="line">}</div></div><!-- fragment --></dd></dl>
+<p><br />
+ <br />
+</p>
+<h2>二、主动取流流程图</h2>
+<p>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;SDK提供主动获取图像的接口，用户可以在开启取流后直接调用此接口获取图像，也可以使用异步方式（线程、定时器等）获取图像。示例代码详见<b> <a class="el" href="_grab_image_8cpp-example.html">GrabImage.cpp</a> </b>和<b> <a class="el" href="_grab_image__high_performance_8cpp-example.html">GrabImage_HighPerformance.cpp</a> </b> 。<br />
+</p><ul>
+<li>
+<b>主动获取图像有两种方式（两种方式不能同时使用）：</b><br />
+ 方式一：调用<b> <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> </b>开始采集，需要自己开启一个buffer，然后在应用层循环调用<b> <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga9dff94abdfd05f9a3bc3aa4e740622c2" title="采用超时机制获取一帧图片，SDK内部等待直到有数据时返回">MV_CC_GetOneFrameTimeout()</a> </b>获取指定像素格式的帧数据，获取帧数据时上层应用程序需要根据帧率控制好调用该接口的频率。<br />
+ 方式二：调用<b> <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> </b>开始采集，然后在应用层调用<b> <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga8c61b2e99e31161e85a68fb8ff026e54" title="使用内部缓存获取一帧图片（与 MV_CC_Display() 不能同时使用）">MV_CC_GetImageBuffer()</a> </b>获取指定像素格式的帧数据，然后调用<b> <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gaeff416b2d35df148fa2e63521d8847d3" title="释放图像缓存(此接口用于释放不再使用的图像缓存，与 MV_CC_GetImageBuffer() 配套使用)">MV_CC_FreeImageBuffer()</a> </b>释放buffer，获取帧数据时上层应用程序需要根据帧率控制好调用该接口的频率。<br />
+  </li>
+<li>
+<b>主动取图方式使用的场景：</b><br />
+ 主动取图方式需要先调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 启动图像采集。上层应用程序需要根据帧率，控制好调用主动取图接口的频率。两种主动取图方式都支持设置超时时间，SDK内部等待直到有数据时返回，可以增加取流平稳性，适合用于对平稳性要求较高的场合。  </li>
+<li>
+<b>两种主动取图方式的区别：</b><br />
+ a、 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga8c61b2e99e31161e85a68fb8ff026e54" title="使用内部缓存获取一帧图片（与 MV_CC_Display() 不能同时使用）">MV_CC_GetImageBuffer()</a> 需要与 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gaeff416b2d35df148fa2e63521d8847d3" title="释放图像缓存(此接口用于释放不再使用的图像缓存，与 MV_CC_GetImageBuffer() 配套使用)">MV_CC_FreeImageBuffer()</a> 配套使用，当处理完取到的数据后，需要用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gaeff416b2d35df148fa2e63521d8847d3" title="释放图像缓存(此接口用于释放不再使用的图像缓存，与 MV_CC_GetImageBuffer() 配套使用)">MV_CC_FreeImageBuffer()</a> 接口将pstFrame内的数据指针权限进行释放。<br />
+ b、 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga8c61b2e99e31161e85a68fb8ff026e54" title="使用内部缓存获取一帧图片（与 MV_CC_Display() 不能同时使用）">MV_CC_GetImageBuffer()</a> 与 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga9dff94abdfd05f9a3bc3aa4e740622c2" title="采用超时机制获取一帧图片，SDK内部等待直到有数据时返回">MV_CC_GetOneFrameTimeout()</a> 相比，有着更高的效率。且其取流缓存的分配是由sdk内部自动分配的，而 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga9dff94abdfd05f9a3bc3aa4e740622c2" title="采用超时机制获取一帧图片，SDK内部等待直到有数据时返回">MV_CC_GetOneFrameTimeout()</a> 接口是需要客户自行分配。  </li>
+<li>
+<b>注意事项：</b><br />
+ a、两种主动取图方式不能同时使用，且不能与后面的回调取图方式同时使用，三种取图方式只能使用其中一种。<br />
+ b、Pdata返回的是一个地址指针，建议将Pdata里面的数据copy出来另建线程使用。  </li>
+</ul>
+<p><br />
+<img src="nitiativetotakephoto.png" style="margin: 0 0 0 40px;" alt="" class="inline"/>
+<br />
+</p>
+<div style="margin: 0 0 0 40px;"> <h4>详细步骤：</h4>
+</div><div style="margin: 0 0 0 40px;"> <ol>
+<li>
+(可选)调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga88741869e2b3c12e47025e53e6a7b58b" title="枚举设备">MV_CC_EnumDevices()</a> 枚举子网内指定传输协议对应的所有设备。<br />
+ 可以通过pstDevList在结构 <a class="el" href="struct_m_v___c_c___d_e_v_i_c_e___i_n_f_o___l_i_s_t.html" title="设备信息列表">MV_CC_DEVICE_INFO_LIST</a> 中找到设备的信息。 </li>
+<li>
+(可选)在打开指定设备之前，调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga3c3ffcbd330529ee076433ef36d226f5" title="设备是否可达">MV_CC_IsDeviceAccessible()</a> 检查指定设备是否可访问。 </li>
+<li>
+调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#gab0a5b929b0bec89c1b2a66c7b30493ed" title="创建设备句柄">MV_CC_CreateHandle()</a> 以创建设备句柄。 </li>
+<li>
+(可选)执行以下一个或多个操作以获取/设置相机不同类型的参数。 <table style="margin: 0 0 0 0;" class="doxtable">
+<tr>
+<td>获取/设置 Bool 类型节点值 </td><td><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#gae775f048b5c49e2583378ba842e0fb1e" title="获取Boolean属性值">MV_CC_GetBoolValue()</a> / <a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#gad725e29bc56fa0eb57dfefb4d8d6ea69" title="设置Boolean型属性值">MV_CC_SetBoolValue()</a>   </td></tr>
+<tr>
+<td>获取/设置 Enum 类型节点值 </td><td><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga5436ee37cbc6073ebff2bffc5df21cd8" title="获取Enum属性值">MV_CC_GetEnumValue()</a> / <a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga15a8abe28a1c5a53e10d115c7def4089" title="设置Enum型属性值">MV_CC_SetEnumValue()</a>   </td></tr>
+<tr>
+<td>获取/设置 Float 类型节点值 </td><td><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga4aa367e4bc6ec6a2d6e694e1386efc9d" title="获取Float属性值">MV_CC_GetFloatValue()</a> / <a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#gad43ad99b3a3a0ec2e91f6ad1ad4e99ac" title="设置float型属性值">MV_CC_SetFloatValue()</a>   </td></tr>
+<tr>
+<td>获取/设置 Int 类型节点值 </td><td><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga8f46931327cb6e4a78703a3e3f201cfe" title="获取Integer属性值">MV_CC_GetIntValueEx()</a> / <a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga9bf0ac21078791974fd4f5b8b2c6328b" title="设置Integer型属性值">MV_CC_SetIntValueEx()</a>   </td></tr>
+<tr>
+<td>获取/设置 String 类型节点值 </td><td><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga4ae9c5a0b988ddb627b5045662e559e0" title="获取String属性值">MV_CC_GetStringValue()</a> / <a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga3c816d281b3941584a8fa8ebf14feda1" title="设置String型属性值">MV_CC_SetStringValue()</a>   </td></tr>
+<tr>
+<td>设置 Command 类型节点值 </td><td><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga1b85d5a9950f315471f4041db36a5c14" title="设置Command型属性值">MV_CC_SetCommandValue()</a>   </td></tr>
+</table>
+<br />
+ <b>说明：</b> <ol type="i">
+<li>
+相机所有开放的属性值都可参考<a class="el" href="_xE7_x9B_xB8_xE6_x9C_xBA_xE5_x8F_x82_xE6_x95_xB0_xE8_x8A_x82_xE7_x82_xB9_xE8_xA1_xA8.html">相机参数节点表</a> 进行查询，此节点表对每个节点的名称、数据类型、数值范围定义、访问模式和节点描述进行了详细说明。  </li>
+</ol>
+<b>例如：</b> <ol type="i">
+<li>
+单帧、多帧和持续采集模式的设置获取如下：<br />
+ <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga15a8abe28a1c5a53e10d115c7def4089">MV_CC_SetEnumValue </a> </b>(handle, "AcquisitionMode", value)//设置采集模式，类型为Enumeration。<br />
+ <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga5436ee37cbc6073ebff2bffc5df21cd8">MV_CC_GetEnumValue</a></b>(handle, "AcquisitionMode", &amp;stEnumValue)//获取采集模式。<br />
+  </li>
+<li>
+触发参数配置：<br />
+ 1) 通过<b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga15a8abe28a1c5a53e10d115c7def4089">MV_CC_SetEnumValue</a></b>(handle, " TriggerMode", value)来设置触发模式。<br />
+ 2) 如果开启了触发模式，则需要配置触发源<b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga15a8abe28a1c5a53e10d115c7def4089">MV_CC_SetEnumValue</a></b>(handle, " TriggerSource", value)，相机触发源包括硬件触发和软触发。<br />
+ 3) 对应的相机触发延时时间通过<b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga4aa367e4bc6ec6a2d6e694e1386efc9d">MV_CC_GetFloatValue</a></b>(handle, " TriggerDelay", &amp;stFloatValue)、<b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#gad43ad99b3a3a0ec2e91f6ad1ad4e99ac">MV_CC_SetFloatValue</a></b>(handle, " TriggerDelay", value)可以获取和设置。<br />
+ 4) 相机触发源设置为软触发模式之后需要调用<b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga1b85d5a9950f315471f4041db36a5c14">MV_CC_SetCommandValue</a></b>(handle, "TriggerSoftware ")触发抓拍，而硬件触发模式时由设备本地硬件输入进行触发。<br />
+  </li>
+<li>
+图像参数配置：<br />
+ 包括图像宽高、像素格式、帧率、AIO偏移量、增益、曝光模式、曝光值、亮度、锐度、饱和度、灰度、白平衡、Gamma值等参数，都可用万能接口进行配置包括图像宽高、像素格式、帧率、AIO偏移量、增益、曝光模式、曝光值、亮度、锐度、饱和度、灰度、白平衡、Gamma值等参数，都可用万能接口进行配置 <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga9bf0ac21078791974fd4f5b8b2c6328b">MV_CC_SetIntValueEx</a> </b>、 <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga15a8abe28a1c5a53e10d115c7def4089">MV_CC_SetEnumValue</a></b>、 <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#gad43ad99b3a3a0ec2e91f6ad1ad4e99ac">MV_CC_SetEnumValue</a></b>、 <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#gad725e29bc56fa0eb57dfefb4d8d6ea69">MV_CC_SetBoolValue</a></b>、 <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga3c816d281b3941584a8fa8ebf14feda1">MV_CC_SetStringValue</a></b>、 <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga1b85d5a9950f315471f4041db36a5c14">MV_CC_SetCommandValue</a></b>；通用配置接口详见“模块”中“相机参数设置”节点下的”<a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html">通用配置接口</a> ”。  </li>
+</ol>
+</li>
+<li>
+图像采集： <ol type="i">
+<li>
+调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 开始获取流。 <ul>
+<li>
+在开始采集之前，可以调用 <a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE6_x8E_xA5_xE5_x8F_xA3.html#gae0c743b164f7093bb7eb74bd271efded" title="设置SDK内部图像缓存节点个数，大于等于1，在抓图前调用">MV_CC_SetImageNodeNum()</a> 设置SDK内部图像缓存节点个数。设置该节点个数，当SDK内部已获取的图像数超过这个值后，自动丢弃最早的图像数据。 </li>
+<li>
+采集到原始图像数据可以调用<b> <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE5_xA4_x84_xE7_x90_x86.html#ga447c5adde3663634c18ab32c5d8a7a6a" title="像素格式转换">MV_CC_ConvertPixelType()</a> </b>转换图像的像素格式，也可以调用<b> <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE5_xA4_x84_xE7_x90_x86.html#gab3ed39a8a16b935aaaab2425ed0731ae" title="保存图片，支持Bmp和Jpeg格式. Jpeg格式的编码质量在50-99之间">MV_CC_SaveImageEx2()</a> </b>转成JPEG或者BMP等格式的图片数据然后保存成图片文件。 </li>
+</ul>
+</li>
+<li>
+在应用程序层中重复调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga9dff94abdfd05f9a3bc3aa4e740622c2" title="采用超时机制获取一帧图片，SDK内部等待直到有数据时返回">MV_CC_GetOneFrameTimeout()</a> 或 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga8c61b2e99e31161e85a68fb8ff026e54" title="使用内部缓存获取一帧图片（与 MV_CC_Display() 不能同时使用）">MV_CC_GetImageBuffer()</a> 来获取图像数据。 <ul>
+<li>
+该接口为主动式获取帧数据，上层应用程序需要根据帧率，控制好调用该接口的频率。 </li>
+</ul>
+</li>
+</ol>
+</li>
+<li>
+调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE5_xA4_x84_xE7_x90_x86.html#ga5de8e4375875d610cdef1ba9330e7e07" title="显示一帧图像">MV_CC_DisplayOneFrame()</a> 输入窗口句柄并开始显示。 </li>
+<li>
+调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gae5d7f4ae46a53851f104e26fa449ab06" title="停止取流">MV_CC_StopGrabbing()</a> 停止采集。 </li>
+<li>
+调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga33853bd328f46492102246ca8b645d57" title="关闭设备">MV_CC_CloseDevice()</a> 关闭设备。 </li>
+<li>
+调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga0f74372a22e8a19fa7e21dad45070428" title="销毁设备句柄">MV_CC_DestroyHandle()</a> 来销毁句柄并释放资源。 </li>
+</ol>
+<br />
+ </div> <h2>三、回调出流流程图</h2>
+<p>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;SDK提供注册回调函数的接口，用户可以将自己定义的回调函数注册在SDK内部，SDK获取到相机图像会主动回调到应用程序供用户处理，此方式可以简化用户程序逻辑。示例代码详见<b> <a class="el" href="_grab__image_callback_8cpp-example.html">Grab_ImageCallback.cpp</a> </b> 。 </p>
+<ul>
+<li>
+<b>回调取图方式：</b><br />
+ 您可以使用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gadbf3d088c7500fc148f01b32ba1217b7" title="注册图像数据回调">MV_CC_RegisterImageCallBackEx()</a> 接口注册回调函数。回调函数可以自定义，用于自动回调获取的图像。此方法可以简化应用程序逻辑。如果你想设置获取RGB24或BGR24格式的图像数据，也可以使用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga1f05699701346a1067e7e1cb14948c5c" title="注册图像数据回调，RGB">MV_CC_RegisterImageCallBackForRGB()</a> 或 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gafe5e7b776c11a072643a06939bff8301" title="注册图像数据回调，BGR">MV_CC_RegisterImageCallBackForBGR()</a> 来注册回调函数。  </li>
+<li>
+<b>注意事项：</b><br />
+ a、回调函数中不建议有耗时操作、线程锁等，容易造成回调阻塞。<br />
+ b、Pdata返回的是一个地址指针，建议将Pdata里面的数据copy出来另建线程使用。  </li>
+</ul>
+<p><br />
+<img src="callback.png" style="margin: 0 0 0 40px;" alt="" class="inline"/>
+<br />
+</p>
+<div style="margin: 0 0 0 40px;"> <h4>详细步骤：</h4>
+</div><div style="margin: 0 0 0 40px;"> <ol>
+<li>
+(可选)调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga88741869e2b3c12e47025e53e6a7b58b" title="枚举设备">MV_CC_EnumDevices()</a> 枚举子网内指定传输协议对应的所有设备。<br />
+ 可以通过pstDevList在结构 <a class="el" href="struct_m_v___c_c___d_e_v_i_c_e___i_n_f_o___l_i_s_t.html" title="设备信息列表">MV_CC_DEVICE_INFO_LIST</a> 中找到设备的信息。 </li>
+<li>
+(可选)在打开指定设备之前，调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga3c3ffcbd330529ee076433ef36d226f5" title="设备是否可达">MV_CC_IsDeviceAccessible()</a> 检查指定设备是否可访问。 </li>
+<li>
+调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#gab0a5b929b0bec89c1b2a66c7b30493ed" title="创建设备句柄">MV_CC_CreateHandle()</a> 以创建设备句柄。 </li>
+<li>
+(可选)执行以下一个或多个操作以获取/设置相机不同类型的参数。 <table style="margin: 0 0 0 0;" class="doxtable">
+<tr>
+<td>获取/设置 Bool 类型节点值 </td><td><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#gae775f048b5c49e2583378ba842e0fb1e" title="获取Boolean属性值">MV_CC_GetBoolValue()</a> / <a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#gad725e29bc56fa0eb57dfefb4d8d6ea69" title="设置Boolean型属性值">MV_CC_SetBoolValue()</a>   </td></tr>
+<tr>
+<td>获取/设置 Enum 类型节点值 </td><td><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga5436ee37cbc6073ebff2bffc5df21cd8" title="获取Enum属性值">MV_CC_GetEnumValue()</a> / <a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga15a8abe28a1c5a53e10d115c7def4089" title="设置Enum型属性值">MV_CC_SetEnumValue()</a>   </td></tr>
+<tr>
+<td>获取/设置 Float 类型节点值 </td><td><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga4aa367e4bc6ec6a2d6e694e1386efc9d" title="获取Float属性值">MV_CC_GetFloatValue()</a> / <a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#gad43ad99b3a3a0ec2e91f6ad1ad4e99ac" title="设置float型属性值">MV_CC_SetFloatValue()</a>   </td></tr>
+<tr>
+<td>获取/设置 Int 类型节点值 </td><td><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga8f46931327cb6e4a78703a3e3f201cfe" title="获取Integer属性值">MV_CC_GetIntValueEx()</a> / <a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga9bf0ac21078791974fd4f5b8b2c6328b" title="设置Integer型属性值">MV_CC_SetIntValueEx()</a>   </td></tr>
+<tr>
+<td>获取/设置 String 类型节点值 </td><td><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga4ae9c5a0b988ddb627b5045662e559e0" title="获取String属性值">MV_CC_GetStringValue()</a> / <a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga3c816d281b3941584a8fa8ebf14feda1" title="设置String型属性值">MV_CC_SetStringValue()</a>   </td></tr>
+<tr>
+<td>设置 Command 类型节点值 </td><td><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga1b85d5a9950f315471f4041db36a5c14" title="设置Command型属性值">MV_CC_SetCommandValue()</a>   </td></tr>
+</table>
+<br />
+ <b>说明：</b> <ol type="i">
+<li>
+相机所有开放的属性值都可参<a class="el" href="_xE7_x9B_xB8_xE6_x9C_xBA_xE5_x8F_x82_xE6_x95_xB0_xE8_x8A_x82_xE7_x82_xB9_xE8_xA1_xA8.html">相机参数节点表</a> 进行查询，此节点表对每个节点的名称、数据类型、数值范围定义、访问模式和节点描述进行了详细说明。  </li>
+</ol>
+<b>例如：</b> <ol type="i">
+<li>
+单帧、多帧和持续采集模式的设置获取如下：<br />
+ <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga15a8abe28a1c5a53e10d115c7def4089">MV_CC_SetEnumValue </a> </b>(handle, "AcquisitionMode", value)//设置采集模式，类型为Enumeration。<br />
+ <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga5436ee37cbc6073ebff2bffc5df21cd8">MV_CC_GetEnumValue</a></b>(handle, "AcquisitionMode", &amp;stEnumValue)//获取采集模式。<br />
+  </li>
+<li>
+触发参数配置：<br />
+ 1) 通过<b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga15a8abe28a1c5a53e10d115c7def4089">MV_CC_SetEnumValue</a></b>(handle, " TriggerMode", value)来设置触发模式。<br />
+ 2) 如果开启了触发模式，则需要配置触发源<b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga15a8abe28a1c5a53e10d115c7def4089">MV_CC_SetEnumValue</a></b>(handle, " TriggerSource", value)，相机触发源包括硬件触发和软触发。<br />
+ 3) 对应的相机触发延时时间通过<b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga4aa367e4bc6ec6a2d6e694e1386efc9d">MV_CC_GetFloatValue</a></b>(handle, " TriggerDelay", &amp;stFloatValue)、<b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#gad43ad99b3a3a0ec2e91f6ad1ad4e99ac">MV_CC_SetFloatValue</a></b>(handle, " TriggerDelay", value)可以获取和设置。<br />
+ 4) 相机触发源设置为软触发模式之后需要调用<b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga1b85d5a9950f315471f4041db36a5c14">MV_CC_SetCommandValue</a></b>(handle, "TriggerSoftware ")触发抓拍，而硬件触发模式时由设备本地硬件输入进行触发。<br />
+  </li>
+<li>
+图像参数配置：<br />
+ 包括图像宽高、像素格式、帧率、AIO偏移量、增益、曝光模式、曝光值、亮度、锐度、饱和度、灰度、白平衡、Gamma值等参数，都可用万能接口进行配置包括图像宽高、像素格式、帧率、AIO偏移量、增益、曝光模式、曝光值、亮度、锐度、饱和度、灰度、白平衡、Gamma值等参数，都可用万能接口进行配置 <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga9bf0ac21078791974fd4f5b8b2c6328b">MV_CC_SetIntValueEx</a> </b>、 <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga15a8abe28a1c5a53e10d115c7def4089">MV_CC_SetEnumValue</a></b>、 <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#gad43ad99b3a3a0ec2e91f6ad1ad4e99ac">MV_CC_SetEnumValue</a></b>、 <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#gad725e29bc56fa0eb57dfefb4d8d6ea69">MV_CC_SetBoolValue</a></b>、 <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga3c816d281b3941584a8fa8ebf14feda1">MV_CC_SetStringValue</a></b>、 <b><a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html#ga1b85d5a9950f315471f4041db36a5c14">MV_CC_SetCommandValue</a></b>；通用配置接口详见“模块”中“相机参数设置”节点下的”<a class="el" href="group___xE9_x80_x9A_xE7_x94_xA8_xE9_x85_x8D_xE7_xBD_xAE_xE6_x8E_xA5_xE5_x8F_xA3.html">通用配置接口</a> ”。  </li>
+</ol>
+</li>
+<li>
+图像采集： <ol type="i">
+<li>
+调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gadbf3d088c7500fc148f01b32ba1217b7" title="注册图像数据回调">MV_CC_RegisterImageCallBackEx()</a> 来设置数据回调函数。  </li>
+<li>
+调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 开始采集。 <ul>
+<li>
+对于原始图像数据，可以调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE5_xA4_x84_xE7_x90_x86.html#ga447c5adde3663634c18ab32c5d8a7a6a" title="像素格式转换">MV_CC_ConvertPixelType()</a> 来转换图像像素格式，也可以调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE5_xA4_x84_xE7_x90_x86.html#gab3ed39a8a16b935aaaab2425ed0731ae" title="保存图片，支持Bmp和Jpeg格式. Jpeg格式的编码质量在50-99之间">MV_CC_SaveImageEx2()</a> 将图像转换为JPEG或BMP格式并保存为文件。(建议另建线程处理，不要影响取图线程) </li>
+</ul>
+</li>
+</ol>
+</li>
+<li>
+调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE5_xA4_x84_xE7_x90_x86.html#ga5de8e4375875d610cdef1ba9330e7e07" title="显示一帧图像">MV_CC_DisplayOneFrame()</a> 输入窗口句柄并开始显示。 </li>
+<li>
+调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gae5d7f4ae46a53851f104e26fa449ab06" title="停止取流">MV_CC_StopGrabbing()</a> 停止采集。 </li>
+<li>
+调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga33853bd328f46492102246ca8b645d57" title="关闭设备">MV_CC_CloseDevice()</a> 关闭设备。 </li>
+<li>
+调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga0f74372a22e8a19fa7e21dad45070428" title="销毁设备句柄">MV_CC_DestroyHandle()</a> 来销毁句柄并释放资源。 </li>
+</ol>
+<br />
+ </div> </div></div><!-- PageDoc -->
+</div><!-- contents -->
+<!-- start footer part -->
+<div class="footer" style="text-align: right;">
+	<hr/>
+	<small></small>
+</div>
+</body>
+</html>

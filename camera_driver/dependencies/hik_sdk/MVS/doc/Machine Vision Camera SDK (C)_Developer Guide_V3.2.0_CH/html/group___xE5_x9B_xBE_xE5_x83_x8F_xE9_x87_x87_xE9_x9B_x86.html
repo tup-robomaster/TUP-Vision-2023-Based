@@ -1,0 +1,621 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<link href="doxygen.css" rel="stylesheet" type="text/css"/>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<link href="custom-style.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+	<div style="overflow: hidden;">
+		<div style="height: 57px;min-width: 1039px;background-size: auto 100%;background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABwgAAAABCAYAAADKO/rAAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAABRSURBVFhH7dUxCoBADEXB5LK5/w1iIaLIrsgWNs50Sf/4WVUd8HOZGd1nCqMbGNMPrNMPrJv1cvz0A3OjfuwPvDPrxf7A7t7IlX7gmX74VsQGguw4S6+UnSYAAAAASUVORK5CYII=');">
+			<img src="titleleft.png" style="float: left;"/>
+			<img src="titleright.png" alt="" style="float: right;" />
+		</div>
+	</div>
+<!-- 制作者 Doxygen 1.8.15 -->
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>声明</span></a></li>
+      <li><a href="_xE9_xA6_x96_xE9_xA1_xB5.html"><span>首页</span></a></li>
+      <li><a href="_xE7_x8E_xAF_xE5_xA2_x83_xE9_x85_x8D_xE7_xBD_xAE.html"><span>环境配置</span></a></li>
+      <li><a href="_xE6_x9B_xB4_xE6_x96_xB0_xE8_xAE_xB0_xE5_xBD_x95.html"><span>更新记录</span></a></li>
+      <li><a href="_xE7_xBC_x96_xE7_xA8_x8B_xE5_xBC_x95_xE5_xAF_xBC.html"><span>编程引导</span></a></li>
+      <li class="current"><a href="modules.html"><span>接口函数</span></a></li>
+      <li><a href="annotated.html"><span>结构体定义</span></a></li>
+      <li><a href="_xE7_x9B_xB8_xE6_x9C_xBA_xE5_x8F_x82_xE6_x95_xB0_xE8_x8A_x82_xE7_x82_xB9_xE8_xA1_xA8.html"><span>相机参数节点表</span></a></li>
+      <li><a href="examples.html"><span>示例程序</span></a></li>
+      <li><a href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html"><span>错误码</span></a></li>
+      <li><a href="_xE5_xB8_xB8_xE8_xA7_x81_xE9_x97_xAE_xE9_xA2_x98.html"><span>常见问题</span></a></li>
+    </ul>
+  </div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#func-members">函数</a>  </div>
+  <div class="headertitle">
+<div class="title">图像采集</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>包含图像获取（回调取图、主动取图）、开始采集和结束采集接口等。  
+<a href="#details">更多...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+函数</h2></td></tr>
+<tr class="memitem:gadbf3d088c7500fc148f01b32ba1217b7"><td class="memItemLeft" align="right" valign="top">MV_CAMCTRL_API int __stdcall&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gadbf3d088c7500fc148f01b32ba1217b7">MV_CC_RegisterImageCallBackEx</a> (void *handle, void(__stdcall *cbOutput)(unsigned char *pData, <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t___i_n_f_o___e_x.html">MV_FRAME_OUT_INFO_EX</a> *pstFrameInfo, void *pUser), void *pUser)</td></tr>
+<tr class="memdesc:gadbf3d088c7500fc148f01b32ba1217b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">注册图像数据回调  <a href="#gadbf3d088c7500fc148f01b32ba1217b7">更多...</a><br /></td></tr>
+<tr class="separator:gadbf3d088c7500fc148f01b32ba1217b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1f05699701346a1067e7e1cb14948c5c"><td class="memItemLeft" align="right" valign="top">MV_CAMCTRL_API int __stdcall&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga1f05699701346a1067e7e1cb14948c5c">MV_CC_RegisterImageCallBackForRGB</a> (void *handle, void(__stdcall *cbOutput)(unsigned char *pData, <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t___i_n_f_o___e_x.html">MV_FRAME_OUT_INFO_EX</a> *pstFrameInfo, void *pUser), void *pUser)</td></tr>
+<tr class="memdesc:ga1f05699701346a1067e7e1cb14948c5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">注册图像数据回调，RGB  <a href="#ga1f05699701346a1067e7e1cb14948c5c">更多...</a><br /></td></tr>
+<tr class="separator:ga1f05699701346a1067e7e1cb14948c5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafe5e7b776c11a072643a06939bff8301"><td class="memItemLeft" align="right" valign="top">MV_CAMCTRL_API int __stdcall&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gafe5e7b776c11a072643a06939bff8301">MV_CC_RegisterImageCallBackForBGR</a> (void *handle, void(__stdcall *cbOutput)(unsigned char *pData, <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t___i_n_f_o___e_x.html">MV_FRAME_OUT_INFO_EX</a> *pstFrameInfo, void *pUser), void *pUser)</td></tr>
+<tr class="memdesc:gafe5e7b776c11a072643a06939bff8301"><td class="mdescLeft">&#160;</td><td class="mdescRight">注册图像数据回调，BGR  <a href="#gafe5e7b776c11a072643a06939bff8301">更多...</a><br /></td></tr>
+<tr class="separator:gafe5e7b776c11a072643a06939bff8301"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga78728211c47c6f118110fde635d6ac69"><td class="memItemLeft" align="right" valign="top">MV_CAMCTRL_API int __stdcall&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69">MV_CC_StartGrabbing</a> (IN void *handle)</td></tr>
+<tr class="memdesc:ga78728211c47c6f118110fde635d6ac69"><td class="mdescLeft">&#160;</td><td class="mdescRight">开始取流  <a href="#ga78728211c47c6f118110fde635d6ac69">更多...</a><br /></td></tr>
+<tr class="separator:ga78728211c47c6f118110fde635d6ac69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae5d7f4ae46a53851f104e26fa449ab06"><td class="memItemLeft" align="right" valign="top">MV_CAMCTRL_API int __stdcall&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gae5d7f4ae46a53851f104e26fa449ab06">MV_CC_StopGrabbing</a> (IN void *handle)</td></tr>
+<tr class="memdesc:gae5d7f4ae46a53851f104e26fa449ab06"><td class="mdescLeft">&#160;</td><td class="mdescRight">停止取流  <a href="#gae5d7f4ae46a53851f104e26fa449ab06">更多...</a><br /></td></tr>
+<tr class="separator:gae5d7f4ae46a53851f104e26fa449ab06"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga69b510f44c2e2ec85b5a010de55a8460"><td class="memItemLeft" align="right" valign="top">MV_CAMCTRL_API int __stdcall&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga69b510f44c2e2ec85b5a010de55a8460">MV_CC_GetImageForRGB</a> (IN void *handle, IN OUT unsigned char *pData, IN unsigned int nDataSize, IN OUT <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t___i_n_f_o___e_x.html">MV_FRAME_OUT_INFO_EX</a> *pstFrameInfo, int nMsec)</td></tr>
+<tr class="memdesc:ga69b510f44c2e2ec85b5a010de55a8460"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取一帧RGB数据，此函数为查询式获取，每次调用查询内部 缓存有无数据，有数据则获取数据，无数据返回错误码  <a href="#ga69b510f44c2e2ec85b5a010de55a8460">更多...</a><br /></td></tr>
+<tr class="separator:ga69b510f44c2e2ec85b5a010de55a8460"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac70418dc01fda0f67443b9eb5767425b"><td class="memItemLeft" align="right" valign="top">MV_CAMCTRL_API int __stdcall&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gac70418dc01fda0f67443b9eb5767425b">MV_CC_GetImageForBGR</a> (IN void *handle, IN OUT unsigned char *pData, IN unsigned int nDataSize, IN OUT <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t___i_n_f_o___e_x.html">MV_FRAME_OUT_INFO_EX</a> *pstFrameInfo, int nMsec)</td></tr>
+<tr class="memdesc:gac70418dc01fda0f67443b9eb5767425b"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取一帧BGR数据，此函数为查询式获取，每次调用查询内部 缓存有无数据，有数据则获取数据，无数据返回错误码  <a href="#gac70418dc01fda0f67443b9eb5767425b">更多...</a><br /></td></tr>
+<tr class="separator:gac70418dc01fda0f67443b9eb5767425b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8c61b2e99e31161e85a68fb8ff026e54"><td class="memItemLeft" align="right" valign="top">MV_CAMCTRL_API int __stdcall&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga8c61b2e99e31161e85a68fb8ff026e54">MV_CC_GetImageBuffer</a> (IN void *handle, OUT <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t.html">MV_FRAME_OUT</a> *pstFrame, IN unsigned int nMsec)</td></tr>
+<tr class="memdesc:ga8c61b2e99e31161e85a68fb8ff026e54"><td class="mdescLeft">&#160;</td><td class="mdescRight">使用内部缓存获取一帧图片（与 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE5_xA4_x84_xE7_x90_x86.html#ga3d79377333891ab4f3e9ba352757eca7" title="显示图像，注册显示窗口，内部自动显示（与 MV_CC_GetImageBuffer() 不能同时使用）">MV_CC_Display()</a> 不能同时使用）  <a href="#ga8c61b2e99e31161e85a68fb8ff026e54">更多...</a><br /></td></tr>
+<tr class="separator:ga8c61b2e99e31161e85a68fb8ff026e54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaeff416b2d35df148fa2e63521d8847d3"><td class="memItemLeft" align="right" valign="top">MV_CAMCTRL_API int __stdcall&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gaeff416b2d35df148fa2e63521d8847d3">MV_CC_FreeImageBuffer</a> (IN void *handle, IN <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t.html">MV_FRAME_OUT</a> *pstFrame)</td></tr>
+<tr class="memdesc:gaeff416b2d35df148fa2e63521d8847d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">释放图像缓存(此接口用于释放不再使用的图像缓存，与 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga8c61b2e99e31161e85a68fb8ff026e54" title="使用内部缓存获取一帧图片（与 MV_CC_Display() 不能同时使用）">MV_CC_GetImageBuffer()</a> 配套使用)  <a href="#gaeff416b2d35df148fa2e63521d8847d3">更多...</a><br /></td></tr>
+<tr class="separator:gaeff416b2d35df148fa2e63521d8847d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9dff94abdfd05f9a3bc3aa4e740622c2"><td class="memItemLeft" align="right" valign="top">MV_CAMCTRL_API int __stdcall&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga9dff94abdfd05f9a3bc3aa4e740622c2">MV_CC_GetOneFrameTimeout</a> (IN void *handle, IN OUT unsigned char *pData, IN unsigned int nDataSize, IN OUT <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t___i_n_f_o___e_x.html">MV_FRAME_OUT_INFO_EX</a> *pstFrameInfo, unsigned int nMsec)</td></tr>
+<tr class="memdesc:ga9dff94abdfd05f9a3bc3aa4e740622c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">采用超时机制获取一帧图片，SDK内部等待直到有数据时返回  <a href="#ga9dff94abdfd05f9a3bc3aa4e740622c2">更多...</a><br /></td></tr>
+<tr class="separator:ga9dff94abdfd05f9a3bc3aa4e740622c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga90fcfa3fb929d76e99ea7f5946d6c5ff"><td class="memItemLeft" align="right" valign="top">MV_CAMCTRL_API int __stdcall&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga90fcfa3fb929d76e99ea7f5946d6c5ff">MV_CC_ClearImageBuffer</a> (IN void *handle)</td></tr>
+<tr class="memdesc:ga90fcfa3fb929d76e99ea7f5946d6c5ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">清除取流数据缓存  <a href="#ga90fcfa3fb929d76e99ea7f5946d6c5ff">更多...</a><br /></td></tr>
+<tr class="separator:ga90fcfa3fb929d76e99ea7f5946d6c5ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">详细描述</h2>
+<p>包含图像获取（回调取图、主动取图）、开始采集和结束采集接口等。 </p>
+<h2 class="groupheader">函数说明</h2>
+<a id="gadbf3d088c7500fc148f01b32ba1217b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadbf3d088c7500fc148f01b32ba1217b7">&#9670;&nbsp;</a></span>MV_CC_RegisterImageCallBackEx()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MV_CAMCTRL_API int __stdcall MV_CC_RegisterImageCallBackEx </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>handle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void(__stdcall *cbOutput)(unsigned char *pData, <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t___i_n_f_o___e_x.html">MV_FRAME_OUT_INFO_EX</a> *pstFrameInfo, void *pUser)&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>pUser</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>注册图像数据回调 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">handle</td><td>[IN] 设备句柄 </td></tr>
+    <tr><td class="paramname">cbOutput</td><td>[IN] 回调函数指针 </td></tr>
+    <tr><td class="paramname">pUser</td><td>[IN] 用户自定义变量 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">MV_OK</a>；失败，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">错误码</a> </dd></dl>
+<dl class="section remark"><dt>备注</dt><dd><b>&#160;&bull;&#160;</b>通过该接口可以设置图像数据回调函数，在 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#gab0a5b929b0bec89c1b2a66c7b30493ed" title="创建设备句柄">MV_CC_CreateHandle()</a> 之后即可调用。 <br />
+ <b>&#160;&bull;&#160;</b>图像数据采集有三种方式，三种方式不能同时使用：<br />
+ &#160;&#160;&#160;<b>&#160;&bull;&#160;</b>方式一：调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gadbf3d088c7500fc148f01b32ba1217b7" title="注册图像数据回调">MV_CC_RegisterImageCallBackEx()</a> 设置图像数据回调函数，然后调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 开始采集，采集的图像数据在设置的回调函数中返回。<br />
+ &#160;&#160;&#160;<b>&#160;&bull;&#160;</b>方式二：调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 开始采集，然后在应用层循环调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga9dff94abdfd05f9a3bc3aa4e740622c2" title="采用超时机制获取一帧图片，SDK内部等待直到有数据时返回">MV_CC_GetOneFrameTimeout()</a> 获取指定像素格式的帧数据，获取帧数据时上层应用程序需要根据帧率控制好调用该接口的频率。 <br />
+ &#160;&#160;&#160;<b>&#160;&bull;&#160;</b>方式三：调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 开始采集，然后在应用层调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga8c61b2e99e31161e85a68fb8ff026e54" title="使用内部缓存获取一帧图片（与 MV_CC_Display() 不能同时使用）">MV_CC_GetImageBuffer()</a> 获取指定像素格式的帧数据，然后调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gaeff416b2d35df148fa2e63521d8847d3" title="释放图像缓存(此接口用于释放不再使用的图像缓存，与 MV_CC_GetImageBuffer() 配套使用)">MV_CC_FreeImageBuffer()</a> 释放buffer，获取帧数据时上层应用程序需要根据帧率控制好调用该接口的频率。<br />
+</dd></dl>
+<dl class="section examples"><dt>示例</dt><dd><a class="el" href="_grab__image_callback_8cpp-example.html#a21">Grab_ImageCallback.cpp</a> , 以及 <a class="el" href="_trigger__image_callback_8cpp-example.html#a23">Trigger_ImageCallback.cpp</a>.</dd>
+</dl>
+
+</div>
+</div>
+<a id="ga1f05699701346a1067e7e1cb14948c5c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1f05699701346a1067e7e1cb14948c5c">&#9670;&nbsp;</a></span>MV_CC_RegisterImageCallBackForRGB()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MV_CAMCTRL_API int __stdcall MV_CC_RegisterImageCallBackForRGB </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>handle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void(__stdcall *cbOutput)(unsigned char *pData, <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t___i_n_f_o___e_x.html">MV_FRAME_OUT_INFO_EX</a> *pstFrameInfo, void *pUser)&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>pUser</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>注册图像数据回调，RGB </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">handle</td><td>[IN] 设备句柄 </td></tr>
+    <tr><td class="paramname">cbOutput</td><td>[IN] 回调函数指针 </td></tr>
+    <tr><td class="paramname">pUser</td><td>[IN] 用户自定义变量 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">MV_OK</a>；失败，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">错误码</a> </dd></dl>
+<dl class="section remark"><dt>备注</dt><dd><b>&#160;&bull;&#160;</b>通过该接口可以设置图像数据回调函数，在 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#gab0a5b929b0bec89c1b2a66c7b30493ed" title="创建设备句柄">MV_CC_CreateHandle()</a> 之后即可调用。<br />
+ <b>&#160;&bull;&#160;</b>图像数据采集有三种方式，三种方式不能同时使用：<br />
+ &#160;&#160;&#160;<b>&#160;&bull;&#160;</b>方式一：调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gadbf3d088c7500fc148f01b32ba1217b7" title="注册图像数据回调">MV_CC_RegisterImageCallBackEx()</a> 设置图像数据回调函数，然后调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 开始采集，采集的图像数据在设置的回调函数中返回。<br />
+ &#160;&#160;&#160;<b>&#160;&bull;&#160;</b>方式二：调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 开始采集，然后在应用层循环调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga9dff94abdfd05f9a3bc3aa4e740622c2" title="采用超时机制获取一帧图片，SDK内部等待直到有数据时返回">MV_CC_GetOneFrameTimeout()</a> 获取指定像素格式的帧数据，获取帧数据时上层应用程序需要根据帧率控制好调用该接口的频率。 <br />
+ &#160;&#160;&#160;<b>&#160;&bull;&#160;</b>方式三：调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 开始采集，然后在应用层调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga8c61b2e99e31161e85a68fb8ff026e54" title="使用内部缓存获取一帧图片（与 MV_CC_Display() 不能同时使用）">MV_CC_GetImageBuffer()</a> 获取指定像素格式的帧数据，然后调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gaeff416b2d35df148fa2e63521d8847d3" title="释放图像缓存(此接口用于释放不再使用的图像缓存，与 MV_CC_GetImageBuffer() 配套使用)">MV_CC_FreeImageBuffer()</a> 释放buffer，获取帧数据时上层应用程序需要根据帧率控制好调用该接口的频率。<br />
+</dd></dl>
+
+</div>
+</div>
+<a id="gafe5e7b776c11a072643a06939bff8301"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafe5e7b776c11a072643a06939bff8301">&#9670;&nbsp;</a></span>MV_CC_RegisterImageCallBackForBGR()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MV_CAMCTRL_API int __stdcall MV_CC_RegisterImageCallBackForBGR </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>handle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void(__stdcall *cbOutput)(unsigned char *pData, <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t___i_n_f_o___e_x.html">MV_FRAME_OUT_INFO_EX</a> *pstFrameInfo, void *pUser)&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>pUser</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>注册图像数据回调，BGR </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">handle</td><td>[IN] 设备句柄 </td></tr>
+    <tr><td class="paramname">cbOutput</td><td>[IN] 回调函数指针 </td></tr>
+    <tr><td class="paramname">pUser</td><td>[IN] 用户自定义变量 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">MV_OK</a>；失败，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">错误码</a> </dd></dl>
+<dl class="section remark"><dt>备注</dt><dd><b>&#160;&bull;&#160;</b>通过该接口可以设置图像数据回调函数，在 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#gab0a5b929b0bec89c1b2a66c7b30493ed" title="创建设备句柄">MV_CC_CreateHandle()</a> 之后即可调用。<br />
+ <b>&#160;&bull;&#160;</b>图像数据采集有三种方式，三种方式不能同时使用：<br />
+ &#160;&#160;&#160;<b>&#160;&bull;&#160;</b>方式一：调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gadbf3d088c7500fc148f01b32ba1217b7" title="注册图像数据回调">MV_CC_RegisterImageCallBackEx()</a> 设置图像数据回调函数，然后调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 开始采集，采集的图像数据在设置的回调函数中返回。<br />
+ &#160;&#160;&#160;<b>&#160;&bull;&#160;</b>方式二：调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 开始采集，然后在应用层循环调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga9dff94abdfd05f9a3bc3aa4e740622c2" title="采用超时机制获取一帧图片，SDK内部等待直到有数据时返回">MV_CC_GetOneFrameTimeout()</a> 获取指定像素格式的帧数据，获取帧数据时上层应用程序需要根据帧率控制好调用该接口的频率。 <br />
+ &#160;&#160;&#160;<b>&#160;&bull;&#160;</b>方式三：调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 开始采集，然后在应用层调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga8c61b2e99e31161e85a68fb8ff026e54" title="使用内部缓存获取一帧图片（与 MV_CC_Display() 不能同时使用）">MV_CC_GetImageBuffer()</a> 获取指定像素格式的帧数据，然后调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gaeff416b2d35df148fa2e63521d8847d3" title="释放图像缓存(此接口用于释放不再使用的图像缓存，与 MV_CC_GetImageBuffer() 配套使用)">MV_CC_FreeImageBuffer()</a> 释放buffer，获取帧数据时上层应用程序需要根据帧率控制好调用该接口的频率。<br />
+</dd></dl>
+
+</div>
+</div>
+<a id="ga78728211c47c6f118110fde635d6ac69"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga78728211c47c6f118110fde635d6ac69">&#9670;&nbsp;</a></span>MV_CC_StartGrabbing()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MV_CAMCTRL_API int __stdcall MV_CC_StartGrabbing </td>
+          <td>(</td>
+          <td class="paramtype">IN void *&#160;</td>
+          <td class="paramname"><em>handle</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>开始取流 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">handle</td><td>[IN] 设备句柄 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">MV_OK</a>；失败，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">错误码</a> </dd></dl>
+<dl class="section examples"><dt>示例</dt><dd><a class="el" href="_chunk_data_8cpp-example.html#a28">ChunkData.cpp</a>, <a class="el" href="_connect_spec_camera_8cpp-example.html#a14">ConnectSpecCamera.cpp</a>, <a class="el" href="_events_8cpp-example.html#a26">Events.cpp</a>, <a class="el" href="_grab__image_callback_8cpp-example.html#a22">Grab_ImageCallback.cpp</a>, <a class="el" href="_grab_image_8cpp-example.html#a24">GrabImage.cpp</a>, <a class="el" href="_grab_image__high_performance_8cpp-example.html#a27">GrabImage_HighPerformance.cpp</a>, <a class="el" href="_grab_multiple_camera_8cpp-example.html#a28">GrabMultipleCamera.cpp</a>, <a class="el" href="_image_process_8cpp-example.html#a19">ImageProcess.cpp</a>, <a class="el" href="_multi_cast_8cpp-example.html#a25">MultiCast.cpp</a>, <a class="el" href="_reconnect_demo_8cpp-example.html#a29">ReconnectDemo.cpp</a>, <a class="el" href="_trigger__image_8cpp-example.html#a26">Trigger_Image.cpp</a> , 以及 <a class="el" href="_trigger__image_callback_8cpp-example.html#a24">Trigger_ImageCallback.cpp</a>.</dd>
+</dl>
+
+</div>
+</div>
+<a id="gae5d7f4ae46a53851f104e26fa449ab06"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae5d7f4ae46a53851f104e26fa449ab06">&#9670;&nbsp;</a></span>MV_CC_StopGrabbing()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MV_CAMCTRL_API int __stdcall MV_CC_StopGrabbing </td>
+          <td>(</td>
+          <td class="paramtype">IN void *&#160;</td>
+          <td class="paramname"><em>handle</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>停止取流 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">handle</td><td>[IN] 设备句柄 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">MV_OK</a>；失败，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">错误码</a> </dd></dl>
+<dl class="section examples"><dt>示例</dt><dd><a class="el" href="_chunk_data_8cpp-example.html#a29">ChunkData.cpp</a>, <a class="el" href="_connect_spec_camera_8cpp-example.html#a15">ConnectSpecCamera.cpp</a>, <a class="el" href="_events_8cpp-example.html#a27">Events.cpp</a>, <a class="el" href="_grab__image_callback_8cpp-example.html#a23">Grab_ImageCallback.cpp</a>, <a class="el" href="_grab_image_8cpp-example.html#a25">GrabImage.cpp</a>, <a class="el" href="_grab_image__high_performance_8cpp-example.html#a28">GrabImage_HighPerformance.cpp</a>, <a class="el" href="_grab_multiple_camera_8cpp-example.html#a29">GrabMultipleCamera.cpp</a>, <a class="el" href="_image_process_8cpp-example.html#a41">ImageProcess.cpp</a>, <a class="el" href="_multi_cast_8cpp-example.html#a26">MultiCast.cpp</a>, <a class="el" href="_reconnect_demo_8cpp-example.html#a18">ReconnectDemo.cpp</a>, <a class="el" href="_trigger__image_8cpp-example.html#a27">Trigger_Image.cpp</a> , 以及 <a class="el" href="_trigger__image_callback_8cpp-example.html#a25">Trigger_ImageCallback.cpp</a>.</dd>
+</dl>
+
+</div>
+</div>
+<a id="ga69b510f44c2e2ec85b5a010de55a8460"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga69b510f44c2e2ec85b5a010de55a8460">&#9670;&nbsp;</a></span>MV_CC_GetImageForRGB()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MV_CAMCTRL_API int __stdcall MV_CC_GetImageForRGB </td>
+          <td>(</td>
+          <td class="paramtype">IN void *&#160;</td>
+          <td class="paramname"><em>handle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IN OUT unsigned char *&#160;</td>
+          <td class="paramname"><em>pData</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IN unsigned int&#160;</td>
+          <td class="paramname"><em>nDataSize</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IN OUT <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t___i_n_f_o___e_x.html">MV_FRAME_OUT_INFO_EX</a> *&#160;</td>
+          <td class="paramname"><em>pstFrameInfo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>nMsec</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取一帧RGB数据，此函数为查询式获取，每次调用查询内部 缓存有无数据，有数据则获取数据，无数据返回错误码 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">handle</td><td>[IN] 设备句柄 </td></tr>
+    <tr><td class="paramname">pData</td><td>[OUT] 图像数据接收指针 </td></tr>
+    <tr><td class="paramname">nDataSize</td><td>[IN] 接收缓存大小 </td></tr>
+    <tr><td class="paramname">pstFrameInfo</td><td>[OUT] 图像信息结构体 </td></tr>
+    <tr><td class="paramname">nMsec</td><td>[IN] 等待超时时间 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">MV_OK</a>；失败，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">错误码</a> </dd></dl>
+<dl class="section remark"><dt>备注</dt><dd><b>&#160;&bull;&#160;</b>每次调用该接口，将查询内部缓存是否有数据，如果有数据则转换成RGB24格式返回，如果没有数据则返回错误码。因为图像转换成RGB24格式有耗时，所以当数据帧率过高时该接口可能会导致丢帧。<br />
+ <b>&#160;&bull;&#160;</b>调用该接口获取图像数据帧之前需要先调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 启动图像采集。该接口为主动式获取帧数据，上层应用程序需要根据帧率，控制好调用该接口的频率。 <br />
+</dd></dl>
+
+</div>
+</div>
+<a id="gac70418dc01fda0f67443b9eb5767425b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac70418dc01fda0f67443b9eb5767425b">&#9670;&nbsp;</a></span>MV_CC_GetImageForBGR()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MV_CAMCTRL_API int __stdcall MV_CC_GetImageForBGR </td>
+          <td>(</td>
+          <td class="paramtype">IN void *&#160;</td>
+          <td class="paramname"><em>handle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IN OUT unsigned char *&#160;</td>
+          <td class="paramname"><em>pData</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IN unsigned int&#160;</td>
+          <td class="paramname"><em>nDataSize</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IN OUT <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t___i_n_f_o___e_x.html">MV_FRAME_OUT_INFO_EX</a> *&#160;</td>
+          <td class="paramname"><em>pstFrameInfo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>nMsec</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>获取一帧BGR数据，此函数为查询式获取，每次调用查询内部 缓存有无数据，有数据则获取数据，无数据返回错误码 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">handle</td><td>[IN] 设备句柄 </td></tr>
+    <tr><td class="paramname">pData</td><td>[OUT] 图像数据接收指针 </td></tr>
+    <tr><td class="paramname">nDataSize</td><td>[IN] 接收缓存大小 </td></tr>
+    <tr><td class="paramname">pstFrameInfo</td><td>[OUT] 图像信息结构体 </td></tr>
+    <tr><td class="paramname">nMsec</td><td>[IN] 等待超时时间 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">MV_OK</a>；失败，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">错误码</a> </dd></dl>
+<dl class="section remark"><dt>备注</dt><dd><b>&#160;&bull;&#160;</b>每次调用该接口，将查询内部缓存是否有数据，如果有数据则转换成BGR24格式返回，如果没有数据则返回错误码。因为图像转换成BGR24格式有耗时，所以当数据帧率过高时该接口可能会导致丢帧。 <br />
+ <b>&#160;&bull;&#160;</b>调用该接口获取图像数据帧之前需要先调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 启动图像采集。该接口为主动式获取帧数据，上层应用程序需要根据帧率，控制好调用该接口的频率。<br />
+ </dd></dl>
+
+</div>
+</div>
+<a id="ga8c61b2e99e31161e85a68fb8ff026e54"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8c61b2e99e31161e85a68fb8ff026e54">&#9670;&nbsp;</a></span>MV_CC_GetImageBuffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MV_CAMCTRL_API int __stdcall MV_CC_GetImageBuffer </td>
+          <td>(</td>
+          <td class="paramtype">IN void *&#160;</td>
+          <td class="paramname"><em>handle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">OUT <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t.html">MV_FRAME_OUT</a> *&#160;</td>
+          <td class="paramname"><em>pstFrame</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IN unsigned int&#160;</td>
+          <td class="paramname"><em>nMsec</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>使用内部缓存获取一帧图片（与 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE5_xA4_x84_xE7_x90_x86.html#ga3d79377333891ab4f3e9ba352757eca7" title="显示图像，注册显示窗口，内部自动显示（与 MV_CC_GetImageBuffer() 不能同时使用）">MV_CC_Display()</a> 不能同时使用） </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">handle</td><td>[IN] 设备句柄 </td></tr>
+    <tr><td class="paramname">pstFrame</td><td>[OUT] 图像数据和图像信息 </td></tr>
+    <tr><td class="paramname">nMsec</td><td>[IN] 等待超时时间，输入INFINITE时表示无限等待，直到收到一帧数据或者停止取流 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">MV_OK</a>；失败，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">错误码</a> </dd></dl>
+<dl class="section remark"><dt>备注</dt><dd><b>&#160;&bull;&#160;</b>调用该接口获取图像数据帧之前需要先调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 启动图像采集。该接口为主动式获取帧数据，上层应用程序需要根据帧率，控制好调用该接口的频率。该接口支持设置超时时间，SDK内部等待直到有数据时返回，可以增加取流平稳性，适合用于对平稳性要求较高的场合。 <br />
+ <b>&#160;&bull;&#160;</b>该接口与 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gaeff416b2d35df148fa2e63521d8847d3" title="释放图像缓存(此接口用于释放不再使用的图像缓存，与 MV_CC_GetImageBuffer() 配套使用)">MV_CC_FreeImageBuffer()</a> 配套使用，当处理完取到的数据后，需要用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gaeff416b2d35df148fa2e63521d8847d3" title="释放图像缓存(此接口用于释放不再使用的图像缓存，与 MV_CC_GetImageBuffer() 配套使用)">MV_CC_FreeImageBuffer()</a> 接口将pstFrame内的数据指针权限进行释放。 <br />
+ <b>&#160;&bull;&#160;</b>该接口与 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga9dff94abdfd05f9a3bc3aa4e740622c2" title="采用超时机制获取一帧图片，SDK内部等待直到有数据时返回">MV_CC_GetOneFrameTimeout()</a> 相比，有着更高的效率。且其取流缓存的分配是由sdk内部自动分配的，而 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga9dff94abdfd05f9a3bc3aa4e740622c2" title="采用超时机制获取一帧图片，SDK内部等待直到有数据时返回">MV_CC_GetOneFrameTimeout()</a> 接口是需要客户自行分配。<br />
+ <b>&#160;&bull;&#160;</b>该接口在调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE5_xA4_x84_xE7_x90_x86.html#ga3d79377333891ab4f3e9ba352757eca7" title="显示图像，注册显示窗口，内部自动显示（与 MV_CC_GetImageBuffer() 不能同时使用）">MV_CC_Display()</a> 后无法取流。 <br />
+ <b>&#160;&bull;&#160;</b>该接口对于U3V、GIGE设备均可支持。 <br />
+</dd></dl>
+<dl class="section examples"><dt>示例</dt><dd><a class="el" href="_grab_image__high_performance_8cpp-example.html#a11">GrabImage_HighPerformance.cpp</a>.</dd>
+</dl>
+
+</div>
+</div>
+<a id="gaeff416b2d35df148fa2e63521d8847d3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaeff416b2d35df148fa2e63521d8847d3">&#9670;&nbsp;</a></span>MV_CC_FreeImageBuffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MV_CAMCTRL_API int __stdcall MV_CC_FreeImageBuffer </td>
+          <td>(</td>
+          <td class="paramtype">IN void *&#160;</td>
+          <td class="paramname"><em>handle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IN <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t.html">MV_FRAME_OUT</a> *&#160;</td>
+          <td class="paramname"><em>pstFrame</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>释放图像缓存(此接口用于释放不再使用的图像缓存，与 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga8c61b2e99e31161e85a68fb8ff026e54" title="使用内部缓存获取一帧图片（与 MV_CC_Display() 不能同时使用）">MV_CC_GetImageBuffer()</a> 配套使用) </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">handle</td><td>[IN] 设备句柄 </td></tr>
+    <tr><td class="paramname">pstFrame</td><td>[IN] 图像数据和图像数据 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">MV_OK</a>；失败，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">错误码</a> </dd></dl>
+<dl class="section remark"><dt>备注</dt><dd><b>&#160;&bull;&#160;</b>该接口与 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga8c61b2e99e31161e85a68fb8ff026e54" title="使用内部缓存获取一帧图片（与 MV_CC_Display() 不能同时使用）">MV_CC_GetImageBuffer()</a> 配套使用，使用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga8c61b2e99e31161e85a68fb8ff026e54" title="使用内部缓存获取一帧图片（与 MV_CC_Display() 不能同时使用）">MV_CC_GetImageBuffer()</a> 接口取到的图像数据pstFrame，需要用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#gaeff416b2d35df148fa2e63521d8847d3" title="释放图像缓存(此接口用于释放不再使用的图像缓存，与 MV_CC_GetImageBuffer() 配套使用)">MV_CC_FreeImageBuffer()</a> 接口进行权限释放。 <br />
+ <b>&#160;&bull;&#160;</b>该接口对于取流效率高于GetOneFrameTimeout接口，且GetImageBuffer在不进行Free的情况下，最大支持输出的节点数与SetImageNode接口所设置的节点数相等，默认节点数是1。<br />
+ <b>&#160;&bull;&#160;</b>该接口对于U3V、GIGE设备均可支持。 <br />
+</dd></dl>
+<dl class="section examples"><dt>示例</dt><dd><a class="el" href="_grab_image__high_performance_8cpp-example.html#a17">GrabImage_HighPerformance.cpp</a>.</dd>
+</dl>
+
+</div>
+</div>
+<a id="ga9dff94abdfd05f9a3bc3aa4e740622c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9dff94abdfd05f9a3bc3aa4e740622c2">&#9670;&nbsp;</a></span>MV_CC_GetOneFrameTimeout()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MV_CAMCTRL_API int __stdcall MV_CC_GetOneFrameTimeout </td>
+          <td>(</td>
+          <td class="paramtype">IN void *&#160;</td>
+          <td class="paramname"><em>handle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IN OUT unsigned char *&#160;</td>
+          <td class="paramname"><em>pData</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IN unsigned int&#160;</td>
+          <td class="paramname"><em>nDataSize</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IN OUT <a class="el" href="struct_m_v___f_r_a_m_e___o_u_t___i_n_f_o___e_x.html">MV_FRAME_OUT_INFO_EX</a> *&#160;</td>
+          <td class="paramname"><em>pstFrameInfo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>nMsec</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>采用超时机制获取一帧图片，SDK内部等待直到有数据时返回 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">handle</td><td>[IN] 设备句柄 </td></tr>
+    <tr><td class="paramname">pData</td><td>[OUT] 图像数据接收指针 </td></tr>
+    <tr><td class="paramname">nDataSize</td><td>[IN] 接收缓存大小 </td></tr>
+    <tr><td class="paramname">pstFrameInfo</td><td>[OUT] 图像信息结构体 </td></tr>
+    <tr><td class="paramname">nMsec</td><td>[IN] 等待超时时间 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">MV_OK</a>；失败，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">错误码</a> </dd></dl>
+<dl class="section remark"><dt>备注</dt><dd><b>&#160;&bull;&#160;</b>调用该接口获取图像数据帧之前需要先调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga78728211c47c6f118110fde635d6ac69" title="开始取流">MV_CC_StartGrabbing()</a> 启动图像采集。该接口为主动式获取帧数据，上层应用程序需要根据帧率，控制好调用该接口的频率。该接口支持设置超时时间，SDK内部等待直到有数据时返回，可以增加取流平稳性，适合用于对平稳性要求较高的场合。<br />
+ <b>&#160;&bull;&#160;</b>该接口对于U3V、GIGE设备均可支持。<br />
+ </dd></dl>
+<dl class="section examples"><dt>示例</dt><dd><a class="el" href="_chunk_data_8cpp-example.html#a13">ChunkData.cpp</a>, <a class="el" href="_connect_spec_camera_8cpp-example.html#a1">ConnectSpecCamera.cpp</a>, <a class="el" href="_grab_image_8cpp-example.html#a13">GrabImage.cpp</a>, <a class="el" href="_grab_multiple_camera_8cpp-example.html#a16">GrabMultipleCamera.cpp</a>, <a class="el" href="_image_process_8cpp-example.html#a21">ImageProcess.cpp</a>, <a class="el" href="_multi_cast_8cpp-example.html#a11">MultiCast.cpp</a>, <a class="el" href="_reconnect_demo_8cpp-example.html#a13">ReconnectDemo.cpp</a> , 以及 <a class="el" href="_trigger__image_8cpp-example.html#a14">Trigger_Image.cpp</a>.</dd>
+</dl>
+
+</div>
+</div>
+<a id="ga90fcfa3fb929d76e99ea7f5946d6c5ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga90fcfa3fb929d76e99ea7f5946d6c5ff">&#9670;&nbsp;</a></span>MV_CC_ClearImageBuffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MV_CAMCTRL_API int __stdcall MV_CC_ClearImageBuffer </td>
+          <td>(</td>
+          <td class="paramtype">IN void *&#160;</td>
+          <td class="paramname"><em>handle</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>清除取流数据缓存 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">handle</td><td>[IN] 设备句柄 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">MV_OK</a> ；失败，返回<a class="el" href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html">错误码</a> </dd></dl>
+<dl class="section remark"><dt>备注</dt><dd>该接口允许用户在不停止取流的时候，就能清除缓存中不需要的图像。<br />
+ 该接口在连续模式切触发模式后，可以清除历史数据。 </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- start footer part -->
+<div class="footer" style="text-align: right;">
+	<hr/>
+	<small></small>
+</div>
+</body>
+</html>

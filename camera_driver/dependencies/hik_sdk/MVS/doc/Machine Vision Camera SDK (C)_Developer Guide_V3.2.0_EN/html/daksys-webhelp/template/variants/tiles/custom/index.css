@@ -1,0 +1,1074 @@
+/*
+ * ==============================================
+ * Skin for dksgen generated WebHelp.
+ * ==============================================
+ */
+
+
+/*
+ * ------------------------------------------------------------------
+ *  
+ * Fonts.
+ *  
+ */
+
+@import url("https://fonts.googleapis.com/css?family=Roboto:400,700,300");
+html,
+body {
+    min-width: 100%;
+	height: 100%;
+	font-size: 16px;
+    font-family: 'Roboto', sans-serif;
+	overflow-y:hidden;
+}
+
+@media only screen and (max-width: 510px) {
+    .body {
+        font-size: 14px;
+    }
+}
+
+/*
+     * ------------------------------------------------------------------
+     *
+     * Fight with bootstrap
+     *
+     */
+
+.navbar-brand {
+    height: auto;
+}
+
+.navbar {
+    border: none;
+    border-radius: 0;
+    margin: 0;
+	min-height:30px;
+}
+
+.hikwh_header{
+	background: #f6f9f9;
+	text-align: center;
+    font-weight: bold;
+    background-color: #f6f9f9;
+}
+@media only screen and (max-width: 510px) {
+    .navbar {
+       min-height:26px;
+    }
+	.hikwh_header {
+        padding: 0;
+    }
+}
+
+.hikwh_headerlogo {
+    background: #2D2D2D;
+    padding: 11px;
+}
+
+
+a,
+a:hover,
+a:visited {}
+
+a:hover {
+    text-decoration: none;
+}
+
+
+/*
+ * ------------------------------------------------------------------
+ *  
+ * Publication titles
+ *  
+ */
+
+.hikwh_publication_title>a {
+    font-size: 1.1em;
+    color: black;
+}
+
+/*
+ * ------------------------------------------------------------------
+ *  
+ * Menu
+ *  
+ */
+
+.wh_top_menu {
+/*    text-transform: uppercase;*/
+    margin: .4em 0;
+    font-size: 0.9em;
+}
+
+.wh_top_menu a {
+    color: #fff;
+    line-height: 2em;
+}
+
+
+/* The submenus */
+
+.wh_top_menu ul ul {
+    background-color: #333;
+}
+
+.wh_top_menu ul li:hover {
+    background-color: #333;
+}
+
+.wh_top_menu ul ul li a:hover {
+    background: #000;
+}
+
+.wh_top_menu ul ul li {
+    border-top-color: #000;
+    width: 270px;
+    text-transform: none; /* BnStar No94 */
+}
+
+.wh_top_menu ul ul li.has-children:after {}
+
+
+/*
+ * ------------------------------------------------------------------
+ *  
+ * Link to the index.
+ * 
+ */
+
+.wh_indexterms_link a span {
+    display: none;
+}
+
+.wh_indexterms_link a:before {
+    color: #fff;
+}
+
+
+/*
+ * ------------------------------------------------------------------
+ *  
+ * Breadcrumb
+ *  
+ */
+
+.wh_breadcrumb ol {
+    color: #878787;
+}
+
+.wh_breadcrumb ol a {
+    color: inherit;
+}
+
+.wh_breadcrumb ol .active {
+    color: #5185cb;
+}
+
+
+/*
+ * ------------------------------------------------------------------
+ *  
+ * Tools and navigation
+ * 
+ */
+
+.wh_tools {
+    background-color: #ECF2F9;
+    margin: 1em 0 2em;
+}
+
+.wh_print_link,
+.wh_navigation_links,
+.wh_navigation_links .navnext,
+.wh_navigation_links .navprev {}
+
+.wh_print_link a,
+.wh_navigation_links a,
+.wh_navigation_links a:hover,
+.wh_navigation_links a:active,
+.wh_navigation_links a:visited,
+.wh_print_link a:before,
+.wh_navigation_links a:before,
+.wh_navigation_links a:hover:before,
+.wh_navigation_links a:active:before,
+.wh_navigation_links a:visited:before {
+    color: #347bb7;
+    text-decoration: none;
+}
+
+
+/*
+ * ------------------------------------------------------------------
+ *  
+ * Tiles
+ * 
+ */
+
+.wh_tile {
+    background-color: #EFEFEF;
+    font-weight: 300;
+}
+
+.wh_tile_shortdesc {
+    margin-top: 1em;
+    text-align: center;
+    color: #0D1A2B;
+    font-size: 1.1em;
+}
+
+.wh_tile_text:after {
+    background: linear-gradient(to bottom, rgba(239, 239, 239, 0), rgba(239, 239, 239, 1) 75%);
+}
+
+.wh_tile_title {
+    font-size: 1.2em;
+    text-align: center;
+    text-decoration: none;
+}
+
+.wh_tile_title a {
+    color: #3077be;
+    line-height: 1.3em
+}
+
+@media only screen and (max-width: 510px) {
+    .wh_tile>div {
+        height: auto;
+    }
+}
+
+
+/* 
+You can style some of the tiles in a special way. 
+Example:
+.wh_tiles *[data-id='getting_started']{
+    background-color:gray;
+}
+*/
+
+
+/*
+ * ------------------------------------------------------------------
+ *  
+ * Search area
+ * 
+ */
+
+
+/* Search autocomplete icons */
+
+.search-autocomplete-proposal-type-history a,
+.search-autocomplete-proposal-type-history a:hover,
+.search-autocomplete-proposal-type-history a:visited,
+.search-autocomplete-proposal-type-history a:active {
+    text-decoration: none;
+    color: inherit;
+    font-size: 0.8em;
+}
+
+.ui-state-active .search-autocomplete-proposal-type-history a,
+.ui-state-active .search-autocomplete-proposal-type-history a:hover,
+.ui-state-active .search-autocomplete-proposal-type-history a:visited,
+.ui-state-active .search-autocomplete-proposal-type-history a:active {
+    color: #fff;
+}
+
+.ui-state-active {
+    background-color: #999;
+}
+.ui-menu {
+	position: fixed;
+}
+
+/* Active search page */
+
+#wh-search-pagination>ul>li.active>a {
+    background-color: #346ec5;
+}
+
+
+/*@media only screen and (max-width: 999px) {*/
+
+
+
+
+
+/*display:none;*/
+
+
+/*}*/
+
+
+/*}*/
+
+
+
+/*
+ * ------------------------------------------------------------------
+ *  
+ * Side TOC
+ * 
+ */
+
+.wh_side_toc {
+    border-radius: 3px;
+    padding: 1.5em 2em;
+    background-color: #edf4f4
+}
+
+.wh_side_toc .active {
+    color: #5185cb;
+}
+
+.wh_side_toc a,
+.wh_side_toc a:visited,
+.wh_side_toc a:hover {
+    color: #878787;
+}
+
+.wh_side_toc a:hover {
+    text-decoration: underline;
+}
+
+.wh_side_toc ul li {
+    margin: .7em 0;
+}
+/* BnStar No99 */
+.wh_side_toc ul li:last-child {
+    margin: .7em 0;
+    margin-bottom: 0;
+}
+
+.wh_side_toc>ul>li>span {
+    font-size: 1.2em;
+}
+
+@media only screen and (max-width: 510px) {
+    .wh_side_toc {
+        border-radius: 0;
+        padding: 1em 0.5em;
+        margin-top: 10px;
+        border: 1px solid #e0e0e0;
+    }
+    .wh_related_links,
+    .wh_child_links,
+    .wh_topic_content .related-links {
+        border: 1px solid #e0e0e0;
+    }
+}
+
+
+/*
+ * ------------------------------------------------------------------
+ *
+ * Footer
+ * 
+ */
+
+.wh_footer {
+    color: #ffffff;
+    background: none #333333;
+    position: fixed;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    align-content: center;
+    padding: 1em;
+    left: 0;
+    bottom: 0;
+    margin-top: 0px;
+    width: 100%;
+    height: 35px;
+    min-height: 30px;
+    z-index: 100;
+}
+
+@media only screen and (max-width: 510px) {
+    .wh_footer {
+        font-size: 12px;
+    }
+}
+
+.wh_footer a {
+    color: #CCE2F1;
+}
+.wh_footer .footer-container{
+    margin: 0 auto;
+}
+
+/*
+ * ------------------------------------------------------------------
+ *  
+ * Topic content
+ * 
+ */
+
+.wh_topic_content,
+.hikwh_content_area {
+    color: #000000;
+}
+
+.wh_topic_content .title.topictitle1 {
+    color: #676868;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+.wh_related_links,
+.wh_child_links,
+.wh_topic_content .related-links {
+    background-color: #F8F8F8;
+    margin-top: 1em;
+}
+
+.wh_related_links,
+.wh_topic_content .related-links {
+    padding: .5em 1.5em;
+}
+
+.wh_child_links {
+    padding: 1.5em;
+}
+
+.related-links strong {
+    font-weight: 500;
+}
+
+.related-links a,
+.related-links a:visited {
+    color: #5185cb;
+    padding-bottom: .3em;
+    display: inline-block;
+}
+
+.filepath {
+    color: #c7254e !important;
+}
+
+
+/*
+ * ------------------------------------------------------------------
+ *  
+ * Search results.
+ * 
+ */
+
+.searchresult {
+    list-style: none;
+}
+
+.searchresult li a {
+    color: #346ec5;
+}
+
+.searchresult .shortdesclink {
+    margin: .3em .5em 0 0;
+}
+
+.wh_search_expression {
+    font-weight: bold;
+}
+
+
+/* Search relative path */
+
+.searchresult li .relativePath a {
+    color: #666666;
+}
+
+
+/*
+ * ------------------------------------------------------------------
+ *  
+ * Index terms.
+ * 
+ */
+
+.wh_index_terms span.wh_first_letter {
+    color: #346ec5;
+}
+
+.wh_index_terms #indexList {
+    padding: 0;
+}
+
+.wh_tile:nth-child(6n+1) {
+    background-color: #f6f9f9;
+}
+
+.wh_tile:nth-child(6n+2) {
+    background-color: #f6f9f9;
+}
+
+.wh_tile:nth-child(6n+3) {
+    background-color: #f6f9f9;
+}
+
+.wh_tile:nth-child(6n+4) {
+    background-color: #f6f9f9;
+}
+
+.wh_tile:nth-child(6n+5) {
+    background-color: #f6f9f9;
+}
+
+.wh_tile:nth-child(6n+0) {
+    background-color: #f6f9f9;
+}
+
+
+/*
+ * ------------------------------------------------------------------
+ *  
+ * Tree TOC for the main page.
+ * 
+ */
+
+.wh_main_page_toc {}
+
+.wh_main_page_toc .expanded,
+.wh_main_page_toc .wh_main_page_toc_accordion_header:hover,
+.wh_main_page_toc>.wh_main_page_toc_entry:hover,
+.wh_main_page_toc_accordion_entries {
+    background-color: #F2F8FF;
+}
+
+
+/**
+ *
+ * Styles used for RTL pages
+ *
+ */
+
+html[dir='rtl'] .wh_top_menu ul li:hover>ul {
+    max-width: 270px;
+}
+
+
+/*Added by Tung for sticky footer*/
+
+.bodywrapper{
+    /*position: relative;*/
+    /*min-height: calc( 100vh - 50px );*/
+    width: 100%;
+    /*height: 220px;
+    min-height: 200px;*/
+    /* position: fixed; */
+    left: 0;
+    top: 0;
+    background-color: white;
+    z-index: 100;
+}
+@media only screen and (max-width: 510px) {
+    .bodywrapper {
+        /*height: 120px;
+		min-height: 120px;*/
+		background-color: white;
+    }
+	
+}
+
+.wh_main_page .bodywrapper{
+    min-height: 0px;
+}
+
+.section .table{
+	width:calc(100% - 15px)
+}
+
+.tablenoborder td,
+.tablenoborder tr
+{
+    border:none !important;
+}
+
+#contentArea{
+    background-color: #f9fbfb;
+}
+
+.figcap {
+    display: block;
+	text-align: center;
+}
+
+
+/*.steps{
+    list-style-type:none; /\* delete default counter *\/
+    counter-reset:elementcounter; /\* create custom counter and set it to 0 *\/
+}
+
+.steps .step:before{
+    content: "Step " counter(elementcounter) ": "; /\* print out "Step " followed by the current counter value *\/
+    counter-increment:elementcounter; /\* increment counter *\/
+}*/
+
+.substeps{
+    list-style-type: none;
+    counter-reset: elementcounter;
+}
+.substeps .substep:before{
+    content: counter(elementcounter) ") ";
+    counter-increment:elementcounter;
+}
+
+li ul{
+    list-style-type:disc;
+}
+
+.steps{
+    padding-left: 0px;
+}
+.step{
+    margin-left:30px; /* BnStar No81 */
+}
+
+.section > *:not(.sectiontitle){
+    margin-left: 15px;
+}
+
+.thead {
+    background-color: lightgray;
+}
+
+.fig .image {
+    display:block;
+    margin:auto;
+}
+
+table caption{
+    display:none;
+}
+
+/* BnStar No102 */
+table .spec_icon{
+    width:auto;
+}
+/* BnStar No102 */
+image .spec_icon{
+    width:auto;
+}
+
+.en-US .steps:before{
+    content:"Steps"; font-weight:bold;
+}
+.zh-CN .steps:before{
+   content:"操作步骤"; font-weight:bold;
+}
+
+.en-US .prereq:before{
+    content:"Before You Start"; font-weight:bold;
+}
+.zh-CN .prereq:before{
+   content:"前提条件"; font-weight:bold;
+}
+
+/* .en-US .stepresult:before{
+    content:"Result"; font-weight:bold;
+} */
+/* .zh-CN .stepresult:before{
+       content:"结果说明"; font-weight:bold;
+} */
+.en-US .result:before{
+    content:"Result"; font-weight:bold;
+}
+.zh-CN .result:before{
+    content:"结果说明"; font-weight:bold;
+}
+.en-US .stepxmp:before{
+    content:"Example"; font-weight:bold;
+}
+.zh-CN .stepxmp:before{
+    content:"示例"; font-weight:bold;
+}
+
+.en-US .example:before{
+    content:"Example"; font-weight:bold;
+}
+.zh-CN .example:before{
+    content:"示例"; font-weight:bold;
+}
+.example .p {
+    margin-left: 15px;
+}
+.en-US .postreq:before{
+    content:"What to do next"; font-weight:bold;
+}
+.zh-CN .postreq:before{
+    content:"后续处理"; font-weight:bold;
+}
+
+/*Tung - Add choice table style*/
+.choicetable thead{
+    display: none;
+}
+
+.choicetable{
+    border: none;
+}
+
+.choicetable td{
+    border: none;
+}
+
+
+
+.hikwh_headerlogo {
+    padding: 0;
+}
+
+.wh_logo_and_publication_title img{
+    height: 18px;
+}
+
+.navbar-default .navbar-toggle{
+    border: 0;
+}
+
+.navbar-toggle .icon-bar+.icon-bar {
+    margin-top: 5px;
+}
+
+.navbar-default .navbar-toggle .icon-bar{
+    background-color: white;
+}
+
+.navbar-default .navbar-toggle:hover .icon-bar{
+    background-color: #888;
+}
+
+.hikwh_headerlogo .wh_logo_and_publication_title{
+    width: 100%;
+    align-items: initial;
+}
+
+.wh_website{
+    width: 30%
+}
+
+.wh_website a{
+    color: white;
+    font-size: 14px;
+    display: inline-block;
+    padding: 16px 3px;
+}
+
+
+.wh_log_div{
+    width: 40%;
+    text-align: center;
+}
+
+.wh_log_div a{
+    display: inline-block;
+    padding: 16px 0;
+}
+
+.wh_download_top_menu{
+    width: 30%;
+    text-align: right;
+}
+
+.wh_download_top_menu a{
+    display: inline-block;
+    padding: 16px 3px;
+}
+
+.wh_download_top_menu img{
+    width: 20px;
+}
+
+.wh_download_top_menu .icon-bar{
+    width: 18px;
+}
+
+.wh_download_top_menu a .wh_download_white{
+    display: inline;
+}
+
+.wh_download_top_menu a .wh_download_black{
+    display: none;
+}
+
+
+.wh_download_top_menu a:hover .wh_download_white{
+    display: inline;
+}
+
+.wh_download_top_menu a:hover .wh_download_black{
+    display: none;
+}
+
+.wh_download_top_menu a:focus .wh_download_white{
+    display: inline;
+}
+
+.wh_download_top_menu a:focus .wh_download_black{
+    display: none;
+}
+
+.wh_download_top_menu .wh_toggle_button{
+	padding-top: 16px;
+}
+
+
+@media only screen and (max-width: 510px) {
+    .wh_website a{
+		padding: 5px 3px;
+	}
+	.wh_log_div a{
+		display: inline-block;
+		padding: 5px 0;
+	}
+	.wh_download_top_menu a{
+		display: inline-block;
+		padding: 5px 3px;
+	}
+	.wh_download_top_menu .wh_toggle_button{
+		display: inline-block;
+		padding-top: 8px;
+	}
+}
+
+#content_area{
+    margin-top: 0px;
+    padding-bottom: 5px;
+    height: calc(100% - 130px - 35px);
+    /* min-height: 0px; */
+    /*overflow: hidden;
+    overflow-y: auto;
+    overflow-x: auto;*/
+}
+@media only screen and (max-width: 510px) {
+	#content_area{
+		margin-top: 0px;
+		height: calc(100% - 150px);
+	}
+}
+
+.hikwh_content_area{
+    min-height: 0px;
+}
+
+.wh_topic_content, .hikwh_content_area{
+    color: #494949;
+}
+
+.wh_main_page .hikwh_content_area{
+    margin: 0 auto;
+}
+.wh_topic_page .hikwh_content_area{
+    margin: 0 auto;
+}
+.topictitle1{
+    padding-left: 0.5em;
+}
+
+#contentArea{
+    background-color: white;
+}
+
+.wh_main_page .wh_tile_list{
+    list-style: none;
+}
+
+.wh_main_page .wh_tile_title{
+    text-align: left;
+    padding: 0.5em 1em;
+    border-bottom: 1px solid #ccc;
+}
+
+.wh_main_page .wh_tile_title:hover{
+    background-color: #f6f9f9;
+}
+
+.wh_main_page .wh_tile_title a{
+    color: black;
+    text-decoration: none;
+}
+@media(max-width: 510px){
+
+    .wh_toggle_button{
+        display: inline-block;
+		margin: 0px 0;
+    }
+}
+
+@media(min-width: 510px){
+	.container{
+		width: 100%;
+		margin-left: 0%;
+		margin-right: 0%;
+		padding-left: 0;
+		padding-right:0;
+    }
+
+    .wh_search_results_header{
+        border-bottom-color: #868484;
+    }
+    .searchresult li{
+        padding-left: 1em;
+        background-color: #FFF;
+        border-bottom: 1px solid #868484;
+    }
+    .pagination>li>a, .pagination>li>span{
+        color: black;
+        border: none;
+    }
+    #wh-search-pagination>ul>li.active>a{
+        color: black;
+        background-color: #FFF;
+        text-decoration: underline;
+    }
+    .wh_toggle_button{
+        display: none;
+		margin: 0px 0;
+    }
+}
+
+
+
+.desktop_left{
+	display:inline-block;
+	vertical-align: top;
+    padding-top: 8px;
+    padding-left: 5%;
+	 
+}
+.desktop_left_menu_ul{
+	overflow-y:auto;
+	height: calc(100% - 38px - 35px);
+}
+.desktop_right{
+	display:inline-block;
+	width:75%;
+	vertical-align: top;
+    padding-top: 8px;
+    padding-left: 0px;
+	padding-right: 0px;
+}
+.container_desktop .menu_ul{
+    list-style: none;
+    padding: 0px;
+}
+.container_desktop .menu_ul li>.topicref{
+    display: block;
+    text-align: left;
+    padding: 0.5em 0em 0.5em 1em;
+    border-bottom: 1px solid #CCC;
+}
+.container_desktop .menu_ul li>.topicref:hover{
+    background-color: #EDEDED;
+}
+.container_desktop .menu_ul li.active>.topicref{
+    background-color: #EDEDED;
+}
+.container_desktop .menu_ul li a{
+    color: black;
+    line-height: 1.1em;
+    font-size: 1em;
+}
+.container_desktop .li_has_children.li_close>.topicref>.li_before{
+    display: inline-block;
+    width: 17px;
+    height: 17px;
+    margin-left: -22px;
+    margin-right: 5px;
+    background: url(../../../../../arrow-close.png) no-repeat;
+    background-size: 100%;
+    cursor: pointer;
+}
+.container_desktop .li_has_children.li_open>.topicref>.li_before{
+    display: inline-block;
+    width: 17px;
+    height: 17px;
+    margin-left: -22px;
+    margin-right: 5px;
+    background: url(../../../../../arrow-open.png) no-repeat;
+    background-size: 100%;
+    cursor: pointer;
+}
+.container_desktop .li_has_children.li_close>.menu_ul{
+    display: none;
+}
+.container_desktop .li_has_children.li_open>.menu_ul{
+    display: block;
+}
+.container_desktop .menu_ul_1>li>.topicref{
+    padding-left: 1.5em;
+}
+.container_desktop .menu_ul_2>li>.topicref{
+    padding-left: 3em;
+}
+.container_desktop .menu_ul_3>li>.topicref{
+    padding-left: 4.5em;
+}
+.container_desktop .menu_ul_4>li>.topicref{
+    padding-left: 6em;
+}
+.container_desktop .menu_ul_5>li>.topicref{
+    padding-left: 7.5em;
+}
+.container_desktop .menu_ul_6>li>.topicref{
+    padding-left: 9em;
+}
+.container_desktop .menu_ul_7>li>.topicref{
+    padding-left: 10.5em;
+}
+.container_desktop .menu_ul_8>li>.topicref{
+    padding-left: 12em;
+}
+.note .p{
+	margin-top: 0;
+}
+
+@media (min-width: 768px)
+.col-sm-3 {
+    width: 20%;
+}
+@media (min-width: 768px)
+.col-sm-9 {
+    width: 80%;
+}
+
+.hikwh_headerlogo .wh_top_menu_and_indexterms_link{
+    /*max-height: 100%;*/
+    overflow-y: scroll;
+}
+
+ul, menu, dir {
+    padding-inline-start: 18px;
+}
+/*隐藏目录*/
+.desktop_left a{
+    display: inline-block;
+    width: 100%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+	
+}
+.hidden{
+    display: none;
+}
+.show{
+    display: block;
+}
+.menu-tempdiv{
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	padding-left: 5px;
+	padding-right: 5px;
+	font-size: 14px;
+	border: 1px solid #848484;
+	background-color: #cacaca;
+	z-index: 1000;
+}
+/*手机端右上角目录*/
+.navbar-default .navbar-toggle:focus{
+    background-color: initial;
+}
+.navbar-default .navbar-toggle:focus .icon-bar{
+    background-color: initial;
+}

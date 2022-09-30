@@ -1,9 +1,19 @@
 cmake_minimum_required(VERSION 3.8)
 project(serialport)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+## Use C++14
+# set(CMAKE_CXX_STANDARD 14)
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_BUILD_TYPE "Debug")  
+SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb")
+SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
+
+# ## By adding -Wall and -Werror, the compiler does not ignore warnings anymore,
+# ## enforcing cleaner code.
+# add_definitions(-Wall -Werror)
+
+# ## Export compile commands for clangd
+# set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -23,6 +33,112 @@ find_package(tf2_sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(angles REQUIRED)
 find_package(robot_state_publisher REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(global_interface REQUIRED)
+find_package(global_user REQUIRED)
+find_package(sensor_msgs REQUIRED)
+
+include_directories(
+  include
+  ${EIGEN3_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  )
+  
+  set(node_plugins "")
+  
+#   add_library(${PROJECT_NAME} SHARED
+#   # src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
+#   # include/${PROJECT_NAME}/${PROJECT_NAME}_node.hpp
+#   src/${PROJECT_NAME}/${PROJECT_NAME}_node.cpp
+#   # include/${PROJECT_NAME}/${PROJECT_NAME}.hpp
+#   # src/${PROJECT_NAME}/crc_check.cpp 
+#   # src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
+#   # include/${PROJECT_NAME}/${PROJECT_NAME}.hpp
+# )
+  
+# target_compile_definitions(${PROJECT_NAME}
+# PRIVATE "COMPOSITION_BUILDING_DLL")
+
+# ament_target_dependencies(${PROJECT_NAME}
+#   rclcpp
+#   rclcpp_components
+#   std_msgs
+#   sensor_msgs
+#   OpenCV
+#   global_interface
+#   global_user
+# )
+
+set(dependencies 
+  rclcpp
+  rclcpp_components
+  std_msgs
+  sensor_msgs
+  OpenCV
+  global_interface
+  global_user
+)
+
+include_directories(include)
+add_executable(serial_driver
+  include/${PROJECT_NAME}/crc_check.hpp
+  include/${PROJECT_NAME}/packet.hpp
+  # include/${PROJECT_NAME}/packet.h
+  include/${PROJECT_NAME}/${PROJECT_NAME}_node.hpp
+  include/${PROJECT_NAME}/${PROJECT_NAME}.hpp
+  src/${PROJECT_NAME}/crc_check.cpp
+  src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
+  src/${PROJECT_NAME}/${PROJECT_NAME}_node.cpp
+  src/${PROJECT_NAME}/${PROJECT_NAME}_node_main.cpp
+  # src/${PROJECT_NAME}/crc_check.cpp
+  # src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
+)
+ament_target_dependencies(serial_driver 
+  ${dependencies}
+)
+
+# target_link_libraries(serial_driver 
+#   # ${PROJECT_NAME}
+#   std_msgs
+#   rclcpp
+# )
+
+# register component nodes
+# rclcpp_components_register_nodes(${PROJECT_NAME} "serialport::serial_driver")
+
+# set(node_plugins "${node_plugins}serialport::serial_driver;$<TARGET_FILE:serialport>\n")
+
+# Install executable nodes
+# install(TARGETS ${PROJECT_NAME}
+#   DESTINATION lib/${PROJECT_NAME}
+# )
+
+# Install libraries
+# install(TARGETS ${PROJECT_NAME}
+#     EXPORT ${PROJECT_NAME}
+#     LIBRARY DESTINATION lib
+#     ARCHIVE DESTINATION lib
+#     RUNTIME DESTINATION bin
+#     INCLUDES DESTINATION include
+# )
+
+install(TARGETS
+  serial_driver
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+# install inlude directories
+install(
+    DIRECTORY include/
+    DESTINATION include
+)
+
+# install launch resource config directory
+install(
+  DIRECTORY launch 
+  DESTINATION share/${PROJECT_NAME}
+)
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -36,3 +152,31 @@ if(BUILD_TESTING)
 endif()
 
 ament_package()
+
+
+# cmake_minimum_required (VERSION 3.5)
+# project(serialport)
+
+# find_package (ament_cmake_auto REQUIRED) 
+# ament_auto_find_build_dependencies ()
+
+# ament_auto_add_library ( ${PROJECT_NAME} SHARED 
+#   include/serialport/serialport.hpp
+#   include/serialport/crc_check.h 
+#   include/serialport/packet.h 
+#   include/serialport/serialport_node.hpp
+#   src/serialport/serialport.cpp 
+#   src/serialport/crc_check.cpp 
+#   src/serialport/serialport_node.cpp 
+# )
+
+# rclcpp_components_register_node(${PROJECT_NAME}
+#   PLUGIN serialport::serial_driver
+#   EXECUTABLE ${PROJECT_NAME}_node
+# )
+
+# ament_auto_package(
+#   INSTALL_TO_SHARE
+#   # config
+#   # launch
+# )

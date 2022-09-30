@@ -2,14 +2,14 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 01:18:42
- * @LastEditTime: 2022-09-06 01:33:47
+ * @LastEditTime: 2022-09-06 13:51:01
  * @FilePath: /tup_2023/src/arm_controller/include/arm_controller/arm_controller.hpp
  */
-#include "params_common/include/params_common/params_common.hpp"
+#include "global_user/include/global_user/global_user.hpp"
 
 namespace arm_controller
 {
-    class arm_controller : public robot_base::params_common
+    class arm_controller : public global_user::global_user
     {
     public:
         arm_controller();

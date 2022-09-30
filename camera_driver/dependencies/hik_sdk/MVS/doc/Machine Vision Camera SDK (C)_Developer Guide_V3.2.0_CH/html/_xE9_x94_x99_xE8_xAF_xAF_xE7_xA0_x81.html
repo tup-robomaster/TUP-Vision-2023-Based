@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<link href="doxygen.css" rel="stylesheet" type="text/css"/>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<link href="custom-style.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+	<div style="overflow: hidden;">
+		<div style="height: 57px;min-width: 1039px;background-size: auto 100%;background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABwgAAAABCAYAAADKO/rAAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAABRSURBVFhH7dUxCoBADEXB5LK5/w1iIaLIrsgWNs50Sf/4WVUd8HOZGd1nCqMbGNMPrNMPrJv1cvz0A3OjfuwPvDPrxf7A7t7IlX7gmX74VsQGguw4S6+UnSYAAAAASUVORK5CYII=');">
+			<img src="titleleft.png" style="float: left;"/>
+			<img src="titleright.png" alt="" style="float: right;" />
+		</div>
+	</div>
+<!-- 制作者 Doxygen 1.8.15 -->
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>声明</span></a></li>
+      <li><a href="_xE9_xA6_x96_xE9_xA1_xB5.html"><span>首页</span></a></li>
+      <li><a href="_xE7_x8E_xAF_xE5_xA2_x83_xE9_x85_x8D_xE7_xBD_xAE.html"><span>环境配置</span></a></li>
+      <li><a href="_xE6_x9B_xB4_xE6_x96_xB0_xE8_xAE_xB0_xE5_xBD_x95.html"><span>更新记录</span></a></li>
+      <li><a href="_xE7_xBC_x96_xE7_xA8_x8B_xE5_xBC_x95_xE5_xAF_xBC.html"><span>编程引导</span></a></li>
+      <li><a href="modules.html"><span>接口函数</span></a></li>
+      <li><a href="annotated.html"><span>结构体定义</span></a></li>
+      <li><a href="_xE7_x9B_xB8_xE6_x9C_xBA_xE5_x8F_x82_xE6_x95_xB0_xE8_x8A_x82_xE7_x82_xB9_xE8_xA1_xA8.html"><span>相机参数节点表</span></a></li>
+      <li><a href="examples.html"><span>示例程序</span></a></li>
+      <li><a href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html"><span>错误码</span></a></li>
+      <li><a href="_xE5_xB8_xB8_xE8_xA7_x81_xE9_x97_xAE_xE9_xA2_x98.html"><span>常见问题</span></a></li>
+    </ul>
+  </div>
+</div><!-- top -->
+<div class="PageDoc"><div class="contents">
+<div class="textblock"><div class="header" style="margin-left:-12px;margin-top:-10px;margin-right:-8px;"> <div class="headertitle"> <div class="title">错误码定义</div> </div> </div><p>&#160;&#160;&#160;&#160;所有工业相机SDK接口都会返回(请参阅错误码)相应的值。如果函数正常完成而没有检测到任何错误，则返回值为MV_OK，否则返回错误码 。 </p><ul>
+<li>
+本表格中错误码采用十六进制表示。如果返回的是十进制值的错误码，需要转换成十六进制查看。 </li>
+<li>
+如果根据错误码还不能解决问题，请联系本公司技术支持。 </li>
+</ul>
+<table style="margin: 0 0 0 40px;" class="doxtable">
+<tr valign="top">
+<th align="left" width="40%"><b>返回类型</b> </th><th align="left" width="20%">类型值 </th><th align="left" width="40%">类型信息描述  </th></tr>
+<tr valign="top">
+<td class="style3" colspan="3"><center><b>正确码：MV_OK</b></center>  </td></tr>
+<tr valign="top">
+<td>MV_OK </td><td>0 </td><td>成功，无错误  </td></tr>
+<tr valign="top">
+<td class="style3" colspan="3"><center><b>通用错误码定义:范围0x80000000-0x800000FF</b></center>  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_HANDLE </td><td class="style2">0x80000000 </td><td class="style2">错误或无效的句柄  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_SUPPORT </td><td class="style2">0x80000001 </td><td class="style2">不支持的功能  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_BUFOVER </td><td class="style2">0x80000002 </td><td class="style2">缓存已满  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_CALLORDER </td><td class="style2">0x80000003 </td><td class="style2">函数调用顺序错误  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_PARAMETER </td><td class="style2">0x80000004 </td><td class="style2">错误的参数  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_RESOURCE </td><td class="style2">0x80000006 </td><td class="style2">资源申请失败  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_NODATA </td><td class="style2">0x80000007 </td><td class="style2">无数据  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_PRECONDITION </td><td class="style2">0x80000008 </td><td class="style2">前置条件有误，或运行环境已发生变化  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_VERSION </td><td class="style2">0x80000009 </td><td class="style2">版本不匹配  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_NOENOUGH_BUF </td><td class="style2">0x8000000A </td><td class="style2">传入的内存空间不足  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_ABNORMAL_IMAGE </td><td class="style2">0x8000000B </td><td class="style2">异常图像，可能是丢包导致图像不完整  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_LOAD_LIBRARY </td><td class="style2">0x8000000C </td><td class="style2">动态导入DLL失败  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_NOOUTBUF </td><td class="style2">0x8000000D </td><td class="style2">没有可输出的缓存  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_UNKNOW </td><td class="style2">0x800000FF </td><td class="style2">未知的错误  </td></tr>
+<tr valign="top">
+<td class="style3" colspan="3"><center><b>GenICam系列错误:范围0x80000100-0x800001FF</b></center>  </td></tr>
+<tr valign="top">
+<td>MV_E_GC_GENERIC </td><td>0x80000100 </td><td>通用错误  </td></tr>
+<tr valign="top">
+<td>MV_E_GC_ARGUMENT </td><td>0x80000101 </td><td>参数非法  </td></tr>
+<tr valign="top">
+<td>MV_E_GC_RANGE </td><td>0x80000102 </td><td>值超出范围  </td></tr>
+<tr valign="top">
+<td>MV_E_GC_PROPERTY </td><td>0x80000103 </td><td>属性  </td></tr>
+<tr valign="top">
+<td>MV_E_GC_RUNTIME </td><td>0x80000104 </td><td>运行环境有问题  </td></tr>
+<tr valign="top">
+<td>MV_E_GC_LOGICAL </td><td>0x80000105 </td><td>逻辑错误  </td></tr>
+<tr valign="top">
+<td>MV_E_GC_ACCESS </td><td>0x80000106 </td><td>节点访问条件有误  </td></tr>
+<tr valign="top">
+<td>MV_E_GC_TIMEOUT </td><td>0x80000107 </td><td>超时  </td></tr>
+<tr valign="top">
+<td>MV_E_GC_DYNAMICCAST </td><td>0x80000108 </td><td>转换异常  </td></tr>
+<tr valign="top">
+<td>MV_E_GC_UNKNOW </td><td>0x800001FF </td><td>GenICam未知错误  </td></tr>
+<tr valign="top">
+<td class="style3" colspan="3"><center><b>GigE_STATUS对应的错误码:范围0x80000200-0x800002FF</b></center>  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_NOT_IMPLEMENTED </td><td class="style2">0x80000200 </td><td class="style2">命令不被设备支持  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_INVALID_ADDRESS </td><td class="style2">0x80000201 </td><td class="style2">访问的目标地址不存在  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_WRITE_PROTECT </td><td class="style2">0x80000202 </td><td class="style2">目标地址不可写  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_ACCESS_DENIED </td><td class="style2">0x80000203 </td><td class="style2">设备无访问权限  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_BUSY </td><td class="style2">0x80000204 </td><td class="style2">设备忙，或网络断开  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_PACKET </td><td class="style2">0x80000205 </td><td class="style2">网络包数据错误  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_NETER </td><td class="style2">0x80000206 </td><td class="style2">网络相关错误  </td></tr>
+<tr valign="top">
+<td class="style3" colspan="3"><center><b>GigE相机特有的错误码</b></center>  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_IP_CONFLICT </td><td class="style2">0x80000221 </td><td class="style2">设备IP冲突  </td></tr>
+<tr valign="top">
+<td class="style3" colspan="3"><center><b>USB_STATUS对应的错误码:范围0x80000300-0x800003FF</b></center>  </td></tr>
+<tr valign="top">
+<td>MV_E_USB_READ </td><td>0x80000300 </td><td>读usb出错  </td></tr>
+<tr valign="top">
+<td>MV_E_USB_WRITE </td><td>0x80000301 </td><td>写usb出错  </td></tr>
+<tr valign="top">
+<td>MV_E_USB_DEVICE </td><td>0x80000302 </td><td>设备异常  </td></tr>
+<tr valign="top">
+<td>MV_E_USB_GENICAM </td><td>0x80000303 </td><td>GenICam相关错误  </td></tr>
+<tr valign="top">
+<td>MV_E_USB_BANDWIDTH </td><td>0x80000304 </td><td>带宽不足  </td></tr>
+<tr valign="top">
+<td>MV_E_USB_DRIVER </td><td>0x80000305 </td><td>驱动不匹配或者未装驱动  </td></tr>
+<tr valign="top">
+<td>MV_E_USB_UNKNOW </td><td>0x800003FF </td><td>USB未知的错误  </td></tr>
+<tr valign="top">
+<td class="style3" colspan="3"><center><b>升级时对应的错误码:范围0x80000400-0x800004FF</b></center>  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_UPG_FILE_MISMATCH </td><td class="style2">0x80000400 </td><td class="style2">升级固件不匹配  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_UPG_LANGUSGE_MISMATCH </td><td class="style2">0x80000401 </td><td class="style2">升级固件语言不匹配  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_UPG_CONFLICT </td><td class="style2">0x80000402 </td><td class="style2">升级冲突（设备已经在升级了再次请求升级即返回此错误）  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_UPG_INNER_ERR </td><td class="style2">0x80000403 </td><td class="style2">升级时相机内部出现错误  </td></tr>
+<tr valign="top">
+<td class="style3">MV_E_UPG_UNKNOW </td><td class="style2">0x800004FF </td><td class="style2">升级时未知错误  </td></tr>
+</table>
+</div></div><!-- PageDoc -->
+</div><!-- contents -->
+<!-- start footer part -->
+<div class="footer" style="text-align: right;">
+	<hr/>
+	<small></small>
+</div>
+</body>
+</html>

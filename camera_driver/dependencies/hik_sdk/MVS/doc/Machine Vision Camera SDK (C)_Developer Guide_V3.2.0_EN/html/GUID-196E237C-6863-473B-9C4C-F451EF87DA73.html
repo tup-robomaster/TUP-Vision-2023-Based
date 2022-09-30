@@ -1,0 +1,148 @@
+
+<!DOCTYPE html
+  PUBLIC "" "about:legacy-compat">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:whc="http://www.daksys.com/webhelp/components" xml:lang="en-us" lang="en-us">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />        
+      <meta name="copyright" content="(C) Copyright 2005" /><meta name="DC.rights.owner" content="(C) Copyright 2005" /><meta name="DC.Type" content="reference" /><meta name="DC.Title" content="MV_CC_FileAccessRead" /><meta name="abstract" content="Read files from camera." /><meta name="description" content="Read files from camera." /><meta name="DC.Relation" scheme="URI" content="GUID-0E134CA3-06ED-4731-ACC7-42BB18EE8188.html" /><meta name="DC.Format" content="XHTML" /><meta name="DC.Identifier" content="GUID-196E237C-6863-473B-9C4C-F451EF87DA73" /><meta name="DC.Language" content="en-US" /><title>MV_CC_FileAccessRead</title><!--  Generated with dksgen version 19.0, build number 2017042020.  --><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="wh-path2root" content="index.html" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/commonltr.css?buildId=2017042020" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/webhelp_responsive_topic.css?buildId=2017042020" />
+		<!-- Latest compiled and minified Bootstrap CSS -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/bootstrap/css/bootstrap.min.css" />
+		<!-- Bootstrap Optional theme -->
+		<link rel="stylesheet" href="daksys-webhelp/resources/bootstrap/css/bootstrap-theme.min.css" />
+		<link rel="stylesheet" href="daksys-webhelp/resources/js/jquery-ui.min.css" />
+		<!-- Changes and comments, as side-notes  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/p-side-notes.css?buildId=2017042020" />
+		<!-- Template default styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_default.css?buildId=2017042020" />
+		<!-- Expand-collapse support styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_expand.css?buildId=2017042020" />
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-3.1.1.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/localization/strings.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/localization.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/parseuri.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.cookie.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-ui.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.highlight-3.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/browserDetect.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<script type="text/javascript" src="daksys-webhelp/resources/js/image-resize.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<!-- Skin resources -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/skin.css?buildId=2017042020" /><link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/watermark.css?buildId=2017042020" />
+		<!-- EXM-36950 - Expand the args.hdf parameter here -->
+		
+		<!-- EXM-36950 - webhelp.fragment.head :topic -->
+		
+	</head>
+	<body class="wh_topic_page frmBody" id="GUID-196E237C-6863-473B-9C4C-F451EF87DA73" onload="topicOnload()">
+		<input hidden="hidden" id="UDCode" value="" /><input hidden="hidden" id="UDTrademark" value="" /><input hidden="hidden" id="Trademark" value="" />
+		<div class="content_area" id="content_area">
+			<div id="container_body" class="container">
+				<div id="container_body_right">
+					<div class="row">
+						<div id="contentArea">
+							<div class=" wh_topic_content body ">
+    <h1 class="title topictitle1">MV_CC_FileAccessRead</h1>
+
+
+<div class="body refbody"><p class="shortdesc">Read files from camera.</p>
+
+<div class="section" id="GUID-196E237C-6863-473B-9C4C-F451EF87DA73__GUID-CCFCE8FA-0668-4235-B2ED-F8BC20689420"><h2 class="title sectiontitle">API Definition</h2>
+            
+            <pre class="pre codeblock">int <span class="keyword apiname">MV_CC_FileAccessRead</span>(
+  void                *<span class="keyword parmname">handle</span>,
+  <var class="keyword varname">MV_CC_FILE_ACCESS</var>   <span class="keyword parmname">pstFileAccess</span>
+);</pre>
+
+        </div>
+
+        <div class="section" id="GUID-196E237C-6863-473B-9C4C-F451EF87DA73__GUID-605746C3-02EA-4F76-BBEE-977F4F5B5696"><h2 class="title sectiontitle">Parameters</h2>
+            
+            <dl class="dl parml">
+                
+                    <dt class="dt pt dlterm"><a name="GUID-196E237C-6863-473B-9C4C-F451EF87DA73__GUID-EF7E1BAE-FFD9-4709-8821-2E999B73671D"><!-- --></a>handle</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">[IN] Device handle, which is returned by <a class="xref" href="GUID-326B9562-8502-45F7-8BC1-6BAA481A8732.html#GUID-326B9562-8502-45F7-8BC1-6BAA481A8732" title="Create a handle.">MV_CC_CreateHandle</a> or <a class="xref" href="GUID-0D6ED5F9-FBE2-44D9-A1A5-5A0043E66658.html#GUID-0D6ED5F9-FBE2-44D9-A1A5-5A0043E66658" title="Create a handle without log.">MV_CC_CreateHandleWithoutLog</a>.</p>
+
+                    </dd>
+
+                
+                
+                    <dt class="dt pt dlterm"><a name="GUID-196E237C-6863-473B-9C4C-F451EF87DA73__GUID-868B7378-680B-4CE2-8F8F-909458C73394"><!-- --></a>pstFileAccess</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">[IN] Structure for getting or saving files, see the
+                            structure <a class="xref" href="GUID-8691432D-B32B-4EE7-9BC1-A738AFFB5F77.html#GUID-8691432D-B32B-4EE7-9BC1-A738AFFB5F77" title="File information structure">MV_CC_FILE_ACCESS</a> for details.</p>
+
+                    </dd>
+
+                
+            </dl>
+
+        </div>
+
+        <div class="section" id="GUID-196E237C-6863-473B-9C4C-F451EF87DA73__GUID-A8452A20-0D76-4961-8954-46ED16032127"><h2 class="title sectiontitle">Return Value</h2>
+            
+            <p class="p">Return <samp class="ph systemoutput">MV_OK(0)</samp> on success, and return <a class="xref" href="GUID-F0BB8308-5910-47DF-A8C6-754ED6296620.html#GUID-F0BB8308-5910-47DF-A8C6-754ED6296620" title="The error may occurred during the MVC SDK integration are listed here for reference. You can search for the error description according to returned error codes or name.">Error Code</a> on failure.</p>
+
+        </div>
+
+        <div class="section" id="GUID-196E237C-6863-473B-9C4C-F451EF87DA73__GUID-304CEC07-6261-42C3-B0E2-0FC5DD2C730A"><h2 class="title sectiontitle">Remarks</h2>
+            
+            <p class="p">After connecting to the device, you can call this API to read files from
+                the camera and save them to local PC. </p>
+
+        </div>
+
+        <div class="section" id="GUID-196E237C-6863-473B-9C4C-F451EF87DA73__GUID-3461F06B-D96B-462E-BB68-7A7B23F12C93"><h2 class="title sectiontitle">See Also</h2>
+            
+            <p class="p"><a class="xref" href="GUID-AFAC8423-4F4E-4F4A-849F-B9AF7F111CA1.html#GUID-AFAC8423-4F4E-4F4A-849F-B9AF7F111CA1" title="Write local files to the camera.">MV_CC_FileAccessWrite</a></p>
+
+        </div>
+
+</div>
+
+
+</div>
+							
+							
+							
+						</div>
+						<nav role="navigation" class="col-lg-4 col-md-4 col-sm-4 col-xs-12 navbar" id="wh_side_toc" style="display:none">
+							<div class=" wh_side_toc "><ul class="hidden-print"><li><span class="topicref"><a href="GUID-2FB95EE3-5E09-4831-9563-1A3548B28745.html">API Reference</a></span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-2F583C2F-A802-4E31-BEFB-4BB79B564CF7.html">General</a></span></li><li><span class="topicref"><a href="GUID-EFAB385E-355E-4FA2-A187-7B4CFBEED84F.html">Parameter Settings</a></span></li><li><span class="topicref"><a href="GUID-7D2DC338-115D-470A-8937-E6694384EFA2.html">Functional</a></span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-0E134CA3-06ED-4731-ACC7-42BB18EE8188.html">General APIs</a></span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-A58784F4-E50F-4E50-9AB0-4143D4DB253F.html">MV_CC_IsDeviceConnected</a></span></li><li><span class="topicref"><a href="GUID-379C0C9C-455D-45E5-BE5F-EEEB29899388.html">MV_CC_SetImageNodeNum</a></span></li><li><span class="topicref"><a href="GUID-7F9D2B38-F497-4878-A9FF-A9E8B94613D3.html">MV_CC_GetAllMatchInfo</a></span></li><li><span class="topicref"><a href="GUID-1F0D2CD6-1709-45AF-9B96-98CF029CF9C4.html">MV_CC_InvalidateNodes</a></span></li><li><span class="topicref"><a href="GUID-516F0A61-02E8-4B1D-B955-3858D14E59FC.html">MV_CC_RegisterExceptionCallBack</a></span></li><li><span class="topicref"><a href="GUID-B7EF78BC-C7E2-480B-84C5-56DD281CD74E.html">MV_CC_RegisterAllEventCallBack</a></span></li><li><span class="topicref"><a href="GUID-D60FDD47-B079-49E1-B5A0-22538D3C0CBD.html">MV_CC_RegisterEventCallBackEx</a></span></li><li><span class="topicref"><a href="GUID-1C1E1433-D05E-4BF9-9934-2B57B02B49ED.html">MV_CC_FeatureSave</a></span></li><li><span class="topicref"><a href="GUID-58E2E674-182C-4F05-B2F6-4CABF510C730.html">MV_CC_FeatureLoad</a></span></li><li class="active"><span class="topicref">MV_CC_FileAccessRead</span></li><li><span class="topicref"><a href="GUID-AFAC8423-4F4E-4F4A-849F-B9AF7F111CA1.html">MV_CC_FileAccessWrite</a></span></li><li><span class="topicref"><a href="GUID-22244B6F-067C-49AD-AFA3-7AD2DE57D9FB.html">MV_CC_GetFileAccessProgress</a></span></li></ul></li><li><span class="topicref"><a href="GUID-C6D770EF-8FB1-498B-952C-8A2CA7954F37.html">GigE APIs</a></span></li></ul></li><li><span class="topicref"><a href="GUID-E63B2D53-01A2-4C3C-8EAB-C8F1B98CBE5B.html">Image Acquisition</a></span></li><li><span class="topicref"><a href="GUID-F0180BD4-C1B4-4AC8-9FCA-5AC8955FA31C.html">Image Processing</a></span></li><li><span class="topicref"><a href="GUID-21D0DD7B-674F-49FD-AE5B-A577203C2884.html">Camera Internal APIs</a></span></li><li><span class="topicref"><a href="GUID-71A7CAEB-235A-4DCA-BC59-EF1D38D4C9F5.html">U3V APIs</a></span></li></ul></li></ul></div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div> 
+		<!-- Latest compiled and minified JavaScript -->
+		<script type="text/javascript" src="daksys-webhelp/resources/bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/hik_topic.js"></script>
+		<!-- <script type="text/javascript" src="${daksys-webhelp-template-dir}/resources/js/wt_default.js?buildId=${daksys-webhelp-build-number}" /> -->
+		<!-- Expand/collapse support -->
+		<script type="text/javascript" src="daksys-webhelp/template/resources/js/wt_expand.js?buildId=2017042020"></script>
+		
+		
+	</body>
+</html>

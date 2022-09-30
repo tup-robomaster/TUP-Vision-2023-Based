@@ -2,9 +2,14 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:13
- * @LastEditTime: 2022-09-06 03:22:26
+ * @LastEditTime: 2022-09-26 22:30:49
  * @FilePath: /tup_2023/src/global_user/include/coordsolver.hpp
  */
+
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/eigen.hpp>
 #include "global_user/global_user.hpp"
 
 namespace coordsolver
@@ -28,7 +33,7 @@ namespace coordsolver
 
         double dynamicCalcPitchOffset(Eigen::Vector3d &xyz);
         
-        PnPInfo pnp(const std::vector<cv::Point2f> &points_pic, const Eigen::Matrix3d &rmat_imu, enum TargetType type, int method);
+        PnPInfo pnp(const std::vector<cv::Point2f> &points_pic, const Eigen::Matrix3d &rmat_imu, enum ::global_user::TargetType type, int method);
         
         Eigen::Vector3d camToWorld(const Eigen::Vector3d &point_camera,const Eigen::Matrix3d &rmat);
         Eigen::Vector3d worldToCam(const Eigen::Vector3d &point_world,const Eigen::Matrix3d &rmat);
