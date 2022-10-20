@@ -53,7 +53,7 @@ include_directories(include
   ${InferenceEngine_INCLUDE_DIRS}
 )
   
-include_directories(include include/armor_detector/)
+include_directories(include)
 add_library(${PROJECT_NAME} SHARED
   ./include/armor_detector/armor_tracker.h 
   ./include/armor_detector/inference.h 
