@@ -1,5 +1,6 @@
 {
     "python.autoComplete.extraPaths": [
         "/opt/ros/galactic/lib/python3.8/site-packages"
-    ]
+    ],
+    "cmake.sourceDirectory": "${workspaceFolder}/src/arm_controller"
 }
