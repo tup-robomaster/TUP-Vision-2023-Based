@@ -1,0 +1,189 @@
+
+<!DOCTYPE html
+  PUBLIC "" "about:legacy-compat">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:whc="http://www.daksys.com/webhelp/components" xml:lang="en-us" lang="en-us">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />        
+      <meta name="copyright" content="(C) Copyright 2005" /><meta name="DC.rights.owner" content="(C) Copyright 2005" /><meta name="DC.Type" content="reference" /><meta name="DC.Title" content="MV_GIGE_TRANSMISSION_TYPE" /><meta name="abstract" content="Enumeration of transmission modes, including unicast mode, multicast mode, and so on." /><meta name="description" content="Enumeration of transmission modes, including unicast mode, multicast mode, and so on." /><meta name="DC.Relation" scheme="URI" content="GUID-304BDFF8-F5DB-432E-812F-F3871DCD86D2.html" /><meta name="DC.Format" content="XHTML" /><meta name="DC.Identifier" content="GUID-23455C96-2923-4143-AA66-2BC3EFAE30CE" /><meta name="DC.Language" content="en-US" /><title>MV_GIGE_TRANSMISSION_TYPE</title><!--  Generated with dksgen version 19.0, build number 2017042020.  --><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="wh-path2root" content="index.html" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/commonltr.css?buildId=2017042020" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/webhelp_responsive_topic.css?buildId=2017042020" />
+		<!-- Latest compiled and minified Bootstrap CSS -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/bootstrap/css/bootstrap.min.css" />
+		<!-- Bootstrap Optional theme -->
+		<link rel="stylesheet" href="daksys-webhelp/resources/bootstrap/css/bootstrap-theme.min.css" />
+		<link rel="stylesheet" href="daksys-webhelp/resources/js/jquery-ui.min.css" />
+		<!-- Changes and comments, as side-notes  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/p-side-notes.css?buildId=2017042020" />
+		<!-- Template default styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_default.css?buildId=2017042020" />
+		<!-- Expand-collapse support styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_expand.css?buildId=2017042020" />
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-3.1.1.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/localization/strings.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/localization.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/parseuri.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.cookie.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-ui.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.highlight-3.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/browserDetect.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<script type="text/javascript" src="daksys-webhelp/resources/js/image-resize.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<!-- Skin resources -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/skin.css?buildId=2017042020" /><link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/watermark.css?buildId=2017042020" />
+		<!-- EXM-36950 - Expand the args.hdf parameter here -->
+		
+		<!-- EXM-36950 - webhelp.fragment.head :topic -->
+		
+	</head>
+	<body class="wh_topic_page frmBody" id="GUID-23455C96-2923-4143-AA66-2BC3EFAE30CE" onload="topicOnload()">
+		<input hidden="hidden" id="UDCode" value="" /><input hidden="hidden" id="UDTrademark" value="" /><input hidden="hidden" id="Trademark" value="" />
+		<div class="content_area" id="content_area">
+			<div id="container_body" class="container">
+				<div id="container_body_right">
+					<div class="row">
+						<div id="contentArea">
+							<div class=" wh_topic_content body ">
+    <h1 class="title topictitle1">MV_GIGE_TRANSMISSION_TYPE</h1>
+
+
+<div class="body refbody"><p class="shortdesc">Enumeration of transmission modes, including unicast mode, multicast mode,
+        and so on.</p>
+
+<div class="section" id="GUID-23455C96-2923-4143-AA66-2BC3EFAE30CE__GUID-88654FAC-802D-46E2-8385-532994A9864A"><h2 class="title sectiontitle">Enumeration Definition</h2>
+            
+            <pre class="pre codeblock">enum{
+  MV_GIGE_TRANSTYPE_UNICAST                = 0x0,
+  MV_GIGE_TRANSTYPE_MULTICAST              = 0x1,
+  MV_GIGE_TRANSTYPE_LIMITEDBROADCAST       = 0x2,
+  MV_GIGE_TRANSTYPE_SUBNETBROADCAST        = 0x3,
+  MV_GIGE_TRANSTYPE_CAMERADEFINED          = 0x4,
+  MV_GIGE_TRANSTYPE_UNICAST_DEFINED_PORT   = 0x5,
+  MV_GIGE_TRANSTYPE_UNICAST_WITHOUT_RECV   = 0x00010000,
+  MV_GIGE_TRANSTYPE_MULTICAST_WITHOUT_RECV = 0x00010001,
+}MV_GIGE_TRANSMISSION_TYPE;</pre>
+
+        </div>
+
+        <div class="section" id="GUID-23455C96-2923-4143-AA66-2BC3EFAE30CE__GUID-E5DD8D86-3E0F-448E-99FB-B9BF170AC3D6"><h2 class="title sectiontitle">Members</h2>
+            
+            <dl class="dl parml">
+                
+                    <dt class="dt pt dlterm"><a name="GUID-23455C96-2923-4143-AA66-2BC3EFAE30CE__GUID-A20E8A17-D5E3-4CBF-934E-B2E2A91AA56A"><!-- --></a>MV_GIGE_TRANSTYPE_UNICAST</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">Unicast</p>
+
+                    </dd>
+
+                
+                
+                    <dt class="dt pt dlterm"><a name="GUID-23455C96-2923-4143-AA66-2BC3EFAE30CE__GUID-6A58EFC9-B785-4CA9-8D8D-EB74A7C84D7A"><!-- --></a>MV_GIGE_TRANSTYPE_MULTICAST</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">Multicast</p>
+
+                    </dd>
+
+                
+                
+                    <dt class="dt pt dlterm"><a name="GUID-23455C96-2923-4143-AA66-2BC3EFAE30CE__GUID-AEB103D6-B432-457B-A60A-1FEEB3B216AF"><!-- --></a>MV_GIGE_TRANSTYPE_LIMITEDBROADCAST</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">LAN broadcast</p>
+
+                    </dd>
+
+                
+                
+                    <dt class="dt pt dlterm"><a name="GUID-23455C96-2923-4143-AA66-2BC3EFAE30CE__GUID-BDBA32DB-2BC8-43B6-A69D-8E82B969C449"><!-- --></a>MV_GIGE_TRANSTYPE_SUBNETBROADCAST</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">Subnet broadcast</p>
+
+                    </dd>
+
+                
+                
+                    <dt class="dt pt dlterm"><a name="GUID-23455C96-2923-4143-AA66-2BC3EFAE30CE__GUID-1FD8B697-91EB-4E5E-91C8-672097309177"><!-- --></a>MV_GIGE_TRANSTYPE_CAMERADEFINED</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">Get from camera</p>
+
+                    </dd>
+
+                
+                
+                    <dt class="dt pt dlterm"><a name="GUID-23455C96-2923-4143-AA66-2BC3EFAE30CE__GUID-37CDC910-7F49-45C5-BC74-A4F59DE68181"><!-- --></a>MV_GIGE_TRANSTYPE_UNICAST_DEFINED_PORT</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">Port No. of getting image data</p>
+
+                    </dd>
+
+                
+                
+                    <dt class="dt pt dlterm"><a name="GUID-23455C96-2923-4143-AA66-2BC3EFAE30CE__GUID-D41C3803-16B7-4F25-95E5-3E064DBE3047"><!-- --></a>MV_GIGE_TRANSTYPE_UNICAST_WITHOUT_RECV</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">Unicast mode, but not receive image data</p>
+
+                    </dd>
+
+                
+                
+                    <dt class="dt pt dlterm"><a name="GUID-23455C96-2923-4143-AA66-2BC3EFAE30CE__GUID-AF2DC604-087A-41F9-BB7B-3236FBA42331"><!-- --></a>MV_GIGE_TRANSTYPE_MULTICAST_WITHOUT_RECV</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">Multiple mode, but not receive image data</p>
+
+                    </dd>
+
+                
+            </dl>
+
+        </div>
+
+</div>
+
+
+</div>
+							
+							
+							
+						</div>
+						<nav role="navigation" class="col-lg-4 col-md-4 col-sm-4 col-xs-12 navbar" id="wh_side_toc" style="display:none">
+							<div class=" wh_side_toc "><ul class="hidden-print"><li><span class="topicref"><a href="GUID-5F13E081-0E99-4434-A8C9-740B84FAD68A.html">Data Structure and Enumeration</a></span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-1D44F708-A9DB-4037-9270-2203D8D8149F.html">Data Structure</a></span></li><li><span class="topicref"><a href="GUID-304BDFF8-F5DB-432E-812F-F3871DCD86D2.html">Enumeration</a></span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-7E5F7D58-AB85-4B31-BF62-C3B04A08AA59.html">MV_CC_GAMMA_TYPE</a></span></li><li><span class="topicref"><a href="GUID-02EFF948-C4C8-466A-8591-0CCB7CC78574.html">MV_GIGE_EVENT</a></span></li><li class="active"><span class="topicref">MV_GIGE_TRANSMISSION_TYPE</span></li><li><span class="topicref"><a href="GUID-DF60B60E-E338-48E1-A0ED-F33BE30CFA55.html">MV_IMG_FLIP_TYPE</a></span></li><li><span class="topicref"><a href="GUID-2749D239-0F84-4654-A814-C207FC1FD630.html">MV_IMG_ROTATION_ANGLE</a></span></li><li><span class="topicref"><a href="GUID-06D8C1E7-9AA8-4A55-BC6D-50264AC53D56.html">MV_SAVE_IAMGE_TYPE</a></span></li><li><span class="topicref"><a href="GUID-EC315EE3-CC04-40B2-8B41-DF045ADD6E60.html">MV_XML_InterfaceType</a></span></li><li><span class="topicref"><a href="GUID-D9C70A41-DF22-4B3D-9929-EB7DB594D905.html">MV_XML_Visibility</a></span></li><li><span class="topicref"><a href="GUID-DDA47D76-3D1E-4E69-8E56-572F7A07A804.html">MvGvspPixelType</a></span></li></ul></li></ul></li></ul></div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div> 
+		<!-- Latest compiled and minified JavaScript -->
+		<script type="text/javascript" src="daksys-webhelp/resources/bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/hik_topic.js"></script>
+		<!-- <script type="text/javascript" src="${daksys-webhelp-template-dir}/resources/js/wt_default.js?buildId=${daksys-webhelp-build-number}" /> -->
+		<!-- Expand/collapse support -->
+		<script type="text/javascript" src="daksys-webhelp/template/resources/js/wt_expand.js?buildId=2017042020"></script>
+		
+		
+	</body>
+</html>

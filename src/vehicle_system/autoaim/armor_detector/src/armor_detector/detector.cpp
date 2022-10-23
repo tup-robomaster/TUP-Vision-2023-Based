@@ -63,25 +63,12 @@ namespace armor_detector
     {
         if(!is_init)
         {
-            // printf("1");
-            // RCLCPP(this->get_logger(), "1...");
-            cv::namedWindow("image", cv::WINDOW_AUTOSIZE);
-            cv::imshow("image", src.img);
-            cv::waitKey(0);
-
             detector_.initModel(network_path);
-
-            cv::namedWindow("image_1", cv::WINDOW_AUTOSIZE);
-            cv::imshow("image_1", src.img);
-            cv::waitKey(0);
-
-            // printf("2");
             coordsolver_.loadParam(camera_param_path, camera_name);
-
             is_init = true;
         }
 
-        auto time_start = std::chrono::steady_clock::now();
+        time_start = std::chrono::steady_clock::now();
         auto input = src.img;
         timestamp = src.timestamp;
         
@@ -94,7 +81,7 @@ namespace armor_detector
             }
         }
 
-        Eigen::Matrix3d rmat_imu;
+        // Eigen::Matrix3d rmat_imu;
         if(!debug_params_.using_imu)
         {   //使用陀螺仪数据
             rmat_imu = src.quat.toRotationMatrix();
@@ -109,11 +96,12 @@ namespace armor_detector
             roi_offset = cropImageByROI(input);
         }
 
-        auto time_crop = std::chrono::steady_clock::now();
+        time_crop = std::chrono::steady_clock::now();
 
         objects.clear();
         armors.clear();
-        if(!detector_.detect(input, objects, this->detector_params_.dw, this->detector_params_.dh, this->detector_params_.rescale_ratio))
+        
+        if(!detector_.detect(input, objects))
         {   //若未检测到目标
             if(debug_params_.show_aim_cross)
             {
@@ -133,7 +121,7 @@ namespace armor_detector
             return false;
         }
 
-        auto inference_time = std::chrono::steady_clock::now();
+        time_infer = std::chrono::steady_clock::now();
         
         //将对象排序，保留面积较大的对象
         sort(objects.begin(),objects.end(),[](ArmorObject& prev, ArmorObject& next)
@@ -221,10 +209,12 @@ namespace armor_detector
             armor.area = object.area;
             armors.push_back(armor);
         }
-
+        
         //若无合适装甲板
         if (armors.empty())
         {
+            std::cout << "No suitable targets..." << std::endl;
+
             if(debug_params_.show_aim_cross)
             {
                 line(src.img, Point2f(src.img.size().width / 2, 0), Point2f(src.img.size().width / 2, src.img.size().height), Scalar(0,255,0), 1);
@@ -245,6 +235,8 @@ namespace armor_detector
             last_target_area = 0;
             return false;
         }
+
+        return true;
     }
 
     bool detector::gyro_detector(global_user::TaskData &src, Eigen::Vector3d& aiming_point)
@@ -252,21 +244,26 @@ namespace armor_detector
         /**
          * @brief 车辆小陀螺状态检测
         */
-        spinning_detector_.create_armor_tracker(timestamp, dead_buffer_cnt);
 
-        spinning_detector_.is_spinning();
+        //Create ArmorTracker for new armors 
+        spinning_detector_.create_armor_tracker(trackers_map, armors, new_armors_cnt_map, timestamp, dead_buffer_cnt);
 
+        //Detect armors status
+        spinning_detector_.is_spinning(trackers_map, new_armors_cnt_map);
+
+        //Update spinning score
         spinning_detector_.update_spin_score();
 
-        //判断击打车辆
+        //Choose target vehicle
         auto target_id = chooseTargetID(armors, timestamp);
+
         string target_key;
         if (detector_params_.color == BLUE)
             target_key = "B" + to_string(target_id);
         else if (detector_params_.color == RED)
             target_key = "R" + to_string(target_id);
 
-        ///-----------------------------判断该装甲板是否有可用Tracker------------------------------------------
+        ///-----------------------------detect whether exists matched tracker------------------------------------------
         if (trackers_map.count(target_key) == 0)
         {
             if(debug_params_.show_aim_cross)
@@ -288,7 +285,7 @@ namespace armor_detector
         }
         auto ID_candiadates = trackers_map.equal_range(target_key);
 
-        ///---------------------------获取最终装甲板序列---------------------------------------
+        ///---------------------------acqusition final armor's sequences---------------------------------------
         bool is_target_spinning;
         Armor target;
         std::vector<ArmorTracker*> final_trackers;
@@ -408,7 +405,7 @@ namespace armor_detector
 
         if(debug_params_.show_all_armors)
         {
-            for (auto armor :armors)
+            for (auto armor : armors)
             {
                 putText(src.img, fmt::format("{:.2f}", armor.conf),armor.apex2d[3],FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
                 if (armor.color == 0)
@@ -425,6 +422,65 @@ namespace armor_detector
                 auto armor_center = coordsolver_.reproject(armor.center3d_cam);
                 circle(src.img, armor_center, 4, {0, 0, 255}, 2);
             }
+        }
+        
+        auto angle = coordsolver_.getAngle(aiming_point, rmat_imu);
+        //若预测出错则直接世界坐标系下坐标作为击打点
+        if (isnan(angle[0]) || isnan(angle[1]))
+            angle = coordsolver_.getAngle(target.center3d_cam, rmat_imu);
+        auto time_predict = std::chrono::steady_clock::now();
+
+        double dr_crop_ms = std::chrono::duration<double,std::milli>(time_crop - time_start).count();
+        double dr_infer_ms = std::chrono::duration<double,std::milli>(time_infer - time_crop).count();
+        // double dr_predict_ms = std::chrono::duration<double,std::milli>(time_predict - time_infer).count();
+        double dr_full_ms = std::chrono::duration<double,std::milli>(time_predict - time_start).count();
+
+        if(debug_params_.show_fps)
+        {
+            putText(src.img, fmt::format("FPS: {}", int(1000 / dr_full_ms)), {10, 25}, FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
+        }
+
+        if(debug_params_.print_letency)
+        {
+            //降低输出频率，避免影响帧率
+            if (count % 5 == 0)
+            {
+                fmt::print(fmt::fg(fmt::color::gray), "-----------TIME------------\n");
+                fmt::print(fmt::fg(fmt::color::blue_violet), "Crop: {} ms\n"   ,dr_crop_ms);
+                fmt::print(fmt::fg(fmt::color::golden_rod), "Infer: {} ms\n",dr_infer_ms);
+                // fmt::print(fmt::fg(fmt::color::green_yellow), "Predict: {} ms\n",dr_predict_ms);
+                fmt::print(fmt::fg(fmt::color::orange_red), "Total: {} ms\n",dr_full_ms);
+            }
+        }
+        // cout<<target.center3d_world<<endl;
+        // cout<<endl;
+    
+        if(debug_params_.print_target_info)
+        {
+            if (count % 5 == 0)
+            {
+                fmt::print(fmt::fg(fmt::color::gray), "-----------INFO------------\n");
+                fmt::print(fmt::fg(fmt::color::blue_violet), "Yaw: {} \n",angle[0]);
+                fmt::print(fmt::fg(fmt::color::golden_rod), "Pitch: {} \n",angle[1]);
+                fmt::print(fmt::fg(fmt::color::green_yellow), "Dist: {} m\n",(float)target.center3d_cam.norm());
+                fmt::print(fmt::fg(fmt::color::white), "Target: {} \n",target.key);
+                fmt::print(fmt::fg(fmt::color::white), "Target Type: {} \n",target.type == global_user::SMALL ? "SMALL" : "BIG");
+                fmt::print(fmt::fg(fmt::color::orange_red), "Is Spinning: {} \n",is_target_spinning);
+                fmt::print(fmt::fg(fmt::color::orange_red), "Is Switched: {} \n",is_target_switched);
+
+                count = 0;
+            }
+            else
+            {
+                count++;
+            }
+        }
+
+        //若预测出错取消本次数据发送
+        if (isnan(angle[0]) || isnan(angle[1]))
+        {
+            // LOG(ERROR)<<"NAN Detected! Data Transmit Aborted!";
+            return false;
         }
 
         if(debug_params_.show_img)

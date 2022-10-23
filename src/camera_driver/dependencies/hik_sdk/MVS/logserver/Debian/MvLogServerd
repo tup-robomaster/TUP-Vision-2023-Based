@@ -1,0 +1,114 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          MvLogServer
+# Required-Start:    $remote_fs $syslog $local_fs
+# Required-Stop:     $remote_fs $syslog $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start log server at boot time
+# Description:       LogServer is a daemon to self-startint log server.
+### END INIT INFO
+
+
+
+DESCRIPTION="Log Server"
+NAME="MvLogServer"
+SDK_HOME=/opt/MVS
+DAEMON="${SDK_HOME}/logserver/MvLogServer"
+SCRIPTNAME="MvLogServer"
+PIDFILE="/var/run/MvLogServer.pid"
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
+# and status_of_proc is working.
+. /lib/lsb/init-functions
+
+exec_Script()
+{
+	IMAGEFILTER_LOADED=`lsmod | grep -o gevfilter`
+	if [ "$IMAGEFILTER_LOADED" != "gevfilter" ]; then
+		if [ ! -f $SDK_HOME/driver/gevfilter.so ]; then
+			if [ -f $SDK_HOME/driver/build.sh ]; then
+				$SDK_HOME/driver/build.sh
+			fi
+		fi
+		
+		if [ -f $SDK_HOME/driver/load.sh ]; then
+			$SDK_HOME/driver/load.sh
+		fi
+	fi
+}
+
+# Start the Log Server
+start() 
+{
+    echo "Starting Log Server..."
+
+	# Return
+	#   0 if daemon has been started
+	#   1 if daemon was already running
+	#   2 if daemon could not be started
+	start-stop-daemon --start --quiet --exec $DAEMON --test	> /dev/null         			|| return 1
+	start-stop-daemon --start --quiet --exec $DAEMON --make-pidfile --pidfile $PIDFILE	    || return 2
+	
+}
+
+# Stop the Log Server
+stop() 
+{
+	echo "Stopping Log Server..."
+	
+
+	# Wait for children to finish too if this is a daemon that forks
+	# and if the daemon is only ever run from this initscript.
+	# If the above conditions are not satisfied then add some other code
+	# that waits for the process to drop all resources that could be
+	# needed by services started subsequently.  A last resort is to
+	# sleep for some time.
+	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --name $NAME
+	[ "$?" = 2 ] && return 2
+	
+	# Return
+	#   0 if daemon has been stopped
+	#   1 if daemon was already stopped
+	#   2 if daemon could not be stopped
+	#   other if a failure occurred
+	start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --pidfile=$PIDFILE --exec $DAEMON
+	RETVAL="$?"
+	[ "$RETVAL" = 2 ] && return 2
+	
+	# Many daemons don't delete their pidfiles when they exit.
+	rm -f $PIDFILE 
+	
+	return "$RETVAL"
+}
+
+# Verify the status of Log Server
+status() 
+{
+	status_of_proc "$DAEMON" "$NAME" && return 0 || return $?
+}
+
+# Main logic
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status
+        ;;
+    restart|reload)
+        stop
+        start
+        ;;
+  *)
+    echo $"Usage: $0 {start|stop|status|restart|reload}"
+    exit 1
+esac
+exit 0

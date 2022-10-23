@@ -1,0 +1,142 @@
+
+<!DOCTYPE html
+  PUBLIC "" "about:legacy-compat">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:whc="http://www.daksys.com/webhelp/components" xml:lang="en-us" lang="en-us">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />        
+      <meta name="copyright" content="(C) Copyright 2005" /><meta name="DC.rights.owner" content="(C) Copyright 2005" /><meta name="DC.Type" content="reference" /><meta name="DC.Title" content="MV_CC_StartRecord" /><meta name="abstract" content="Start recording." /><meta name="description" content="Start recording." /><meta name="DC.Relation" scheme="URI" content="GUID-F0180BD4-C1B4-4AC8-9FCA-5AC8955FA31C.html" /><meta name="DC.Format" content="XHTML" /><meta name="DC.Identifier" content="GUID-11EE959D-C3FC-459C-B78F-0E59C388CE95" /><meta name="DC.Language" content="en-US" /><title>MV_CC_StartRecord</title><!--  Generated with dksgen version 19.0, build number 2017042020.  --><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="wh-path2root" content="index.html" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/commonltr.css?buildId=2017042020" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/webhelp_responsive_topic.css?buildId=2017042020" />
+		<!-- Latest compiled and minified Bootstrap CSS -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/bootstrap/css/bootstrap.min.css" />
+		<!-- Bootstrap Optional theme -->
+		<link rel="stylesheet" href="daksys-webhelp/resources/bootstrap/css/bootstrap-theme.min.css" />
+		<link rel="stylesheet" href="daksys-webhelp/resources/js/jquery-ui.min.css" />
+		<!-- Changes and comments, as side-notes  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/p-side-notes.css?buildId=2017042020" />
+		<!-- Template default styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_default.css?buildId=2017042020" />
+		<!-- Expand-collapse support styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_expand.css?buildId=2017042020" />
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-3.1.1.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/localization/strings.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/localization.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/parseuri.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.cookie.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-ui.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.highlight-3.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/browserDetect.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<script type="text/javascript" src="daksys-webhelp/resources/js/image-resize.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<!-- Skin resources -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/skin.css?buildId=2017042020" /><link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/watermark.css?buildId=2017042020" />
+		<!-- EXM-36950 - Expand the args.hdf parameter here -->
+		
+		<!-- EXM-36950 - webhelp.fragment.head :topic -->
+		
+	</head>
+	<body class="wh_topic_page frmBody" id="GUID-11EE959D-C3FC-459C-B78F-0E59C388CE95" onload="topicOnload()">
+		<input hidden="hidden" id="UDCode" value="" /><input hidden="hidden" id="UDTrademark" value="" /><input hidden="hidden" id="Trademark" value="" />
+		<div class="content_area" id="content_area">
+			<div id="container_body" class="container">
+				<div id="container_body_right">
+					<div class="row">
+						<div id="contentArea">
+							<div class=" wh_topic_content body ">
+    <h1 class="title topictitle1">MV_CC_StartRecord</h1>
+
+
+<div class="body refbody"><p class="shortdesc">Start recording.</p>
+
+<div class="section" id="GUID-11EE959D-C3FC-459C-B78F-0E59C388CE95__GUID-F873A15D-08A9-47F9-AA58-DBAE3621CFB3"><h2 class="title sectiontitle">API Definition</h2>
+            
+            <pre class="pre codeblock">int <span class="keyword apiname">MV_CC_StartRecord</span>(
+  void                  *<span class="keyword parmname">handle</span>,
+  <var class="keyword varname">MV_CC_RECORD_PARAM</var>    *<span class="keyword parmname">pstRecordParam</span>
+  );</pre>
+
+        </div>
+
+        <div class="section" id="GUID-11EE959D-C3FC-459C-B78F-0E59C388CE95__GUID-13F4CE22-E283-44B7-BB65-C0010236A67C"><h2 class="title sectiontitle">Parameters</h2>
+            
+            <dl class="dl parml">
+                
+                    <dt class="dt pt dlterm"><a name="GUID-11EE959D-C3FC-459C-B78F-0E59C388CE95__GUID-3801F9BC-0971-4B37-8EFC-AE0BBADC61F6"><!-- --></a>handle</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">[IN] Device handle, which is returned by <a class="xref" href="GUID-326B9562-8502-45F7-8BC1-6BAA481A8732.html#GUID-326B9562-8502-45F7-8BC1-6BAA481A8732" title="Create a handle.">MV_CC_CreateHandle</a> or <a class="xref" href="GUID-0D6ED5F9-FBE2-44D9-A1A5-5A0043E66658.html#GUID-0D6ED5F9-FBE2-44D9-A1A5-5A0043E66658" title="Create a handle without log.">MV_CC_CreateHandleWithoutLog</a>.</p>
+
+                    </dd>
+
+                
+                
+                    <dt class="dt pt dlterm"><a name="GUID-11EE959D-C3FC-459C-B78F-0E59C388CE95__GUID-5BEB2C20-D716-4597-B189-F999511BF6C2"><!-- --></a>pstRecordParam</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">[IN] Video parameters</p>
+
+                    </dd>
+
+                
+            </dl>
+
+        </div>
+
+        <div class="section" id="GUID-11EE959D-C3FC-459C-B78F-0E59C388CE95__GUID-1126C812-3708-4405-9A9C-D7E7C3F12DC9"><h2 class="title sectiontitle">Return Value</h2>
+            
+            <p class="p">Return <samp class="ph systemoutput">MV_OK(0)</samp> on success, and return <a class="xref" href="GUID-F0BB8308-5910-47DF-A8C6-754ED6296620.html#GUID-F0BB8308-5910-47DF-A8C6-754ED6296620" title="The error may occurred during the MVC SDK integration are listed here for reference. You can search for the error description according to returned error codes or name.">Error Code</a> on failure.</p>
+
+        </div>
+
+        <div class="section" id="GUID-11EE959D-C3FC-459C-B78F-0E59C388CE95__GUID-35DD91E7-6736-4DA5-AF7A-9784F65D0C4D"><h2 class="title sectiontitle">See Also</h2>
+            
+            <p class="p"><a class="xref" href="GUID-27B97582-3712-4282-8C28-3F2754D0A4E4.html#GUID-27B97582-3712-4282-8C28-3F2754D0A4E4" title="Stop recording.">MV_CC_StopRecord</a></p>
+
+            <p class="p"><a class="xref" href="GUID-CD7EB681-125B-4F50-8E2B-C234086C93B6.html#GUID-CD7EB681-125B-4F50-8E2B-C234086C93B6" title="Transmit video parameters.">MV_CC_InputOneFrame</a></p>
+
+        </div>
+
+</div>
+
+
+</div>
+							
+							
+							
+						</div>
+						<nav role="navigation" class="col-lg-4 col-md-4 col-sm-4 col-xs-12 navbar" id="wh_side_toc" style="display:none">
+							<div class=" wh_side_toc "><ul class="hidden-print"><li><span class="topicref"><a href="GUID-2FB95EE3-5E09-4831-9563-1A3548B28745.html">API Reference</a></span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-2F583C2F-A802-4E31-BEFB-4BB79B564CF7.html">General</a></span></li><li><span class="topicref"><a href="GUID-EFAB385E-355E-4FA2-A187-7B4CFBEED84F.html">Parameter Settings</a></span></li><li><span class="topicref"><a href="GUID-7D2DC338-115D-470A-8937-E6694384EFA2.html">Functional</a></span></li><li><span class="topicref"><a href="GUID-E63B2D53-01A2-4C3C-8EAB-C8F1B98CBE5B.html">Image Acquisition</a></span></li><li><span class="topicref"><a href="GUID-F0180BD4-C1B4-4AC8-9FCA-5AC8955FA31C.html">Image Processing</a></span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-D8186310-D9BB-4DDC-8ACD-05F6D7AA1BB8.html">MV_CC_DisplayOneFrame</a></span></li><li><span class="topicref"><a href="GUID-81AEDABC-A07E-45DF-A73C-C228474A3055.html">MV_CC_SaveImageEx2</a></span></li><li><span class="topicref"><a href="GUID-BA256CB4-5612-4652-8997-723A0EE182E5.html">MV_CC_RotateImage</a></span></li><li><span class="topicref"><a href="GUID-375EAADA-AB5A-4226-B855-790034C144ED.html">MV_CC_FlipImage</a></span></li><li><span class="topicref"><a href="GUID-6C79B6F2-345A-4777-8DD8-07D369B675B5.html">MV_CC_SetBayerGammaParam</a></span></li><li><span class="topicref"><a href="GUID-00CF23C6-733C-444F-B2D1-DD03FA169DD6.html">MV_CC_HB_Decode</a></span></li><li><span class="topicref"><a href="GUID-5D0AA5AB-9386-4A55-ACC8-6F31E3AC050F.html">MV_CC_ConvertPixelType</a></span></li><li><span class="topicref"><a href="GUID-01859685-73DD-4368-8C21-21E9C83238E0.html">MV_CC_SetBayerCvtQuality</a></span></li><li><span class="topicref"><a href="GUID-CD7EB681-125B-4F50-8E2B-C234086C93B6.html">MV_CC_InputOneFrame</a></span></li><li class="active"><span class="topicref">MV_CC_StartRecord</span></li><li><span class="topicref"><a href="GUID-27B97582-3712-4282-8C28-3F2754D0A4E4.html">MV_CC_StopRecord</a></span></li></ul></li><li><span class="topicref"><a href="GUID-21D0DD7B-674F-49FD-AE5B-A577203C2884.html">Camera Internal APIs</a></span></li><li><span class="topicref"><a href="GUID-71A7CAEB-235A-4DCA-BC59-EF1D38D4C9F5.html">U3V APIs</a></span></li></ul></li></ul></div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div> 
+		<!-- Latest compiled and minified JavaScript -->
+		<script type="text/javascript" src="daksys-webhelp/resources/bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/hik_topic.js"></script>
+		<!-- <script type="text/javascript" src="${daksys-webhelp-template-dir}/resources/js/wt_default.js?buildId=${daksys-webhelp-build-number}" /> -->
+		<!-- Expand/collapse support -->
+		<script type="text/javascript" src="daksys-webhelp/template/resources/js/wt_expand.js?buildId=2017042020"></script>
+		
+		
+	</body>
+</html>

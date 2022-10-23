@@ -1,0 +1,327 @@
+
+<!DOCTYPE html
+  PUBLIC "" "about:legacy-compat">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:whc="http://www.daksys.com/webhelp/components" xml:lang="en-us" lang="en-us">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />        
+      <meta name="copyright" content="(C) Copyright 2005" /><meta name="DC.rights.owner" content="(C) Copyright 2005" /><meta name="DC.Type" content="reference" /><meta name="DC.Title" content="Grab Images of Multiple Cameras" /><meta name="abstract" content="The sample code below shows how to grab images of multiple cameras." /><meta name="description" content="The sample code below shows how to grab images of multiple cameras." /><meta name="DC.Relation" scheme="URI" content="GUID-1D39F90E-1C45-4160-ABDE-C2E72154FFB3.html" /><meta name="DC.Format" content="XHTML" /><meta name="DC.Identifier" content="GUID-31317BB1-CACE-47F8-89D2-47342B1E6D10" /><meta name="DC.Language" content="en-US" /><title>Grab Images of Multiple Cameras</title><!--  Generated with dksgen version 19.0, build number 2017042020.  --><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="wh-path2root" content="index.html" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/commonltr.css?buildId=2017042020" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/webhelp_responsive_topic.css?buildId=2017042020" />
+		<!-- Latest compiled and minified Bootstrap CSS -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/bootstrap/css/bootstrap.min.css" />
+		<!-- Bootstrap Optional theme -->
+		<link rel="stylesheet" href="daksys-webhelp/resources/bootstrap/css/bootstrap-theme.min.css" />
+		<link rel="stylesheet" href="daksys-webhelp/resources/js/jquery-ui.min.css" />
+		<!-- Changes and comments, as side-notes  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/p-side-notes.css?buildId=2017042020" />
+		<!-- Template default styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_default.css?buildId=2017042020" />
+		<!-- Expand-collapse support styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_expand.css?buildId=2017042020" />
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-3.1.1.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/localization/strings.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/localization.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/parseuri.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.cookie.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-ui.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.highlight-3.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/browserDetect.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<script type="text/javascript" src="daksys-webhelp/resources/js/image-resize.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<!-- Skin resources -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/skin.css?buildId=2017042020" /><link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/watermark.css?buildId=2017042020" />
+		<!-- EXM-36950 - Expand the args.hdf parameter here -->
+		
+		<!-- EXM-36950 - webhelp.fragment.head :topic -->
+		
+	</head>
+	<body class="wh_topic_page frmBody" id="GUID-31317BB1-CACE-47F8-89D2-47342B1E6D10" onload="topicOnload()">
+		<input hidden="hidden" id="UDCode" value="" /><input hidden="hidden" id="UDTrademark" value="" /><input hidden="hidden" id="Trademark" value="" />
+		<div class="content_area" id="content_area">
+			<div id="container_body" class="container">
+				<div id="container_body_right">
+					<div class="row">
+						<div id="contentArea">
+							<div class=" wh_topic_content body ">
+    <h1 class="title topictitle1">Grab Images of Multiple Cameras</h1>
+
+
+<div class="body refbody"><p class="shortdesc">The sample code below shows how to grab images of multiple
+        cameras.</p>
+
+        <div class="section" id="GUID-31317BB1-CACE-47F8-89D2-47342B1E6D10__GUID-E31CB631-4486-4BEE-BEAF-211E85B8821C">
+            <pre class="pre codeblock">#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;pthread.h&gt;
+#include "MvCameraControl.h"
+#define CAMERA_NUM             2
+bool g_bExit = false;
+// Wait for the user to press Enter to stop grabbing or end the program
+void PressEnterToExit(void)
+{
+    int c;
+    while ( (c = getchar()) != '\n' &amp;&amp; c != EOF );
+    fprintf( stderr, "\nPress enter to exit.\n");
+    while( getchar() != '\n');
+    g_bExit = true;
+    sleep(1);
+}
+bool PrintDeviceInfo(MV_CC_DEVICE_INFO* pstMVDevInfo)
+{
+    if (NULL == pstMVDevInfo)
+    {
+        printf("The Pointer of pstMVDevInfo is NULL!\n");
+        return false;
+    }
+    if (pstMVDevInfo-&gt;nTLayerType == MV_GIGE_DEVICE)
+    {
+        int nIp1 = ((pstMVDevInfo-&gt;SpecialInfo.stGigEInfo.nCurrentIp &amp; 0xff000000) &gt;&gt; 24);
+        int nIp2 = ((pstMVDevInfo-&gt;SpecialInfo.stGigEInfo.nCurrentIp &amp; 0x00ff0000) &gt;&gt; 16);
+        int nIp3 = ((pstMVDevInfo-&gt;SpecialInfo.stGigEInfo.nCurrentIp &amp; 0x0000ff00) &gt;&gt; 8);
+        int nIp4 = (pstMVDevInfo-&gt;SpecialInfo.stGigEInfo.nCurrentIp &amp; 0x000000ff);
+        // Print the IP address and user defined name of the current camera
+        printf("Device Model Name: %s\n", pstMVDevInfo-&gt;SpecialInfo.stGigEInfo.chModelName);
+        printf("CurrentIp: %d.%d.%d.%d\n" , nIp1, nIp2, nIp3, nIp4);
+        printf("UserDefinedName: %s\n\n" , pstMVDevInfo-&gt;SpecialInfo.stGigEInfo.chUserDefinedName);
+    }
+    else if (pstMVDevInfo-&gt;nTLayerType == MV_USB_DEVICE)
+    {
+        printf("Device Model Name: %s\n", pstMVDevInfo-&gt;SpecialInfo.stUsb3VInfo.chModelName);
+        printf("UserDefinedName: %s\n\n", pstMVDevInfo-&gt;SpecialInfo.stUsb3VInfo.chUserDefinedName);
+    }
+    else
+    {
+        printf("Not support.\n");
+    }
+    return true;
+}
+static void* WorkThread(void* pUser)
+{
+    int nRet = MV_OK;
+    MVCC_STRINGVALUE stStringValue = {0};
+    char camSerialNumber[256] = {0};
+    nRet = MV_CC_GetStringValue(pUser, "DeviceSerialNumber", &amp;stStringValue);
+    if (MV_OK == nRet)
+    {
+        memcpy(camSerialNumber, stStringValue.chCurValue, sizeof(stStringValue.chCurValue));
+    }
+    else
+    {
+        printf("Get DeviceUserID Failed! nRet = [%x]\n", nRet);
+    }
+    // Get the payload size
+    MVCC_INTVALUE stParam;
+    memset(&amp;stParam, 0, sizeof(MVCC_INTVALUE));
+    nRet = MV_CC_GetIntValue(pUser, "PayloadSize", &amp;stParam);
+    if (MV_OK != nRet)
+    {
+        printf("Get PayloadSize fail! nRet [0x%x]\n", nRet);
+        return NULL;
+    }
+    MV_FRAME_OUT_INFO_EX stImageInfo = {0};
+    memset(&amp;stImageInfo, 0, sizeof(MV_FRAME_OUT_INFO_EX));
+    unsigned char * pData = (unsigned char *)malloc(sizeof(unsigned char) * stParam.nCurValue);
+    if (NULL == pData)
+    {
+        return NULL;
+    }
+    unsigned int nDataSize = stParam.nCurValue;
+    while(1)
+    {
+        if(g_bExit)
+        {
+            break;
+        }
+            
+        nRet = MV_CC_GetOneFrameTimeout(pUser, pData, nDataSize, &amp;stImageInfo, 1000);
+        if (nRet == MV_OK)
+        {
+            printf("Cam Serial Number[%s]:GetOneFrame, Width[%d], Height[%d], nFrameNum[%d]\n", 
+                camSerialNumber, stImageInfo.nWidth, stImageInfo.nHeight, stImageInfo.nFrameNum);
+        }
+        else
+        {
+            printf("cam[%s]:Get One Frame failed![%x]\n", camSerialNumber, nRet);
+        }
+    }
+    return 0;
+}
+int main()
+{
+    int nRet = MV_OK;
+    void* handle[CAMERA_NUM] = {NULL};
+    MV_CC_DEVICE_INFO_LIST stDeviceList;
+    memset(&amp;stDeviceList, 0, sizeof(MV_CC_DEVICE_INFO_LIST));
+    // Enumerate devices
+    nRet = MV_CC_EnumDevices(MV_GIGE_DEVICE | MV_USB_DEVICE, &amp;stDeviceList);
+    if (MV_OK != nRet)
+    {
+        printf("MV_CC_EnumDevices fail! nRet [%x]\n", nRet);
+        return -1;
+    }
+    unsigned int nIndex = 0;
+    if (stDeviceList.nDeviceNum &gt; 0)
+    {
+        for (int i = 0; i &lt; stDeviceList.nDeviceNum; i++)
+        {
+            printf("[device %d]:\n", i);
+            MV_CC_DEVICE_INFO* pDeviceInfo = stDeviceList.pDeviceInfo[i];
+            if (NULL == pDeviceInfo)
+            {
+                break;
+            } 
+            PrintDeviceInfo(pDeviceInfo);            
+        }  
+    } 
+    else
+    {
+        printf("Find No Devices!\n");
+        return -1;
+    }
+    if(stDeviceList.nDeviceNum &lt; CAMERA_NUM)
+    {
+        printf("only have %d camera\n", stDeviceList.nDeviceNum);
+        return -1;
+    }
+    
+    // Tips for testing multiple cameras
+    printf("Start %d camera Grabbing Image test\n", CAMERA_NUM);
+    for(int i = 0; i &lt; CAMERA_NUM; i++)
+    {
+        printf("Please Input Camera Index: ");
+        scanf("%d", &amp;nIndex);
+        // Create a handle for the selected device
+        nRet = MV_CC_CreateHandle(&amp;handle[i], stDeviceList.pDeviceInfo[nIndex]);
+        if (MV_OK != nRet)
+        {
+            printf("MV_CC_CreateHandle fail! nRet [%x]\n", nRet);
+            MV_CC_DestroyHandle(handle[i]);
+            return -1;
+        }
+        // Open the device
+        nRet = MV_CC_OpenDevice(handle[i]);
+        if (MV_OK != nRet)
+        {
+            printf("MV_CC_OpenDevice fail! nRet [%x]\n", nRet);
+            MV_CC_DestroyHandle(handle[i]);
+            return -1;
+        }
+        
+        // Detect the optimal packet size (it is valid for GigE cameras only)
+        if (stDeviceList.pDeviceInfo[nIndex]-&gt;nTLayerType == MV_GIGE_DEVICE)
+        {
+            int nPacketSize = MV_CC_GetOptimalPacketSize(handle[i]);
+            if (nPacketSize &gt; 0)
+            {
+                nRet = MV_CC_SetIntValue(handle[i],"GevSCPSPacketSize",nPacketSize);
+                if(nRet != MV_OK)
+                {
+                    printf("Warning: Set Packet Size fail nRet [0x%x]!\n", nRet);
+                }
+            }
+            else
+            {
+                printf("Warning: Get Packet Size fail nRet [0x%x]!\n", nPacketSize);
+            }
+        }
+    }
+    for(int i = 0; i &lt; CAMERA_NUM; i++)
+    {
+        // Set the trigger mode to off
+        nRet = MV_CC_SetEnumValue(handle[i], "TriggerMode", MV_TRIGGER_MODE_OFF);
+        if (MV_OK != nRet)
+        {
+            printf("Cam[%d]: MV_CC_SetTriggerMode fail! nRet [%x]\n", i, nRet);
+        }
+        // Start grabbing images
+        nRet = MV_CC_StartGrabbing(handle[i]);
+        if (MV_OK != nRet)
+        {
+            printf("Cam[%d]: MV_CC_StartGrabbing fail! nRet [%x]\n",i, nRet);
+            return -1;
+        }
+        pthread_t nThreadID;
+        nRet = pthread_create(&amp;nThreadID, NULL ,WorkThread , handle[i]);
+        if (nRet != 0)
+        {
+            printf("Cam[%d]: thread create failed.ret = %d\n",i, nRet);
+            return -1;
+        }
+    }
+    PressEnterToExit();
+    for(int i = 0; i &lt; CAMERA_NUM; i++)
+    {
+        // Stop grabbing images
+        nRet = MV_CC_StopGrabbing(handle[i]);
+        if (MV_OK != nRet)
+        {
+            printf("MV_CC_StopGrabbing fail! nRet [%x]\n", nRet);
+            return -1;
+        }
+        // Shut down the device
+        nRet = MV_CC_CloseDevice(handle[i]);
+        if (MV_OK != nRet)
+        {
+            printf("MV_CC_CloseDevice fail! nRet [%x]\n", nRet);
+            return -1;
+        }
+        // Destroy the handle
+        nRet = MV_CC_DestroyHandle(handle[i]);
+        if (MV_OK != nRet)
+        {
+            printf("MV_CC_DestroyHandle fail! nRet [%x]\n", nRet);
+            return -1;
+        }
+    }
+    printf("exit\n");
+    return 0;
+}</pre>
+
+        </div>
+
+    </div>
+
+
+</div>
+							
+							
+							
+						</div>
+						<nav role="navigation" class="col-lg-4 col-md-4 col-sm-4 col-xs-12 navbar" id="wh_side_toc" style="display:none">
+							<div class=" wh_side_toc "><ul class="hidden-print"><li><span class="topicref"><a href="GUID-1D39F90E-1C45-4160-ABDE-C2E72154FFB3.html">Sample Code</a></span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-F593E195-2EAF-4FBA-A6E1-19B44EAD589E.html">Get The Chunk Information</a></span></li><li><span class="topicref"><a href="GUID-95D8237A-926C-45CB-8788-176B14AB40CB.html">Connect to Cameras via IP Address</a></span></li><li><span class="topicref"><a href="GUID-D587AE4C-0D70-4E2A-94E7-2113DB350F26.html">Get Camera Events</a></span></li><li><span class="topicref"><a href="GUID-8673DEA3-E4BF-42B6-85DE-66F7E2E544AA.html">Set Static IP Address of The Camera</a></span></li><li><span class="topicref"><a href="GUID-2CE260D9-B640-43B9-9045-F3C43526A1AF.html">Get Images in Callback Function</a></span></li><li><span class="topicref"><a href="GUID-FC27486A-8483-4D90-993A-06EE2AC34654.html">Get Images Directly</a></span></li><li><span class="topicref"><a href="GUID-635A20E1-E356-416F-9242-E52084EAE5EC.html">Get Images Directly with High Performance</a></span></li><li class="active"><span class="topicref">Grab Images of Multiple Cameras</span></li><li><span class="topicref"><a href="GUID-9CC2B146-8537-487F-A387-93DDC4F10D03.html">Process The Image</a></span></li><li><span class="topicref"><a href="GUID-E88315C9-3F68-4792-8239-BA2DEE1605E1.html">Set The Multicast Mode</a></span></li><li><span class="topicref"><a href="GUID-0D08F0B6-2552-44A9-87F1-B060A0FDF492.html">File Access</a></span></li><li><span class="topicref"><a href="GUID-717803FA-7066-4452-B338-E52FA7DACA9F.html">Import/Export The Camera Feature File</a></span></li><li><span class="topicref"><a href="GUID-F2429CFC-2588-446D-8432-450B71FF2690.html">Camera Reconnection</a></span></li><li><span class="topicref"><a href="GUID-7168F3F5-F58F-40EC-BC81-BDB11A80AF34.html">Set The Camera IO Status</a></span></li><li><span class="topicref"><a href="GUID-7D0BD778-FFCF-45E4-AD81-FE60C5F4A4F4.html">Set Camera Parameters</a></span></li><li><span class="topicref"><a href="GUID-9CBF1695-3F10-439D-9C34-AC95FBBEC084.html">Get Images Directly in Triggering Mode</a></span></li><li><span class="topicref"><a href="GUID-8EA7156A-3205-4857-AF9B-48EE156C0BAD.html">Get Images via Callback in Triggering Mode</a></span></li></ul></li></ul></div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div> 
+		<!-- Latest compiled and minified JavaScript -->
+		<script type="text/javascript" src="daksys-webhelp/resources/bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/hik_topic.js"></script>
+		<!-- <script type="text/javascript" src="${daksys-webhelp-template-dir}/resources/js/wt_default.js?buildId=${daksys-webhelp-build-number}" /> -->
+		<!-- Expand/collapse support -->
+		<script type="text/javascript" src="daksys-webhelp/template/resources/js/wt_expand.js?buildId=2017042020"></script>
+		
+		
+	</body>
+</html>

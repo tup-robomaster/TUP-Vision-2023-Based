@@ -126,13 +126,17 @@ void SimpleAutoAimNode::process_image(const cv::Mat & img, const rclcpp::Time & 
   target_in_camera.point.x = target.postion.x;
   target_in_camera.point.y = target.postion.y;
   target_in_camera.point.z = target.postion.z;
-  try {
+
+  try 
+  {
     tf_buffer_->transform(target_in_camera, target_in_home, "gimbal_home", transform_tolerance_);
-  } catch (tf2::TransformException & e) {
+  } 
+  catch (tf2::TransformException & e) {
     RCLCPP_ERROR(
       node_->get_logger(), "%s_optical transforms failed: (%s)", camera_name_.c_str(), e.what());
     return;
   }
+  
   RCLCPP_INFO(
     node_->get_logger(), "find target: (%.3lf,%.3lf,%.3lf)",
     target_in_home.point.x, target_in_home.point.y, target_in_home.point.z);

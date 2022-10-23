@@ -62,11 +62,13 @@ private:
   // 坐标变换工具类
   std::shared_ptr<rmoss_projectile_motion::GimbalTransformTool> gimbal_tansformoss_tool_;
   rmoss_util::TaskManager::SharedPtr task_manager_;
+  
   // ros pub, sub, srv
   rclcpp::Publisher<rmoss_interfaces::msg::GimbalCmd>::SharedPtr gimbal_cmd_pub_;
   rclcpp::Publisher<rmoss_interfaces::msg::ShootCmd>::SharedPtr shoot_cmd_pub_;
   rclcpp::Subscription<rmoss_interfaces::msg::Gimbal>::SharedPtr gimbal_state_sub_;
   rclcpp::Service<rmoss_interfaces::srv::SetColor>::SharedPtr set_color_srv_;
+  
   // tf and message filter
   rclcpp::TimerBase::SharedPtr init_timer_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;

@@ -98,7 +98,7 @@ namespace armor_detector
         return true;
     }
 
-    void spinning_detector::create_armor_tracker(int timestamp, int dead_buffer_cnt)
+    void spinning_detector::create_armor_tracker(std::multimap<std::string, ArmorTracker>& trackers_map, std::vector<armor_detector::Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int timestamp, int dead_buffer_cnt)
     {
         /**
          * @brief 生成/分配ArmorTracker
@@ -106,9 +106,14 @@ namespace armor_detector
         */
         new_armors_cnt_map.clear();
 
+        // std::cout << "create armor_tracker..." << std::endl;
+        
+        // std::cout << "detected_armors:" << armors.size() << std::endl;
         //为装甲板分配或新建最佳ArmorTracker(注:将不会为灰色装甲板创建预测器，只会分配给现有的预测器)
         for (auto armor = armors.begin(); armor != armors.end(); ++armor)
         {
+            // std::cout << "1..." << std::endl;
+
             //当装甲板颜色为灰色且当前dead_buffer小于max_dead_buffer
             string tracker_key;
             if ((*armor).color == 2)
@@ -125,6 +130,8 @@ namespace armor_detector
             {
                 tracker_key = (*armor).key;
             }
+
+            // std::cout << "2..." << std::endl;
 
             auto predictors_with_same_key = trackers_map.count(tracker_key);
             //当不存在该类型装甲板ArmorTracker且该装甲板Tracker类型不为灰色装甲板
@@ -198,9 +205,13 @@ namespace armor_detector
                 }
 
             }
+            // std::cout << "3..." << std::endl;
+            
         }
         if (trackers_map.size() != 0)
         {
+            // std::cout << "4..." << std::endl;
+
             //维护预测器Map，删除过久之前的装甲板
             for (auto iter = trackers_map.begin(); iter != trackers_map.end();)
             {
@@ -214,9 +225,11 @@ namespace armor_detector
                 iter = next;
             }
         }
+
+        // std::cout << "5..." << std::endl;
     }
 
-    bool spinning_detector::is_spinning()
+    bool spinning_detector::is_spinning(std::multimap<std::string, ArmorTracker>& trackers_map, std::map<std::string, int>& new_armors_cnt_map)
     {
         /**
          * @brief 检测装甲板变化情况，计算各车陀螺分数

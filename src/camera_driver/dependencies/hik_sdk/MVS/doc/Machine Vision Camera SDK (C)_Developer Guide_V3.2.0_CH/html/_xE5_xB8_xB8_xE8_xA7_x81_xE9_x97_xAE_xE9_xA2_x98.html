@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<link href="doxygen.css" rel="stylesheet" type="text/css"/>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<link href="custom-style.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+	<div style="overflow: hidden;">
+		<div style="height: 57px;min-width: 1039px;background-size: auto 100%;background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABwgAAAABCAYAAADKO/rAAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAABRSURBVFhH7dUxCoBADEXB5LK5/w1iIaLIrsgWNs50Sf/4WVUd8HOZGd1nCqMbGNMPrNMPrJv1cvz0A3OjfuwPvDPrxf7A7t7IlX7gmX74VsQGguw4S6+UnSYAAAAASUVORK5CYII=');">
+			<img src="titleleft.png" style="float: left;"/>
+			<img src="titleright.png" alt="" style="float: right;" />
+		</div>
+	</div>
+<!-- 制作者 Doxygen 1.8.15 -->
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>声明</span></a></li>
+      <li><a href="_xE9_xA6_x96_xE9_xA1_xB5.html"><span>首页</span></a></li>
+      <li><a href="_xE7_x8E_xAF_xE5_xA2_x83_xE9_x85_x8D_xE7_xBD_xAE.html"><span>环境配置</span></a></li>
+      <li><a href="_xE6_x9B_xB4_xE6_x96_xB0_xE8_xAE_xB0_xE5_xBD_x95.html"><span>更新记录</span></a></li>
+      <li><a href="_xE7_xBC_x96_xE7_xA8_x8B_xE5_xBC_x95_xE5_xAF_xBC.html"><span>编程引导</span></a></li>
+      <li><a href="modules.html"><span>接口函数</span></a></li>
+      <li><a href="annotated.html"><span>结构体定义</span></a></li>
+      <li><a href="_xE7_x9B_xB8_xE6_x9C_xBA_xE5_x8F_x82_xE6_x95_xB0_xE8_x8A_x82_xE7_x82_xB9_xE8_xA1_xA8.html"><span>相机参数节点表</span></a></li>
+      <li><a href="examples.html"><span>示例程序</span></a></li>
+      <li><a href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html"><span>错误码</span></a></li>
+      <li><a href="_xE5_xB8_xB8_xE8_xA7_x81_xE9_x97_xAE_xE9_xA2_x98.html"><span>常见问题</span></a></li>
+    </ul>
+  </div>
+</div><!-- top -->
+<div class="PageDoc"><div class="contents">
+<div class="textblock"><div class="header" style="margin-left:-12px;margin-top:-10px;margin-right:-8px;"> <div class="headertitle"> <div class="title">常见问题解答</div> </div> </div> <div style="margin: 0 0 0 20px;"> <h2>一、问题排查思路</h2>
+</div><div style="margin: 0 0 0 20px;"> <ol>
+<li>
+基于SDK开发的程序异常，建议先运行MVS客户端，查看相应功能是否正常 </li>
+<li>
+如果MVS正常，但基于SDK开发的程序异常，需要重点排查二次开发的程序问题 </li>
+<li>
+如果MVS客户端也异常，请参考以下典型问题的解决方法，看是否能匹配上 </li>
+<li>
+<p class="startli">若根据以上排查思路仍不能解决问题，请记录问题现象或图片、MVS客户端版本号和dll库信息（名称和版本号），联系本公司技术同事获取支持</p>
+<p class="endli"></p>
+</li>
+</ol>
+<h2>二、典型问题解决方法</h2>
+</div><div style="margin: 0 0 0 20px;"> <div style="margin: 0 0 0 20px;"> <h3>1、GigE相机问题</h3>
+</div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"> </div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b>&#160;&#160;&#160;&#160;问题 1：用MVS看图像有很多丢包。</b></div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b></b> &#160;&#160;&#160;&#160;<b>问题原因：</b>网络传输环境异常，导致数据传输丢包。<br />
+ &#160;&#160;&#160;&#160;<b>解决方法：</b>1、保证网络有足够带宽。2、开启网卡巨帧。3、关闭系统防火墙。4、调节SCPD，慢慢调大，直到不丢包为止，如下图:<br />
+&#160;&#160;&#160;&#160;<img src="GevSCPSPacketSize.PNG" align="middle" alt="" class="inline"/>
+<br />
+ <br />
+ </div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b>&#160;&#160;&#160;&#160;问题 2：调用sdk执行软触发命令时，软触发命令执行失败。</b></div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b></b> &#160;&#160;&#160;&#160;<b>问题原因：</b>设置触发源不是软触发。<br />
+ &#160;&#160;&#160;&#160;<b>解决方法：</b>调用sdk时，在执行软触发命令时，先保证相机处于软触发模式以及触发源为软触发。<br />
+ <br />
+ </div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b>&#160;&#160;&#160;&#160;问题 3：相机跑一会出现断线情况。</b></div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b></b> &#160;&#160;&#160;&#160;<b>问题原因：</b>网卡休眠或者网口连接处松动。<br />
+ &#160;&#160;&#160;&#160;<b>解决方法：</b>1、设置操作系统的电源选项，使计算机不要进入睡眠状态。2、确认下网口是否松掉了。<br />
+ <br />
+ </div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b>&#160;&#160;&#160;&#160;问题 4：调用 <a class="el" href="group___xE7_x9B_xB8_xE6_x9C_xBA_xE5_x88_x9D_xE5_xA7_x8B_xE5_x8C_x96_xE5_x8F_x8A_xE9_x94_x80_xE6_xAF_x81.html#ga308c9a9869be7a457d27aadd94ce57dd" title="打开设备">MV_CC_OpenDevice()</a> 返回无权限。</b></div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b></b> &#160;&#160;&#160;&#160;<b>问题原因：</b>1、该相机已经被其它程序占用了。2、可能是设置心跳时间过长，而程序没有执行关闭设备或者销毁设备句柄接口，直接异常退出（在调试模式下常见），导致设备一直被占用着。<br />
+ &#160;&#160;&#160;&#160;<b>解决方法：</b>1、检查是否已经有别的程序占用了相机，或者在程序中已经被连接。2、需要等心跳时间到或者插拔下相机电源。<br />
+ <br />
+ </div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b>&#160;&#160;&#160;&#160;问题 5：调试过程中返回错误码。</b></div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b></b> &#160;&#160;&#160;&#160;<b>问题原因：</b>调试时会引起心跳发送超时。<br />
+ &#160;&#160;&#160;&#160;<b>解决方法：</b>使用setintvalue值，再opendevice后面调用，加长心跳时间（如30s，及设置值为30000），默认是3s，如下图：<br />
+ &#160;&#160;&#160;&#160;<img src="GevHeartbeatTimeout.PNG" align="middle" alt="" class="inline"/>
+<br />
+ <br />
+ </div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b>&#160;&#160;&#160;&#160;问题 6：调用 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga9dff94abdfd05f9a3bc3aa4e740622c2" title="采用超时机制获取一帧图片，SDK内部等待直到有数据时返回">MV_CC_GetOneFrameTimeout()</a> 接口，发现 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga9dff94abdfd05f9a3bc3aa4e740622c2" title="采用超时机制获取一帧图片，SDK内部等待直到有数据时返回">MV_CC_GetOneFrameTimeout()</a> 返回无数据错误。</b></div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b></b> &#160;&#160;&#160;&#160;<b>问题原因：</b>对 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga9dff94abdfd05f9a3bc3aa4e740622c2" title="采用超时机制获取一帧图片，SDK内部等待直到有数据时返回">MV_CC_GetOneFrameTimeout()</a> 接口不理解，认为调用一次一定能取到数据。<br />
+ &#160;&#160;&#160;&#160;<b>解决方法：</b>需要强调 <a class="el" href="group___xE5_x9B_xBE_xE5_x83_x8F_xE9_x87_x87_xE9_x9B_x86.html#ga9dff94abdfd05f9a3bc3aa4e740622c2" title="采用超时机制获取一帧图片，SDK内部等待直到有数据时返回">MV_CC_GetOneFrameTimeout()</a> 是主动查询方式，不是每次都能获取到数据的，可以增大超时时间。<br />
+ <br />
+ </div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b>&#160;&#160;&#160;&#160;问题 7：调试状态异常结束后相机无法打开。</b></div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b></b> &#160;&#160;&#160;&#160;<b>问题原因：</b>在调试状态下，相机的心跳值会被默认设置成60000ms（60s），目的是避免用户在Visual Studio集成开发环境调试状态下心跳发送超时的情况，但会出现调试状态异常关闭后相机无法打开问题。<br />
+ &#160;&#160;&#160;&#160;<b>解决方法：</b>建议客户在退出调试之前先将相机关闭。<br />
+</div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><br />
+ </div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b>&#160;&#160;&#160;&#160;问题 8：编译报ld:-lMvCameraControl找不到libMvCameraControl库。</b></div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b></b> &#160;&#160;&#160;&#160;<b>问题原因：</b>安装完成后，当前控制台中会出现环境变量不生效的情况。<br />
+ &#160;&#160;&#160;&#160;<b>解决方法：</b>排查环境变量是否生效，Lib库是否存在。<br />
+ &#160;&#160;&#160;&#160;1）首先确认环境变量中关于SDK的环境变量都生效了<br />
+ <div class="fragment"><div class="line">echo $MVCAM_COMMON_RUNENV </div></div><!-- fragment --> &#160;&#160;&#160;&#160;如果执行命令没有打印出相应的SDK路径，则需要执行：<br />
+ <div class="fragment"><div class="line">cd 安装文件夹路径</div><div class="line">source set_env_path.sh</div></div><!-- fragment --> &#160;&#160;&#160;&#160;2）如果环境变量没有问题，则找到lib库路径，看库是否存在<br />
+ <div class="fragment"><div class="line">cd /opt/MVS/lib/64</div><div class="line">ls -lh</div></div><!-- fragment --></div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><br />
+ </div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b>&#160;&#160;&#160;&#160;问题 9：编译报ld:-lMvCameraControl 不兼容的符号（not compatable symbol）。</b></div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b></b> &#160;&#160;&#160;&#160;<b>问题原因：</b>SDK版本与硬件版本不匹配，或者编译链不支持。<br />
+ &#160;&#160;&#160;&#160;<b>解决方法：</b><br />
+ &#160;&#160;&#160;&#160;1）确认当前的硬件环境和SDK是对应的版本：<br />
+ <div class="fragment"><div class="line">uname -a</div><div class="line">cd /opt/MVS/lib/64</div><div class="line">readelf -h libMvCameraControl.so </div></div><!-- fragment --> &#160;&#160;&#160;&#160;查看SDK的头部信息和系统信息是否是匹配的<br />
+</div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;">&#160;&#160;&#160;&#160;2）gcc -v查看gcc版本是否是高于SDK的gcc的。各个SDK的gcc版本为：<br />
+ <div class="fragment"><div class="line">x86_64: gcc-4.4.7</div><div class="line">i386: gcc-4.4.7</div><div class="line">armhf: gcc-4.8.2</div><div class="line">aarch64: gcc-4.9.4</div><div class="line">arm-none: gcc-4.1.1</div></div><!-- fragment --> &#160;&#160;&#160;&#160;如果使用的gcc低于对应的SDK版本，可以使用gcc较高的版本，详情可以咨询本司技术支持。<br />
+</div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><br />
+ </div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b>&#160;&#160;&#160;&#160;问题 10：枚举不到GigE相机。</b></div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b></b> &#160;&#160;&#160;&#160;<b>问题原因：</b>PC端的IP不是静态IP。<br />
+ &#160;&#160;&#160;&#160;<b>解决方法：</b>PC端设置为静态IP，否则Linux无法为自己分配局域网IP地址，导致无法枚举到相机。<br />
+ <br />
+ <br />
+ </div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b>&#160;&#160;&#160;&#160;问题 11：MVS同一相机枚举到两个。</b></div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><b></b> &#160;&#160;&#160;&#160;<b>问题原因：</b>在linux测试中，有的PC在设置静态ip的情况下，切换到dhcp模式，静态ip仍然存在，这种情况下会出现一个相机枚举到两个；大多数PC在设置静态IP的情况下，切换到dhcp模式，静态ip会删除。<br />
+ &#160;&#160;&#160;&#160;<b>解决方法：</b>删除多余的IP地址。<br />
+ <br />
+ <br />
+</div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"><h2>2、U3V相机问题</h2>
+</div></div><div style="margin: 0 0 0 20px;"><div style="margin: 0 0 0 20px;"> <b>&#160;&#160;&#160;&#160;问题 1：MVS取不到数据，或者帧率远低于实际帧率。</b><br />
+ &#160;&#160;&#160;&#160;<b>问题原因：</b>相机接在2.0的口上，带宽不足。<br />
+ &#160;&#160;&#160;&#160;<b>解决方法：</b>可以通过以下方式确认相机连接口是USB2.0口还是USB3.0口。<br />
+ &#160;&#160;&#160;&#160;1）设备列表的图标是否显示为2<br />
+ &#160;&#160;&#160;&#160;<img src="USB 2.0.PNG" align="middle" alt="" class="inline"/>
+<br />
+ &#160;&#160;&#160;&#160;2）设备属性中的USB Speed Mode属性值是HighSpeed还是SuperSpeed<br />
+ &#160;&#160;&#160;&#160;<img src="USBSpeedMode.PNG" align="middle" alt="" class="inline"/>
+ </div> </div> </div></div><!-- PageDoc -->
+</div><!-- contents -->
+<!-- start footer part -->
+<div class="footer" style="text-align: right;">
+	<hr/>
+	<small></small>
+</div>
+</body>
+</html>

@@ -9,7 +9,8 @@
 #include "../../global_user/include/coordsolver.hpp"
 
 #include "./armor_tracker.h"
-#include "./inference.h"
+// #include "./inference.h"
+#include "./inference_api2.hpp"
 #include "./spinning_detector.hpp"
 
 //C++
@@ -32,6 +33,9 @@ namespace armor_detector
         bool show_img;
         bool detect_red;
         bool show_all_armors;
+        bool show_fps;
+        bool print_letency;
+        bool print_target_info;
 
         debug_params()
         {
@@ -42,6 +46,9 @@ namespace armor_detector
             show_img = true;
             detect_red = true;
             show_all_armors = true;
+            show_fps = true;
+            print_letency = true;
+            print_target_info = true; 
         }
     };
 
@@ -62,6 +69,7 @@ namespace armor_detector
         Color color;
         detector_params()
         {
+            color = RED;
             armor_type_wh_thres = 0;
             max_lost_cnt = 0;
             max_armors_cnt = 0;
@@ -111,7 +119,12 @@ namespace armor_detector
         std::multimap<std::string, ArmorTracker> trackers_map;
         std::map<string, int> new_armors_cnt_map;    //装甲板计数map，记录新增装甲板数
         
+        Eigen::Matrix3d rmat_imu;
     private:
+        int count;
+        std::chrono::_V2::steady_clock::time_point time_start;
+        std::chrono::_V2::steady_clock::time_point time_infer;
+        std::chrono::_V2::steady_clock::time_point time_crop;
         int timestamp;
         int dead_buffer_cnt;
 

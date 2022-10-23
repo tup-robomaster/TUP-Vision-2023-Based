@@ -16,7 +16,8 @@
   <depend>image_transport</depend>
   <depend>sensor_msgs</depend>
 
-  <depend>InferenceEngine</depend>
+  <!-- <depend>InferenceEngine</depend> -->
+  <depend>OpenVINO</depend>
   <depend>Ceres</depend>
   <depend>Eigen3</depend>
 

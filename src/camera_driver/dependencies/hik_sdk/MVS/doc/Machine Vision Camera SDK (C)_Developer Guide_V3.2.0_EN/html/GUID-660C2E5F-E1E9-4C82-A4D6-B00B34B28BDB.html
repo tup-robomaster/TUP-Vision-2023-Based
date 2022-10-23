@@ -1,0 +1,124 @@
+
+<!DOCTYPE html
+  PUBLIC "" "about:legacy-compat">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:whc="http://www.daksys.com/webhelp/components" xml:lang="en-us" lang="en-us">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />        
+      <meta name="copyright" content="(C) Copyright 2005" /><meta name="DC.rights.owner" content="(C) Copyright 2005" /><meta name="DC.Type" content="concept" /><meta name="DC.Title" content="Introduction" /><meta name="abstract" content="This manual mainly introduces the MvCameraSDK based on C language, which provides several APIs to implement the functions of image acquisition, parameter configuration, image post-process, device upgrade, and so on." /><meta name="description" content="This manual mainly introduces the MvCameraSDK based on C language, which provides several APIs to implement the functions of image acquisition, parameter configuration, image post-process, device upgrade, and so on." /><meta name="DC.Relation" scheme="URI" content="GUID-DE8C1AFC-F19D-4EB5-AF4F-0B0B9947DDB0.html" /><meta name="DC.Format" content="XHTML" /><meta name="DC.Identifier" content="GUID-660C2E5F-E1E9-4C82-A4D6-B00B34B28BDB" /><meta name="DC.Language" content="en-US" /><title>Introduction</title><!--  Generated with dksgen version 19.0, build number 2017042020.  --><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="wh-path2root" content="index.html" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/commonltr.css?buildId=2017042020" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/webhelp_responsive_topic.css?buildId=2017042020" />
+		<!-- Latest compiled and minified Bootstrap CSS -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/bootstrap/css/bootstrap.min.css" />
+		<!-- Bootstrap Optional theme -->
+		<link rel="stylesheet" href="daksys-webhelp/resources/bootstrap/css/bootstrap-theme.min.css" />
+		<link rel="stylesheet" href="daksys-webhelp/resources/js/jquery-ui.min.css" />
+		<!-- Changes and comments, as side-notes  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/p-side-notes.css?buildId=2017042020" />
+		<!-- Template default styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_default.css?buildId=2017042020" />
+		<!-- Expand-collapse support styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_expand.css?buildId=2017042020" />
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-3.1.1.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/localization/strings.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/localization.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/parseuri.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.cookie.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-ui.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.highlight-3.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/browserDetect.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<script type="text/javascript" src="daksys-webhelp/resources/js/image-resize.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<!-- Skin resources -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/skin.css?buildId=2017042020" /><link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/watermark.css?buildId=2017042020" />
+		<!-- EXM-36950 - Expand the args.hdf parameter here -->
+		
+		<!-- EXM-36950 - webhelp.fragment.head :topic -->
+		
+	</head>
+	<body class="wh_topic_page frmBody" id="GUID-660C2E5F-E1E9-4C82-A4D6-B00B34B28BDB" onload="topicOnload()">
+		<input hidden="hidden" id="UDCode" value="" /><input hidden="hidden" id="UDTrademark" value="" /><input hidden="hidden" id="Trademark" value="" />
+		<div class="content_area" id="content_area">
+			<div id="container_body" class="container">
+				<div id="container_body_right">
+					<div class="row">
+						<div id="contentArea">
+							<div class=" wh_topic_content body ">
+    <h1 class="title topictitle1">Introduction</h1>
+
+
+<div class="body conbody"><p class="shortdesc">This manual mainly introduces the MvCameraSDK based on C language, which
+        provides several APIs to implement the functions of image acquisition, parameter
+        configuration, image post-process, device upgrade, and so on.</p>
+
+        <div class="p">Parameter configuration and image acquisition are two basic functions, see details
+                below:<ul class="ul" id="GUID-660C2E5F-E1E9-4C82-A4D6-B00B34B28BDB__UL_XBX_W1L_NHB">
+                <li class="li" id="GUID-660C2E5F-E1E9-4C82-A4D6-B00B34B28BDB__GUID-CCB63909-BBF1-4DE2-8B6C-485CC0FFD6CA">
+                    <p class="p">Parameter configuration: Get and set all parameters of cameras, such as image
+                        width, height, exposure time, which are realized by the general
+                        configuration API. </p>
+
+                </li>
+
+                <li class="li" id="GUID-660C2E5F-E1E9-4C82-A4D6-B00B34B28BDB__GUID-2F021385-717B-40B0-8781-FD59802E74D0">
+                    <p class="p">Image acquisition: When the camera sends image data to PC, the image data
+                        will be saved to the SDK. SDK provides two methods for getting the image,
+                        including search method and callback method. These two methods cannot be
+                        adopted at same time, the user should choose one method according to actual
+                        application.</p>
+
+                </li>
+
+            </ul>
+</div>
+
+        <div class="section" id="GUID-660C2E5F-E1E9-4C82-A4D6-B00B34B28BDB__GUID-866CF9A4-3708-435F-AC85-C9FD47040ABA"><h2 class="title sectiontitle">Remarks</h2>
+            
+            <p class="p">The drive program can be selected to be installed during installing
+                Machine Vision Software (MVS). </p>
+
+        </div>
+
+</div>
+
+
+</div>
+							
+							
+							
+						</div>
+						<nav role="navigation" class="col-lg-4 col-md-4 col-sm-4 col-xs-12 navbar" id="wh_side_toc" style="display:none">
+							<div class=" wh_side_toc "><ul class="hidden-print"><li><span class="topicref"><a href="GUID-DE8C1AFC-F19D-4EB5-AF4F-0B0B9947DDB0.html">Overview</a></span><ul class="nav nav-list"><li class="active"><span class="topicref">Introduction</span></li><li><span class="topicref"><a href="GUID-4203F61F-1EBF-49D2-833B-955C52F9BC6B.html">Integrated Development Environment</a></span></li><li><span class="topicref"><a href="GUID-A8E49414-2926-45F9-B585-E78D66E0B8B7.html">Update History</a></span></li><li><span class="topicref"><a href="GUID-EEBAA5D2-2704-4629-9199-4A2A02AD1C9A.html">Notice</a></span></li></ul></li></ul></div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div> 
+		<!-- Latest compiled and minified JavaScript -->
+		<script type="text/javascript" src="daksys-webhelp/resources/bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/hik_topic.js"></script>
+		<!-- <script type="text/javascript" src="${daksys-webhelp-template-dir}/resources/js/wt_default.js?buildId=${daksys-webhelp-build-number}" /> -->
+		<!-- Expand/collapse support -->
+		<script type="text/javascript" src="daksys-webhelp/template/resources/js/wt_expand.js?buildId=2017042020"></script>
+		
+		
+	</body>
+</html>

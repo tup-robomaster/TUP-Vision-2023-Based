@@ -1,0 +1,431 @@
+/*
+
+DAKOTASYSTEMS Plugin
+Copyright (c) 1998-2017 DAKOTASYSTEMS.  All rights reserved.
+
+*/
+/*
+ * ==========================================
+ * 
+ * Side notes. These are the dksgen review processing instructions
+ * converted to elements. They are floating to one
+ * side of the page.
+ *
+ * For the WebHelp HTML output, the review elements are converted 
+ * to 'div' and 'span's having with a class name matching the name 
+ * of the element. 
+ * 
+ * ==========================================
+ */
+@namespace dks "http://www.daksys.com/extensions/author";
+
+ 
+@media screen {
+
+	dks-attributes,
+    dks-comment,
+    dks-delete,
+    dks-insert,
+    .dks-attributes,
+    .dks-comment,
+    .dks-delete,
+    .dks-insert {
+            margin: 0.5em;
+            width: 20%;
+            min-width:7em;                                          
+    }
+    
+    table dks-attributes,
+    table dks-comment,
+    table dks-delete,
+    table dks-insert,
+    table .dks-attributes,
+    table .dks-comment,
+    table .dks-delete,
+    table .dks-insert {
+            margin: 0.5em;
+            width: 50%;
+    }
+        
+}
+
+ 
+@media print, screen {
+
+	
+	/*
+	 * Main callouts properties.
+	 */
+    dks-attributes,
+    dks-comment,
+    dks-delete,
+    dks-insert,
+    .dks-attributes,
+    .dks-comment,
+    .dks-delete,
+    .dks-insert  {
+        font-size:small;
+        
+        font-weight:normal !important; /* Do not take text styles from the context. */
+        text-decoration:none !important;
+        
+        font-family:arial, helvetica, sans-serif;
+        
+        position:relative;
+        float: right;
+        clear:right;
+                
+        padding: 0.5em 1em 0.5em 1em;
+        
+        min-height:1em;
+        page-break-inside: avoid;
+       
+        border-radius: 10px;
+
+        link:attr(href);
+        -ah-link: attr(href);
+        -dks-link: attr(href);
+        
+    }
+    
+
+    /*
+     * Style the comment replies.
+     */	
+	dks-attributes   dks-comment,
+    dks-comment  	 dks-comment,
+    dks-delete  	 dks-comment,
+    dks-insert   	 dks-comment,
+	.dks-attributes .dks-comment,
+    .dks-comment  	.dks-comment,
+    .dks-delete  	.dks-comment,
+    .dks-insert  	.dks-comment {
+		border-left: 2pt solid;
+	    padding-left: 0.5em;
+	    padding-right: 0;
+	    
+        margin: 2pt 0 2pt 10%;
+        width:90%;
+        border-radius: 0;
+    } 
+	
+	
+	/* 
+	 * Hide the links from the replies.
+	 */
+	dks-attributes   dks-comment:before,
+    dks-comment      dks-comment:before,
+    dks-delete       dks-comment:before,
+    dks-insert       dks-comment:before,
+	.dks-attributes  .dks-comment:before,
+    .dks-comment     .dks-comment:before,
+    .dks-delete      .dks-comment:before,
+    .dks-insert      .dks-comment:before {
+		display:none;
+    }
+    	
+    	
+	/*
+	 * Hide some meta information.
+	 */
+	dks-comment-id,
+	dks-comment-parent-id,
+	dks-mid,
+	dks-hour,
+	dks-tz,
+	.dks-comment-id,
+	.dks-comment-parent-id,
+	.dks-mid,
+	.dks-hour,
+	.dks-tz  {
+		display:none;
+	}
+	
+    
+    /* The ID of the change, like the number of a footnote. */
+    dks-attributes[hr_id]:before,
+    dks-comment[hr_id]:before,
+    dks-delete[hr_id]:before,
+    dks-insert[hr_id]:before{
+        content:'[' attr(hr_id) '] ';
+    }
+    
+    .dks-attributes[hr_id]:before,
+    .dks-comment[hr_id]:before,
+    .dks-delete[hr_id]:before,
+    .dks-insert[hr_id]:before{
+    	/* For HTML, the hr_id is missing, the link is created as an "A" element. */
+		content:none;
+    }
+
+
+
+    /* Author */
+    dks-author,
+    .dks-author {
+        font-weight:bold;
+    }
+    dks-author:after,
+    .dks-author:after {
+        content:':';
+    }
+    
+    /* Comment */
+    dks-comment-text,
+    .dks-comment-text{
+        display:block;
+        margin-top:0.5em;
+        margin-bottom:0.5em;
+    }
+    dks-comment-text:before,
+    .dks-comment-text:before  {
+        content:'\201C';
+    }
+    dks-comment-text:after,
+    .dks-comment-text:after  {
+        content:'\201D';
+    }
+        
+    /* Content of the change */    
+    dks-content,
+    .dks-content{
+        display:block;
+        margin-top:0.5em;
+        margin-bottom:0.5em;
+    }
+    dks-content:before,
+    .dks-content:before {
+        content:'\201C';
+    }
+    dks-content:after,
+    .dks-content:after{
+        content:'\201D';
+    }
+    dks-delete > dks-content,
+    .dks-delete > .dks-content  {
+        text-decoration:line-through;
+    }
+    dks-insert > dks-content,
+    .dks-insert > .dks-content  {
+        font-style:italic;
+    }
+    dks-insert > dks-content:before,
+    .dks-insert > .dks-content:before {
+        content:"<<";
+    }
+    dks-insert > dks-content:after,
+    .dks-insert > .dks-content:after  {
+        content:">>";
+    }
+     
+    /* Date */    
+    dks-date,
+    .dks-date {
+        display:block;
+        margin-top:0.5em;
+        margin-bottom:0.5em;
+        text-align:right;
+        font-size:0.8em;
+    }
+
+
+    /* Old and cuattribute value */    
+    dks-old-value,
+    .dks-old-value {
+        display:block;    
+    }
+    
+    dks-old-value:before,
+    .dks-old-value:before,
+    dks-current-value:before,
+    .dks-current-value:before {
+        display:block;
+        font-weight:bold;
+        text-decoration:none;
+    }
+    dks-old-value:before,
+    .dks-old-value:before{
+        content: "Was:";
+    }        
+    dks-current-value[unknown='true']:before,
+    .dks-current-value[unknown='true']:before{
+    	content:"<< Cannot determine the current value >>";
+    	color:red;
+    }    
+    dks-current-value,
+    .dks-current-value
+     {
+        display:block;
+    }
+
+
+    dks-attribute-change:before,
+    .dks-attribute-change:before{
+        display:block;
+        content: " @" attr(name) "\A" attr(type)" by \A";
+        font-weight:bold;
+    }
+    
+
+    dks-range-start,
+    .dks-range-start,
+    dks-range-end,
+    .dks-range-end {
+    	display:inline;
+    	text-decoration: none;
+        font-weight: normal;
+        font-style: normal;
+    	
+    }
+
+
+    /*
+     * This is the link to the floated comment.
+     * This remains in the main content flow.
+     */
+    dks-range-start:before,
+    .dks-range-start:before {
+    	display:inline;
+        content:'[' attr(hr_id) ']';
+    }
+    /*
+     * This marks the end of the range. 
+     */
+    dks-range-end:before,
+    .dks-range-end:before {
+       	display:inline ;
+        content:'[/' attr(hr_id) ']';
+    }
+    
+    /*
+     * Between an insert range start and end, underline the text.  
+     */
+    dks-insert-hl,
+    .dks-insert-hl
+    {
+    	display:inline;
+		text-decoration:underline;
+    }
+    
+    /*
+     * Between an delete range start and end, underline the text.  
+     */    
+    dks-delete-hl,
+    .dks-delete-hl {
+    	display:inline;
+		text-decoration:line-through;
+     
+    }
+
+    /*
+     * Between an comment range start and end, highlight the text.  
+     */    
+    dks-comment-hl,
+    .dks-comment-hl{
+    	display:inline;
+     }
+    /*
+     * Between an highlight range start and end, highlight the text.  
+     */    
+    dks-color-hl[color],
+    .dks-color-hl[color]{
+    	display:inline;
+        background-color:attr(color, color);
+    }
+}
+
+
+@media print {
+	
+	dks-attributes,
+    dks-comment,
+    dks-delete,
+    dks-insert,
+    .dks-attributes,
+    .dks-comment,
+    .dks-delete,
+    .dks-insert {
+            font-size:0.8rem;
+            margin: 0.5em -0.7in 0.5em 0.5em;
+            /* This should be correlated with the page margin from the p-page-size.css */
+            width: 1.5in;
+             
+    }        
+}
+
+/*
+ * 
+ * Colors
+ * 
+ */
+dks-attributes,
+dks-comment,
+dks-delete,
+dks-insert,
+.dks-attributes,
+.dks-comment,
+.dks-delete,
+.dks-insert  {
+        background-color: #FFFFAA;
+        color:black;
+}
+
+
+    
+/*
+ * The marked as done changes should be grayed out.
+ */
+dks-attributes[flag~="done"],
+dks-comment[flag~="done"],
+dks-delete[flag~="done"],
+dks-insert[flag~="done"],
+.dks-attributes[flag~="done"],
+.dks-comment[flag~="done"],
+.dks-delete[flag~="done"],
+.dks-insert[flag~="done"] {
+    color:gray;
+}       
+dks-attributes,
+.dks-attributes{
+    border-color:black;
+}
+dks-comment,
+.dks-comment{
+    border-color:transparent;
+}
+dks-delete,
+.dks-delete{
+    border-color:red;
+}
+dks-insert,
+.dks-insert{
+    border-color:blue;
+}
+dks-range-start,
+.dks-range-start,
+dks-range-end,
+.dks-range-end {
+    background-color: yellow;        
+}
+dks-insert-hl,
+.dks-insert-hl{
+    color:blue;
+}
+dks-delete-hl,
+.dks-delete-hl {
+    color:red;
+}
+dks-comment-hl,
+.dks-comment-hl{
+    background-color:yellow;
+}
+dks-attributes   dks-comment,
+dks-comment  	 dks-comment,
+dks-delete  	 dks-comment,
+dks-insert   	 dks-comment,
+.dks-attributes .dks-comment,
+.dks-comment  	.dks-comment,
+.dks-delete  	.dks-comment,
+.dks-insert  	.dks-comment {
+	border-left-color: orange;
+}

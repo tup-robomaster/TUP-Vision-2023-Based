@@ -29,13 +29,10 @@ namespace armor_detector
         //armors pub
         armors_pub = this->create_publisher<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS());
 
-        RCLCPP_INFO(this->get_logger(), "1...");
-
         time_start = std::chrono::steady_clock::now();
 
         // Subscriptions transport type
         transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
-        RCLCPP_INFO(this->get_logger(), "2...");
 
         //image sub
         img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
@@ -65,9 +62,9 @@ namespace armor_detector
         this->declare_parameter("no_crop_thres", 1e-2);
         this->declare_parameter("hero_danger_zone", 4);
         
-        this->declare_parameter("camera_name", "0");
+        this->declare_parameter("camera_name", "hik_camera");
         this->declare_parameter("camera_param_path", "/home/tup/Desktop/tup_2023/src/global_user/config/camera.yaml");
-        this->declare_parameter("network_path", "/home/tup/Desktop/tup_2023/src/vehicle_system/autoaim/armor_detector/model/opt-0527-001.xml");
+        this->declare_parameter("network_path", "/home/tup/Desktop/tup_2023/src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml");
         
         this->declare_parameter("debug_without_com", true);
         this->declare_parameter("using_imu", false);
@@ -75,6 +72,9 @@ namespace armor_detector
         this->declare_parameter("show_aim_cross", false);
         this->declare_parameter("show_img", true);
         this->declare_parameter("detect_red", true);
+        this->declare_parameter("show_fps", true);
+        this->declare_parameter("print_letency", true);
+        this->declare_parameter("print_target_info", true);
         
         this->declare_parameter("anti_spin_judge_high_thres", 2e4);
         this->declare_parameter("anti_spin_judge_low_thres", 2e3);
@@ -104,6 +104,9 @@ namespace armor_detector
         debug_.show_img = this->get_parameter("show_img").as_bool();
         debug_.using_imu = this->get_parameter("using_imu").as_bool();
         debug_.using_roi = this->get_parameter("using_roi").as_bool();
+        debug_.show_fps = this->get_parameter("show_fps").as_bool();
+        debug_.print_letency = this->get_parameter("print_letency").as_bool();
+        debug_.print_target_info = this->get_parameter("print_target_info").as_bool();
 
         gyro_params gyro_params_;
         gyro_params_.anti_spin_judge_high_thres = this->get_parameter("anti_spin_judge_high_thres").as_double();
@@ -114,20 +117,12 @@ namespace armor_detector
         gyro_params_.max_delta_dist = this->get_parameter("max_delta_dist").as_double();
         gyro_params_.max_delta_t = this->get_parameter("max_delta_t").as_int();
 
-        // try
-        // {
-        RCLCPP_INFO(this->get_logger(), "3...");
-        // }
-        // catch(const std::exception& e)
-        // {
-            // std::cerr << e.what() << '\n';
         return std::make_unique<detector>(camera_name, camera_param_path, network_path, detector_params_, debug_, gyro_params_);
-        // }
     }
 
     void detector_node::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
     {
-        RCLCPP_INFO(this->get_logger(), "image callback...");
+        // RCLCPP_INFO(this->get_logger(), "image callback...");
         global_user::TaskData src;
         std::vector<Armor> armors;
 
@@ -147,8 +142,9 @@ namespace armor_detector
         
         if(detector_->armor_detect(src))
         {
-            RCLCPP_INFO(this->get_logger(), "armors detector...");
+            // RCLCPP_INFO(this->get_logger(), "armors detector...");
             Eigen::Vector3d aiming_point_cam;
+            
             if(detector_->gyro_detector(src, aiming_point_cam))
             {
                 global_interface::msg::Target target_info;

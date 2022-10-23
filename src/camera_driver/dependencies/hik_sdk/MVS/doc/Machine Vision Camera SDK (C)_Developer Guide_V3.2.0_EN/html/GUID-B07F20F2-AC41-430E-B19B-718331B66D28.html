@@ -1,0 +1,346 @@
+
+<!DOCTYPE html
+  PUBLIC "" "about:legacy-compat">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:whc="http://www.daksys.com/webhelp/components" xml:lang="en-us" lang="en-us">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />        
+      <meta name="copyright" content="(C) Copyright 2005" /><meta name="DC.rights.owner" content="(C) Copyright 2005" /><meta name="DC.Type" content="reference" /><meta name="DC.Title" content="MV_CC_OpenDevice" /><meta name="abstract" content="Open the device (connect to the device)." /><meta name="description" content="Open the device (connect to the device)." /><meta name="DC.Relation" scheme="URI" content="GUID-2F583C2F-A802-4E31-BEFB-4BB79B564CF7.html" /><meta name="DC.Format" content="XHTML" /><meta name="DC.Identifier" content="GUID-B07F20F2-AC41-430E-B19B-718331B66D28" /><meta name="DC.Language" content="en-US" /><title>MV_CC_OpenDevice</title><!--  Generated with dksgen version 19.0, build number 2017042020.  --><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="wh-path2root" content="index.html" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/commonltr.css?buildId=2017042020" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/webhelp_responsive_topic.css?buildId=2017042020" />
+		<!-- Latest compiled and minified Bootstrap CSS -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/bootstrap/css/bootstrap.min.css" />
+		<!-- Bootstrap Optional theme -->
+		<link rel="stylesheet" href="daksys-webhelp/resources/bootstrap/css/bootstrap-theme.min.css" />
+		<link rel="stylesheet" href="daksys-webhelp/resources/js/jquery-ui.min.css" />
+		<!-- Changes and comments, as side-notes  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/p-side-notes.css?buildId=2017042020" />
+		<!-- Template default styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_default.css?buildId=2017042020" />
+		<!-- Expand-collapse support styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_expand.css?buildId=2017042020" />
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-3.1.1.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/localization/strings.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/localization.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/parseuri.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.cookie.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-ui.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.highlight-3.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/browserDetect.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<script type="text/javascript" src="daksys-webhelp/resources/js/image-resize.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<!-- Skin resources -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/skin.css?buildId=2017042020" /><link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/watermark.css?buildId=2017042020" />
+		<!-- EXM-36950 - Expand the args.hdf parameter here -->
+		
+		<!-- EXM-36950 - webhelp.fragment.head :topic -->
+		
+	</head>
+	<body class="wh_topic_page frmBody" id="GUID-B07F20F2-AC41-430E-B19B-718331B66D28" onload="topicOnload()">
+		<input hidden="hidden" id="UDCode" value="" /><input hidden="hidden" id="UDTrademark" value="" /><input hidden="hidden" id="Trademark" value="" />
+		<div class="content_area" id="content_area">
+			<div id="container_body" class="container">
+				<div id="container_body_right">
+					<div class="row">
+						<div id="contentArea">
+							<div class=" wh_topic_content body ">
+    <h1 class="title topictitle1">MV_CC_OpenDevice</h1>
+
+
+<div class="body refbody"><p class="shortdesc">Open the device (connect to the device).</p>
+
+<div class="section" id="GUID-B07F20F2-AC41-430E-B19B-718331B66D28__GUID-DE434CA8-8CE4-49B7-937C-C8EC72F7B015"><h2 class="title sectiontitle">API Definition</h2>
+            
+            <pre class="pre codeblock">int MV_CC_OpenDevice(
+  void              *<span class="keyword parmname">handle</span>,
+  unsigned int      <span class="keyword parmname">nAccessMode = MV_ACCESS_Exclusive</span>,
+  unsigned short    <span class="keyword parmname">nSwitchoverKey = 0</span>
+);</pre>
+
+        </div>
+
+        <div class="section" id="GUID-B07F20F2-AC41-430E-B19B-718331B66D28__GUID-8FA2516A-1304-4AB8-BD8E-D469C472354C"><h2 class="title sectiontitle">Parameters</h2>
+            
+            <dl class="dl parml">
+                
+                    <dt class="dt pt dlterm"><a name="GUID-B07F20F2-AC41-430E-B19B-718331B66D28__GUID-B7239AB3-963B-434D-A945-CCFD90634395"><!-- --></a>handle</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">[IN] Device handle, which is returned by <a class="xref" href="GUID-326B9562-8502-45F7-8BC1-6BAA481A8732.html#GUID-326B9562-8502-45F7-8BC1-6BAA481A8732" title="Create a handle.">MV_CC_CreateHandle</a> or <a class="xref" href="GUID-0D6ED5F9-FBE2-44D9-A1A5-5A0043E66658.html#GUID-0D6ED5F9-FBE2-44D9-A1A5-5A0043E66658" title="Create a handle without log.">MV_CC_CreateHandleWithoutLog</a>.</p>
+
+                    </dd>
+
+                
+                
+                    <dt class="dt pt dlterm"><a name="GUID-B07F20F2-AC41-430E-B19B-718331B66D28__GUID-13DC6F86-509A-4588-B9F9-594360B4AD75"><!-- --></a>nAccessMode</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">[IN] Device access mode, it is exclusive mode by default,
+                            see the table below for details.</p>
+
+                        
+<table cellpadding="4" cellspacing="0" summary="" id="GUID-B07F20F2-AC41-430E-B19B-718331B66D28__TABLE_NDZ_VWZ_2HB" class="table" frame="border" border="1" rules="all">
+                                
+                                
+                                
+                                <thead class="thead" align="left">
+                                    <tr>
+                                        <th class="entry" valign="top" width="44.11764705882353%" id="d41326e91">
+                                            <p class="p">Macro Definition</p>
+
+                                        </th>
+
+                                        <th class="entry" valign="top" width="11.764705882352942%" id="d41326e97">
+                                            <p class="p">Value</p>
+
+                                        </th>
+
+                                        <th class="entry" valign="top" width="44.11764705882353%" id="d41326e103">
+                                            <p class="p">Description</p>
+
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody class="tbody">
+                                    <tr>
+                                        <td class="entry" valign="top" width="44.11764705882353%" headers="d41326e91 ">
+                                            <p class="p">MV_ACCESS_Exclusive</p>
+
+                                        </td>
+
+                                        <td class="entry" valign="top" width="11.764705882352942%" headers="d41326e97 ">
+                                            <p class="p">1</p>
+
+                                        </td>
+
+                                        <td class="entry" valign="top" width="44.11764705882353%" headers="d41326e103 ">
+                                            <p class="p">Exclusive permission, for other apps, the CCP
+                                                register is only allowed to be read</p>
+
+                                        </td>
+
+                                    </tr>
+
+                                    <tr>
+                                        <td class="entry" valign="top" width="44.11764705882353%" headers="d41326e91 ">
+                                            <p class="p">MV_ACCESS_ExclusiveWithSwitch</p>
+
+                                        </td>
+
+                                        <td class="entry" valign="top" width="11.764705882352942%" headers="d41326e97 ">
+                                            <p class="p">2</p>
+
+                                        </td>
+
+                                        <td class="entry" valign="top" width="44.11764705882353%" headers="d41326e103 ">
+                                            <p class="p">Preempt permission in mode 5, and then open with
+                                                exclusive permission</p>
+
+                                        </td>
+
+                                    </tr>
+
+                                    <tr>
+                                        <td class="entry" valign="top" width="44.11764705882353%" headers="d41326e91 ">
+                                            <p class="p">MV_ACCESS_Control</p>
+
+                                        </td>
+
+                                        <td class="entry" valign="top" width="11.764705882352942%" headers="d41326e97 ">
+                                            <p class="p">3</p>
+
+                                        </td>
+
+                                        <td class="entry" valign="top" width="44.11764705882353%" headers="d41326e103 ">
+                                            <p class="p">Control permission, for other apps, all registers are
+                                                allowed to be read</p>
+
+                                        </td>
+
+                                    </tr>
+
+                                    <tr>
+                                        <td class="entry" valign="top" width="44.11764705882353%" headers="d41326e91 ">
+                                            <p class="p">MV_ACCESS_ControlWithSwitch</p>
+
+                                        </td>
+
+                                        <td class="entry" valign="top" width="11.764705882352942%" headers="d41326e97 ">
+                                            <p class="p">4</p>
+
+                                        </td>
+
+                                        <td class="entry" valign="top" width="44.11764705882353%" headers="d41326e103 ">
+                                            <p class="p">Preempt permission in mode 5, and then open with
+                                                control permission</p>
+
+                                        </td>
+
+                                    </tr>
+
+                                    <tr>
+                                        <td class="entry" valign="top" width="44.11764705882353%" headers="d41326e91 ">
+                                            <p class="p">MV_ACCESS_ControlSwitchEnable</p>
+
+                                        </td>
+
+                                        <td class="entry" valign="top" width="11.764705882352942%" headers="d41326e97 ">
+                                            <p class="p">5</p>
+
+                                        </td>
+
+                                        <td class="entry" valign="top" width="44.11764705882353%" headers="d41326e103 ">
+                                            <p class="p">Open with control permission that can be
+                                                preempted</p>
+
+                                        </td>
+
+                                    </tr>
+
+                                    <tr>
+                                        <td class="entry" valign="top" width="44.11764705882353%" headers="d41326e91 ">
+                                            <p class="p">MV_ACCESS_ControlSwitchEnableWithKey</p>
+
+                                        </td>
+
+                                        <td class="entry" valign="top" width="11.764705882352942%" headers="d41326e97 ">
+                                            <p class="p">6</p>
+
+                                        </td>
+
+                                        <td class="entry" valign="top" width="44.11764705882353%" headers="d41326e103 ">
+                                            <p class="p">Preempt permission in mode 5, and then open with
+                                                control permission that can be preempted</p>
+
+                                        </td>
+
+                                    </tr>
+
+                                    <tr>
+                                        <td class="entry" valign="top" width="44.11764705882353%" headers="d41326e91 ">
+                                            <p class="p">MV_ACCESS_Monitor</p>
+
+                                        </td>
+
+                                        <td class="entry" valign="top" width="11.764705882352942%" headers="d41326e97 ">
+                                            <p class="p">7</p>
+
+                                        </td>
+
+                                        <td class="entry" valign="top" width="44.11764705882353%" headers="d41326e103 ">
+                                            <p class="p">Open device with reading mode, suitable under control
+                                                permission</p>
+
+                                        </td>
+
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+
+                    </dd>
+
+                
+                
+                    <dt class="dt pt dlterm"><a name="GUID-B07F20F2-AC41-430E-B19B-718331B66D28__GUID-D78C5C53-1D64-4AD1-8103-24AAE364425F"><!-- --></a>nSwitchoverKey</dt>
+
+                    <dd class="dd pd">
+                        <p class="p">[IN] Key for switching permissions, it is null by default,
+                            and it is valid when access mode supports permission switching (2/4/6
+                            mode).</p>
+
+                    </dd>
+
+                
+            </dl>
+
+        </div>
+
+        <div class="section" id="GUID-B07F20F2-AC41-430E-B19B-718331B66D28__GUID-D50C0128-9DC7-472D-A7FF-9EA245D583DA"><h2 class="title sectiontitle">Return Value</h2>
+            
+            <p class="p">Return <samp class="ph systemoutput">MV_OK(0)</samp> on success, and return <a class="xref" href="GUID-F0BB8308-5910-47DF-A8C6-754ED6296620.html#GUID-F0BB8308-5910-47DF-A8C6-754ED6296620" title="The error may occurred during the MVC SDK integration are listed here for reference. You can search for the error description according to returned error codes or name.">Error Code</a> on failure.</p>
+
+        </div>
+
+        <div class="section" id="GUID-B07F20F2-AC41-430E-B19B-718331B66D28__GUID-0D619C37-E423-497A-B492-2069660B8E97"><h2 class="title sectiontitle">Remarks</h2>
+            
+            <ul class="ul" id="GUID-B07F20F2-AC41-430E-B19B-718331B66D28__UL_CQL_411_FHB">
+                <li class="li" id="GUID-B07F20F2-AC41-430E-B19B-718331B66D28__GUID-82B84CCB-F731-4F68-AE93-5C0F59141212">
+                    <p class="p">You can find the specific device and connect according to inputted device
+                        parameters.</p>
+
+                </li>
+
+                <li class="li" id="GUID-B07F20F2-AC41-430E-B19B-718331B66D28__GUID-5B2E7C02-1462-48BA-AB80-53A82EF9BE57">
+                    <p class="p">When calling this API, the parameters <span class="keyword parmname">nAccessMode</span> and
+                            <span class="keyword parmname">nSwitchoverKey</span> are optional, and the device access
+                        mode is exclusive by default. Currently the device does not support the
+                        following preemption modes: MV_ACCESS_ExclusiveWithSwitch,
+                        MV_ACCESS_ControlWithSwitch, and MV_ACCESS_ControlSwitchEnableWithKey. </p>
+
+                </li>
+
+                <li class="li" id="GUID-B07F20F2-AC41-430E-B19B-718331B66D28__GUID-E9F53681-795B-470B-978C-60BAAC3B7215">
+                    <p class="p">For USB3Vision device, the parameters <span class="keyword parmname">nAccessMode</span> and
+                            <span class="keyword parmname">nSwitchoverKey</span> are invalid.</p>
+
+                </li>
+
+            </ul>
+
+        </div>
+
+        <div class="section" id="GUID-B07F20F2-AC41-430E-B19B-718331B66D28__GUID-6545FAB0-CB6C-4B9C-AF1A-E08A940AD771"><h2 class="title sectiontitle">See Also</h2>
+            
+            <p class="p"><a class="xref" href="GUID-3ABCB022-456C-486F-9DF5-D69BF94465FF.html#GUID-3ABCB022-456C-486F-9DF5-D69BF94465FF" title="Shut down the device.">MV_CC_CloseDevice</a></p>
+
+        </div>
+
+</div>
+
+
+</div>
+							
+							
+							
+						</div>
+						<nav role="navigation" class="col-lg-4 col-md-4 col-sm-4 col-xs-12 navbar" id="wh_side_toc" style="display:none">
+							<div class=" wh_side_toc "><ul class="hidden-print"><li><span class="topicref"><a href="GUID-2FB95EE3-5E09-4831-9563-1A3548B28745.html">API Reference</a></span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-2F583C2F-A802-4E31-BEFB-4BB79B564CF7.html">General</a></span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-87551AFD-703A-425A-ABE8-64174E6903AB.html">MV_CC_GetSDKVersion</a></span></li><li><span class="topicref"><a href="GUID-EF78C6D0-F6B3-4757-AED8-BF39158FAE8C.html">MV_CC_EnumerateTls</a></span></li><li><span class="topicref"><a href="GUID-016C3B61-0388-426C-A994-BA13401DB251.html">MV_CC_EnumDevices</a></span></li><li><span class="topicref"><a href="GUID-A4B695CF-EA3E-4D93-BE51-F82B5C45B42C.html">MV_CC_EnumDevicesEx</a></span></li><li><span class="topicref"><a href="GUID-0A17919C-B3CD-4F0B-AAAE-9F43EFEA9A58.html">MV_CC_IsDeviceAccessible</a></span></li><li><span class="topicref"><a href="GUID-26FB4257-AF88-4F5A-8D87-07867B8D0CB4.html">MV_CC_SetSDKLogPath</a></span></li><li><span class="topicref"><a href="GUID-326B9562-8502-45F7-8BC1-6BAA481A8732.html">MV_CC_CreateHandle</a></span></li><li><span class="topicref"><a href="GUID-0D6ED5F9-FBE2-44D9-A1A5-5A0043E66658.html">MV_CC_CreateHandleWithoutLog</a></span></li><li><span class="topicref"><a href="GUID-5B9F3C77-B93A-4B09-BD18-2B04164ADBB8.html">MV_CC_DestroyHandle</a></span></li><li class="active"><span class="topicref">MV_CC_OpenDevice</span></li><li><span class="topicref"><a href="GUID-3ABCB022-456C-486F-9DF5-D69BF94465FF.html">MV_CC_CloseDevice</a></span></li><li><span class="topicref"><a href="GUID-39723B4F-D660-45B6-9FB9-5C566B4A2082.html">MV_CC_GetDeviceInfo</a></span></li></ul></li><li><span class="topicref"><a href="GUID-EFAB385E-355E-4FA2-A187-7B4CFBEED84F.html">Parameter Settings</a></span></li><li><span class="topicref"><a href="GUID-7D2DC338-115D-470A-8937-E6694384EFA2.html">Functional</a></span></li><li><span class="topicref"><a href="GUID-E63B2D53-01A2-4C3C-8EAB-C8F1B98CBE5B.html">Image Acquisition</a></span></li><li><span class="topicref"><a href="GUID-F0180BD4-C1B4-4AC8-9FCA-5AC8955FA31C.html">Image Processing</a></span></li><li><span class="topicref"><a href="GUID-21D0DD7B-674F-49FD-AE5B-A577203C2884.html">Camera Internal APIs</a></span></li><li><span class="topicref"><a href="GUID-71A7CAEB-235A-4DCA-BC59-EF1D38D4C9F5.html">U3V APIs</a></span></li></ul></li></ul></div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div> 
+		<!-- Latest compiled and minified JavaScript -->
+		<script type="text/javascript" src="daksys-webhelp/resources/bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/hik_topic.js"></script>
+		<!-- <script type="text/javascript" src="${daksys-webhelp-template-dir}/resources/js/wt_default.js?buildId=${daksys-webhelp-build-number}" /> -->
+		<!-- Expand/collapse support -->
+		<script type="text/javascript" src="daksys-webhelp/template/resources/js/wt_expand.js?buildId=2017042020"></script>
+		
+		
+	</body>
+</html>

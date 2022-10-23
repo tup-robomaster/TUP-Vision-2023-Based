@@ -1,0 +1,283 @@
+
+<!DOCTYPE html
+  PUBLIC "" "about:legacy-compat">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:whc="http://www.daksys.com/webhelp/components" xml:lang="en-us" lang="en-us">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />        
+      <meta name="copyright" content="(C) Copyright 2005" /><meta name="DC.rights.owner" content="(C) Copyright 2005" /><meta name="DC.Type" content="reference" /><meta name="DC.Title" content="MvGvspPixelType" /><meta name="abstract" content="Enumeration of GigE protocol pixel types" /><meta name="description" content="Enumeration of GigE protocol pixel types" /><meta name="DC.Relation" scheme="URI" content="GUID-304BDFF8-F5DB-432E-812F-F3871DCD86D2.html" /><meta name="DC.Format" content="XHTML" /><meta name="DC.Identifier" content="GUID-DDA47D76-3D1E-4E69-8E56-572F7A07A804" /><meta name="DC.Language" content="en-US" /><title>MvGvspPixelType</title><!--  Generated with dksgen version 19.0, build number 2017042020.  --><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="wh-path2root" content="index.html" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/commonltr.css?buildId=2017042020" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/webhelp_responsive_topic.css?buildId=2017042020" />
+		<!-- Latest compiled and minified Bootstrap CSS -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/bootstrap/css/bootstrap.min.css" />
+		<!-- Bootstrap Optional theme -->
+		<link rel="stylesheet" href="daksys-webhelp/resources/bootstrap/css/bootstrap-theme.min.css" />
+		<link rel="stylesheet" href="daksys-webhelp/resources/js/jquery-ui.min.css" />
+		<!-- Changes and comments, as side-notes  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/p-side-notes.css?buildId=2017042020" />
+		<!-- Template default styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_default.css?buildId=2017042020" />
+		<!-- Expand-collapse support styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_expand.css?buildId=2017042020" />
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-3.1.1.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/localization/strings.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/localization.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/parseuri.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.cookie.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-ui.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.highlight-3.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/browserDetect.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<script type="text/javascript" src="daksys-webhelp/resources/js/image-resize.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<!-- Skin resources -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/skin.css?buildId=2017042020" /><link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/watermark.css?buildId=2017042020" />
+		<!-- EXM-36950 - Expand the args.hdf parameter here -->
+		
+		<!-- EXM-36950 - webhelp.fragment.head :topic -->
+		
+	</head>
+	<body class="wh_topic_page frmBody" id="GUID-DDA47D76-3D1E-4E69-8E56-572F7A07A804" onload="topicOnload()">
+		<input hidden="hidden" id="UDCode" value="" /><input hidden="hidden" id="UDTrademark" value="" /><input hidden="hidden" id="Trademark" value="" />
+		<div class="content_area" id="content_area">
+			<div id="container_body" class="container">
+				<div id="container_body_right">
+					<div class="row">
+						<div id="contentArea">
+							<div class=" wh_topic_content body ">
+    <h1 class="title topictitle1">MvGvspPixelType</h1>
+
+
+<div class="body refbody"><p class="shortdesc">Enumeration of GigE protocol pixel types</p>
+
+<div class="section" id="GUID-DDA47D76-3D1E-4E69-8E56-572F7A07A804__GUID-C5FDE5E0-013A-4434-8986-E37FCC7359E3">
+            <pre class="pre codeblock">enum{
+  PixelType_Gvsp_Undefined                        = -1,   
+    // Mono buffer format defines
+  PixelType_Gvsp_Mono1p                           =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(1) | 0x0037),
+  PixelType_Gvsp_Mono2p                           =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(2) | 0x0038),
+  PixelType_Gvsp_Mono4p                           =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(4) | 0x0039),
+  PixelType_Gvsp_Mono8                            =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(8) | 0x0001),
+  PixelType_Gvsp_Mono8_Signed                     =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(8)  | 0x0002),
+  PixelType_Gvsp_Mono10                           =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0003),
+  PixelType_Gvsp_Mono10_Packed                    =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x0004),
+  PixelType_Gvsp_Mono12                           =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0005),
+  PixelType_Gvsp_Mono12_Packed                    =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x0006),
+  PixelType_Gvsp_Mono14                           =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0025),
+  PixelType_Gvsp_Mono16                           =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0007),
+    // Bayer buffer format defines 
+  PixelType_Gvsp_BayerGR8                         =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(8) | 0x0008),
+  PixelType_Gvsp_BayerRG8                         =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(8) | 0x0009),
+  PixelType_Gvsp_BayerGB8                         =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(8) | 0x000A),
+  PixelType_Gvsp_BayerBG8                         =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(8) | 0x000B),
+  PixelType_Gvsp_BayerGR10                        =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x000C),
+  PixelType_Gvsp_BayerRG10                        =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x000D),
+  PixelType_Gvsp_BayerGB10                        =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x000E),
+  PixelType_Gvsp_BayerBG10                        =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x000F),
+  PixelType_Gvsp_BayerGR12                        =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0010),
+  PixelType_Gvsp_BayerRG12                        =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0011),
+  PixelType_Gvsp_BayerGB12                        =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0012),
+  PixelType_Gvsp_BayerBG12                        =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0013),
+  PixelType_Gvsp_BayerGR10_Packed                 =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x0026),
+  PixelType_Gvsp_BayerRG10_Packed                 =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x0027),
+  PixelType_Gvsp_BayerGB10_Packed                 =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x0028),
+  PixelType_Gvsp_BayerBG10_Packed                 =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x0029),
+  PixelType_Gvsp_BayerGR12_Packed                 =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x002A),
+  PixelType_Gvsp_BayerRG12_Packed                 =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x002B),
+  PixelType_Gvsp_BayerGB12_Packed                 =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x002C),
+  PixelType_Gvsp_BayerBG12_Packed                 =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x002D),
+  PixelType_Gvsp_BayerGR16                        =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x002E),
+  PixelType_Gvsp_BayerRG16                        =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x002F),
+  PixelType_Gvsp_BayerGB16                        =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0030),
+  PixelType_Gvsp_BayerBG16                        =   (MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0031),
+    // RGB Packed buffer format defines 
+  PixelType_Gvsp_RGB8_Packed                      =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(24) | 0x0014),
+  PixelType_Gvsp_BGR8_Packed                      =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(24) | 0x0015),
+  PixelType_Gvsp_RGBA8_Packed                     =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(32) | 0x0016),
+  PixelType_Gvsp_BGRA8_Packed                     =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(32) | 0x0017),
+  PixelType_Gvsp_RGB10_Packed                     =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(48) | 0x0018),
+  PixelType_Gvsp_BGR10_Packed                     =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(48) | 0x0019),
+  PixelType_Gvsp_RGB12_Packed                     =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(48) | 0x001A),
+  PixelType_Gvsp_BGR12_Packed                     =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(48) | 0x001B),
+  PixelType_Gvsp_RGB16_Packed                     =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(48) | 0x0033),
+  PixelType_Gvsp_RGB10V1_Packed                   =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(32) | 0x001C),
+  PixelType_Gvsp_RGB10V2_Packed                   =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(32) | 0x001D),
+  PixelType_Gvsp_RGB12V1_Packed                   =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(36) | 0X0034),
+  PixelType_Gvsp_RGB565_Packed                    =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(16) | 0x0035),
+  PixelType_Gvsp_BGR565_Packed                    =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(16) | 0X0036),
+    // YUV Packed buffer format defines 
+  PixelType_Gvsp_YUV411_Packed                    =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(12) | 0x001E),
+  PixelType_Gvsp_YUV422_Packed                    =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(16) | 0x001F),
+  PixelType_Gvsp_YUV422_YUYV_Packed               =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(16) | 0x0032),
+  PixelType_Gvsp_YUV444_Packed                    =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(24) | 0x0020),
+  PixelType_Gvsp_YCBCR8_CBYCR                     =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(24) | 0x003A),
+  PixelType_Gvsp_YCBCR422_8                       =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(16) | 0x003B),
+  PixelType_Gvsp_YCBCR422_8_CBYCRY                =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(16) | 0x0043),
+  PixelType_Gvsp_YCBCR411_8_CBYYCRYY              =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(12) | 0x003C),
+  PixelType_Gvsp_YCBCR601_8_CBYCR                 =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(24) | 0x003D),
+  PixelType_Gvsp_YCBCR601_422_8                   =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(16) | 0x003E),
+  PixelType_Gvsp_YCBCR601_422_8_CBYCRY            =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(16) | 0x0044),
+  PixelType_Gvsp_YCBCR601_411_8_CBYYCRYY          =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(12) | 0x003F),
+  PixelType_Gvsp_YCBCR709_8_CBYCR                 =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(24) | 0x0040),
+  PixelType_Gvsp_YCBCR709_422_8                   =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(16) | 0x0041),
+  PixelType_Gvsp_YCBCR709_422_8_CBYCRY            =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(16) | 0x0045),
+  PixelType_Gvsp_YCBCR709_411_8_CBYYCRYY          =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(12) | 0x0042),
+    // RGB Planar buffer format defines 
+  PixelType_Gvsp_RGB8_Planar                      =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(24) | 0x0021),
+  PixelType_Gvsp_RGB10_Planar                     =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(48) | 0x0022),
+  PixelType_Gvsp_RGB12_Planar                     =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(48) | 0x0023),
+  PixelType_Gvsp_RGB16_Planar                     =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(48) | 0x0024),
+  // Custom picture format 
+  PixelType_Gvsp_Jpeg                             =   (MV_GVSP_PIX_CUSTOM | MV_PIXEL_BIT_COUNT(24) | 0x0001)
+  PixelType_Gvsp_Coord3D_ABC32f                   =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(96) | 0x00C0),//0x026000C0
+  PixelType_Gvsp_Coord3D_ABC32f_Planar            =   (MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(96) | 0x00C1),//0x026000C1
+  //Lossless decoding pixel format
+  PixelType_Gvsp_HB_Mono8                         =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(8) | 0x0001),
+  PixelType_Gvsp_HB_Mono10                        =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0003),
+  PixelType_Gvsp_HB_Mono10_Packed                 =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x0004),
+  PixelType_Gvsp_HB_Mono12                        =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0005),
+  PixelType_Gvsp_HB_Mono12_Packed                 =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x0006),
+  PixelType_Gvsp_HB_Mono16                        =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0007),
+  PixelType_Gvsp_HB_BayerGR8                      =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(8) | 0x0008),
+  PixelType_Gvsp_HB_BayerRG8                      =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(8) | 0x0009),
+  PixelType_Gvsp_HB_BayerGB8                      =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(8) | 0x000A),
+  PixelType_Gvsp_HB_BayerBG8                      =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(8) | 0x000B),
+  PixelType_Gvsp_HB_BayerGR10                     =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x000C),
+  PixelType_Gvsp_HB_BayerRG10                     =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x000D),
+  PixelType_Gvsp_HB_BayerGB10                     =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x000E),
+  PixelType_Gvsp_HB_BayerBG10                     =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x000F),
+  PixelType_Gvsp_HB_BayerGR12                     =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0010),
+  PixelType_Gvsp_HB_BayerRG12                     =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0011),
+  PixelType_Gvsp_HB_BayerGB12                     =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0012),
+  PixelType_Gvsp_HB_BayerBG12                     =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(16) | 0x0013),
+  PixelType_Gvsp_HB_BayerGR10_Packed              =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x0026),
+  PixelType_Gvsp_HB_BayerRG10_Packed              =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x0027),
+  PixelType_Gvsp_HB_BayerGB10_Packed              =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x0028),
+  PixelType_Gvsp_HB_BayerBG10_Packed              =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x0029),
+  PixelType_Gvsp_HB_BayerGR12_Packed              =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x002A),
+  PixelType_Gvsp_HB_BayerRG12_Packed              =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x002B),
+  PixelType_Gvsp_HB_BayerGB12_Packed              =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x002C),
+  PixelType_Gvsp_HB_BayerBG12_Packed              =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_MONO | MV_PIXEL_BIT_COUNT(12) | 0x002D),
+  PixelType_Gvsp_HB_YUV422_Packed                 =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(16) | 0x001F),
+  PixelType_Gvsp_HB_YUV422_YUYV_Packed            =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(16) | 0x0032),
+  PixelType_Gvsp_HB_RGB8_Packed                   =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(24) | 0x0014),
+  PixelType_Gvsp_HB_BGR8_Packed                   =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(24) | 0x0015),
+  PixelType_Gvsp_HB_RGBA8_Packed                  =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(32) | 0x0016),
+  PixelType_Gvsp_HB_BGRA8_Packed                  =   (MV_GVSP_PIX_CUSTOM | MV_GVSP_PIX_COLOR | MV_PIXEL_BIT_COUNT(32) | 0x0017),
+}<var class="keyword varname">MvGvspPixelType</var></pre>
+
+        </div>
+
+        <div class="section" id="GUID-DDA47D76-3D1E-4E69-8E56-572F7A07A804__GUID-17C11F04-E59D-4AE6-B92F-28747132BAD2"><h2 class="title sectiontitle">Remarks</h2>
+            
+            <p class="p">The macro definitions of enumeration types are listed below: </p>
+
+            
+<table cellpadding="4" cellspacing="0" summary="" id="GUID-DDA47D76-3D1E-4E69-8E56-572F7A07A804__TABLE_RD3_PGV_FHB" class="table" frame="border" border="1" rules="all">
+                    
+                    
+                    <thead class="thead" align="left">
+                        <tr>
+                            <th class="entry" valign="top" width="50%" id="d52031e44">
+                                <p class="p">Macro Definition</p>
+
+                            </th>
+
+                            <th class="entry" valign="top" width="50%" id="d52031e50">
+                                <p class="p">Value</p>
+
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody class="tbody">
+                        <tr>
+                            <td class="entry" valign="top" width="50%" headers="d52031e44 ">
+                                <p class="p">MV_GVSP_PIX_MONO</p>
+
+                            </td>
+
+                            <td class="entry" valign="top" width="50%" headers="d52031e50 ">
+                                <p class="p">0x01000000</p>
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+                            <td class="entry" valign="top" width="50%" headers="d52031e44 ">
+                                <p class="p">MV_GVSP_PIX_COLOR</p>
+
+                            </td>
+
+                            <td class="entry" valign="top" width="50%" headers="d52031e50 ">
+                                <p class="p">0x02000000</p>
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+                            <td class="entry" valign="top" width="50%" headers="d52031e44 ">
+                                <p class="p">MV_PIXEL_BIT_COUNT(n)</p>
+
+                            </td>
+
+                            <td class="entry" valign="top" width="50%" headers="d52031e50 ">
+                                <p class="p">((n) &lt;&lt; 16)</p>
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+
+        </div>
+
+</div>
+
+
+</div>
+							
+							
+							
+						</div>
+						<nav role="navigation" class="col-lg-4 col-md-4 col-sm-4 col-xs-12 navbar" id="wh_side_toc" style="display:none">
+							<div class=" wh_side_toc "><ul class="hidden-print"><li><span class="topicref"><a href="GUID-5F13E081-0E99-4434-A8C9-740B84FAD68A.html">Data Structure and Enumeration</a></span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-1D44F708-A9DB-4037-9270-2203D8D8149F.html">Data Structure</a></span></li><li><span class="topicref"><a href="GUID-304BDFF8-F5DB-432E-812F-F3871DCD86D2.html">Enumeration</a></span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-7E5F7D58-AB85-4B31-BF62-C3B04A08AA59.html">MV_CC_GAMMA_TYPE</a></span></li><li><span class="topicref"><a href="GUID-02EFF948-C4C8-466A-8591-0CCB7CC78574.html">MV_GIGE_EVENT</a></span></li><li><span class="topicref"><a href="GUID-23455C96-2923-4143-AA66-2BC3EFAE30CE.html">MV_GIGE_TRANSMISSION_TYPE</a></span></li><li><span class="topicref"><a href="GUID-DF60B60E-E338-48E1-A0ED-F33BE30CFA55.html">MV_IMG_FLIP_TYPE</a></span></li><li><span class="topicref"><a href="GUID-2749D239-0F84-4654-A814-C207FC1FD630.html">MV_IMG_ROTATION_ANGLE</a></span></li><li><span class="topicref"><a href="GUID-06D8C1E7-9AA8-4A55-BC6D-50264AC53D56.html">MV_SAVE_IAMGE_TYPE</a></span></li><li><span class="topicref"><a href="GUID-EC315EE3-CC04-40B2-8B41-DF045ADD6E60.html">MV_XML_InterfaceType</a></span></li><li><span class="topicref"><a href="GUID-D9C70A41-DF22-4B3D-9929-EB7DB594D905.html">MV_XML_Visibility</a></span></li><li class="active"><span class="topicref">MvGvspPixelType</span></li></ul></li></ul></li></ul></div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div> 
+		<!-- Latest compiled and minified JavaScript -->
+		<script type="text/javascript" src="daksys-webhelp/resources/bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/hik_topic.js"></script>
+		<!-- <script type="text/javascript" src="${daksys-webhelp-template-dir}/resources/js/wt_default.js?buildId=${daksys-webhelp-build-number}" /> -->
+		<!-- Expand/collapse support -->
+		<script type="text/javascript" src="daksys-webhelp/template/resources/js/wt_expand.js?buildId=2017042020"></script>
+		
+		
+	</body>
+</html>

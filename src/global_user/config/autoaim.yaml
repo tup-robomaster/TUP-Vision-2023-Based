@@ -1,4 +1,4 @@
-autoaim:
+/autoaim:
   ros__parameters:
     # 自瞄检测节点参数配置
     /armor_detector:
@@ -10,15 +10,18 @@ autoaim:
       no_crop_thres: 1e-2
       hero_danger_zone: 4
       
-      camera_name: "0"
+      camera_name: hik_camera
       camera_param_path: /home/zhengtu/Desktop/tup_2023/src/global_user/config/camera.yaml
-      network_path: ../model/opt-0527-001.xml
+      network_path: /home/tup/Desktop/tup_2023/src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml
 
       debug_without_com: true
       using_imu: false
       using_roi: true
       show_aim_cross: false
       show_img: true
+      show_fps: true
+      print_letency: true
+      print_target_info: true
       detect_red: true
 
       anti_spin_judge_high_thres: 2e4

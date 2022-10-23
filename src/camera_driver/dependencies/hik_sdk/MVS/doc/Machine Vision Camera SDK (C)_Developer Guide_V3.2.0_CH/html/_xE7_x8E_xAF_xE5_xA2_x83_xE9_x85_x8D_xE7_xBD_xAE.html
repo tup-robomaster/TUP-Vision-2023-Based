@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<link href="doxygen.css" rel="stylesheet" type="text/css"/>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<link href="custom-style.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+	<div style="overflow: hidden;">
+		<div style="height: 57px;min-width: 1039px;background-size: auto 100%;background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABwgAAAABCAYAAADKO/rAAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAABRSURBVFhH7dUxCoBADEXB5LK5/w1iIaLIrsgWNs50Sf/4WVUd8HOZGd1nCqMbGNMPrNMPrJv1cvz0A3OjfuwPvDPrxf7A7t7IlX7gmX74VsQGguw4S6+UnSYAAAAASUVORK5CYII=');">
+			<img src="titleleft.png" style="float: left;"/>
+			<img src="titleright.png" alt="" style="float: right;" />
+		</div>
+	</div>
+<!-- 制作者 Doxygen 1.8.15 -->
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>声明</span></a></li>
+      <li><a href="_xE9_xA6_x96_xE9_xA1_xB5.html"><span>首页</span></a></li>
+      <li><a href="_xE7_x8E_xAF_xE5_xA2_x83_xE9_x85_x8D_xE7_xBD_xAE.html"><span>环境配置</span></a></li>
+      <li><a href="_xE6_x9B_xB4_xE6_x96_xB0_xE8_xAE_xB0_xE5_xBD_x95.html"><span>更新记录</span></a></li>
+      <li><a href="_xE7_xBC_x96_xE7_xA8_x8B_xE5_xBC_x95_xE5_xAF_xBC.html"><span>编程引导</span></a></li>
+      <li><a href="modules.html"><span>接口函数</span></a></li>
+      <li><a href="annotated.html"><span>结构体定义</span></a></li>
+      <li><a href="_xE7_x9B_xB8_xE6_x9C_xBA_xE5_x8F_x82_xE6_x95_xB0_xE8_x8A_x82_xE7_x82_xB9_xE8_xA1_xA8.html"><span>相机参数节点表</span></a></li>
+      <li><a href="examples.html"><span>示例程序</span></a></li>
+      <li><a href="_xE9_x94_x99_xE8_xAF_xAF_xE7_xA0_x81.html"><span>错误码</span></a></li>
+      <li><a href="_xE5_xB8_xB8_xE8_xA7_x81_xE9_x97_xAE_xE9_xA2_x98.html"><span>常见问题</span></a></li>
+    </ul>
+  </div>
+</div><!-- top -->
+<div class="PageDoc"><div class="contents">
+<div class="textblock"><div class="header" style="margin-left:-12px;margin-top:-10px;margin-right:-8px;"> <div class="headertitle"> <div class="title">SDK开发相关的环境配置</div> </div> </div> <h3>一、MVS安装</h3>
+<p>SDK有 5 个安装包，分别对应的环境为：x86_64 | i386 | armhf | aarch64 | arm-none，在不同的硬件平台上选择不同的安装包安装。详情请咨询本司技术支持。</p>
+<h4>安装步骤：</h4>
+<ol>
+<li>
+安装 MVS 前，需获取系统 root 权限:<b> sudo su </b>或<b> su root</b>。 </li>
+<li>
+我们提供两种打包方式的安装包 xxxx.deb 和 xxxx.tar.gz 。安装方式分别如下：<br />
+ a、安装 xxxx.deb 的安装包：打开 MVS 安装包所在文件夹，使用“<b> sudo dpkg -i xxxx.deb </b>”直接安装MVS客户端。<br />
+ b、安装 xxxx.tar.gz 的安装包：打开 MVS 安装包所在文件夹，使用“ <b>tar –xzvf xxxx.tar.gz </b>”对安装包进行解压，打开解压后生成的文件夹，运行安装脚本 “ <b>source ./setup.sh </b>“ 安装 MVS。 </li>
+<li>
+MVS安装在 opt/MVS 路径下，安装完成后，在 MVS 文件夹中一般包含：bin、doc、driver、include、lib、logserver、Samples 等文件夹（不同版本可能存在差异）。 </li>
+<li>
+运行“<b>/opt/MVS/bin/MVS.sh</b> ”（或者在/opt/MVS/bin 文件夹中运行“ <b>./MVS.sh</b> ”）测试 MVS 是否安装成功。 </li>
+</ol>
+<p><br />
+ </p><h3>二、MVS开发目录介绍</h3>
+<p>MVS默认安装在 opt/MVS路径下，安装完成后，在MVS文件夹下包含目录结构如下: </p><ul>
+<li>
+bin（执行文件）<br />
+ </li>
+<li>
+doc（工业相机SDK相关文档）<br />
+ </li>
+<li>
+driver （Gige相机驱动安装）<br />
+ </li>
+<li>
+Include（SDK的头文件）<br />
+ </li>
+<li>
+Lib（SDK的Lib文件）<br />
+ </li>
+<li>
+logserver （日志服务）<br />
+ </li>
+<li>
+<p class="startli">Samples（示例程序）<br />
+</p>
+<p class="endli"></p>
+</li>
+</ul>
+<p><br />
+ </p><h3>三、驱动安装步骤</h3>
+<p>Gige相机驱动会在安装MVS的时候同时安装，也可以通过以下的方式进行安装或卸载。 </p><ol>
+<li>
+<b>安装驱动：</b>在 /opt/MVS/driver 中运行“ <b>./load.sh</b> ”安装Gige相机驱动。<br />
+ </li>
+<li>
+<p class="startli"><b>卸载驱动：</b>在 /opt/MVS/driver 中运行“ <b>./unload.sh</b> ”卸载Gige相机驱动。<br />
+</p>
+<p class="endli"></p>
+</li>
+</ol>
+<p><br />
+ </p><h3>四、防火墙关闭方式</h3>
+<p>Linux系统下如果枚举不到相机，则需要关闭防火墙。以下是不同Linux系统环境下关闭防火墙的方式（仅供参考，具体可能系统版本不一样方式也不一样）: </p><ol>
+<li>
+<b>Ubuntu<br />
+</b> 启动时是默认关闭的 </li>
+<li>
+<b>Centos7<br />
+</b> 临时关闭：service firewalld stop 或systemctl stop firewalld <br />
+ 永久关闭：chkconfig firewalld off<br />
+ </li>
+<li>
+<b>RedHat7<br />
+</b> 临时关闭：service firewalld stop 或systemctl stop firewalld <br />
+ 永久关闭：chkconfig firewalld off <br />
+ </li>
+</ol>
+<p><br />
+ </p><h3>五、网卡相关设置</h3>
+<p>Linux下建议开启巨帧，开启方法(仅供参考)： </p><ol>
+<li>
+<b>临时开启：</b>ifconfig eth0 mtu 9000<br />
+ </li>
+<li>
+<p class="startli"><b>永久开启：</b>将"ifconfig eth0 mtu 9000"语句写到配置文件 /etc/profile 中，重启生效。<br />
+</p>
+<p class="endli"></p>
+</li>
+</ol>
+<p>&#160;&#160;&#160;&#160;<b>注意</b>：eth0代表网卡名字，不同系统名字有可能不一样；9000代表最大接收包的大小，一些较老的网卡最大接收包或许无法达到，需根据实际来设置，并且相机侧需将GEVSCPSPacketSize节点设置成相应大小。 <br />
+ <br />
+ </p><h3>六、脚本说明</h3>
+<ol>
+<li>
+<b>set_env_path.sh：</b>设置环境变量，将SDK动态库放入系统环境变量中。<br />
+ </li>
+<li>
+<b>set_rp_filter.sh：</b>禁用rpfilter，使pc的IP网段和相机的IP网段不在同一网段时也能枚举的上。<br />
+ </li>
+<li>
+<b>set_socket_buffer_size.sh：</b>当出现GigE丢包时，可开大socket缓存，用来减缓丢包。 <br />
+ </li>
+<li>
+<b>set_usb_priority.sh：</b>设置udev规则，使之能在非管理员权限下使用u3相机。<br />
+ </li>
+<li>
+<b>set_usbfs_memory_size.sh：</b>设置usb缓存，使之能兼容多个大分辨率u3相机。<br />
+ </li>
+<li>
+<b>set_sdk_version.sh：</b>生成SDK软链接。<br />
+ </li>
+</ol>
+<p>&#160;&#160;&#160;&#160;<b>注意</b>： </p><ol>
+<li>
+使用GigE相机建议开启Linux网卡巨帧，设置MTU为9000。并且设置网络缓存（set_socket_buffer_size.sh）<br />
+ </li>
+<li>
+使用USB相机建议设置usb缓存（set_usbfs_memory_size.sh）<br />
+ </li>
+</ol>
+</div></div><!-- PageDoc -->
+</div><!-- contents -->
+<!-- start footer part -->
+<div class="footer" style="text-align: right;">
+	<hr/>
+	<small></small>
+</div>
+</body>
+</html>

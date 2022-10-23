@@ -1,0 +1,118 @@
+
+<!DOCTYPE html
+  PUBLIC "" "about:legacy-compat">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:whc="http://www.daksys.com/webhelp/components" xml:lang="en-us" lang="en-us">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />        
+      <meta name="copyright" content="(C) Copyright 2005" /><meta name="DC.rights.owner" content="(C) Copyright 2005" /><meta name="DC.Type" content="concept" /><meta name="DC.Title" content="Image Acquisition and Display" /><meta name="abstract" content="Two methods of image acquisition are provided in the MvCameraSDK. You can get the image directly after starting stream or get the image in registered callback function." /><meta name="description" content="Two methods of image acquisition are provided in the MvCameraSDK. You can get the image directly after starting stream or get the image in registered callback function." /><meta name="DC.Relation" scheme="URI" content="GUID-A484A936-DCD2-439C-91CE-FC2F1DB4AF0B.html" /><meta name="DC.Relation" scheme="URI" content="GUID-B10C071B-BF7D-4F20-B929-89D2DCB97E9F.html" /><meta name="DC.Relation" scheme="URI" content="GUID-2EA9B105-94F8-460C-96A9-5B4E74B5F42E.html" /><meta name="DC.Format" content="XHTML" /><meta name="DC.Identifier" content="GUID-29FF693F-3936-43DF-9B14-866051B1B2DC" /><meta name="DC.Language" content="en-US" /><title>Image Acquisition and Display</title><!--  Generated with dksgen version 19.0, build number 2017042020.  --><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" /><meta name="wh-path2root" content="index.html" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/commonltr.css?buildId=2017042020" />
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/webhelp_responsive_topic.css?buildId=2017042020" />
+		<!-- Latest compiled and minified Bootstrap CSS -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/bootstrap/css/bootstrap.min.css" />
+		<!-- Bootstrap Optional theme -->
+		<link rel="stylesheet" href="daksys-webhelp/resources/bootstrap/css/bootstrap-theme.min.css" />
+		<link rel="stylesheet" href="daksys-webhelp/resources/js/jquery-ui.min.css" />
+		<!-- Changes and comments, as side-notes  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/resources/css/p-side-notes.css?buildId=2017042020" />
+		<!-- Template default styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_default.css?buildId=2017042020" />
+		<!-- Expand-collapse support styles  -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/resources/css/wt_expand.css?buildId=2017042020" />
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-3.1.1.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/localization/strings.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/localization.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/parseuri.js?buildId=2017042020">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.cookie.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery-ui.min.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/jquery.highlight-3.js">
+			<!---->
+		</script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/browserDetect.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<script type="text/javascript" src="daksys-webhelp/resources/js/image-resize.js">
+			<!---->
+		</script>
+		<!-- BnStart No37 -->
+		<!-- Skin resources -->
+		<link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/skin.css?buildId=2017042020" /><link rel="stylesheet" type="text/css" href="daksys-webhelp/template/variants/tiles/custom/watermark.css?buildId=2017042020" />
+		<!-- EXM-36950 - Expand the args.hdf parameter here -->
+		
+		<!-- EXM-36950 - webhelp.fragment.head :topic -->
+		
+	</head>
+	<body class="wh_topic_page frmBody" id="GUID-29FF693F-3936-43DF-9B14-866051B1B2DC" onload="topicOnload()">
+		<input hidden="hidden" id="UDCode" value="" /><input hidden="hidden" id="UDTrademark" value="" /><input hidden="hidden" id="Trademark" value="" />
+		<div class="content_area" id="content_area">
+			<div id="container_body" class="container">
+				<div id="container_body_right">
+					<div class="row">
+						<div id="contentArea">
+							<div class=" wh_topic_content body ">
+    <h1 class="title topictitle1">Image Acquisition and Display</h1>
+
+
+    <div class="body conbody"><p class="shortdesc">Two methods of image acquisition are provided in the MvCameraSDK. You can get
+        the image directly after starting stream or get the image in registered callback
+        function.</p>
+
+        <ul class="ul" id="GUID-29FF693F-3936-43DF-9B14-866051B1B2DC__UL_TLW_HM4_4HB">
+            <li class="li" id="GUID-29FF693F-3936-43DF-9B14-866051B1B2DC__GUID-5EC705A9-1590-4461-A180-4C1637B7D925">
+                <p class="p">For detailed programming flow of getting image directly, refer to <a class="xref" href="GUID-B10C071B-BF7D-4F20-B929-89D2DCB97E9F.html#GUID-B10C071B-BF7D-4F20-B929-89D2DCB97E9F" title="You can directly get the image after starting getting stream, or adopts asynchronous mode (thread or timer) to get the image.">Get Image Directly</a>.</p>
+
+            </li>
+
+            <li class="li" id="GUID-29FF693F-3936-43DF-9B14-866051B1B2DC__GUID-625949EE-8B21-48F5-A174-C22873EA2291">
+                <p class="p">For detailed programming flow of getting image in callback function, refer to
+                        <a class="xref" href="GUID-2EA9B105-94F8-460C-96A9-5B4E74B5F42E.html#GUID-2EA9B105-94F8-460C-96A9-5B4E74B5F42E" title="The API MV_CC_RegisterImageCallBackEx is provided for registering callback function. You can customize the callback function and the obtained image will automatically called back. This method can simplify the application logic.">Get Image in Callback Function</a>.</p>
+
+            </li>
+
+        </ul>
+
+        <div class="note note" id="GUID-29FF693F-3936-43DF-9B14-866051B1B2DC__GUID-C3540480-6F77-4CE4-90B1-EA7C8BDF3576"><span class="notetitle">Note:</span> 
+            <p class="p">Now supports processing the images behind the image acquisition APIs via
+                generated ISP configuration files. You should create a folder named "ISPTool" in
+                Users folder of C disk (e.g., C:\Users\Kevin\ISPTool), and copy the calibration file
+                (.bin) and configuration file (.xml) to the "ISPTool" folder.</p>
+
+        </div>
+
+    </div>
+
+
+</div>
+							
+							
+							
+						</div>
+						<nav role="navigation" class="col-lg-4 col-md-4 col-sm-4 col-xs-12 navbar" id="wh_side_toc" style="display:none">
+							<div class=" wh_side_toc "><ul class="hidden-print"><li><span class="topicref"><a href="GUID-A484A936-DCD2-439C-91CE-FC2F1DB4AF0B.html">Programming Guideline</a></span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-D6BBD4D3-3C5F-470E-91ED-BD79FCDE92FE.html">Connect Device</a></span></li><li class="active"><span class="topicref">Image Acquisition and Display</span><ul class="nav nav-list"><li><span class="topicref"><a href="GUID-B10C071B-BF7D-4F20-B929-89D2DCB97E9F.html">Get Image Directly</a></span></li><li><span class="topicref"><a href="GUID-2EA9B105-94F8-460C-96A9-5B4E74B5F42E.html">Get Image in Callback Function</a></span></li></ul></li></ul></li></ul></div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div> 
+		<!-- Latest compiled and minified JavaScript -->
+		<script type="text/javascript" src="daksys-webhelp/resources/bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="daksys-webhelp/resources/js/hik_topic.js"></script>
+		<!-- <script type="text/javascript" src="${daksys-webhelp-template-dir}/resources/js/wt_default.js?buildId=${daksys-webhelp-build-number}" /> -->
+		<!-- Expand/collapse support -->
+		<script type="text/javascript" src="daksys-webhelp/template/resources/js/wt_expand.js?buildId=2017042020"></script>
+		
+		
+	</body>
+</html>

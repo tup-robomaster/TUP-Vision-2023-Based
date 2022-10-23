@@ -54,9 +54,10 @@ namespace armor_detector
 
         armor_detector::Armor last_armor;
 
-        std::vector<armor_detector::Armor> armors;
-        std::multimap<std::string, armor_detector::ArmorTracker> trackers_map;
-        std::map<std::string, int> new_armors_cnt_map;
+        // std::vector<armor_detector::Armor> armors;
+        // std::multimap<std::string, ArmorTracker> trackers_map;
+
+        // std::map<std::string, int> new_armors_cnt_map;
      
     public:
         spinning_detector();
@@ -64,8 +65,8 @@ namespace armor_detector
         ~spinning_detector();
 
         bool update_spin_score();
-        void create_armor_tracker(int timestamp, int dead_buffer_cnt);
-        bool is_spinning();
+        void create_armor_tracker(std::multimap<std::string, ArmorTracker>& trackers_map, std::vector<armor_detector::Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int timestamp, int dead_buffer_cnt);
+        bool is_spinning(std::multimap<std::string, ArmorTracker>& trackers_map, std::map<std::string, int>& new_armors_cnt_map);
 
         // armor_detector::ArmorTracker* chooseTargetTracker(vector<armor_detector::ArmorTracker*> trackers, int timestamp, int prev_timestamp);
         // int chooseTargetID(vector<armor_detector::Armor> &armors, int timestamp, int prev_timestamp);
