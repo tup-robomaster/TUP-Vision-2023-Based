@@ -1,5 +1,8 @@
 # TUP-Vision-2023-Based
-沈阳航空航天大学TUP战队2023赛季视觉程序
+沈阳航空航天大学TUP战队2023赛季视觉基础程序开发仓库
+
+##Version
+程序基于ros-galactic框架
 
 ## 开发日志
 Date:2022-10-23 加入2022.1版本的OpenVINO，并在armor_detector节点调试成功，在7代i7NUC上测试网络推理部分耗时在15ms左右。
