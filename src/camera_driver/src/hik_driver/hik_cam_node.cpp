@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 14:30:38
- * @LastEditTime: 2022-09-30 14:03:08
- * @FilePath: /tup_2023/src/camera_driver/src/hik_driver/hik_cam_node.cpp
+ * @LastEditTime: 2022-10-23 23:05:33
+ * @FilePath: /TUP-Vision-2023/src/camera_driver/src/hik_driver/hik_cam_node.cpp
  */
 #include "../../include/hik_driver/hik_cam_node.hpp"
 
@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 namespace camera_driver
 {
     hik_cam_node::hik_cam_node(const rclcpp::NodeOptions &options)
-    : Node("hik_camera", options)
+    : Node("hik_driver", options)
     {
         // camera params initialize 
         try
@@ -137,6 +137,31 @@ namespace camera_driver
         // cv::imshow("hik_cam_frame", frame);
         // cv::waitKey(1);
     }
+}
+
+int main(int argc, char** argv)
+{
+    // rclcpp::init(argc, argv);
+    // const rclcpp::NodeOptions options;
+    // auto cam_node = std::make_shared<camera_driver::hik_cam_node>(options);
+    // rclcpp::spin(cam_node);
+    // rclcpp::shutdown();
+
+    // printf("2\n");
+    setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
+    rclcpp::init(argc, argv);
+    rclcpp::executors::SingleThreadedExecutor exec;
+
+    const rclcpp::NodeOptions options;
+
+    auto hik_cam_node = std::make_shared<camera_driver::hik_cam_node>(options);
+
+    exec.add_node(hik_cam_node);
+    exec.spin();
+
+    rclcpp::shutdown();
+    return 0;
 }
 
 #include "rclcpp_components/register_node_macro.hpp"

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2022-10-16 23:08:56
+ * @LastEditTime: 2022-10-23 19:15:40
  * @FilePath: /tup_2023-10-16/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -21,6 +21,8 @@
 
 //ros
 #include <rclcpp/rclcpp.hpp>
+
+typedef std::chrono::_V2::steady_clock::time_point TimePoint;
 
 namespace armor_detector
 {
@@ -122,9 +124,10 @@ namespace armor_detector
         Eigen::Matrix3d rmat_imu;
     private:
         int count;
-        std::chrono::_V2::steady_clock::time_point time_start;
-        std::chrono::_V2::steady_clock::time_point time_infer;
-        std::chrono::_V2::steady_clock::time_point time_crop;
+        TimePoint time_start;
+        TimePoint time_infer;
+        TimePoint time_crop;
+        
         int timestamp;
         int dead_buffer_cnt;
 

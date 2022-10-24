@@ -1,0 +1,849 @@
+[0.000000] (-) TimerEvent: {}
+[0.001101] (-) JobUnselected: {'identifier': 'arm_controller'}
+[0.001187] (-) JobUnselected: {'identifier': 'armor_detector'}
+[0.001242] (-) JobUnselected: {'identifier': 'armor_processor'}
+[0.001287] (-) JobUnselected: {'identifier': 'auto_navigation'}
+[0.001355] (-) JobUnselected: {'identifier': 'binocular'}
+[0.001473] (-) JobUnselected: {'identifier': 'buff'}
+[0.001588] (-) JobUnselected: {'identifier': 'filter'}
+[0.001649] (-) JobUnselected: {'identifier': 'rmoss_auto_aim'}
+[0.001692] (-) JobUnselected: {'identifier': 'rmoss_base'}
+[0.001733] (-) JobUnselected: {'identifier': 'rmoss_cam'}
+[0.001774] (-) JobUnselected: {'identifier': 'rmoss_core'}
+[0.001817] (-) JobUnselected: {'identifier': 'rmoss_daheng_driver'}
+[0.001864] (-) JobUnselected: {'identifier': 'rmoss_interfaces'}
+[0.001905] (-) JobUnselected: {'identifier': 'rmoss_projectile_motion'}
+[0.002025] (-) JobUnselected: {'identifier': 'rmoss_util'}
+[0.002445] (-) JobUnselected: {'identifier': 'serialport'}
+[0.002965] (global_interface) JobQueued: {'identifier': 'global_interface', 'dependencies': OrderedDict()}
+[0.003026] (global_user) JobQueued: {'identifier': 'global_user', 'dependencies': OrderedDict()}
+[0.003074] (camera_driver) JobQueued: {'identifier': 'camera_driver', 'dependencies': OrderedDict([('global_interface', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface'), ('global_user', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user')])}
+[0.003137] (global_interface) JobStarted: {'identifier': 'global_interface'}
+[0.014337] (global_user) JobStarted: {'identifier': 'global_user'}
+[0.021683] (global_interface) JobProgress: {'identifier': 'global_interface', 'progress': 'cmake'}
+[0.022288] (global_interface) Command: {'cmd': ['/usr/bin/cmake', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_interface', '-DCMAKE_INSTALL_PREFIX=/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface'], 'cwd': '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_interface', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'zhengtu'), ('LC_TIME', 'zh_CN.UTF-8'), ('SSH_AGENT_PID', '2225'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HOME', '/home/zhengtu'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.72.0'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2032'), ('DBUS_STARTER_BUS_TYPE', 'session'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'zhengtu'), ('JOURNAL_STREAM', '8:45654'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'zhengtu'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/zhengtu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/zhengtu-NMH-WXX9:@/tmp/.ICE-unix/2300,unix/zhengtu-NMH-WXX9:/tmp/.ICE-unix/2300'), ('INVOCATION_ID', '908929a0a72149b693f9b4f4a6b2b5fc'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/8081d553_3e82_439d_85a9_bd1bbee3bb78'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-e145d6ad7b.sock'), ('GNOME_TERMINAL_SERVICE', ':1.373'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_interface'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('DBUS_STARTER_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/galactic/lib/python3.8/site-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[0.030538] (global_user) JobProgress: {'identifier': 'global_user', 'progress': 'cmake'}
+[0.032150] (global_user) Command: {'cmd': ['/usr/bin/cmake', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user', '-DCMAKE_INSTALL_PREFIX=/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user'], 'cwd': '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'zhengtu'), ('LC_TIME', 'zh_CN.UTF-8'), ('SSH_AGENT_PID', '2225'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HOME', '/home/zhengtu'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.72.0'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2032'), ('DBUS_STARTER_BUS_TYPE', 'session'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'zhengtu'), ('JOURNAL_STREAM', '8:45654'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'zhengtu'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/zhengtu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/zhengtu-NMH-WXX9:@/tmp/.ICE-unix/2300,unix/zhengtu-NMH-WXX9:/tmp/.ICE-unix/2300'), ('INVOCATION_ID', '908929a0a72149b693f9b4f4a6b2b5fc'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/8081d553_3e82_439d_85a9_bd1bbee3bb78'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-e145d6ad7b.sock'), ('GNOME_TERMINAL_SERVICE', ':1.373'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('DBUS_STARTER_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/galactic/lib/python3.8/site-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[0.098999] (-) TimerEvent: {}
+[0.103913] (global_user) StdoutLine: {'line': b'-- The C compiler identification is GNU 9.4.0\n'}
+[0.108977] (global_interface) StdoutLine: {'line': b'-- The C compiler identification is GNU 9.4.0\n'}
+[0.168634] (global_interface) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 9.4.0\n'}
+[0.171706] (global_user) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 9.4.0\n'}
+[0.175533] (global_interface) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc\n'}
+[0.178659] (global_user) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc\n'}
+[0.199138] (-) TimerEvent: {}
+[0.259880] (global_interface) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc -- works\n'}
+[0.261915] (global_interface) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.266349] (global_user) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc -- works\n'}
+[0.269201] (global_user) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.299296] (-) TimerEvent: {}
+[0.358125] (global_user) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.364217] (global_interface) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.374788] (global_user) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.375315] (global_user) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.377537] (global_user) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++\n'}
+[0.382111] (global_interface) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.382336] (global_interface) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.384269] (global_interface) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++\n'}
+[0.399454] (-) TimerEvent: {}
+[0.480422] (global_user) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ -- works\n'}
+[0.481937] (global_interface) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ -- works\n'}
+[0.482762] (global_interface) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.483616] (global_user) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.499622] (-) TimerEvent: {}
+[0.569789] (global_interface) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.589057] (global_user) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.589494] (global_interface) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.589857] (global_interface) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.591183] (global_interface) StdoutLine: {'line': b'-- Found ament_cmake: 1.1.5 (/opt/ros/galactic/share/ament_cmake/cmake)\n'}
+[0.599752] (-) TimerEvent: {}
+[0.605612] (global_user) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.606089] (global_user) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.608111] (global_user) StdoutLine: {'line': b'-- Found ament_cmake: 1.1.5 (/opt/ros/galactic/share/ament_cmake/cmake)\n'}
+[0.617962] (global_interface) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") \n'}
+[0.618313] (global_interface) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[0.634914] (global_user) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") \n'}
+[0.635077] (global_user) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[0.697874] (global_user) StdoutLine: {'line': b'-- Found rclcpp: 9.2.1 (/opt/ros/galactic/share/rclcpp/cmake)\n'}
+[0.698370] (global_interface) StdoutLine: {'line': b'-- Found rosidl_default_generators: 1.1.1 (/opt/ros/galactic/share/rosidl_default_generators/cmake)\n'}
+[0.699827] (-) TimerEvent: {}
+[0.700423] (global_interface) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.705170] (global_interface) StdoutLine: {'line': b'-- Found rosidl_adapter: 2.2.2 (/opt/ros/galactic/share/rosidl_adapter/cmake)\n'}
+[0.737671] (global_user) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.742073] (global_user) StdoutLine: {'line': b'-- Found rosidl_adapter: 2.2.2 (/opt/ros/galactic/share/rosidl_adapter/cmake)\n'}
+[0.800005] (-) TimerEvent: {}
+[0.829355] (global_interface) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "1.1.1f")  \n'}
+[0.860211] (global_user) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "1.1.1f")  \n'}
+[0.861067] (global_interface) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/galactic/include  \n'}
+[0.883661] (global_user) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/galactic/include  \n'}
+[0.900167] (-) TimerEvent: {}
+[0.932677] (global_interface) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.953137] (global_interface) StdoutLine: {'line': b'-- Found rclcpp: 9.2.1 (/opt/ros/galactic/share/rclcpp/cmake)\n'}
+[0.960348] (global_user) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[1.000315] (-) TimerEvent: {}
+[1.006488] (global_interface) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)\n'}
+[1.006888] (global_user) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)\n'}
+[1.008542] (global_interface) StdoutLine: {'line': b'-- Found rmw_cyclonedds_cpp: 0.22.5 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)\n'}
+[1.009325] (global_user) StdoutLine: {'line': b'-- Found rmw_cyclonedds_cpp: 0.22.5 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)\n'}
+[1.024108] (global_interface) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_cyclonedds_cpp' as default\n"}
+[1.024722] (global_interface) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[1.029223] (global_user) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_cyclonedds_cpp' as default\n"}
+[1.029806] (global_user) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[1.100439] (-) TimerEvent: {}
+[1.112891] (global_user) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[1.113557] (global_user) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[1.117435] (global_interface) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[1.118128] (global_interface) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[1.200595] (-) TimerEvent: {}
+[1.214695] (global_user) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed\n'}
+[1.215100] (global_user) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads\n'}
+[1.217727] (global_interface) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed\n'}
+[1.218200] (global_interface) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads\n'}
+[1.300729] (-) TimerEvent: {}
+[1.301257] (global_user) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads - not found\n'}
+[1.301673] (global_user) StdoutLine: {'line': b'-- Looking for pthread_create in pthread\n'}
+[1.308739] (global_interface) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads - not found\n'}
+[1.309193] (global_interface) StdoutLine: {'line': b'-- Looking for pthread_create in pthread\n'}
+[1.400854] (-) TimerEvent: {}
+[1.411730] (global_user) StdoutLine: {'line': b'-- Looking for pthread_create in pthread - found\n'}
+[1.414731] (global_user) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[1.417866] (global_interface) StdoutLine: {'line': b'-- Looking for pthread_create in pthread - found\n'}
+[1.419546] (global_interface) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[1.500987] (-) TimerEvent: {}
+[1.534406] (global_user) StdoutLine: {'line': b'-- Found rclcpp_components: 9.2.1 (/opt/ros/galactic/share/rclcpp_components/cmake)\n'}
+[1.541350] (global_interface) StdoutLine: {'line': b'-- Found geometry_msgs: 2.2.4 (/opt/ros/galactic/share/geometry_msgs/cmake)\n'}
+[1.568272] (global_interface) StdoutLine: {'line': b'-- Found sensor_msgs: 2.2.4 (/opt/ros/galactic/share/sensor_msgs/cmake)\n'}
+[1.587660] (global_user) StdoutLine: {'line': b'-- Found OpenCV: /usr/local (found version "4.5.5") \n'}
+[1.588365] (global_user) StdoutLine: {'line': b'-- Found geometry_msgs: 2.2.4 (/opt/ros/galactic/share/geometry_msgs/cmake)\n'}
+[1.601443] (-) TimerEvent: {}
+[1.616420] (global_user) StdoutLine: {'line': b'-- Found tf2_geometry_msgs: 0.17.4 (/opt/ros/galactic/share/tf2_geometry_msgs/cmake)\n'}
+[1.622937] (global_user) StdoutLine: {'line': b'-- Found eigen3_cmake_module: 0.1.1 (/opt/ros/galactic/share/eigen3_cmake_module/cmake)\n'}
+[1.624899] (global_user) StdoutLine: {'line': b'-- Found Eigen3: TRUE (found version "3.4.0") \n'}
+[1.651105] (global_interface) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found version "3.8.10") \n'}
+[1.701786] (-) TimerEvent: {}
+[1.802342] (-) TimerEvent: {}
+[1.859275] (global_interface) StdoutLine: {'line': b'-- Found ament_cmake_ros: 0.9.2 (/opt/ros/galactic/share/ament_cmake_ros/cmake)\n'}
+[1.899402] (global_user) StdoutLine: {'line': b'-- Found rclpy: 1.9.2 (/opt/ros/galactic/share/rclpy/cmake)\n'}
+[1.900050] (global_user) StdoutLine: {'line': b'-- Found rclcpp_lifecycle: 9.2.1 (/opt/ros/galactic/share/rclcpp_lifecycle/cmake)\n'}
+[1.902443] (-) TimerEvent: {}
+[1.927288] (global_user) StdoutLine: {'line': b'-- Found laser_geometry: 2.2.1 (/opt/ros/galactic/share/laser_geometry/cmake)\n'}
+[1.929586] (global_user) StdoutLine: {'line': b'-- Found sensor_msgs: 2.2.4 (/opt/ros/galactic/share/sensor_msgs/cmake)\n'}
+[1.986633] (global_user) StdoutLine: {'line': b'-- Found tf2_sensor_msgs: 0.17.4 (/opt/ros/galactic/share/tf2_sensor_msgs/cmake)\n'}
+[2.000325] (global_user) StdoutLine: {'line': b'-- Found visualization_msgs: 2.2.4 (/opt/ros/galactic/share/visualization_msgs/cmake)\n'}
+[2.002550] (-) TimerEvent: {}
+[2.062692] (global_user) StdoutLine: {'line': b'-- Found angles: 1.14.0 (/opt/ros/galactic/share/angles/cmake)\n'}
+[2.063793] (global_user) StdoutLine: {'line': b'-- Found robot_state_publisher: 2.5.3 (/opt/ros/galactic/share/robot_state_publisher/cmake)\n'}
+[2.102693] (-) TimerEvent: {}
+[2.116658] (global_user) StdoutLine: {'line': b'-- Found required Ceres dependency: Eigen version 3.4.0 in /usr/local/share/eigen3/cmake\n'}
+[2.118599] (global_user) StdoutLine: {'line': b'-- Found required Ceres dependency: glog\n'}
+[2.119336] (global_user) StdoutLine: {'line': b'-- Found Ceres version: 2.1.0 installed in: /usr/local with components: [EigenSparse, SparseLinearAlgebraLibrary, SchurSpecializations, Multithreading]\n'}
+[2.122882] (global_interface) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[2.123191] (global_user) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.10.7 (/opt/ros/galactic/share/ament_lint_auto/cmake)\n'}
+[2.193400] (global_user) StdoutLine: {'line': b"-- Added test 'copyright' to check source files copyright and LICENSE\n"}
+[2.194193] (global_user) StdoutLine: {'line': b"-- Added test 'cppcheck' to perform static code analysis on C / C++ code\n"}
+[2.194442] (global_user) StdoutLine: {'line': b'-- Configured cppcheck include dirs: /home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/include;$<BUILD_INTERFACE:/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/include>\n'}
+[2.194597] (global_user) StdoutLine: {'line': b'-- Configured cppcheck exclude dirs and/or files: \n'}
+[2.195123] (global_user) StdoutLine: {'line': b"-- Added test 'cpplint' to check C / C++ code against the Google style\n"}
+[2.195271] (global_user) StdoutLine: {'line': b'-- Configured cpplint exclude dirs and/or files: \n'}
+[2.195623] (global_user) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[2.196374] (global_user) StdoutLine: {'line': b"-- Added test 'uncrustify' to check C / C++ code style\n"}
+[2.196526] (global_user) StdoutLine: {'line': b'-- Configured uncrustify additional arguments: \n'}
+[2.196678] (global_user) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[2.200183] (global_user) StdoutLine: {'line': b'-- Configuring done\n'}
+[2.202787] (-) TimerEvent: {}
+[2.207444] (global_user) StdoutLine: {'line': b'-- Generating done\n'}
+[2.209324] (global_user) StdoutLine: {'line': b'-- Build files have been written to: /home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user\n'}
+[2.218705] (global_user) CommandEnded: {'returncode': 0}
+[2.220130] (global_user) JobProgress: {'identifier': 'global_user', 'progress': 'build'}
+[2.222788] (global_user) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user', '--', '-j16', '-l16'], 'cwd': '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'zhengtu'), ('LC_TIME', 'zh_CN.UTF-8'), ('SSH_AGENT_PID', '2225'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HOME', '/home/zhengtu'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.72.0'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2032'), ('DBUS_STARTER_BUS_TYPE', 'session'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'zhengtu'), ('JOURNAL_STREAM', '8:45654'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'zhengtu'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/zhengtu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/zhengtu-NMH-WXX9:@/tmp/.ICE-unix/2300,unix/zhengtu-NMH-WXX9:/tmp/.ICE-unix/2300'), ('INVOCATION_ID', '908929a0a72149b693f9b4f4a6b2b5fc'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/8081d553_3e82_439d_85a9_bd1bbee3bb78'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-e145d6ad7b.sock'), ('GNOME_TERMINAL_SERVICE', ':1.373'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('DBUS_STARTER_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/galactic/lib/python3.8/site-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[2.251866] (global_interface) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[2.280292] (global_user) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_user\x1b[0m\n'}
+[2.284274] (global_interface) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3.5") \n'}
+[2.286112] (global_interface) StdoutLine: {'line': b'-- Found python_cmake_module: 0.8.1 (/opt/ros/galactic/share/python_cmake_module/cmake)\n'}
+[2.302955] (-) TimerEvent: {}
+[2.316162] (global_interface) StdoutLine: {'line': b'-- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.8.so (found suitable version "3.8.10", minimum required is "3.5") \n'}
+[2.316527] (global_interface) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[2.316655] (global_interface) StdoutLine: {'line': b'-- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.8\n'}
+[2.316757] (global_interface) StdoutLine: {'line': b'-- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.8.so\n'}
+[2.342388] (global_interface) StdoutLine: {'line': b'-- Found PythonExtra: .so  \n'}
+[2.356038] (global_user) StdoutLine: {'line': b'[ 66%] \x1b[32mBuilding CXX object CMakeFiles/global_user.dir/src/coordsolver.cpp.o\x1b[0m\n'}
+[2.356292] (global_user) StdoutLine: {'line': b'[ 66%] \x1b[32mBuilding CXX object CMakeFiles/global_user.dir/src/global_user.cpp.o\x1b[0m\n'}
+[2.403073] (-) TimerEvent: {}
+[2.454884] (global_interface) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.10.7 (/opt/ros/galactic/share/ament_lint_auto/cmake)\n'}
+[2.470439] (global_interface) StdoutLine: {'line': b"-- Added test 'copyright' to check source files copyright and LICENSE\n"}
+[2.471471] (global_interface) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[2.472134] (global_interface) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[2.476101] (global_interface) StdoutLine: {'line': b'-- Configuring done\n'}
+[2.503238] (-) TimerEvent: {}
+[2.535011] (global_interface) StdoutLine: {'line': b'-- Generating done\n'}
+[2.537779] (global_interface) StdoutLine: {'line': b'-- Build files have been written to: /home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_interface\n'}
+[2.550433] (global_interface) CommandEnded: {'returncode': 0}
+[2.551511] (global_interface) JobProgress: {'identifier': 'global_interface', 'progress': 'build'}
+[2.554042] (global_interface) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_interface', '--', '-j16', '-l16'], 'cwd': '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_interface', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'zhengtu'), ('LC_TIME', 'zh_CN.UTF-8'), ('SSH_AGENT_PID', '2225'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HOME', '/home/zhengtu'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.72.0'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2032'), ('DBUS_STARTER_BUS_TYPE', 'session'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'zhengtu'), ('JOURNAL_STREAM', '8:45654'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'zhengtu'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/zhengtu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/zhengtu-NMH-WXX9:@/tmp/.ICE-unix/2300,unix/zhengtu-NMH-WXX9:/tmp/.ICE-unix/2300'), ('INVOCATION_ID', '908929a0a72149b693f9b4f4a6b2b5fc'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/8081d553_3e82_439d_85a9_bd1bbee3bb78'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-e145d6ad7b.sock'), ('GNOME_TERMINAL_SERVICE', ':1.373'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_interface'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('DBUS_STARTER_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/galactic/lib/python3.8/site-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[2.603401] (-) TimerEvent: {}
+[2.623673] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__cpp\x1b[0m\n'}
+[2.625609] (global_interface) StdoutLine: {'line': b'[  1%] \x1b[34m\x1b[1mGenerating C code for ROS interfaces\x1b[0m\n'}
+[2.641134] (global_interface) StdoutLine: {'line': b'[  3%] \x1b[34m\x1b[1mGenerating C++ code for ROS interfaces\x1b[0m\n'}
+[2.703523] (-) TimerEvent: {}
+[2.803910] (-) TimerEvent: {}
+[2.904266] (-) TimerEvent: {}
+[2.951792] (global_interface) StdoutLine: {'line': b'[  3%] Built target global_interface__cpp\n'}
+[2.971154] (global_interface) StdoutLine: {'line': b'[  5%] \x1b[34m\x1b[1mGenerating C++ type support for eProsima Fast-RTPS\x1b[0m\n'}
+[2.971523] (global_interface) StdoutLine: {'line': b'[  7%] \x1b[34m\x1b[1mGenerating C++ type support dispatch for ROS interfaces\x1b[0m\n'}
+[2.973021] (global_interface) StdoutLine: {'line': b'[  9%] \x1b[34m\x1b[1mGenerating C++ introspection for ROS interfaces\x1b[0m\n'}
+[2.980042] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_generator_c\x1b[0m\n'}
+[2.999130] (global_interface) StdoutLine: {'line': b'[ 10%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_generator_c.dir/rosidl_generator_c/global_interface/msg/detail/armor__functions.c.o\x1b[0m\n'}
+[3.000726] (global_interface) StdoutLine: {'line': b'[ 16%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_generator_c.dir/rosidl_generator_c/global_interface/msg/detail/target__functions.c.o\x1b[0m\n'}
+[3.000985] (global_interface) StdoutLine: {'line': b'[ 16%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_generator_c.dir/rosidl_generator_c/global_interface/msg/detail/gimbal__functions.c.o\x1b[0m\n'}
+[3.001060] (global_interface) StdoutLine: {'line': b'[ 16%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_generator_c.dir/rosidl_generator_c/global_interface/msg/detail/armors__functions.c.o\x1b[0m\n'}
+[3.004395] (-) TimerEvent: {}
+[3.063339] (global_interface) StdoutLine: {'line': b'[ 18%] \x1b[32m\x1b[1mLinking C shared library libglobal_interface__rosidl_generator_c.so\x1b[0m\n'}
+[3.104508] (-) TimerEvent: {}
+[3.116005] (global_interface) StdoutLine: {'line': b'[ 18%] Built target global_interface__rosidl_generator_c\n'}
+[3.130941] (global_interface) StdoutLine: {'line': b'[ 21%] \x1b[34m\x1b[1mGenerating C introspection for ROS interfaces\x1b[0m\n'}
+[3.131191] (global_interface) StdoutLine: {'line': b'[ 21%] \x1b[34m\x1b[1mGenerating C type support dispatch for ROS interfaces\x1b[0m\n'}
+[3.204641] (-) TimerEvent: {}
+[3.245976] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_cpp\x1b[0m\n'}
+[3.269505] (global_interface) StdoutLine: {'line': b'[ 25%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/global_interface/msg/gimbal__type_support.cpp.o\x1b[0m\n'}
+[3.269769] (global_interface) StdoutLine: {'line': b'[ 25%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/global_interface/msg/armors__type_support.cpp.o\x1b[0m\n'}
+[3.269976] (global_interface) StdoutLine: {'line': b'[ 27%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/global_interface/msg/armor__type_support.cpp.o\x1b[0m\n'}
+[3.271626] (global_interface) StdoutLine: {'line': b'[ 29%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/global_interface/msg/target__type_support.cpp.o\x1b[0m\n'}
+[3.281962] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_introspection_cpp\x1b[0m\n'}
+[3.304804] (-) TimerEvent: {}
+[3.308355] (global_interface) StdoutLine: {'line': b'[ 30%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/global_interface/msg/detail/gimbal__type_support.cpp.o\x1b[0m\n'}
+[3.312265] (global_interface) StdoutLine: {'line': b'[ 32%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/global_interface/msg/detail/armor__type_support.cpp.o\x1b[0m\n'}
+[3.312867] (global_interface) StdoutLine: {'line': b'[ 34%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/global_interface/msg/detail/target__type_support.cpp.o\x1b[0m\n'}
+[3.314693] (global_interface) StdoutLine: {'line': b'[ 36%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/global_interface/msg/detail/armors__type_support.cpp.o\x1b[0m\n'}
+[3.317350] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_fastrtps_cpp\x1b[0m\n'}
+[3.347177] (global_interface) StdoutLine: {'line': b'[ 38%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/global_interface/msg/detail/dds_fastrtps/gimbal__type_support.cpp.o\x1b[0m\n'}
+[3.354824] (global_interface) StdoutLine: {'line': b'[ 40%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/global_interface/msg/detail/dds_fastrtps/armor__type_support.cpp.o\x1b[0m\n'}
+[3.362284] (global_interface) StdoutLine: {'line': b'[ 41%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/global_interface/msg/detail/dds_fastrtps/armors__type_support.cpp.o\x1b[0m\n'}
+[3.364065] (global_interface) StdoutLine: {'line': b'[ 43%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/global_interface/msg/detail/dds_fastrtps/target__type_support.cpp.o\x1b[0m\n'}
+[3.407298] (-) TimerEvent: {}
+[3.507782] (-) TimerEvent: {}
+[3.608330] (-) TimerEvent: {}
+[3.683898] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_introspection_c\x1b[0m\n'}
+[3.697273] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_c\x1b[0m\n'}
+[3.708495] (-) TimerEvent: {}
+[3.723236] (global_interface) StdoutLine: {'line': b'[ 45%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/global_interface/msg/detail/gimbal__type_support.c.o\x1b[0m\n'}
+[3.731416] (global_interface) StdoutLine: {'line': b'[ 47%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_c.dir/rosidl_typesupport_c/global_interface/msg/gimbal__type_support.cpp.o\x1b[0m\n'}
+[3.740470] (global_interface) StdoutLine: {'line': b'[ 49%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/global_interface/msg/detail/armor__type_support.c.o\x1b[0m\n'}
+[3.742304] (global_interface) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_c.dir/rosidl_typesupport_c/global_interface/msg/armors__type_support.cpp.o\x1b[0m\n'}
+[3.746266] (global_interface) StdoutLine: {'line': b'[ 52%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_c.dir/rosidl_typesupport_c/global_interface/msg/armor__type_support.cpp.o\x1b[0m\n'}
+[3.751456] (global_interface) StdoutLine: {'line': b'[ 54%] \x1b[32m\x1b[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_cpp.so\x1b[0m\n'}
+[3.757856] (global_interface) StdoutLine: {'line': b'[ 56%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_c.dir/rosidl_typesupport_c/global_interface/msg/target__type_support.cpp.o\x1b[0m\n'}
+[3.759630] (global_interface) StdoutLine: {'line': b'[ 58%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/global_interface/msg/detail/armors__type_support.c.o\x1b[0m\n'}
+[3.760256] (global_interface) StdoutLine: {'line': b'[ 60%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/global_interface/msg/detail/target__type_support.c.o\x1b[0m\n'}
+[3.808706] (-) TimerEvent: {}
+[3.830330] (global_interface) StdoutLine: {'line': b'[ 61%] \x1b[32m\x1b[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_c.so\x1b[0m\n'}
+[3.846503] (global_interface) StdoutLine: {'line': b'[ 61%] Built target global_interface__rosidl_typesupport_cpp\n'}
+[3.849002] (global_interface) StdoutLine: {'line': b'[ 63%] \x1b[32m\x1b[1mLinking C shared library libglobal_interface__rosidl_typesupport_introspection_c.so\x1b[0m\n'}
+[3.892232] (global_interface) StdoutLine: {'line': b'[ 63%] Built target global_interface__rosidl_typesupport_c\n'}
+[3.900966] (global_interface) StdoutLine: {'line': b'[ 63%] Built target global_interface__rosidl_typesupport_introspection_c\n'}
+[3.908834] (-) TimerEvent: {}
+[3.911712] (global_interface) StdoutLine: {'line': b'[ 65%] \x1b[32m\x1b[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_introspection_cpp.so\x1b[0m\n'}
+[4.008998] (-) TimerEvent: {}
+[4.041843] (global_interface) StdoutLine: {'line': b'[ 65%] Built target global_interface__rosidl_typesupport_introspection_cpp\n'}
+[4.064050] (global_interface) StdoutLine: {'line': b'[ 67%] \x1b[32m\x1b[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_fastrtps_cpp.so\x1b[0m\n'}
+[4.109160] (-) TimerEvent: {}
+[4.191018] (global_interface) StdoutLine: {'line': b'[ 67%] Built target global_interface__rosidl_typesupport_fastrtps_cpp\n'}
+[4.207475] (global_interface) StdoutLine: {'line': b'[ 69%] \x1b[34m\x1b[1mGenerating C type support for eProsima Fast-RTPS\x1b[0m\n'}
+[4.209312] (-) TimerEvent: {}
+[4.309715] (-) TimerEvent: {}
+[4.410094] (-) TimerEvent: {}
+[4.482206] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_fastrtps_c\x1b[0m\n'}
+[4.505816] (global_interface) StdoutLine: {'line': b'[ 70%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/global_interface/msg/detail/armor__type_support_c.cpp.o\x1b[0m\n'}
+[4.509734] (global_interface) StdoutLine: {'line': b'[ 74%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/global_interface/msg/detail/armors__type_support_c.cpp.o\x1b[0m\n'}
+[4.510007] (global_interface) StdoutLine: {'line': b'[ 74%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/global_interface/msg/detail/gimbal__type_support_c.cpp.o\x1b[0m\n'}
+[4.510112] (-) TimerEvent: {}
+[4.510256] (global_interface) StdoutLine: {'line': b'[ 76%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/global_interface/msg/detail/target__type_support_c.cpp.o\x1b[0m\n'}
+[4.610298] (-) TimerEvent: {}
+[4.710684] (-) TimerEvent: {}
+[4.811061] (-) TimerEvent: {}
+[4.858947] (global_interface) StdoutLine: {'line': b'[ 78%] \x1b[32m\x1b[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_fastrtps_c.so\x1b[0m\n'}
+[4.911208] (-) TimerEvent: {}
+[4.988282] (global_interface) StdoutLine: {'line': b'[ 78%] Built target global_interface__rosidl_typesupport_fastrtps_c\n'}
+[4.997587] (global_user) StderrLine: {'line': b'\x1b[01m\x1b[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:\x1b[m\x1b[K In function \xe2\x80\x98\x1b[01m\x1b[Kstd::string global_user::getParent(std::string)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[4.997865] (global_user) StderrLine: {'line': b'\x1b[01m\x1b[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:203:51:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kcomparison of integer expressions of different signedness: \xe2\x80\x98\x1b[01m\x1b[Kint\x1b[m\x1b[K\xe2\x80\x99 and \xe2\x80\x98\x1b[01m\x1b[Kconst size_type\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Kconst long unsigned int\x1b[m\x1b[K\xe2\x80\x99} [\x1b[01;35m\x1b[K-Wsign-compare\x1b[m\x1b[K]\n'}
+[4.997992] (global_user) StderrLine: {'line': b'  203 |         for(auto i = 0; i = path_tmp.find("/"), i != path_tmp.npos; path_tmp = path_tmp.substr(i + 1))\n'}
+[4.998219] (global_user) StderrLine: {'line': b'\x1b[01m\x1b[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:\x1b[m\x1b[K In function \xe2\x80\x98\x1b[01m\x1b[Kstd::vector<std::__cxx11::basic_string<char> > global_user::generatePathTree(std::string)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[4.998375] (global_user) StderrLine: {'line': b'\x1b[01m\x1b[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:223:47:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kcomparison of integer expressions of different signedness: \xe2\x80\x98\x1b[01m\x1b[Kint\x1b[m\x1b[K\xe2\x80\x99 and \xe2\x80\x98\x1b[01m\x1b[Kconst size_type\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Kconst long unsigned int\x1b[m\x1b[K\xe2\x80\x99} [\x1b[01;35m\x1b[K-Wsign-compare\x1b[m\x1b[K]\n'}
+[4.998480] (global_user) StderrLine: {'line': b'  223 |         for(auto i = 0; i = path.find("/"), i != path.npos; path = path.substr(i + 1))\n'}
+[5.004697] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface\x1b[0m\n'}
+[5.011372] (-) TimerEvent: {}
+[5.025302] (global_interface) StdoutLine: {'line': b'[ 78%] Built target global_interface\n'}
+[5.043556] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__py\x1b[0m\n'}
+[5.060833] (global_interface) StdoutLine: {'line': b'[ 80%] \x1b[34m\x1b[1mGenerating Python code for ROS interfaces\x1b[0m\n'}
+[5.111537] (-) TimerEvent: {}
+[5.211941] (-) TimerEvent: {}
+[5.312383] (-) TimerEvent: {}
+[5.412778] (-) TimerEvent: {}
+[5.513152] (-) TimerEvent: {}
+[5.562506] (global_interface) StdoutLine: {'line': b'[ 80%] Built target global_interface__py\n'}
+[5.576408] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__python\x1b[0m\n'}
+[5.604443] (global_interface) StdoutLine: {'line': b'[ 81%] \x1b[32mBuilding C object CMakeFiles/global_interface__python.dir/rosidl_generator_py/global_interface/msg/_armors_s.c.o\x1b[0m\n'}
+[5.605325] (global_interface) StdoutLine: {'line': b'[ 85%] \x1b[32mBuilding C object CMakeFiles/global_interface__python.dir/rosidl_generator_py/global_interface/msg/_gimbal_s.c.o\x1b[0m\n'}
+[5.605635] (global_interface) StdoutLine: {'line': b'[ 85%] \x1b[32mBuilding C object CMakeFiles/global_interface__python.dir/rosidl_generator_py/global_interface/msg/_target_s.c.o\x1b[0m\n'}
+[5.606198] (global_interface) StdoutLine: {'line': b'[ 87%] \x1b[32mBuilding C object CMakeFiles/global_interface__python.dir/rosidl_generator_py/global_interface/msg/_armor_s.c.o\x1b[0m\n'}
+[5.613296] (-) TimerEvent: {}
+[5.698826] (global_interface) StdoutLine: {'line': b'[ 89%] \x1b[32m\x1b[1mLinking C shared library rosidl_generator_py/global_interface/libglobal_interface__python.so\x1b[0m\n'}
+[5.713419] (-) TimerEvent: {}
+[5.761047] (global_interface) StdoutLine: {'line': b'[ 89%] Built target global_interface__python\n'}
+[5.773287] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_c__pyext\x1b[0m\n'}
+[5.777328] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_fastrtps_c__pyext\x1b[0m\n'}
+[5.777661] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_introspection_c__pyext\x1b[0m\n'}
+[5.794390] (global_interface) StdoutLine: {'line': b'[ 90%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/global_interface/_global_interface_s.ep.rosidl_typesupport_c.c.o\x1b[0m\n'}
+[5.797205] (global_interface) StdoutLine: {'line': b'[ 92%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/global_interface/_global_interface_s.ep.rosidl_typesupport_introspection_c.c.o\x1b[0m\n'}
+[5.797625] (global_interface) StdoutLine: {'line': b'[ 94%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/global_interface/_global_interface_s.ep.rosidl_typesupport_fastrtps_c.c.o\x1b[0m\n'}
+[5.813598] (-) TimerEvent: {}
+[5.879165] (global_interface) StdoutLine: {'line': b'[ 96%] \x1b[32m\x1b[1mLinking C shared library rosidl_generator_py/global_interface/global_interface_s__rosidl_typesupport_c.cpython-38-x86_64-linux-gnu.so\x1b[0m\n'}
+[5.885427] (global_interface) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking C shared library rosidl_generator_py/global_interface/global_interface_s__rosidl_typesupport_introspection_c.cpython-38-x86_64-linux-gnu.so\x1b[0m\n'}
+[5.885693] (global_interface) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX shared library rosidl_generator_py/global_interface/global_interface_s__rosidl_typesupport_fastrtps_c.cpython-38-x86_64-linux-gnu.so\x1b[0m\n'}
+[5.913785] (-) TimerEvent: {}
+[5.928662] (global_interface) StdoutLine: {'line': b'[100%] Built target global_interface__rosidl_typesupport_c__pyext\n'}
+[5.930367] (global_interface) StdoutLine: {'line': b'[100%] Built target global_interface__rosidl_typesupport_introspection_c__pyext\n'}
+[5.948778] (global_interface) StdoutLine: {'line': b'[100%] Built target global_interface__rosidl_typesupport_fastrtps_c__pyext\n'}
+[5.967466] (global_interface) CommandEnded: {'returncode': 0}
+[6.013985] (-) TimerEvent: {}
+[6.071871] (global_interface) JobProgress: {'identifier': 'global_interface', 'progress': 'install'}
+[6.090535] (global_interface) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_interface'], 'cwd': '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_interface', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'zhengtu'), ('LC_TIME', 'zh_CN.UTF-8'), ('SSH_AGENT_PID', '2225'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HOME', '/home/zhengtu'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.72.0'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2032'), ('DBUS_STARTER_BUS_TYPE', 'session'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'zhengtu'), ('JOURNAL_STREAM', '8:45654'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'zhengtu'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/zhengtu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/zhengtu-NMH-WXX9:@/tmp/.ICE-unix/2300,unix/zhengtu-NMH-WXX9:/tmp/.ICE-unix/2300'), ('INVOCATION_ID', '908929a0a72149b693f9b4f4a6b2b5fc'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/8081d553_3e82_439d_85a9_bd1bbee3bb78'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-e145d6ad7b.sock'), ('GNOME_TERMINAL_SERVICE', ':1.373'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_interface'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('DBUS_STARTER_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/galactic/lib/python3.8/site-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[6.098870] (global_interface) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[6.099229] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/ament_index/resource_index/rosidl_interfaces/global_interface\n'}
+[6.099513] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface\n'}
+[6.099847] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg\n'}
+[6.100048] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/gimbal.h\n'}
+[6.100202] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/rosidl_generator_c__visibility_control.h\n'}
+[6.100378] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail\n'}
+[6.100525] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__struct.h\n'}
+[6.100687] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__functions.h\n'}
+[6.100852] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__type_support.h\n'}
+[6.101003] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__functions.c\n'}
+[6.101174] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__struct.h\n'}
+[6.101325] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__functions.c\n'}
+[6.101492] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__type_support.h\n'}
+[6.101644] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__type_support.h\n'}
+[6.101781] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__struct.h\n'}
+[6.101959] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__functions.c\n'}
+[6.102085] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__functions.c\n'}
+[6.102238] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__functions.h\n'}
+[6.102363] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__functions.h\n'}
+[6.102487] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__struct.h\n'}
+[6.102688] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__functions.h\n'}
+[6.102861] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__type_support.h\n'}
+[6.103038] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/target.h\n'}
+[6.103194] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/armor.h\n'}
+[6.103344] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/armors.h\n'}
+[6.103469] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/library_path.sh\n'}
+[6.103595] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/library_path.dsv\n'}
+[6.103749] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_generator_c.so\n'}
+[6.103952] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_generator_c.so" to ""\n'}
+[6.104129] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface\n'}
+[6.104276] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg\n'}
+[6.104450] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/rosidl_typesupport_fastrtps_c__visibility_control.h\n'}
+[6.104573] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail\n'}
+[6.104722] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__rosidl_typesupport_fastrtps_c.h\n'}
+[6.104818] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__rosidl_typesupport_fastrtps_c.h\n'}
+[6.104911] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__rosidl_typesupport_fastrtps_c.h\n'}
+[6.105080] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__rosidl_typesupport_fastrtps_c.h\n'}
+[6.105209] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_fastrtps_c.so\n'}
+[6.105322] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_fastrtps_c.so" to ""\n'}
+[6.105451] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface\n'}
+[6.105564] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg\n'}
+[6.105692] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h\n'}
+[6.105790] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail\n'}
+[6.105864] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/dds_fastrtps\n'}
+[6.105956] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[6.106029] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[6.106102] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[6.106195] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[6.106285] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_fastrtps_cpp.so\n'}
+[6.106358] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_fastrtps_cpp.so" to ""\n'}
+[6.106442] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface\n'}
+[6.106550] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg\n'}
+[6.106653] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail\n'}
+[6.106754] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__type_support.c\n'}
+[6.106842] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__type_support.c\n'}
+[6.106949] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__type_support.c\n'}
+[6.107043] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__rosidl_typesupport_introspection_c.h\n'}
+[6.107135] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__rosidl_typesupport_introspection_c.h\n'}
+[6.107244] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__rosidl_typesupport_introspection_c.h\n'}
+[6.107318] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__type_support.c\n'}
+[6.107421] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__rosidl_typesupport_introspection_c.h\n'}
+[6.107512] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/rosidl_typesupport_introspection_c__visibility_control.h\n'}
+[6.107603] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_introspection_c.so\n'}
+[6.107706] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_introspection_c.so" to ""\n'}
+[6.107824] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_c.so\n'}
+[6.107903] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_c.so" to ""\n'}
+[6.108030] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface\n'}
+[6.108121] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg\n'}
+[6.108213] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/armor.hpp\n'}
+[6.108304] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/target.hpp\n'}
+[6.108394] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail\n'}
+[6.108499] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__builder.hpp\n'}
+[6.108590] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__struct.hpp\n'}
+[6.108664] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__traits.hpp\n'}
+[6.108758] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__struct.hpp\n'}
+[6.108833] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__traits.hpp\n'}
+[6.108905] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__traits.hpp\n'}
+[6.108986] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__struct.hpp\n'}
+[6.109080] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__builder.hpp\n'}
+[6.109167] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__struct.hpp\n'}
+[6.109249] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__builder.hpp\n'}
+[6.109322] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__traits.hpp\n'}
+[6.109399] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__builder.hpp\n'}
+[6.109504] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/gimbal.hpp\n'}
+[6.109592] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/armors.hpp\n'}
+[6.109672] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface\n'}
+[6.109766] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg\n'}
+[6.109839] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail\n'}
+[6.109911] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__rosidl_typesupport_introspection_cpp.hpp\n'}
+[6.109983] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__type_support.cpp\n'}
+[6.110056] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__type_support.cpp\n'}
+[6.110128] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__type_support.cpp\n'}
+[6.110200] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__type_support.cpp\n'}
+[6.110273] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__rosidl_typesupport_introspection_cpp.hpp\n'}
+[6.110346] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__rosidl_typesupport_introspection_cpp.hpp\n'}
+[6.110419] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__rosidl_typesupport_introspection_cpp.hpp\n'}
+[6.110492] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_introspection_cpp.so\n'}
+[6.110576] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_introspection_cpp.so" to ""\n'}
+[6.110648] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_cpp.so\n'}
+[6.110721] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_cpp.so" to ""\n'}
+[6.110794] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/pythonpath.sh\n'}
+[6.110867] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/pythonpath.dsv\n'}
+[6.110939] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/__init__.py\n'}
+[6.114040] (-) TimerEvent: {}
+[6.137352] (global_interface) StdoutLine: {'line': b"Compiling '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/__init__.py'...\n"}
+[6.141738] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg\n'}
+[6.142034] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_target_s.c\n'}
+[6.142263] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_target.py\n'}
+[6.142564] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_gimbal.py\n'}
+[6.142861] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_armors_s.c\n'}
+[6.143035] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/__init__.py\n'}
+[6.143169] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_gimbal_s.c\n'}
+[6.143262] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_armor.py\n'}
+[6.143362] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_armor_s.c\n'}
+[6.143455] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_armors.py\n'}
+[6.143630] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_fastrtps_c.cpython-38-x86_64-linux-gnu.so\n'}
+[6.144504] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_fastrtps_c.cpython-38-x86_64-linux-gnu.so" to ""\n'}
+[6.145001] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_introspection_c.cpython-38-x86_64-linux-gnu.so\n'}
+[6.146280] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_introspection_c.cpython-38-x86_64-linux-gnu.so" to ""\n'}
+[6.146693] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_c.cpython-38-x86_64-linux-gnu.so\n'}
+[6.147996] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_c.cpython-38-x86_64-linux-gnu.so" to ""\n'}
+[6.148353] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__python.so\n'}
+[6.149152] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__python.so" to ""\n'}
+[6.149478] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Gimbal.idl\n'}
+[6.149647] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Armor.idl\n'}
+[6.149881] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Armors.idl\n'}
+[6.150072] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Target.idl\n'}
+[6.150245] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Gimbal.msg\n'}
+[6.150413] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Armor.msg\n'}
+[6.150580] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Armors.msg\n'}
+[6.150723] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Target.msg\n'}
+[6.150890] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/ament_index/resource_index/package_run_dependencies/global_interface\n'}
+[6.150991] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/ament_index/resource_index/parent_prefix_path/global_interface\n'}
+[6.151106] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/ament_prefix_path.sh\n'}
+[6.151254] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/ament_prefix_path.dsv\n'}
+[6.151398] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/path.sh\n'}
+[6.151542] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/path.dsv\n'}
+[6.151676] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/local_setup.bash\n'}
+[6.151898] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/local_setup.sh\n'}
+[6.152128] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/local_setup.zsh\n'}
+[6.152362] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/local_setup.dsv\n'}
+[6.152558] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/package.dsv\n'}
+[6.152692] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/ament_index/resource_index/packages/global_interface\n'}
+[6.152852] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_generator_cExport.cmake\n'}
+[6.153013] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_generator_cExport-noconfig.cmake\n'}
+[6.153233] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_introspection_cExport.cmake\n'}
+[6.153417] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_introspection_cExport-noconfig.cmake\n'}
+[6.153575] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_cExport.cmake\n'}
+[6.153732] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_cExport-noconfig.cmake\n'}
+[6.153886] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_generator_cppExport.cmake\n'}
+[6.154033] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_introspection_cppExport.cmake\n'}
+[6.154184] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_introspection_cppExport-noconfig.cmake\n'}
+[6.154462] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_cppExport.cmake\n'}
+[6.154676] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_cppExport-noconfig.cmake\n'}
+[6.154812] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/rosidl_cmake-extras.cmake\n'}
+[6.154993] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[6.155166] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/ament_cmake_export_libraries-extras.cmake\n'}
+[6.155349] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[6.155510] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[6.155682] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake\n'}
+[6.155841] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake\n'}
+[6.155979] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interfaceConfig.cmake\n'}
+[6.156109] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interfaceConfig-version.cmake\n'}
+[6.156232] (global_interface) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/package.xml\n'}
+[6.158549] (global_interface) CommandEnded: {'returncode': 0}
+[6.214266] (-) TimerEvent: {}
+[6.313087] (global_interface) JobEnded: {'identifier': 'global_interface', 'rc': 0}
+[6.314324] (-) TimerEvent: {}
+[6.414649] (-) TimerEvent: {}
+[6.515092] (-) TimerEvent: {}
+[6.615493] (-) TimerEvent: {}
+[6.715984] (-) TimerEvent: {}
+[6.816456] (-) TimerEvent: {}
+[6.916907] (-) TimerEvent: {}
+[7.017304] (-) TimerEvent: {}
+[7.118056] (-) TimerEvent: {}
+[7.218745] (-) TimerEvent: {}
+[7.319401] (-) TimerEvent: {}
+[7.419745] (-) TimerEvent: {}
+[7.509884] (global_user) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX shared library libglobal_user.so\x1b[0m\n'}
+[7.520094] (-) TimerEvent: {}
+[7.620454] (-) TimerEvent: {}
+[7.720838] (-) TimerEvent: {}
+[7.724473] (global_user) StdoutLine: {'line': b'[100%] Built target global_user\n'}
+[7.742064] (global_user) CommandEnded: {'returncode': 0}
+[7.784161] (global_user) JobProgress: {'identifier': 'global_user', 'progress': 'install'}
+[7.786441] (global_user) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user'], 'cwd': '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'zhengtu'), ('LC_TIME', 'zh_CN.UTF-8'), ('SSH_AGENT_PID', '2225'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HOME', '/home/zhengtu'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.72.0'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2032'), ('DBUS_STARTER_BUS_TYPE', 'session'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'zhengtu'), ('JOURNAL_STREAM', '8:45654'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'zhengtu'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/zhengtu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/zhengtu-NMH-WXX9:@/tmp/.ICE-unix/2300,unix/zhengtu-NMH-WXX9:/tmp/.ICE-unix/2300'), ('INVOCATION_ID', '908929a0a72149b693f9b4f4a6b2b5fc'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/8081d553_3e82_439d_85a9_bd1bbee3bb78'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-e145d6ad7b.sock'), ('GNOME_TERMINAL_SERVICE', ':1.373'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('DBUS_STARTER_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/galactic/lib/python3.8/site-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[7.794690] (global_user) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[7.795053] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/library_path.sh\n'}
+[7.795332] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/library_path.dsv\n'}
+[7.795528] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/include\n'}
+[7.795703] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/include/global_user\n'}
+[7.795887] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/include/global_user/global_user.hpp\n'}
+[7.796037] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/include/coordsolver.hpp\n'}
+[7.796179] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/lib/libglobal_user.so\n'}
+[7.798453] (global_user) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/lib/libglobal_user.so" to ""\n'}
+[7.798744] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config\n'}
+[7.798916] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/autoaim.yaml\n'}
+[7.799021] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/buff.yaml\n'}
+[7.799137] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/camera_ros.yaml\n'}
+[7.799230] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/camera.yaml\n'}
+[7.799354] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/ament_index/resource_index/package_run_dependencies/global_user\n'}
+[7.799464] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/ament_index/resource_index/parent_prefix_path/global_user\n'}
+[7.799616] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/ament_prefix_path.sh\n'}
+[7.799730] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/ament_prefix_path.dsv\n'}
+[7.799860] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/path.sh\n'}
+[7.800011] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/path.dsv\n'}
+[7.800116] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.bash\n'}
+[7.800245] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.sh\n'}
+[7.800382] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.zsh\n'}
+[7.800498] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.dsv\n'}
+[7.800631] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/package.dsv\n'}
+[7.800743] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/ament_index/resource_index/packages/global_user\n'}
+[7.800900] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userExport.cmake\n'}
+[7.801062] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userExport-noconfig.cmake\n'}
+[7.801201] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[7.801314] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_libraries-extras.cmake\n'}
+[7.801427] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[7.801553] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[7.801682] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userConfig.cmake\n'}
+[7.801802] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userConfig-version.cmake\n'}
+[7.801896] (global_user) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/package.xml\n'}
+[7.803350] (global_user) CommandEnded: {'returncode': 0}
+[7.821152] (-) TimerEvent: {}
+[7.880455] (global_user) JobEnded: {'identifier': 'global_user', 'rc': 0}
+[7.882793] (camera_driver) JobStarted: {'identifier': 'camera_driver'}
+[7.899412] (camera_driver) JobProgress: {'identifier': 'camera_driver', 'progress': 'cmake'}
+[7.901530] (camera_driver) Command: {'cmd': ['/usr/bin/cmake', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/camera_driver', '-DCMAKE_INSTALL_PREFIX=/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver'], 'cwd': '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/camera_driver', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'zhengtu'), ('LC_TIME', 'zh_CN.UTF-8'), ('SSH_AGENT_PID', '2225'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/lib:/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32'), ('HOME', '/home/zhengtu'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.72.0'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2032'), ('DBUS_STARTER_BUS_TYPE', 'session'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'zhengtu'), ('JOURNAL_STREAM', '8:45654'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'zhengtu'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/zhengtu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/zhengtu-NMH-WXX9:@/tmp/.ICE-unix/2300,unix/zhengtu-NMH-WXX9:/tmp/.ICE-unix/2300'), ('INVOCATION_ID', '908929a0a72149b693f9b4f4a6b2b5fc'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/8081d553_3e82_439d_85a9_bd1bbee3bb78'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-e145d6ad7b.sock'), ('GNOME_TERMINAL_SERVICE', ':1.373'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user:/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/camera_driver'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('DBUS_STARTER_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user:/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic')]), 'shell': False}
+[7.921231] (-) TimerEvent: {}
+[7.978773] (camera_driver) StdoutLine: {'line': b'-- The C compiler identification is GNU 9.4.0\n'}
+[8.021714] (-) TimerEvent: {}
+[8.049580] (camera_driver) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 9.4.0\n'}
+[8.056027] (camera_driver) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc\n'}
+[8.122043] (-) TimerEvent: {}
+[8.160513] (camera_driver) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc -- works\n'}
+[8.163408] (camera_driver) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[8.222395] (-) TimerEvent: {}
+[8.271596] (camera_driver) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[8.286787] (camera_driver) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[8.287117] (camera_driver) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[8.288917] (camera_driver) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++\n'}
+[8.322523] (-) TimerEvent: {}
+[8.389949] (camera_driver) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ -- works\n'}
+[8.392454] (camera_driver) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[8.422655] (-) TimerEvent: {}
+[8.503803] (camera_driver) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[8.520078] (camera_driver) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[8.520462] (camera_driver) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[8.522104] (camera_driver) StdoutLine: {'line': b'-- Found ament_cmake: 1.1.5 (/opt/ros/galactic/share/ament_cmake/cmake)\n'}
+[8.522745] (-) TimerEvent: {}
+[8.548439] (camera_driver) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") \n'}
+[8.548690] (camera_driver) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[8.622898] (-) TimerEvent: {}
+[8.634268] (camera_driver) StdoutLine: {'line': b'-- Found rclcpp: 9.2.1 (/opt/ros/galactic/share/rclcpp/cmake)\n'}
+[8.673018] (camera_driver) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[8.680780] (camera_driver) StdoutLine: {'line': b'-- Found rosidl_adapter: 2.2.2 (/opt/ros/galactic/share/rosidl_adapter/cmake)\n'}
+[8.723041] (-) TimerEvent: {}
+[8.785396] (camera_driver) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "1.1.1f")  \n'}
+[8.816481] (camera_driver) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/galactic/include  \n'}
+[8.823203] (-) TimerEvent: {}
+[8.901075] (camera_driver) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[8.923347] (-) TimerEvent: {}
+[8.950638] (camera_driver) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)\n'}
+[8.952585] (camera_driver) StdoutLine: {'line': b'-- Found rmw_cyclonedds_cpp: 0.22.5 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)\n'}
+[8.967607] (camera_driver) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_cyclonedds_cpp' as default\n"}
+[8.968230] (camera_driver) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[9.023694] (-) TimerEvent: {}
+[9.067011] (camera_driver) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[9.067336] (camera_driver) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[9.124052] (-) TimerEvent: {}
+[9.162771] (camera_driver) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed\n'}
+[9.163094] (camera_driver) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads\n'}
+[9.224177] (-) TimerEvent: {}
+[9.245613] (camera_driver) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads - not found\n'}
+[9.245882] (camera_driver) StdoutLine: {'line': b'-- Looking for pthread_create in pthread\n'}
+[9.324339] (-) TimerEvent: {}
+[9.347827] (camera_driver) StdoutLine: {'line': b'-- Looking for pthread_create in pthread - found\n'}
+[9.350983] (camera_driver) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[9.424472] (-) TimerEvent: {}
+[9.481417] (camera_driver) StdoutLine: {'line': b'-- Found rclcpp_components: 9.2.1 (/opt/ros/galactic/share/rclcpp_components/cmake)\n'}
+[9.524610] (-) TimerEvent: {}
+[9.541879] (camera_driver) StdoutLine: {'line': b'-- Found OpenCV: /usr/local (found version "4.5.5") \n'}
+[9.542293] (camera_driver) StdoutLine: {'line': b'-- Found geometry_msgs: 2.2.4 (/opt/ros/galactic/share/geometry_msgs/cmake)\n'}
+[9.569753] (camera_driver) StdoutLine: {'line': b'-- Found tf2_geometry_msgs: 0.17.4 (/opt/ros/galactic/share/tf2_geometry_msgs/cmake)\n'}
+[9.575749] (camera_driver) StdoutLine: {'line': b'-- Found eigen3_cmake_module: 0.1.1 (/opt/ros/galactic/share/eigen3_cmake_module/cmake)\n'}
+[9.577408] (camera_driver) StdoutLine: {'line': b'-- Found Eigen3: TRUE (found version "3.4.0") \n'}
+[9.624740] (-) TimerEvent: {}
+[9.725109] (-) TimerEvent: {}
+[9.825445] (-) TimerEvent: {}
+[9.846563] (camera_driver) StdoutLine: {'line': b'-- Found rclpy: 1.9.2 (/opt/ros/galactic/share/rclpy/cmake)\n'}
+[9.847392] (camera_driver) StdoutLine: {'line': b'-- Found rclcpp_lifecycle: 9.2.1 (/opt/ros/galactic/share/rclcpp_lifecycle/cmake)\n'}
+[9.875002] (camera_driver) StdoutLine: {'line': b'-- Found laser_geometry: 2.2.1 (/opt/ros/galactic/share/laser_geometry/cmake)\n'}
+[9.879188] (camera_driver) StdoutLine: {'line': b'-- Found sensor_msgs: 2.2.4 (/opt/ros/galactic/share/sensor_msgs/cmake)\n'}
+[9.925582] (-) TimerEvent: {}
+[9.936973] (camera_driver) StdoutLine: {'line': b'-- Found tf2_sensor_msgs: 0.17.4 (/opt/ros/galactic/share/tf2_sensor_msgs/cmake)\n'}
+[9.950627] (camera_driver) StdoutLine: {'line': b'-- Found visualization_msgs: 2.2.4 (/opt/ros/galactic/share/visualization_msgs/cmake)\n'}
+[10.007866] (camera_driver) StdoutLine: {'line': b'-- Found angles: 1.14.0 (/opt/ros/galactic/share/angles/cmake)\n'}
+[10.009301] (camera_driver) StdoutLine: {'line': b'-- Found robot_state_publisher: 2.5.3 (/opt/ros/galactic/share/robot_state_publisher/cmake)\n'}
+[10.025725] (-) TimerEvent: {}
+[10.059825] (camera_driver) StdoutLine: {'line': b'-- Found global_user: 0.0.0 (/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake)\n'}
+[10.125865] (-) TimerEvent: {}
+[10.176568] (camera_driver) StdoutLine: {'line': b'-- Found global_interface: 0.0.0 (/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake)\n'}
+[10.226218] (-) TimerEvent: {}
+[10.279493] (camera_driver) StdoutLine: {'line': b'-- Found image_transport: 2.5.0 (/opt/ros/galactic/share/image_transport/cmake)\n'}
+[10.294498] (camera_driver) StdoutLine: {'line': b'-- Found camera_info_manager: 2.5.0 (/opt/ros/galactic/share/camera_info_manager/cmake)\n'}
+[10.326508] (-) TimerEvent: {}
+[10.356483] (camera_driver) StdoutLine: {'line': b'-- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.8.so (found version "3.8.10") \n'}
+[10.426634] (-) TimerEvent: {}
+[10.526990] (-) TimerEvent: {}
+[10.627343] (-) TimerEvent: {}
+[10.633169] (camera_driver) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3.8 (found version "3.8.10") found components: Interpreter Development \n'}
+[10.727490] (-) TimerEvent: {}
+[10.827869] (-) TimerEvent: {}
+[10.928245] (-) TimerEvent: {}
+[10.961740] (camera_driver) StdoutLine: {'line': b'-- Found Python3: /home/zhengtu/.local/lib/python3.8/site-packages/numpy/core/include (found version "3.8.10") found components: NumPy Interpreter Development \n'}
+[11.028384] (-) TimerEvent: {}
+[11.128721] (-) TimerEvent: {}
+[11.229053] (-) TimerEvent: {}
+[11.284869] (camera_driver) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.10.7 (/opt/ros/galactic/share/ament_lint_auto/cmake)\n'}
+[11.329197] (-) TimerEvent: {}
+[11.362523] (camera_driver) StdoutLine: {'line': b"-- Added test 'copyright' to check source files copyright and LICENSE\n"}
+[11.364168] (camera_driver) StdoutLine: {'line': b"-- Added test 'cppcheck' to perform static code analysis on C / C++ code\n"}
+[11.365531] (camera_driver) StdoutLine: {'line': b'-- Configured cppcheck include dirs: /home/zhengtu/Desktop/TUP-Vision-2023-Based/src/camera_driver/include;/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/camera_driver/dependencies/hik_sdk/include;/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/camera_driver/dependencies/daheng_sdk/include\n'}
+[11.365703] (camera_driver) StdoutLine: {'line': b'-- Configured cppcheck exclude dirs and/or files: \n'}
+[11.367150] (camera_driver) StdoutLine: {'line': b"-- Added test 'cpplint' to check C / C++ code against the Google style\n"}
+[11.367377] (camera_driver) StdoutLine: {'line': b'-- Configured cpplint exclude dirs and/or files: \n'}
+[11.367885] (camera_driver) StdoutLine: {'line': b"-- Added test 'flake8' to check Python code syntax and style conventions\n"}
+[11.368727] (camera_driver) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[11.369231] (camera_driver) StdoutLine: {'line': b"-- Added test 'pep257' to check Python code against some of the style conventions in PEP 257\n"}
+[11.370719] (camera_driver) StdoutLine: {'line': b"-- Added test 'uncrustify' to check C / C++ code style\n"}
+[11.370859] (camera_driver) StdoutLine: {'line': b'-- Configured uncrustify additional arguments: \n'}
+[11.371289] (camera_driver) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[11.374718] (camera_driver) StdoutLine: {'line': b'-- Configuring done\n'}
+[11.429342] (-) TimerEvent: {}
+[11.449627] (camera_driver) StdoutLine: {'line': b'-- Generating done\n'}
+[11.451817] (camera_driver) StdoutLine: {'line': b'-- Build files have been written to: /home/zhengtu/Desktop/TUP-Vision-2023-Based/build/camera_driver\n'}
+[11.462590] (camera_driver) CommandEnded: {'returncode': 0}
+[11.463651] (camera_driver) JobProgress: {'identifier': 'camera_driver', 'progress': 'build'}
+[11.466358] (camera_driver) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/camera_driver', '--', '-j16', '-l16'], 'cwd': '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/camera_driver', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'zhengtu'), ('LC_TIME', 'zh_CN.UTF-8'), ('SSH_AGENT_PID', '2225'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/lib:/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32'), ('HOME', '/home/zhengtu'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.72.0'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2032'), ('DBUS_STARTER_BUS_TYPE', 'session'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'zhengtu'), ('JOURNAL_STREAM', '8:45654'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'zhengtu'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/zhengtu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/zhengtu-NMH-WXX9:@/tmp/.ICE-unix/2300,unix/zhengtu-NMH-WXX9:/tmp/.ICE-unix/2300'), ('INVOCATION_ID', '908929a0a72149b693f9b4f4a6b2b5fc'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/8081d553_3e82_439d_85a9_bd1bbee3bb78'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-e145d6ad7b.sock'), ('GNOME_TERMINAL_SERVICE', ':1.373'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user:/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/camera_driver'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('DBUS_STARTER_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user:/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic')]), 'shell': False}
+[11.528626] (camera_driver) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target camera_driver\x1b[0m\n'}
+[11.529452] (-) TimerEvent: {}
+[11.619196] (camera_driver) StdoutLine: {'line': b'[ 10%] \x1b[32mBuilding CXX object CMakeFiles/camera_driver.dir/src/usb_driver/usb_cam.cpp.o\x1b[0m\n'}
+[11.621516] (camera_driver) StdoutLine: {'line': b'[ 20%] \x1b[32mBuilding CXX object CMakeFiles/camera_driver.dir/src/hik_driver/hik_camera.cpp.o\x1b[0m\n'}
+[11.623577] (camera_driver) StdoutLine: {'line': b'[ 30%] \x1b[32mBuilding CXX object CMakeFiles/camera_driver.dir/src/daheng_driver/daheng_camera.cpp.o\x1b[0m\n'}
+[11.629608] (-) TimerEvent: {}
+[11.730018] (-) TimerEvent: {}
+[11.830423] (-) TimerEvent: {}
+[11.930831] (-) TimerEvent: {}
+[12.031252] (-) TimerEvent: {}
+[12.131652] (-) TimerEvent: {}
+[12.232056] (-) TimerEvent: {}
+[12.332445] (-) TimerEvent: {}
+[12.432829] (-) TimerEvent: {}
+[12.533248] (-) TimerEvent: {}
+[12.633635] (-) TimerEvent: {}
+[12.734007] (-) TimerEvent: {}
+[12.834383] (-) TimerEvent: {}
+[12.934776] (-) TimerEvent: {}
+[13.035169] (-) TimerEvent: {}
+[13.135565] (-) TimerEvent: {}
+[13.235968] (-) TimerEvent: {}
+[13.336330] (-) TimerEvent: {}
+[13.436708] (-) TimerEvent: {}
+[13.537083] (-) TimerEvent: {}
+[13.637441] (-) TimerEvent: {}
+[13.737798] (-) TimerEvent: {}
+[13.838168] (-) TimerEvent: {}
+[13.938545] (-) TimerEvent: {}
+[14.038919] (-) TimerEvent: {}
+[14.139277] (-) TimerEvent: {}
+[14.239675] (-) TimerEvent: {}
+[14.340276] (-) TimerEvent: {}
+[14.440761] (-) TimerEvent: {}
+[14.541258] (-) TimerEvent: {}
+[14.623343] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kbool camera_driver::hik_camera::set_trigger_mode(unsigned int, const char*, const char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[14.623750] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:393:21:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Kacquisition_start\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-parameter\x1b[m\x1b[K]\n'}
+[14.623999] (camera_driver) StderrLine: {'line': b'  393 |         \x1b[01;35m\x1b[Kconst char* acquisition_start\x1b[m\x1b[K,\n'}
+[14.624184] (camera_driver) StderrLine: {'line': b'      |         \x1b[01;35m\x1b[K~~~~~~~~~~~~^~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[14.624359] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:394:21:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Kacquisition_stop\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-parameter\x1b[m\x1b[K]\n'}
+[14.624538] (camera_driver) StderrLine: {'line': b'  394 |         \x1b[01;35m\x1b[Kconst char* acquisition_stop\x1b[m\x1b[K,\n'}
+[14.624713] (camera_driver) StderrLine: {'line': b'      |         \x1b[01;35m\x1b[K~~~~~~~~~~~~^~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[14.624885] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:396:22:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Ktrigger_selector\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-parameter\x1b[m\x1b[K]\n'}
+[14.625060] (camera_driver) StderrLine: {'line': b'  396 |         \x1b[01;35m\x1b[Kunsigned int trigger_selector\x1b[m\x1b[K,\n'}
+[14.625233] (camera_driver) StderrLine: {'line': b'      |         \x1b[01;35m\x1b[K~~~~~~~~~~~~~^~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[14.625405] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:398:22:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Ktrigger_source_line\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-parameter\x1b[m\x1b[K]\n'}
+[14.625590] (camera_driver) StderrLine: {'line': b'  398 |         \x1b[01;35m\x1b[Kunsigned int trigger_source_line\x1b[m\x1b[K,\n'}
+[14.625765] (camera_driver) StderrLine: {'line': b'      |         \x1b[01;35m\x1b[K~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[14.625941] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:399:22:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Ktrigger_activation\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-parameter\x1b[m\x1b[K]\n'}
+[14.626116] (camera_driver) StderrLine: {'line': b'  399 |         \x1b[01;35m\x1b[Kunsigned int trigger_activation\x1b[m\x1b[K,\n'}
+[14.626291] (camera_driver) StderrLine: {'line': b'      |         \x1b[01;35m\x1b[K~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[14.626478] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:400:22:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Ktrigger_delay\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-parameter\x1b[m\x1b[K]\n'}
+[14.626661] (camera_driver) StderrLine: {'line': b'  400 |         \x1b[01;35m\x1b[Kunsigned int trigger_delay\x1b[m\x1b[K)\n'}
+[14.626834] (camera_driver) StderrLine: {'line': b'      |         \x1b[01;35m\x1b[K~~~~~~~~~~~~~^~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[14.627007] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kbool camera_driver::hik_camera::set_digital_io_control(unsigned int, unsigned int, bool, unsigned int)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[14.627196] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:510:5:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kno return statement in function returning non-void [\x1b[01;35m\x1b[K-Wreturn-type\x1b[m\x1b[K]\n'}
+[14.627387] (camera_driver) StderrLine: {'line': b'  510 |     \x1b[01;35m\x1b[K}\x1b[m\x1b[K\n'}
+[14.627562] (camera_driver) StderrLine: {'line': b'      |     \x1b[01;35m\x1b[K^\x1b[m\x1b[K\n'}
+[14.627735] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:474:22:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Ktrigger_selector\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-parameter\x1b[m\x1b[K]\n'}
+[14.627946] (camera_driver) StderrLine: {'line': b'  474 |         \x1b[01;35m\x1b[Kunsigned int trigger_selector\x1b[m\x1b[K)\n'}
+[14.628123] (camera_driver) StderrLine: {'line': b'      |         \x1b[01;35m\x1b[K~~~~~~~~~~~~~^~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[14.641366] (-) TimerEvent: {}
+[14.741956] (-) TimerEvent: {}
+[14.842434] (-) TimerEvent: {}
+[14.943093] (-) TimerEvent: {}
+[15.043567] (-) TimerEvent: {}
+[15.144118] (-) TimerEvent: {}
+[15.244602] (-) TimerEvent: {}
+[15.345025] (-) TimerEvent: {}
+[15.445362] (-) TimerEvent: {}
+[15.546188] (-) TimerEvent: {}
+[15.646540] (-) TimerEvent: {}
+[15.746924] (-) TimerEvent: {}
+[15.750998] (camera_driver) StdoutLine: {'line': b'[ 40%] \x1b[32m\x1b[1mLinking CXX shared library libcamera_driver.so\x1b[0m\n'}
+[15.847056] (-) TimerEvent: {}
+[15.915126] (camera_driver) StdoutLine: {'line': b'[ 40%] Built target camera_driver\n'}
+[15.930835] (camera_driver) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target hik_cam_driver_node\x1b[0m\n'}
+[15.931118] (camera_driver) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target usb_cam_driver_node\x1b[0m\n'}
+[15.931595] (camera_driver) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target daheng_cam_driver_node\x1b[0m\n'}
+[15.947190] (-) TimerEvent: {}
+[15.994365] (camera_driver) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/daheng_cam_driver_node.dir/src/daheng_driver/daheng_cam_node.cpp.o\x1b[0m\n'}
+[16.022887] (camera_driver) StdoutLine: {'line': b'[ 70%] \x1b[32mBuilding CXX object CMakeFiles/hik_cam_driver_node.dir/src/hik_driver/hik_cam_node.cpp.o\x1b[0m\n'}
+[16.023113] (camera_driver) StdoutLine: {'line': b'[ 70%] \x1b[32mBuilding CXX object CMakeFiles/usb_cam_driver_node.dir/src/usb_driver/usb_cam_node.cpp.o\x1b[0m\n'}
+[16.047323] (-) TimerEvent: {}
+[16.147654] (-) TimerEvent: {}
+[16.248123] (-) TimerEvent: {}
+[16.348502] (-) TimerEvent: {}
+[16.448899] (-) TimerEvent: {}
+[16.549291] (-) TimerEvent: {}
+[16.649709] (-) TimerEvent: {}
+[16.750235] (-) TimerEvent: {}
+[16.851075] (-) TimerEvent: {}
+[16.951497] (-) TimerEvent: {}
+[17.051938] (-) TimerEvent: {}
+[17.152342] (-) TimerEvent: {}
+[17.252767] (-) TimerEvent: {}
+[17.353185] (-) TimerEvent: {}
+[17.453577] (-) TimerEvent: {}
+[17.554009] (-) TimerEvent: {}
+[17.654426] (-) TimerEvent: {}
+[17.754810] (-) TimerEvent: {}
+[17.855316] (-) TimerEvent: {}
+[17.955811] (-) TimerEvent: {}
+[18.056258] (-) TimerEvent: {}
+[18.156658] (-) TimerEvent: {}
+[18.257013] (-) TimerEvent: {}
+[18.357415] (-) TimerEvent: {}
+[18.457834] (-) TimerEvent: {}
+[18.558200] (-) TimerEvent: {}
+[18.658608] (-) TimerEvent: {}
+[18.758996] (-) TimerEvent: {}
+[18.859408] (-) TimerEvent: {}
+[18.959850] (-) TimerEvent: {}
+[19.060242] (-) TimerEvent: {}
+[19.160678] (-) TimerEvent: {}
+[19.261066] (-) TimerEvent: {}
+[19.361460] (-) TimerEvent: {}
+[19.461805] (-) TimerEvent: {}
+[19.562198] (-) TimerEvent: {}
+[19.662581] (-) TimerEvent: {}
+[19.762967] (-) TimerEvent: {}
+[19.863335] (-) TimerEvent: {}
+[19.963723] (-) TimerEvent: {}
+[20.064118] (-) TimerEvent: {}
+[20.164504] (-) TimerEvent: {}
+[20.264878] (-) TimerEvent: {}
+[20.365252] (-) TimerEvent: {}
+[20.465646] (-) TimerEvent: {}
+[20.566023] (-) TimerEvent: {}
+[20.666384] (-) TimerEvent: {}
+[20.766768] (-) TimerEvent: {}
+[20.867181] (-) TimerEvent: {}
+[20.967661] (-) TimerEvent: {}
+[21.068131] (-) TimerEvent: {}
+[21.168612] (-) TimerEvent: {}
+[21.268976] (-) TimerEvent: {}
+[21.369390] (-) TimerEvent: {}
+[21.469771] (-) TimerEvent: {}
+[21.570152] (-) TimerEvent: {}
+[21.670496] (-) TimerEvent: {}
+[21.770825] (-) TimerEvent: {}
+[21.871192] (-) TimerEvent: {}
+[21.952326] (camera_driver) StdoutLine: {'line': b'[ 80%] \x1b[32m\x1b[1mLinking CXX executable daheng_cam_driver_node\x1b[0m\n'}
+[21.971364] (-) TimerEvent: {}
+[22.071757] (-) TimerEvent: {}
+[22.172221] (-) TimerEvent: {}
+[22.272720] (-) TimerEvent: {}
+[22.373136] (-) TimerEvent: {}
+[22.422956] (camera_driver) StdoutLine: {'line': b'[ 90%] \x1b[32m\x1b[1mLinking CXX executable usb_cam_driver_node\x1b[0m\n'}
+[22.473285] (-) TimerEvent: {}
+[22.511937] (camera_driver) StdoutLine: {'line': b'[ 90%] Built target daheng_cam_driver_node\n'}
+[22.573451] (-) TimerEvent: {}
+[22.666762] (camera_driver) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable hik_cam_driver_node\x1b[0m\n'}
+[22.673614] (-) TimerEvent: {}
+[22.774013] (-) TimerEvent: {}
+[22.874471] (-) TimerEvent: {}
+[22.974944] (-) TimerEvent: {}
+[23.006396] (camera_driver) StdoutLine: {'line': b'[100%] Built target usb_cam_driver_node\n'}
+[23.075090] (-) TimerEvent: {}
+[23.175435] (-) TimerEvent: {}
+[23.187188] (camera_driver) StdoutLine: {'line': b'[100%] Built target hik_cam_driver_node\n'}
+[23.203949] (camera_driver) CommandEnded: {'returncode': 0}
+[23.267307] (camera_driver) JobProgress: {'identifier': 'camera_driver', 'progress': 'install'}
+[23.270476] (camera_driver) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/camera_driver'], 'cwd': '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/camera_driver', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'zhengtu'), ('LC_TIME', 'zh_CN.UTF-8'), ('SSH_AGENT_PID', '2225'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/lib:/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32'), ('HOME', '/home/zhengtu'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.72.0'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2032'), ('DBUS_STARTER_BUS_TYPE', 'session'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'zhengtu'), ('JOURNAL_STREAM', '8:45654'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'zhengtu'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/zhengtu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/zhengtu-NMH-WXX9:@/tmp/.ICE-unix/2300,unix/zhengtu-NMH-WXX9:/tmp/.ICE-unix/2300'), ('INVOCATION_ID', '908929a0a72149b693f9b4f4a6b2b5fc'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/8081d553_3e82_439d_85a9_bd1bbee3bb78'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-e145d6ad7b.sock'), ('GNOME_TERMINAL_SERVICE', ':1.373'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user:/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/camera_driver'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('DBUS_STARTER_ADDRESS', 'unix:path=/run/user/1000/bus,guid=27ca5ad27b47906332450e9f6355eee3'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user:/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic')]), 'shell': False}
+[23.275912] (-) TimerEvent: {}
+[23.283861] (camera_driver) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[23.284358] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/libcamera_driver.so\n'}
+[23.284675] (camera_driver) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/libcamera_driver.so" to ""\n'}
+[23.284888] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/camera_driver/usb_cam_driver_node\n'}
+[23.285778] (camera_driver) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/camera_driver/usb_cam_driver_node" to ""\n'}
+[23.286016] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/camera_driver/hik_cam_driver_node\n'}
+[23.287122] (camera_driver) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/camera_driver/hik_cam_driver_node" to ""\n'}
+[23.287400] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/camera_driver/daheng_cam_driver_node\n'}
+[23.288421] (camera_driver) StdoutLine: {'line': b'-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/camera_driver/daheng_cam_driver_node" to ""\n'}
+[23.288784] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/launch\n'}
+[23.288933] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/launch/daheng_cam_node.launch.py\n'}
+[23.289036] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/launch/usb_cam_node.launch.py\n'}
+[23.289305] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/launch/hik_cam_node.launch.py\n'}
+[23.289441] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/config\n'}
+[23.289553] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/config/camera.yaml\n'}
+[23.289667] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/ament_index/resource_index/package_run_dependencies/camera_driver\n'}
+[23.289792] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/ament_index/resource_index/parent_prefix_path/camera_driver\n'}
+[23.289898] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/environment/ament_prefix_path.sh\n'}
+[23.290006] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/environment/ament_prefix_path.dsv\n'}
+[23.290115] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/environment/path.sh\n'}
+[23.290246] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/environment/path.dsv\n'}
+[23.290370] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/local_setup.bash\n'}
+[23.290487] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/local_setup.sh\n'}
+[23.290587] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/local_setup.zsh\n'}
+[23.290678] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/local_setup.dsv\n'}
+[23.290768] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/package.dsv\n'}
+[23.290859] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/ament_index/resource_index/packages/camera_driver\n'}
+[23.290951] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/ament_index/resource_index/rclcpp_components/camera_driver\n'}
+[23.291042] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/cmake/camera_driverConfig.cmake\n'}
+[23.291135] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/cmake/camera_driverConfig-version.cmake\n'}
+[23.291228] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/package.xml\n'}
+[23.292207] (camera_driver) CommandEnded: {'returncode': 0}
+[23.376080] (-) TimerEvent: {}
+[23.395158] (camera_driver) JobEnded: {'identifier': 'camera_driver', 'rc': 0}
+[23.396453] (-) EventReactorShutdown: {}

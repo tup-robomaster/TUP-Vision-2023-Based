@@ -1,0 +1,118 @@
+[0.022s] Invoking command in '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake /home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user -DCMAKE_INSTALL_PREFIX=/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user
+[0.090s] -- The C compiler identification is GNU 9.4.0
+[0.158s] -- The CXX compiler identification is GNU 9.4.0
+[0.164s] -- Check for working C compiler: /usr/bin/cc
+[0.252s] -- Check for working C compiler: /usr/bin/cc -- works
+[0.255s] -- Detecting C compiler ABI info
+[0.344s] -- Detecting C compiler ABI info - done
+[0.361s] -- Detecting C compile features
+[0.361s] -- Detecting C compile features - done
+[0.363s] -- Check for working CXX compiler: /usr/bin/c++
+[0.466s] -- Check for working CXX compiler: /usr/bin/c++ -- works
+[0.469s] -- Detecting CXX compiler ABI info
+[0.575s] -- Detecting CXX compiler ABI info - done
+[0.591s] -- Detecting CXX compile features
+[0.592s] -- Detecting CXX compile features - done
+[0.594s] -- Found ament_cmake: 1.1.5 (/opt/ros/galactic/share/ament_cmake/cmake)
+[0.621s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") 
+[0.621s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[0.684s] -- Found rclcpp: 9.2.1 (/opt/ros/galactic/share/rclcpp/cmake)
+[0.723s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.728s] -- Found rosidl_adapter: 2.2.2 (/opt/ros/galactic/share/rosidl_adapter/cmake)
+[0.846s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "1.1.1f")  
+[0.870s] -- Found FastRTPS: /opt/ros/galactic/include  
+[0.946s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.993s] -- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)
+[0.995s] -- Found rmw_cyclonedds_cpp: 0.22.5 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)
+[1.015s] -- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+[1.015s] -- Looking for pthread.h
+[1.099s] -- Looking for pthread.h - found
+[1.099s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[1.201s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+[1.201s] -- Looking for pthread_create in pthreads
+[1.287s] -- Looking for pthread_create in pthreads - not found
+[1.287s] -- Looking for pthread_create in pthread
+[1.398s] -- Looking for pthread_create in pthread - found
+[1.400s] -- Found Threads: TRUE  
+[1.520s] -- Found rclcpp_components: 9.2.1 (/opt/ros/galactic/share/rclcpp_components/cmake)
+[1.573s] -- Found OpenCV: /usr/local (found version "4.5.5") 
+[1.574s] -- Found geometry_msgs: 2.2.4 (/opt/ros/galactic/share/geometry_msgs/cmake)
+[1.602s] -- Found tf2_geometry_msgs: 0.17.4 (/opt/ros/galactic/share/tf2_geometry_msgs/cmake)
+[1.609s] -- Found eigen3_cmake_module: 0.1.1 (/opt/ros/galactic/share/eigen3_cmake_module/cmake)
+[1.611s] -- Found Eigen3: TRUE (found version "3.4.0") 
+[1.885s] -- Found rclpy: 1.9.2 (/opt/ros/galactic/share/rclpy/cmake)
+[1.886s] -- Found rclcpp_lifecycle: 9.2.1 (/opt/ros/galactic/share/rclcpp_lifecycle/cmake)
+[1.913s] -- Found laser_geometry: 2.2.1 (/opt/ros/galactic/share/laser_geometry/cmake)
+[1.915s] -- Found sensor_msgs: 2.2.4 (/opt/ros/galactic/share/sensor_msgs/cmake)
+[1.972s] -- Found tf2_sensor_msgs: 0.17.4 (/opt/ros/galactic/share/tf2_sensor_msgs/cmake)
+[1.986s] -- Found visualization_msgs: 2.2.4 (/opt/ros/galactic/share/visualization_msgs/cmake)
+[2.048s] -- Found angles: 1.14.0 (/opt/ros/galactic/share/angles/cmake)
+[2.049s] -- Found robot_state_publisher: 2.5.3 (/opt/ros/galactic/share/robot_state_publisher/cmake)
+[2.102s] -- Found required Ceres dependency: Eigen version 3.4.0 in /usr/local/share/eigen3/cmake
+[2.104s] -- Found required Ceres dependency: glog
+[2.105s] -- Found Ceres version: 2.1.0 installed in: /usr/local with components: [EigenSparse, SparseLinearAlgebraLibrary, SchurSpecializations, Multithreading]
+[2.109s] -- Found ament_lint_auto: 0.10.7 (/opt/ros/galactic/share/ament_lint_auto/cmake)
+[2.179s] -- Added test 'copyright' to check source files copyright and LICENSE
+[2.180s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[2.180s] -- Configured cppcheck include dirs: /home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/include;$<BUILD_INTERFACE:/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/include>
+[2.180s] -- Configured cppcheck exclude dirs and/or files: 
+[2.181s] -- Added test 'cpplint' to check C / C++ code against the Google style
+[2.181s] -- Configured cpplint exclude dirs and/or files: 
+[2.181s] -- Added test 'lint_cmake' to check CMake code style
+[2.182s] -- Added test 'uncrustify' to check C / C++ code style
+[2.182s] -- Configured uncrustify additional arguments: 
+[2.182s] -- Added test 'xmllint' to check XML markup files
+[2.186s] -- Configuring done
+[2.193s] -- Generating done
+[2.195s] -- Build files have been written to: /home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user
+[2.205s] Invoked command in '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user' returned '0': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake /home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user -DCMAKE_INSTALL_PREFIX=/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user
+[2.210s] Invoking command in '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --build /home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user -- -j16 -l16
+[2.266s] [35m[1mScanning dependencies of target global_user[0m
+[2.342s] [ 66%] [32mBuilding CXX object CMakeFiles/global_user.dir/src/coordsolver.cpp.o[0m
+[2.342s] [ 66%] [32mBuilding CXX object CMakeFiles/global_user.dir/src/global_user.cpp.o[0m
+[4.983s] [01m[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:[m[K In function ‘[01m[Kstd::string global_user::getParent(std::string)[m[K’:
+[4.984s] [01m[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:203:51:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kconst size_type[m[K’ {aka ‘[01m[Kconst long unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+[4.984s]   203 |         for(auto i = 0; i = path_tmp.find("/"), i != path_tmp.npos; path_tmp = path_tmp.substr(i + 1))
+[4.984s] [01m[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:[m[K In function ‘[01m[Kstd::vector<std::__cxx11::basic_string<char> > global_user::generatePathTree(std::string)[m[K’:
+[4.984s] [01m[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:223:47:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kconst size_type[m[K’ {aka ‘[01m[Kconst long unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+[4.984s]   223 |         for(auto i = 0; i = path.find("/"), i != path.npos; path = path.substr(i + 1))
+[7.496s] [100%] [32m[1mLinking CXX shared library libglobal_user.so[0m
+[7.710s] [100%] Built target global_user
+[7.728s] Invoked command in '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user' returned '0': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --build /home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user -- -j16 -l16
+[7.773s] Invoking command in '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --install /home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user
+[7.781s] -- Install configuration: ""
+[7.781s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/library_path.sh
+[7.781s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/library_path.dsv
+[7.781s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/include
+[7.781s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/include/global_user
+[7.782s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/include/global_user/global_user.hpp
+[7.782s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/include/coordsolver.hpp
+[7.782s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/lib/libglobal_user.so
+[7.784s] -- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/lib/libglobal_user.so" to ""
+[7.784s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config
+[7.785s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/autoaim.yaml
+[7.785s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/buff.yaml
+[7.785s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/camera_ros.yaml
+[7.785s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/camera.yaml
+[7.785s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/ament_index/resource_index/package_run_dependencies/global_user
+[7.785s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/ament_index/resource_index/parent_prefix_path/global_user
+[7.785s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/ament_prefix_path.sh
+[7.785s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/ament_prefix_path.dsv
+[7.786s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/path.sh
+[7.786s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/path.dsv
+[7.786s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.bash
+[7.786s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.sh
+[7.786s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.zsh
+[7.786s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.dsv
+[7.786s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/package.dsv
+[7.786s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/ament_index/resource_index/packages/global_user
+[7.787s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userExport.cmake
+[7.787s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userExport-noconfig.cmake
+[7.787s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_include_directories-extras.cmake
+[7.787s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_libraries-extras.cmake
+[7.787s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_targets-extras.cmake
+[7.787s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_dependencies-extras.cmake
+[7.787s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userConfig.cmake
+[7.787s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userConfig-version.cmake
+[7.788s] -- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/package.xml
+[7.793s] Invoked command in '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user' returned '0': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --install /home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user

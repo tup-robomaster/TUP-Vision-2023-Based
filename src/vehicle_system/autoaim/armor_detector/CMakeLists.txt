@@ -69,6 +69,7 @@ include_directories(include
 )
   
 include_directories(include)
+
 # add_library(${PROJECT_NAME}
   # ./include/armor_detector/armor_tracker.h 
   # ./include/armor_detector/inference.h 
@@ -84,9 +85,9 @@ include_directories(include)
 #   ${dependencies}  
 # )
   
-  # set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-  # target_compile_definitions(${PROJECT_NAME}
-  # PRIVATE "COMPOSITION_BUILDING_DLL")
+# set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+# target_compile_definitions(${PROJECT_NAME}
+# PRIVATE "COMPOSITION_BUILDING_DLL")
   
 add_executable(armor_detector_node
   # ./include/armor_detector/inference.h 
@@ -105,10 +106,6 @@ add_executable(armor_detector_node
 #   ./src/test/test.cpp 
 # )
 
-# rclcpp_components_register_nodes(${PROJECT_NAME}
-#   PLUGIN "armor_detector::detector_node"
-#   EXECUTABLE armor_detector_node
-# )
 
 ament_target_dependencies(armor_detector_node
   ${dependencies}
@@ -120,11 +117,16 @@ target_link_libraries(armor_detector_node
   # ${InferenceEngine_LIBRARIES}
   openvino::runtime 
   ${Eigen3_LIBRARIES}
-  
+
   yaml-cpp.so 
   glog.so 
   fmt.so
 )
+
+# rclcpp_components_register_nodes(${PROJECT_NAME}
+#   PLUGIN "armor_detector::detector_node"
+#   EXECUTABLE armor_detector_node
+# )
 
 # target_link_libraries(testing
 #   ${PROJECT_NAME}

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-10-17 13:25:33
+ * @LastEditTime: 2022-10-23 19:23:23
  * @FilePath: /tup_2023-10-16/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
@@ -37,14 +37,6 @@ namespace armor_detector
         //image sub
         img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
         std::bind(&detector_node::image_callback, this, _1), transport_));
-
-        // img_sub = std::make_shared<image_transport::Subscriber>(this, "daheng_camera/daheng_image_data", &detector_node::image_callback, ,transport_);
-        // it = image_transport::ImageTransport(this);
-        // img_sub = it.subscribe("daheng_camera/daheng_image_data", 1, &detector_node::image_callback, this);
-
-        // img_sub = this->create_subscription<sensor_msgs::msg::Image>("daheng_camera/daheng_image_data", rclcpp::SensorDataQoS(), 
-        //     std::bind(&image_callback, this, _1));
-
     }
 
     detector_node::~detector_node()
@@ -61,8 +53,10 @@ namespace armor_detector
         this->declare_parameter("max_delta_t", 50);
         this->declare_parameter("no_crop_thres", 1e-2);
         this->declare_parameter("hero_danger_zone", 4);
+        this->declare_parameter("color", true);
         
-        this->declare_parameter("camera_name", "hik_camera");
+        //TODO:set by own path
+        this->declare_parameter("camera_name", "00J90630561"); //相机型号
         this->declare_parameter("camera_param_path", "/home/tup/Desktop/tup_2023/src/global_user/config/camera.yaml");
         this->declare_parameter("network_path", "/home/tup/Desktop/tup_2023/src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml");
         
@@ -92,6 +86,11 @@ namespace armor_detector
         detector_params_.max_delta_t = this->get_parameter("max_delta_t").as_int();
         detector_params_.no_crop_thres = this->get_parameter("no_crop_thres").as_double();
         detector_params_.hero_danger_zone = this->get_parameter("hero_danger_zone").as_int();
+        bool det_red = this->get_parameter("color").as_bool();
+        if(det_red)
+            detector_params_.color = RED;
+        else
+            detector_params_.color = BLUE;
 
         std::string camera_name = this->get_parameter("camera_name").as_string();
         std::string camera_param_path = this->get_parameter("camera_param_path").as_string();
@@ -107,6 +106,7 @@ namespace armor_detector
         debug_.show_fps = this->get_parameter("show_fps").as_bool();
         debug_.print_letency = this->get_parameter("print_letency").as_bool();
         debug_.print_target_info = this->get_parameter("print_target_info").as_bool();
+
 
         gyro_params gyro_params_;
         gyro_params_.anti_spin_judge_high_thres = this->get_parameter("anti_spin_judge_high_thres").as_double();
@@ -141,10 +141,11 @@ namespace armor_detector
         src.timestamp = (int)(std::chrono::duration<double, std::milli>(time_img_sub - time_start).count());
         
         if(detector_->armor_detect(src))
-        {
+        {   //find armors
             // RCLCPP_INFO(this->get_logger(), "armors detector...");
             Eigen::Vector3d aiming_point_cam;
             
+            //target's spinning status detect 
             if(detector_->gyro_detector(src, aiming_point_cam))
             {
                 global_interface::msg::Target target_info;
@@ -153,6 +154,7 @@ namespace armor_detector
                 target_info.aiming_point.z = aiming_point_cam[2];
                 target_info.timestamp = src.timestamp;
 
+                //publish target's information containing 3d point and timestamp.
                 armors_pub->publish(target_info);
             }
             // global_interface::msg::Armors armors_info;

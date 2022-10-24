@@ -13,7 +13,7 @@ def generate_launch_description():
 
     share_path = get_package_share_directory('global_user')
 
-    cam_config = os.path.join(share_path, 'config', 'camera.yaml')
+    cam_config = os.path.join(share_path, 'config', 'camera_ros.yaml')
     autoaim_config = os.path.join(share_path, 'config', 'autoaim.yaml')
 
     cam_node = Node(

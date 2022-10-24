@@ -115,9 +115,9 @@ include_directories(include)
 
 add_library(${PROJECT_NAME} SHARED
   src/usb_driver/usb_cam.cpp
-  src/usb_driver/usb_cam_node.cpp
+  # src/usb_driver/usb_cam_node.cpp
   src/hik_driver/hik_camera.cpp
-  src/hik_driver/hik_cam_node.cpp
+  # src/hik_driver/hik_cam_node.cpp
   src/daheng_driver/daheng_camera.cpp
   # src/hik_driver/hik_camera.cpp
 )
@@ -182,11 +182,13 @@ set(node_plugins "${node_plugins}camera_driver::daheng_cam_node;$<TARGET_FILE:da
 
 # link_directories(${MVS_LIB_DIR})
 add_executable(usb_cam_driver_node
-  src/usb_driver/usb_cam_node_main.cpp
+  # src/usb_driver/usb_cam_node_main.cpp
+  src/usb_driver/usb_cam_node.cpp
 )
 
 add_executable(hik_cam_driver_node
-  src/hik_driver/hik_cam_node_main.cpp
+  # src/hik_driver/hik_cam_node_main.cpp
+  src/hik_driver/hik_cam_node.cpp
 )
 
 add_executable(daheng_cam_driver_node

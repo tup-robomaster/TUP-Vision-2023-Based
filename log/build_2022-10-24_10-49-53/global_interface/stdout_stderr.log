@@ -1,0 +1,303 @@
+-- The C compiler identification is GNU 9.4.0
+-- The CXX compiler identification is GNU 9.4.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 1.1.5 (/opt/ros/galactic/share/ament_cmake/cmake)
+-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") 
+-- Using PYTHON_EXECUTABLE: /usr/bin/python3
+-- Found rosidl_default_generators: 1.1.1 (/opt/ros/galactic/share/rosidl_default_generators/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Found rosidl_adapter: 2.2.2 (/opt/ros/galactic/share/rosidl_adapter/cmake)
+-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "1.1.1f")  
+-- Found FastRTPS: /opt/ros/galactic/include  
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found rclcpp: 9.2.1 (/opt/ros/galactic/share/rclcpp/cmake)
+-- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)
+-- Found rmw_cyclonedds_cpp: 0.22.5 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)
+-- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE  
+-- Found geometry_msgs: 2.2.4 (/opt/ros/galactic/share/geometry_msgs/cmake)
+-- Found sensor_msgs: 2.2.4 (/opt/ros/galactic/share/sensor_msgs/cmake)
+-- Found PythonInterp: /usr/bin/python3 (found version "3.8.10") 
+-- Found ament_cmake_ros: 0.9.2 (/opt/ros/galactic/share/ament_cmake_ros/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3.5") 
+-- Found python_cmake_module: 0.8.1 (/opt/ros/galactic/share/python_cmake_module/cmake)
+-- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.8.so (found suitable version "3.8.10", minimum required is "3.5") 
+-- Using PYTHON_EXECUTABLE: /usr/bin/python3
+-- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.8
+-- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.8.so
+-- Found PythonExtra: .so  
+-- Found ament_lint_auto: 0.10.7 (/opt/ros/galactic/share/ament_lint_auto/cmake)
+-- Added test 'copyright' to check source files copyright and LICENSE
+-- Added test 'lint_cmake' to check CMake code style
+-- Added test 'xmllint' to check XML markup files
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_interface
+[35m[1mScanning dependencies of target global_interface__cpp[0m
+[  1%] [34m[1mGenerating C code for ROS interfaces[0m
+[  3%] [34m[1mGenerating C++ code for ROS interfaces[0m
+[  3%] Built target global_interface__cpp
+[  5%] [34m[1mGenerating C++ type support for eProsima Fast-RTPS[0m
+[  7%] [34m[1mGenerating C++ type support dispatch for ROS interfaces[0m
+[  9%] [34m[1mGenerating C++ introspection for ROS interfaces[0m
+[35m[1mScanning dependencies of target global_interface__rosidl_generator_c[0m
+[ 10%] [32mBuilding C object CMakeFiles/global_interface__rosidl_generator_c.dir/rosidl_generator_c/global_interface/msg/detail/armor__functions.c.o[0m
+[ 16%] [32mBuilding C object CMakeFiles/global_interface__rosidl_generator_c.dir/rosidl_generator_c/global_interface/msg/detail/target__functions.c.o[0m
+[ 16%] [32mBuilding C object CMakeFiles/global_interface__rosidl_generator_c.dir/rosidl_generator_c/global_interface/msg/detail/gimbal__functions.c.o[0m
+[ 16%] [32mBuilding C object CMakeFiles/global_interface__rosidl_generator_c.dir/rosidl_generator_c/global_interface/msg/detail/armors__functions.c.o[0m
+[ 18%] [32m[1mLinking C shared library libglobal_interface__rosidl_generator_c.so[0m
+[ 18%] Built target global_interface__rosidl_generator_c
+[ 21%] [34m[1mGenerating C introspection for ROS interfaces[0m
+[ 21%] [34m[1mGenerating C type support dispatch for ROS interfaces[0m
+[35m[1mScanning dependencies of target global_interface__rosidl_typesupport_cpp[0m
+[ 25%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/global_interface/msg/gimbal__type_support.cpp.o[0m
+[ 25%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/global_interface/msg/armors__type_support.cpp.o[0m
+[ 27%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/global_interface/msg/armor__type_support.cpp.o[0m
+[ 29%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/global_interface/msg/target__type_support.cpp.o[0m
+[35m[1mScanning dependencies of target global_interface__rosidl_typesupport_introspection_cpp[0m
+[ 30%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/global_interface/msg/detail/gimbal__type_support.cpp.o[0m
+[ 32%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/global_interface/msg/detail/armor__type_support.cpp.o[0m
+[ 34%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/global_interface/msg/detail/target__type_support.cpp.o[0m
+[ 36%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/global_interface/msg/detail/armors__type_support.cpp.o[0m
+[35m[1mScanning dependencies of target global_interface__rosidl_typesupport_fastrtps_cpp[0m
+[ 38%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/global_interface/msg/detail/dds_fastrtps/gimbal__type_support.cpp.o[0m
+[ 40%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/global_interface/msg/detail/dds_fastrtps/armor__type_support.cpp.o[0m
+[ 41%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/global_interface/msg/detail/dds_fastrtps/armors__type_support.cpp.o[0m
+[ 43%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/global_interface/msg/detail/dds_fastrtps/target__type_support.cpp.o[0m
+[35m[1mScanning dependencies of target global_interface__rosidl_typesupport_introspection_c[0m
+[35m[1mScanning dependencies of target global_interface__rosidl_typesupport_c[0m
+[ 45%] [32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/global_interface/msg/detail/gimbal__type_support.c.o[0m
+[ 47%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_c.dir/rosidl_typesupport_c/global_interface/msg/gimbal__type_support.cpp.o[0m
+[ 49%] [32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/global_interface/msg/detail/armor__type_support.c.o[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_c.dir/rosidl_typesupport_c/global_interface/msg/armors__type_support.cpp.o[0m
+[ 52%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_c.dir/rosidl_typesupport_c/global_interface/msg/armor__type_support.cpp.o[0m
+[ 54%] [32m[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_cpp.so[0m
+[ 56%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_c.dir/rosidl_typesupport_c/global_interface/msg/target__type_support.cpp.o[0m
+[ 58%] [32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/global_interface/msg/detail/armors__type_support.c.o[0m
+[ 60%] [32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/global_interface/msg/detail/target__type_support.c.o[0m
+[ 61%] [32m[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_c.so[0m
+[ 61%] Built target global_interface__rosidl_typesupport_cpp
+[ 63%] [32m[1mLinking C shared library libglobal_interface__rosidl_typesupport_introspection_c.so[0m
+[ 63%] Built target global_interface__rosidl_typesupport_c
+[ 63%] Built target global_interface__rosidl_typesupport_introspection_c
+[ 65%] [32m[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_introspection_cpp.so[0m
+[ 65%] Built target global_interface__rosidl_typesupport_introspection_cpp
+[ 67%] [32m[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_fastrtps_cpp.so[0m
+[ 67%] Built target global_interface__rosidl_typesupport_fastrtps_cpp
+[ 69%] [34m[1mGenerating C type support for eProsima Fast-RTPS[0m
+[35m[1mScanning dependencies of target global_interface__rosidl_typesupport_fastrtps_c[0m
+[ 70%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/global_interface/msg/detail/armor__type_support_c.cpp.o[0m
+[ 74%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/global_interface/msg/detail/armors__type_support_c.cpp.o[0m
+[ 74%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/global_interface/msg/detail/gimbal__type_support_c.cpp.o[0m
+[ 76%] [32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/global_interface/msg/detail/target__type_support_c.cpp.o[0m
+[ 78%] [32m[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_fastrtps_c.so[0m
+[ 78%] Built target global_interface__rosidl_typesupport_fastrtps_c
+[35m[1mScanning dependencies of target global_interface[0m
+[ 78%] Built target global_interface
+[35m[1mScanning dependencies of target global_interface__py[0m
+[ 80%] [34m[1mGenerating Python code for ROS interfaces[0m
+[ 80%] Built target global_interface__py
+[35m[1mScanning dependencies of target global_interface__python[0m
+[ 81%] [32mBuilding C object CMakeFiles/global_interface__python.dir/rosidl_generator_py/global_interface/msg/_armors_s.c.o[0m
+[ 85%] [32mBuilding C object CMakeFiles/global_interface__python.dir/rosidl_generator_py/global_interface/msg/_gimbal_s.c.o[0m
+[ 85%] [32mBuilding C object CMakeFiles/global_interface__python.dir/rosidl_generator_py/global_interface/msg/_target_s.c.o[0m
+[ 87%] [32mBuilding C object CMakeFiles/global_interface__python.dir/rosidl_generator_py/global_interface/msg/_armor_s.c.o[0m
+[ 89%] [32m[1mLinking C shared library rosidl_generator_py/global_interface/libglobal_interface__python.so[0m
+[ 89%] Built target global_interface__python
+[35m[1mScanning dependencies of target global_interface__rosidl_typesupport_c__pyext[0m
+[35m[1mScanning dependencies of target global_interface__rosidl_typesupport_fastrtps_c__pyext[0m
+[35m[1mScanning dependencies of target global_interface__rosidl_typesupport_introspection_c__pyext[0m
+[ 90%] [32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/global_interface/_global_interface_s.ep.rosidl_typesupport_c.c.o[0m
+[ 92%] [32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/global_interface/_global_interface_s.ep.rosidl_typesupport_introspection_c.c.o[0m
+[ 94%] [32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/global_interface/_global_interface_s.ep.rosidl_typesupport_fastrtps_c.c.o[0m
+[ 96%] [32m[1mLinking C shared library rosidl_generator_py/global_interface/global_interface_s__rosidl_typesupport_c.cpython-38-x86_64-linux-gnu.so[0m
+[100%] [32m[1mLinking C shared library rosidl_generator_py/global_interface/global_interface_s__rosidl_typesupport_introspection_c.cpython-38-x86_64-linux-gnu.so[0m
+[100%] [32m[1mLinking CXX shared library rosidl_generator_py/global_interface/global_interface_s__rosidl_typesupport_fastrtps_c.cpython-38-x86_64-linux-gnu.so[0m
+[100%] Built target global_interface__rosidl_typesupport_c__pyext
+[100%] Built target global_interface__rosidl_typesupport_introspection_c__pyext
+[100%] Built target global_interface__rosidl_typesupport_fastrtps_c__pyext
+-- Install configuration: ""
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/ament_index/resource_index/rosidl_interfaces/global_interface
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/gimbal.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/rosidl_generator_c__visibility_control.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__struct.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__functions.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__type_support.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__functions.c
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__struct.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__functions.c
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__type_support.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__type_support.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__struct.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__functions.c
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__functions.c
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__functions.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__functions.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__struct.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__functions.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__type_support.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/target.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/armor.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/armors.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/library_path.sh
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/library_path.dsv
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_generator_c.so
+-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_generator_c.so" to ""
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__rosidl_typesupport_fastrtps_c.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__rosidl_typesupport_fastrtps_c.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__rosidl_typesupport_fastrtps_c.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__rosidl_typesupport_fastrtps_c.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_fastrtps_c.so
+-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_fastrtps_c.so" to ""
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/dds_fastrtps
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__rosidl_typesupport_fastrtps_cpp.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__rosidl_typesupport_fastrtps_cpp.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__rosidl_typesupport_fastrtps_cpp.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__rosidl_typesupport_fastrtps_cpp.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_fastrtps_cpp.so
+-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_fastrtps_cpp.so" to ""
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__type_support.c
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__type_support.c
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__type_support.c
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__rosidl_typesupport_introspection_c.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__rosidl_typesupport_introspection_c.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__rosidl_typesupport_introspection_c.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__type_support.c
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__rosidl_typesupport_introspection_c.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/rosidl_typesupport_introspection_c__visibility_control.h
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_introspection_c.so
+-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_introspection_c.so" to ""
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_c.so
+-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_c.so" to ""
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/armor.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/target.hpp
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__builder.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__struct.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__traits.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__struct.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__traits.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__traits.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__struct.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__builder.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__struct.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__builder.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__traits.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__builder.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/gimbal.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/armors.hpp
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg
+-- Up-to-date: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__rosidl_typesupport_introspection_cpp.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__type_support.cpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__type_support.cpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__type_support.cpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__type_support.cpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__rosidl_typesupport_introspection_cpp.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__rosidl_typesupport_introspection_cpp.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__rosidl_typesupport_introspection_cpp.hpp
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_introspection_cpp.so
+-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_introspection_cpp.so" to ""
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_cpp.so
+-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_cpp.so" to ""
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/pythonpath.sh
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/pythonpath.dsv
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/__init__.py
+Compiling '/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/__init__.py'...
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_target_s.c
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_target.py
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_gimbal.py
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_armors_s.c
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/__init__.py
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_gimbal_s.c
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_armor.py
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_armor_s.c
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_armors.py
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_fastrtps_c.cpython-38-x86_64-linux-gnu.so
+-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_fastrtps_c.cpython-38-x86_64-linux-gnu.so" to ""
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_introspection_c.cpython-38-x86_64-linux-gnu.so
+-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_introspection_c.cpython-38-x86_64-linux-gnu.so" to ""
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_c.cpython-38-x86_64-linux-gnu.so
+-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_c.cpython-38-x86_64-linux-gnu.so" to ""
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__python.so
+-- Set runtime path of "/home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__python.so" to ""
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Gimbal.idl
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Armor.idl
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Armors.idl
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Target.idl
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Gimbal.msg
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Armor.msg
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Armors.msg
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Target.msg
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/ament_index/resource_index/package_run_dependencies/global_interface
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/ament_index/resource_index/parent_prefix_path/global_interface
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/ament_prefix_path.sh
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/ament_prefix_path.dsv
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/path.sh
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/path.dsv
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/local_setup.bash
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/local_setup.sh
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/local_setup.zsh
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/local_setup.dsv
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/package.dsv
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/ament_index/resource_index/packages/global_interface
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_generator_cExport.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_generator_cExport-noconfig.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_introspection_cExport.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_introspection_cExport-noconfig.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_cExport.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_cExport-noconfig.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_generator_cppExport.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_introspection_cppExport.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_introspection_cppExport-noconfig.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_cppExport.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_cppExport-noconfig.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/rosidl_cmake-extras.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/ament_cmake_export_dependencies-extras.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/ament_cmake_export_libraries-extras.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/ament_cmake_export_targets-extras.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/ament_cmake_export_include_directories-extras.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interfaceConfig.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interfaceConfig-version.cmake
+-- Installing: /home/zhengtu/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/package.xml

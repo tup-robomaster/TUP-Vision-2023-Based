@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 14:25:39
- * @LastEditTime: 2022-10-09 16:23:18
- * @FilePath: /tup_2023/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
+ * @LastEditTime: 2022-10-23 22:57:15
+ * @FilePath: /TUP-Vision-2023/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
  */
 #include "../../include/daheng_driver/daheng_cam_node.hpp"
 
@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 namespace camera_driver
 {
     daheng_cam_node::daheng_cam_node(const rclcpp::NodeOptions &options)
-    : Node("daheng_camera", options)
+    : Node("daheng_driver", options)
     {
         // camera params initialize 
         daheng_cam = init_daheng_cam();

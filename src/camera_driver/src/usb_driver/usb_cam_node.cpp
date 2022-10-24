@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2022-09-29 19:56:19
- * @FilePath: /tup_2023/src/camera_driver/src/usb_driver/usb_cam_node.cpp
+ * @LastEditTime: 2022-10-23 23:05:49
+ * @FilePath: /TUP-Vision-2023/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
 
@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 namespace camera_driver
 {
     usb_cam_node::usb_cam_node(const rclcpp::NodeOptions& option)
-    : Node("camera_driver", option), is_filpped(false)
+    : Node("usb_driver", option), is_filpped(false)
     {
         frame_pub = this->create_publisher<sensor_msgs::msg::Image>("usb_img", 1);
         
@@ -185,6 +185,23 @@ namespace camera_driver
         }
     }
 } //namespace usb_cam_node
+
+int main(int argc, char** argv)
+{
+    setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
+    rclcpp::init(argc, argv);
+    rclcpp::executors::SingleThreadedExecutor exec;
+
+    const rclcpp::NodeOptions options;
+    auto usb_cam_node = std::make_shared<camera_driver::usb_cam_node>(options);
+
+    exec.add_node(usb_cam_node);
+    exec.spin();
+
+    rclcpp::shutdown();
+    return 0;
+}
 
 #include "rclcpp_components/register_node_macro.hpp"
 
