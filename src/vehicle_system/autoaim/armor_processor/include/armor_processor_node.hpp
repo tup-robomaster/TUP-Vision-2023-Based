@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-10-28 09:34:05
+ * @LastEditTime: 2022-10-25 22:37:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP
@@ -43,9 +43,10 @@ namespace armor_processor
         
         // message_filters::Subscriber<global_interface::msg::Target> target_info_sub;
         rclcpp::Subscription<global_interface::msg::Target>::SharedPtr target_info_sub_;
+        message_filters::Subscriber<global_interface::msg::Target> target_point_sub_; 
         void target_info_callback(const global_interface::msg::Target& target_info);
 
-        rclcpp::Publisher<global_interface::msg::Gimbal>::SharedPtr gimbal_info_pub;
+        rclcpp::Publisher<global_interface::msg::Gimbal>::SharedPtr gimbal_info_pub_;
     
     private:
         std::unique_ptr<Processor> processor_;
@@ -56,10 +57,10 @@ namespace armor_processor
         std::string target_frame_;
         std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
         std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
-        // message_filters::Subscriber<geometry_msgs::msg::PointStamped> point_sub_;
-        std::shared_ptr<tf2_ros::MessageFilter<global_interface::msg::Target>> tf2_filter_;
+        message_filters::Subscriber<geometry_msgs::msg::PointStamped> point_sub_;
+        std::shared_ptr<tf2_ros::MessageFilter<geometry_msgs::msg::PointStamped>> tf2_filter_;
 
-        // void msg_callback(const geometry_msgs::msg::PointStamped::SharedPtr point_ptr);
+        void msg_callback(const geometry_msgs::msg::PointStamped::SharedPtr point_ptr);
     
     };
 } //armor_processor

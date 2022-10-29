@@ -11,7 +11,15 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
+# set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17 -Os -pthread -g")
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(CMAKE_C_VISIBILITY_PRESET default)
+set(CMAKE_CXX_VISIBILITY_PRESET default)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN OFF)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -26,8 +34,14 @@ find_package(Ceres REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(angles REQUIRED)
+# find_package(lapack REQUIRED)
+
 find_package(global_interface REQUIRED)
 find_package(global_user REQUIRED)
+
+find_package(glog REQUIRED)
+find_package(fmt REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 set(dependencies 
   rclcpp
@@ -40,6 +54,7 @@ set(dependencies
   rclcpp_lifecycle
   Eigen3
   Ceres
+  # lapack 
 
   global_interface
   global_user
@@ -63,8 +78,23 @@ add_executable(${PROJECT_NAME}_node
   src/${PROJECT_NAME}_node.cpp 
 )
 
+target_link_libraries(${PROJECT_NAME}
+  # ${dependencies}
+  # ceres.a
+  ceres.so
+  glog.so 
+  fmt.so 
+  yaml-cpp.so
+  lapack.so 
+)
+
+# ament_target_dependencies(${PROJECT_NAME}_node
+#   ${dependencies}
+# )
+
 target_link_libraries(${PROJECT_NAME}_node 
   ${PROJECT_NAME}
+  # ${dependencies}
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME}

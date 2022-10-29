@@ -20,7 +20,7 @@
 #include <Eigen/Core>
 // #include <opencv2/opencv.hpp>
 
-#include "global_user/include/global_user/global_user.hpp"
+#include "../../global_user/include/global_user/global_user.hpp"
 
 using namespace std;
 using namespace Eigen;

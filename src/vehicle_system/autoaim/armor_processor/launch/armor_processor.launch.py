@@ -6,12 +6,11 @@ LastEditTime: 2022-10-25 23:24:15
 FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/launch/armor_processor.launch.py
 '''
 import os
-from sys import exec_prefix
 
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.action import DeclareLaunchArgument
-from launch.substitution import LaunchConfiguration
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
@@ -23,10 +22,19 @@ def generate_launch_description():
     return LaunchDescription([
         Node
         (
-            name = "camera_driver",
+            name = "hik_cam_driver",
             package = "camera_driver",
-            executable = "hik_cam_node",
+            executable = "hik_cam_driver_node",
             parameters = [cam_config],
+            output = "screen"
+        ),
+
+        Node
+        (
+            name = "serialport",
+            package = "serialport",
+            executable = "serial_driver",
+            # parameters = [],
             output = "screen"
         ),
 

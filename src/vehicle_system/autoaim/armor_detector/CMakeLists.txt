@@ -1,15 +1,16 @@
 cmake_minimum_required(VERSION 3.8)
 project(armor_detector)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17 -Os -pthread -g")
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
+  
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17 -Os -pthread -g")
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -29,12 +30,10 @@ find_package(image_transport REQUIRED)
 find_package(sensor_msgs REQUIRED)
 # find_package(InferenceEngine REQUIRED)
 find_package(OpenVINO REQUIRED)
-find_package(Ceres REQUIRED COMPONENTS EigenSparse)
 find_package(Eigen3 REQUIRED)
-find_package(tf2_ros REQUIRED)
+find_package(Ceres REQUIRED COMPONENTS EigenSparse)
+
 find_package(cv_bridge REQUIRED)
-find_package(kdl_parser REQUIRED)
-find_package(urdf REQUIRED)
 
 # custom package
 find_package(global_interface REQUIRED)
@@ -55,9 +54,6 @@ set(dependencies
   Ceres
   Eigen3
   cv_bridge
-  tf2_ros
-  kdl_parser
-  urdf
   
   global_interface
   global_user
@@ -110,7 +106,6 @@ add_executable(armor_detector_node
 #   # ./src/armor_detector/inference.cpp
 #   ./src/test/test.cpp 
 # )
-
 
 ament_target_dependencies(armor_detector_node
   ${dependencies}

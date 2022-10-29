@@ -239,7 +239,7 @@ namespace armor_detector
         return true;
     }
 
-    bool detector::gyro_detector(global_user::TaskData &src, Eigen::Vector3d& aiming_point)
+    bool detector::gyro_detector(global_user::TaskData &src, global_interface::msg::Target& target_info)
     {
         /**
          * @brief 车辆小陀螺状态检测
@@ -296,15 +296,22 @@ namespace armor_detector
         if (spinning_detector_.spin_status_map.count(target_key) == 0)
         {
             spin_status = UNKNOWN;
-            is_target_spinning = false;
+            // is_target_spinning = false;
+            target_info.is_spinning = false;
         }
         else
         {
             spin_status = spinning_detector_.spin_status_map[target_key];
             if (spin_status != UNKNOWN)
-                is_target_spinning = true;
+            {
+                // is_target_spinning = true;
+                target_info.is_spinning = true;
+            }
             else
-                is_target_spinning = false;
+            {
+                // is_target_spinning = false;
+                target_info.is_spinning = false;
+            }
         }
 
         ///----------------------------------反陀螺击打---------------------------------------
@@ -349,11 +356,19 @@ namespace armor_detector
             auto velocity = (delta_dist / delta_t) * 1e3;
             if ((target.id != last_armor.id || !last_armor.roi.contains((target.center2d))) &&
                 is_last_target_exists)
-                is_target_switched = true;
+            {
+                // is_target_switched = true;
+                target_info.target_switched = true;
+            }
             else
-                is_target_switched = false;
+            {
+                // is_target_switched = false;
+                target_info.target_switched = false;
+            }
             
-            aiming_point = target.center3d_cam;
+            target_info.aiming_point.x = target.center3d_cam[0];
+            target_info.aiming_point.y = target.center3d_cam[1];
+            target_info.aiming_point.z = target.center3d_cam[2];
         }
         else
         {
@@ -373,11 +388,19 @@ namespace armor_detector
             auto velocity = (delta_dist / delta_t) * 1e3;
             // cout<<(delta_dist >= max_delta_dist)<<" "<<!last_armor.roi.contains(target.center2d)<<endl;
             if ((target.id != last_armor.id || !last_armor.roi.contains((target.center2d))) && is_last_target_exists)
-                is_target_switched = true;
+            {
+                // is_target_switched = true;
+                target_info.target_switched = true;
+            }
             else
-                is_target_switched = false;
+            {
+                // is_target_switched = false;
+                target_info.target_switched = false;
+            }
 
-            aiming_point = target.center3d_cam;
+            target_info.aiming_point.x = target.center3d_cam[0];
+            target_info.aiming_point.y = target.center3d_cam[1];
+            target_info.aiming_point.z = target.center3d_cam[2];
         }
 
         if (target.color == 2)
@@ -392,7 +415,9 @@ namespace armor_detector
         lost_cnt = 0;
         prev_timestamp = src.timestamp;
         last_target_area = target.area;
-        last_aiming_point = aiming_point;
+        last_aiming_point[0] = target_info.aiming_point.x;
+        last_aiming_point[1] = target_info.aiming_point.y;
+        last_aiming_point[2] = target_info.aiming_point.z;
         is_last_target_exists = true;
         last_armors.clear();
         last_armors = armors;
@@ -424,10 +449,10 @@ namespace armor_detector
             }
         }
         
-        auto angle = coordsolver_.getAngle(aiming_point, rmat_imu);
+        auto angle = coordsolver_.getAngle(last_aiming_point, rmat_imu);
         //若预测出错则直接世界坐标系下坐标作为击打点
         if (isnan(angle[0]) || isnan(angle[1]))
-            angle = coordsolver_.getAngle(target.center3d_cam, rmat_imu);
+            angle = coordsolver_.getAngle(last_aiming_point, rmat_imu);
         auto time_predict = std::chrono::steady_clock::now();
 
         double dr_crop_ms = std::chrono::duration<double,std::milli>(time_crop - time_start).count();

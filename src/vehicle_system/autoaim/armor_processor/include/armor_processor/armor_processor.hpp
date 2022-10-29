@@ -5,13 +5,24 @@
  * @LastEditTime: 2022-10-25 23:46:51
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor/armor_processor.hpp
  */
-#include "global_user/include/coordsolver.hpp"
+#ifndef ARMOR_PRECESSOR_HPP
+#define ARMOR_PROCESSOR_HPP
+
+#pragma once 
+
+// #include "../../global_user/include/coordsolver.hpp"
 #include "global_interface/msg/target.hpp"
 // #include "global_interface/msg/gimbal.hpp"
 // #include "global_interface/msg/armor.hpp"
 // #include "global_interface/msg/armors.hpp"
 
-#include "../prediction/prediction.hpp"
+#include "../prediction/prediction.h"
+
+// #include <Eigen/Core>
+// #include <ceres/ceres.h>
+// #include <glog/logging.h>
+// #include <fmt/format.h>
+// #include <yaml-cpp/yaml.h>
 
 typedef geometry_msgs::msg::Point GeometryPoint;
 
@@ -20,7 +31,7 @@ namespace armor_processor
     class Processor
     {
     public:
-        Processor(const PredictParam& predict_param, DebugParam& debug_param, std::string coord_file);
+        Processor(const PredictParam& predict_param, DebugParam& debug_param, std::string filter_param_path);
         ~Processor();
 
         //预测(接收armor_detector节点发布的目标信息进行预测)
@@ -37,3 +48,5 @@ namespace armor_processor
         Eigen::Matrix3d rmat_imu;
     };
 } //namespace armor_processor
+
+#endif

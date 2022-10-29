@@ -15,9 +15,6 @@
   <depend>message_filters</depend>
   <depend>image_transport</depend>
   <depend>sensor_msgs</depend>
-  <depend>tf2_ros</depend>
-  <depend>kdl_parser</depend>
-  <depend>urdf</depend>
 
   <!-- <depend>InferenceEngine</depend> -->
   <depend>OpenVINO</depend>

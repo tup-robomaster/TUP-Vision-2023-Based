@@ -7,6 +7,7 @@
  */
 #include "../../global_user/include/global_user/global_user.hpp"
 #include "../../global_user/include/coordsolver.hpp"
+#include "global_interface/msg/target.hpp"
 
 #include "./armor_tracker.h"
 // #include "./inference.h"
@@ -98,7 +99,7 @@ namespace armor_detector
     public:
         void run();
         bool armor_detect(global_user::TaskData &src);
-        bool gyro_detector(global_user::TaskData &src, Eigen::Vector3d& aiming_point);
+        bool gyro_detector(global_user::TaskData &src, global_interface::msg::Target& target_info);
 
         Point2i cropImageByROI(Mat &img);
         ArmorTracker* chooseTargetTracker(vector<ArmorTracker*> trackers, int timestamp);

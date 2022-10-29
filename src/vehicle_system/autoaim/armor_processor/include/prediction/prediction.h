@@ -5,14 +5,28 @@
  * @LastEditTime: 2022-10-25 23:47:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
-#include "../../../global_user/include/global_user/global_user.hpp"
-#include "../../../global_user/include/coordsolver.hpp"
+#ifndef PREDICTION_HPP
+#define PREDICTION_HPP
+
+#pragma once
+
+#include "../../global_user/include/global_user/global_user.hpp"
+#include "../../global_user/include/coordsolver.hpp"
 #include "../filter/particle_filter.hpp"
 
 #include <opencv2/opencv.hpp>
 #include <Eigen/Core>
+#include <Eigen/Dense>
 #include <ceres/ceres.h>
 #include <yaml-cpp/yaml.h>
+
+#include <ctime>
+#include <future>
+#include <random>
+#include <vector>
+
+#include <stdio.h>
+#include <lapacke.h>
 
 namespace armor_processor
 {
@@ -114,12 +128,14 @@ namespace armor_processor
 
         std::deque<TargetInfo> history_info_;
         int history_deque_lens_; //历史队列长度
-    
+
+        bool is_init;
     public:
         // set const value or default value
         PredictParam predict_param_;
         DebugParam debug_param_;
 
+        std::string filter_param_path_;
         YAML::Node config_;
     public:
         TargetInfo final_target_;  //最终击打目标信息
@@ -131,7 +147,7 @@ namespace armor_processor
         cv::Mat pic_z;
         
     public:
-        ArmorPredictor(const PredictParam& predict_param, DebugParam& debug_param, std::string coord_file);
+        ArmorPredictor(const PredictParam& predict_param, DebugParam& debug_param, std::string filter_param_path);
         
         Eigen::Vector3d predict(Eigen::Vector3d xyz, int timestamp);
 
@@ -144,3 +160,5 @@ namespace armor_processor
 
 
 } //namespace armor_processor
+
+#endif

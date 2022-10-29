@@ -5,7 +5,7 @@
  * @LastEditTime: 2022-10-24 14:10:37
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
-#include "../../include/prediction/prediction.hpp"
+#include "../../include/prediction/prediction.h"
 
 namespace armor_processor
 {
@@ -19,23 +19,33 @@ namespace armor_processor
 
     ArmorPredictor::~ArmorPredictor(){}
 
-    ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, DebugParam& debug_param, std::string coord_file)
-    : predict_param_(predict_param), debug_param_(debug_param)
+    ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, DebugParam& debug_param, std::string filter_param_path)
+    : predict_param_(predict_param), debug_param_(debug_param), filter_param_path_(filter_param_path)
     {
         int cnt = 0;
         pic_x = cv::Mat::zeros(500, 2000, CV_8UC3);
         pic_y = cv::Mat::zeros(500, 2000, CV_8UC3);
         pic_z = cv::Mat::zeros(500, 2000, CV_8UC3);
 
-        config_ = YAML::LoadFile(coord_file);
-        pf_pos.initParam(config_, "pos");
-        pf_v.initParam(config_, "v");
+        // config_ = YAML::LoadFile(coord_file);
+        // pf_pos.initParam(config_, "pos");
+        // pf_v.initParam(config_, "v");
         
         fitting_disabled_ = false;
+        is_init = false;
     }
 
     Eigen::Vector3d ArmorPredictor::predict(Eigen::Vector3d xyz, int timestamp)
     {
+        if(!is_init)
+        {
+            config_ = YAML::LoadFile(filter_param_path_);
+            pf_pos.initParam(config_, "pos");
+            pf_v.initParam(config_, "v");
+
+            is_init = true;
+        }
+
         auto t1 = std::chrono::steady_clock::now();
         TargetInfo target = {xyz, (int)xyz.norm(), timestamp};
         
