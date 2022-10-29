@@ -1,4 +1,0 @@
-Invoking command in '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --build /home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user -- -j16 -l16
-Invoked command in '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user' returned '0': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --build /home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user -- -j16 -l16
-Invoking command in '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --install /home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user
-Invoked command in '/home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user' returned '0': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --install /home/zhengtu/Desktop/TUP-Vision-2023-Based/build/global_user

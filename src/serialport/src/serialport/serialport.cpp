@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 16:03:31
- * @LastEditTime: 2022-09-28 16:41:57
- * @FilePath: /tup_2023/src/serialport/src/serialport/serialport.cpp
+ * @LastEditTime: 2022-10-27 18:04:22
+ * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport/serialport.cpp
  */
 #include "../../include/serialport/serialport.hpp"
 
@@ -171,7 +171,7 @@ namespace serialport
     //TODO: virtual com port
     bool serialport::debug_without_port()
     {
-        is_open = false;
+        is_open = true;
         return is_open;
     }
 

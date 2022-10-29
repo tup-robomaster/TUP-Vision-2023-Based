@@ -1,6 +1,0 @@
-[01m[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:[m[K In function ‘[01m[Kstd::string global_user::getParent(std::string)[m[K’:
-[01m[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:203:51:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kconst size_type[m[K’ {aka ‘[01m[Kconst long unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
-  203 |         for(auto i = 0; i = path_tmp.find("/"), i != path_tmp.npos; path_tmp = path_tmp.substr(i + 1))
-[01m[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:[m[K In function ‘[01m[Kstd::vector<std::__cxx11::basic_string<char> > global_user::generatePathTree(std::string)[m[K’:
-[01m[K/home/zhengtu/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:223:47:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kconst size_type[m[K’ {aka ‘[01m[Kconst long unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
-  223 |         for(auto i = 0; i = path.find("/"), i != path.npos; path = path.substr(i + 1))

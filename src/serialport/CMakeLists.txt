@@ -2,18 +2,18 @@ cmake_minimum_required(VERSION 3.8)
 project(serialport)
 
 ## Use C++14
-# set(CMAKE_CXX_STANDARD 14)
-# set(CMAKE_CXX_STANDARD_REQUIRED ON)
-SET(CMAKE_BUILD_TYPE "Debug")  
-SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb")
-SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# SET(CMAKE_BUILD_TYPE "Debug")  
+# SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb")
+# SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
 
 # ## By adding -Wall and -Werror, the compiler does not ignore warnings anymore,
 # ## enforcing cleaner code.
 # add_definitions(-Wall -Werror)
 
 # ## Export compile commands for clangd
-# set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -42,9 +42,9 @@ include_directories(
   include
   ${EIGEN3_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
-  )
+)
   
-  set(node_plugins "")
+set(node_plugins "")
   
 #   add_library(${PROJECT_NAME} SHARED
 #   # src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
@@ -77,9 +77,22 @@ set(dependencies
   OpenCV
   global_interface
   global_user
+  tf2_geometry_msgs
+  tf2_ros
+
+  rclcpp_lifecycle 
+  laser_geometry 
+  message_filters 
+  sensor_msgs 
+  tf2 
+  tf2_sensor_msgs 
+  visualization_msgs 
+  angles 
+  robot_state_publisher 
 )
 
 include_directories(include)
+
 add_executable(serial_driver
   include/${PROJECT_NAME}/crc_check.hpp
   include/${PROJECT_NAME}/packet.hpp
@@ -93,6 +106,7 @@ add_executable(serial_driver
   # src/${PROJECT_NAME}/crc_check.cpp
   # src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
 )
+
 ament_target_dependencies(serial_driver 
   ${dependencies}
 )

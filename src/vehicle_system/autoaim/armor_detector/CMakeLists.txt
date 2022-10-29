@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 project(armor_detector)
 
-# set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17 -Os -pthread -g")
 
@@ -31,8 +31,10 @@ find_package(sensor_msgs REQUIRED)
 find_package(OpenVINO REQUIRED)
 find_package(Ceres REQUIRED COMPONENTS EigenSparse)
 find_package(Eigen3 REQUIRED)
-
+find_package(tf2_ros REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(kdl_parser REQUIRED)
+find_package(urdf REQUIRED)
 
 # custom package
 find_package(global_interface REQUIRED)
@@ -53,6 +55,9 @@ set(dependencies
   Ceres
   Eigen3
   cv_bridge
+  tf2_ros
+  kdl_parser
+  urdf
   
   global_interface
   global_user

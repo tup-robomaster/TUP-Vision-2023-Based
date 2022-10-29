@@ -1,0 +1,28 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "build ROS", //代表提示的描述性信息
+			"type": "shell",      //可以选择shell或者process,如果是shell代码是在shell里面运行一个命令，如果是process代表作为一个进程来运行
+			"command": "colcon build -DCMAKE_BUILD_TYPE=Debug", //这个是我们需要运行的命令
+			"args": [											//如果需要在命令后面加一些后缀，可以写在这里，比如-DCATKIN_WHITELIST_PACKAGES=“pac1;pac2”
+				"--packages-select package"						//
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"echo": true,
+				"reveal": "always", //可选always或者silence，代表是否输出信息
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": [
+				"$msCompile"
+			],
+		}
+	]
+}

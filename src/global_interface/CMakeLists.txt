@@ -18,6 +18,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Armor.msg"
   "msg/Armors.msg"
   "msg/Target.msg"
+  "msg/SpinInfo.msg"
+  "msg/Imu.msg"
   # "srv/*.srv"
   # "action/*.action"
   DEPENDENCIES
@@ -26,6 +28,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   geometry_msgs
   sensor_msgs
 )
+
 if(BUILD_TESTING)
 find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights

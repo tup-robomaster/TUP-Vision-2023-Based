@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-10-23 19:23:23
- * @FilePath: /tup_2023-10-16/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
+ * @LastEditTime: 2022-10-28 20:06:58
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
 
@@ -25,17 +25,49 @@ namespace armor_detector
         {
             std::cerr << e.what() << '\n';
         }
+
+        //tf2---declare and acquire 'target_frame' parameter
+        this->declare_parameter<std::string>("target_frame", "world");
+        this->get_parameter("target_frame", target_frame_);
+
+        SecondsType buffer_timeout(1);
+
+        //tf2
+        // armor_point_pub_ = message_filters::Publisher<geometry_msgs::msg::PointStamped>("/armor_point_stamped", 10);
+        tf2_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+
+        //create the timer interface before call to waitForTransform
+        auto timer_interface = std::make_shared<tf2_ros::CreateTimerROS>(
+            this->get_node_base_interface(),
+            this->get_node_timers_interface());
+
+        tf2_buffer_->setCreateTimerInterface(timer_interface);
+        tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
+        // tf2_filter_ = std::make_shared<tf2_ros::MessageFilter<geometry_msgs::msg::PointStamped>
+        // (
+        //     point_sub_,
+        //     *tf2_buffer_, 
+        //     target_frame_, 
+        //     100, 
+        //     this->get_node_logging_interface(),
+        //     this->get_node_clock_interface(), 
+        //     buffer_timeout
+        // );
+
+        // Register a callback with tf2_ros::MessageFilter to be called when transforms are available
+        //等待需要的tf关系就绪，一就绪有数据就进入到回调函数中。
+        // tf2_filter_->registerCallback(&PoseDrawer::msgCallback, this);
         
         //armors pub
-        armors_pub = this->create_publisher<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS());
+        armors_pub_ = this->create_publisher<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS());
 
-        time_start = std::chrono::steady_clock::now();
+        time_start_ = std::chrono::steady_clock::now();
 
         // Subscriptions transport type
         transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
 
         //image sub
-        img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
+        img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
         std::bind(&detector_node::image_callback, this, _1), transport_));
     }
 
@@ -138,24 +170,54 @@ namespace armor_detector
         // cv::waitKey(0);
 
         auto time_img_sub = std::chrono::steady_clock::now();
-        src.timestamp = (int)(std::chrono::duration<double, std::milli>(time_img_sub - time_start).count());
+        src.timestamp = (int)(std::chrono::duration<double, std::milli>(time_img_sub - time_start_).count());
         
         if(detector_->armor_detect(src))
         {   //find armors
             // RCLCPP_INFO(this->get_logger(), "armors detector...");
-            Eigen::Vector3d aiming_point_cam;
+            //tf2
+            for(auto& armor : detector_->armors)
+            {
+                geometry_msgs::msg::PointStamped point_in_cam;
+
+                point_in_cam.header.frame_id = "gyro";
+                point_in_cam.point.x = armor.center3d_cam[0];
+                point_in_cam.point.y = armor.center3d_cam[1];
+                point_in_cam.point.z = armor.center3d_cam[2];
+
+                geometry_msgs::msg::PointStamped point_in_world;
+                try
+                {
+                    tf2_buffer_->transform(point_in_cam, point_in_world, this->target_frame_);
+                    armor.center3d_world[0] = point_in_world.point.x;
+                    armor.center3d_world[1] = point_in_world.point.y;
+                    armor.center3d_world[2] = point_in_world.point.z;
+                    RCLCPP_INFO(
+                        this->get_logger(), "Point of armor center in the frame of world: x:%f y:%f z:%f\n",
+                        point_in_world.point.x,
+                        point_in_world.point.y,
+                        point_in_world.point.z
+                    );
+                }
+                catch(const std::exception& ex)
+                {
+                    RCLCPP_WARN(this->get_logger(), "Failure %s\n", ex.what());
+                }
+            }
+
+            Eigen::Vector3d aiming_point_world;
             
             //target's spinning status detect 
-            if(detector_->gyro_detector(src, aiming_point_cam))
+            if(detector_->gyro_detector(src, aiming_point_world))
             {
                 global_interface::msg::Target target_info;
-                target_info.aiming_point.x = aiming_point_cam[0];
-                target_info.aiming_point.y = aiming_point_cam[1];
-                target_info.aiming_point.z = aiming_point_cam[2];
-                target_info.timestamp = src.timestamp;
+                target_info.aiming_point.x = aiming_point_world[0];
+                target_info.aiming_point.y = aiming_point_world[1];
+                target_info.aiming_point.z = aiming_point_world[2];
+                target_info.timestamp = src.timestamp; 
 
                 //publish target's information containing 3d point and timestamp.
-                armors_pub->publish(target_info);
+                armors_pub_->publish(target_info);
             }
             // global_interface::msg::Armors armors_info;
             // for(int ii = 0; ii < detector_->armors.size(); ii++)

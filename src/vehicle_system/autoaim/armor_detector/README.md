@@ -9,6 +9,7 @@
 ## 2.调试此节点前先修改global_user包下config文件夹中autoaim.yaml文件中的参数文件路径
 
 # 调试日志
+## data: 2022-10-28 加入tf2，将装甲板目标在相机系（camera_frame）下坐标转换到车辆系（world_frame）
 ## date: 2022-10-23 使用OpenVINO API2.0替换旧版本。
 问题记录：在NUC上调试时出现全局参数读入失败的情况，但是重启电脑后就解决了(fixed)
 

@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "global_user/global_user.hpp"
+#include "../../../global_user/include/global_user/global_user.hpp"
 #include <vector>
 #include <thread>
 #include <memory>

@@ -1,0 +1,39 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) launch", // 配置名称，将会在调试配置下拉列表中显示
+            "type": "cppdbg",       // 调试器类型 该值自动生成
+            "request": "launch",    // 调试方式,还可以选择attach
+            "program": "${workspaceFolder}/a.out", //TODO:要调试的程序（完整路径，支持相对路径）
+            "args": [],                            // 传递给上面程序的参数，没有参数留空即可
+            "stopAtEntry": false,                  // 是否停在程序入口点（停在main函数开始）
+            "cwd": "${workspaceFolder}",               // 调试程序时的工作目录
+            "environment": [],                     // 针对调试的程序，要添加到环境中的环境变量. 例如: [ { "name": "squid", "value": "clam" } ]
+            "externalConsole": false,              //如果设置为true，则为应用程序启动外部控制台。 如果为false，则不会启动控制台，并使用VS Code的内置调试控制台。
+            "pipeTransport": {                      
+                "debuggerPath": "/usr/bin/gdb",
+                "pipeProgram": "/usr/bin/ssh",
+                "pipeArgs": [],
+                "pipeCwd": ""
+            },
+            "MIMode": "gdb",                        // VSCode要使用的调试工具
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description":  "将反汇编风格设置为 Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build ROS"
+        }
+    ]
+}

@@ -2,15 +2,15 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:17:34
- * @LastEditTime: 2022-10-15 00:20:21
- * @FilePath: /tup_2023/src/vehicle_system/autoaim/armor_autoaim/src/filter/particle_filter.cpp
+ * @LastEditTime: 2022-10-24 14:14:03
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/particle_filter.cpp
  */
 #include "../../include/filter/particle_filter.hpp"
 
 using namespace std;
 using namespace cv;
 
-namespace autoaim
+namespace armor_processor
 {
     bool randomlizedGaussianColwise(Eigen::MatrixXd &matrix, Eigen::MatrixXd &cov)
     {
@@ -32,7 +32,6 @@ namespace autoaim
             normal_distribution<double> n(0,cov(i,i));
             normal_distribution_list.push_back(n);
         }
-
 
         for (int col = 0; col < matrix.cols(); col++)
         {
@@ -56,14 +55,14 @@ namespace autoaim
     {
     }
 
-    /**
-     * @brief Construct a new Particle Filter:: Particle Filter object
-     * 
-     * @param config 
-     * @param param_name 
-     */
     ParticleFilter::ParticleFilter(YAML::Node &config,const string param_name)
     {
+        /**
+         * @brief Construct a new Particle Filter:: Particle Filter object
+         * 
+         * @param config 
+         * @param param_name 
+         */
         initParam(config,param_name);
     }
 
@@ -71,18 +70,17 @@ namespace autoaim
     {
     }
 
-
-
-    /**
-     * @brief 从文件中初始化滤波器参数
-     * 
-     * @param config 文件路径
-     * @param param_name 参数组名称
-     * @return true 
-     * @return false 
-     */
     bool ParticleFilter::initParam(YAML::Node &config,const string param_name)
     {
+        /**
+         * @brief 从文件中初始化滤波器参数
+         * 
+         * @param config 文件路径
+         * @param param_name 参数组名称
+         * @return true 
+         * @return false 
+         */
+
         //初始化向量长度与粒子数
         vector_len = config[param_name]["vector_len"].as<int>();
         num_particle = config[param_name]["num_particle"].as<int>();
@@ -105,14 +103,15 @@ namespace autoaim
         
         return true;
     }
-    /**
-     * @brief 从其他滤波器中初始化滤波器参数
-     * @param parent 滤波器
-     * @return true 
-     * @return false 
-     */
+
     bool ParticleFilter::initParam(ParticleFilter parent)
     {
+        /**
+         * @brief 从其他滤波器中初始化滤波器参数
+         * @param parent 滤波器
+         * @return true 
+         * @return false 
+         */
         vector_len = parent.vector_len;
         num_particle = parent.num_particle;
         process_noise_cov = parent.process_noise_cov;
@@ -127,26 +126,26 @@ namespace autoaim
         return true;
     }
 
-    /**
-     * @brief 进行一次预测
-     * 
-     * @return Eigen::VectorXd 预测结果 
-     */
     Eigen::VectorXd ParticleFilter::predict()
     {
+        /**
+         * @brief 进行一次预测
+         * 
+         * @return Eigen::VectorXd 预测结果 
+         */
         Eigen::VectorXd particles_weighted = matrix_particle.transpose() * matrix_weights;
         return particles_weighted;
     }
 
-    /**
-     * @brief 进行一次更新
-     * 
-     * @param measure 测量值
-     * @return true 
-     * @return false 
-     */
     bool ParticleFilter::update(Eigen::VectorXd measure)
     {
+        /**
+         * @brief 进行一次更新
+         * 
+         * @param measure 测量值
+         * @return true 
+         * @return false 
+         */
         Eigen::MatrixXd gaussian = Eigen::MatrixXd::Zero(num_particle, vector_len);
         Eigen::MatrixXd mat_measure = measure.replicate(1,num_particle).transpose();
         auto err = ((measure - (matrix_particle.transpose() * matrix_weights)).norm());
@@ -211,9 +210,6 @@ namespace autoaim
         matrix_particle = matrix_particle_tmp + gaussian;
         matrix_weights = Eigen::MatrixXd::Ones(num_particle, 1) / float(num_particle);
         return true;
-}
+    }
 
-
-
-
-};
+} // namespace armor_processor
