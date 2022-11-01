@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-10-25 23:47:31
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
+ * @LastEditTime: 2022-11-01 13:55:25
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.h
  */
 #ifndef PREDICTION_HPP
 #define PREDICTION_HPP
@@ -68,6 +68,48 @@ namespace armor_processor
             // residual[0] = T (_y) - params[0] * ceres::cos(params[2] * T (_x)) - params[1] * ceres::sin(params[2] * T (_x)); // f(x) = a0 + a1 * cos(wx) + b1 * sin(wx) 
 
             return true;
+        }
+    };
+
+    struct XAxisFitting
+    {
+        double _x, _y, _t;
+        XAxisFitting(double x, double y, double t) : _x(x), _y(y), _t(t) {}
+
+        template <class T>
+        bool operator()
+        (
+            const T* const w,
+            const T* const theta,
+            const T* const V,
+            const T* const x0,
+            const T* const y0,
+            T* residual
+        )
+        {
+            residual[0] = x0[0] + 0.25 * ceres::cos(w[0] * T(_t)) + V[0] * T(_t) * ceres::cos(theta[0]) - _x;
+            return 0;
+        }
+    };
+
+    struct YAxisFitting
+    {
+        double _x, _y, _t;
+        YAxisFitting(double x, double y, double t) : _x(x), _y(y), _t(t) {}
+
+        template <class T>
+        bool operator()
+        (
+            const T* const w,
+            const T* const theta,
+            const T* const V,
+            const T* const x0,
+            const T* const y0,
+            T* residual
+        )
+        {
+            residual[0] = y0[0] + 0.25 * ceres::sin(w[0] * T(_t)) + V[0] * T(_t) * ceres::sin(theta[0]) - _y;
+            return 0;
         }
     };
 
@@ -155,7 +197,10 @@ namespace armor_processor
         Eigen::Vector3d shiftWindowFilter(int start_idx);
 
         PredictStatus predict_pf_run(TargetInfo target, Vector3d& result, int timestamp);
-        PredictStatus predict_fitting_run(Eigen::Vector3d& result, int timestamp);
+        PredictStatus uncouple_fitting_predict(Eigen::Vector3d& result, int timestamp);
+
+        //移动轨迹拟合预测（小陀螺+横移->旋轮线）
+        PredictStatus couple_fitting_predict(Eigen::Vector3d& result, int timestamp);
     };
 
 

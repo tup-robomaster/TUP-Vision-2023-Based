@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-10-24 14:10:37
+ * @LastEditTime: 2022-11-01 13:53:01
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -311,7 +311,7 @@ namespace armor_processor
         return is_available;
     }
 
-    PredictStatus ArmorPredictor::predict_fitting_run(Eigen::Vector3d& result, int time_estimated)
+    PredictStatus ArmorPredictor::uncouple_fitting_predict(Eigen::Vector3d& result, int time_estimated)
     {
         //0.1的位置使用0初始化会导致拟合结果出错
         double params_x[4] = {0,0,0,0};            // 参数的估计值
@@ -423,5 +423,57 @@ namespace armor_processor
         return is_available;
     }
 
+    PredictStatus ArmorPredictor::couple_fitting_predict(Eigen::Vector3d& result, int time_estimated)
+    {
+        double params[] = {0, 0, 0, 0, 0};
 
+        ceres::Problem problem;
+        ceres::Solver::Options options;
+        ceres::Solver::Summary summary;
+
+        options.max_num_iterations = 200;
+        options.linear_solver_type = ceres::DENSE_QR;
+        options.minimizer_progress_to_stdout = false;
+
+        for(auto& target_info : history_info_)
+        {
+            problem.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<XAxisFitting, 5, 3>
+                (
+                    new XAxisFitting(target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3)
+                ),
+                new ceres::CauchyLoss(0.5),
+                &params[0],
+                &params[1],
+                &params[2],
+                &params[3],
+                &params[4]
+            )
+
+            problem.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<YAxisFitting, 5, 3>
+                (
+                    new YAxisFitting(target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3)
+                ),
+                new ceres::CauchyLoss(0.5),
+                &params[0],
+                &params[1],
+                &params[2],
+                &params[3],
+                &params[4]
+            )
+        }
+
+        ceres::Solve(options, &problem, &summary);
+
+        bool is_available;
+        is_available = (summary.final_cost <= predict_param_.max_cost);
+
+        auto x_pred = params[3] + 0.25 * ceres::cos(params[0] * (time_estimated / 1e3)) + params[2] * (time_estimated / 1e3) * ceres::cos(params[1]);
+        auto y_pred = params[4] + 0.25 * ceres::sin(params[0] * (time_estimated / 1e3)) + params[2] * (time_estimated / 1e3) * ceres::sin(params[1]);
+
+        result = {x_pred, y_pred, history_info_.end()->xyz[2]};
+        
+        return is_available;
+    }
 } // armor_processor
