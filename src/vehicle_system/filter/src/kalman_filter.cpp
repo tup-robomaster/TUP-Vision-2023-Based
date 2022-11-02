@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2022-10-31 19:37:56
+ * @LastEditTime: 2022-11-02 22:34:46
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/src/kalman_filter.cpp
  */
 #include "filter/include/kalman_filter.hpp"
@@ -25,6 +25,18 @@ namespace kalman_filter
         H_ = H_in;
         R_ = R_in;
         Q_ = Q_in;
+    }
+
+    void KalmanFilter::Init(VectorXd& x_in, MatrixXd& P_in, MatrixXd& F_in,
+            MatrixXd& H_in, MatrixXd& R_in, MatrixXd& Q_in, MatrixXd& J_in)
+    {
+        x_ = x_in;
+        P_ = P_in;
+        F_ = F_in;
+        H_ = H_in;
+        R_ = R_in;
+        Q_ = Q_in;
+        J_ = J_in;
     }
 
     void KalmanFilter::Predict()
