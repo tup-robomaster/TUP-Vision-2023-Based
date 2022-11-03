@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-03 12:27:21
- * @LastEditTime: 2022-11-03 13:09:17
+ * @LastEditTime: 2022-11-03 16:37:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/motion_model/linear_measurement_model.hpp
  */
 #ifndef LINEAR_SYSTEM_MODEL_HPP_
@@ -21,7 +21,7 @@ namespace filter
         using typename MeasurementModelBase::State;
         using typename MeasurementModelBase::Measurement; 
 
-    protected:
+    public:
         //观测模型雅可比矩阵
         Jacobian<Measurement, State> H;
         //观测噪声雅可比矩阵

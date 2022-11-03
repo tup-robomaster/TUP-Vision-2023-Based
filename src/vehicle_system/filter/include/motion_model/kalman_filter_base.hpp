@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-03 13:10:34
- * @LastEditTime: 2022-11-03 13:21:46
+ * @LastEditTime: 2022-11-03 16:30:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/motion_model/kalman_filter_base.hpp
  */
 #ifndef KALMAN_FILTER_BASE_HPP_
@@ -24,7 +24,7 @@ namespace filter
         
         typedef StateType State;
     
-    public:
+    protected:
         State x;
     
     public:
@@ -34,6 +34,11 @@ namespace filter
             x = initialState;
         }
 
+        //返回状态估计量
+        const State& getState() const
+        {
+            return x;
+        }
     public:
         KalmanFilterBase(){}
     };

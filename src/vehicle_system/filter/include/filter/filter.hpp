@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 02:27:06
- * @LastEditTime: 2022-11-03 00:07:00
+ * @LastEditTime: 2022-11-03 16:27:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/filter/filter.hpp
  */
 #ifndef FILTER_HPP_
@@ -64,6 +64,13 @@ namespace filter
         }
     };
 
+    //抽象基类适配标准滤波
+    template<class StateType>
+    class FilterBase : public Base<StateType>
+    {
+    public:
+        using Base::P;
+    };
 } //namespace filter
 
 #endif
