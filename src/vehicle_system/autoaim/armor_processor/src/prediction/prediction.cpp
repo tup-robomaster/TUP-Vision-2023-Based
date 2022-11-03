@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-11-01 13:53:01
+ * @LastEditTime: 2022-11-03 20:48:51
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -129,38 +129,43 @@ namespace armor_processor
         //需注意粒子滤波使用相对时间（自上一次检测时所经过ms数），拟合使用自首帧所经过时间
         if(fitting_disabled_)
         {
-            auto is_pf_available = predict_pf_run(target, result_pf, delta_time_estimate);
+        //     auto is_pf_available = predict_pf_run(target, result_pf, delta_time_estimate);
         }
         else
         {
-            auto get_pf_available = std::async(std::launch::async, [=, &result_pf](){return predict_pf_run(target, result_pf, delta_time_estimate);});
-            auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return predict_fitting_run(result_fitting, time_estimate);});
+        //     auto get_pf_available = std::async(std::launch::async, [=, &result_pf](){return predict_pf_run(target, result_pf, delta_time_estimate);});
+        
+        //轨迹拟合（解耦）
+            auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return uncouple_fitting_predict(result_fitting, time_estimate);});
 
-            is_pf_available = get_pf_available.get();
+        //小陀螺轨迹拟合（耦合）
+            // auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return couple_fitting_predict(result_fitting, time_estimate);});
+        
+        //     is_pf_available = get_pf_available.get();
             is_fitting_available = get_fitting_available.get();
         }
 
         // if (fitting_disabled)
         // {
         //     return xyz;
-        //     // auto is_pf_available = predict_pf_run(target, result_pf, delta_time_estimate);
-        // }
-        // else
-        // {
-        //     auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return predict_fitting_run(result_fitting, time_estimate);});
+        // //     // auto is_pf_available = predict_pf_run(target, result_pf, delta_time_estimate);
+        // // }
+        // // else
+        // // {
+        // //     auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return uncouple_fitting_predict(result_fitting, time_estimate);});
 
-        //     is_fitting_available = get_fitting_available.get();
-        // }
+        // //     is_fitting_available = get_fitting_available.get();
+        // // }
         
-        // 进行融合
+        // // 进行融合
         if(is_fitting_available.xyz_status[0] && !fitting_disabled_)
         {
             result[0] = result_fitting[0];
         }
-        else if(is_pf_available.xyz_status[0])
-        {
-            result[0] = result_pf[0];
-        }
+        // else if(is_pf_available.xyz_status[0])
+        // {
+        //     result[0] = result_pf[0];
+        // }
         else
         {
             result[0] = xyz[0];
@@ -170,10 +175,10 @@ namespace armor_processor
         {
             result[1] = result_fitting[1];
         }
-        else if(is_pf_available.xyz_status[1])
-        {
-            result[1] = result_pf[1];
-        }
+        // else if(is_pf_available.xyz_status[1])
+        // {
+        //     result[1] = result_pf[1];
+        // }
         else
         {
             result[1] = xyz[1];
@@ -188,44 +193,45 @@ namespace armor_processor
             result[2] = xyz[2];
         }
 
-        result = result_pf;
+        // result = result_pf;
         auto t2 = std::chrono::steady_clock::now();
-        double dr_ms = std::chrono::duration<double,std::milli>(t2-t1).count();
+        double dr_ms = std::chrono::duration<double, std::milli>(t2-t1).count();
         // if(timestamp % 10 == 0)
         delta_time_estimate = 0;
         // cout<<dr_ms<<endl;
         // cout<<xyz<<endl;
         // result_pf = target.xyz;
-        if(debug_param_.draw_predict)
-        {
-            double x_offset = 400;
-            double y_offset = 400;
-            double z_offset = 200;
-            if (cnt < 2000)
-            {
-                auto x = cnt * 5;
-                cv::circle(pic_x,cv::Point2f((timestamp) / 10,xyz[0] * 100 + x_offset),1,cv::Scalar(0,0,255),1);
-                cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[0] * 100 + x_offset),1,cv::Scalar(0,255,0),1);
-                cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[0] * 100 + x_offset),1,cv::Scalar(255,255,0),1);
-                // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result[0]+ 200),1,cv::Scalar(255,255,255),1);
+
+        // if(debug_param_.draw_predict)
+        // {
+        //     double x_offset = 400;
+        //     double y_offset = 400;
+        //     double z_offset = 200;
+        //     if (cnt < 2000)
+        //     {
+        //         auto x = cnt * 5;
+        //         cv::circle(pic_x,cv::Point2f((timestamp) / 10,xyz[0] * 100 + x_offset),1,cv::Scalar(0,0,255),1);
+        //         cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[0] * 100 + x_offset),1,cv::Scalar(0,255,0),1);
+        //         cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[0] * 100 + x_offset),1,cv::Scalar(255,255,0),1);
+        //         // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result[0]+ 200),1,cv::Scalar(255,255,255),1);
 
 
-                cv::circle(pic_y,cv::Point2f((timestamp) / 10,xyz[1] * 100 + y_offset),1,cv::Scalar(0,0,255),1);
-                cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[1] * 100 + y_offset),1,cv::Scalar(0,255,0),1);
-                cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[1] * 100 + y_offset),1,cv::Scalar(255,255,0),1);
-                // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result[1]+ 200),1,cv::Scalar(255,255,255),1);
+        //         cv::circle(pic_y,cv::Point2f((timestamp) / 10,xyz[1] * 100 + y_offset),1,cv::Scalar(0,0,255),1);
+        //         cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[1] * 100 + y_offset),1,cv::Scalar(0,255,0),1);
+        //         cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[1] * 100 + y_offset),1,cv::Scalar(255,255,0),1);
+        //         // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result[1]+ 200),1,cv::Scalar(255,255,255),1);
 
-                cv::circle(pic_z,cv::Point2f((timestamp) / 10,xyz[2] * 100 + z_offset),1,cv::Scalar(0,0,255),1);
-                cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[2] * 100  + z_offset),1,cv::Scalar(0,255,0),1);
-                cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[2] * 100 + z_offset),1,cv::Scalar(255,255,0),1);
-                // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result[2]),1,cv::Scalar(255,255,255),1);
-                cnt++;
-            }
-            cv::imshow("result_x",pic_x);
-            cv::imshow("result_y",pic_y);
-            cv::imshow("result_z",pic_z);
-            cv::waitKey(1);
-        }
+        //         cv::circle(pic_z,cv::Point2f((timestamp) / 10,xyz[2] * 100 + z_offset),1,cv::Scalar(0,0,255),1);
+        //         cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[2] * 100  + z_offset),1,cv::Scalar(0,255,0),1);
+        //         cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[2] * 100 + z_offset),1,cv::Scalar(255,255,0),1);
+        //         // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result[2]),1,cv::Scalar(255,255,255),1);
+        //         cnt++;
+        //     }
+        //     cv::imshow("result_x",pic_x);
+        //     cv::imshow("result_y",pic_y);
+        //     cv::imshow("result_z",pic_z);
+        //     cv::waitKey(1);
+        // }
 
         final_target_ = target;
         // return target.xyz;
