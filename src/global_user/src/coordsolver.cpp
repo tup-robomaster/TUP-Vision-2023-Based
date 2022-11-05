@@ -177,18 +177,33 @@ namespace coordsolver
     {
         // cout<<xyz_cam<<endl;
         // cout<<endl;
+        // std::cout << "xyz:" << xyz_cam[0] << " " << xyz_cam[1] << " " << xyz_cam[2] << std::endl;
         auto xyz_offseted = staticCoordOffset(xyz_cam);
-        auto xyz_world = camToWorld(xyz_offseted,rmat);
+        // std::cout << "xyz_offseted :" << xyz_offseted[0] << " " << xyz_offseted[1] << " " << xyz_offseted[2] << std::endl;
+        
+        rmat = Eigen::Matrix3d::Identity();
+
+        auto xyz_world = camToWorld(xyz_offseted, rmat);
+        // std::cout << "xyz_world:" << xyz_world[0] << " " << xyz_world[1] << " " << xyz_world[2] << std::endl;
+
         auto angle_cam = calcYawPitch(xyz_cam);
+        // std::cout << "angle_cam: " << "pitch:" << angle_cam[0] << " yaw:" << angle_cam[1] << std::endl;
+
         // auto dist = xyz_offseted.norm();
         // auto pitch_offset = 6.457e04 * pow(dist,-2.199);
         auto pitch_offset = dynamicCalcPitchOffset(xyz_world);
+        // std::cout << "pitch_offset: " << pitch_offset << std::endl;
+
         //TODO: Add Log
         // cout<<pitch_offset<<endl;
         angle_cam[1] = angle_cam[1] + pitch_offset;
         auto angle_offseted = staticAngleOffset(angle_cam);
-        return angle_offseted;
 
+        // std::cout << "angle_offseted: " << "pitch:" << angle_offseted[0] << " yaw:" << angle_offseted[1] << std::endl;
+
+        // std::cout << " " << std::endl;
+        
+        return angle_offseted;
     }
 
     /**

@@ -21,8 +21,8 @@
     show_aim_cross: false
     show_img: true
     show_fps: true
-    print_letency: true
-    print_target_info: true
+    print_letency: false
+    print_target_info: false
     detect_red: true
 
     anti_spin_judge_high_thres: 2e4

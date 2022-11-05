@@ -14,6 +14,8 @@ namespace camera_driver
     daheng_cam_node::daheng_cam_node(const rclcpp::NodeOptions &options)
     : Node("daheng_driver", options)
     {
+        RCLCPP_WARN(this->get_logger(), "Camera driver node...");
+        
         // camera params initialize 
         daheng_cam = init_daheng_cam();
 

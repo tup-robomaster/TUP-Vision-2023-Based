@@ -38,7 +38,7 @@ namespace serialport
         }
         ::close(last_fd);
 
-        printf("Sreialport is opening...\n");
+        printf("Serial port is opening...\n");
 
         speed = device_baud;
         databits = 8;
@@ -65,8 +65,8 @@ namespace serialport
 
     bool serialport::open(const std::string id, const int baud)
     {
-        this->serial_id = id;
-        this->device_baud = baud;
+        // this->serial_id = id;
+        // this->device_baud = baud;
         init();
         return is_open;
     }
@@ -86,6 +86,20 @@ namespace serialport
             // return false;
         
         bytes = ::read(fd, &buffer, sizeof(buffer));
+        if(buffer.empty())
+        {
+            std::cout << 7 << std::endl;
+        }
+        else
+        {
+            std::cout << 9 << std::endl;
+            for(auto& info : buffer)
+            {
+                std::cout << "data:" << info << std::endl;
+            }
+        }
+
+        std::cout << 8 << std::endl;
     }
 
     void serialport::write(std::vector<uint8_t>& buffer)
@@ -143,7 +157,7 @@ namespace serialport
         for(auto text : texts)
         {
             int equal_idx = text.find("=");
-            std::string config_type = text.substr(0,equal_idx);
+            std::string config_type = text.substr(0, equal_idx);
             std::string config_info = text.substr(equal_idx + 1);
 
             if(config_type == "PRODUCT")

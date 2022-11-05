@@ -14,6 +14,8 @@ namespace camera_driver
     usb_cam_node::usb_cam_node(const rclcpp::NodeOptions& option)
     : Node("usb_driver", option), is_filpped(false)
     {
+        RCLCPP_WARN(this->get_logger(), "Camera driver node...");
+        
         frame_pub = this->create_publisher<sensor_msgs::msg::Image>("usb_img", 1);
         
         usb_cam_ = init_usb_cam();

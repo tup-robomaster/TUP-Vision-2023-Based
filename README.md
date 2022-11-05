@@ -7,7 +7,9 @@ V1.0
 程序基于ros-galactic框架
 
 ## 开发日志
-Data:2022-10-28 加入tf2，serialport包将陀螺仪数据加入到tf树，world->gyro(==world->camera)
+Date:2022-11-05 fixed serialport node bugs and armor processor node bugs.
+
+Date:2022-10-28 加入tf2，serialport包将陀螺仪数据加入到tf树，world->gyro(+ transformation == world->camera)
 
 Date:2022-10-23 加入2022.1版本的OpenVINO，并在armor_detector节点调试成功，在7代i7NUC上测试网络推理部分耗时在15ms～30ms左右。
 

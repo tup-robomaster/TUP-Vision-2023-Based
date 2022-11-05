@@ -85,7 +85,7 @@ namespace armor_processor
             const T* const x0,
             const T* const y0,
             T* residual
-        )
+        ) const
         {
             residual[0] = x0[0] + 0.25 * ceres::cos(w[0] * T(_t)) + V[0] * T(_t) * ceres::cos(theta[0]) - _x;
             return 0;
@@ -106,7 +106,7 @@ namespace armor_processor
             const T* const x0,
             const T* const y0,
             T* residual
-        )
+        ) const
         {
             residual[0] = y0[0] + 0.25 * ceres::sin(w[0] * T(_t)) + V[0] * T(_t) * ceres::sin(theta[0]) - _y;
             return 0;

@@ -12,9 +12,11 @@ namespace serialport
     serial_driver::serial_driver(const rclcpp::NodeOptions& options)
     : Node("serial_driver", options), device_name_("ttyACM0"), baud_(115200)
     {
-        RCLCPP_INFO(this->get_logger(), "Serialport node...");
+        RCLCPP_WARN(this->get_logger(), "Serialport node...");
         
-        serial_port_ = init_serial_port();
+        // serial_port_ = init_serial_port();
+
+        serial_port_old_ = init_serial_port_old();
 
         // joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_state", rclcpp::QoS(rclcpp::KeepLast(10)));
         
@@ -32,6 +34,8 @@ namespace serialport
         //     }
 
         // }
+        this->declare_parameter<bool>("debug_without_com", false);
+        this->get_parameter("debug_without_com", debug_without_port);
 
         //world
         this->declare_parameter<std::string>("base_frame", "world");
@@ -52,20 +56,36 @@ namespace serialport
         //initialize the transform broadcaster
         tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
         
-        gimbal_motion_sub_ = this->create_subscription<global_interface::msg::Target>(
-            "armor_detector/armor_info", 
-            rclcpp::SensorDataQoS(rclcpp::KeepLast(10)),
+        // std::cout << 1 << std::endl;
+        gimbal_motion_sub_ = this->create_subscription<global_interface::msg::Gimbal>(
+            "/gimbal_info", 
+            rclcpp::SensorDataQoS(),
             std::bind(&serial_driver::send_data, this, std::placeholders::_1)
         );
+        // std::cout << 1 << std::endl;
+        // if(serial_port_->debug_without_port())
+        // {
+        //     std::cout << 2 << std::endl;
 
-        if(serial_port_->debug_without_port())
-        {
-            serial_port_->open(device_name_, baud_);
-            if(!serial_port_->is_open)
-            {
-                RCLCPP_INFO(this->get_logger(), "Serial open failed!");
-            }
-            else
+        //     serial_port_->open(device_name_, baud_);
+        //     std::cout << 3 << std::endl;
+
+        //     if(!serial_port_->is_open)
+        //     {
+        //         std::cout << 4 << std::endl;
+        //         RCLCPP_INFO(this->get_logger(), "Serial open failed!");
+        //     }
+        //     else
+        //     {
+        //         std::cout << 5 << std::endl;
+        //         receive_thread_ = std::thread(&serial_driver::receive_data, this);
+        //     }
+        // }
+        // std::cout << 2 << std::endl;
+
+        if(!debug_without_port)
+        {   //use serial port
+            if(serial_port_old_->initSerialPort())
             {
                 receive_thread_ = std::thread(&serial_driver::receive_data, this);
             }
@@ -78,7 +98,15 @@ namespace serialport
         // buffer = NULL;
     }
 
-    void handle_imu_data(const std::shared_ptr<global_interface::msg::Imu>& msg)
+    std::unique_ptr<SerialPort> serial_driver::init_serial_port_old()
+    {
+        std::string id = "483/5740/200";
+        int baud = 115200;
+
+        return std::make_unique<SerialPort>(id, baud);
+    }
+
+    void serial_driver::handle_imu_data(const std::shared_ptr<global_interface::msg::Imu>& msg)
     {
         
     }
@@ -101,105 +129,186 @@ namespace serialport
 
     void serial_driver::receive_data()
     {
-        std::vector<uint8_t> header(1);
-        std::vector<uint8_t> data(sizeof(ReceivePacket));
+        std::vector<uchar> header(1);
+        std::vector<uchar> data(sizeof(ReceivePacket));
 
-        while (rclcpp::ok())
-        {
-            if(serial_port_->debug_without_port())
-            {
-                serial_port_->read(header);
-                if(header.at(0) == 0xA5)
-                {
-                    serial_port_->read(data);
-                    data.insert(data.begin(), header.at(0));
+        // while (rclcpp::ok())
+        // {
+        //     if(serial_port_->debug_without_port())
+        //     {
+        //         std::cout << 6 << std::endl;
+        //         serial_port_->read(header);
+        //         // std::cout << header.at(0) << std::endl;
+        //         if(header.at(0) == 0xA5)
+        //         {
+        //             serial_port_->read(data);
+        //             data.insert(data.begin(), header.at(0));
 
-                    ReceivePacket packet = vec_to_packet(data);
+        //             ReceivePacket packet = vec_to_packet(data);
 
-                    bool crc_16_check = Verify_CRC16_Check_Sum(reinterpret_cast<uint8_t *>(&packet), sizeof(packet));
-                    if(crc_16_check)
-                    {
-                        sensor_msgs::msg::JointState joint_state;
-                        joint_state.header.stamp = this->now();
-                        joint_state.name.push_back("pitch_angle");
-                        joint_state.name.push_back("yaw_angle");
-                        joint_state.position.push_back(packet.joint_pitch);
-                        joint_state.position.push_back(packet.joint_yaw);
-                        joint_state_pub_->publish(joint_state);
+        //             bool crc_16_check = Verify_CRC16_Check_Sum(reinterpret_cast<uint8_t *>(&packet), sizeof(packet));
+        //             if(crc_16_check)
+        //             {
+        //                 sensor_msgs::msg::JointState joint_state;
+        //                 joint_state.header.stamp = this->now();
+        //                 joint_state.name.push_back("pitch_angle");
+        //                 joint_state.name.push_back("yaw_angle");
+        //                 joint_state.position.push_back(packet.joint_pitch);
+        //                 joint_state.position.push_back(packet.joint_yaw);
+        //                 joint_state_pub_->publish(joint_state);
 
-                        // std::cout << "bullet_speed:" << packet.bullet_speed << std::endl;
-                        RCLCPP_INFO(this->get_logger(), "bullet_speed:%f", packet.bullet_speed);
+        //                 // std::cout << "bullet_speed:" << packet.bullet_speed << std::endl;
+        //                 RCLCPP_INFO(this->get_logger(), "bullet_speed:%f", packet.bullet_speed);
 
-                        //tf2
-                        rclcpp::Time now = this->get_clock()->now();
-                        geometry_msgs::msg::TransformStamped transform_;
-                        transform_.header.stamp = now;
-                        transform_.header.frame_id = this->base_frame_;
-                        transform_.child_frame_id = this->imu_frame_;
+        //                 //tf2
+        //                 rclcpp::Time now = this->get_clock()->now();
+        //                 geometry_msgs::msg::TransformStamped transform_;
+        //                 transform_.header.stamp = now;
+        //                 transform_.header.frame_id = this->base_frame_;
+        //                 transform_.child_frame_id = this->imu_frame_;
 
-                        //TODO:add translation vector
-                        transform_.transform.translation.x = 0;
-                        transform_.transform.translation.y = 0;
-                        transform_.transform.translation.z = 0;
+        //                 //TODO:add translation vector
+        //                 transform_.transform.translation.x = 0;
+        //                 transform_.transform.translation.y = 0;
+        //                 transform_.transform.translation.z = 0;
 
-                        //rotation
-                        transform_.transform.rotation.w = packet.quat[0];
-                        transform_.transform.rotation.x = packet.quat[1];
-                        transform_.transform.rotation.y = packet.quat[2];
-                        transform_.transform.rotation.z = packet.quat[3];
+        //                 //rotation
+        //                 transform_.transform.rotation.w = packet.quat[0];
+        //                 transform_.transform.rotation.x = packet.quat[1];
+        //                 transform_.transform.rotation.y = packet.quat[2];
+        //                 transform_.transform.rotation.z = packet.quat[3];
                         
-                        //imu rotation
-                        quat_ = {packet.quat[0], packet.quat[1], packet.quat[2], packet.quat[3]};
-                        rmat_imu_ = quat_.toRotationMatrix();
+        //                 //imu rotation
+        //                 quat_ = {packet.quat[0], packet.quat[1], packet.quat[2], packet.quat[3]};
+        //                 rmat_imu_ = quat_.toRotationMatrix();
 
-                        //send the transformation
-                        tf_broadcaster_->sendTransform(transform_);
-                    }        
-                    else
-                    {
-                        // std::cout << "Crc check error!" << std::endl;
+        //                 //send the transformation
+        //                 tf_broadcaster_->sendTransform(transform_);
+        //             }        
+        //             else
+        //             {
+        //                 // std::cout << "Crc check error!" << std::endl;
 
-                        RCLCPP_ERROR(this->get_logger(), "Crc check error!");
-                    }   
-                }
-                else
-                {
-                    // std::cout << "Invalid header:" << header.at(0) << std::endl;
-                    RCLCPP_ERROR(this->get_logger(), "Invalid header: %02X", header.at(0));
-                }
+        //                 RCLCPP_ERROR(this->get_logger(), "Crc check error!");
+        //             }   
+        //         }
+        //         else
+        //         {
+        //             // std::cout << "Invalid header:" << header.at(0) << std::endl;
+        //             // RCLCPP_ERROR(this->get_logger(), "Invalid header: %02X", header.at(0));
+        //         }
+        //     }
+        // }
+
+        while(1)
+        {
+            //若串口离线则跳过数据发送
+            if (serial_port_old_->need_init == true)
+            {
+                // cout<<"offline..."<<endl;
+                usleep(5000);
+                continue;
             }
+            //数据读取不成功进行循环
+            while (!serial_port_old_->get_Mode())
+                ;
+            // auto time_cap = std::chrono::steady_clock::now();
+
+    // #ifdef USING_IMU_C_BOARD 
+    //         auto imu_timestamp = serial.timestamp;
+    //         auto delta_t = (int)(std::chrono::duration<double,std::micro>(imu_timestamp - image_timestamp).count());
+    //         cout << "cam_imu data delta_t: " << delta_t << "us" <<  endl;
+    // #endif
+            // cout<<"Quat: "<<serial.quat[0]<<" "<<serial.quat[1]<<" "<<serial.quat[2]<<" "<<serial.quat[3]<<" "<<endl;
+            // Eigen::Quaterniond quat = {serial.quat[0],serial.quat[1],serial.quat[2],serial.quat[3]};
+            //FIXME:注意此处mode设置
+            int mode = serial_port_old_->mode;
+            float bullet_speed = serial_port_old_->bullet_speed;
+            
+            // int mode = 2;
+            // Eigen::Quaterniond quat = {serial_port_old_->quat[0], serial_port_old_->quat[1], serial_port_old_->quat[2], serial_port_old_->quat[3]};
+            // Eigen::Vector3d acc = {serial_port_old_->acc[0], serial_port_old_->acc[1], serial_port_old_->acc[2]};
+            // Eigen::Vector3d gyro = {serial_port_old_->gyro[0], serial_port_old_->gyro[1], serial_port_old_->gyro[2]};
+            
+            // std::cout << 3 << std::endl;
+            //tf2
+            rclcpp::Time now = this->get_clock()->now();
+            geometry_msgs::msg::TransformStamped transform_;
+            transform_.header.stamp = now;
+            transform_.header.frame_id = this->base_frame_;
+            transform_.child_frame_id = this->imu_frame_;
+
+            //TODO:add translation vector
+            transform_.transform.translation.x = 0;
+            transform_.transform.translation.y = 0;
+            transform_.transform.translation.z = 0;
+
+            //rotation
+            // transform_.transform.rotation.w = packet.quat[0];
+            // transform_.transform.rotation.x = packet.quat[1];
+            // transform_.transform.rotation.y = packet.quat[2];
+            // transform_.transform.rotation.z = packet.quat[3];
+
+            transform_.transform.rotation.w = serial_port_old_->quat[0];
+            transform_.transform.rotation.x = serial_port_old_->quat[1];
+            transform_.transform.rotation.y = serial_port_old_->quat[2];
+            transform_.transform.rotation.z = serial_port_old_->quat[3];
+            
+            //imu rotation
+            quat_ = {serial_port_old_->quat[0], serial_port_old_->quat[1], serial_port_old_->quat[2], serial_port_old_->quat[3]};
+            rmat_imu_ = quat_.toRotationMatrix();
+
+            //send the transformation
+            tf_broadcaster_->sendTransform(transform_);
+            // Eigen::Vector3d vec = quat.toRotationMatrix().eulerAngles(2,1,0);
+            // cout<<"Euler : "<<vec[0] * 180.f / CV_PI<<" "<<vec[1] * 180.f / CV_PI<<" "<<vec[2] * 180.f / CV_PI<<endl;
+            // cout<<"transmitting..."<<endl;
         }
     }
 
-    void serial_driver::send_data(global_interface::msg::Target::SharedPtr target_info) 
+    void serial_driver::send_data(global_interface::msg::Gimbal::SharedPtr target_info) 
     {
-        global_interface::msg::Gimbal msg;
+        // std::cout << 4 << std::endl;
+
+        // global_interface::msg::Gimbal msg;
+        // Eigen::Vector3d aiming_point = {target_info->aiming_point.x, target_info->aiming_point.y, target_info->aiming_point.z};
         
-        Eigen::Vector3d aiming_point = {target_info->aiming_point.x, target_info->aiming_point.y, target_info->aiming_point.z};
+        // auto angle = coordsolver_.getAngle(aiming_point, rmat_imu_);
         
-        auto angle = coordsolver_.getAngle(aiming_point, rmat_imu_);
-        
-        if(serial_port_->debug_without_port())
+        // if(serial_port_->debug_without_port())
+        // {
+        //     SendPacket packet;
+        //     packet.header = 0xA5;
+        //     packet.pitch_angle = angle[0];
+        //     packet.yaw_angle = angle[1];
+        //     packet.dis = 0;
+        //     packet.isFindTarget = false;
+        //     packet.isSwitched = false;
+        //     packet.isSpinning = false;
+        //     packet.isMiddle = false;
+            
+        //     Append_CRC16_Check_Sum(reinterpret_cast<uint8_t*>(&packet), sizeof(packet));
+            
+        //     std::vector<uint8_t> data = packet_to_vec(packet);
+        //     serial_port_->write((data));
+            
+        //     // if(!serial_port_->write((data)))
+        //     // {
+        //     //     RCLCPP_ERROR(this->get_logger(), "serial data sends failed!");
+        //     // }
+        // }
+        if(!this->debug_without_port)
         {
-            SendPacket packet;
-            packet.header = 0xA5;
-            packet.pitch_angle = angle[0];
-            packet.yaw_angle = angle[1];
-            packet.dis = 0;
-            packet.isFindTarget = false;
-            packet.isSwitched = false;
-            packet.isSpinning = false;
-            packet.isMiddle = false;
-            
-            Append_CRC16_Check_Sum(reinterpret_cast<uint8_t*>(&packet), sizeof(packet));
-            
-            std::vector<uint8_t> data = packet_to_vec(packet);
-            serial_port_->write((data));
-            
-            // if(!serial_port_->write((data)))
-            // {
-            //     RCLCPP_ERROR(this->get_logger(), "serial data sends failed!");
-            // }
+            VisionData transmition_data = {target_info->pitch, target_info->yaw, target_info->distance, target_info->is_switched, 1, target_info->is_spinning, 0};
+            serial_port_old_->TransformData(transmition_data);
+            serial_port_old_->send();
+
+            // RCLCPP_INFO(this->get_logger(), "send data...");
+        }
+        else
+        {
+            // std::cout << 4 << std::endl;
+            //debug without com
         }
     }
 

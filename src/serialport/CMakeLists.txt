@@ -95,12 +95,18 @@ include_directories(include)
 
 add_executable(serial_driver
   include/${PROJECT_NAME}/crc_check.hpp
+  include/${PROJECT_NAME}/crc_check_old.hpp
+
   include/${PROJECT_NAME}/packet.hpp
   # include/${PROJECT_NAME}/packet.h
   include/${PROJECT_NAME}/${PROJECT_NAME}_node.hpp
   include/${PROJECT_NAME}/${PROJECT_NAME}.hpp
+  include/${PROJECT_NAME}/${PROJECT_NAME}_old.hpp
+
   src/${PROJECT_NAME}/crc_check.cpp
+  src/${PROJECT_NAME}/crc_check_old.cpp
   src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
+  src/${PROJECT_NAME}/${PROJECT_NAME}_old.cpp
   src/${PROJECT_NAME}/${PROJECT_NAME}_node.cpp
   src/${PROJECT_NAME}/${PROJECT_NAME}_node_main.cpp
   # src/${PROJECT_NAME}/crc_check.cpp

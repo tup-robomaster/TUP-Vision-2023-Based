@@ -14,7 +14,7 @@ namespace armor_detector
     detector_node::detector_node(const rclcpp::NodeOptions& options)
     : Node("armor_detector", options)
     {
-        RCLCPP_INFO(this->get_logger(), "Starting detector node...");
+        RCLCPP_WARN(this->get_logger(), "Starting detector node...");
 
         try
         {
@@ -67,7 +67,7 @@ namespace armor_detector
         this->declare_parameter("show_img", true);
         this->declare_parameter("detect_red", true);
         this->declare_parameter("show_fps", true);
-        this->declare_parameter("print_letency", true);
+        this->declare_parameter("print_letency", false);
         this->declare_parameter("print_target_info", true);
         
         this->declare_parameter("anti_spin_judge_high_thres", 2e4);

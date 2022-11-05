@@ -19,7 +19,9 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
 
+#include "./serialport_old.hpp"
 #include "./serialport.hpp"
+
 #include "../../../global_user/include/coordsolver.hpp"
 #include "global_interface/msg/imu.hpp"
 #include "global_interface/msg/gimbal.hpp"
@@ -43,9 +45,10 @@ namespace serialport
     public:
         void run();
         void receive_data();
-        void send_data(global_interface::msg::Target::SharedPtr msg);
+        void send_data(global_interface::msg::Gimbal::SharedPtr msg);
     
     private:
+        bool debug_without_port;
         // rclcpp::Node::SharedPtr node_;
         // std::thread thread_watch_;
         std::thread receive_thread_;
@@ -61,11 +64,14 @@ namespace serialport
 
     public:
         rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
-        rclcpp::Subscription<global_interface::msg::Target>::SharedPtr gimbal_motion_sub_;
+        rclcpp::Subscription<global_interface::msg::Gimbal>::SharedPtr gimbal_motion_sub_;
     
     private:
         std::unique_ptr<serialport> serial_port_;
         std::unique_ptr<serialport> init_serial_port();
+
+        std::unique_ptr<SerialPort> serial_port_old_;
+        std::unique_ptr<SerialPort> init_serial_port_old();
 
     public:
         //tf2

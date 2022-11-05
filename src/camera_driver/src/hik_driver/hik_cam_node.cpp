@@ -14,6 +14,8 @@ namespace camera_driver
     hik_cam_node::hik_cam_node(const rclcpp::NodeOptions &options)
     : Node("hik_driver", options)
     {
+        RCLCPP_WARN(this->get_logger(), "Camera driver node...");
+
         // camera params initialize 
         try
         {
@@ -24,7 +26,6 @@ namespace camera_driver
             std::cerr << e.what() << '\n';
         }
         
-        RCLCPP_INFO(this->get_logger(), "1...");
         // create img publisher
         this->image_pub = this->create_publisher<sensor_msgs::msg::Image>("hik_img", 1);
         

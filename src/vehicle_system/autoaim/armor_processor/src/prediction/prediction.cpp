@@ -136,10 +136,10 @@ namespace armor_processor
         //     auto get_pf_available = std::async(std::launch::async, [=, &result_pf](){return predict_pf_run(target, result_pf, delta_time_estimate);});
         
         //轨迹拟合（解耦）
-            auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return uncouple_fitting_predict(result_fitting, time_estimate);});
+            // auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return uncouple_fitting_predict(result_fitting, time_estimate);});
 
         //小陀螺轨迹拟合（耦合）
-            // auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return couple_fitting_predict(result_fitting, time_estimate);});
+            auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return couple_fitting_predict(result_fitting, time_estimate);});
         
         //     is_pf_available = get_pf_available.get();
             is_fitting_available = get_fitting_available.get();
@@ -431,6 +431,7 @@ namespace armor_processor
 
     PredictStatus ArmorPredictor::couple_fitting_predict(Eigen::Vector3d& result, int time_estimated)
     {
+        auto time_start = std::chrono::steady_clock::now();
         double params[] = {0, 0, 0, 0, 0};
 
         ceres::Problem problem;
@@ -444,7 +445,7 @@ namespace armor_processor
         for(auto& target_info : history_info_)
         {
             problem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<XAxisFitting, 5, 3>
+                new ceres::AutoDiffCostFunction<XAxisFitting, 1, 1, 1, 1, 1, 1>
                 (
                     new XAxisFitting(target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3)
                 ),
@@ -454,10 +455,10 @@ namespace armor_processor
                 &params[2],
                 &params[3],
                 &params[4]
-            )
+            );
 
             problem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<YAxisFitting, 5, 3>
+                new ceres::AutoDiffCostFunction<YAxisFitting, 1, 1, 1, 1, 1, 1>
                 (
                     new YAxisFitting(target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3)
                 ),
@@ -467,13 +468,18 @@ namespace armor_processor
                 &params[2],
                 &params[3],
                 &params[4]
-            )
+            );
         }
 
         ceres::Solve(options, &problem, &summary);
 
-        bool is_available;
-        is_available = (summary.final_cost <= predict_param_.max_cost);
+        auto time_now = std::chrono::steady_clock::now();
+        auto t = std::chrono::duration<double, std::milli>(time_now - time_start).count();
+        std::cout << "fitting_fime:" << t / 1e3 << "ms" << std::endl;
+
+        PredictStatus is_available;
+        is_available.xyz_status[0] = (summary.final_cost <= predict_param_.max_cost);
+        is_available.xyz_status[1] = (summary.final_cost <= predict_param_.max_cost);
 
         auto x_pred = params[3] + 0.25 * ceres::cos(params[0] * (time_estimated / 1e3)) + params[2] * (time_estimated / 1e3) * ceres::cos(params[1]);
         auto y_pred = params[4] + 0.25 * ceres::sin(params[0] * (time_estimated / 1e3)) + params[2] * (time_estimated / 1e3) * ceres::sin(params[1]);

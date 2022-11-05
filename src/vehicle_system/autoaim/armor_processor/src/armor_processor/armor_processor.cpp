@@ -9,14 +9,19 @@
 
 namespace armor_processor
 {
-    Processor::Processor(const PredictParam& predict_param, DebugParam& debug_param, std::string filter_param_path)
+    Processor::Processor(const PredictParam& predict_param, DebugParam& debug_param, std::string filter_param_path, std::string coord_param_path, std::string coord_param_name)
     : armor_predictor_(predict_param, debug_param, filter_param_path)
     {
-        if(!debug_param.using_imu)
-        {
-            //TODO:暂时未使用陀螺仪数据
-            rmat_imu = Eigen::Matrix3d::Identity();
-        }
+        // if(!debug_param.using_imu)
+        // {
+        //     //TODO:暂时未使用陀螺仪数据
+        //     rmat_imu = Eigen::Matrix3d::Identity();
+        // }
+        coord_param_path_ = coord_param_path;
+        coord_param_name_ = coord_param_name;
+        is_initialized = false;
+
+        rmat_imu = Eigen::Matrix3d::Identity();
     }
 
     Processor::~Processor()
@@ -26,6 +31,12 @@ namespace armor_processor
 
     void Processor::predictor(global_interface::msg::Target& target_info)
     {
+        if(!is_initialized)
+        {
+            coordsolver_.loadParam(coord_param_path_, coord_param_name_);
+            is_initialized = true;
+        }
+
         Eigen::Vector3d target_;
         target_[0] = target_info.aiming_point.x;
         target_[1] = target_info.aiming_point.y;

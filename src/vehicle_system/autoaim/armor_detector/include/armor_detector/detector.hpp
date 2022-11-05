@@ -50,8 +50,8 @@ namespace armor_detector
             detect_red = true;
             show_all_armors = true;
             show_fps = true;
-            print_letency = true;
-            print_target_info = true; 
+            print_letency = false;
+            print_target_info = false; 
         }
     };
 

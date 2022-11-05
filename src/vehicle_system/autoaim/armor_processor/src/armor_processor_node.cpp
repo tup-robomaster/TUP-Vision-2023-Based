@@ -12,8 +12,14 @@ namespace armor_processor
     ArmorProcessorNode::ArmorProcessorNode(const rclcpp::NodeOptions& options)
     : Node("armor_processor", options)
     {
-        RCLCPP_INFO(this->get_logger(), "Starting processor node...");
+        RCLCPP_WARN(this->get_logger(), "Starting processor node...");
+        
         processor_ = init_armor_processor();
+        if(!processor_->is_initialized)
+        {
+            processor_->coordsolver_.loadParam(processor_->coord_param_path_, processor_->coord_param_name_);
+            processor_->is_initialized = true;
+        }
 
         gimbal_info_pub_ = this->create_publisher<global_interface::msg::Gimbal>("/gimbal_info", 10);
 
@@ -57,7 +63,7 @@ namespace armor_processor
         // {
             // spin_info_sub = this->create_subscription<global_interface::msg::SpinInfo>("/spin_info", 10,
             //     std::bind(&ArmorProcessorNode::spin_info_callback, this, std::placeholders::_1));
-        target_info_sub_ = this->create_subscription<global_interface::msg::Target>("armor_detector/armor_info", 10,
+        target_info_sub_ = this->create_subscription<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS(),
             std::bind(&ArmorProcessorNode::target_info_callback, this, std::placeholders::_1));
         // }
 
@@ -108,7 +114,14 @@ namespace armor_processor
         this->declare_parameter<std::string>("filter_param_path", "src/global_user/config/filter_param.yaml");
         filter_param_path = this->get_parameter("filter_param_path").as_string();
 
-        return std::make_unique<Processor>(predict_param, debug_param, filter_param_path);
+        std::string coord_param_path;
+        std::string coord_param_name;
+        this->declare_parameter<std::string>("coord_param_path", "src/global_user/config/camera.yaml");
+        this->declare_parameter<std::string>("coord_param_name", "00J90630561");
+        coord_param_path = this->get_parameter("coord_param_path").as_string();
+        coord_param_name = this->get_parameter("coord_param_name").as_string();
+
+        return std::make_unique<Processor>(predict_param, debug_param, filter_param_path, coord_param_path, coord_param_name);
     }
 
     void ArmorProcessorNode::msg_callback(const geometry_msgs::msg::PointStamped::SharedPtr point_ptr)
@@ -136,21 +149,26 @@ namespace armor_processor
                 e.what()
             );
         } 
-
     }
 
     void ArmorProcessorNode::target_info_callback(const global_interface::msg::Target& target_info)
     {
+        // std::cout << 1 << std::endl;
         if(target_info.target_switched)
         {
             RCLCPP_INFO(this->get_logger(), "Target switched...");
-
             Eigen::Vector3d aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
+            
+            // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
+            
             auto angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
 
             global_interface::msg::Gimbal gimbal_info;
             gimbal_info.pitch = angle[0];
             gimbal_info.yaw = angle[1]; 
+            // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
+            // std::cout << std::endl;
+
             gimbal_info_pub_->publish(gimbal_info);
         }
         else
@@ -158,7 +176,12 @@ namespace armor_processor
             Eigen::Vector3d aiming_point;
             aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
 
+            // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
+
             auto aiming_point_world = processor_->armor_predictor_.predict(aiming_point, target_info.timestamp);
+
+            // std::cout << "aiming_point_world: " << aiming_point_world[0] << " " << aiming_point_world[1] << " " << aiming_point_world[2] << std::endl;
+
             // Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, processor_->rmat_imu);
             
             // global_interface::msg::Target final_point;
@@ -176,6 +199,12 @@ namespace armor_processor
             global_interface::msg::Gimbal gimbal_info;
             gimbal_info.pitch = angle[0];
             gimbal_info.yaw = angle[1];
+            gimbal_info.distance = aiming_point_world.norm();
+            gimbal_info.is_switched = target_info.target_switched;
+            gimbal_info.is_spinning = target_info.is_spinning;
+            
+            // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
+
             gimbal_info_pub_->publish(gimbal_info);
         }
 

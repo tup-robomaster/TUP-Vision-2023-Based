@@ -296,7 +296,7 @@ namespace armor_detector
         if (spinning_detector_.spin_status_map.count(target_key) == 0)
         {
             spin_status = UNKNOWN;
-            // is_target_spinning = false;
+            is_target_spinning = false;
             target_info.is_spinning = false;
         }
         else
@@ -304,12 +304,12 @@ namespace armor_detector
             spin_status = spinning_detector_.spin_status_map[target_key];
             if (spin_status != UNKNOWN)
             {
-                // is_target_spinning = true;
+                is_target_spinning = true;
                 target_info.is_spinning = true;
             }
             else
             {
-                // is_target_spinning = false;
+                is_target_spinning = false;
                 target_info.is_spinning = false;
             }
         }
@@ -355,14 +355,14 @@ namespace armor_detector
             auto delta_dist = (target.center3d_world - last_armor.center3d_world).norm();
             auto velocity = (delta_dist / delta_t) * 1e3;
             if ((target.id != last_armor.id || !last_armor.roi.contains((target.center2d))) &&
-                is_last_target_exists)
+                !is_last_target_exists)
             {
-                // is_target_switched = true;
+                is_target_switched = true;
                 target_info.target_switched = true;
             }
             else
             {
-                // is_target_switched = false;
+                is_target_switched = false;
                 target_info.target_switched = false;
             }
             
@@ -387,14 +387,14 @@ namespace armor_detector
             auto delta_dist = (target.center3d_world - last_armor.center3d_world).norm();
             auto velocity = (delta_dist / delta_t) * 1e3;
             // cout<<(delta_dist >= max_delta_dist)<<" "<<!last_armor.roi.contains(target.center2d)<<endl;
-            if ((target.id != last_armor.id || !last_armor.roi.contains((target.center2d))) && is_last_target_exists)
+            if ((target.id != last_armor.id || !last_armor.roi.contains((target.center2d))) && !is_last_target_exists)
             {
-                // is_target_switched = true;
+                is_target_switched = true;
                 target_info.target_switched = true;
             }
             else
             {
-                // is_target_switched = false;
+                is_target_switched = false;
                 target_info.target_switched = false;
             }
 

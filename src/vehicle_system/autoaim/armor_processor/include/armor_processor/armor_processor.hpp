@@ -31,7 +31,7 @@ namespace armor_processor
     class Processor
     {
     public:
-        Processor(const PredictParam& predict_param, DebugParam& debug_param, std::string filter_param_path);
+        Processor(const PredictParam& predict_param, DebugParam& debug_param, std::string filter_param_path, std::string coord_param_path, std::string coord_param_name);
         ~Processor();
 
         //预测(接收armor_detector节点发布的目标信息进行预测)
@@ -42,6 +42,9 @@ namespace armor_processor
         // GeometryPoint aiming_point_;
 
     public:
+        std::string coord_param_path_;
+        std::string coord_param_name_;
+        bool is_initialized;
         ArmorPredictor armor_predictor_;
         coordsolver::coordsolver coordsolver_;
 
