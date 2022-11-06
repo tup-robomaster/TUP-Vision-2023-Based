@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2022-10-22 22:53:30
- * @FilePath: /inference/src/network_inference/src/inference.cpp
+ * @LastEditTime: 2022-11-06 20:08:44
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp
  */
 #include "../../include/armor_detector/inference_api2.hpp"
 
@@ -344,7 +344,7 @@ bool ArmorDetector::initModel(std::string path)
 
     std::cout << "Start initialize model..." << std::endl;
     // Setting Configuration Values
-    core.set_property("GPU", ov::enable_profiling(true));
+    core.set_property("CPU", ov::enable_profiling(true));
 
     //Step 1.Create openvino runtime core
     model = core.read_model(path);
@@ -366,7 +366,9 @@ bool ArmorDetector::initModel(std::string path)
     // std::cout << 5 << std::endl;
     //Step 2. Compile the model
     compiled_model = core.compile_model(
-        model
+        model,
+        "GPU",
+        ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
         // "AUTO:GPU,CPU", 
         // ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
         // ov::hint::inference_precision(ov::element::u8)
