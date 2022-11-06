@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-03 15:51:26
- * @LastEditTime: 2022-11-03 16:46:58
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/extend_kalman_filter.hpp
+ * @LastEditTime: 2022-11-06 15:04:10
+ * @FilePath: /filter/include/extend_kalman_filter.hpp
  */
 #ifndef EXTEND_KALMAN_FILTER_HPP_
 #define EXTEND_KALMAN_FILTER_HPP_
@@ -25,7 +25,7 @@ namespace filter
         using typename KalmanBase::T;
 
         //从基类继承的状态矩阵类型
-        using typename KalmamBase::State;
+        using typename KalmanBase::State;
 
         template<class Measurement, template<class> class CovarianceBase>
         using MeasurementModelType = LinearMeasurementModel<State, Measurement, CovarianceBase>;
@@ -43,7 +43,7 @@ namespace filter
         using KalmanBase::x;
 
         //状态协方差矩阵
-        using Base::P;
+        using Filter_Base::P;
     
     public:
         ExtendKalmanFilter()
@@ -56,7 +56,7 @@ namespace filter
 
         //无控制输入的线性模型预测
         template<class Control, template<class> class CovarianceBase>
-        const State& predict(SystemModelType<Control, Covariance>& s)
+        const State& predict(SystemModelType<Control, CovarianceBase>& s)
         {
             //预测
             Control u;
@@ -66,12 +66,12 @@ namespace filter
 
         //含控制输入的线性模型预测
         template<class Control, template<class> class CovarianceBase>
-        const State& predict(SystemModelType<Control, Covariance>& s, const Control& u)
+        const State& predict(SystemModelType<Control, CovarianceBase>& s, const Control& u, const float& t)
         {
-            s.updateJacobians(x, u);
+            s.updateJacobians(x, u, t);
 
             //状态预测
-            x = s.f(x, u);
+            x = s.f(x, u, t);
 
             //协方差预测
             P = (s.F * P * s.F.transpose()) + (s.W * s.getCovariance() * s.W.transpose());
@@ -90,8 +90,8 @@ namespace filter
             KalmanGain<Measurement> K = P * m.H.transpose() * S.inverse();
 
             //更新状态矩阵和协方差矩阵
-            x += K * (z - m.h(x));
-            P -= K * m.H * P;
+            x += (K * (z - m.h(x)));
+            P -= (K * m.H * P);
 
             return this->getState();
         }

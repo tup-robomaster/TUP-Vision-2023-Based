@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:00:19
- * @LastEditTime: 2022-11-02 22:34:03
+ * @LastEditTime: 2022-11-06 15:33:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/kalman_filter.hpp
  */
 #ifndef KALMAN_FILTER_HPP_
@@ -56,7 +56,7 @@ namespace kalman_filter
              * @brief 更新状态向量
              * 
              */
-            void Update(const Egien::VectorXd& z);
+            void Update(const Eigen::VectorXd& z);
 
             /**
              * @brief 更新状态向量（EKF）

@@ -2,13 +2,15 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 02:27:06
- * @LastEditTime: 2022-11-03 16:27:03
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/filter/filter.hpp
+ * @LastEditTime: 2022-11-06 11:52:15
+ * @FilePath: /filter/include/filter/filter.hpp
  */
 #ifndef FILTER_HPP_
 #define FILTER_HPP_
 
+#include <Eigen/Core>
 #include <Eigen/Dense>
+#include <ceres/ceres.h>
 
 namespace filter
 {
@@ -17,7 +19,24 @@ namespace filter
 
     //向量
     template<typename T, int N>
-    using Vector = Matrix<T, N, 1>;
+    class Vector : public Matrix<T, N, 1>
+    {
+    public:
+        typedef Matrix<T, N, 1> Base;
+
+        using typename Base::Scalar;
+        using Base::RowsAtCompileTime;
+        using Base::ColsAtCompileTime;
+        using Base::SizeAtCompileTime;
+
+        Vector(void) : Matrix<T, N, 1>() {}
+
+        //拷贝构造
+        template<typename OtherDerived>
+        Vector(const Eigen::MatrixBase<OtherDerived>& other)
+        : Matrix<T, N, 1>(other)
+        {}
+    };
 
     //方形矩阵
     template<typename T, int N>
@@ -25,11 +44,11 @@ namespace filter
 
     //协方差矩阵
     template<class Type>
-    using Covariance = SquareMatrix<typename Type::Scaler, Type::RowsAtCompileTime>;
+    using Covariance = SquareMatrix<typename Type::Scalar, Type::RowsAtCompileTime>;
 
     //卡尔曼增益
     template<class State, class Measurement>
-    using KalmanGain = Matrix<typename State::Scaler,
+    using KalmanGain = Matrix<typename State::Scalar,
                                 State::RowsAtCompileTime,
                                 Measurement::RowsAtCompileTime>;
     
@@ -42,6 +61,7 @@ namespace filter
     template<class StateType>
     class Base
     {
+    public:
         //协方差
         Covariance<StateType> P;
     
@@ -69,7 +89,7 @@ namespace filter
     class FilterBase : public Base<StateType>
     {
     public:
-        using Base::P;
+        using Base<StateType>::P;
     };
 } //namespace filter
 

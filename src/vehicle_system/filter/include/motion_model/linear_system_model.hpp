@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-03 00:23:18
- * @LastEditTime: 2022-11-03 13:09:55
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/motion_model/linear_system_model.hpp
+ * @LastEditTime: 2022-11-06 13:09:57
+ * @FilePath: /filter/include/motion_model/linear_system_model.hpp
  */
 #ifndef LINEAR_SYSTEM_MODEL_HPP_
 #define LINEAR_SYSTEM_MODEL_HPP_
@@ -22,17 +22,18 @@ namespace filter
         using typename SystemModelBase::State;
         using typename SystemModelBase::Control;
     
-    protected:
+    public:
         //运动模型的雅可比矩阵
         Jacobian<State, State> F;
         //运动噪声的雅可比矩阵
         Jacobian<State, State> W;
 
-        virtual void updateJacobians(const State& x, const Control& u)
+        virtual void updateJacobians(const State& x, const Control& u, const float& t)
         {
             //默认不更新
             (void)x;
             (void)u;
+            (void)t;
         }
 
     protected:

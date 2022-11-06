@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-03 13:10:34
- * @LastEditTime: 2022-11-03 16:30:55
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/motion_model/kalman_filter_base.hpp
+ * @LastEditTime: 2022-11-04 23:03:24
+ * @FilePath: /filter/include/motion_model/kalman_filter_base.hpp
  */
 #ifndef KALMAN_FILTER_BASE_HPP_
 #define KALMAN_FILTER_BASE_HPP_
@@ -20,11 +20,11 @@ namespace filter
         static_assert(StateType::ColsAtCompileTime == 1, "状态向量必须是列向量!");
 
         //元素类型
-        typedef typename StateType::Scaler T;
+        typedef typename StateType::Scalar T;
         
         typedef StateType State;
     
-    protected:
+    public:
         State x;
     
     public:

@@ -7,7 +7,9 @@ V1.0
 程序基于ros-galactic框架
 
 ## 开发日志
-Date:2022-11-05 fixed serialport node bugs and armor processor node bugs.
+Date:2022-11-06 Construct system models and filter algorithms template class.
+
+Date:2022-11-05 Fixed serialport node bugs and armor processor node bugs.
 
 Date:2022-10-28 加入tf2，serialport包将陀螺仪数据加入到tf树，world->gyro(+ transformation == world->camera)
 
