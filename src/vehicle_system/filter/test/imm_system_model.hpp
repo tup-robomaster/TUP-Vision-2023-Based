@@ -1,21 +1,19 @@
-
-#ifndef SYSTEM_MODEL_HPP_
-#define SYSTEM_MODEL_HPP_
-
-#include "../include/extend_kalman_filter.hpp"
+/*
+ * @Description: This is a ros-based project!
+ * @Author: Liu Biao
+ * @Date: 2022-11-07 16:34:37
+ * @LastEditTime: 2022-11-08 00:22:26
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/test/imm_system_model.hpp
+ */
+#include "../include/motion_model/linear_system_model.hpp"
 #include "../include/motion_model/system_model.hpp"
-
-#include <iostream>
-#include <random>
-#include <chrono>
-#include <ceres/ceres.h>
+#include "../include/extend_kalman_filter.hpp"
 
 template<typename T>
-class CVModelState : public filter::Vector<T, 4>
+class CVModelState : public filter::Vector<T, 6>
 {
-protected:
-    //vector param index
-    //X-position
+    typedef filter::Vector<T, 6> Vector;
+
     constexpr static size_t X = 0;
     //Y-position
     constexpr static size_t Y = 1;
@@ -23,12 +21,18 @@ protected:
     constexpr static size_t Vx = 2;
     //Y-velocity
     constexpr static size_t Vy = 3;
+    constexpr static size_t N0 = 4;
+    constexpr static size_t N1 = 5;
 
 public:
+    Vector xState() const {return (*this);}
+
     T x() const {return (*this)[X];}
     T y() const {return (*this)[Y];}
     T v_x() const {return (*this)[Vx];}
     T v_y() const {return (*this)[Vy];}
+
+    Vector& xState() {return (*this);} 
 
     T& x() {return (*this)[X];}
     T& y() {return (*this)[Y];}
@@ -40,6 +44,8 @@ template<typename T>
 class CAModelState : public filter::Vector<T, 6>
 {
 protected:
+    typedef filter::Vector<T, 6> Vector;
+    
     //vector param index
     constexpr static size_t X = 0;
     constexpr static size_t Y = 1;
@@ -49,6 +55,8 @@ protected:
     constexpr static size_t ay = 5;
 
 public:
+    Vector xState() const {return (*this);}
+    
     T x() const {return (*this)[X];}
     T y() const {return (*this)[Y];}
     T v_x() const {return (*this)[Vx];}
@@ -56,6 +64,7 @@ public:
     T a_x() const {return (*this)[ax];}
     T a_y() const {return (*this)[ay];}
 
+    Vector& xState() {return (*this);}
     T& x() {return (*this)[X];}
     T& y() {return (*this)[Y];}
     T& v_x() {return (*this)[Vx];}
@@ -65,28 +74,64 @@ public:
 };
 
 template<typename T>
-class CTRVModelState : public filter::Vector<T, 5>
+class CTRVModelState : public filter::Vector<T, 6>
 {
 public:
+    typedef filter::Vector<T, 6> Vector;
+    
     //vector param index
     static constexpr size_t X = 0;
     static constexpr size_t Y = 1;
     static constexpr size_t V = 2;     //速度
     static constexpr size_t Theta = 3; //偏航角
     static constexpr size_t W = 4;     //偏航角速度
+    static constexpr size_t N0 = 5;
 
 public:
+    Vector xState() const {return (*this);}
     T x() const {return (*this)[ X ];}
     T y() const {return (*this)[ Y ];}
     T v() const {return (*this)[ V ];}
     T theta() const {return (*this)[ Theta ];}
     T w() const {return (*this)[ W ];}
 
+    Vector& xState() {return (*this);}
     T& x() {return (*this)[ X ];}
     T& y() {return (*this)[ Y ];}
     T& v() {return (*this)[ V ];}
     T& theta() {return (*this)[ Theta ];}
     T& w() {return (*this)[ W ];}
+};
+
+template<typename T>
+class ModelState : public filter::Vector<T, 6>
+{
+protected:
+    typedef filter::Vector<T, 6> Vector;
+
+    static constexpr size_t X0 = 0;
+    static constexpr size_t X1 = 1;
+    static constexpr size_t X2 = 2;
+    static constexpr size_t X3 = 3;
+    static constexpr size_t X4 = 4;
+    static constexpr size_t X5 = 5;
+
+public:
+    T x() const {return (*this);}
+    T x0() const {return (*this)[X0];}
+    T x1() const {return (*this)[X1];}
+    T x2() const {return (*this)[X2];}
+    T x3() const {return (*this)[X3];}
+    T x4() const {return (*this)[X4];}
+    T x5() const {return (*this)[X5];}
+
+    T& x() {return (*this);}
+    T& x0() {return (*this)[X0];}
+    T& x1() {return (*this)[X1];}
+    T& x2() {return (*this)[X2];}
+    T& x3() {return (*this)[X3];}
+    T& x4() {return (*this)[X4];}
+    T& x5() {return (*this)[X5];}
 };
 
 template<typename T>
@@ -140,5 +185,3 @@ public:
     T& theta() {return (*this)[Theta];}
     T& w() {return (*this)[W];}
 };
-
-#endif

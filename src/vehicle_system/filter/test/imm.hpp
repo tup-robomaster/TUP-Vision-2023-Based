@@ -1,14 +1,13 @@
- /*
+/*
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
- * @Date: 2022-11-03 22:59:40
- * @LastEditTime: 2022-11-06 16:44:09
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/test/system_model.cpp
+ * @Date: 2022-11-06 16:45:33
+ * @LastEditTime: 2022-11-08 00:25:13
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/test/imm.hpp
  */
-#include "./system_model.hpp"
+#include "./imm_system_model.hpp"
 
 //Model(CA、CV、CTRV) 
-
 template<typename T, template<class> class CovarianceBase = filter::Base>
 class CVModel : public filter::LinearSystemModel<CVModelState<T>, CVModelControl<T>, CovarianceBase>
 {
@@ -167,4 +166,70 @@ public:
         // std::cout << 1 << std::endl;
         this->W.setIdentity();
     }
+};
+
+template<typename T>
+class IMM
+{
+private:
+    typedef CVModelState<T> CVState;
+    typedef CVModelControl<T> CVControl; 
+    typedef CAModelState<T> CAState;
+    typedef CAModelControl<T> CAControl;
+    typedef CTRVModelState<T> CTRVState;
+    typedef CTRVModelControl<T> CTRVControl;
+    typedef ModelState<T> State;
+
+    using Matrix = Eigen::MatrixXd;
+    using Vector = Eigen::VectorXd;
+
+private:
+    std::vector<std::shared_ptr<filter::ExtendKalmanFilter<State>>> models_;
+
+    Matrix transfer_prob_;
+    Matrix P_;
+    Matrix X_;
+
+    Vector c_;
+    Vector model_prob_;
+    Vector x_;
+
+    size_t model_num_;
+    size_t state_num_;
+
+public:
+    IMM();
+    ~IMM();
+
+    //添加运动模型
+    //CV
+    void addCVModel(const std::shared_ptr<filter::ExtendKalmanFilter<CVState>> model);
+    // //CA
+    void addCAModel(const std::shared_ptr<filter::ExtendKalmanFilter<CAState>> model);
+    // //CTRV
+    void addCTRVModel(const std::shared_ptr<filter::ExtendKalmanFilter<CTRVState>> model);
+
+    //初始化（目标状态、状态协方差、模型概率和马尔可夫状态转移矩阵）
+    void init(
+        const Vector& x,
+        const Matrix& P,
+        const Matrix& model_prob,
+        const Matrix& transfer_prob
+    );
+
+    /**
+     * @brief IMM算法流程
+     * 
+     */
+    // step1:输入交互
+    void stateInteraction();
+
+    // step2:滤波
+    void updateState();
+
+    // step3:模型概率更新
+    void updateModelProb();
+
+    // step4:估计融合
+    void estimateFusion();
 };

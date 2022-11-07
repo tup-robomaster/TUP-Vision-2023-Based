@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-03 15:51:26
- * @LastEditTime: 2022-11-06 15:04:10
- * @FilePath: /filter/include/extend_kalman_filter.hpp
+ * @LastEditTime: 2022-11-06 17:01:53
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/extend_kalman_filter.hpp
  */
 #ifndef EXTEND_KALMAN_FILTER_HPP_
 #define EXTEND_KALMAN_FILTER_HPP_
@@ -87,7 +87,7 @@ namespace filter
 
             //计算卡尔曼增益
             Covariance<Measurement> S = (m.H * P * m.H.transpose()) + (m.V * m.getCovariance() * m.V.transpose());
-            KalmanGain<Measurement> K = P * m.H.transpose() * S.inverse();
+            KalmanGain<Measurement> K = P * (m.H.transpose() * S.inverse());
 
             //更新状态矩阵和协方差矩阵
             x += (K * (z - m.h(x)));
