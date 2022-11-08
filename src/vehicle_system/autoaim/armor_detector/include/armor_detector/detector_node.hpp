@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2022-10-15 15:30:56
- * @FilePath: /tup_2023-10-16/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector_node.hpp
+ * @LastEditTime: 2022-11-08 19:11:38
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
 #include "./detector.hpp"
@@ -30,6 +30,10 @@ namespace armor_detector
 {
     class detector_node : public rclcpp::Node
     {
+        typedef std::chrono::_V2::steady_clock::time_point TimePoint;
+        typedef global_interface::msg::Armors ArmorsMsg;
+        typedef global_interface::msg::Target TargetMsg;
+
     public:
         detector_node(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         ~detector_node();
@@ -41,14 +45,14 @@ namespace armor_detector
 
         // Image subscriptions transport type
         std::string transport_;
-        std::chrono::_V2::steady_clock::time_point time_start;
+        TimePoint time_start;
         
         // std::shared_ptr<sensor_msgs::msg::CameraInfo> cam_info;
         // rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr cam_info_sub;
 
         //发布装甲信息
-        global_interface::msg::Armors armors_info;
-        rclcpp::Publisher<global_interface::msg::Target>::SharedPtr armors_pub;
+        ArmorsMsg armors_info;
+        rclcpp::Publisher<TargetMsg>::SharedPtr armors_pub;
 
     public:
         void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);

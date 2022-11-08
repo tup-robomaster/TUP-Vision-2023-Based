@@ -10,11 +10,23 @@
     hero_danger_zone: 4
     color: true # red: true
                 # blue: false
+    no_crop_ratio: 2e-3
+    full_crop_ratio: 1e-4
+    armor_roi_expand_ratio_width: 1.1
+    armor_roi_expand_ratio_height: 1.5
+    armor_conf_high_thres: 0.82
+    anti_spin_judge_high_thres: 2e4
+    anti_spin_judge_low_thres: 2e3
+    anti_spin_max_r_multiple: 4.5
+    max_dead_buffer: 2
+    max_delta_dist: 0.3
+
     #待改
     camera_name: "00J90630561" 
     camera_param_path: src/global_user/config/camera.yaml
     network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
 
+    #debug
     debug_without_com: true
     using_imu: false
     using_roi: true
@@ -24,12 +36,6 @@
     print_letency: false
     print_target_info: false
     detect_red: true
-
-    anti_spin_judge_high_thres: 2e4
-    anti_spin_judge_low_thres: 2e3
-    anti_spin_max_r_multiple: 4.5
-    max_dead_buffer: 2
-    max_delta_dist: 0.3
 
 # 自瞄预测节点参数配置 
 # /armor_processor:

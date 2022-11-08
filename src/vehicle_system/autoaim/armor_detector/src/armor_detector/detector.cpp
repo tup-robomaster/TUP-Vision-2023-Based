@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-10-17 14:01:51
- * @FilePath: /tup_2023-10-16/src/vehicle_system/autoaim/armor_detector/src/detector.cpp
+ * @LastEditTime: 2022-11-08 19:03:32
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector.cpp
  */
 #include "../../include/armor_detector/detector.hpp"
 
@@ -77,7 +77,14 @@ namespace armor_detector
             //设置弹速,若弹速大于10m/s值,且弹速变化大于0.5m/s则更新
             if (src.bullet_speed > 10 && abs(src.bullet_speed - last_bullet_speed) > 0.5)
             {
-                last_bullet_speed = src.bullet_speed;
+                double bullet_speed;
+                if (abs(src.bullet_speed - last_bullet_speed) > 0.5)
+                    bullet_speed = src.bullet_speed;
+                else
+                    bullet_speed = (last_bullet_speed + src.bullet_speed) / 2;
+                
+                coordsolver_.setBulletSpeed(bullet_speed);
+                last_bullet_speed = bullet_speed;
             }
         }
 
@@ -91,9 +98,19 @@ namespace armor_detector
             rmat_imu = Eigen::Matrix3d::Identity();
         }
 
-        if(!debug_params_.using_roi)
+        // std::cout << 2 << std::endl;
+        if(debug_params_.using_roi)
         {   //启用roi
-            roi_offset = cropImageByROI(input);
+            //吊射模式采用固定ROI
+            if (src.mode == 2)
+            {
+                input(Range(600,1024),Range(432,848)).copyTo(input);
+                roi_offset = Point2f((float)432, (float)600);
+            }
+            else
+            {
+                roi_offset = cropImageByROI(input);
+            }
         }
 
         time_crop = std::chrono::steady_clock::now();
@@ -171,36 +188,103 @@ namespace armor_detector
 
             // auto pnp_result = coordsolver.pnp(armor.apex2d, rmat_imu, SOLVEPNP_ITERATIVE);
 
-            std::vector<Point2f> points_pic(armor.apex2d, armor.apex2d + 4);
+            // std::vector<Point2f> points_pic(armor.apex2d, armor.apex2d + 4);
+            
             // std::vector<Point2f> tmp;
             // for (auto rrect.)
-            global_user::TargetType target_type = global_user::SMALL;
+            // global_user::TargetType target_type = global_user::SMALL;
 
-            //计算长宽比,确定装甲板类型
-            RotatedRect points_pic_rrect = minAreaRect(points_pic);
-            auto apex_wh_ratio = max(points_pic_rrect.size.height, points_pic_rrect.size.width) /
-                                    min(points_pic_rrect.size.height, points_pic_rrect.size.width);
+            // //计算长宽比,确定装甲板类型
+            // RotatedRect points_pic_rrect = minAreaRect(points_pic);
+            // auto apex_wh_ratio = max(points_pic_rrect.size.height, points_pic_rrect.size.width) /
+            //                         min(points_pic_rrect.size.height, points_pic_rrect.size.width);
             
-            //若大于长宽阈值或为哨兵、英雄装甲板
-            if (apex_wh_ratio > this->detector_params_.armor_type_wh_thres || object.cls == 1 || object.cls == 0)
-                target_type = global_user::BIG;
+            // //若大于长宽阈值或为哨兵、英雄装甲板
+            // if (apex_wh_ratio > this->detector_params_.armor_type_wh_thres || object.cls == 1 || object.cls == 0)
+            //     target_type = global_user::BIG;
             // for (auto pic : points_pic)
             //     cout<<pic<<endl;
             // cout<<target_type<<endl;
+
+            //生成装甲板旋转矩形和ROI
+            std::vector<Point2f> points_pic(armor.apex2d, armor.apex2d + 4);
+            RotatedRect points_pic_rrect = minAreaRect(points_pic);        
+            armor.rrect = points_pic_rrect;
+            auto bbox = points_pic_rrect.boundingRect();
+            auto x = bbox.x - 0.5 * bbox.width * (detector_params_.armor_roi_expand_ratio_width - 1);
+            auto y = bbox.y - 0.5 * bbox.height * (detector_params_.armor_roi_expand_ratio_height - 1);
+            armor.roi = Rect(x,
+                            y,
+                            bbox.width * detector_params_.armor_roi_expand_ratio_width,
+                            bbox.height * detector_params_.armor_roi_expand_ratio_height
+                            );
+            //若装甲板置信度小于高阈值，需要相同位置存在过装甲板才放行
+            if (armor.conf < this->detector_params_.armor_conf_high_thres)
+            {
+                if (last_armors.empty())
+                {
+                    continue;
+                }
+                else
+                {
+                    bool is_this_armor_available = false;
+                    for (auto last_armor : last_armors)
+                    {
+                        if (last_armor.roi.contains(armor.center2d))
+                        {
+                            is_this_armor_available = true;
+                            break;
+                        }
+                    }
+                    if (!is_this_armor_available)
+                    {
+                        continue;
+                        cout<<"IGN"<<endl;
+                    }
+                }
+            }
+            //进行PnP，目标较少时采取迭代法，较多时采用IPPE
+            int pnp_method;
+            if (objects.size() <= 2)
+                pnp_method = SOLVEPNP_ITERATIVE;
+            else
+                pnp_method = SOLVEPNP_IPPE;
+            global_user::TargetType target_type = global_user::SMALL;
+
+            //计算长宽比,确定装甲板类型
+            auto apex_wh_ratio = max(points_pic_rrect.size.height, points_pic_rrect.size.width) /
+                                    min(points_pic_rrect.size.height, points_pic_rrect.size.width);
+            //若大于长宽阈值或为哨兵、英雄装甲板
+            if (object.cls == 1 || object.cls == 0)
+                target_type = global_user::BIG;
+
+            //FIXME：若存在平衡步兵需要对此处步兵装甲板类型进行修改
+            else if (object.cls == 2 || object.cls == 3 || object.cls == 4 || object.cls == 5 || object.cls == 6)
+                target_type = global_user::SMALL;
+            else if(apex_wh_ratio > detector_params_.armor_type_wh_thres)
+                target_type = global_user::BIG;
 
             //单目PnP
             auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_IPPE);
             
             //防止装甲板类型出错导致解算问题，首先尝试切换装甲板类型，若仍无效则直接跳过该装甲板
-            if (pnp_result.armor_cam.norm() > 10)
+            if (pnp_result.armor_cam.norm() > 10 ||
+                isnan(pnp_result.armor_cam[0]) ||
+                isnan(pnp_result.armor_cam[1]) ||
+                isnan(pnp_result.armor_cam[2]))
             {
                 if (target_type == global_user::SMALL)
                     target_type = global_user::BIG;
                 else if (target_type == global_user::BIG)
                     target_type = global_user::SMALL;
                 pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_IPPE);
-                if (pnp_result.armor_cam.norm() > 10)
-                    continue;
+                if (pnp_result.armor_cam.norm() > 10 ||
+                    isnan(pnp_result.armor_cam[0]) ||
+                    isnan(pnp_result.armor_cam[1]) ||
+                    isnan(pnp_result.armor_cam[2]))
+                    {
+                        continue;
+                    }
             }
 
             armor.center3d_world = pnp_result.armor_world;
@@ -213,7 +297,7 @@ namespace armor_detector
         //若无合适装甲板
         if (armors.empty())
         {
-            std::cout << "No suitable targets..." << std::endl;
+            // std::cout << "No suitable targets..." << std::endl;
 
             if(debug_params_.show_aim_cross)
             {
@@ -234,6 +318,10 @@ namespace armor_detector
             is_last_target_exists = false;
             last_target_area = 0;
             return false;
+        }
+        else
+        {
+            last_armors = armors;
         }
 
         return true;
@@ -520,72 +608,72 @@ namespace armor_detector
 
     Point2i detector::cropImageByROI(Mat &img)
     {
-        if (!is_last_target_exists)
-        {
-            //当丢失目标帧数过多或lost_cnt为初值
-            if (lost_cnt > this->detector_params_.max_lost_cnt || lost_cnt == 0)
-            {
-                return Point2i(0,0);
-            }
-        }
+        // if (!is_last_target_exists)
+        // {
+        //     //当丢失目标帧数过多或lost_cnt为初值
+        //     if (lost_cnt > this->detector_params_.max_lost_cnt || lost_cnt == 0)
+        //     {
+        //         return Point2i(0,0);
+        //     }
+        // }
 
-        //若目标大小大于阈值
-        if ((last_target_area / img.size().area()) > this->detector_params_.no_crop_thres)
-        {
-            return Point2i(0,0);
-        }
-        //处理X越界
+        // //若目标大小大于阈值
+        // if ((last_target_area / img.size().area()) > this->detector_params_.no_crop_thres)
+        // {
+        //     return Point2i(0,0);
+        // }
+        // //处理X越界
         
-        // 计算上一帧roi中心在原图像中的坐标
-        Point2i last_armor_center = Point2i(last_roi_center.x - this->detector_params_.dw, last_roi_center.y - this->detector_params_.dh) * (1 / this->detector_params_.rescale_ratio);
+        // // 计算上一帧roi中心在原图像中的坐标
+        // Point2i last_armor_center = Point2i(last_roi_center.x - this->detector_params_.dw, last_roi_center.y - this->detector_params_.dh) * (1 / this->detector_params_.rescale_ratio);
 
-        float armor_h = global_user::calcDistance(last_armor.apex2d[0], last_armor.apex2d[1]);
-        float armor_w = global_user::calcDistance(last_armor.apex2d[1], last_armor.apex2d[2]);
-        int roi_width = MAX(armor_h, armor_w) * (1 / this->detector_params_.rescale_ratio);
-        int roi_height = MIN(armor_h, armor_w) * (1 / this->detector_params_.rescale_ratio);
+        // float armor_h = global_user::calcDistance(last_armor.apex2d[0], last_armor.apex2d[1]);
+        // float armor_w = global_user::calcDistance(last_armor.apex2d[1], last_armor.apex2d[2]);
+        // int roi_width = MAX(armor_h, armor_w) * (1 / this->detector_params_.rescale_ratio);
+        // int roi_height = MIN(armor_h, armor_w) * (1 / this->detector_params_.rescale_ratio);
 
-        //根据丢失帧数逐渐扩大ROI大小
-        if(lost_cnt == 2)
-        {   //丢失2帧ROI扩大3.2倍
-            roi_width *= 1.2;
-            roi_height *= 1.2;
-        }
-        else if(lost_cnt == 3)
-        {   //丢失3帧ROI扩大4.5倍
-            roi_width *= 1.8;
-            roi_height *= 1.8;
-        }
-        else if(lost_cnt == 4)
-        {   //丢失4帧ROI扩大6倍
-            roi_width *= 2.2;
-            roi_height *= 2.2;
-        }
-        else if(lost_cnt == 5)
-        {   //返回原图像
-            return Point2i(0,0);
-        }
+        // //根据丢失帧数逐渐扩大ROI大小
+        // if(lost_cnt == 2)
+        // {   //丢失2帧ROI扩大3.2倍
+        //     roi_width *= 1.2;
+        //     roi_height *= 1.2;
+        // }
+        // else if(lost_cnt == 3)
+        // {   //丢失3帧ROI扩大4.5倍
+        //     roi_width *= 1.8;
+        //     roi_height *= 1.8;
+        // }
+        // else if(lost_cnt == 4)
+        // {   //丢失4帧ROI扩大6倍
+        //     roi_width *= 2.2;
+        //     roi_height *= 2.2;
+        // }
+        // else if(lost_cnt == 5)
+        // {   //返回原图像
+        //     return Point2i(0,0);
+        // }
 
-        //防止roi越界
-        if(last_armor_center.x > img.size().width || last_armor_center.y > img.size().height)
-        {
-            return Point2f(0, 0);
-        }
-        if(last_armor_center.x < 0 || last_armor_center.y < 0)
-        {
-            return Point2f(0, 0);
-        }
+        // //防止roi越界
+        // if(last_armor_center.x > img.size().width || last_armor_center.y > img.size().height)
+        // {
+        //     return Point2f(0, 0);
+        // }
+        // if(last_armor_center.x < 0 || last_armor_center.y < 0)
+        // {
+        //     return Point2f(0, 0);
+        // }
 
-        if((last_armor_center.x + roi_width / 2)  > img.size().width)
-            roi_width = (img.size().width - last_armor_center.x) * 2;
+        // if((last_armor_center.x + roi_width / 2)  > img.size().width)
+        //     roi_width = (img.size().width - last_armor_center.x) * 2;
         
-        if(last_armor_center.y + roi_height / 2 > img.size().height)
-            roi_height = (img.size().height - last_armor_center.y) * 2;
+        // if(last_armor_center.y + roi_height / 2 > img.size().height)
+        //     roi_height = (img.size().height - last_armor_center.y) * 2;
 
-        Point2f roi_left_top = Point2i(last_armor_center.x - roi_width / 2, last_armor_center.y - roi_height / 2);
-        Rect roi_rect = Rect(roi_left_top.x, roi_left_top.y, roi_width, roi_height);
-        img(roi_rect).copyTo(img);
+        // Point2f roi_left_top = Point2i(last_armor_center.x - roi_width / 2, last_armor_center.y - roi_height / 2);
+        // Rect roi_rect = Rect(roi_left_top.x, roi_left_top.y, roi_width, roi_height);
+        // img(roi_rect).copyTo(img);
 
-        return roi_left_top;
+        // return roi_left_top;
 
         // if (last_roi_center.x <= input_size.width / 2)
         //     last_roi_center.x = input_size.width / 2;
@@ -603,6 +691,48 @@ namespace armor_detector
         // img(roi_rect).copyTo(img);
 
         // return offset;
+
+         //若上次不存在目标
+        if (!is_last_target_exists)
+        {
+            //当丢失目标帧数过多或lost_cnt为初值
+            if (lost_cnt > detector_params_.max_lost_cnt || lost_cnt == 0)
+            {
+                return Point2i(0,0);
+            }
+        }
+        //若目标大小大于阈值
+        auto area_ratio = last_target_area / img.size().area();
+        int max_expand = (img.size().height - input_size.width) / 32;
+        double cropped_ratio = (detector_params_.no_crop_ratio / detector_params_.full_crop_ratio) / max_expand;
+        int expand_value = ((int)(area_ratio / detector_params_.full_crop_ratio / cropped_ratio)) * 32;
+
+        Size2i cropped_size = input_size + Size2i(expand_value, expand_value);
+        // cout<<cropped_size<<endl;
+        // Size2i crooped_size = (input_size + (no_crop_thres / max))
+        if (area_ratio > detector_params_.no_crop_ratio)
+        {
+            return Point2i(0,0);
+        }
+
+        //处理X越界
+        if (last_roi_center.x <= cropped_size.width / 2)
+            last_roi_center.x = cropped_size.width / 2;
+        else if (last_roi_center.x > (img.size().width - cropped_size.width / 2))
+            last_roi_center.x = img.size().width - cropped_size.width / 2;
+        //处理Y越界
+        if (last_roi_center.y <= cropped_size.height / 2)
+            last_roi_center.y = cropped_size.height / 2;
+        else if (last_roi_center.y > (img.size().height - cropped_size.height / 2))
+            last_roi_center.y = img.size().height - cropped_size.height / 2;
+        
+        //左上角顶点
+        auto offset = last_roi_center - Point2i(cropped_size.width / 2, cropped_size.height / 2);
+        // auto offset = last_roi_center - Point2i(roi_width / 2, roi_height / 2);
+        Rect roi_rect = Rect(offset, cropped_size);
+        img(roi_rect).copyTo(img);
+
+        return offset;
     }
     
     ArmorTracker* detector::chooseTargetTracker(vector<ArmorTracker*> trackers, int timestamp)

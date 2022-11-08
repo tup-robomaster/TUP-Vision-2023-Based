@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-10-23 19:23:23
- * @FilePath: /tup_2023-10-16/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
+ * @LastEditTime: 2022-11-08 19:25:55
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
 
@@ -26,15 +26,15 @@ namespace armor_detector
             std::cerr << e.what() << '\n';
         }
         
-        //armors pub
-        armors_pub = this->create_publisher<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS());
+        // armors pub
+        armors_pub = this->create_publisher<TargetMsg>("/armor_info", rclcpp::SensorDataQoS());
 
         time_start = std::chrono::steady_clock::now();
 
         // Subscriptions transport type
         transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
 
-        //image sub
+        // image sub
         img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
         std::bind(&detector_node::image_callback, this, _1), transport_));
     }
@@ -46,20 +46,27 @@ namespace armor_detector
 
     std::unique_ptr<detector> detector_node::init_detector()
     {
-        this->declare_parameter("armor_type_wh_thres", 3);
-        this->declare_parameter("max_lost_cnt", 5);
-        this->declare_parameter("max_armors_cnt", 8);
-        this->declare_parameter("max_v", 8);
-        this->declare_parameter("max_delta_t", 50);
-        this->declare_parameter("no_crop_thres", 1e-2);
-        this->declare_parameter("hero_danger_zone", 4);
-        this->declare_parameter("color", true);
+        //detector params
+        this->declare_parameter<int>("armor_type_wh_thres", 3);
+        this->declare_parameter<int>("max_lost_cnt", 5);
+        this->declare_parameter<int>("max_armors_cnt", 8);
+        this->declare_parameter<int>("max_v", 8);
+        this->declare_parameter<int>("max_delta_t", 100);
+        this->declare_parameter<double>("no_crop_thres", 1e-2);
+        this->declare_parameter<int>("hero_danger_zone", 4);
+        this->declare_parameter<bool>("color", true);
+        this->declare_parameter<double>("no_crop_ratio", 2e-3);
+        this->declare_parameter<double>("full_crop_ratio", 1e-4);
+        this->declare_parameter<double>("armor_roi_expand_ratio_width", 1.1);
+        this->declare_parameter<double>("armor_roi_expand_ratio_height", 1.5);
+        this->declare_parameter<double>("armor_conf_high_thres", 0.82);
         
         //TODO:set by own path
         this->declare_parameter("camera_name", "00J90630561"); //相机型号
-        this->declare_parameter("camera_param_path", "/home/tup/Desktop/tup_2023/src/global_user/config/camera.yaml");
-        this->declare_parameter("network_path", "/home/tup/Desktop/tup_2023/src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml");
+        this->declare_parameter("camera_param_path", "src/global_user/config/camera.yaml");
+        this->declare_parameter("network_path", "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml");
         
+        //debug
         this->declare_parameter("debug_without_com", true);
         this->declare_parameter("using_imu", false);
         this->declare_parameter("using_roi", true);
@@ -70,6 +77,7 @@ namespace armor_detector
         this->declare_parameter("print_letency", false);
         this->declare_parameter("print_target_info", true);
         
+        //
         this->declare_parameter("anti_spin_judge_high_thres", 2e4);
         this->declare_parameter("anti_spin_judge_low_thres", 2e3);
         this->declare_parameter("anti_spin_max_r_multiple", 4.5);
@@ -91,6 +99,11 @@ namespace armor_detector
             detector_params_.color = RED;
         else
             detector_params_.color = BLUE;
+        this->get_parameter("no_crop_ratio", detector_params_.no_crop_ratio);
+        this->get_parameter("full_crop_ratio", detector_params_.full_crop_ratio);
+        this->get_parameter("armor_roi_expand_ratio_width", detector_params_.armor_roi_expand_ratio_width);
+        this->get_parameter("armor_roi_expand_ratio_height", detector_params_.armor_roi_expand_ratio_height);
+        this->get_parameter("armor_conf_high_thres", detector_params_.armor_conf_high_thres);
 
         std::string camera_name = this->get_parameter("camera_name").as_string();
         std::string camera_param_path = this->get_parameter("camera_param_path").as_string();
@@ -137,13 +150,13 @@ namespace armor_detector
         // cv::imshow("image", src.img);
         // cv::waitKey(0);
 
-        auto time_img_sub = std::chrono::steady_clock::now();
+        TimePoint time_img_sub = std::chrono::steady_clock::now();
         src.timestamp = (int)(std::chrono::duration<double, std::milli>(time_img_sub - time_start).count());
         
         if(detector_->armor_detect(src))
         {   //find armors
             // RCLCPP_INFO(this->get_logger(), "armors detector...");
-            global_interface::msg::Target target_info;
+            TargetMsg target_info;
             
             //target's spinning status detect 
             if(detector_->gyro_detector(src, target_info))

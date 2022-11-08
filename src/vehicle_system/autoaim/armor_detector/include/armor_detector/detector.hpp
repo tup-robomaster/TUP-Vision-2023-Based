@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2022-10-23 19:15:40
- * @FilePath: /tup_2023-10-16/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector.hpp
+ * @LastEditTime: 2022-11-08 18:57:35
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
 #include "../../global_user/include/coordsolver.hpp"
@@ -68,18 +68,31 @@ namespace armor_detector
 
         double no_crop_thres; //禁用ROI裁剪的装甲板占图像面积最大面积比值
         int hero_danger_zone; //英雄危险距离阈值，检测到有小于该距离的英雄直接开始攻击
+        double no_crop_ratio;
+        double full_crop_ratio;
+
+        double max_delta_dist;
+        double armor_roi_expand_ratio_width;
+        double armor_roi_expand_ratio_height;
+        double armor_conf_high_thres;
 
         Color color;
         detector_params()
         {
             color = RED;
-            armor_type_wh_thres = 0;
-            max_lost_cnt = 0;
-            max_armors_cnt = 0;
+            armor_type_wh_thres = 3;
+            max_lost_cnt = 5;
+            max_armors_cnt = 8;
             max_v = 0;
-            max_delta_t = 0;
-            no_crop_thres = 0.0;
-            hero_danger_zone = 0.0;
+            max_delta_t = 100;
+            no_crop_thres = 2e-3;
+            no_crop_ratio = 2e-3;
+            full_crop_ratio = 1e-4;
+
+            hero_danger_zone = 4.0;
+            armor_roi_expand_ratio_width = 1.1;
+            armor_roi_expand_ratio_height = 1.5;
+            armor_conf_high_thres = 0.82;
         }
     };
     
@@ -143,7 +156,7 @@ namespace armor_detector
         Eigen::Vector3d last_aiming_point;
         
         Point2i roi_offset;
-        Size2d input_size;
+        Size2i input_size;
 
         // coordsolver::coordsolver coordsolver_;
 
