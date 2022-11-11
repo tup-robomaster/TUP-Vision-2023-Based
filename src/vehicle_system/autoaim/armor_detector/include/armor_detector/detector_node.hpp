@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2022-11-08 19:11:38
+ * @LastEditTime: 2022-11-08 21:56:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -53,12 +53,22 @@ namespace armor_detector
         //发布装甲信息
         ArmorsMsg armors_info;
         rclcpp::Publisher<TargetMsg>::SharedPtr armors_pub;
-
+    
+    private:    
+        //params callback
+        rclcpp::TimerBase::SharedPtr param_timer_;
+        void param_callback();
+        
     public:
         void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
         // std::vector<Armor> detect_armors(const sensor_msgs::msg::Image::SharedPtr& img);
   
     public:
+        detector_params detector_params_;
+        debug_params debug_;
+        gyro_params gyro_params_;
+        void getParameters();
+
         // rclcpp::Node handle;
         // image_transport::ImageTransport it;
         std::unique_ptr<detector> detector_;

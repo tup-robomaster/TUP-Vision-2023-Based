@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2022-11-08 18:57:35
+ * @LastEditTime: 2022-11-08 21:50:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -117,13 +117,16 @@ namespace armor_detector
         Point2i cropImageByROI(Mat &img);
         ArmorTracker* chooseTargetTracker(vector<ArmorTracker*> trackers, int timestamp);
         int chooseTargetID(vector<Armor> &armors, int timestamp);
-    
+
+        void debugParams(const detector_params& detector_params, const debug_params& debug_params, const gyro_params& gyro_params);
     public:
         std::vector<ArmorObject> objects;
         std::vector<Armor> armors;
 
         std::vector<Armor> last_armors;
-    
+
+        ofstream data_save;
+        bool is_save_data;
     private:
         bool is_init;
         Armor last_armor;

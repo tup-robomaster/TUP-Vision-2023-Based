@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-11-08 19:25:55
+ * @LastEditTime: 2022-11-09 20:22:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
@@ -16,36 +16,6 @@ namespace armor_detector
     {
         RCLCPP_WARN(this->get_logger(), "Starting detector node...");
 
-        try
-        {
-            //detector类初始化
-            this->detector_ = init_detector();
-        }
-        catch(const std::exception& e)
-        {
-            std::cerr << e.what() << '\n';
-        }
-        
-        // armors pub
-        armors_pub = this->create_publisher<TargetMsg>("/armor_info", rclcpp::SensorDataQoS());
-
-        time_start = std::chrono::steady_clock::now();
-
-        // Subscriptions transport type
-        transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
-
-        // image sub
-        img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
-        std::bind(&detector_node::image_callback, this, _1), transport_));
-    }
-
-    detector_node::~detector_node()
-    {
-
-    }
-
-    std::unique_ptr<detector> detector_node::init_detector()
-    {
         //detector params
         this->declare_parameter<int>("armor_type_wh_thres", 3);
         this->declare_parameter<int>("max_lost_cnt", 5);
@@ -86,7 +56,48 @@ namespace armor_detector
         this->declare_parameter("max_delta_dist", 0.3);
         // this->declare_parameter("max_delta_t", 50);
 
-        detector_params detector_params_;
+        try
+        {
+            //detector类初始化
+            this->detector_ = init_detector();
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+        
+        // armors pub
+        armors_pub = this->create_publisher<TargetMsg>("/armor_info", rclcpp::SensorDataQoS());
+
+        time_start = std::chrono::steady_clock::now();
+
+        // Subscriptions transport type
+        transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
+
+        // image sub
+        img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
+        std::bind(&detector_node::image_callback, this, _1), transport_));
+        // img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+        // std::bind(&detector_node::image_callback, this, _1), transport_));
+
+        // param callback
+        param_timer_ = this->create_wall_timer(1000ms, std::bind(&detector_node::param_callback, this));
+    }
+
+    detector_node::~detector_node()
+    {
+
+    }
+
+    void detector_node::param_callback()
+    {
+        //
+        getParameters();
+        this->detector_->debugParams(detector_params_, debug_, gyro_params_);
+    }
+
+    void detector_node::getParameters()
+    {
         detector_params_.armor_type_wh_thres = this->get_parameter("armor_type_wh_thres").as_int();
         detector_params_.max_lost_cnt = this->get_parameter("max_lost_cnt").as_int();
         detector_params_.max_armors_cnt = this->get_parameter("max_armors_cnt").as_int();
@@ -105,11 +116,7 @@ namespace armor_detector
         this->get_parameter("armor_roi_expand_ratio_height", detector_params_.armor_roi_expand_ratio_height);
         this->get_parameter("armor_conf_high_thres", detector_params_.armor_conf_high_thres);
 
-        std::string camera_name = this->get_parameter("camera_name").as_string();
-        std::string camera_param_path = this->get_parameter("camera_param_path").as_string();
-        std::string network_path = this->get_parameter("network_path").as_string();
 
-        debug_params debug_;
         debug_.detect_red = this->get_parameter("detect_red").as_bool();
         debug_.debug_without_com  = this->get_parameter("debug_without_com").as_bool();
         debug_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
@@ -120,8 +127,6 @@ namespace armor_detector
         debug_.print_letency = this->get_parameter("print_letency").as_bool();
         debug_.print_target_info = this->get_parameter("print_target_info").as_bool();
 
-
-        gyro_params gyro_params_;
         gyro_params_.anti_spin_judge_high_thres = this->get_parameter("anti_spin_judge_high_thres").as_double();
         gyro_params_.anti_spin_judge_low_thres = this->get_parameter("anti_spin_judge_low_thres").as_double();
         gyro_params_.anti_spin_max_r_multiple = this->get_parameter("anti_spin_max_r_multiple").as_double();
@@ -129,6 +134,16 @@ namespace armor_detector
         gyro_params_.max_dead_buffer = this->get_parameter("max_dead_buffer").as_int() ;
         gyro_params_.max_delta_dist = this->get_parameter("max_delta_dist").as_double();
         gyro_params_.max_delta_t = this->get_parameter("max_delta_t").as_int();
+    }
+
+    std::unique_ptr<detector> detector_node::init_detector()
+    {
+        //
+        getParameters();
+
+        std::string camera_name = this->get_parameter("camera_name").as_string();
+        std::string camera_param_path = this->get_parameter("camera_param_path").as_string();
+        std::string network_path = this->get_parameter("network_path").as_string();
 
         return std::make_unique<detector>(camera_name, camera_param_path, network_path, detector_params_, debug_, gyro_params_);
     }

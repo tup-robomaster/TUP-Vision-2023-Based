@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2022-11-06 20:08:44
+ * @LastEditTime: 2022-11-09 18:12:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp
  */
 #include "../../include/armor_detector/inference_api2.hpp"
@@ -348,17 +348,13 @@ bool ArmorDetector::initModel(std::string path)
 
     //Step 1.Create openvino runtime core
     model = core.read_model(path);
-    // std::cout << 2 << std::endl;
 
     // Preprocessing
     ov::preprocess::PrePostProcessor ppp(model);
     ppp.input().tensor().set_element_type(ov::element::f32);
 
-    // std::cout << 3 << std::endl;
-
     //set output precision
     ppp.output().tensor().set_element_type(ov::element::f32);
-    // std::cout << 4 << std::endl;
     
     //将预处理融入原始模型
     ppp.build(); 
@@ -378,21 +374,14 @@ bool ArmorDetector::initModel(std::string path)
 
     // compiled_model.set_property(ov::device::priorities("GPU"));
 
-    // std::cout << 7 << std::endl;
-    
-    //Step 3. Create an Inference Request
+    // Step 3. Create an Inference Request
     infer_request = compiled_model.create_infer_request();
 
-    // std::cout << 8 << std::endl;
-
-    //Fill Input Tensors with Data
-    //get input tensor by index
+    // Fill Input Tensors with Data
+    // get input tensor by index
     // input_tensor = infer_request.get_input_tensor(0);
-    // std::cout << 9 << std::endl;
 
-    return true;
-    //Step 4. Set Inputs
-    
+    // Step 4. Set Inputs
     // Get input port for model with one input
     // auto input_port = compiled_model.input();
 
@@ -412,6 +401,8 @@ bool ArmorDetector::initModel(std::string path)
     // auto output = infer_request.get_tensor("tensor_name");
     // const float output_buffer = output.data<const float>();
     // output_buffer[] - accessing output tensor data 
+
+    return true;
 }
 
 bool ArmorDetector::detect(cv::Mat &src, std::vector<ArmorObject>& objects)
@@ -422,7 +413,6 @@ bool ArmorDetector::detect(cv::Mat &src, std::vector<ArmorObject>& objects)
         return false;
     }
 
-    // std::cout << 10 << std::endl;
     cv::Mat pr_img = scaledResize(src, transfrom_matrix);
     dw = this->dw;
 
@@ -431,14 +421,11 @@ bool ArmorDetector::detect(cv::Mat &src, std::vector<ArmorObject>& objects)
     pr_img.convertTo(pre, CV_32F);
     cv::split(pre, pre_split);
 
-    // std::cout << 10 << std::endl;
-
     // Get input tensor by index
     input_tensor = infer_request.get_input_tensor(0);
     
     // 准备输入
     infer_request.set_input_tensor(input_tensor);
-    // std::cout << 12 << std::endl;
 
     float* tensor_data = input_tensor.data<float_t>();
     
@@ -458,18 +445,15 @@ bool ArmorDetector::detect(cv::Mat &src, std::vector<ArmorObject>& objects)
 
     // // 转换图像数据为ov::Tensor
     // input_tensor = ov::Tensor(input_type, input_shape, input_data_ptr);
-    // std::cout << 11 << std::endl;
 
     // 推理
     infer_request.infer();
-    // std::cout << 13 << std::endl;
     
     // 处理推理结果
     ov::Tensor output_tensor = infer_request.get_output_tensor();
     float* output = output_tensor.data<float_t>();
 
     // std::cout << &output << std::endl;
-    // std::cout << 14 << std::endl;
 
     int img_w = src.cols;
     int img_h = src.rows;
@@ -480,42 +464,53 @@ bool ArmorDetector::detect(cv::Mat &src, std::vector<ArmorObject>& objects)
     for (auto object = objects.begin(); object != objects.end(); ++object)
     {
         //对候选框预测角点进行平均,降低误差
-        if ((*object).pts.size() >= 8)
+        // if ((*object).pts.size() >= 8)
+        // {
+        //     auto N = (*object).pts.size();
+        //     cv::Point2f pts_final[4];
+
+        //     for (int i = 0; i < N; i++)
+        //     {
+        //         pts_final[i % 4]+=(*object).pts[i];
+        //     }
+
+        //     for (int i = 0; i < 4; i++)
+        //     {
+        //         pts_final[i].x = pts_final[i].x / (N / 4);
+        //         pts_final[i].y = pts_final[i].y / (N / 4);
+        //     }
+
+        //     (*object).apex[0] = pts_final[0];
+        //     (*object).apex[1] = pts_final[1];
+        //     (*object).apex[2] = pts_final[2];
+        //     (*object).apex[3] = pts_final[3];
+        // }
+
+        //
+        cv::Point2f pts_final[4];
+        for(int ii = 0; ii < 4; ii++)
         {
-            auto N = (*object).pts.size();
-            cv::Point2f pts_final[4];
-
-            for (int i = 0; i < N; i++)
-            {
-                pts_final[i % 4]+=(*object).pts[i];
-            }
-
-            for (int i = 0; i < 4; i++)
-            {
-                pts_final[i].x = pts_final[i].x / (N / 4);
-                pts_final[i].y = pts_final[i].y / (N / 4);
-            }
-
-            (*object).apex[0] = pts_final[0];
-            (*object).apex[1] = pts_final[1];
-            (*object).apex[2] = pts_final[2];
-            (*object).apex[3] = pts_final[3];
-
+            pts_final[ii] = (*object).pts[ii];
         }
+        (*object).apex[0] = pts_final[0];
+        (*object).apex[1] = pts_final[1];
+        (*object).apex[2] = pts_final[2];
+        (*object).apex[3] = pts_final[3];
+        
         (*object).area = (int)(calcTetragonArea((*object).apex));
     }
     // std::cout << 16 << std::endl;
 
-    if (objects.size() != 0)
-    {
-        // std::cout << "Objects found..." << std::endl;
-        return true;
-    }
-    else
-    {
-        // std::cout << "No objects found..." << std::endl;
-        return false;
-    } 
+    // if (objects.size() != 0)
+    // {
+    //     // std::cout << "Objects found..." << std::endl;
+    //     return true;
+    // }
+    // else
+    // {
+    //     // std::cout << "No objects found..." << std::endl;
+    //     return false;
+    // } 
 
     return true;
 }

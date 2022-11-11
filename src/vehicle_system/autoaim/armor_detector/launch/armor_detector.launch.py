@@ -1,3 +1,10 @@
+'''
+Description: This is a ros-based project!
+Author: Liu Biao
+Date: 2022-11-08 17:54:17
+LastEditTime: 2022-11-09 20:23:53
+FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/launch/armor_detector.launch.py
+'''
 from argparse import Namespace
 from launch import LaunchDescription
 from launch_ros.actions import Node
@@ -23,6 +30,14 @@ def generate_launch_description():
         parameters = [cam_config],
         output = 'screen'
     )
+
+    # cam_node = Node(
+    #     name = "daheng_cam_driver",
+    #     package = "camera_driver",
+    #     executable = "daheng_cam_driver_node",
+    #     parameters = [cam_config],
+    #     output = "screen"
+    # )
 
     armor_detector_node = Node(
         name = 'armor_detector',

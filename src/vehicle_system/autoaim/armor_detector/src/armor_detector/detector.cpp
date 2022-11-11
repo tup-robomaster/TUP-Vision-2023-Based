@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-11-08 19:03:32
+ * @LastEditTime: 2022-11-09 20:29:29
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector.cpp
  */
 #include "../../include/armor_detector/detector.hpp"
@@ -32,7 +32,6 @@ namespace armor_detector
                    
         //网络模型初始化
         
-
         //默认值
         lost_cnt = 0;
         is_last_target_exists = false;
@@ -41,6 +40,8 @@ namespace armor_detector
         last_bullet_speed = 0;
         input_size = {720, 720};
         is_init = false;
+
+        is_save_data = false; //save distance error data
 
         //debug
         // this->debug_params_.debug_without_com = _debug_params_.debug_without_com;
@@ -56,7 +57,35 @@ namespace armor_detector
 
     detector::~detector()
     {
-        
+        if(is_save_data)
+        {
+            data_save.close();
+        }
+    }
+
+    void detector::debugParams(const detector_params& detector_params, const debug_params& debug_params, const gyro_params& gyro_params)
+    {
+        //detector params
+        this->detector_params_.dw = detector_params.dw;
+        this->detector_params_.dh = detector_params.dh;
+        this->detector_params_.rescale_ratio = detector_params.rescale_ratio;
+        this->detector_params_.armor_type_wh_thres = detector_params.armor_type_wh_thres;
+        this->detector_params_.max_lost_cnt = detector_params.max_lost_cnt;
+        this->detector_params_.max_armors_cnt = detector_params.max_armors_cnt;
+        this->detector_params_.max_v = detector_params.max_v;
+        this->detector_params_.max_delta_t = detector_params.max_delta_t;
+        this->detector_params_.no_crop_thres = detector_params.no_crop_thres;
+        this->detector_params_.hero_danger_zone = detector_params.hero_danger_zone;
+
+        //debug
+        this->debug_params_.debug_without_com = debug_params.debug_without_com;
+        this->debug_params_.using_imu =  debug_params.using_imu;
+        this->debug_params_.using_roi =  debug_params.using_roi;
+        this->debug_params_.show_aim_cross = debug_params.show_aim_cross;
+        this->debug_params_.show_img = debug_params.show_img;
+        this->debug_params_.detect_red = debug_params.detect_red;
+        this->debug_params_.print_letency = debug_params.print_letency;
+        this->debug_params_.print_target_info = debug_params.print_target_info;
     }
     
     bool detector::armor_detect(global_user::TaskData &src)
@@ -65,6 +94,13 @@ namespace armor_detector
         {
             detector_.initModel(network_path);
             coordsolver_.loadParam(camera_param_path, camera_name);
+
+            if(is_save_data)
+            {
+                data_save.open("src/data/dis_info_1.txt", ios::out | ios::trunc);
+                data_save << fixed;
+            }
+
             is_init = true;
         }
 
@@ -580,6 +616,11 @@ namespace armor_detector
                 fmt::print(fmt::fg(fmt::color::white), "Target Type: {} \n",target.type == global_user::SMALL ? "SMALL" : "BIG");
                 fmt::print(fmt::fg(fmt::color::orange_red), "Is Spinning: {} \n",is_target_spinning);
                 fmt::print(fmt::fg(fmt::color::orange_red), "Is Switched: {} \n",is_target_switched);
+
+                if(is_save_data)
+                {
+                    data_save << setprecision(3) << (float)target.center3d_cam.norm() << endl;
+                }
 
                 count = 0;
             }
