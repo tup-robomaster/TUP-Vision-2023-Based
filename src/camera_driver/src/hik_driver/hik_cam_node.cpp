@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 14:30:38
- * @LastEditTime: 2022-10-23 23:05:33
- * @FilePath: /TUP-Vision-2023/src/camera_driver/src/hik_driver/hik_cam_node.cpp
+ * @LastEditTime: 2022-11-10 21:05:02
+ * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_cam_node.cpp
  */
 #include "../../include/hik_driver/hik_cam_node.hpp"
 
@@ -134,9 +134,9 @@ namespace camera_driver
             image_pub->publish(std::move(msg));
         }
 
-        // cv::namedWindow("hik_cam_frame", cv::WINDOW_AUTOSIZE);
-        // cv::imshow("hik_cam_frame", frame);
-        // cv::waitKey(1);
+        cv::namedWindow("hik_cam_frame", cv::WINDOW_AUTOSIZE);
+        cv::imshow("hik_cam_frame", frame);
+        cv::waitKey(1);
     }
 }
 

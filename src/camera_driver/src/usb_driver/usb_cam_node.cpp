@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2022-10-23 23:05:49
- * @FilePath: /TUP-Vision-2023/src/camera_driver/src/usb_driver/usb_cam_node.cpp
+ * @LastEditTime: 2022-11-11 12:32:51
+ * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
 
@@ -15,11 +15,11 @@ namespace camera_driver
     : Node("usb_driver", option), is_filpped(false)
     {
         RCLCPP_WARN(this->get_logger(), "Camera driver node...");
+       
+        usb_cam_ = init_usb_cam();
         
         frame_pub = this->create_publisher<sensor_msgs::msg::Image>("usb_img", 1);
         
-        usb_cam_ = init_usb_cam();
-
         // rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_sensor_data;
         // camera_info_pub = image_transport::create_camera_publisher(this, "image");
 
@@ -38,13 +38,32 @@ namespace camera_driver
         last_frame = std::chrono::steady_clock::now();
 
         timer = this->create_wall_timer(1ms, std::bind(&usb_cam_node::image_callback, this));
+
+        //创建参数订阅者监测参数改变情况
+        //既可以用于本节点也可以是其他节点
+        param_subscriber_ = std::make_shared<ParamSubscriber>(this);
+
+        //设置回调用于本节点参数修改
+        ParamCallbackType cb = [this](const rclcpp::Parameter& p)
+        {
+            RCLCPP_INFO(this->get_logger(), 
+                "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+                p.get_name().c_str(),
+                p.get_type_name().c_str(),
+                p.as_int()
+            );
+
+            this->usb_cam_->usb_cam_params_.image_width = p.as_int();
+        };
+
+        param_cb_handle_ = param_subscriber_->add_parameter_callback("image_width", cb);
     }
 
     std::unique_ptr<usb_cam> usb_cam_node::init_usb_cam()
     {
         usb_cam_params usb_cam_params_;
 
-        this->declare_parameter("camera_id", 1);
+        this->declare_parameter("camera_id", 0);
         this->declare_parameter("frame_id", "usb_image");
         this->declare_parameter("image_width", 480);
         this->declare_parameter("image_height", 480);
@@ -56,7 +75,7 @@ namespace camera_driver
         usb_cam_params_.image_height = this->get_parameter("image_height").as_int();
         usb_cam_params_.fps = this->get_parameter("fps").as_int();
 
-        printf("camera_id: %d", usb_cam_params_.camera_id);
+        printf("camera_id: %d\n", usb_cam_params_.camera_id);
 
         return std::make_unique<usb_cam>(usb_cam_params_);
     }
@@ -135,6 +154,8 @@ namespace camera_driver
         // RCLCPP_INFO(this->get_logger(), "frame stream...");
         auto now = std::chrono::steady_clock::now();
         
+        // std::cout << "image_width:" << this->usb_cam_->usb_cam_params_.image_width << std::endl;
+
         if(!frame.empty() && 
             std::chrono::duration_cast<std::chrono::milliseconds>(now - last_frame).count() > 1 / usb_cam_->usb_cam_params_.fps * 1000)
         {

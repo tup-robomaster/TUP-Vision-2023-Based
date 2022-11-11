@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 14:25:39
- * @LastEditTime: 2022-10-23 22:57:15
- * @FilePath: /TUP-Vision-2023/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
+ * @LastEditTime: 2022-11-11 19:46:28
+ * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
  */
 #include "../../include/daheng_driver/daheng_cam_node.hpp"
 
@@ -69,8 +69,8 @@ namespace camera_driver
         daheng_cam_param_.daheng_cam_id = this->get_parameter("daheng_cam_id").as_int();
         daheng_cam_param_.image_width = this->get_parameter("image_width").as_int();
         daheng_cam_param_.image_height = this->get_parameter("image_height").as_int();
-        daheng_cam_param_.width_scale = this->declare_parameter("width_scale", 1);
-        daheng_cam_param_.height_scale = this->declare_parameter("height_scale", 1);
+        daheng_cam_param_.width_scale = this->get_parameter("width_scale").as_int();
+        daheng_cam_param_.height_scale = this->get_parameter("height_scale").as_int();
         daheng_cam_param_.exposure_time = this->get_parameter("exposure_time").as_int();
         daheng_cam_param_.exposure_gain = this->get_parameter("exposure_gain").as_int();
         daheng_cam_param_.exposure_gain_b = this->get_parameter("exposure_gain_b").as_int();
