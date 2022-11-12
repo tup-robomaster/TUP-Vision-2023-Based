@@ -130,9 +130,9 @@ namespace camera_driver
             image_pub->publish(std::move(msg));
         }
 
-        cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
-        cv::imshow("daheng_cam_frame", frame);
-        cv::waitKey(1);
+        // cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
+        // cv::imshow("daheng_cam_frame", frame);
+        // cv::waitKey(1);
     }
 }
 

@@ -1,0 +1,125 @@
+[0.000000] (-) TimerEvent: {}
+[0.000173] (-) JobUnselected: {'identifier': 'arm_controller'}
+[0.000275] (-) JobUnselected: {'identifier': 'armor_processor'}
+[0.000316] (-) JobUnselected: {'identifier': 'auto_navigation'}
+[0.000334] (-) JobUnselected: {'identifier': 'binocular'}
+[0.000351] (-) JobUnselected: {'identifier': 'buff'}
+[0.000388] (-) JobUnselected: {'identifier': 'camera_driver'}
+[0.000407] (-) JobUnselected: {'identifier': 'filter'}
+[0.000422] (-) JobUnselected: {'identifier': 'global_interface'}
+[0.000455] (-) JobUnselected: {'identifier': 'global_user'}
+[0.001896] (-) JobUnselected: {'identifier': 'rmoss_auto_aim'}
+[0.001939] (-) JobUnselected: {'identifier': 'rmoss_base'}
+[0.001979] (-) JobUnselected: {'identifier': 'rmoss_cam'}
+[0.002006] (-) JobUnselected: {'identifier': 'rmoss_core'}
+[0.002027] (-) JobUnselected: {'identifier': 'rmoss_daheng_driver'}
+[0.002043] (-) JobUnselected: {'identifier': 'rmoss_interfaces'}
+[0.002075] (-) JobUnselected: {'identifier': 'rmoss_projectile_motion'}
+[0.002108] (-) JobUnselected: {'identifier': 'rmoss_util'}
+[0.002157] (-) JobUnselected: {'identifier': 'serialport'}
+[0.002229] (armor_detector) JobQueued: {'identifier': 'armor_detector', 'dependencies': OrderedDict()}
+[0.002266] (armor_detector) JobStarted: {'identifier': 'armor_detector'}
+[0.014561] (armor_detector) JobProgress: {'identifier': 'armor_detector', 'progress': 'cmake'}
+[0.014947] (armor_detector) Command: {'cmd': ['/usr/local/bin/cmake', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector', '-DCMAKE_INSTALL_PREFIX=/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector'], 'cwd': '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'liyuhang'), ('SSH_AGENT_PID', '2728'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/intel/openvino_2022/tools/compile_tool:/opt/intel/openvino_2022/runtime/3rdparty/tbb/lib::/opt/intel/openvino_2022/runtime/3rdparty/hddl/lib:/opt/intel/openvino_2022/runtime/lib/intel64:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HDDL_INSTALL_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/hddl'), ('TBB_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/tbb/cmake'), ('HOME', '/home/liyuhang'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.67.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('INTEL_OPENVINO_DIR', '/opt/intel/openvino_2022'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2495'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '10785'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu.mandatory.path'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'liyuhang'), ('JOURNAL_STREAM', '8:49895'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', ':/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu.default.path'), ('USERNAME', 'liyuhang'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/liyuhang/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/liyuhang-Inspiron-7590:@/tmp/.ICE-unix/2766,unix/liyuhang-Inspiron-7590:/tmp/.ICE-unix/2766'), ('INVOCATION_ID', '6cd134efe3f642ddac467d2718960722'), ('XDG_MENU_PREFIX', 'gnome-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-048da31f87.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('ngraph_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('QT_ACCESSIBILITY', '1'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('InferenceEngine_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:/opt/ros/galactic/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:'), ('COLCON', '1'), ('OpenVINO_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[0.070162] (armor_detector) StdoutLine: {'line': b'-- The C compiler identification is GNU 9.4.0\n'}
+[0.099072] (-) TimerEvent: {}
+[0.123964] (armor_detector) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 9.4.0\n'}
+[0.130914] (armor_detector) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.178059] (armor_detector) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.187221] (armor_detector) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[0.187437] (armor_detector) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.187756] (armor_detector) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.190687] (armor_detector) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.199178] (-) TimerEvent: {}
+[0.256838] (armor_detector) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.267345] (armor_detector) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.267663] (armor_detector) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.268172] (armor_detector) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.270399] (armor_detector) StdoutLine: {'line': b'-- Found ament_cmake: 1.1.5 (/opt/ros/galactic/share/ament_cmake/cmake)\n'}
+[0.292619] (armor_detector) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") \n'}
+[0.292776] (armor_detector) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[0.299266] (-) TimerEvent: {}
+[0.363328] (armor_detector) StdoutLine: {'line': b'-- Found rclcpp: 9.2.1 (/opt/ros/galactic/share/rclcpp/cmake)\n'}
+[0.399384] (-) TimerEvent: {}
+[0.404364] (armor_detector) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.410249] (armor_detector) StdoutLine: {'line': b'-- Found rosidl_adapter: 2.2.2 (/opt/ros/galactic/share/rosidl_adapter/cmake)\n'}
+[0.484560] (armor_detector) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "1.1.1f")  \n'}
+[0.499488] (-) TimerEvent: {}
+[0.512441] (armor_detector) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/galactic/include  \n'}
+[0.585457] (armor_detector) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.599584] (-) TimerEvent: {}
+[0.640403] (armor_detector) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)\n'}
+[0.642604] (armor_detector) StdoutLine: {'line': b'-- Found rmw_cyclonedds_cpp: 0.22.5 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)\n'}
+[0.659519] (armor_detector) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_cyclonedds_cpp' as default\n"}
+[0.660422] (armor_detector) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[0.699709] (-) TimerEvent: {}
+[0.711702] (armor_detector) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[0.711954] (armor_detector) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[0.763634] (armor_detector) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed\n'}
+[0.763865] (armor_detector) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads\n'}
+[0.799796] (-) TimerEvent: {}
+[0.801648] (armor_detector) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads - not found\n'}
+[0.801863] (armor_detector) StdoutLine: {'line': b'-- Looking for pthread_create in pthread\n'}
+[0.853226] (armor_detector) StdoutLine: {'line': b'-- Looking for pthread_create in pthread - found\n'}
+[0.854424] (armor_detector) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[0.899907] (-) TimerEvent: {}
+[0.982108] (armor_detector) StdoutLine: {'line': b'-- Found rclpy: 1.9.2 (/opt/ros/galactic/share/rclpy/cmake)\n'}
+[0.987219] (armor_detector) StdoutLine: {'line': b'-- Found OpenCV: /usr/local (found version "4.5.5") \n'}
+[0.988180] (armor_detector) StdoutLine: {'line': b'-- Found message_filters: 3.2.6 (/opt/ros/galactic/share/message_filters/cmake)\n'}
+[0.996656] (armor_detector) StdoutLine: {'line': b'-- Found image_transport: 2.5.0 (/opt/ros/galactic/share/image_transport/cmake)\n'}
+[1.000004] (-) TimerEvent: {}
+[1.100217] (-) TimerEvent: {}
+[1.159268] (armor_detector) StdoutLine: {'line': b'-- Found CXSparse: /usr/include/suitesparse (found suitable version "3.2.0", minimum required is "3.2.0") \n'}
+[1.200341] (-) TimerEvent: {}
+[1.300605] (-) TimerEvent: {}
+[1.337214] (armor_detector) StdoutLine: {'line': b'-- Found BLAS: /usr/lib/x86_64-linux-gnu/libopenblas.so  \n'}
+[1.400744] (-) TimerEvent: {}
+[1.420131] (armor_detector) StdoutLine: {'line': b'-- Found AMD headers in: /usr/include/suitesparse\n'}
+[1.420949] (armor_detector) StdoutLine: {'line': b'-- Found AMD library: /usr/lib/x86_64-linux-gnu/libamd.so\n'}
+[1.421340] (armor_detector) StdoutLine: {'line': b'-- Found CAMD headers in: /usr/include/suitesparse\n'}
+[1.421962] (armor_detector) StdoutLine: {'line': b'-- Found CAMD library: /usr/lib/x86_64-linux-gnu/libcamd.so\n'}
+[1.422291] (armor_detector) StdoutLine: {'line': b'-- Found CCOLAMD headers in: /usr/include/suitesparse\n'}
+[1.422883] (armor_detector) StdoutLine: {'line': b'-- Found CCOLAMD library: /usr/lib/x86_64-linux-gnu/libccolamd.so\n'}
+[1.423178] (armor_detector) StdoutLine: {'line': b'-- Found CHOLMOD headers in: /usr/include/suitesparse\n'}
+[1.424022] (armor_detector) StdoutLine: {'line': b'-- Found CHOLMOD library: /usr/lib/x86_64-linux-gnu/libcholmod.so\n'}
+[1.424502] (armor_detector) StdoutLine: {'line': b'-- Found COLAMD headers in: /usr/include/suitesparse\n'}
+[1.425625] (armor_detector) StdoutLine: {'line': b'-- Found COLAMD library: /usr/lib/x86_64-linux-gnu/libcolamd.so\n'}
+[1.425998] (armor_detector) StdoutLine: {'line': b'-- Found SPQR headers in: /usr/include/suitesparse\n'}
+[1.426696] (armor_detector) StdoutLine: {'line': b'-- Found SPQR library: /usr/lib/x86_64-linux-gnu/libspqr.so\n'}
+[1.427029] (armor_detector) StdoutLine: {'line': b'-- Found Config headers in: /usr/include/suitesparse\n'}
+[1.427809] (armor_detector) StdoutLine: {'line': b'-- Found Config library: /usr/lib/x86_64-linux-gnu/libsuitesparseconfig.so\n'}
+[1.428513] (armor_detector) StdoutLine: {'line': b'-- Found Intel Thread Building Blocks (TBB) library (2020.2 / 11102) include location: . Assuming SuiteSparseQR was compiled with TBB.\n'}
+[1.428676] (armor_detector) StdoutLine: {'line': b'-- Looking for shm_open in rt\n'}
+[1.477394] (armor_detector) StdoutLine: {'line': b'-- Looking for shm_open in rt - found\n'}
+[1.477648] (armor_detector) StdoutLine: {'line': b'-- Adding librt to SuiteSparse_config libraries (required on Linux & Unix [not OSX] if SuiteSparse is compiled with timing).\n'}
+[1.480325] (armor_detector) StdoutLine: {'line': b'-- Found METIS: /usr/include (found version "5.1.0") \n'}
+[1.481501] (armor_detector) StdoutLine: {'line': b'-- Found SuiteSparse: /usr/include/suitesparse (found suitable version "5.7.1", minimum required is "5.7.1") found components: AMD CAMD CCOLAMD CHOLMOD COLAMD SPQR Config \n'}
+[1.482181] (armor_detector) StdoutLine: {'line': b'-- Found required Ceres dependency: Eigen version 3.4.0 in /usr/local/share/eigen3/cmake\n'}
+[1.484071] (armor_detector) StdoutLine: {'line': b'-- Found required Ceres dependency: glog\n'}
+[1.486661] (armor_detector) StdoutLine: {'line': b'-- Found required Ceres dependency: gflags\n'}
+[1.487091] (armor_detector) StdoutLine: {'line': b'-- Found Ceres version: 2.1.0 installed in: /usr/local with components: [EigenSparse, SparseLinearAlgebraLibrary, LAPACK, SuiteSparse, CXSparse, SchurSpecializations, Multithreading]\n'}
+[1.492129] (armor_detector) StdoutLine: {'line': b'-- Found cv_bridge: 3.1.3 (/opt/ros/galactic/share/cv_bridge/cmake)\n'}
+[1.500815] (-) TimerEvent: {}
+[1.513289] (armor_detector) StderrLine: {'line': b'CMake Error at CMakeLists.txt:39 (find_package):\n'}
+[1.513669] (armor_detector) StderrLine: {'line': b'  By not providing "Findglobal_interface.cmake" in CMAKE_MODULE_PATH this\n'}
+[1.513799] (armor_detector) StderrLine: {'line': b'  project has asked CMake to find a package configuration file provided by\n'}
+[1.513914] (armor_detector) StderrLine: {'line': b'  "global_interface", but CMake did not find one.\n'}
+[1.514024] (armor_detector) StderrLine: {'line': b'\n'}
+[1.514132] (armor_detector) StderrLine: {'line': b'  Could not find a package configuration file provided by "global_interface"\n'}
+[1.514240] (armor_detector) StderrLine: {'line': b'  with any of the following names:\n'}
+[1.514347] (armor_detector) StderrLine: {'line': b'\n'}
+[1.514454] (armor_detector) StderrLine: {'line': b'    global_interfaceConfig.cmake\n'}
+[1.514563] (armor_detector) StderrLine: {'line': b'    global_interface-config.cmake\n'}
+[1.514675] (armor_detector) StderrLine: {'line': b'\n'}
+[1.514782] (armor_detector) StderrLine: {'line': b'  Add the installation prefix of "global_interface" to CMAKE_PREFIX_PATH or\n'}
+[1.514890] (armor_detector) StderrLine: {'line': b'  set "global_interface_DIR" to a directory containing one of the above\n'}
+[1.514998] (armor_detector) StderrLine: {'line': b'  files.  If "global_interface" provides a separate development package or\n'}
+[1.515105] (armor_detector) StderrLine: {'line': b'  SDK, be sure it has been installed.\n'}
+[1.515212] (armor_detector) StderrLine: {'line': b'\n'}
+[1.515321] (armor_detector) StderrLine: {'line': b'\n'}
+[1.515428] (armor_detector) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[1.515551] (armor_detector) StdoutLine: {'line': b'See also "/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector/CMakeFiles/CMakeOutput.log".\n'}
+[1.515686] (armor_detector) StdoutLine: {'line': b'See also "/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector/CMakeFiles/CMakeError.log".\n'}
+[1.521715] (armor_detector) CommandEnded: {'returncode': 1}
+[1.541288] (armor_detector) JobEnded: {'identifier': 'armor_detector', 'rc': 1}
+[1.552219] (-) EventReactorShutdown: {}

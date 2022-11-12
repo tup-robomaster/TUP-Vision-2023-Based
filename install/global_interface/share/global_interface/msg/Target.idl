@@ -1,0 +1,22 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from global_interface/msg/Target.msg
+// generated code does not contain a copyright notice
+
+#include "geometry_msgs/msg/Point.idl"
+#include "geometry_msgs/msg/Vector3.idl"
+
+module global_interface {
+  module msg {
+    struct Target {
+      geometry_msgs::msg::Point aiming_point;
+
+      double timestamp;
+
+      geometry_msgs::msg::Vector3 rmat_imu;
+
+      boolean target_switched;
+
+      boolean is_spinning;
+    };
+  };
+};

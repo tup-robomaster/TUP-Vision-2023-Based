@@ -1,0 +1,239 @@
+[0.000000] (-) TimerEvent: {}
+[0.000343] (-) JobUnselected: {'identifier': 'arm_controller'}
+[0.000479] (-) JobUnselected: {'identifier': 'armor_detector'}
+[0.000508] (-) JobUnselected: {'identifier': 'armor_processor'}
+[0.000534] (-) JobUnselected: {'identifier': 'auto_navigation'}
+[0.000558] (-) JobUnselected: {'identifier': 'binocular'}
+[0.000584] (-) JobUnselected: {'identifier': 'buff'}
+[0.000622] (-) JobUnselected: {'identifier': 'camera_driver'}
+[0.000646] (-) JobUnselected: {'identifier': 'filter'}
+[0.000668] (-) JobUnselected: {'identifier': 'global_interface'}
+[0.001151] (-) JobUnselected: {'identifier': 'rmoss_auto_aim'}
+[0.001581] (-) JobUnselected: {'identifier': 'rmoss_base'}
+[0.001678] (-) JobUnselected: {'identifier': 'rmoss_cam'}
+[0.001726] (-) JobUnselected: {'identifier': 'rmoss_core'}
+[0.001754] (-) JobUnselected: {'identifier': 'rmoss_daheng_driver'}
+[0.001778] (-) JobUnselected: {'identifier': 'rmoss_interfaces'}
+[0.001802] (-) JobUnselected: {'identifier': 'rmoss_projectile_motion'}
+[0.001860] (-) JobUnselected: {'identifier': 'rmoss_util'}
+[0.001889] (-) JobUnselected: {'identifier': 'serialport'}
+[0.001909] (global_user) JobQueued: {'identifier': 'global_user', 'dependencies': OrderedDict()}
+[0.001939] (global_user) JobStarted: {'identifier': 'global_user'}
+[0.018948] (global_user) JobProgress: {'identifier': 'global_user', 'progress': 'cmake'}
+[0.019662] (global_user) Command: {'cmd': ['/usr/local/bin/cmake', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/global_user', '-DCMAKE_INSTALL_PREFIX=/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user'], 'cwd': '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'liyuhang'), ('SSH_AGENT_PID', '2728'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/intel/openvino_2022/tools/compile_tool:/opt/intel/openvino_2022/runtime/3rdparty/tbb/lib::/opt/intel/openvino_2022/runtime/3rdparty/hddl/lib:/opt/intel/openvino_2022/runtime/lib/intel64:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HDDL_INSTALL_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/hddl'), ('TBB_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/tbb/cmake'), ('HOME', '/home/liyuhang'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.67.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('INTEL_OPENVINO_DIR', '/opt/intel/openvino_2022'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2495'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '10785'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu.mandatory.path'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'liyuhang'), ('JOURNAL_STREAM', '8:49895'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', ':/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu.default.path'), ('USERNAME', 'liyuhang'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/liyuhang/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/liyuhang-Inspiron-7590:@/tmp/.ICE-unix/2766,unix/liyuhang-Inspiron-7590:/tmp/.ICE-unix/2766'), ('INVOCATION_ID', '6cd134efe3f642ddac467d2718960722'), ('XDG_MENU_PREFIX', 'gnome-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-048da31f87.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('ngraph_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('QT_ACCESSIBILITY', '1'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('InferenceEngine_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:/opt/ros/galactic/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:'), ('COLCON', '1'), ('OpenVINO_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[0.078874] (global_user) StdoutLine: {'line': b'-- The C compiler identification is GNU 9.4.0\n'}
+[0.099467] (-) TimerEvent: {}
+[0.180025] (global_user) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 9.4.0\n'}
+[0.186536] (global_user) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.199559] (-) TimerEvent: {}
+[0.239582] (global_user) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.248866] (global_user) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[0.249209] (global_user) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.249521] (global_user) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.253719] (global_user) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.299680] (-) TimerEvent: {}
+[0.310578] (global_user) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.326883] (global_user) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.327136] (global_user) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.327586] (global_user) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.332303] (global_user) StdoutLine: {'line': b'-- Found ament_cmake: 1.1.5 (/opt/ros/galactic/share/ament_cmake/cmake)\n'}
+[0.358746] (global_user) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") \n'}
+[0.358957] (global_user) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[0.399794] (-) TimerEvent: {}
+[0.434194] (global_user) StdoutLine: {'line': b'-- Found rclcpp: 9.2.1 (/opt/ros/galactic/share/rclcpp/cmake)\n'}
+[0.475434] (global_user) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.480986] (global_user) StdoutLine: {'line': b'-- Found rosidl_adapter: 2.2.2 (/opt/ros/galactic/share/rosidl_adapter/cmake)\n'}
+[0.499915] (-) TimerEvent: {}
+[0.562627] (global_user) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "1.1.1f")  \n'}
+[0.588695] (global_user) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/galactic/include  \n'}
+[0.600037] (-) TimerEvent: {}
+[0.666914] (global_user) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.700136] (-) TimerEvent: {}
+[0.719257] (global_user) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)\n'}
+[0.721490] (global_user) StdoutLine: {'line': b'-- Found rmw_cyclonedds_cpp: 0.22.5 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)\n'}
+[0.738644] (global_user) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_cyclonedds_cpp' as default\n"}
+[0.746837] (global_user) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[0.800277] (-) TimerEvent: {}
+[0.800524] (global_user) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[0.800821] (global_user) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[0.863820] (global_user) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed\n'}
+[0.864069] (global_user) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads\n'}
+[0.900380] (-) TimerEvent: {}
+[0.908608] (global_user) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads - not found\n'}
+[0.908936] (global_user) StdoutLine: {'line': b'-- Looking for pthread_create in pthread\n'}
+[0.965851] (global_user) StdoutLine: {'line': b'-- Looking for pthread_create in pthread - found\n'}
+[0.967063] (global_user) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[1.000527] (-) TimerEvent: {}
+[1.100888] (-) TimerEvent: {}
+[1.135696] (global_user) StdoutLine: {'line': b'-- Found rclcpp_components: 9.2.1 (/opt/ros/galactic/share/rclcpp_components/cmake)\n'}
+[1.189399] (global_user) StdoutLine: {'line': b'-- Found OpenCV: /usr/local (found version "4.5.5") \n'}
+[1.190386] (global_user) StdoutLine: {'line': b'-- Found geometry_msgs: 2.2.4 (/opt/ros/galactic/share/geometry_msgs/cmake)\n'}
+[1.200999] (-) TimerEvent: {}
+[1.221402] (global_user) StdoutLine: {'line': b'-- Found tf2_geometry_msgs: 0.17.4 (/opt/ros/galactic/share/tf2_geometry_msgs/cmake)\n'}
+[1.228290] (global_user) StdoutLine: {'line': b'-- Found eigen3_cmake_module: 0.1.1 (/opt/ros/galactic/share/eigen3_cmake_module/cmake)\n'}
+[1.236335] (global_user) StdoutLine: {'line': b'-- Found Eigen3: TRUE (found version "3.4.0") \n'}
+[1.301133] (-) TimerEvent: {}
+[1.401346] (-) TimerEvent: {}
+[1.501619] (-) TimerEvent: {}
+[1.541308] (global_user) StdoutLine: {'line': b'-- Found rclpy: 1.9.2 (/opt/ros/galactic/share/rclpy/cmake)\n'}
+[1.542187] (global_user) StdoutLine: {'line': b'-- Found rclcpp_lifecycle: 9.2.1 (/opt/ros/galactic/share/rclcpp_lifecycle/cmake)\n'}
+[1.569500] (global_user) StdoutLine: {'line': b'-- Found laser_geometry: 2.2.1 (/opt/ros/galactic/share/laser_geometry/cmake)\n'}
+[1.572848] (global_user) StdoutLine: {'line': b'-- Found sensor_msgs: 2.2.4 (/opt/ros/galactic/share/sensor_msgs/cmake)\n'}
+[1.601711] (-) TimerEvent: {}
+[1.637508] (global_user) StdoutLine: {'line': b'-- Found tf2_sensor_msgs: 0.17.4 (/opt/ros/galactic/share/tf2_sensor_msgs/cmake)\n'}
+[1.652137] (global_user) StdoutLine: {'line': b'-- Found visualization_msgs: 2.2.4 (/opt/ros/galactic/share/visualization_msgs/cmake)\n'}
+[1.701821] (-) TimerEvent: {}
+[1.717925] (global_user) StdoutLine: {'line': b'-- Found angles: 1.14.0 (/opt/ros/galactic/share/angles/cmake)\n'}
+[1.720623] (global_user) StdoutLine: {'line': b'-- Found robot_state_publisher: 2.5.3 (/opt/ros/galactic/share/robot_state_publisher/cmake)\n'}
+[1.796232] (global_user) StdoutLine: {'line': b'-- Found CXSparse: /usr/include/suitesparse (found suitable version "3.2.0", minimum required is "3.2.0") \n'}
+[1.801927] (-) TimerEvent: {}
+[1.902169] (-) TimerEvent: {}
+[1.973487] (global_user) StdoutLine: {'line': b'-- Found BLAS: /usr/lib/x86_64-linux-gnu/libopenblas.so  \n'}
+[2.002213] (-) TimerEvent: {}
+[2.060105] (global_user) StdoutLine: {'line': b'-- Found AMD headers in: /usr/include/suitesparse\n'}
+[2.061653] (global_user) StdoutLine: {'line': b'-- Found AMD library: /usr/lib/x86_64-linux-gnu/libamd.so\n'}
+[2.062139] (global_user) StdoutLine: {'line': b'-- Found CAMD headers in: /usr/include/suitesparse\n'}
+[2.062864] (global_user) StdoutLine: {'line': b'-- Found CAMD library: /usr/lib/x86_64-linux-gnu/libcamd.so\n'}
+[2.063212] (global_user) StdoutLine: {'line': b'-- Found CCOLAMD headers in: /usr/include/suitesparse\n'}
+[2.063892] (global_user) StdoutLine: {'line': b'-- Found CCOLAMD library: /usr/lib/x86_64-linux-gnu/libccolamd.so\n'}
+[2.064204] (global_user) StdoutLine: {'line': b'-- Found CHOLMOD headers in: /usr/include/suitesparse\n'}
+[2.064795] (global_user) StdoutLine: {'line': b'-- Found CHOLMOD library: /usr/lib/x86_64-linux-gnu/libcholmod.so\n'}
+[2.065136] (global_user) StdoutLine: {'line': b'-- Found COLAMD headers in: /usr/include/suitesparse\n'}
+[2.065727] (global_user) StdoutLine: {'line': b'-- Found COLAMD library: /usr/lib/x86_64-linux-gnu/libcolamd.so\n'}
+[2.066211] (global_user) StdoutLine: {'line': b'-- Found SPQR headers in: /usr/include/suitesparse\n'}
+[2.066785] (global_user) StdoutLine: {'line': b'-- Found SPQR library: /usr/lib/x86_64-linux-gnu/libspqr.so\n'}
+[2.067139] (global_user) StdoutLine: {'line': b'-- Found Config headers in: /usr/include/suitesparse\n'}
+[2.067734] (global_user) StdoutLine: {'line': b'-- Found Config library: /usr/lib/x86_64-linux-gnu/libsuitesparseconfig.so\n'}
+[2.068545] (global_user) StdoutLine: {'line': b'-- Found Intel Thread Building Blocks (TBB) library (2020.2 / 11102) include location: . Assuming SuiteSparseQR was compiled with TBB.\n'}
+[2.068700] (global_user) StdoutLine: {'line': b'-- Looking for shm_open in rt\n'}
+[2.102300] (-) TimerEvent: {}
+[2.118470] (global_user) StdoutLine: {'line': b'-- Looking for shm_open in rt - found\n'}
+[2.118676] (global_user) StdoutLine: {'line': b'-- Adding librt to SuiteSparse_config libraries (required on Linux & Unix [not OSX] if SuiteSparse is compiled with timing).\n'}
+[2.123554] (global_user) StdoutLine: {'line': b'-- Found METIS: /usr/include (found version "5.1.0") \n'}
+[2.125211] (global_user) StdoutLine: {'line': b'-- Found SuiteSparse: /usr/include/suitesparse (found suitable version "5.7.1", minimum required is "5.7.1") found components: AMD CAMD CCOLAMD CHOLMOD COLAMD SPQR Config \n'}
+[2.126220] (global_user) StdoutLine: {'line': b'-- Found required Ceres dependency: Eigen version 3.4.0 in /usr/local/share/eigen3/cmake\n'}
+[2.129637] (global_user) StdoutLine: {'line': b'-- Found required Ceres dependency: glog\n'}
+[2.133636] (global_user) StdoutLine: {'line': b'-- Found required Ceres dependency: gflags\n'}
+[2.134224] (global_user) StdoutLine: {'line': b'-- Found Ceres version: 2.1.0 installed in: /usr/local with components: [EigenSparse, SparseLinearAlgebraLibrary, LAPACK, SuiteSparse, CXSparse, SchurSpecializations, Multithreading]\n'}
+[2.139296] (global_user) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.10.7 (/opt/ros/galactic/share/ament_lint_auto/cmake)\n'}
+[2.202442] (-) TimerEvent: {}
+[2.240047] (global_user) StdoutLine: {'line': b"-- Added test 'copyright' to check source files copyright and LICENSE\n"}
+[2.241502] (global_user) StdoutLine: {'line': b"-- Added test 'cppcheck' to perform static code analysis on C / C++ code\n"}
+[2.241794] (global_user) StdoutLine: {'line': b'-- Configured cppcheck include dirs: /home/liyuhang/Desktop/TUP-Vision-2023-Based/src/global_user/include;$<BUILD_INTERFACE:/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/global_user/include>\n'}
+[2.241929] (global_user) StdoutLine: {'line': b'-- Configured cppcheck exclude dirs and/or files: \n'}
+[2.243077] (global_user) StdoutLine: {'line': b"-- Added test 'cpplint' to check C / C++ code against the Google style\n"}
+[2.243211] (global_user) StdoutLine: {'line': b'-- Configured cpplint exclude dirs and/or files: \n'}
+[2.244070] (global_user) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[2.245564] (global_user) StdoutLine: {'line': b"-- Added test 'uncrustify' to check C / C++ code style\n"}
+[2.245668] (global_user) StdoutLine: {'line': b'-- Configured uncrustify additional arguments: \n'}
+[2.246145] (global_user) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[2.248604] (global_user) StdoutLine: {'line': b'-- Configuring done\n'}
+[2.256411] (global_user) StdoutLine: {'line': b'-- Generating done\n'}
+[2.258081] (global_user) StdoutLine: {'line': b'-- Build files have been written to: /home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user\n'}
+[2.266290] (global_user) CommandEnded: {'returncode': 0}
+[2.267092] (global_user) JobProgress: {'identifier': 'global_user', 'progress': 'build'}
+[2.268934] (global_user) Command: {'cmd': ['/usr/local/bin/cmake', '--build', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user', '--', '-j8', '-l8'], 'cwd': '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'liyuhang'), ('SSH_AGENT_PID', '2728'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/intel/openvino_2022/tools/compile_tool:/opt/intel/openvino_2022/runtime/3rdparty/tbb/lib::/opt/intel/openvino_2022/runtime/3rdparty/hddl/lib:/opt/intel/openvino_2022/runtime/lib/intel64:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HDDL_INSTALL_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/hddl'), ('TBB_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/tbb/cmake'), ('HOME', '/home/liyuhang'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.67.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('INTEL_OPENVINO_DIR', '/opt/intel/openvino_2022'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2495'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '10785'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu.mandatory.path'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'liyuhang'), ('JOURNAL_STREAM', '8:49895'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', ':/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu.default.path'), ('USERNAME', 'liyuhang'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/liyuhang/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/liyuhang-Inspiron-7590:@/tmp/.ICE-unix/2766,unix/liyuhang-Inspiron-7590:/tmp/.ICE-unix/2766'), ('INVOCATION_ID', '6cd134efe3f642ddac467d2718960722'), ('XDG_MENU_PREFIX', 'gnome-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-048da31f87.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('ngraph_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('QT_ACCESSIBILITY', '1'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('InferenceEngine_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:/opt/ros/galactic/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:'), ('COLCON', '1'), ('OpenVINO_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[2.289209] (global_user) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_user\x1b[0m\n'}
+[2.302607] (-) TimerEvent: {}
+[2.403310] (-) TimerEvent: {}
+[2.472932] (global_user) StdoutLine: {'line': b'[ 33%] \x1b[32mBuilding CXX object CMakeFiles/global_user.dir/src/global_user.cpp.o\x1b[0m\n'}
+[2.473487] (global_user) StdoutLine: {'line': b'[ 66%] \x1b[32mBuilding CXX object CMakeFiles/global_user.dir/src/coordsolver.cpp.o\x1b[0m\n'}
+[2.503438] (-) TimerEvent: {}
+[2.603706] (-) TimerEvent: {}
+[2.703968] (-) TimerEvent: {}
+[2.804236] (-) TimerEvent: {}
+[2.904436] (-) TimerEvent: {}
+[3.004722] (-) TimerEvent: {}
+[3.105018] (-) TimerEvent: {}
+[3.205306] (-) TimerEvent: {}
+[3.305592] (-) TimerEvent: {}
+[3.405872] (-) TimerEvent: {}
+[3.506168] (-) TimerEvent: {}
+[3.606460] (-) TimerEvent: {}
+[3.706745] (-) TimerEvent: {}
+[3.807027] (-) TimerEvent: {}
+[3.907314] (-) TimerEvent: {}
+[4.007596] (-) TimerEvent: {}
+[4.107885] (-) TimerEvent: {}
+[4.208167] (-) TimerEvent: {}
+[4.308454] (-) TimerEvent: {}
+[4.408759] (-) TimerEvent: {}
+[4.509031] (-) TimerEvent: {}
+[4.542372] (global_user) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:\x1b[m\x1b[K In function \xe2\x80\x98\x1b[01m\x1b[Kstd::string global_user::getParent(std::string)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[4.542555] (global_user) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:203:51:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kcomparison of integer expressions of different signedness: \xe2\x80\x98\x1b[01m\x1b[Kint\x1b[m\x1b[K\xe2\x80\x99 and \xe2\x80\x98\x1b[01m\x1b[Kconst size_type\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Kconst long unsigned int\x1b[m\x1b[K\xe2\x80\x99} [\x1b[01;35m\x1b[K-Wsign-compare\x1b[m\x1b[K]\n'}
+[4.542630] (global_user) StderrLine: {'line': b'  203 |         for(auto i = 0; i = path_tmp.find("/"), i != path_tmp.npos; path_tmp = path_tmp.substr(i + 1))\n'}
+[4.542772] (global_user) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:\x1b[m\x1b[K In function \xe2\x80\x98\x1b[01m\x1b[Kstd::vector<std::__cxx11::basic_string<char> > global_user::generatePathTree(std::string)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[4.542854] (global_user) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/global_user/src/global_user.cpp:223:47:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kcomparison of integer expressions of different signedness: \xe2\x80\x98\x1b[01m\x1b[Kint\x1b[m\x1b[K\xe2\x80\x99 and \xe2\x80\x98\x1b[01m\x1b[Kconst size_type\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Kconst long unsigned int\x1b[m\x1b[K\xe2\x80\x99} [\x1b[01;35m\x1b[K-Wsign-compare\x1b[m\x1b[K]\n'}
+[4.542917] (global_user) StderrLine: {'line': b'  223 |         for(auto i = 0; i = path.find("/"), i != path.npos; path = path.substr(i + 1))\n'}
+[4.609155] (-) TimerEvent: {}
+[4.709435] (-) TimerEvent: {}
+[4.809700] (-) TimerEvent: {}
+[4.909965] (-) TimerEvent: {}
+[5.010241] (-) TimerEvent: {}
+[5.110494] (-) TimerEvent: {}
+[5.210756] (-) TimerEvent: {}
+[5.311032] (-) TimerEvent: {}
+[5.411296] (-) TimerEvent: {}
+[5.511565] (-) TimerEvent: {}
+[5.611821] (-) TimerEvent: {}
+[5.712081] (-) TimerEvent: {}
+[5.812333] (-) TimerEvent: {}
+[5.912599] (-) TimerEvent: {}
+[6.012846] (-) TimerEvent: {}
+[6.113121] (-) TimerEvent: {}
+[6.213372] (-) TimerEvent: {}
+[6.313623] (-) TimerEvent: {}
+[6.413874] (-) TimerEvent: {}
+[6.514130] (-) TimerEvent: {}
+[6.614357] (-) TimerEvent: {}
+[6.714618] (-) TimerEvent: {}
+[6.814869] (-) TimerEvent: {}
+[6.915122] (-) TimerEvent: {}
+[6.997020] (global_user) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX shared library libglobal_user.so\x1b[0m\n'}
+[7.015247] (-) TimerEvent: {}
+[7.115537] (-) TimerEvent: {}
+[7.215923] (-) TimerEvent: {}
+[7.227628] (global_user) StdoutLine: {'line': b'[100%] Built target global_user\n'}
+[7.231688] (global_user) CommandEnded: {'returncode': 0}
+[7.254131] (global_user) JobProgress: {'identifier': 'global_user', 'progress': 'install'}
+[7.260495] (global_user) Command: {'cmd': ['/usr/local/bin/cmake', '--install', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user'], 'cwd': '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'liyuhang'), ('SSH_AGENT_PID', '2728'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/intel/openvino_2022/tools/compile_tool:/opt/intel/openvino_2022/runtime/3rdparty/tbb/lib::/opt/intel/openvino_2022/runtime/3rdparty/hddl/lib:/opt/intel/openvino_2022/runtime/lib/intel64:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HDDL_INSTALL_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/hddl'), ('TBB_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/tbb/cmake'), ('HOME', '/home/liyuhang'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.67.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('INTEL_OPENVINO_DIR', '/opt/intel/openvino_2022'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2495'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '10785'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu.mandatory.path'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'liyuhang'), ('JOURNAL_STREAM', '8:49895'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', ':/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu.default.path'), ('USERNAME', 'liyuhang'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/liyuhang/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/liyuhang-Inspiron-7590:@/tmp/.ICE-unix/2766,unix/liyuhang-Inspiron-7590:/tmp/.ICE-unix/2766'), ('INVOCATION_ID', '6cd134efe3f642ddac467d2718960722'), ('XDG_MENU_PREFIX', 'gnome-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-048da31f87.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('ngraph_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('QT_ACCESSIBILITY', '1'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('InferenceEngine_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:/opt/ros/galactic/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:'), ('COLCON', '1'), ('OpenVINO_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[7.263576] (global_user) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[7.263753] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/library_path.sh\n'}
+[7.263891] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/library_path.dsv\n'}
+[7.264030] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/include\n'}
+[7.264125] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/include/global_user\n'}
+[7.264204] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/include/global_user/global_user.hpp\n'}
+[7.264304] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/include/coordsolver.hpp\n'}
+[7.264561] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/lib/libglobal_user.so\n'}
+[7.268506] (global_user) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/lib/libglobal_user.so" to ""\n'}
+[7.268678] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config\n'}
+[7.268799] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/autoaim.yaml\n'}
+[7.268929] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/camera_ros.yaml\n'}
+[7.269051] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/buff.yaml\n'}
+[7.269146] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/camera.yaml\n'}
+[7.269251] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/filter_param.yaml\n'}
+[7.269362] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/ament_index/resource_index/package_run_dependencies/global_user\n'}
+[7.269478] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/ament_index/resource_index/parent_prefix_path/global_user\n'}
+[7.269604] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/ament_prefix_path.sh\n'}
+[7.269722] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/ament_prefix_path.dsv\n'}
+[7.269850] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/path.sh\n'}
+[7.269998] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/path.dsv\n'}
+[7.270144] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.bash\n'}
+[7.270263] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.sh\n'}
+[7.270389] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.zsh\n'}
+[7.270510] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.dsv\n'}
+[7.270625] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/package.dsv\n'}
+[7.270807] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/ament_index/resource_index/packages/global_user\n'}
+[7.271012] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userExport.cmake\n'}
+[7.271171] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userExport-noconfig.cmake\n'}
+[7.271326] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[7.271464] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_libraries-extras.cmake\n'}
+[7.271612] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[7.271752] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[7.271897] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userConfig.cmake\n'}
+[7.272013] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userConfig-version.cmake\n'}
+[7.272125] (global_user) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/package.xml\n'}
+[7.273333] (global_user) CommandEnded: {'returncode': 0}
+[7.317983] (-) TimerEvent: {}
+[7.330666] (global_user) JobEnded: {'identifier': 'global_user', 'rc': 0}
+[7.331705] (-) EventReactorShutdown: {}

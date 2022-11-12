@@ -1,0 +1,17 @@
+CMake Error at CMakeLists.txt:39 (find_package):
+  By not providing "Findglobal_interface.cmake" in CMAKE_MODULE_PATH this
+  project has asked CMake to find a package configuration file provided by
+  "global_interface", but CMake did not find one.
+
+  Could not find a package configuration file provided by "global_interface"
+  with any of the following names:
+
+    global_interfaceConfig.cmake
+    global_interface-config.cmake
+
+  Add the installation prefix of "global_interface" to CMAKE_PREFIX_PATH or
+  set "global_interface_DIR" to a directory containing one of the above
+  files.  If "global_interface" provides a separate development package or
+  SDK, be sure it has been installed.
+
+

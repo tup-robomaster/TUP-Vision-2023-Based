@@ -1,0 +1,40 @@
+[0.020s] Invoking command in '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/galactic /usr/local/bin/cmake --build /home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user -- -j8 -l8
+[0.055s] [100%] Built target global_user
+[0.059s] Invoked command in '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/galactic /usr/local/bin/cmake --build /home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user -- -j8 -l8
+[0.086s] Invoking command in '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/galactic /usr/local/bin/cmake --install /home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user
+[0.089s] -- Install configuration: ""
+[0.090s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/library_path.sh
+[0.090s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/library_path.dsv
+[0.090s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/include
+[0.090s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/include/global_user
+[0.090s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/include/global_user/global_user.hpp
+[0.090s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/include/coordsolver.hpp
+[0.091s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/lib/libglobal_user.so
+[0.091s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config
+[0.091s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/autoaim.yaml
+[0.091s] -- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/camera_ros.yaml
+[0.091s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/buff.yaml
+[0.091s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/camera.yaml
+[0.091s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/config/filter_param.yaml
+[0.092s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/ament_index/resource_index/package_run_dependencies/global_user
+[0.092s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/ament_index/resource_index/parent_prefix_path/global_user
+[0.092s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/ament_prefix_path.sh
+[0.092s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/ament_prefix_path.dsv
+[0.093s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/path.sh
+[0.093s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/environment/path.dsv
+[0.094s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.bash
+[0.095s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.sh
+[0.095s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.zsh
+[0.095s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/local_setup.dsv
+[0.095s] -- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/package.dsv
+[0.095s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/ament_index/resource_index/packages/global_user
+[0.095s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userExport.cmake
+[0.095s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userExport-noconfig.cmake
+[0.096s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_include_directories-extras.cmake
+[0.096s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_libraries-extras.cmake
+[0.096s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_targets-extras.cmake
+[0.096s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/ament_cmake_export_dependencies-extras.cmake
+[0.096s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userConfig.cmake
+[0.097s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake/global_userConfig-version.cmake
+[0.097s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/package.xml
+[0.097s] Invoked command in '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/galactic /usr/local/bin/cmake --install /home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_user

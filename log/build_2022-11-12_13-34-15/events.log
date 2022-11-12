@@ -1,0 +1,355 @@
+[0.000000] (-) TimerEvent: {}
+[0.000272] (-) JobUnselected: {'identifier': 'arm_controller'}
+[0.000745] (-) JobUnselected: {'identifier': 'armor_detector'}
+[0.001060] (-) JobUnselected: {'identifier': 'armor_processor'}
+[0.001113] (-) JobUnselected: {'identifier': 'auto_navigation'}
+[0.001622] (-) JobUnselected: {'identifier': 'binocular'}
+[0.002145] (-) JobUnselected: {'identifier': 'buff'}
+[0.002209] (-) JobUnselected: {'identifier': 'filter'}
+[0.002275] (-) JobUnselected: {'identifier': 'global_interface'}
+[0.002334] (-) JobUnselected: {'identifier': 'global_user'}
+[0.002391] (-) JobUnselected: {'identifier': 'rmoss_auto_aim'}
+[0.002447] (-) JobUnselected: {'identifier': 'rmoss_base'}
+[0.002504] (-) JobUnselected: {'identifier': 'rmoss_cam'}
+[0.002560] (-) JobUnselected: {'identifier': 'rmoss_core'}
+[0.002628] (-) JobUnselected: {'identifier': 'rmoss_daheng_driver'}
+[0.002676] (-) JobUnselected: {'identifier': 'rmoss_interfaces'}
+[0.002724] (-) JobUnselected: {'identifier': 'rmoss_projectile_motion'}
+[0.002769] (-) JobUnselected: {'identifier': 'rmoss_util'}
+[0.002815] (-) JobUnselected: {'identifier': 'serialport'}
+[0.002909] (camera_driver) JobQueued: {'identifier': 'camera_driver', 'dependencies': OrderedDict([('global_interface', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface'), ('global_user', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user')])}
+[0.002971] (camera_driver) JobStarted: {'identifier': 'camera_driver'}
+[0.019226] (camera_driver) JobProgress: {'identifier': 'camera_driver', 'progress': 'cmake'}
+[0.019524] (camera_driver) Command: {'cmd': ['/usr/local/bin/cmake', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/camera_driver', '-DCMAKE_INSTALL_PREFIX=/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver'], 'cwd': '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/camera_driver', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'liyuhang'), ('SSH_AGENT_PID', '2728'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/lib:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/intel/openvino_2022/tools/compile_tool:/opt/intel/openvino_2022/runtime/3rdparty/tbb/lib:/opt/intel/openvino_2022/runtime/3rdparty/hddl/lib:/opt/intel/openvino_2022/runtime/lib/intel64:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32'), ('HDDL_INSTALL_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/hddl'), ('TBB_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/tbb/cmake'), ('HOME', '/home/liyuhang'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.67.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('INTEL_OPENVINO_DIR', '/opt/intel/openvino_2022'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2495'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '10785'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu.mandatory.path'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'liyuhang'), ('JOURNAL_STREAM', '8:49895'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', ':/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu.default.path'), ('USERNAME', 'liyuhang'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/liyuhang/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/liyuhang-Inspiron-7590:@/tmp/.ICE-unix/2766,unix/liyuhang-Inspiron-7590:/tmp/.ICE-unix/2766'), ('INVOCATION_ID', '6cd134efe3f642ddac467d2718960722'), ('XDG_MENU_PREFIX', 'gnome-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-048da31f87.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('ngraph_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('QT_ACCESSIBILITY', '1'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('InferenceEngine_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/camera_driver'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:/opt/ros/galactic/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3'), ('COLCON', '1'), ('OpenVINO_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic')]), 'shell': False}
+[0.069450] (camera_driver) StdoutLine: {'line': b'-- The C compiler identification is GNU 9.4.0\n'}
+[0.099838] (-) TimerEvent: {}
+[0.124041] (camera_driver) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 9.4.0\n'}
+[0.131641] (camera_driver) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.177841] (camera_driver) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.186930] (camera_driver) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[0.187181] (camera_driver) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.187488] (camera_driver) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.190476] (camera_driver) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.199906] (-) TimerEvent: {}
+[0.250221] (camera_driver) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.259705] (camera_driver) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.260091] (camera_driver) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.260619] (camera_driver) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.262576] (camera_driver) StdoutLine: {'line': b'-- Found ament_cmake: 1.1.5 (/opt/ros/galactic/share/ament_cmake/cmake)\n'}
+[0.285199] (camera_driver) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") \n'}
+[0.285459] (camera_driver) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[0.299981] (-) TimerEvent: {}
+[0.357636] (camera_driver) StdoutLine: {'line': b'-- Found rclcpp: 9.2.1 (/opt/ros/galactic/share/rclcpp/cmake)\n'}
+[0.399802] (camera_driver) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.400044] (-) TimerEvent: {}
+[0.405956] (camera_driver) StdoutLine: {'line': b'-- Found rosidl_adapter: 2.2.2 (/opt/ros/galactic/share/rosidl_adapter/cmake)\n'}
+[0.479686] (camera_driver) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "1.1.1f")  \n'}
+[0.500154] (-) TimerEvent: {}
+[0.511807] (camera_driver) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/galactic/include  \n'}
+[0.585450] (camera_driver) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.600242] (-) TimerEvent: {}
+[0.641907] (camera_driver) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)\n'}
+[0.644326] (camera_driver) StdoutLine: {'line': b'-- Found rmw_cyclonedds_cpp: 0.22.5 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)\n'}
+[0.661616] (camera_driver) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_cyclonedds_cpp' as default\n"}
+[0.662411] (camera_driver) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[0.700370] (-) TimerEvent: {}
+[0.714706] (camera_driver) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[0.714963] (camera_driver) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[0.766710] (camera_driver) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed\n'}
+[0.766939] (camera_driver) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads\n'}
+[0.800486] (-) TimerEvent: {}
+[0.806241] (camera_driver) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads - not found\n'}
+[0.806576] (camera_driver) StdoutLine: {'line': b'-- Looking for pthread_create in pthread\n'}
+[0.858697] (camera_driver) StdoutLine: {'line': b'-- Looking for pthread_create in pthread - found\n'}
+[0.860183] (camera_driver) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[0.900593] (-) TimerEvent: {}
+[0.988328] (camera_driver) StdoutLine: {'line': b'-- Found rclcpp_components: 9.2.1 (/opt/ros/galactic/share/rclcpp_components/cmake)\n'}
+[1.000693] (-) TimerEvent: {}
+[1.044382] (camera_driver) StdoutLine: {'line': b'-- Found OpenCV: /usr/local (found version "4.5.5") \n'}
+[1.045522] (camera_driver) StdoutLine: {'line': b'-- Found geometry_msgs: 2.2.4 (/opt/ros/galactic/share/geometry_msgs/cmake)\n'}
+[1.075160] (camera_driver) StdoutLine: {'line': b'-- Found tf2_geometry_msgs: 0.17.4 (/opt/ros/galactic/share/tf2_geometry_msgs/cmake)\n'}
+[1.082088] (camera_driver) StdoutLine: {'line': b'-- Found eigen3_cmake_module: 0.1.1 (/opt/ros/galactic/share/eigen3_cmake_module/cmake)\n'}
+[1.084535] (camera_driver) StdoutLine: {'line': b'-- Found Eigen3: TRUE (found version "3.4.0") \n'}
+[1.100794] (-) TimerEvent: {}
+[1.201015] (-) TimerEvent: {}
+[1.301276] (-) TimerEvent: {}
+[1.379115] (camera_driver) StdoutLine: {'line': b'-- Found rclpy: 1.9.2 (/opt/ros/galactic/share/rclpy/cmake)\n'}
+[1.380166] (camera_driver) StdoutLine: {'line': b'-- Found rclcpp_lifecycle: 9.2.1 (/opt/ros/galactic/share/rclcpp_lifecycle/cmake)\n'}
+[1.401369] (-) TimerEvent: {}
+[1.408881] (camera_driver) StdoutLine: {'line': b'-- Found laser_geometry: 2.2.1 (/opt/ros/galactic/share/laser_geometry/cmake)\n'}
+[1.412962] (camera_driver) StdoutLine: {'line': b'-- Found sensor_msgs: 2.2.4 (/opt/ros/galactic/share/sensor_msgs/cmake)\n'}
+[1.474981] (camera_driver) StdoutLine: {'line': b'-- Found tf2_sensor_msgs: 0.17.4 (/opt/ros/galactic/share/tf2_sensor_msgs/cmake)\n'}
+[1.489660] (camera_driver) StdoutLine: {'line': b'-- Found visualization_msgs: 2.2.4 (/opt/ros/galactic/share/visualization_msgs/cmake)\n'}
+[1.501472] (-) TimerEvent: {}
+[1.553433] (camera_driver) StdoutLine: {'line': b'-- Found angles: 1.14.0 (/opt/ros/galactic/share/angles/cmake)\n'}
+[1.555335] (camera_driver) StdoutLine: {'line': b'-- Found robot_state_publisher: 2.5.3 (/opt/ros/galactic/share/robot_state_publisher/cmake)\n'}
+[1.601589] (-) TimerEvent: {}
+[1.615096] (camera_driver) StdoutLine: {'line': b'-- Found global_user: 0.0.0 (/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/share/global_user/cmake)\n'}
+[1.701711] (-) TimerEvent: {}
+[1.802056] (-) TimerEvent: {}
+[1.902602] (-) TimerEvent: {}
+[2.002893] (-) TimerEvent: {}
+[2.040369] (camera_driver) StdoutLine: {'line': b'-- Found BLAS: /usr/lib/x86_64-linux-gnu/libopenblas.so  \n'}
+[2.103094] (-) TimerEvent: {}
+[2.183679] (camera_driver) StdoutLine: {'line': b'-- Found AMD headers in: /usr/include/suitesparse\n'}
+[2.184523] (camera_driver) StdoutLine: {'line': b'-- Found AMD library: /usr/lib/x86_64-linux-gnu/libamd.so\n'}
+[2.184896] (camera_driver) StdoutLine: {'line': b'-- Found CAMD headers in: /usr/include/suitesparse\n'}
+[2.185599] (camera_driver) StdoutLine: {'line': b'-- Found CAMD library: /usr/lib/x86_64-linux-gnu/libcamd.so\n'}
+[2.185988] (camera_driver) StdoutLine: {'line': b'-- Found CCOLAMD headers in: /usr/include/suitesparse\n'}
+[2.186543] (camera_driver) StdoutLine: {'line': b'-- Found CCOLAMD library: /usr/lib/x86_64-linux-gnu/libccolamd.so\n'}
+[2.186881] (camera_driver) StdoutLine: {'line': b'-- Found CHOLMOD headers in: /usr/include/suitesparse\n'}
+[2.187523] (camera_driver) StdoutLine: {'line': b'-- Found CHOLMOD library: /usr/lib/x86_64-linux-gnu/libcholmod.so\n'}
+[2.187755] (camera_driver) StdoutLine: {'line': b'-- Found COLAMD headers in: /usr/include/suitesparse\n'}
+[2.188505] (camera_driver) StdoutLine: {'line': b'-- Found COLAMD library: /usr/lib/x86_64-linux-gnu/libcolamd.so\n'}
+[2.188847] (camera_driver) StdoutLine: {'line': b'-- Found SPQR headers in: /usr/include/suitesparse\n'}
+[2.189442] (camera_driver) StdoutLine: {'line': b'-- Found SPQR library: /usr/lib/x86_64-linux-gnu/libspqr.so\n'}
+[2.189783] (camera_driver) StdoutLine: {'line': b'-- Found Config headers in: /usr/include/suitesparse\n'}
+[2.190394] (camera_driver) StdoutLine: {'line': b'-- Found Config library: /usr/lib/x86_64-linux-gnu/libsuitesparseconfig.so\n'}
+[2.191157] (camera_driver) StdoutLine: {'line': b'-- Found Intel Thread Building Blocks (TBB) library (2020.2 / 11102) include location: . Assuming SuiteSparseQR was compiled with TBB.\n'}
+[2.191286] (camera_driver) StdoutLine: {'line': b'-- Looking for shm_open in rt\n'}
+[2.203196] (-) TimerEvent: {}
+[2.250198] (camera_driver) StdoutLine: {'line': b'-- Looking for shm_open in rt - found\n'}
+[2.250355] (camera_driver) StdoutLine: {'line': b'-- Adding librt to SuiteSparse_config libraries (required on Linux & Unix [not OSX] if SuiteSparse is compiled with timing).\n'}
+[2.253764] (camera_driver) StdoutLine: {'line': b'-- Found METIS: /usr/include (found version "5.1.0") \n'}
+[2.266703] (camera_driver) StdoutLine: {'line': b'-- Found global_interface: 0.0.0 (/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake)\n'}
+[2.303292] (-) TimerEvent: {}
+[2.403615] (-) TimerEvent: {}
+[2.417824] (camera_driver) StdoutLine: {'line': b'-- Found image_transport: 2.5.0 (/opt/ros/galactic/share/image_transport/cmake)\n'}
+[2.503847] (-) TimerEvent: {}
+[2.525224] (camera_driver) StdoutLine: {'line': b'-- Found camera_info_manager: 2.5.0 (/opt/ros/galactic/share/camera_info_manager/cmake)\n'}
+[2.604194] (-) TimerEvent: {}
+[2.704952] (-) TimerEvent: {}
+[2.805514] (-) TimerEvent: {}
+[2.905976] (-) TimerEvent: {}
+[2.909420] (camera_driver) StdoutLine: {'line': b'-- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.8.so (found version "3.8.10") \n'}
+[3.006169] (-) TimerEvent: {}
+[3.106698] (-) TimerEvent: {}
+[3.206930] (-) TimerEvent: {}
+[3.278970] (camera_driver) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3.8 (found version "3.8.10") found components: Interpreter Development Development.Module Development.Embed \n'}
+[3.307012] (-) TimerEvent: {}
+[3.407270] (-) TimerEvent: {}
+[3.507531] (-) TimerEvent: {}
+[3.542516] (camera_driver) StdoutLine: {'line': b'-- Found Python3: /usr/include/python3.8 (found version "3.8.10") found components: NumPy Interpreter Development.Module \n'}
+[3.607653] (-) TimerEvent: {}
+[3.707877] (-) TimerEvent: {}
+[3.808132] (-) TimerEvent: {}
+[3.864299] (camera_driver) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.10.7 (/opt/ros/galactic/share/ament_lint_auto/cmake)\n'}
+[3.908213] (-) TimerEvent: {}
+[3.938029] (camera_driver) StdoutLine: {'line': b"-- Added test 'copyright' to check source files copyright and LICENSE\n"}
+[3.940922] (camera_driver) StdoutLine: {'line': b"-- Added test 'cppcheck' to perform static code analysis on C / C++ code\n"}
+[3.942329] (camera_driver) StdoutLine: {'line': b'-- Configured cppcheck include dirs: /home/liyuhang/Desktop/TUP-Vision-2023-Based/src/camera_driver/include;/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/camera_driver/dependencies/hik_sdk/include;/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/camera_driver/dependencies/daheng_sdk/include\n'}
+[3.942491] (camera_driver) StdoutLine: {'line': b'-- Configured cppcheck exclude dirs and/or files: \n'}
+[3.944910] (camera_driver) StdoutLine: {'line': b"-- Added test 'cpplint' to check C / C++ code against the Google style\n"}
+[3.945013] (camera_driver) StdoutLine: {'line': b'-- Configured cpplint exclude dirs and/or files: \n'}
+[3.945604] (camera_driver) StdoutLine: {'line': b"-- Added test 'flake8' to check Python code syntax and style conventions\n"}
+[3.946486] (camera_driver) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[3.947087] (camera_driver) StdoutLine: {'line': b"-- Added test 'pep257' to check Python code against some of the style conventions in PEP 257\n"}
+[3.949433] (camera_driver) StdoutLine: {'line': b"-- Added test 'uncrustify' to check C / C++ code style\n"}
+[3.949528] (camera_driver) StdoutLine: {'line': b'-- Configured uncrustify additional arguments: \n'}
+[3.950072] (camera_driver) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[3.951340] (camera_driver) StdoutLine: {'line': b'-- Configuring done\n'}
+[4.008412] (-) TimerEvent: {}
+[4.108887] (-) TimerEvent: {}
+[4.209302] (-) TimerEvent: {}
+[4.220074] (camera_driver) StdoutLine: {'line': b'-- Generating done\n'}
+[4.221957] (camera_driver) StdoutLine: {'line': b'-- Build files have been written to: /home/liyuhang/Desktop/TUP-Vision-2023-Based/build/camera_driver\n'}
+[4.234911] (camera_driver) CommandEnded: {'returncode': 0}
+[4.235906] (camera_driver) JobProgress: {'identifier': 'camera_driver', 'progress': 'build'}
+[4.236690] (camera_driver) Command: {'cmd': ['/usr/local/bin/cmake', '--build', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/camera_driver', '--', '-j8', '-l8'], 'cwd': '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/camera_driver', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'liyuhang'), ('SSH_AGENT_PID', '2728'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/lib:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/intel/openvino_2022/tools/compile_tool:/opt/intel/openvino_2022/runtime/3rdparty/tbb/lib:/opt/intel/openvino_2022/runtime/3rdparty/hddl/lib:/opt/intel/openvino_2022/runtime/lib/intel64:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32'), ('HDDL_INSTALL_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/hddl'), ('TBB_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/tbb/cmake'), ('HOME', '/home/liyuhang'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.67.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('INTEL_OPENVINO_DIR', '/opt/intel/openvino_2022'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2495'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '10785'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu.mandatory.path'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'liyuhang'), ('JOURNAL_STREAM', '8:49895'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', ':/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu.default.path'), ('USERNAME', 'liyuhang'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/liyuhang/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/liyuhang-Inspiron-7590:@/tmp/.ICE-unix/2766,unix/liyuhang-Inspiron-7590:/tmp/.ICE-unix/2766'), ('INVOCATION_ID', '6cd134efe3f642ddac467d2718960722'), ('XDG_MENU_PREFIX', 'gnome-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-048da31f87.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('ngraph_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('QT_ACCESSIBILITY', '1'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('InferenceEngine_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/camera_driver'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:/opt/ros/galactic/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3'), ('COLCON', '1'), ('OpenVINO_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic')]), 'shell': False}
+[4.258513] (camera_driver) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target camera_driver\x1b[0m\n'}
+[4.309425] (-) TimerEvent: {}
+[4.409695] (-) TimerEvent: {}
+[4.510074] (-) TimerEvent: {}
+[4.610867] (-) TimerEvent: {}
+[4.676977] (camera_driver) StdoutLine: {'line': b'[ 10%] \x1b[32mBuilding CXX object CMakeFiles/camera_driver.dir/src/usb_driver/usb_cam.cpp.o\x1b[0m\n'}
+[4.678325] (camera_driver) StdoutLine: {'line': b'[ 20%] \x1b[32mBuilding CXX object CMakeFiles/camera_driver.dir/src/hik_driver/hik_camera.cpp.o\x1b[0m\n'}
+[4.678674] (camera_driver) StdoutLine: {'line': b'[ 30%] \x1b[32mBuilding CXX object CMakeFiles/camera_driver.dir/src/daheng_driver/daheng_camera.cpp.o\x1b[0m\n'}
+[4.710951] (-) TimerEvent: {}
+[4.811227] (-) TimerEvent: {}
+[4.911536] (-) TimerEvent: {}
+[5.011878] (-) TimerEvent: {}
+[5.112238] (-) TimerEvent: {}
+[5.212509] (-) TimerEvent: {}
+[5.312796] (-) TimerEvent: {}
+[5.413072] (-) TimerEvent: {}
+[5.513345] (-) TimerEvent: {}
+[5.613621] (-) TimerEvent: {}
+[5.713919] (-) TimerEvent: {}
+[5.814198] (-) TimerEvent: {}
+[5.914480] (-) TimerEvent: {}
+[6.014744] (-) TimerEvent: {}
+[6.115069] (-) TimerEvent: {}
+[6.215362] (-) TimerEvent: {}
+[6.315664] (-) TimerEvent: {}
+[6.415980] (-) TimerEvent: {}
+[6.516296] (-) TimerEvent: {}
+[6.616535] (-) TimerEvent: {}
+[6.716810] (-) TimerEvent: {}
+[6.817080] (-) TimerEvent: {}
+[6.917366] (-) TimerEvent: {}
+[7.017686] (-) TimerEvent: {}
+[7.117967] (-) TimerEvent: {}
+[7.218241] (-) TimerEvent: {}
+[7.318528] (-) TimerEvent: {}
+[7.418809] (-) TimerEvent: {}
+[7.519085] (-) TimerEvent: {}
+[7.619364] (-) TimerEvent: {}
+[7.719648] (-) TimerEvent: {}
+[7.819900] (-) TimerEvent: {}
+[7.839024] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kbool camera_driver::hik_camera::set_trigger_mode(unsigned int, const char*, const char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[7.839537] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:393:21:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Kacquisition_start\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-parameter\x1b[m\x1b[K]\n'}
+[7.839671] (camera_driver) StderrLine: {'line': b'  393 |         \x1b[01;35m\x1b[Kconst char* acquisition_start\x1b[m\x1b[K,\n'}
+[7.839758] (camera_driver) StderrLine: {'line': b'      |         \x1b[01;35m\x1b[K~~~~~~~~~~~~^~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[7.839873] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:394:21:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Kacquisition_stop\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-parameter\x1b[m\x1b[K]\n'}
+[7.839945] (camera_driver) StderrLine: {'line': b'  394 |         \x1b[01;35m\x1b[Kconst char* acquisition_stop\x1b[m\x1b[K,\n'}
+[7.840011] (camera_driver) StderrLine: {'line': b'      |         \x1b[01;35m\x1b[K~~~~~~~~~~~~^~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[7.840101] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:396:22:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Ktrigger_selector\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-parameter\x1b[m\x1b[K]\n'}
+[7.840163] (camera_driver) StderrLine: {'line': b'  396 |         \x1b[01;35m\x1b[Kunsigned int trigger_selector\x1b[m\x1b[K,\n'}
+[7.840222] (camera_driver) StderrLine: {'line': b'      |         \x1b[01;35m\x1b[K~~~~~~~~~~~~~^~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[7.840281] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:398:22:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Ktrigger_source_line\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-parameter\x1b[m\x1b[K]\n'}
+[7.840341] (camera_driver) StderrLine: {'line': b'  398 |         \x1b[01;35m\x1b[Kunsigned int trigger_source_line\x1b[m\x1b[K,\n'}
+[7.840400] (camera_driver) StderrLine: {'line': b'      |         \x1b[01;35m\x1b[K~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[7.840502] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:399:22:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Ktrigger_activation\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-parameter\x1b[m\x1b[K]\n'}
+[7.840612] (camera_driver) StderrLine: {'line': b'  399 |         \x1b[01;35m\x1b[Kunsigned int trigger_activation\x1b[m\x1b[K,\n'}
+[7.840687] (camera_driver) StderrLine: {'line': b'      |         \x1b[01;35m\x1b[K~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[7.840748] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:400:22:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Ktrigger_delay\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-parameter\x1b[m\x1b[K]\n'}
+[7.840862] (camera_driver) StderrLine: {'line': b'  400 |         \x1b[01;35m\x1b[Kunsigned int trigger_delay\x1b[m\x1b[K)\n'}
+[7.840981] (camera_driver) StderrLine: {'line': b'      |         \x1b[01;35m\x1b[K~~~~~~~~~~~~~^~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[7.841099] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kbool camera_driver::hik_camera::set_digital_io_control(unsigned int, unsigned int, bool, unsigned int)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[7.841225] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:510:5:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kno return statement in function returning non-void [\x1b[01;35m\x1b[K-Wreturn-type\x1b[m\x1b[K]\n'}
+[7.841345] (camera_driver) StderrLine: {'line': b'  510 |     \x1b[01;35m\x1b[K}\x1b[m\x1b[K\n'}
+[7.841465] (camera_driver) StderrLine: {'line': b'      |     \x1b[01;35m\x1b[K^\x1b[m\x1b[K\n'}
+[7.841581] (camera_driver) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp:474:22:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Ktrigger_selector\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-parameter\x1b[m\x1b[K]\n'}
+[7.841701] (camera_driver) StderrLine: {'line': b'  474 |         \x1b[01;35m\x1b[Kunsigned int trigger_selector\x1b[m\x1b[K)\n'}
+[7.841818] (camera_driver) StderrLine: {'line': b'      |         \x1b[01;35m\x1b[K~~~~~~~~~~~~~^~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[7.919986] (-) TimerEvent: {}
+[8.020259] (-) TimerEvent: {}
+[8.120537] (-) TimerEvent: {}
+[8.220833] (-) TimerEvent: {}
+[8.321132] (-) TimerEvent: {}
+[8.421424] (-) TimerEvent: {}
+[8.521701] (-) TimerEvent: {}
+[8.621972] (-) TimerEvent: {}
+[8.722251] (-) TimerEvent: {}
+[8.822522] (-) TimerEvent: {}
+[8.869186] (camera_driver) StdoutLine: {'line': b'[ 40%] \x1b[32m\x1b[1mLinking CXX shared library libcamera_driver.so\x1b[0m\n'}
+[8.922646] (-) TimerEvent: {}
+[8.991838] (camera_driver) StdoutLine: {'line': b'[ 40%] Built target camera_driver\n'}
+[8.996702] (camera_driver) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target usb_cam_driver_node\x1b[0m\n'}
+[8.996927] (camera_driver) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target daheng_cam_driver_node\x1b[0m\n'}
+[8.997050] (camera_driver) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target hik_cam_driver_node\x1b[0m\n'}
+[9.022734] (-) TimerEvent: {}
+[9.043403] (camera_driver) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/daheng_cam_driver_node.dir/src/daheng_driver/daheng_cam_node.cpp.o\x1b[0m\n'}
+[9.063437] (camera_driver) StdoutLine: {'line': b'[ 60%] \x1b[32mBuilding CXX object CMakeFiles/hik_cam_driver_node.dir/src/hik_driver/hik_cam_node.cpp.o\x1b[0m\n'}
+[9.069186] (camera_driver) StdoutLine: {'line': b'[ 70%] \x1b[32mBuilding CXX object CMakeFiles/usb_cam_driver_node.dir/src/usb_driver/usb_cam_node.cpp.o\x1b[0m\n'}
+[9.122851] (-) TimerEvent: {}
+[9.223141] (-) TimerEvent: {}
+[9.323453] (-) TimerEvent: {}
+[9.423754] (-) TimerEvent: {}
+[9.524074] (-) TimerEvent: {}
+[9.624371] (-) TimerEvent: {}
+[9.724669] (-) TimerEvent: {}
+[9.824976] (-) TimerEvent: {}
+[9.925279] (-) TimerEvent: {}
+[10.025591] (-) TimerEvent: {}
+[10.125881] (-) TimerEvent: {}
+[10.226187] (-) TimerEvent: {}
+[10.326480] (-) TimerEvent: {}
+[10.426789] (-) TimerEvent: {}
+[10.527100] (-) TimerEvent: {}
+[10.627426] (-) TimerEvent: {}
+[10.727729] (-) TimerEvent: {}
+[10.828040] (-) TimerEvent: {}
+[10.928331] (-) TimerEvent: {}
+[11.028627] (-) TimerEvent: {}
+[11.128919] (-) TimerEvent: {}
+[11.229222] (-) TimerEvent: {}
+[11.329525] (-) TimerEvent: {}
+[11.429841] (-) TimerEvent: {}
+[11.530136] (-) TimerEvent: {}
+[11.630446] (-) TimerEvent: {}
+[11.730759] (-) TimerEvent: {}
+[11.831060] (-) TimerEvent: {}
+[11.931364] (-) TimerEvent: {}
+[12.031664] (-) TimerEvent: {}
+[12.131975] (-) TimerEvent: {}
+[12.232263] (-) TimerEvent: {}
+[12.332557] (-) TimerEvent: {}
+[12.432868] (-) TimerEvent: {}
+[12.533213] (-) TimerEvent: {}
+[12.633504] (-) TimerEvent: {}
+[12.733798] (-) TimerEvent: {}
+[12.834098] (-) TimerEvent: {}
+[12.934384] (-) TimerEvent: {}
+[13.034665] (-) TimerEvent: {}
+[13.134918] (-) TimerEvent: {}
+[13.235221] (-) TimerEvent: {}
+[13.335511] (-) TimerEvent: {}
+[13.435772] (-) TimerEvent: {}
+[13.536030] (-) TimerEvent: {}
+[13.636313] (-) TimerEvent: {}
+[13.736589] (-) TimerEvent: {}
+[13.836871] (-) TimerEvent: {}
+[13.937103] (-) TimerEvent: {}
+[14.037410] (-) TimerEvent: {}
+[14.137698] (-) TimerEvent: {}
+[14.237993] (-) TimerEvent: {}
+[14.338296] (-) TimerEvent: {}
+[14.398249] (camera_driver) StdoutLine: {'line': b'[ 80%] \x1b[32m\x1b[1mLinking CXX executable daheng_cam_driver_node\x1b[0m\n'}
+[14.438413] (-) TimerEvent: {}
+[14.538711] (-) TimerEvent: {}
+[14.639009] (-) TimerEvent: {}
+[14.739296] (-) TimerEvent: {}
+[14.839583] (-) TimerEvent: {}
+[14.892178] (camera_driver) StdoutLine: {'line': b'[ 80%] Built target daheng_cam_driver_node\n'}
+[14.939700] (-) TimerEvent: {}
+[15.039949] (-) TimerEvent: {}
+[15.043483] (camera_driver) StdoutLine: {'line': b'[ 90%] \x1b[32m\x1b[1mLinking CXX executable hik_cam_driver_node\x1b[0m\n'}
+[15.140054] (-) TimerEvent: {}
+[15.240376] (-) TimerEvent: {}
+[15.324661] (camera_driver) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable usb_cam_driver_node\x1b[0m\n'}
+[15.340490] (-) TimerEvent: {}
+[15.440795] (-) TimerEvent: {}
+[15.485398] (camera_driver) StdoutLine: {'line': b'[100%] Built target hik_cam_driver_node\n'}
+[15.540896] (-) TimerEvent: {}
+[15.641165] (-) TimerEvent: {}
+[15.741437] (-) TimerEvent: {}
+[15.747803] (camera_driver) StdoutLine: {'line': b'[100%] Built target usb_cam_driver_node\n'}
+[15.751942] (camera_driver) CommandEnded: {'returncode': 0}
+[15.783785] (camera_driver) JobProgress: {'identifier': 'camera_driver', 'progress': 'install'}
+[15.790645] (camera_driver) Command: {'cmd': ['/usr/local/bin/cmake', '--install', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/camera_driver'], 'cwd': '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/camera_driver', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'liyuhang'), ('SSH_AGENT_PID', '2728'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/lib:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/intel/openvino_2022/tools/compile_tool:/opt/intel/openvino_2022/runtime/3rdparty/tbb/lib:/opt/intel/openvino_2022/runtime/3rdparty/hddl/lib:/opt/intel/openvino_2022/runtime/lib/intel64:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32'), ('HDDL_INSTALL_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/hddl'), ('TBB_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/tbb/cmake'), ('HOME', '/home/liyuhang'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.67.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('INTEL_OPENVINO_DIR', '/opt/intel/openvino_2022'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2495'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '10785'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu.mandatory.path'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'liyuhang'), ('JOURNAL_STREAM', '8:49895'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', ':/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu.default.path'), ('USERNAME', 'liyuhang'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/liyuhang/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/liyuhang-Inspiron-7590:@/tmp/.ICE-unix/2766,unix/liyuhang-Inspiron-7590:/tmp/.ICE-unix/2766'), ('INVOCATION_ID', '6cd134efe3f642ddac467d2718960722'), ('XDG_MENU_PREFIX', 'gnome-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-048da31f87.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('ngraph_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('QT_ACCESSIBILITY', '1'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('InferenceEngine_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/camera_driver'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:/opt/ros/galactic/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3'), ('COLCON', '1'), ('OpenVINO_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic')]), 'shell': False}
+[15.794165] (camera_driver) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[15.794416] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/libcamera_driver.so\n'}
+[15.794834] (camera_driver) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/libcamera_driver.so" to ""\n'}
+[15.795024] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/camera_driver/usb_cam_driver_node\n'}
+[15.796505] (camera_driver) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/camera_driver/usb_cam_driver_node" to ""\n'}
+[15.796717] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/camera_driver/hik_cam_driver_node\n'}
+[15.797937] (camera_driver) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/camera_driver/hik_cam_driver_node" to ""\n'}
+[15.798140] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/camera_driver/daheng_cam_driver_node\n'}
+[15.799262] (camera_driver) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib/camera_driver/daheng_cam_driver_node" to ""\n'}
+[15.799415] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/launch\n'}
+[15.799593] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/launch/hik_cam_node.launch.py\n'}
+[15.799739] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/launch/daheng_cam_node.launch.py\n'}
+[15.799899] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/launch/usb_cam_node.launch.py\n'}
+[15.800027] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/config\n'}
+[15.800172] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/config/camera.yaml\n'}
+[15.800312] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/ament_index/resource_index/package_run_dependencies/camera_driver\n'}
+[15.800444] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/ament_index/resource_index/parent_prefix_path/camera_driver\n'}
+[15.800593] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/environment/ament_prefix_path.sh\n'}
+[15.800741] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/environment/ament_prefix_path.dsv\n'}
+[15.800880] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/environment/path.sh\n'}
+[15.801021] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/environment/path.dsv\n'}
+[15.801186] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/local_setup.bash\n'}
+[15.801331] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/local_setup.sh\n'}
+[15.801468] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/local_setup.zsh\n'}
+[15.801612] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/local_setup.dsv\n'}
+[15.801754] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/package.dsv\n'}
+[15.801881] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/ament_index/resource_index/packages/camera_driver\n'}
+[15.802043] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/ament_index/resource_index/rclcpp_components/camera_driver\n'}
+[15.802181] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/cmake/camera_driverConfig.cmake\n'}
+[15.802307] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/cmake/camera_driverConfig-version.cmake\n'}
+[15.802427] (camera_driver) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/share/camera_driver/package.xml\n'}
+[15.803330] (camera_driver) CommandEnded: {'returncode': 0}
+[15.841586] (-) TimerEvent: {}
+[15.867374] (camera_driver) JobEnded: {'identifier': 'camera_driver', 'rc': 0}
+[15.867844] (-) EventReactorShutdown: {}

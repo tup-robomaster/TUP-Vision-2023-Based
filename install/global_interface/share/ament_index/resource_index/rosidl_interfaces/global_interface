@@ -1,0 +1,12 @@
+msg/Armor.idl
+msg/Armor.msg
+msg/Armors.idl
+msg/Armors.msg
+msg/Gimbal.idl
+msg/Gimbal.msg
+msg/Imu.idl
+msg/Imu.msg
+msg/SpinInfo.idl
+msg/SpinInfo.msg
+msg/Target.idl
+msg/Target.msg

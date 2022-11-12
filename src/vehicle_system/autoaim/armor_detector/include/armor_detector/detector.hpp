@@ -51,7 +51,7 @@ namespace armor_detector
             show_all_armors = true;
             show_fps = true;
             print_letency = false;
-            print_target_info = false; 
+            print_target_info = true; 
         }
     };
 

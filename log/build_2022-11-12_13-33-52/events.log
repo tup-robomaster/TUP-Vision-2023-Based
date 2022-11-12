@@ -1,0 +1,457 @@
+[0.000000] (-) TimerEvent: {}
+[0.000136] (-) JobUnselected: {'identifier': 'arm_controller'}
+[0.000204] (-) JobUnselected: {'identifier': 'armor_detector'}
+[0.000256] (-) JobUnselected: {'identifier': 'armor_processor'}
+[0.000307] (-) JobUnselected: {'identifier': 'auto_navigation'}
+[0.000342] (-) JobUnselected: {'identifier': 'binocular'}
+[0.000413] (-) JobUnselected: {'identifier': 'buff'}
+[0.001288] (-) JobUnselected: {'identifier': 'camera_driver'}
+[0.001339] (-) JobUnselected: {'identifier': 'filter'}
+[0.001377] (-) JobUnselected: {'identifier': 'global_user'}
+[0.001400] (-) JobUnselected: {'identifier': 'rmoss_auto_aim'}
+[0.001699] (-) JobUnselected: {'identifier': 'rmoss_base'}
+[0.001760] (-) JobUnselected: {'identifier': 'rmoss_cam'}
+[0.001825] (-) JobUnselected: {'identifier': 'rmoss_core'}
+[0.001844] (-) JobUnselected: {'identifier': 'rmoss_daheng_driver'}
+[0.001862] (-) JobUnselected: {'identifier': 'rmoss_interfaces'}
+[0.001885] (-) JobUnselected: {'identifier': 'rmoss_projectile_motion'}
+[0.001905] (-) JobUnselected: {'identifier': 'rmoss_util'}
+[0.002029] (-) JobUnselected: {'identifier': 'serialport'}
+[0.002056] (global_interface) JobQueued: {'identifier': 'global_interface', 'dependencies': OrderedDict()}
+[0.002088] (global_interface) JobStarted: {'identifier': 'global_interface'}
+[0.013458] (global_interface) JobProgress: {'identifier': 'global_interface', 'progress': 'cmake'}
+[0.013784] (global_interface) Command: {'cmd': ['/usr/local/bin/cmake', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/global_interface', '-DCMAKE_INSTALL_PREFIX=/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface'], 'cwd': '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_interface', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'liyuhang'), ('SSH_AGENT_PID', '2728'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/intel/openvino_2022/tools/compile_tool:/opt/intel/openvino_2022/runtime/3rdparty/tbb/lib::/opt/intel/openvino_2022/runtime/3rdparty/hddl/lib:/opt/intel/openvino_2022/runtime/lib/intel64:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HDDL_INSTALL_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/hddl'), ('TBB_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/tbb/cmake'), ('HOME', '/home/liyuhang'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.67.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('INTEL_OPENVINO_DIR', '/opt/intel/openvino_2022'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2495'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '10785'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu.mandatory.path'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'liyuhang'), ('JOURNAL_STREAM', '8:49895'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', ':/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu.default.path'), ('USERNAME', 'liyuhang'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/liyuhang/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/liyuhang-Inspiron-7590:@/tmp/.ICE-unix/2766,unix/liyuhang-Inspiron-7590:/tmp/.ICE-unix/2766'), ('INVOCATION_ID', '6cd134efe3f642ddac467d2718960722'), ('XDG_MENU_PREFIX', 'gnome-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-048da31f87.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('ngraph_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('QT_ACCESSIBILITY', '1'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('InferenceEngine_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_interface'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:/opt/ros/galactic/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:'), ('COLCON', '1'), ('OpenVINO_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[0.064534] (global_interface) StdoutLine: {'line': b'-- The C compiler identification is GNU 9.4.0\n'}
+[0.099041] (-) TimerEvent: {}
+[0.120306] (global_interface) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 9.4.0\n'}
+[0.126594] (global_interface) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.173106] (global_interface) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.182721] (global_interface) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[0.182915] (global_interface) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.183345] (global_interface) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.186222] (global_interface) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.199123] (-) TimerEvent: {}
+[0.244177] (global_interface) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.254227] (global_interface) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.254554] (global_interface) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.255445] (global_interface) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.257607] (global_interface) StdoutLine: {'line': b'-- Found ament_cmake: 1.1.5 (/opt/ros/galactic/share/ament_cmake/cmake)\n'}
+[0.280821] (global_interface) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") \n'}
+[0.280978] (global_interface) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[0.299205] (-) TimerEvent: {}
+[0.351484] (global_interface) StdoutLine: {'line': b'-- Found rosidl_default_generators: 1.1.1 (/opt/ros/galactic/share/rosidl_default_generators/cmake)\n'}
+[0.354285] (global_interface) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.359461] (global_interface) StdoutLine: {'line': b'-- Found rosidl_adapter: 2.2.2 (/opt/ros/galactic/share/rosidl_adapter/cmake)\n'}
+[0.399325] (-) TimerEvent: {}
+[0.448582] (global_interface) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "1.1.1f")  \n'}
+[0.474882] (global_interface) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/galactic/include  \n'}
+[0.499447] (-) TimerEvent: {}
+[0.552632] (global_interface) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.597529] (global_interface) StdoutLine: {'line': b'-- Found rclcpp: 9.2.1 (/opt/ros/galactic/share/rclcpp/cmake)\n'}
+[0.599555] (-) TimerEvent: {}
+[0.663288] (global_interface) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)\n'}
+[0.665436] (global_interface) StdoutLine: {'line': b'-- Found rmw_cyclonedds_cpp: 0.22.5 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)\n'}
+[0.682689] (global_interface) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_cyclonedds_cpp' as default\n"}
+[0.683449] (global_interface) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[0.699677] (-) TimerEvent: {}
+[0.736958] (global_interface) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[0.737297] (global_interface) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[0.789077] (global_interface) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed\n'}
+[0.789259] (global_interface) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads\n'}
+[0.799795] (-) TimerEvent: {}
+[0.830408] (global_interface) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads - not found\n'}
+[0.830625] (global_interface) StdoutLine: {'line': b'-- Looking for pthread_create in pthread\n'}
+[0.877659] (global_interface) StdoutLine: {'line': b'-- Looking for pthread_create in pthread - found\n'}
+[0.878792] (global_interface) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[0.899893] (-) TimerEvent: {}
+[1.000117] (-) TimerEvent: {}
+[1.016514] (global_interface) StdoutLine: {'line': b'-- Found geometry_msgs: 2.2.4 (/opt/ros/galactic/share/geometry_msgs/cmake)\n'}
+[1.048702] (global_interface) StdoutLine: {'line': b'-- Found sensor_msgs: 2.2.4 (/opt/ros/galactic/share/sensor_msgs/cmake)\n'}
+[1.100234] (-) TimerEvent: {}
+[1.138951] (global_interface) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found version "3.8.10") \n'}
+[1.200347] (-) TimerEvent: {}
+[1.300583] (-) TimerEvent: {}
+[1.360347] (global_interface) StdoutLine: {'line': b'-- Found ament_cmake_ros: 0.9.2 (/opt/ros/galactic/share/ament_cmake_ros/cmake)\n'}
+[1.400699] (-) TimerEvent: {}
+[1.500912] (-) TimerEvent: {}
+[1.601164] (-) TimerEvent: {}
+[1.663932] (global_interface) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[1.701257] (-) TimerEvent: {}
+[1.801472] (-) TimerEvent: {}
+[1.820148] (global_interface) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[1.845724] (global_interface) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3.5") \n'}
+[1.847017] (global_interface) StdoutLine: {'line': b'-- Found python_cmake_module: 0.8.1 (/opt/ros/galactic/share/python_cmake_module/cmake)\n'}
+[1.873297] (global_interface) StdoutLine: {'line': b'-- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.8.so (found suitable version "3.8.10", minimum required is "3.5") \n'}
+[1.873479] (global_interface) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[1.873552] (global_interface) StdoutLine: {'line': b'-- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.8\n'}
+[1.873613] (global_interface) StdoutLine: {'line': b'-- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.8.so\n'}
+[1.893684] (global_interface) StdoutLine: {'line': b'-- Found PythonExtra: .so  \n'}
+[1.901535] (-) TimerEvent: {}
+[1.990536] (global_interface) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.10.7 (/opt/ros/galactic/share/ament_lint_auto/cmake)\n'}
+[2.001638] (-) TimerEvent: {}
+[2.011942] (global_interface) StdoutLine: {'line': b"-- Added test 'copyright' to check source files copyright and LICENSE\n"}
+[2.013715] (global_interface) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[2.014641] (global_interface) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[2.017637] (global_interface) StdoutLine: {'line': b'-- Configuring done\n'}
+[2.081850] (global_interface) StdoutLine: {'line': b'-- Generating done\n'}
+[2.084332] (global_interface) StdoutLine: {'line': b'-- Build files have been written to: /home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_interface\n'}
+[2.092318] (global_interface) CommandEnded: {'returncode': 0}
+[2.095295] (global_interface) JobProgress: {'identifier': 'global_interface', 'progress': 'build'}
+[2.095348] (global_interface) Command: {'cmd': ['/usr/local/bin/cmake', '--build', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_interface', '--', '-j8', '-l8'], 'cwd': '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_interface', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'liyuhang'), ('SSH_AGENT_PID', '2728'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/intel/openvino_2022/tools/compile_tool:/opt/intel/openvino_2022/runtime/3rdparty/tbb/lib::/opt/intel/openvino_2022/runtime/3rdparty/hddl/lib:/opt/intel/openvino_2022/runtime/lib/intel64:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HDDL_INSTALL_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/hddl'), ('TBB_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/tbb/cmake'), ('HOME', '/home/liyuhang'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.67.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('INTEL_OPENVINO_DIR', '/opt/intel/openvino_2022'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2495'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '10785'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu.mandatory.path'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'liyuhang'), ('JOURNAL_STREAM', '8:49895'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', ':/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu.default.path'), ('USERNAME', 'liyuhang'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/liyuhang/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/liyuhang-Inspiron-7590:@/tmp/.ICE-unix/2766,unix/liyuhang-Inspiron-7590:/tmp/.ICE-unix/2766'), ('INVOCATION_ID', '6cd134efe3f642ddac467d2718960722'), ('XDG_MENU_PREFIX', 'gnome-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-048da31f87.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('ngraph_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('QT_ACCESSIBILITY', '1'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('InferenceEngine_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_interface'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:/opt/ros/galactic/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:'), ('COLCON', '1'), ('OpenVINO_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[2.101753] (-) TimerEvent: {}
+[2.116056] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__cpp\x1b[0m\n'}
+[2.116239] (global_interface) StdoutLine: {'line': b'[  1%] \x1b[34m\x1b[1mGenerating C code for ROS interfaces\x1b[0m\n'}
+[2.121237] (global_interface) StdoutLine: {'line': b'[  2%] \x1b[34m\x1b[1mGenerating C++ code for ROS interfaces\x1b[0m\n'}
+[2.201852] (-) TimerEvent: {}
+[2.302141] (-) TimerEvent: {}
+[2.402366] (-) TimerEvent: {}
+[2.499393] (global_interface) StdoutLine: {'line': b'[  2%] Built target global_interface__cpp\n'}
+[2.502446] (-) TimerEvent: {}
+[2.504547] (global_interface) StdoutLine: {'line': b'[  7%] \x1b[34m\x1b[1mGenerating C++ type support for eProsima Fast-RTPS\x1b[0m\n'}
+[2.504820] (global_interface) StdoutLine: {'line': b'[  7%] \x1b[34m\x1b[1mGenerating C++ introspection for ROS interfaces\x1b[0m\n'}
+[2.504952] (global_interface) StdoutLine: {'line': b'[  7%] \x1b[34m\x1b[1mGenerating C++ type support dispatch for ROS interfaces\x1b[0m\n'}
+[2.565400] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_generator_c\x1b[0m\n'}
+[2.579448] (global_interface) StdoutLine: {'line': b'[  9%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_generator_c.dir/rosidl_generator_c/global_interface/msg/detail/armor__functions.c.o\x1b[0m\n'}
+[2.579781] (global_interface) StdoutLine: {'line': b'[ 11%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_generator_c.dir/rosidl_generator_c/global_interface/msg/detail/armors__functions.c.o\x1b[0m\n'}
+[2.579951] (global_interface) StdoutLine: {'line': b'[ 12%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_generator_c.dir/rosidl_generator_c/global_interface/msg/detail/target__functions.c.o\x1b[0m\n'}
+[2.580216] (global_interface) StdoutLine: {'line': b'[  9%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_generator_c.dir/rosidl_generator_c/global_interface/msg/detail/gimbal__functions.c.o\x1b[0m\n'}
+[2.580367] (global_interface) StdoutLine: {'line': b'[ 14%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_generator_c.dir/rosidl_generator_c/global_interface/msg/detail/spin_info__functions.c.o\x1b[0m\n'}
+[2.602542] (-) TimerEvent: {}
+[2.635293] (global_interface) StdoutLine: {'line': b'[ 15%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_generator_c.dir/rosidl_generator_c/global_interface/msg/detail/imu__functions.c.o\x1b[0m\n'}
+[2.680080] (global_interface) StdoutLine: {'line': b'[ 16%] \x1b[32m\x1b[1mLinking C shared library libglobal_interface__rosidl_generator_c.so\x1b[0m\n'}
+[2.702656] (-) TimerEvent: {}
+[2.726528] (global_interface) StdoutLine: {'line': b'[ 16%] Built target global_interface__rosidl_generator_c\n'}
+[2.731635] (global_interface) StdoutLine: {'line': b'[ 18%] \x1b[34m\x1b[1mGenerating C type support dispatch for ROS interfaces\x1b[0m\n'}
+[2.733510] (global_interface) StdoutLine: {'line': b'[ 19%] \x1b[34m\x1b[1mGenerating C introspection for ROS interfaces\x1b[0m\n'}
+[2.802748] (-) TimerEvent: {}
+[2.849698] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_cpp\x1b[0m\n'}
+[2.862710] (global_interface) StdoutLine: {'line': b'[ 21%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/global_interface/msg/gimbal__type_support.cpp.o\x1b[0m\n'}
+[2.864403] (global_interface) StdoutLine: {'line': b'[ 22%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/global_interface/msg/armor__type_support.cpp.o\x1b[0m\n'}
+[2.864737] (global_interface) StdoutLine: {'line': b'[ 23%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/global_interface/msg/armors__type_support.cpp.o\x1b[0m\n'}
+[2.868930] (global_interface) StdoutLine: {'line': b'[ 25%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/global_interface/msg/target__type_support.cpp.o\x1b[0m\n'}
+[2.871997] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_introspection_cpp\x1b[0m\n'}
+[2.899307] (global_interface) StdoutLine: {'line': b'[ 26%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/global_interface/msg/detail/gimbal__type_support.cpp.o\x1b[0m\n'}
+[2.902841] (-) TimerEvent: {}
+[2.977426] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_fastrtps_cpp\x1b[0m\n'}
+[2.998315] (global_interface) StdoutLine: {'line': b'[ 28%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/global_interface/msg/detail/dds_fastrtps/gimbal__type_support.cpp.o\x1b[0m\n'}
+[3.002944] (-) TimerEvent: {}
+[3.103547] (-) TimerEvent: {}
+[3.204218] (-) TimerEvent: {}
+[3.260687] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_c\x1b[0m\n'}
+[3.292697] (global_interface) StdoutLine: {'line': b'[ 29%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_c.dir/rosidl_typesupport_c/global_interface/msg/gimbal__type_support.cpp.o\x1b[0m\n'}
+[3.304321] (-) TimerEvent: {}
+[3.321460] (global_interface) StdoutLine: {'line': b'[ 30%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_c.dir/rosidl_typesupport_c/global_interface/msg/armor__type_support.cpp.o\x1b[0m\n'}
+[3.329488] (global_interface) StdoutLine: {'line': b'[ 32%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/global_interface/msg/spin_info__type_support.cpp.o\x1b[0m\n'}
+[3.346299] (global_interface) StdoutLine: {'line': b'[ 33%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/global_interface/msg/imu__type_support.cpp.o\x1b[0m\n'}
+[3.348962] (global_interface) StdoutLine: {'line': b'[ 35%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/global_interface/msg/detail/armor__type_support.cpp.o\x1b[0m\n'}
+[3.352942] (global_interface) StdoutLine: {'line': b'[ 36%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/global_interface/msg/detail/armors__type_support.cpp.o\x1b[0m\n'}
+[3.358498] (global_interface) StdoutLine: {'line': b'[ 38%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_c.dir/rosidl_typesupport_c/global_interface/msg/armors__type_support.cpp.o\x1b[0m\n'}
+[3.363994] (global_interface) StdoutLine: {'line': b'[ 39%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_c.dir/rosidl_typesupport_c/global_interface/msg/target__type_support.cpp.o\x1b[0m\n'}
+[3.399169] (global_interface) StdoutLine: {'line': b'[ 40%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_c.dir/rosidl_typesupport_c/global_interface/msg/spin_info__type_support.cpp.o\x1b[0m\n'}
+[3.403530] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_introspection_c\x1b[0m\n'}
+[3.404389] (-) TimerEvent: {}
+[3.405769] (global_interface) StdoutLine: {'line': b'[ 42%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_c.dir/rosidl_typesupport_c/global_interface/msg/imu__type_support.cpp.o\x1b[0m\n'}
+[3.443269] (global_interface) StdoutLine: {'line': b'[ 43%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/global_interface/msg/detail/target__type_support.cpp.o\x1b[0m\n'}
+[3.452718] (global_interface) StdoutLine: {'line': b'[ 45%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/global_interface/msg/detail/gimbal__type_support.c.o\x1b[0m\n'}
+[3.467252] (global_interface) StdoutLine: {'line': b'[ 46%] \x1b[32m\x1b[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_c.so\x1b[0m\n'}
+[3.504518] (-) TimerEvent: {}
+[3.539715] (global_interface) StdoutLine: {'line': b'[ 46%] Built target global_interface__rosidl_typesupport_c\n'}
+[3.544799] (global_interface) StdoutLine: {'line': b'[ 47%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/global_interface/msg/detail/armor__type_support.c.o\x1b[0m\n'}
+[3.549678] (global_interface) StdoutLine: {'line': b'[ 49%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/global_interface/msg/detail/spin_info__type_support.cpp.o\x1b[0m\n'}
+[3.604615] (-) TimerEvent: {}
+[3.670001] (global_interface) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/global_interface/msg/detail/armors__type_support.c.o\x1b[0m\n'}
+[3.690489] (global_interface) StdoutLine: {'line': b'[ 52%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/global_interface/msg/detail/dds_fastrtps/armor__type_support.cpp.o\x1b[0m\n'}
+[3.704712] (-) TimerEvent: {}
+[3.734567] (global_interface) StdoutLine: {'line': b'[ 53%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/global_interface/msg/detail/target__type_support.c.o\x1b[0m\n'}
+[3.784138] (global_interface) StdoutLine: {'line': b'[ 54%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/global_interface/msg/detail/spin_info__type_support.c.o\x1b[0m\n'}
+[3.788213] (global_interface) StdoutLine: {'line': b'[ 56%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/global_interface/msg/detail/imu__type_support.cpp.o\x1b[0m\n'}
+[3.804829] (-) TimerEvent: {}
+[3.812723] (global_interface) StdoutLine: {'line': b'[ 57%] \x1b[32m\x1b[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_cpp.so\x1b[0m\n'}
+[3.858813] (global_interface) StdoutLine: {'line': b'[ 59%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/global_interface/msg/detail/imu__type_support.c.o\x1b[0m\n'}
+[3.885351] (global_interface) StdoutLine: {'line': b'[ 60%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/global_interface/msg/detail/dds_fastrtps/armors__type_support.cpp.o\x1b[0m\n'}
+[3.891433] (global_interface) StdoutLine: {'line': b'[ 61%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/global_interface/msg/detail/dds_fastrtps/target__type_support.cpp.o\x1b[0m\n'}
+[3.895994] (global_interface) StdoutLine: {'line': b'[ 61%] Built target global_interface__rosidl_typesupport_cpp\n'}
+[3.904929] (-) TimerEvent: {}
+[3.908102] (global_interface) StdoutLine: {'line': b'[ 63%] \x1b[32m\x1b[1mLinking C shared library libglobal_interface__rosidl_typesupport_introspection_c.so\x1b[0m\n'}
+[3.908365] (global_interface) StdoutLine: {'line': b'[ 64%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/global_interface/msg/detail/dds_fastrtps/spin_info__type_support.cpp.o\x1b[0m\n'}
+[3.958910] (global_interface) StdoutLine: {'line': b'[ 66%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/global_interface/msg/detail/dds_fastrtps/imu__type_support.cpp.o\x1b[0m\n'}
+[3.959742] (global_interface) StdoutLine: {'line': b'[ 66%] Built target global_interface__rosidl_typesupport_introspection_c\n'}
+[4.005042] (-) TimerEvent: {}
+[4.106661] (-) TimerEvent: {}
+[4.207008] (-) TimerEvent: {}
+[4.217399] (global_interface) StdoutLine: {'line': b'[ 67%] \x1b[32m\x1b[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_introspection_cpp.so\x1b[0m\n'}
+[4.307114] (-) TimerEvent: {}
+[4.336337] (global_interface) StdoutLine: {'line': b'[ 67%] Built target global_interface__rosidl_typesupport_introspection_cpp\n'}
+[4.407201] (-) TimerEvent: {}
+[4.502115] (global_interface) StdoutLine: {'line': b'[ 69%] \x1b[32m\x1b[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_fastrtps_cpp.so\x1b[0m\n'}
+[4.507271] (-) TimerEvent: {}
+[4.585134] (global_interface) StdoutLine: {'line': b'[ 69%] Built target global_interface__rosidl_typesupport_fastrtps_cpp\n'}
+[4.590086] (global_interface) StdoutLine: {'line': b'[ 70%] \x1b[34m\x1b[1mGenerating C type support for eProsima Fast-RTPS\x1b[0m\n'}
+[4.607380] (-) TimerEvent: {}
+[4.707604] (-) TimerEvent: {}
+[4.807838] (-) TimerEvent: {}
+[4.908050] (-) TimerEvent: {}
+[4.913647] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_fastrtps_c\x1b[0m\n'}
+[4.935037] (global_interface) StdoutLine: {'line': b'[ 71%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/global_interface/msg/detail/gimbal__type_support_c.cpp.o\x1b[0m\n'}
+[4.935405] (global_interface) StdoutLine: {'line': b'[ 73%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/global_interface/msg/detail/target__type_support_c.cpp.o\x1b[0m\n'}
+[4.935647] (global_interface) StdoutLine: {'line': b'[ 74%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/global_interface/msg/detail/armor__type_support_c.cpp.o\x1b[0m\n'}
+[4.936001] (global_interface) StdoutLine: {'line': b'[ 76%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/global_interface/msg/detail/armors__type_support_c.cpp.o\x1b[0m\n'}
+[4.936246] (global_interface) StdoutLine: {'line': b'[ 77%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/global_interface/msg/detail/spin_info__type_support_c.cpp.o\x1b[0m\n'}
+[4.936577] (global_interface) StdoutLine: {'line': b'[ 78%] \x1b[32mBuilding CXX object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/global_interface/msg/detail/imu__type_support_c.cpp.o\x1b[0m\n'}
+[5.008156] (-) TimerEvent: {}
+[5.109726] (-) TimerEvent: {}
+[5.210073] (-) TimerEvent: {}
+[5.310375] (-) TimerEvent: {}
+[5.410674] (-) TimerEvent: {}
+[5.452357] (global_interface) StdoutLine: {'line': b'[ 80%] \x1b[32m\x1b[1mLinking CXX shared library libglobal_interface__rosidl_typesupport_fastrtps_c.so\x1b[0m\n'}
+[5.510790] (-) TimerEvent: {}
+[5.531912] (global_interface) StdoutLine: {'line': b'[ 80%] Built target global_interface__rosidl_typesupport_fastrtps_c\n'}
+[5.536568] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface\x1b[0m\n'}
+[5.541884] (global_interface) StdoutLine: {'line': b'[ 80%] Built target global_interface\n'}
+[5.547008] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__py\x1b[0m\n'}
+[5.552255] (global_interface) StdoutLine: {'line': b'[ 81%] \x1b[34m\x1b[1mGenerating Python code for ROS interfaces\x1b[0m\n'}
+[5.610900] (-) TimerEvent: {}
+[5.711162] (-) TimerEvent: {}
+[5.811606] (-) TimerEvent: {}
+[5.911903] (-) TimerEvent: {}
+[6.012192] (-) TimerEvent: {}
+[6.112390] (-) TimerEvent: {}
+[6.212600] (-) TimerEvent: {}
+[6.312837] (-) TimerEvent: {}
+[6.321380] (global_interface) StdoutLine: {'line': b'[ 81%] Built target global_interface__py\n'}
+[6.327098] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__python\x1b[0m\n'}
+[6.358678] (global_interface) StdoutLine: {'line': b'[ 83%] \x1b[32mBuilding C object CMakeFiles/global_interface__python.dir/rosidl_generator_py/global_interface/msg/_gimbal_s.c.o\x1b[0m\n'}
+[6.359144] (global_interface) StdoutLine: {'line': b'[ 84%] \x1b[32mBuilding C object CMakeFiles/global_interface__python.dir/rosidl_generator_py/global_interface/msg/_armor_s.c.o\x1b[0m\n'}
+[6.359397] (global_interface) StdoutLine: {'line': b'[ 85%] \x1b[32mBuilding C object CMakeFiles/global_interface__python.dir/rosidl_generator_py/global_interface/msg/_imu_s.c.o\x1b[0m\n'}
+[6.359601] (global_interface) StdoutLine: {'line': b'[ 87%] \x1b[32mBuilding C object CMakeFiles/global_interface__python.dir/rosidl_generator_py/global_interface/msg/_armors_s.c.o\x1b[0m\n'}
+[6.359820] (global_interface) StdoutLine: {'line': b'[ 88%] \x1b[32mBuilding C object CMakeFiles/global_interface__python.dir/rosidl_generator_py/global_interface/msg/_target_s.c.o\x1b[0m\n'}
+[6.360303] (global_interface) StdoutLine: {'line': b'[ 90%] \x1b[32mBuilding C object CMakeFiles/global_interface__python.dir/rosidl_generator_py/global_interface/msg/_spin_info_s.c.o\x1b[0m\n'}
+[6.412933] (-) TimerEvent: {}
+[6.489018] (global_interface) StdoutLine: {'line': b'[ 91%] \x1b[32m\x1b[1mLinking C shared library rosidl_generator_py/global_interface/libglobal_interface__python.so\x1b[0m\n'}
+[6.513054] (-) TimerEvent: {}
+[6.525389] (global_interface) StdoutLine: {'line': b'[ 91%] Built target global_interface__python\n'}
+[6.530429] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_introspection_c__pyext\x1b[0m\n'}
+[6.530656] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_c__pyext\x1b[0m\n'}
+[6.530785] (global_interface) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target global_interface__rosidl_typesupport_fastrtps_c__pyext\x1b[0m\n'}
+[6.543269] (global_interface) StdoutLine: {'line': b'[ 92%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/global_interface/_global_interface_s.ep.rosidl_typesupport_introspection_c.c.o\x1b[0m\n'}
+[6.543603] (global_interface) StdoutLine: {'line': b'[ 94%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/global_interface/_global_interface_s.ep.rosidl_typesupport_fastrtps_c.c.o\x1b[0m\n'}
+[6.543822] (global_interface) StdoutLine: {'line': b'[ 95%] \x1b[32mBuilding C object CMakeFiles/global_interface__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/global_interface/_global_interface_s.ep.rosidl_typesupport_c.c.o\x1b[0m\n'}
+[6.613159] (-) TimerEvent: {}
+[6.628812] (global_interface) StdoutLine: {'line': b'[ 97%] \x1b[32m\x1b[1mLinking C shared library rosidl_generator_py/global_interface/global_interface_s__rosidl_typesupport_c.cpython-38-x86_64-linux-gnu.so\x1b[0m\n'}
+[6.630738] (global_interface) StdoutLine: {'line': b'[ 98%] \x1b[32m\x1b[1mLinking C shared library rosidl_generator_py/global_interface/global_interface_s__rosidl_typesupport_introspection_c.cpython-38-x86_64-linux-gnu.so\x1b[0m\n'}
+[6.634687] (global_interface) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX shared library rosidl_generator_py/global_interface/global_interface_s__rosidl_typesupport_fastrtps_c.cpython-38-x86_64-linux-gnu.so\x1b[0m\n'}
+[6.660261] (global_interface) StdoutLine: {'line': b'[100%] Built target global_interface__rosidl_typesupport_c__pyext\n'}
+[6.661845] (global_interface) StdoutLine: {'line': b'[100%] Built target global_interface__rosidl_typesupport_introspection_c__pyext\n'}
+[6.693525] (global_interface) StdoutLine: {'line': b'[100%] Built target global_interface__rosidl_typesupport_fastrtps_c__pyext\n'}
+[6.698797] (global_interface) CommandEnded: {'returncode': 0}
+[6.713283] (-) TimerEvent: {}
+[6.813585] (-) TimerEvent: {}
+[6.826284] (global_interface) JobProgress: {'identifier': 'global_interface', 'progress': 'install'}
+[6.832885] (global_interface) Command: {'cmd': ['/usr/local/bin/cmake', '--install', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_interface'], 'cwd': '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_interface', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'liyuhang'), ('SSH_AGENT_PID', '2728'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/intel/openvino_2022/tools/compile_tool:/opt/intel/openvino_2022/runtime/3rdparty/tbb/lib::/opt/intel/openvino_2022/runtime/3rdparty/hddl/lib:/opt/intel/openvino_2022/runtime/lib/intel64:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HDDL_INSTALL_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/hddl'), ('TBB_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/tbb/cmake'), ('HOME', '/home/liyuhang'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.67.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('INTEL_OPENVINO_DIR', '/opt/intel/openvino_2022'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2495'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '10785'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu.mandatory.path'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'liyuhang'), ('JOURNAL_STREAM', '8:49895'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', ':/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu.default.path'), ('USERNAME', 'liyuhang'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/liyuhang/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/liyuhang-Inspiron-7590:@/tmp/.ICE-unix/2766,unix/liyuhang-Inspiron-7590:/tmp/.ICE-unix/2766'), ('INVOCATION_ID', '6cd134efe3f642ddac467d2718960722'), ('XDG_MENU_PREFIX', 'gnome-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-048da31f87.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('ngraph_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('QT_ACCESSIBILITY', '1'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('InferenceEngine_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/global_interface'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:/opt/ros/galactic/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:'), ('COLCON', '1'), ('OpenVINO_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[6.836443] (global_interface) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[6.836659] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/ament_index/resource_index/rosidl_interfaces/global_interface\n'}
+[6.836818] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface\n'}
+[6.837027] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg\n'}
+[6.837201] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/spin_info.h\n'}
+[6.837352] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail\n'}
+[6.837516] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__struct.h\n'}
+[6.837667] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__struct.h\n'}
+[6.837809] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__type_support.h\n'}
+[6.837980] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__functions.c\n'}
+[6.838140] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__type_support.h\n'}
+[6.838325] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/imu__type_support.h\n'}
+[6.838474] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/imu__functions.h\n'}
+[6.838622] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__type_support.h\n'}
+[6.838770] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/imu__functions.c\n'}
+[6.838965] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__functions.c\n'}
+[6.839241] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/spin_info__type_support.h\n'}
+[6.839420] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__functions.c\n'}
+[6.839535] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__type_support.h\n'}
+[6.839642] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__functions.h\n'}
+[6.839782] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/spin_info__struct.h\n'}
+[6.839917] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__functions.c\n'}
+[6.840047] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__functions.h\n'}
+[6.840177] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/spin_info__functions.c\n'}
+[6.840326] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__functions.h\n'}
+[6.840425] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/spin_info__functions.h\n'}
+[6.840546] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__struct.h\n'}
+[6.840651] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__struct.h\n'}
+[6.840773] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__functions.h\n'}
+[6.840869] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/imu__struct.h\n'}
+[6.840987] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/rosidl_generator_c__visibility_control.h\n'}
+[6.841085] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/armors.h\n'}
+[6.841182] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/armor.h\n'}
+[6.841290] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/gimbal.h\n'}
+[6.841387] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/imu.h\n'}
+[6.841508] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/target.h\n'}
+[6.841656] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/library_path.sh\n'}
+[6.841774] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/library_path.dsv\n'}
+[6.841919] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_generator_c.so\n'}
+[6.842041] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_generator_c.so" to ""\n'}
+[6.842178] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface\n'}
+[6.842314] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg\n'}
+[6.842416] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/rosidl_typesupport_fastrtps_c__visibility_control.h\n'}
+[6.842534] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail\n'}
+[6.842653] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__rosidl_typesupport_fastrtps_c.h\n'}
+[6.842767] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/spin_info__rosidl_typesupport_fastrtps_c.h\n'}
+[6.842948] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__rosidl_typesupport_fastrtps_c.h\n'}
+[6.843063] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__rosidl_typesupport_fastrtps_c.h\n'}
+[6.843161] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__rosidl_typesupport_fastrtps_c.h\n'}
+[6.843267] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/imu__rosidl_typesupport_fastrtps_c.h\n'}
+[6.843365] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_fastrtps_c.so\n'}
+[6.843499] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_fastrtps_c.so" to ""\n'}
+[6.843698] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface\n'}
+[6.843834] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg\n'}
+[6.843972] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail\n'}
+[6.844121] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/dds_fastrtps\n'}
+[6.844267] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[6.844389] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[6.844515] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[6.844613] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/spin_info__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[6.844737] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[6.844865] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/imu__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[6.844974] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h\n'}
+[6.845083] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_fastrtps_cpp.so\n'}
+[6.845269] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_fastrtps_cpp.so" to ""\n'}
+[6.845423] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface\n'}
+[6.845581] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg\n'}
+[6.845743] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail\n'}
+[6.845876] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/spin_info__rosidl_typesupport_introspection_c.h\n'}
+[6.846008] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/spin_info__type_support.c\n'}
+[6.846170] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__type_support.c\n'}
+[6.846308] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__type_support.c\n'}
+[6.846445] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/imu__type_support.c\n'}
+[6.846574] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__rosidl_typesupport_introspection_c.h\n'}
+[6.846734] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__rosidl_typesupport_introspection_c.h\n'}
+[6.846862] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__type_support.c\n'}
+[6.846980] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__rosidl_typesupport_introspection_c.h\n'}
+[6.847117] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__type_support.c\n'}
+[6.847226] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__rosidl_typesupport_introspection_c.h\n'}
+[6.847334] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/imu__rosidl_typesupport_introspection_c.h\n'}
+[6.847442] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/rosidl_typesupport_introspection_c__visibility_control.h\n'}
+[6.847553] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_introspection_c.so\n'}
+[6.847709] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_introspection_c.so" to ""\n'}
+[6.847820] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_c.so\n'}
+[6.848083] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_c.so" to ""\n'}
+[6.848227] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface\n'}
+[6.848373] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg\n'}
+[6.848500] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/gimbal.hpp\n'}
+[6.848652] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail\n'}
+[6.848789] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__traits.hpp\n'}
+[6.848930] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__struct.hpp\n'}
+[6.849078] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/imu__struct.hpp\n'}
+[6.849217] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/spin_info__traits.hpp\n'}
+[6.849350] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__struct.hpp\n'}
+[6.849480] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__builder.hpp\n'}
+[6.849643] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/spin_info__builder.hpp\n'}
+[6.849769] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__builder.hpp\n'}
+[6.849899] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__builder.hpp\n'}
+[6.850046] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/imu__traits.hpp\n'}
+[6.850181] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__traits.hpp\n'}
+[6.850318] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__builder.hpp\n'}
+[6.850451] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__traits.hpp\n'}
+[6.850606] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__struct.hpp\n'}
+[6.850737] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/spin_info__struct.hpp\n'}
+[6.850870] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/imu__builder.hpp\n'}
+[6.851060] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__traits.hpp\n'}
+[6.851192] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__struct.hpp\n'}
+[6.851310] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/armors.hpp\n'}
+[6.851427] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/armor.hpp\n'}
+[6.851538] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/spin_info.hpp\n'}
+[6.851652] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/target.hpp\n'}
+[6.851762] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/imu.hpp\n'}
+[6.851874] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface\n'}
+[6.851990] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg\n'}
+[6.852113] (global_interface) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail\n'}
+[6.852246] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__type_support.cpp\n'}
+[6.852380] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__type_support.cpp\n'}
+[6.852489] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armor__rosidl_typesupport_introspection_cpp.hpp\n'}
+[6.852615] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/target__rosidl_typesupport_introspection_cpp.hpp\n'}
+[6.852733] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__rosidl_typesupport_introspection_cpp.hpp\n'}
+[6.852841] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/armors__type_support.cpp\n'}
+[6.852953] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/spin_info__type_support.cpp\n'}
+[6.853080] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__rosidl_typesupport_introspection_cpp.hpp\n'}
+[6.853189] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/imu__rosidl_typesupport_introspection_cpp.hpp\n'}
+[6.853323] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/gimbal__type_support.cpp\n'}
+[6.853432] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/imu__type_support.cpp\n'}
+[6.853539] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/include/global_interface/msg/detail/spin_info__rosidl_typesupport_introspection_cpp.hpp\n'}
+[6.853663] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_introspection_cpp.so\n'}
+[6.853787] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_introspection_cpp.so" to ""\n'}
+[6.853896] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_cpp.so\n'}
+[6.854024] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__rosidl_typesupport_cpp.so" to ""\n'}
+[6.854158] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/pythonpath.sh\n'}
+[6.854269] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/pythonpath.dsv\n'}
+[6.854377] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/__init__.py\n'}
+[6.881745] (global_interface) StdoutLine: {'line': b"Compiling '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/__init__.py'...\n"}
+[6.886504] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg\n'}
+[6.886710] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_armor_s.c\n'}
+[6.886779] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_gimbal_s.c\n'}
+[6.886867] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_armor.py\n'}
+[6.886965] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_imu.py\n'}
+[6.887101] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_armors.py\n'}
+[6.887280] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_target_s.c\n'}
+[6.887375] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_spin_info.py\n'}
+[6.887440] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_imu_s.c\n'}
+[6.887528] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_gimbal.py\n'}
+[6.887608] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_armors_s.c\n'}
+[6.887684] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_spin_info_s.c\n'}
+[6.887769] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/__init__.py\n'}
+[6.887857] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/msg/_target.py\n'}
+[6.888193] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_fastrtps_c.cpython-38-x86_64-linux-gnu.so\n'}
+[6.888759] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_fastrtps_c.cpython-38-x86_64-linux-gnu.so" to ""\n'}
+[6.889015] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_introspection_c.cpython-38-x86_64-linux-gnu.so\n'}
+[6.889590] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_introspection_c.cpython-38-x86_64-linux-gnu.so" to ""\n'}
+[6.889781] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_c.cpython-38-x86_64-linux-gnu.so\n'}
+[6.890315] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages/global_interface/global_interface_s__rosidl_typesupport_c.cpython-38-x86_64-linux-gnu.so" to ""\n'}
+[6.890455] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__python.so\n'}
+[6.890965] (global_interface) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/libglobal_interface__python.so" to ""\n'}
+[6.891106] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Gimbal.idl\n'}
+[6.891244] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Armor.idl\n'}
+[6.891380] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Armors.idl\n'}
+[6.891512] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Target.idl\n'}
+[6.891643] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/SpinInfo.idl\n'}
+[6.891768] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Imu.idl\n'}
+[6.891893] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Gimbal.msg\n'}
+[6.892021] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Armor.msg\n'}
+[6.892164] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Armors.msg\n'}
+[6.892292] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Target.msg\n'}
+[6.892418] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/SpinInfo.msg\n'}
+[6.892558] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/msg/Imu.msg\n'}
+[6.892736] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/ament_index/resource_index/package_run_dependencies/global_interface\n'}
+[6.892926] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/ament_index/resource_index/parent_prefix_path/global_interface\n'}
+[6.893076] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/ament_prefix_path.sh\n'}
+[6.893223] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/ament_prefix_path.dsv\n'}
+[6.893369] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/path.sh\n'}
+[6.893513] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/environment/path.dsv\n'}
+[6.893654] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/local_setup.bash\n'}
+[6.893795] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/local_setup.sh\n'}
+[6.893936] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/local_setup.zsh\n'}
+[6.894079] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/local_setup.dsv\n'}
+[6.894218] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/package.dsv\n'}
+[6.894372] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/ament_index/resource_index/packages/global_interface\n'}
+[6.894592] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_generator_cExport.cmake\n'}
+[6.894749] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_generator_cExport-noconfig.cmake\n'}
+[6.894963] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_introspection_cExport.cmake\n'}
+[6.895110] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_introspection_cExport-noconfig.cmake\n'}
+[6.895275] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_cExport.cmake\n'}
+[6.895410] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_cExport-noconfig.cmake\n'}
+[6.895580] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_generator_cppExport.cmake\n'}
+[6.895795] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_introspection_cppExport.cmake\n'}
+[6.895950] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_introspection_cppExport-noconfig.cmake\n'}
+[6.896144] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_cppExport.cmake\n'}
+[6.896302] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interface__rosidl_typesupport_cppExport-noconfig.cmake\n'}
+[6.896447] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/rosidl_cmake-extras.cmake\n'}
+[6.896596] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[6.896746] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/ament_cmake_export_libraries-extras.cmake\n'}
+[6.896893] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[6.897038] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[6.897186] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake\n'}
+[6.897333] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake\n'}
+[6.897483] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interfaceConfig.cmake\n'}
+[6.897620] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/cmake/global_interfaceConfig-version.cmake\n'}
+[6.897750] (global_interface) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/share/global_interface/package.xml\n'}
+[6.899275] (global_interface) CommandEnded: {'returncode': 0}
+[6.913675] (-) TimerEvent: {}
+[7.015646] (-) TimerEvent: {}
+[7.075421] (global_interface) JobEnded: {'identifier': 'global_interface', 'rc': 0}
+[7.076149] (-) EventReactorShutdown: {}

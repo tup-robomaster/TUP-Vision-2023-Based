@@ -75,10 +75,10 @@ namespace armor_detector
         transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
 
         // image sub
-        img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
-        std::bind(&detector_node::image_callback, this, _1), transport_));
-        // img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+        // img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
         // std::bind(&detector_node::image_callback, this, _1), transport_));
+        img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+        std::bind(&detector_node::image_callback, this, _1), transport_));
 
         // param callback
         param_timer_ = this->create_wall_timer(1000ms, std::bind(&detector_node::param_callback, this));
@@ -150,7 +150,7 @@ namespace armor_detector
 
     void detector_node::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
     {
-        // RCLCPP_INFO(this->get_logger(), "image callback...");
+        RCLCPP_INFO(this->get_logger(), "image callback...");
         global_user::TaskData src;
         std::vector<Armor> armors;
 
@@ -158,6 +158,8 @@ namespace armor_detector
         {
             return;
         }
+        
+        RCLCPP_INFO(this->get_logger(), "...");
 
         auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
         img.copyTo(src.img);
@@ -170,7 +172,7 @@ namespace armor_detector
         
         if(detector_->armor_detect(src))
         {   //find armors
-            // RCLCPP_INFO(this->get_logger(), "armors detector...");
+            RCLCPP_INFO(this->get_logger(), "armors detector...");
             TargetMsg target_info;
             
             //target's spinning status detect 
