@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:40
- * @LastEditTime: 2022-11-11 00:09:15
+ * @LastEditTime: 2022-11-12 09:52:38
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/usb_driver/usb_cam_node.hpp
  */
 #ifndef USB_CAM_NODE_HPP
@@ -12,9 +12,11 @@
 
 #include <memory>
 
+//opencv
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
+//ros
 #include <rclcpp/rclcpp.hpp>
 #include <image_transport/image_transport.hpp>
 #include <cv_bridge/cv_bridge.h>
@@ -22,6 +24,7 @@
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <camera_info_manager/camera_info_manager.hpp>
+#include <rcl_interfaces/msg/set_parameters_result.hpp>
 
 namespace camera_driver
 {
@@ -66,9 +69,16 @@ namespace camera_driver
         std::unique_ptr<usb_cam> init_usb_cam();
     
     protected:
-        std::shared_ptr<ParamSubscriber> param_subscriber_;
-        std::shared_ptr<ParamCbHandle> param_cb_handle_;
-
+        /**
+         * @brief 动态调参
+         * 
+         */
+        // std::vector<std::string> params_vec_;
+        // int index;
+        // std::shared_ptr<ParamSubscriber> param_subscriber_;
+        // std::shared_ptr<ParamCbHandle> param_cb_handle_;
+        OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+        rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
     }; // usb_cam_node
 } //namespace camera_driver
 

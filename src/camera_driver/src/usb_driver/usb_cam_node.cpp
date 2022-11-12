@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2022-11-11 12:32:51
+ * @LastEditTime: 2022-11-12 10:08:47
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -39,35 +39,77 @@ namespace camera_driver
 
         timer = this->create_wall_timer(1ms, std::bind(&usb_cam_node::image_callback, this));
 
-        //创建参数订阅者监测参数改变情况
-        //既可以用于本节点也可以是其他节点
-        param_subscriber_ = std::make_shared<ParamSubscriber>(this);
-
-        //设置回调用于本节点参数修改
-        ParamCallbackType cb = [this](const rclcpp::Parameter& p)
+        bool debug_;
+        this->declare_parameter<bool>("debug", false);
+        this->get_parameter("debug", debug_);
+        if(debug_)
         {
-            RCLCPP_INFO(this->get_logger(), 
-                "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
-                p.get_name().c_str(),
-                p.get_type_name().c_str(),
-                p.as_int()
-            );
+            //动态调参回调
+            callback_handle_ = this->add_on_set_parameters_callback(std::bind(&usb_cam_node::paramsCallback, this, std::placeholders::_1));
+            
+            //创建参数订阅者监测参数改变情况
+            //既可以用于本节点也可以是其他节点
+            // param_subscriber_ = std::make_shared<ParamSubscriber>(this);
 
-            this->usb_cam_->usb_cam_params_.image_width = p.as_int();
-        };
+            // //设置回调用于本节点参数修改
+            // ParamCallbackType cb = [this](const rclcpp::Parameter& p)
+            // {
+            //     RCLCPP_INFO(this->get_logger(), 
+            //         "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+            //         p.get_name().c_str(),
+            //         p.get_type_name().c_str(),
+            //         p.as_int()
+            //     );
 
-        param_cb_handle_ = param_subscriber_->add_parameter_callback("image_width", cb);
+            //     for(int ii = 0; ii < this->params_vec_.size(); ii++)
+            //     {
+            //         if(this->params_vec_[ii] == p.get_name().c_str())
+            //         {
+            //             index = ii;
+            //             break;
+            //         }
+            //         // std::cout << ii << std::endl;
+            //     }
+            //     switch (index)
+            //     {
+            //     case 0:
+            //         this->usb_cam_->usb_cam_params_.camera_id = p.as_int();
+            //         break;
+            //     case 1:
+            //         this->usb_cam_->usb_cam_params_.frame_id = p.as_int();
+            //         break;
+            //     case 2:
+            //         this->usb_cam_->usb_cam_params_.image_width = p.as_int();
+            //         break;
+            //     case 3:
+            //         this->usb_cam_->usb_cam_params_.image_height = p.as_int();
+            //         break;
+            //     case 4:
+            //         this->usb_cam_->usb_cam_params_.fps = p.as_int();
+            //         break;
+            //     default:
+            //         break;
+            //     }
+            // };
+
+            // param_cb_handle_ = param_subscriber_->add_parameter_callback("ParamCallback", cb);
+        }
     }
 
     std::unique_ptr<usb_cam> usb_cam_node::init_usb_cam()
     {
+        // index = 0;
         usb_cam_params usb_cam_params_;
-
         this->declare_parameter("camera_id", 0);
         this->declare_parameter("frame_id", "usb_image");
         this->declare_parameter("image_width", 480);
         this->declare_parameter("image_height", 480);
         this->declare_parameter("fps", 30);
+        // this->params_vec_.push_back("camera_id");
+        // this->params_vec_.push_back("frame_id");
+        // this->params_vec_.push_back("image_width");
+        // this->params_vec_.push_back("image_height");
+        // this->params_vec_.push_back("fps");
 
         usb_cam_params_.camera_id = this->get_parameter("camera_id").as_int();
         usb_cam_params_.frame_id = this->get_parameter("frame_id").as_string();
@@ -78,6 +120,104 @@ namespace camera_driver
         printf("camera_id: %d\n", usb_cam_params_.camera_id);
 
         return std::make_unique<usb_cam>(usb_cam_params_);
+    }
+
+    rcl_interfaces::msg::SetParametersResult usb_cam_node::paramsCallback(const std::vector<rclcpp::Parameter>& params)
+    {
+        rcl_interfaces::msg::SetParametersResult result;
+        result.successful = false;
+        result.reason = "debug";
+        for(const auto& param : params)
+        {
+            if(param.get_name() == "camera_id")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
+                {
+                    if(param.as_int() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_int()
+                        );
+
+                        this->usb_cam_->usb_cam_params_.camera_id = param.as_int();
+                        result.successful = true;
+                    }
+                }
+            }
+            if(param.get_name() == "frame_id")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
+                {
+                    if(param.as_int() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_int()
+                        );
+                        this->usb_cam_->usb_cam_params_.frame_id = param.as_int();
+                        result.successful = true;
+                    }
+                }
+            }
+            if(param.get_name() == "image_width")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
+                {
+                    if(param.as_int() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_int()
+                        );
+                        this->usb_cam_->usb_cam_params_.image_width = param.as_int();
+                        result.successful = true;
+                    }
+                }
+            }
+            if(param.get_name() == "image_height")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
+                {
+                    if(param.as_int() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_int()
+                        );
+                        this->usb_cam_->usb_cam_params_.image_height = param.as_int();
+                        result.successful = true;
+                    }
+                }
+            }
+            if(param.get_name() == "fps")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
+                {
+                    if(param.as_int() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_int()
+                        );
+                        this->usb_cam_->usb_cam_params_.fps = param.as_int();
+                        result.successful = true;
+                    }
+                }
+            }
+        }
+        
+        return result;
     }
 
     std::shared_ptr<sensor_msgs::msg::Image> usb_cam_node::convert_frame_to_message(cv::Mat &frame)
