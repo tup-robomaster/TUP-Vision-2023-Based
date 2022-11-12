@@ -1,0 +1,24 @@
+[35m[1mScanning dependencies of target armor_detector_node[0m
+[ 16%] [32mBuilding CXX object CMakeFiles/armor_detector_node.dir/src/armor_detector/detector.cpp.o[0m
+[ 33%] [32m[1mLinking CXX executable armor_detector_node[0m
+[100%] Built target armor_detector_node
+-- Install configuration: ""
+-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/lib/armor_detector/armor_detector_node
+-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/lib/armor_detector/armor_detector_node" to ""
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/launch
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/launch/armor_detector.launch.py
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/ament_index/resource_index/package_run_dependencies/armor_detector
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/ament_index/resource_index/parent_prefix_path/armor_detector
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/ament_prefix_path.sh
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/ament_prefix_path.dsv
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/path.sh
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/path.dsv
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.bash
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.sh
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.zsh
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.dsv
+-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/package.dsv
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/ament_index/resource_index/packages/armor_detector
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/cmake/armor_detectorConfig.cmake
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/cmake/armor_detectorConfig-version.cmake
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/package.xml

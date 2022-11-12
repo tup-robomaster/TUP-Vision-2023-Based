@@ -41,7 +41,7 @@ namespace armor_detector
         input_size = {720, 720};
         is_init = false;
 
-        is_save_data = false; //save distance error data
+        is_save_data = true; //save distance error data
 
         //debug
         // this->debug_params_.debug_without_com = _debug_params_.debug_without_com;

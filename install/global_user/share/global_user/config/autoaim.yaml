@@ -22,7 +22,8 @@
     max_delta_dist: 0.3
 
     #待改
-    camera_name: "00J90630561" 
+    camera_name: "KE0200110075" 
+    # camera_name: "KE0200110075" 
     camera_param_path: src/global_user/config/camera.yaml
     network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
 

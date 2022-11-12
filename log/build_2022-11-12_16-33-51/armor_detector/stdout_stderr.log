@@ -1,0 +1,57 @@
+[35m[1mScanning dependencies of target armor_detector_node[0m
+[ 16%] [32mBuilding CXX object CMakeFiles/armor_detector_node.dir/src/armor_detector/inference_api2.cpp.o[0m
+[01m[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp:199:[m[K [01;35m[Kwarning: [m[Kignoring #pragma omp parallel [[01;35m[K-Wunknown-pragmas[m[K]
+  199 |     #pragma omp parallel sections
+      | 
+[01m[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp:201:[m[K [01;35m[Kwarning: [m[Kignoring #pragma omp section [[01;35m[K-Wunknown-pragmas[m[K]
+  201 |         #pragma omp section
+      | 
+[01m[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp:205:[m[K [01;35m[Kwarning: [m[Kignoring #pragma omp section [[01;35m[K-Wunknown-pragmas[m[K]
+  205 |         #pragma omp section
+      | 
+[01m[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp:[m[K In function ‘[01m[Kvoid generate_grids_and_stride(int, int, std::vector<int>&, std::vector<GridAndStride>&)[m[K’:
+[01m[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp:80:70:[m[K [01;35m[Kwarning: [m[KISO C++ forbids compound-literals [[01;35m[K-Wpedantic[m[K]
+   80 |                 grid_strides.push_back((GridAndStride){g0, g1, stride[01;35m[K}[m[K);
+      |                                                                      [01;35m[K^[m[K
+[01m[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp:[m[K In function ‘[01m[Kvoid generateYoloxProposals(std::vector<GridAndStride>, const float*, Eigen::Matrix<float, 3, 3>&, float, std::vector<ArmorObject>&)[m[K’:
+[01m[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp:125:15:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Kcolor_conf[m[K’ [[01;35m[K-Wunused-variable[m[K]
+  125 |         float [01;35m[Kcolor_conf[m[K = (feat_ptr[basic_pos + 9 + box_color]);
+      |               [01;35m[K^~~~~~~~~~[m[K
+[01m[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp:126:15:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Kcls_conf[m[K’ [[01;35m[K-Wunused-variable[m[K]
+  126 |         float [01;35m[Kcls_conf[m[K = (feat_ptr[basic_pos + 9 + NUM_COLORS + box_class]);
+      |               [01;35m[K^~~~~~~~[m[K
+[01m[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp:[m[K In function ‘[01m[Kvoid decodeOutputs(const float*, std::vector<ArmorObject>&, Eigen::Matrix<float, 3, 3>&, int, int)[m[K’:
+[01m[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp:277:83:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kimg_w[m[K’ [[01;35m[K-Wunused-parameter[m[K]
+  277 |                             Eigen::Matrix<float,3,3> &transform_matrix, [01;35m[Kconst int img_w[m[K, const int img_h)
+      |                                                                         [01;35m[K~~~~~~~~~~^~~~~[m[K
+[01m[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp:277:100:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kimg_h[m[K’ [[01;35m[K-Wunused-parameter[m[K]
+  277 |                             Eigen::Matrix<float,3,3> &transform_matrix, const int img_w, [01;35m[Kconst int img_h[m[K)
+      |                                                                                          [01;35m[K~~~~~~~~~~^~~~~[m[K
+[01m[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp:[m[K In member function ‘[01m[Kbool ArmorDetector::detect(cv::Mat&, std::vector<ArmorObject>&)[m[K’:
+[01m[K/home/liyuhang/Desktop/TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp:472:31:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Klong unsigned int[m[K’ [[01;35m[K-Wsign-compare[m[K]
+  472 |             for (int i = 0; [01;35m[Ki < N[m[K; i++)
+      |                             [01;35m[K~~^~~[m[K
+[ 33%] [32m[1mLinking CXX executable armor_detector_node[0m
+/usr/bin/ld: warning: libopencv_imgproc.so.4.2, needed by /opt/ros/galactic/lib/libcv_bridge.so, may conflict with libopencv_imgproc.so.405
+/usr/bin/ld: warning: libopencv_core.so.4.2, needed by /opt/ros/galactic/lib/libcv_bridge.so, may conflict with libopencv_core.so.405
+[100%] Built target armor_detector_node
+-- Install configuration: ""
+-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/lib/armor_detector/armor_detector_node
+-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/lib/armor_detector/armor_detector_node" to ""
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/launch
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/launch/armor_detector.launch.py
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/ament_index/resource_index/package_run_dependencies/armor_detector
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/ament_index/resource_index/parent_prefix_path/armor_detector
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/ament_prefix_path.sh
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/ament_prefix_path.dsv
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/path.sh
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/path.dsv
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.bash
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.sh
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.zsh
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.dsv
+-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/package.dsv
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/ament_index/resource_index/packages/armor_detector
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/cmake/armor_detectorConfig.cmake
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/cmake/armor_detectorConfig-version.cmake
+-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/package.xml

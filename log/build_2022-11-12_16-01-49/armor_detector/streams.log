@@ -1,0 +1,30 @@
+[0.014s] Invoking command in '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/galactic /usr/local/bin/cmake --build /home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector -- -j8 -l8
+[0.052s] [35m[1mScanning dependencies of target armor_detector_node[0m
+[0.090s] [ 16%] [32mBuilding CXX object CMakeFiles/armor_detector_node.dir/src/armor_detector/detector_node.cpp.o[0m
+[10.851s] [ 33%] [32m[1mLinking CXX executable armor_detector_node[0m
+[11.613s] /usr/bin/ld: warning: libopencv_imgproc.so.4.2, needed by /opt/ros/galactic/lib/libcv_bridge.so, may conflict with libopencv_imgproc.so.405
+[11.613s] /usr/bin/ld: warning: libopencv_core.so.4.2, needed by /opt/ros/galactic/lib/libcv_bridge.so, may conflict with libopencv_core.so.405
+[11.618s] [100%] Built target armor_detector_node
+[11.622s] Invoked command in '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/galactic /usr/local/bin/cmake --build /home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector -- -j8 -l8
+[11.660s] Invoking command in '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/galactic /usr/local/bin/cmake --install /home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector
+[11.662s] -- Install configuration: ""
+[11.662s] -- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/lib/armor_detector/armor_detector_node
+[11.683s] -- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/lib/armor_detector/armor_detector_node" to ""
+[11.683s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/launch
+[11.684s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/launch/armor_detector.launch.py
+[11.684s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/ament_index/resource_index/package_run_dependencies/armor_detector
+[11.684s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/ament_index/resource_index/parent_prefix_path/armor_detector
+[11.684s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/ament_prefix_path.sh
+[11.684s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/ament_prefix_path.dsv
+[11.684s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/path.sh
+[11.685s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/path.dsv
+[11.685s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.bash
+[11.685s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.sh
+[11.685s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.zsh
+[11.685s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.dsv
+[11.686s] -- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/package.dsv
+[11.687s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/ament_index/resource_index/packages/armor_detector
+[11.688s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/cmake/armor_detectorConfig.cmake
+[11.689s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/cmake/armor_detectorConfig-version.cmake
+[11.689s] -- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/package.xml
+[11.689s] Invoked command in '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/galactic /usr/local/bin/cmake --install /home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector

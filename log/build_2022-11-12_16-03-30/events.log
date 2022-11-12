@@ -1,0 +1,172 @@
+[0.000000] (-) TimerEvent: {}
+[0.000099] (-) JobUnselected: {'identifier': 'arm_controller'}
+[0.000126] (-) JobUnselected: {'identifier': 'armor_processor'}
+[0.000146] (-) JobUnselected: {'identifier': 'auto_navigation'}
+[0.000162] (-) JobUnselected: {'identifier': 'binocular'}
+[0.000178] (-) JobUnselected: {'identifier': 'buff'}
+[0.000638] (-) JobUnselected: {'identifier': 'camera_driver'}
+[0.000893] (-) JobUnselected: {'identifier': 'filter'}
+[0.000933] (-) JobUnselected: {'identifier': 'global_interface'}
+[0.000955] (-) JobUnselected: {'identifier': 'global_user'}
+[0.000985] (-) JobUnselected: {'identifier': 'rmoss_auto_aim'}
+[0.001010] (-) JobUnselected: {'identifier': 'rmoss_base'}
+[0.001353] (-) JobUnselected: {'identifier': 'rmoss_cam'}
+[0.001654] (-) JobUnselected: {'identifier': 'rmoss_core'}
+[0.001897] (-) JobUnselected: {'identifier': 'rmoss_daheng_driver'}
+[0.001928] (-) JobUnselected: {'identifier': 'rmoss_interfaces'}
+[0.001946] (-) JobUnselected: {'identifier': 'rmoss_projectile_motion'}
+[0.001982] (-) JobUnselected: {'identifier': 'rmoss_util'}
+[0.002028] (-) JobUnselected: {'identifier': 'serialport'}
+[0.002050] (armor_detector) JobQueued: {'identifier': 'armor_detector', 'dependencies': OrderedDict()}
+[0.002076] (armor_detector) JobStarted: {'identifier': 'armor_detector'}
+[0.017036] (armor_detector) JobProgress: {'identifier': 'armor_detector', 'progress': 'cmake'}
+[0.018036] (armor_detector) JobProgress: {'identifier': 'armor_detector', 'progress': 'build'}
+[0.019380] (armor_detector) Command: {'cmd': ['/usr/local/bin/cmake', '--build', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector', '--', '-j8', '-l8'], 'cwd': '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'liyuhang'), ('SSH_AGENT_PID', '2728'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/lib:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/intel/openvino_2022/tools/compile_tool:/opt/intel/openvino_2022/runtime/3rdparty/tbb/lib::/opt/intel/openvino_2022/runtime/3rdparty/hddl/lib:/opt/intel/openvino_2022/runtime/lib/intel64:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HDDL_INSTALL_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/hddl'), ('TBB_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/tbb/cmake'), ('HOME', '/home/liyuhang'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.67.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('INTEL_OPENVINO_DIR', '/opt/intel/openvino_2022'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2495'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '10785'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu.mandatory.path'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('IM_CONFIG_PHASE', '1'), ('COLCON_PREFIX_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'liyuhang'), ('JOURNAL_STREAM', '8:49895'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', ':/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu.default.path'), ('USERNAME', 'liyuhang'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/liyuhang/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/liyuhang-Inspiron-7590:@/tmp/.ICE-unix/2766,unix/liyuhang-Inspiron-7590:/tmp/.ICE-unix/2766'), ('INVOCATION_ID', '6cd134efe3f642ddac467d2718960722'), ('XDG_MENU_PREFIX', 'gnome-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-048da31f87.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('ngraph_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('QT_ACCESSIBILITY', '1'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('InferenceEngine_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:/opt/ros/galactic/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:'), ('COLCON', '1'), ('OpenVINO_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('CMAKE_PREFIX_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib')]), 'shell': False}
+[0.057131] (armor_detector) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target armor_detector_node\x1b[0m\n'}
+[0.096991] (armor_detector) StdoutLine: {'line': b'[ 16%] \x1b[32mBuilding CXX object CMakeFiles/armor_detector_node.dir/src/armor_detector/detector_node.cpp.o\x1b[0m\n'}
+[0.099797] (-) TimerEvent: {}
+[0.200054] (-) TimerEvent: {}
+[0.300293] (-) TimerEvent: {}
+[0.400570] (-) TimerEvent: {}
+[0.500855] (-) TimerEvent: {}
+[0.601123] (-) TimerEvent: {}
+[0.701387] (-) TimerEvent: {}
+[0.801637] (-) TimerEvent: {}
+[0.901915] (-) TimerEvent: {}
+[1.002182] (-) TimerEvent: {}
+[1.102450] (-) TimerEvent: {}
+[1.202719] (-) TimerEvent: {}
+[1.302957] (-) TimerEvent: {}
+[1.403193] (-) TimerEvent: {}
+[1.503461] (-) TimerEvent: {}
+[1.603717] (-) TimerEvent: {}
+[1.703984] (-) TimerEvent: {}
+[1.804302] (-) TimerEvent: {}
+[1.904581] (-) TimerEvent: {}
+[2.004855] (-) TimerEvent: {}
+[2.105120] (-) TimerEvent: {}
+[2.205383] (-) TimerEvent: {}
+[2.305643] (-) TimerEvent: {}
+[2.405903] (-) TimerEvent: {}
+[2.506155] (-) TimerEvent: {}
+[2.606416] (-) TimerEvent: {}
+[2.706705] (-) TimerEvent: {}
+[2.806945] (-) TimerEvent: {}
+[2.907207] (-) TimerEvent: {}
+[3.007488] (-) TimerEvent: {}
+[3.107756] (-) TimerEvent: {}
+[3.208021] (-) TimerEvent: {}
+[3.308302] (-) TimerEvent: {}
+[3.408611] (-) TimerEvent: {}
+[3.508900] (-) TimerEvent: {}
+[3.609166] (-) TimerEvent: {}
+[3.709429] (-) TimerEvent: {}
+[3.809691] (-) TimerEvent: {}
+[3.909938] (-) TimerEvent: {}
+[4.010241] (-) TimerEvent: {}
+[4.110523] (-) TimerEvent: {}
+[4.210825] (-) TimerEvent: {}
+[4.311129] (-) TimerEvent: {}
+[4.411457] (-) TimerEvent: {}
+[4.511725] (-) TimerEvent: {}
+[4.612003] (-) TimerEvent: {}
+[4.712273] (-) TimerEvent: {}
+[4.812542] (-) TimerEvent: {}
+[4.912815] (-) TimerEvent: {}
+[5.013085] (-) TimerEvent: {}
+[5.113351] (-) TimerEvent: {}
+[5.213624] (-) TimerEvent: {}
+[5.313897] (-) TimerEvent: {}
+[5.414184] (-) TimerEvent: {}
+[5.514415] (-) TimerEvent: {}
+[5.614700] (-) TimerEvent: {}
+[5.714959] (-) TimerEvent: {}
+[5.815222] (-) TimerEvent: {}
+[5.915503] (-) TimerEvent: {}
+[6.015783] (-) TimerEvent: {}
+[6.116061] (-) TimerEvent: {}
+[6.216348] (-) TimerEvent: {}
+[6.316631] (-) TimerEvent: {}
+[6.416919] (-) TimerEvent: {}
+[6.517198] (-) TimerEvent: {}
+[6.617445] (-) TimerEvent: {}
+[6.717742] (-) TimerEvent: {}
+[6.818033] (-) TimerEvent: {}
+[6.918310] (-) TimerEvent: {}
+[7.018574] (-) TimerEvent: {}
+[7.118855] (-) TimerEvent: {}
+[7.219097] (-) TimerEvent: {}
+[7.319367] (-) TimerEvent: {}
+[7.419659] (-) TimerEvent: {}
+[7.519939] (-) TimerEvent: {}
+[7.620216] (-) TimerEvent: {}
+[7.720509] (-) TimerEvent: {}
+[7.820808] (-) TimerEvent: {}
+[7.921079] (-) TimerEvent: {}
+[8.021311] (-) TimerEvent: {}
+[8.121608] (-) TimerEvent: {}
+[8.221871] (-) TimerEvent: {}
+[8.322159] (-) TimerEvent: {}
+[8.422425] (-) TimerEvent: {}
+[8.522687] (-) TimerEvent: {}
+[8.622946] (-) TimerEvent: {}
+[8.723208] (-) TimerEvent: {}
+[8.823470] (-) TimerEvent: {}
+[8.923738] (-) TimerEvent: {}
+[9.023998] (-) TimerEvent: {}
+[9.124257] (-) TimerEvent: {}
+[9.224515] (-) TimerEvent: {}
+[9.324773] (-) TimerEvent: {}
+[9.425053] (-) TimerEvent: {}
+[9.525319] (-) TimerEvent: {}
+[9.625578] (-) TimerEvent: {}
+[9.725843] (-) TimerEvent: {}
+[9.826102] (-) TimerEvent: {}
+[9.926376] (-) TimerEvent: {}
+[10.026644] (-) TimerEvent: {}
+[10.126907] (-) TimerEvent: {}
+[10.227242] (-) TimerEvent: {}
+[10.327511] (-) TimerEvent: {}
+[10.427797] (-) TimerEvent: {}
+[10.528056] (-) TimerEvent: {}
+[10.628319] (-) TimerEvent: {}
+[10.728601] (-) TimerEvent: {}
+[10.798040] (armor_detector) StdoutLine: {'line': b'[ 33%] \x1b[32m\x1b[1mLinking CXX executable armor_detector_node\x1b[0m\n'}
+[10.828726] (-) TimerEvent: {}
+[10.929008] (-) TimerEvent: {}
+[11.029332] (-) TimerEvent: {}
+[11.129665] (-) TimerEvent: {}
+[11.229989] (-) TimerEvent: {}
+[11.330302] (-) TimerEvent: {}
+[11.430597] (-) TimerEvent: {}
+[11.530897] (-) TimerEvent: {}
+[11.583588] (armor_detector) StderrLine: {'line': b'/usr/bin/ld: warning: libopencv_imgproc.so.4.2, needed by /opt/ros/galactic/lib/libcv_bridge.so, may conflict with libopencv_imgproc.so.405\n'}
+[11.583796] (armor_detector) StderrLine: {'line': b'/usr/bin/ld: warning: libopencv_core.so.4.2, needed by /opt/ros/galactic/lib/libcv_bridge.so, may conflict with libopencv_core.so.405\n'}
+[11.588802] (armor_detector) StdoutLine: {'line': b'[100%] Built target armor_detector_node\n'}
+[11.593154] (armor_detector) CommandEnded: {'returncode': 0}
+[11.621443] (armor_detector) JobProgress: {'identifier': 'armor_detector', 'progress': 'install'}
+[11.627593] (armor_detector) Command: {'cmd': ['/usr/local/bin/cmake', '--install', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector'], 'cwd': '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'liyuhang'), ('SSH_AGENT_PID', '2728'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver/lib:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user/lib:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/intel/openvino_2022/tools/compile_tool:/opt/intel/openvino_2022/runtime/3rdparty/tbb/lib::/opt/intel/openvino_2022/runtime/3rdparty/hddl/lib:/opt/intel/openvino_2022/runtime/lib/intel64:/opt/MVS/lib/64:/opt/MVS/lib/32:/opt/MVS/lib/64:/opt/MVS/lib/32:'), ('HDDL_INSTALL_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/hddl'), ('TBB_DIR', '/opt/intel/openvino_2022/runtime/3rdparty/tbb/cmake'), ('HOME', '/home/liyuhang'), ('CHROME_DESKTOP', 'code-url-handler.desktop'), ('TERM_PROGRAM_VERSION', '1.67.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('INTEL_OPENVINO_DIR', '/opt/intel/openvino_2022'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2495'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '10785'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu.mandatory.path'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('IM_CONFIG_PHASE', '1'), ('COLCON_PREFIX_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'liyuhang'), ('JOURNAL_STREAM', '8:49895'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', ':/usr/local/lib/pkgconfig:/usr/local/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu.default.path'), ('USERNAME', 'liyuhang'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('MVCAM_SDK_PATH', '/opt/MVS'), ('PATH', '/opt/ros/galactic/bin:/home/liyuhang/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/liyuhang-Inspiron-7590:@/tmp/.ICE-unix/2766,unix/liyuhang-Inspiron-7590:/tmp/.ICE-unix/2766'), ('INVOCATION_ID', '6cd134efe3f642ddac467d2718960722'), ('XDG_MENU_PREFIX', 'gnome-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-048da31f87.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('ngraph_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('QT_ACCESSIBILITY', '1'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('InferenceEngine_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', '--ms-enable-electron-run-as-node'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/build/armor_detector'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:/opt/ros/galactic/lib/python3.8/site-packages:/opt/intel/openvino_2022/python/python3.8:/opt/intel/openvino_2022/python/python3:'), ('COLCON', '1'), ('OpenVINO_DIR', '/opt/intel/openvino_2022/runtime/cmake'), ('CMAKE_PREFIX_PATH', '/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/camera_driver:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_user:/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/global_interface:/opt/ros/galactic'), ('MVCAM_COMMON_RUNENV', '/opt/MVS/lib')]), 'shell': False}
+[11.630737] (armor_detector) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[11.630923] (-) TimerEvent: {}
+[11.631170] (armor_detector) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/lib/armor_detector/armor_detector_node\n'}
+[11.649173] (armor_detector) StdoutLine: {'line': b'-- Set runtime path of "/home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/lib/armor_detector/armor_detector_node" to ""\n'}
+[11.649493] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/launch\n'}
+[11.649639] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/launch/armor_detector.launch.py\n'}
+[11.649725] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/ament_index/resource_index/package_run_dependencies/armor_detector\n'}
+[11.649807] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/ament_index/resource_index/parent_prefix_path/armor_detector\n'}
+[11.649886] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/ament_prefix_path.sh\n'}
+[11.649976] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/ament_prefix_path.dsv\n'}
+[11.650037] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/path.sh\n'}
+[11.650096] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/environment/path.dsv\n'}
+[11.650154] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.bash\n'}
+[11.650230] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.sh\n'}
+[11.650322] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.zsh\n'}
+[11.650400] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/local_setup.dsv\n'}
+[11.650459] (armor_detector) StdoutLine: {'line': b'-- Installing: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/package.dsv\n'}
+[11.650517] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/ament_index/resource_index/packages/armor_detector\n'}
+[11.650575] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/cmake/armor_detectorConfig.cmake\n'}
+[11.650633] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/cmake/armor_detectorConfig-version.cmake\n'}
+[11.650690] (armor_detector) StdoutLine: {'line': b'-- Up-to-date: /home/liyuhang/Desktop/TUP-Vision-2023-Based/install/armor_detector/share/armor_detector/package.xml\n'}
+[11.651672] (armor_detector) CommandEnded: {'returncode': 0}
+[11.713156] (armor_detector) JobEnded: {'identifier': 'armor_detector', 'rc': 0}
+[11.713981] (-) EventReactorShutdown: {}
