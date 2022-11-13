@@ -89,6 +89,27 @@ public:
     T& w() {return (*this)[ W ];}
 };
 
+template <class T>
+class SingerModelState : public filter::Vector<T, 3>
+{   
+    // typedef filter::Vector<T, 3> Vector;
+
+public:
+    static constexpr size_t X = 0;
+    static constexpr size_t V = 1;
+    static constexpr size_t A = 2;
+
+    // Vector s() const {return (*this);}
+    T x() const {return (*this)[X];}
+    T v() const {return (*this)[V];}
+    T a() const {return (*this)[A];}
+
+    // Vector& s() {return (*this);}
+    T& x() {return (*this)[X];}
+    T& v() {return (*this)[V];}
+    T& a() {return (*this)[A];}
+};
+
 template<typename T>
 class CVModelControl : public filter::Vector<T, 2>
 {
@@ -139,6 +160,27 @@ public:
     T& v() {return (*this)[V];}
     T& theta() {return (*this)[Theta];}
     T& w() {return (*this)[W];}
+};
+
+template<typename T>
+class SingerModelControl : public filter::Vector<T, 3>
+{
+    // typedef filter::Vector<T, 3> Vector;
+
+public:
+    static constexpr size_t X = 0;
+    static constexpr size_t V = 1;
+    static constexpr size_t A = 2;
+
+    // Vector s() const {return (*this);}
+    T x() const {return (*this)[X];}
+    T v() const {return (*this)[V];}
+    T a() const {return (*this)[A];}
+
+    // Vector& s() {return (*this);}
+    T& x() {return (*this)[X];}
+    T& v() {return (*this)[V];}
+    T& a() {return (*this)[A];}
 };
 
 #endif

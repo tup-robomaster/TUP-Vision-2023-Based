@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-07 16:34:37
- * @LastEditTime: 2022-11-08 00:22:26
+ * @LastEditTime: 2022-11-13 10:21:42
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/test/imm_system_model.hpp
  */
 #include "../include/motion_model/linear_system_model.hpp"
@@ -117,7 +117,7 @@ protected:
     static constexpr size_t X5 = 5;
 
 public:
-    T x() const {return (*this);}
+    Vector x() const {return (*this);}
     T x0() const {return (*this)[X0];}
     T x1() const {return (*this)[X1];}
     T x2() const {return (*this)[X2];}
@@ -125,7 +125,7 @@ public:
     T x4() const {return (*this)[X4];}
     T x5() const {return (*this)[X5];}
 
-    T& x() {return (*this);}
+    Vector& x() {return (*this);}
     T& x0() {return (*this)[X0];}
     T& x1() {return (*this)[X1];}
     T& x2() {return (*this)[X2];}
@@ -185,3 +185,33 @@ public:
     T& theta() {return (*this)[Theta];}
     T& w() {return (*this)[W];}
 };
+
+template<typename T>
+class ModelControl : public filter::Vector<T, 6>
+{
+    typedef filter::Vector<T, 6> Vector;
+    static constexpr size_t X0 = 0;
+    static constexpr size_t X1 = 1;
+    static constexpr size_t X2 = 2;
+    static constexpr size_t X3 = 3;
+    static constexpr size_t X4 = 4;
+    static constexpr size_t X5 = 5;
+
+public:
+    Vector x() const {return (*this);}
+    T x0() const {return (*this)[X0];}
+    T x1() const {return (*this)[X1];}
+    T x2() const {return (*this)[X2];}
+    T x3() const {return (*this)[X3];}
+    T x4() const {return (*this)[X4];}
+    T x5() const {return (*this)[X5];}
+
+    Vector& x() {return (*this);}
+    T& x0() {return (*this)[X0];}
+    T& x1() {return (*this)[X1];}
+    T& x2() {return (*this)[X2];}
+    T& x3() {return (*this)[X3];}
+    T& x4() {return (*this)[X4];}
+    T& x5() {return (*this)[X5];}
+};
+

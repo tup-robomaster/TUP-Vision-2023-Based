@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-04 19:04:11
- * @LastEditTime: 2022-11-06 15:56:41
+ * @LastEditTime: 2022-11-14 09:05:44
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/test/main.cpp
  */
 #include <cmath>
@@ -23,11 +23,139 @@ typedef CTRVModel<T> SystemModel;
 typedef PositionMeasurement<T> PosMeasure;
 typedef PositionMeasurementModel<T> PosModel;
 
+//Singer Model
+typedef SingerModelState<T> SingerState;
+typedef SingerModelControl<T> SingerControl;
+typedef SingerModel<T> Singer;
+typedef SingerPositionMeasurement<T> SingerPosMeasure;
+typedef SingerPositionMeasurementModel<T> SingerPosModel;
+
 namespace Plt = matplotlibcpp;
+
+//基于CTRV模型的扩展卡尔曼滤波
+void test_ekf_based_CTRV();
+
+//基于IMM交互式多模型的扩展卡尔曼滤波（CV、CA、CTRV）
+void test_ekf_based_IMM();
+
+//基于Singer模型的卡尔曼滤波算法
+void test_ekf_based_Singer();
 
 int main(int argc, char** argv)
 {
-    auto time_start = std::chrono::steady_clock::now();
+    // test_ekf_based_CTRV();
+    test_ekf_based_Singer();
+
+    return 0;
+}
+
+void test_ekf_based_Singer()
+{
+    SingerState x;
+    x.setZero();
+    
+    //控制量
+    SingerControl u;
+
+    //Singer模型
+    Singer singer;
+
+    //观测模型
+    SingerPosModel pos_model;
+
+    //随机噪声
+    std::default_random_engine generator;
+    generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+    std::normal_distribution<T> noise(0, 1);
+
+    //ekf
+    filter::ExtendKalmanFilter<SingerState> predictor;
+    filter::ExtendKalmanFilter<SingerState> ekf;
+
+    std::vector<float> Time(100);
+    std::vector<double> X_pred(100), V_pred(100), A_pred(100);
+    std::vector<double> X_ekf(100), V_ekf(100), A_ekf(100);
+    std::vector<double> X_true(100), V_true(100), A_true(100);
+
+    T system_noise = 0.1;
+    T pos_noise = 0.025;
+
+    bool is_init = false;
+    float x0 = 2.5;
+    float v0 = 0.2;
+    float a0 = 0.1;
+
+    float r = 0.25;
+    // float x0 = 2.5;
+    // float y0 = 2.5;
+    float v = 0.8;
+    float theta = 0.4;
+    float w = 3.0;
+
+    x.x() = x0;
+    x.v() = v0;
+    x.a() = a0;
+
+    float xx = x0;
+    float vv = v0;
+    float aa = a0;
+    for(float t = 0; t < 5.0; t += 0.05)
+    {
+        // xx = xx + (v / w) * (sin(w * t + theta) - sin(theta));
+        xx = xx + v0 * t + 0.5 * a0 * pow(t, 2);
+        vv = vv + a0 * t;
+        aa = a0 + 0.1 * t;
+
+        //
+        x.x() = xx;
+        x.v() = vv;
+        x.a() = aa;
+
+        if(!is_init)
+        {
+            predictor.init(x);
+            ekf.init(x);
+            is_init = true;
+        }
+
+        auto x_model = singer.f(x, u, t);
+
+        x.x() += system_noise * noise(generator);
+
+        auto x_pred = predictor.predict(singer, u, t);
+        auto x_ekf = ekf.predict(singer, u, t);
+
+        //更新
+        SingerPosMeasure pos = pos_model.h(x_model);
+        x_ekf = ekf.update(pos_model, pos);
+
+        Time.push_back(t);
+        X_true.push_back(xx);
+        X_pred.push_back(x_model.x());
+        X_ekf.push_back(x_ekf.x());
+    }
+
+    // 
+    Plt::figure_size(640, 480);
+    Plt::named_plot("X_true", Time, X_true);
+    Plt::named_plot("X_pred", Time, X_pred);
+    Plt::named_plot("X_ekf", Time, X_ekf);
+    // Plt::named_plot("X_pred", Pred_X, Pred_Y);
+    // Plt::named_plot("X_model", X_pred, Y_pred);
+    Plt::xlim(0, 5);
+    // Plt::ylim(0.00, 16.00);
+    Plt::title("Singer model figure");
+    Plt::legend();
+    Plt::show();
+}
+
+void test_ekf_based_IMM()
+{
+    
+}
+
+void test_ekf_based_CTRV()
+{
     //状态向量
     State x;
     x.setZero();
@@ -151,5 +279,4 @@ int main(int argc, char** argv)
     Plt::legend();
     Plt::show();
 
-    return 0;
 }

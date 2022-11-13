@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-04 13:40:21
- * @LastEditTime: 2022-11-06 13:28:57
- * @FilePath: /filter/test/measurement_model.cpp
+ * @LastEditTime: 2022-11-13 17:44:48
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/test/measurement_model.cpp
  */
 #include "./system_model.hpp"
 
@@ -71,5 +71,61 @@ protected:
         this->H(M::V, S::V) = 1;
         this->H(M::Theta, S::Theta) = 1;
         this->H(M::W, S::W) = 1;
+    }
+};
+
+template<class T>
+class SingerPositionMeasurement : public filter::Vector<T, 3>
+{
+    typedef filter::Vector<T, 3> Vector;
+
+public:
+    static constexpr size_t X = 0;
+    static constexpr size_t V = 1;
+    static constexpr size_t A = 2;
+
+    Vector s() const {return (*this);}
+    T x() const {return (*this)[X];}
+    T v() const {return (*this)[V];}
+    T a() const {return (*this)[A];}
+
+    Vector& s() {return (*this);}
+    T& x() {return (*this)[X];}
+    T& v() {return (*this)[V];}
+    T& a() {return (*this)[A];}
+};
+
+template<class T, template<class> class CovarianceBase = filter::Base>
+class SingerPositionMeasurementModel : public filter::LinearMeasurementModel<SingerModelState<T>, SingerPositionMeasurement<T>, CovarianceBase>
+{
+    typedef SingerModelState<T> S;
+    typedef SingerPositionMeasurement<T> M;
+
+public:
+    SingerPositionMeasurementModel()
+    {
+        this->H.setIdentity();
+        this->V.setIdentity();
+    }
+
+    M h(const S& x) const
+    {
+        M x_;
+
+        x_.x() = x.x();
+        x_.v() = x.v();
+        x_.a() = x.a();
+
+        return x_;        
+    }
+
+    void updateJacobians(const S& x)
+    {
+        this->H.setZero();
+
+        //
+        this->H(M::X, M::X) = 1;
+        this->H(M::V, M::V) = 1;
+        this->H(M::A, M::A) = 1;
     }
 };

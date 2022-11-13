@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-03 15:51:26
- * @LastEditTime: 2022-11-06 17:01:53
+ * @LastEditTime: 2022-11-14 08:51:21
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/extend_kalman_filter.hpp
  */
 #ifndef EXTEND_KALMAN_FILTER_HPP_
@@ -46,6 +46,10 @@ namespace filter
         using Filter_Base::P;
     
     public:
+        Covariance<StateType> S_;
+        double likelihood_;
+    
+    public:
         ExtendKalmanFilter()
         {
             //初始化协方差矩阵
@@ -56,12 +60,12 @@ namespace filter
 
         //无控制输入的线性模型预测
         template<class Control, template<class> class CovarianceBase>
-        const State& predict(SystemModelType<Control, CovarianceBase>& s)
+        const State& predict(SystemModelType<Control, CovarianceBase>& s, const double& dt)
         {
             //预测
             Control u;
             u.setZero();
-            return predict(s, u);
+            return predict(s, u, dt);
         }
 
         //含控制输入的线性模型预测
@@ -85,9 +89,20 @@ namespace filter
         {
             m.updateJacobians(x);
 
+            //测量值与预测值之间的残差
+            auto v = z - m.H * this->getState();
+            // std::cout << v.size() << std::endl;
+            
             //计算卡尔曼增益
+            //残差的协方差矩阵
             Covariance<Measurement> S = (m.H * P * m.H.transpose()) + (m.V * m.getCovariance() * m.V.transpose());
             KalmanGain<Measurement> K = P * (m.H.transpose() * S.inverse());
+
+            //假定模型残差符合高斯分布，计算似然值
+            // double det = S.determinant();
+            // this->S_ = S;
+            // S = S.inverse();
+            // this->likelihood_ = (1.0 / sqrt(2 * M_PI * fabs(det))) * exp(-0.5 * v.transpose() * S * v);
 
             //更新状态矩阵和协方差矩阵
             x += (K * (z - m.h(x)));

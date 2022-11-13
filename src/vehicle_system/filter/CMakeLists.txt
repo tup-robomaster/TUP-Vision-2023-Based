@@ -92,9 +92,9 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 add_executable(testing 
-  test/imm_system_model.hpp
-  test/imm.hpp
-  test/imm.cpp
+  # test/imm_system_model.hpp
+  # test/imm.hpp
+  # test/imm.cpp
   test/system_model.cpp 
   test/system_model.hpp
   test/measurement_model.cpp
@@ -115,6 +115,18 @@ add_executable(figure
 target_link_libraries(figure
   matplotlib_cpp::matplotlib_cpp
 )
+
+# add_executable(imm_testing 
+#   test/imm.hpp
+#   test/imm.cpp 
+#   test/imm_system_model.hpp  
+#   test/ekf_based_imm.cpp 
+# )
+
+# target_link_libraries(imm_testing 
+#   ${PROJECT_NAME}
+#   ceres.so
+# )
       
 # 添加头文件地址
 target_include_directories(${PROJECT_NAME} PUBLIC
