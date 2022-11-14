@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 14:25:39
- * @LastEditTime: 2022-11-11 19:46:28
+ * @LastEditTime: 2022-11-14 09:44:00
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
  */
 #include "../../include/daheng_driver/daheng_cam_node.hpp"
@@ -11,7 +11,7 @@ using namespace std::chrono_literals;
 
 namespace camera_driver
 {
-    daheng_cam_node::daheng_cam_node(const rclcpp::NodeOptions &options)
+    DahengCamNode::DahengCamNode(const rclcpp::NodeOptions &options)
     : Node("daheng_driver", options)
     {
         RCLCPP_WARN(this->get_logger(), "Camera driver node...");
@@ -34,7 +34,7 @@ namespace camera_driver
         // acquisition system clock
         last_frame = std::chrono::steady_clock::now();
 
-        // open daheng_camera
+        // open DaHengCam
         if(!daheng_cam->open())
         {
             RCLCPP_WARN(this->get_logger(), "Camera open failed!");
@@ -44,15 +44,23 @@ namespace camera_driver
             RCLCPP_INFO(this->get_logger(), "Camera open success!");
         }
         
-        timer = this->create_wall_timer(1ms, std::bind(&daheng_cam_node::image_callback, this));
+        timer = this->create_wall_timer(1ms, std::bind(&DahengCamNode::image_callback, this));
+
+        bool debug_;
+        this->declare_parameter<bool>("debug", true);
+        this->get_parameter("debug", debug_);
+        if(debug_)
+        {
+            //动态调参回调
+            callback_handle_ = this->add_on_set_parameters_callback(std::bind(&DahengCamNode::paramsCallback, this, std::placeholders::_1));
+        }
+
     }
 
-    std::unique_ptr<daheng_camera> daheng_cam_node::init_daheng_cam()
+    std::unique_ptr<DaHengCam> DahengCamNode::init_daheng_cam()
     {
-        daheng_cam_param daheng_cam_param_;
-        
         this->declare_parameter("daheng_cam_id", 1);
-        this->declare_parameter("image_width", 1080);
+        this->declare_parameter("image_width", 1280);
         this->declare_parameter("image_height", 1024);
         this->declare_parameter("width_scale", 1);
         this->declare_parameter("height_scale", 1);
@@ -81,11 +89,114 @@ namespace camera_driver
         daheng_cam_param_.balance_g = this->get_parameter("balance_g").as_double();
         daheng_cam_param_.balance_r = this->get_parameter("balance_r").as_double();
 
-        return std::make_unique<daheng_camera>(daheng_cam_param_);
+        return std::make_unique<DaHengCam>(daheng_cam_param_);
+    }
+
+    rcl_interfaces::msg::SetParametersResult DahengCamNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
+    {
+        rcl_interfaces::msg::SetParametersResult result;
+        result.successful = false;
+        result.reason = "debug";
+        for(const auto& param : params)
+        {
+            if(param.get_name() == "exposure_time")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
+                {
+                    if(param.as_int() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_int()
+                        );
+
+                        this->daheng_cam_param_.exposure_time = param.as_int();
+                        this->daheng_cam->SetExposureTime(this->daheng_cam_param_.exposure_time);
+                        result.successful = true;
+                    }
+                }
+            }
+            if(param.get_name() == "exposure_gain")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
+                {
+                    if(param.as_int() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_int()
+                        );
+                        this->daheng_cam_param_.exposure_gain = param.as_int();
+                        this->daheng_cam->SetGAIN(3, this->daheng_cam_param_.exposure_gain);
+                        result.successful = true;
+                    }
+                }
+            }
+            if(param.get_name() == "balance_b")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+                {
+                    if(param.as_double() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_double()
+                        );
+                        this->daheng_cam_param_.balance_b = param.as_double();
+                        this->daheng_cam->Set_BALANCE(0, this->daheng_cam_param_.balance_b);
+                        result.successful = true;
+                    }
+                }
+            }
+            if(param.get_name() == "balance_g")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+                {
+                    if(param.as_double() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_double()
+                        );
+                        this->daheng_cam_param_.balance_g = param.as_double();
+                        this->daheng_cam->Set_BALANCE(1, this->daheng_cam_param_.balance_g);
+                        result.successful = true;
+                    }
+                }
+            }
+            if(param.get_name() == "balance_r")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+                {
+                    if(param.as_double() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_double()
+                        );
+                        this->daheng_cam_param_.balance_r = param.as_double();
+                        this->daheng_cam->Set_BALANCE(2, this->daheng_cam_param_.balance_r);
+                        result.successful = true;
+                    }
+                }
+            }
+        }
+        
+        return result;
     }
 
 
-    std::unique_ptr<sensor_msgs::msg::Image> daheng_cam_node::convert_frame_to_msg(cv::Mat frame)
+    std::unique_ptr<sensor_msgs::msg::Image> DahengCamNode::convert_frame_to_msg(cv::Mat frame)
     {
         std_msgs::msg::Header header;
         sensor_msgs::msg::Image ros_image;
@@ -110,7 +221,7 @@ namespace camera_driver
         return msg_ptr;
     }
 
-    void daheng_cam_node::image_callback()
+    void DahengCamNode::image_callback()
     {
         if(!daheng_cam->get_frame(frame))
         {
@@ -130,21 +241,21 @@ namespace camera_driver
             image_pub->publish(std::move(msg));
         }
 
-        // cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
-        // cv::imshow("daheng_cam_frame", frame);
-        // cv::waitKey(1);
+        cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
+        cv::imshow("daheng_cam_frame", frame);
+        cv::waitKey(1);
     }
 }
 
 int main(int argc, char** argv)
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<camera_driver::daheng_cam_node>());
+    rclcpp::spin(std::make_shared<camera_driver::DahengCamNode>());
     rclcpp::shutdown();
     
     return 0;
 }
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(camera_driver::daheng_cam_node)
+RCLCPP_COMPONENTS_REGISTER_NODE(camera_driver::DahengCamNode)
 

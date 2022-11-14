@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 12:12:19
- * @LastEditTime: 2022-10-09 14:52:00
- * @FilePath: /tup_2023/src/camera_driver/include/daheng_driver/daheng_camera.hpp
+ * @LastEditTime: 2022-11-14 09:33:51
+ * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_camera.hpp
  */
 
 //daheng
@@ -25,7 +25,7 @@ using namespace std;
 using namespace cv;
 namespace camera_driver
 {
-    struct daheng_cam_param
+    struct DahengCamParam
     {
         int daheng_cam_id;
         int image_width;
@@ -44,7 +44,7 @@ namespace camera_driver
     };
     
     //本类现只应对使用单个相机的情况
-    class daheng_camera
+    class DaHengCam
     {
     private:
         //枚举操作成功与失败信息
@@ -74,9 +74,9 @@ namespace camera_driver
 
     public:
         //构造函数，初始化库
-        daheng_camera(daheng_cam_param daheng_param);
+        DaHengCam(DahengCamParam daheng_param);
         //析构函数释放资源
-        ~daheng_camera();
+        ~DaHengCam();
         
     public:
         bool open();
@@ -88,14 +88,8 @@ namespace camera_driver
         bool SetStreamOn();
         //设置分辨率，支持1:1(最大1280*1024),1:2,2:1,2:2(最小640*512),默认1:1
         bool SetResolution(int width_scale = 1, int height_scale = 1);
-        //手动设置曝光值,单位us,正常大小应在2000至8000
-        bool SetExposureTime(int ExposureTime);
-        //设置曝光增益
-        bool SetGAIN(int value, int ExpGain);
         //设置自动白平衡,0表示关闭，1表示开启
         bool Set_BALANCE_AUTO(int value);
-        //手动设置白平衡,value表示平衡通道，value_number表示具体值,0、1、2对应B、G、R，value_number范围为10到80,10表示正常
-        bool Set_BALANCE(int value, float value_number);
         //Color_Correct
         bool Color_Correct(bool value);
         // Set Gamma
@@ -106,6 +100,15 @@ namespace camera_driver
         bool Set_Saturation(bool set_status,int dSaturationParam);
     
     public:
+        //手动设置曝光值,单位us,正常大小应在2000至8000
+        bool SetExposureTime(int ExposureTime);
+        
+        //设置曝光增益
+        bool SetGAIN(int value, int ExpGain);
+
+        //手动设置白平衡,value表示平衡通道，value_number表示具体值,0、1、2对应B、G、R，value_number范围为10到80,10表示正常
+        bool Set_BALANCE(int value, float value_number);
+        
         //采集一次图像,更新时间戳
         bool UpdateTimestampOffset(std::chrono::_V2::steady_clock::time_point time_start);
         //读取相机时间戳
@@ -114,7 +117,7 @@ namespace camera_driver
         bool get_frame(cv::Mat &Src);
     
     private:
-        daheng_cam_param daheng_cam_param_;
+        DahengCamParam daheng_cam_param_;
     };
 
 }

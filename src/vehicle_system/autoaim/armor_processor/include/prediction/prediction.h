@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-11-14 01:16:35
+ * @LastEditTime: 2022-11-14 08:46:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.h
  */
 #ifndef PREDICTION_HPP
@@ -26,7 +26,7 @@
 #include <vector>
 
 #include <stdio.h>
-#include <lapacke.h>
+// #include <lapacke.h> //如果出现找不到此文件夹的错误，注释掉试一试，不行就去官方安装
 
 namespace armor_processor
 {

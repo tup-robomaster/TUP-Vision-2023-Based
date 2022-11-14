@@ -2,11 +2,11 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 02:02:35
- * @LastEditTime: 2022-10-09 16:02:56
- * @FilePath: /tup_2023/src/camera_driver/include/daheng_driver/daheng_cam_node.hpp
+ * @LastEditTime: 2022-11-14 09:11:29
+ * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_cam_node.hpp
  */
-#ifndef DAHENG_CAM_NODE_HPP
-#define DAHENG_CAM_NODE_HPP
+#ifndef DAHENG_CAM_NODE_HPP_
+#define DAHENG_CAM_NODE_HPP_
 
 #include "./daheng_camera.hpp"
 
@@ -20,11 +20,11 @@
 
 namespace camera_driver
 {
-    class daheng_cam_node : public rclcpp::Node
+    class DahengCamNode : public rclcpp::Node
     {
     public:
-        daheng_cam_node(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
-        ~daheng_cam_node(){};
+        DahengCamNode(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+        ~DahengCamNode(){};
     
     private:    
         cv::Mat frame;
@@ -46,8 +46,18 @@ namespace camera_driver
         void image_callback();
     
     private:
-        std::unique_ptr<daheng_camera> daheng_cam;
-        std::unique_ptr<daheng_camera> init_daheng_cam();
+        DahengCamParam daheng_cam_param_;
+        std::unique_ptr<DaHengCam> daheng_cam;
+        std::unique_ptr<DaHengCam> init_daheng_cam();
+    
+    protected:
+        /**
+         * @brief 动态调参
+         * @param 参数服务器参数
+         * @return 是否修改参数成功
+         */
+        rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
+        OnSetParametersCallbackHandle::SharedPtr callback_handle_;
     };
 } // namespace camera_driver
 

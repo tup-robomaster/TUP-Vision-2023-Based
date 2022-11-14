@@ -3,9 +3,9 @@
 namespace camera_driver
 {
     /**
-     * @brief 相机构建函数  完成库的初始化
+     * @brief 相机构建函数,完成库的初始化
      */
-    daheng_camera::daheng_camera(daheng_cam_param daheng_param)
+    DaHengCam::DaHengCam(DahengCamParam daheng_param)
     {
         //初始化库
         status = GXInitLib();
@@ -20,9 +20,9 @@ namespace camera_driver
     }
 
     /**
-     * @brief daheng_camera::~daheng_camera 析构函数关闭设备
+     * @brief DaHengCam::~DaHengCam 析构函数关闭设备
      */
-    daheng_camera::~daheng_camera()
+    DaHengCam::~DaHengCam()
     {
         //停 采
         status = GXStreamOff(hDevice);
@@ -33,7 +33,7 @@ namespace camera_driver
         // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 析构!\n");
     }
 
-    bool daheng_camera::open()
+    bool DaHengCam::open()
     {
         /**
          * @brief 外部调用接口
@@ -92,7 +92,7 @@ namespace camera_driver
      * @param serial_number为要打开设备的序列号
      * @return 返回检测到的连接相机个数
      */
-    int daheng_camera::StartDevice(int serial_number)
+    int DaHengCam::StartDevice(int serial_number)
     {
         uint32_t nDeviceNum = 0;
         //枚 举 设 备 列 表
@@ -120,10 +120,10 @@ namespace camera_driver
     }
 
     /**
-     * @brief daheng_camera::SetStreamOn 设置设备开始采集，设置分辨率应在采集图像之前
+     * @brief DaHengCam::SetStreamOn 设置设备开始采集，设置分辨率应在采集图像之前
      * @return bool 返回是否设置成功
      */
-    bool daheng_camera::SetStreamOn()
+    bool DaHengCam::SetStreamOn()
     {
         //    status = GXSetAcqusitionBufferNumber(hDevice,1);
         //    if(status == GX_STATUS_SUCCESS){
@@ -205,11 +205,11 @@ namespace camera_driver
         }
     }
     /**
-     * @brief daheng_camera::UpdateTimestamp 进行一次采图，更新时间戳
+     * @brief DaHengCam::UpdateTimestamp 进行一次采图，更新时间戳
      * @param Src 引入方式传递
      * @return bool 返回是否成功
      */
-    bool daheng_camera::UpdateTimestampOffset(std::chrono::_V2::steady_clock::time_point time_start)
+    bool DaHengCam::UpdateTimestampOffset(std::chrono::_V2::steady_clock::time_point time_start)
     {
         //清空缓冲队列
         int64_t nPayLoadSize = 0;
@@ -242,11 +242,11 @@ namespace camera_driver
     }
 
     /**
-     * @brief daheng_camera::GetMat 读取图像
+     * @brief DaHengCam::GetMat 读取图像
      * @param Src 引入方式传递
      * @return bool 返回是否成功
      */
-    bool daheng_camera::get_frame(cv::Mat &Src)
+    bool DaHengCam::get_frame(cv::Mat &Src)
     {
         // ------------------------------------------- For Soft Trigger------------------------------------------------------------
         // int64_t nPayLoadSize = 0;
@@ -417,12 +417,12 @@ namespace camera_driver
     }
 
     /**
-     * @brief daheng_camera::SetResolution   设置分辨率
+     * @brief DaHengCam::SetResolution   设置分辨率
      * @param width_scale   宽比例
      * @param height_scale  高比例
      * @return bool 返回是否成功
      */
-    bool daheng_camera::SetResolution(int width_scale, int height_scale)
+    bool DaHengCam::SetResolution(int width_scale, int height_scale)
     {
         //配 置 一 个 2x2 的 Binning 和 2x2 的 Decimation
         GX_STATUS status = GX_STATUS_SUCCESS;
@@ -455,11 +455,11 @@ namespace camera_driver
     }
 
     /**
-     * @brief daheng_camera::SetExposureTime 设置曝光值
+     * @brief DaHengCam::SetExposureTime 设置曝光值
      * @param ExposureTime  具体曝光值
      * @return bool 返回是否设置成功
      */
-    bool daheng_camera::SetExposureTime(int ExposureTime)
+    bool DaHengCam::SetExposureTime(int ExposureTime)
     {
         //设 置  曝 光 值
         status = GXSetFloat(hDevice, GX_FLOAT_EXPOSURE_TIME, ExposureTime);
@@ -476,12 +476,12 @@ namespace camera_driver
     }
 
     /**
-     * @brief daheng_camera::SetGAIN 手动设置曝光增益
+     * @brief DaHengCam::SetGAIN 手动设置曝光增益
      * @param value 选择曝光增益通道 0-B,1-G,2-R,3-All
      * @param ExpGain   具体增益值 范围0-16
      * @return
      */
-    bool daheng_camera::SetGAIN(int value, int ExpGain)
+    bool DaHengCam::SetGAIN(int value, int ExpGain)
     {
         if (value == 0)
         {
@@ -509,10 +509,10 @@ namespace camera_driver
     }
 
     /**
-     * @brief daheng_camera::Set_BALANCE_AUTO 枚举变量为0是表示关闭，1为开启，具体请查询SDK手册,具有记忆功能
+     * @brief DaHengCam::Set_BALANCE_AUTO 枚举变量为0是表示关闭，1为开启，具体请查询SDK手册,具有记忆功能
      * @return bool 返回是否设置成功
      */
-    bool daheng_camera::Set_BALANCE_AUTO(int value)
+    bool DaHengCam::Set_BALANCE_AUTO(int value)
     {
         //设 置 连 续 自 动 白 平 衡
         status = GXSetEnum(hDevice, GX_ENUM_BALANCE_WHITE_AUTO, value);
@@ -529,10 +529,10 @@ namespace camera_driver
     }
 
     /**
-     * @brief daheng_camera::Color_Correct 0是表示关闭，1为开启，具体请查询SDK手册,bu具有记忆功能
+     * @brief DaHengCam::Color_Correct 0是表示关闭，1为开启，具体请查询SDK手册,bu具有记忆功能
      * @return bool 返回是否设置成功
      */
-    bool daheng_camera::Color_Correct(bool value)
+    bool DaHengCam::Color_Correct(bool value)
     {
         if(value)
         {
@@ -565,12 +565,12 @@ namespace camera_driver
     }
 
     /**
-     * @brief daheng_camera::Set_BALANCE 手动白平衡,设置之前必须先关闭自动白平衡,具有记忆功能
+     * @brief DaHengCam::Set_BALANCE 手动白平衡,设置之前必须先关闭自动白平衡,具有记忆功能
      * @param value 选择平衡通道 0-B,1-G,2-R
      * @param value_number 平衡系数
      * @return
      */
-    bool daheng_camera::Set_BALANCE(int value, float value_number)
+    bool DaHengCam::Set_BALANCE(int value, float value_number)
     {
         status = GXSetEnum(hDevice, GX_ENUM_BALANCE_WHITE_AUTO, GX_BALANCE_WHITE_AUTO_OFF);
         if (value == 0)
@@ -599,12 +599,12 @@ namespace camera_driver
     }
 
     /**
-     * @brief daheng_camera::Set_GAMMA 手动adjust gamma,具有记忆功能
+     * @brief DaHengCam::Set_GAMMA 手动adjust gamma,具有记忆功能
      * @param value 选择平衡通道 0-B,1-G,2-R
      * @param value_number 平衡系数
      * @return
      */
-    bool daheng_camera::Set_Gamma(bool set_status,double dGammaParam)
+    bool DaHengCam::Set_Gamma(bool set_status,double dGammaParam)
     {
         set_contrast = set_status;
         if(set_status)
@@ -657,12 +657,12 @@ namespace camera_driver
     }
 
     /**
-     * @brief daheng_camera::Set_Contrast 手动adjust Contrast,具有记忆功能
+     * @brief DaHengCam::Set_Contrast 手动adjust Contrast,具有记忆功能
      * @param value 选择平衡通道 0-B,1-G,2-R
      * @param value_number 平衡系数
      * @return
      */
-    bool daheng_camera::Set_Contrast(bool set_status,int dContrastParam)
+    bool DaHengCam::Set_Contrast(bool set_status,int dContrastParam)
     {
         set_contrast = set_status;
         if(set_status)
@@ -679,12 +679,12 @@ namespace camera_driver
     }
 
     /**
-     * @brief daheng_camera::Set_Contrast 手动adjust Contrast,具有记忆功能
+     * @brief DaHengCam::Set_Contrast 手动adjust Contrast,具有记忆功能
      * @param value 选择平衡通道 0-B,1-G,2-R
      * @param value_number 平衡系数
      * @return
      */
-    bool daheng_camera::Set_Saturation(bool set_status,int dSaturationParam)
+    bool DaHengCam::Set_Saturation(bool set_status,int dSaturationParam)
     {
         set_saturation = set_status;
         if(set_status)
@@ -701,11 +701,11 @@ namespace camera_driver
     }
 
     /**
-     * @brief daheng_camera::Get_TIMESTAMP   得到时间戳锁存值
+     * @brief DaHengCam::Get_TIMESTAMP   得到时间戳锁存值
      *                  还有问题没解决，可能是不支持此功能
      * @return _time 单位ms
      */
-    int daheng_camera::Get_TIMESTAMP()
+    int DaHengCam::Get_TIMESTAMP()
     {
         //更新频率为125000000Hz
         int _time = ((double)lastImgTimestamp / (1.25 * 1e6)) - timestamp_offset;
