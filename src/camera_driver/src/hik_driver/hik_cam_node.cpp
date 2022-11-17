@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 14:30:38
- * @LastEditTime: 2022-11-10 21:05:02
+ * @LastEditTime: 2022-11-14 10:50:35
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_cam_node.cpp
  */
 #include "../../include/hik_driver/hik_cam_node.hpp"
@@ -11,7 +11,7 @@ using namespace std::chrono_literals;
 
 namespace camera_driver
 {
-    hik_cam_node::hik_cam_node(const rclcpp::NodeOptions &options)
+    HikCamNode::HikCamNode(const rclcpp::NodeOptions &options)
     : Node("hik_driver", options)
     {
         RCLCPP_WARN(this->get_logger(), "Camera driver node...");
@@ -51,13 +51,20 @@ namespace camera_driver
             RCLCPP_INFO(this->get_logger(), "Camera open failed!");
         }
         
-        timer = this->create_wall_timer(1ms, std::bind(&hik_cam_node::image_callback, this));
+        timer = this->create_wall_timer(1ms, std::bind(&HikCamNode::image_callback, this));
+
+        bool debug_;
+        this->declare_parameter<bool>("debug", true);
+        this->get_parameter("debug", debug_);
+        if(debug_)
+        {
+            //动态调参回调
+            callback_handle_ = this->add_on_set_parameters_callback(std::bind(&HikCamNode::paramsCallback, this, std::placeholders::_1));
+        }
     }
 
-    std::unique_ptr<hik_camera> hik_cam_node::init_hik_cam()
+    std::unique_ptr<HikCamera> HikCamNode::init_hik_cam()
     {
-        hik_cam_params hik_cam_params_;
-        
         this->declare_parameter("hik_cam_id", 0);
         this->declare_parameter("image_width", 1440);
         this->declare_parameter("image_height", 1080);
@@ -86,10 +93,113 @@ namespace camera_driver
 
         // RCLCPP_INFO(this->get_logger(), "1...");
 
-        return std::make_unique<hik_camera>(hik_cam_params_);
+        return std::make_unique<HikCamera>(hik_cam_params_);
     }
 
-    std::unique_ptr<sensor_msgs::msg::Image> hik_cam_node::convert_frame_to_msg(cv::Mat frame)
+    rcl_interfaces::msg::SetParametersResult HikCamNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
+    {
+        rcl_interfaces::msg::SetParametersResult result;
+        result.successful = false;
+        result.reason = "debug";
+        for(const auto& param : params)
+        {
+            if(param.get_name() == "exposure_time")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
+                {
+                    if(param.as_int() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_int()
+                        );
+
+                        this->hik_cam_params_.exposure_time = param.as_int();
+                        this->hik_cam->set_exposure_time(this->hik_cam_params_.exposure_time);
+                        result.successful = true;
+                    }
+                }
+            }
+            if(param.get_name() == "exposure_gain")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
+                {
+                    if(param.as_int() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_int()
+                        );
+                        this->hik_cam_params_.exposure_gain = param.as_int();
+                        this->hik_cam->set_gain(3, this->hik_cam_params_.exposure_gain);
+                        result.successful = true;
+                    }
+                }
+            }
+            if(param.get_name() == "balance_b")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+                {
+                    if(param.as_double() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_double()
+                        );
+                        this->hik_cam_params_.balance_b = param.as_double();
+                        this->hik_cam->set_balance(0, this->hik_cam_params_.balance_b);
+                        result.successful = true;
+                    }
+                }
+            }
+            if(param.get_name() == "balance_g")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+                {
+                    if(param.as_double() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_double()
+                        );
+                        this->hik_cam_params_.balance_g = param.as_double();
+                        this->hik_cam->set_balance(1, this->hik_cam_params_.balance_g);
+                        result.successful = true;
+                    }
+                }
+            }
+            if(param.get_name() == "balance_r")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+                {
+                    if(param.as_double() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_double()
+                        );
+                        this->hik_cam_params_.balance_r = param.as_double();
+                        this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
+                        result.successful = true;
+                    }
+                }
+            }
+        }
+        
+        return result;
+    }
+
+    std::unique_ptr<sensor_msgs::msg::Image> HikCamNode::convert_frame_to_msg(cv::Mat frame)
     {
         std_msgs::msg::Header header;
         sensor_msgs::msg::Image ros_image;
@@ -114,7 +224,7 @@ namespace camera_driver
         return msg_ptr;
     }
 
-    void hik_cam_node::image_callback()
+    void HikCamNode::image_callback()
     {
         if(!hik_cam->get_frame(frame))
         {
@@ -144,7 +254,7 @@ int main(int argc, char** argv)
 {
     // rclcpp::init(argc, argv);
     // const rclcpp::NodeOptions options;
-    // auto cam_node = std::make_shared<camera_driver::hik_cam_node>(options);
+    // auto cam_node = std::make_shared<camera_driver::HikCamNode>(options);
     // rclcpp::spin(cam_node);
     // rclcpp::shutdown();
 
@@ -156,9 +266,9 @@ int main(int argc, char** argv)
 
     const rclcpp::NodeOptions options;
 
-    auto hik_cam_node = std::make_shared<camera_driver::hik_cam_node>(options);
+    auto HikCamNode = std::make_shared<camera_driver::HikCamNode>(options);
 
-    exec.add_node(hik_cam_node);
+    exec.add_node(HikCamNode);
     exec.spin();
 
     rclcpp::shutdown();
@@ -166,5 +276,5 @@ int main(int argc, char** argv)
 }
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(camera_driver::hik_cam_node)
+RCLCPP_COMPONENTS_REGISTER_NODE(camera_driver::HikCamNode)
 

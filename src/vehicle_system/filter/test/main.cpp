@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-04 19:04:11
- * @LastEditTime: 2022-11-14 09:05:44
+ * @LastEditTime: 2022-11-14 21:56:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/test/main.cpp
  */
 #include <cmath>
@@ -43,8 +43,8 @@ void test_ekf_based_Singer();
 
 int main(int argc, char** argv)
 {
-    // test_ekf_based_CTRV();
-    test_ekf_based_Singer();
+    test_ekf_based_CTRV();
+    // test_ekf_based_Singer();
 
     return 0;
 }
@@ -101,6 +101,7 @@ void test_ekf_based_Singer()
     float aa = a0;
     for(float t = 0; t < 5.0; t += 0.05)
     {
+        auto last_x = x;
         // xx = xx + (v / w) * (sin(w * t + theta) - sin(theta));
         xx = xx + v0 * t + 0.5 * a0 * pow(t, 2);
         vv = vv + a0 * t;
@@ -126,7 +127,7 @@ void test_ekf_based_Singer()
         auto x_ekf = ekf.predict(singer, u, t);
 
         //更新
-        SingerPosMeasure pos = pos_model.h(x_model);
+        SingerPosMeasure pos = pos_model.h(last_x);
         x_ekf = ekf.update(pos_model, pos);
 
         Time.push_back(t);
@@ -138,7 +139,7 @@ void test_ekf_based_Singer()
     // 
     Plt::figure_size(640, 480);
     Plt::named_plot("X_true", Time, X_true);
-    Plt::named_plot("X_pred", Time, X_pred);
+    // Plt::named_plot("X_pred", Time, X_pred);
     Plt::named_plot("X_ekf", Time, X_ekf);
     // Plt::named_plot("X_pred", Pred_X, Pred_Y);
     // Plt::named_plot("X_model", X_pred, Y_pred);
@@ -209,13 +210,13 @@ void test_ekf_based_CTRV()
     x.v() = v;
     x.w() = w;
 
-    for(float t = 0; t < 5.0; t += 0.05)
+    for(float t = 0; t < 50.0; t += 0.05)
     {
         // x.x() = x0 + r * ceres::cos(w * (ii)) + v * (ii) * ceres::cos(theta);
         // x.y() = y0 + r * ceres::sin(w * (ii)) + v * (ii) * ceres::sin(theta);
         // x.x() = x.x() + (v / w) * (ceres::sin(w * ii + theta) - ceres::sin(theta));
         // x.y() = x.y() + (v / w) * (ceres::cos(theta) - ceres::cos(w * ii + theta));
-        
+        auto last_x = x;
         xx = xx + (v / w) * (sin(w * t + theta) - sin(theta));
         xy = xy + (v / w) * (cos(theta) - cos(w * t + theta));
         x.x() = xx;
@@ -247,7 +248,7 @@ void test_ekf_based_CTRV()
         auto x_ekf = ekf.predict(sys_model, u, t);
 
         //更新
-        PosMeasure pos = pos_model.h(x_pre);
+        PosMeasure pos = pos_model.h(last_x);
         // // x_pred = predictor.update(pos_model, pos);
         x_ekf = ekf.update(pos_model, pos);
 
@@ -273,7 +274,7 @@ void test_ekf_based_CTRV()
     Plt::named_plot("X_ekf", X_ekf, Y_ekf);
     // Plt::named_plot("X_pred", Pred_X, Pred_Y);
     // Plt::named_plot("X_model", X_pred, Y_pred);
-    Plt::xlim(2.50, 4.50);
+    Plt::xlim(2.50, 4.45);
     Plt::ylim(2.50, 16.00);
     Plt::title("EKF figure");
     Plt::legend();

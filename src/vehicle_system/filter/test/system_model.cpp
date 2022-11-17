@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-03 22:59:40
- * @LastEditTime: 2022-11-14 08:45:01
+ * @LastEditTime: 2022-11-14 21:49:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/test/system_model.cpp
  */
 #include "./system_model.hpp"
@@ -19,11 +19,13 @@ public:
     S f(const S& x, const C& u, const int& t) const
     {
         S x_;
-        
-        x_.v_x() = x.v_x();
-        x_.v_y() = x.v_y();
-        x_.x() = x.x() + x.v_x() * t;
-        x_.y() = x.y() + x.v_y() * t;
+        double ax = 0.05;
+        double ay = 0.01;
+
+        x_.x() = x.x() + x.v_x() * t + ax * pow(t, 2) * 0.5;
+        x_.y() = x.y() + x.v_y() * t + ay * pow(t, 2) * 0.5;
+        x_.v_x() = x.v_x() + ax * t;
+        x_.v_y() = x.v_y() + ay * t;
 
         return x_;
     }
@@ -51,6 +53,18 @@ protected:
 
         //Y对Vy的偏导数
         this->F(S::Y, S::Vy) = t;
+
+        //匀速运动模型加速度理论为0，实际上速度会发生轻微变化，把加速度作为服从高斯分布的随机扰动白噪声加入
+        // double q = 0.3;
+        this->W.setZero();
+        this->W(S::X, S::X) = 0.5 * pow(t, 2);
+        this->W(S::Y, S::Y) = 0.5 * pow(t, 2);
+        this->W(S::Vx, S::X) = t;
+        this->W(S::Vy, S::Y) = t;
+        // this->W(S::X, S::X) = pow(q, 2) * pow(t, 2) * 0.5;
+        // this->W(S::Y, S::Y) = pow(q, 2) * pow(t, 2) * 0.5;
+        // this->W(S::Vx, S::Vx) = pow(q, 2) * t;
+        // this->W(S::Vy, S::Vy) = pow(q, 2) * t;
     }
 };
 
@@ -64,15 +78,17 @@ public:
     S f(const S& x, const C& u, const int& t)
     {
         S x_;
+        double ax = 0.02;
+        double ay = 0.01;
 
-        x_.a_x() = x.a_x();
-        x_.a_y() = x.a_y();
+        x_.a_x() = x.a_x() + ax;
+        x_.a_y() = x.a_y() + ay;
 
-        x_.v_x() = x.v_x() + x.a_x() * t;
-        x_.v_y() = x.v_y() + x.a_y() * t;
+        x_.v_x() = x.v_x() + x.a_x() * t + ax * t;
+        x_.v_y() = x.v_y() + x.a_y() * t + ay * t;
 
-        x_.x() = x.x() + x.v_x() * t + (1 / 2) * x.a_x() * t * t;
-        x_.y() = x.x() + x.v_y() * t + (1 / 2) * x.a_y() * t * t; 
+        x_.x() = x.x() + x.v_x() * t + (1 / 2) * x.a_x() * t * t + 0.5 * ax * pow(t, 2);
+        x_.y() = x.x() + x.v_y() * t + (1 / 2) * x.a_y() * t * t + 0.5 * ay * pow(t, 2); 
 
         return x_;
     }
@@ -97,6 +113,14 @@ public:
         this->F(S::Y, S::ay) = (1 / 2) * t * t;
         this->F(S::Vx, S::ax) = t;
         this->F(S::Vy, S::ay) = t;
+
+        this->W.SetZero();
+        this->W(S::X, S::X) = 0.5 * pow(t, 2);
+        this->W(S::Y, S::Y) = 0.5 * pow(t, 2);
+        this->W(S::Vx, S::X) = t;
+        this->W(S::Vy, S::Y) = t;
+        this->W(S::ax, S::X) = 1;
+        this->W(S::ay, S::Y) = 1;
     }
 };
 
@@ -110,6 +134,8 @@ public:
     S f(const S& x, const C& u, const float& t) const
     {
         S x_;
+        double av = 0.01;
+        double aw = 0.01;
 
         if(x.w() == 0)
         {
@@ -122,11 +148,11 @@ public:
         }
         else
         {
-            x_.x() = x.x() + (x.v() / x.w()) * (sin(x.w() * t + x.theta()) - sin(x.theta()));
-            x_.y() = x.y() + (x.v() / x.w()) * (cos(x.theta()) - cos(x.w() * t + x.theta()));
-            x_.v() = x.v();
-            x_.theta() = x.theta() + x.w() * t;
-            x_.w() = x.w();
+            x_.x() = x.x() + (x.v() / x.w()) * (sin(x.w() * t + x.theta()) - sin(x.theta())) + 0.5 * cos(x.theta()) * pow(t, 2) * av;
+            x_.y() = x.y() + (x.v() / x.w()) * (cos(x.theta()) - cos(x.w() * t + x.theta())) + 0.5 * cos(x.theta()) * pow(t, 2) * aw;
+            x_.v() = x.v() + av * t;
+            x_.theta() = x.theta() + x.w() * t + 0.5 * pow(t, 2) * aw;
+            x_.w() = x.w() + t * aw;
         }
 
         return x_;
@@ -165,7 +191,14 @@ public:
             this->F(S::Theta, S::W) = t;
         }
         // std::cout << 1 << std::endl;
-        this->W.setIdentity();
+        // this->W.setIdentity();
+        // double q = 0.5; 
+        this->W.setZero();
+        this->W(S::X, S::X) = 0.5 * cos(x.theta()) * pow(t, 2);
+        this->W(S::Y, S::X) = 0.5 * sin(x.theta()) * pow(t, 2);
+        this->W(S::V, S::X) = t;
+        this->W(S::Theta, S::Y) = 0.5 * pow(t, 2);
+        this->W(S::W, S::Y) = t;
     }
 };
 
@@ -178,7 +211,7 @@ public:
 
     S f(const S& x, const C& u, const float& dt) const
     {
-        double alpha = 5;
+        double alpha = 0.01;
 
         S x_;
 
@@ -200,8 +233,11 @@ public:
 public:
     void updateJacobians(const S& x, const C& u, const float& dt)
     {
-        double alpha = 5;
-        double sigma = 0.01;
+        double alpha = 0.01;
+        double a_max = 5;
+        double p_max = 0.5;
+        double p0 = 0.01;
+        double sigma = sqrt((pow(a_max, 2) * (1 + 4 * p_max - p0)) / 3);
         
         this->F.setZero();
 
@@ -219,9 +255,16 @@ public:
         }
         else
         {
+            // this->F(S::X, S::X) = 1;
+            // this->F(S::X, S::V) = dt;
+            // this->F(S::V, S::V) = 1;
+            // this->F(S::A, S::A) = 1;
+
             this->F(S::X, S::X) = 1;
             this->F(S::X, S::V) = dt;
+            this->F(S::X, S::A) = 0.5 * pow(dt, 2);
             this->F(S::V, S::V) = 1;
+            this->F(S::V, S::A) = dt;
             this->F(S::A, S::A) = 1;
         }
 
@@ -243,22 +286,47 @@ public:
         }
         else
         {
-            this->W.setIdentity();
+            double q_ = 0.05;
+            this->W(S::X, S::X) = q_ * q[0][0];
+            this->W(S::X, S::V) = q_ * q[0][1];
+            this->W(S::X, S::A) = q_ * q[0][2];
+            this->W(S::V, S::X) = q_ * q[1][0];
+            this->W(S::V, S::V) = q_ * q[1][1];
+            this->W(S::V, S::A) = q_ * q[1][2];
+            this->W(S::A, S::X) = q_ * q[2][0];
+            this->W(S::A, S::V) = q_ * q[2][1];
+            this->W(S::A, S::A) = q_ * q[2][2];
+            // this->W.setIdentity();
         }
     }
 
 public:
     void calProcessNoiseCov(double (*q)[3], const double& alpha, const double& sigma, const double& dt)
     {
-        q[0][0] = (1 - exp(-2 * alpha * dt) + 2 * alpha * dt + ((2 * pow(alpha, 3) * pow(dt, 3)) / 3) - 2 * pow(alpha, 2) * pow(dt, 2) - 4 * alpha * dt * exp(-alpha * dt)) / (2 * pow(alpha, 5));
-        q[0][1] = (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt) + 2 * alpha * dt * exp(-alpha * dt) - 2 * alpha * dt + pow(alpha, 2) * pow(dt, 2)) / (2 * pow(alpha, 4));
-        q[0][2] = (1 - exp(-2 * alpha * dt) - 2 * alpha * dt * exp(-alpha * dt)) / (2 * pow(alpha, 3));
-        q[1][0] = 0;
-        q[1][1] = (4 * exp(-alpha * dt) - 3 - exp(-2 * alpha * dt) + 2 * alpha * dt) / (2 * pow(alpha, 3));
-        q[1][2] = (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt)) / (2 * pow(alpha, 2));
-        q[2][0] = 0;
-        q[2][1] = 0;
-        q[2][2] = (1 - exp(-2 * alpha * dt)) / (2 * alpha);
+        if(alpha != 0)
+        {
+            q[0][0] = (1 - exp(-2 * alpha * dt) + 2 * alpha * dt + ((2 * pow(alpha, 3) * pow(dt, 3)) / 3) - 2 * pow(alpha, 2) * pow(dt, 2) - 4 * alpha * dt * exp(-alpha * dt)) / (2 * pow(alpha, 5));
+            q[0][1] = (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt) + 2 * alpha * dt * exp(-alpha * dt) - 2 * alpha * dt + pow(alpha, 2) * pow(dt, 2)) / (2 * pow(alpha, 4));
+            q[0][2] = (1 - exp(-2 * alpha * dt) - 2 * alpha * dt * exp(-alpha * dt)) / (2 * pow(alpha, 3));
+            q[1][0] = 0;
+            q[1][1] = (4 * exp(-alpha * dt) - 3 - exp(-2 * alpha * dt) + 2 * alpha * dt) / (2 * pow(alpha, 3));
+            q[1][2] = (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt)) / (2 * pow(alpha, 2));
+            q[2][0] = 0;
+            q[2][1] = 0;
+            q[2][2] = (1 - exp(-2 * alpha * dt)) / (2 * alpha);
+        }
+        else
+        {
+            q[0][0] = pow(dt, 5) * 0.05;
+            q[0][1] = pow(dt, 4) * 0.125;
+            q[0][2] = pow(dt, 3) / 6;
+            q[1][0] = pow(dt, 4) * 0.125;
+            q[1][1] = pow(dt, 3) / 3;
+            q[1][2] = pow(dt, 2) * 0.5;
+            q[2][0] = pow(dt, 3) / 6;
+            q[2][1] = pow(dt, 2) * 0.5;
+            q[2][2] = dt;
+        }
     }
 
 };

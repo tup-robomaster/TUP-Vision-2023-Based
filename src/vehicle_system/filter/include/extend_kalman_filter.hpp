@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-03 15:51:26
- * @LastEditTime: 2022-11-14 08:51:21
+ * @LastEditTime: 2022-11-14 21:51:40
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/extend_kalman_filter.hpp
  */
 #ifndef EXTEND_KALMAN_FILTER_HPP_
@@ -78,7 +78,8 @@ namespace filter
             x = s.f(x, u, t);
 
             //协方差预测
-            P = (s.F * P * s.F.transpose()) + (s.W * s.getCovariance() * s.W.transpose());
+            // P = (s.F * P * s.F.transpose()) +  s.W(); 
+            P = (s.F * P * s.F.transpose()) +  (s.W * s.getCovariance() * s.W.transpose());
 
             return this->getState();
         }

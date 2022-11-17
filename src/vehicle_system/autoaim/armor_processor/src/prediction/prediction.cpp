@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-11-03 20:48:51
+ * @LastEditTime: 2022-11-18 00:04:40
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -15,6 +15,10 @@ namespace armor_processor
         pic_x = cv::Mat::zeros(500, 2000, CV_8UC3);
         pic_y = cv::Mat::zeros(500, 2000, CV_8UC3);
         pic_z = cv::Mat::zeros(500, 2000, CV_8UC3);
+
+        fitting_disabled_ = false;
+        is_init = false;
+        is_ekf_init = false;
     }
 
     ArmorPredictor::~ArmorPredictor(){}
@@ -33,6 +37,7 @@ namespace armor_processor
         
         fitting_disabled_ = false;
         is_init = false;
+        is_ekf_init = false;
     }
 
     Eigen::Vector3d ArmorPredictor::predict(Eigen::Vector3d xyz, int timestamp)
@@ -123,25 +128,30 @@ namespace armor_processor
         Eigen::Vector3d result = {0, 0, 0};
         Eigen::Vector3d result_pf = {0, 0, 0};
         Eigen::Vector3d result_fitting = {0, 0, 0};
+        Eigen::Vector3d result_ekf = {0, 0, 0};
         PredictStatus is_pf_available;
         PredictStatus is_fitting_available;
+        PredictStatus is_ekf_available;
         
         //需注意粒子滤波使用相对时间（自上一次检测时所经过ms数），拟合使用自首帧所经过时间
         if(fitting_disabled_)
         {
-        //     auto is_pf_available = predict_pf_run(target, result_pf, delta_time_estimate);
+            // auto is_pf_available = predict_pf_run(target, result_pf, delta_time_estimate);
+            auto is_ekf_available = predict_ekf_run(target, result_ekf, delta_time_estimate);
         }
         else
         {
-        //     auto get_pf_available = std::async(std::launch::async, [=, &result_pf](){return predict_pf_run(target, result_pf, delta_time_estimate);});
+            // auto get_pf_available = std::async(std::launch::async, [=, &result_pf](){return predict_pf_run(target, result_pf, delta_time_estimate);});
+            auto get_ekf_available = std::async(std::launch::async, [=, &result_ekf](){return predict_ekf_run(target, result_ekf, delta_time_estimate);});
         
-        //轨迹拟合（解耦）
+            // 轨迹拟合（解耦）
             // auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return uncouple_fitting_predict(result_fitting, time_estimate);});
 
-        //小陀螺轨迹拟合（耦合）
+            //小陀螺轨迹拟合（耦合）
             auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return couple_fitting_predict(result_fitting, time_estimate);});
         
-        //     is_pf_available = get_pf_available.get();
+            // is_pf_available = get_pf_available.get();
+            is_ekf_available = get_ekf_available.get();
             is_fitting_available = get_fitting_available.get();
         }
 
@@ -166,6 +176,10 @@ namespace armor_processor
         // {
         //     result[0] = result_pf[0];
         // }
+        else if(is_ekf_available.xyz_status[0])
+        {
+            result[0] = result_ekf[0];
+        }
         else
         {
             result[0] = xyz[0];
@@ -487,5 +501,46 @@ namespace armor_processor
         result = {x_pred, y_pred, history_info_.end()->xyz[2]};
         
         return is_available;
+    }
+
+    PredictStatus ArmorPredictor::predict_ekf_run(TargetInfo target, Eigen::Vector3d& result, int timestamp)
+    {
+        PredictStatus is_available;
+        // 计算目标速度、加速度 
+        //取目标t-2、t-1、t时刻的坐标信息
+        auto delta_x_last = (history_info_.at(history_info_.size() - 2).xyz[0] - history_info_.at(history_info_.size() - 3).xyz[0]);
+        auto delta_t_last = (history_info_.at(history_info_.size() - 2).timestamp - history_info_.at(history_info_.size() - 3));
+        auto v_last = delta_x_last / delta_t_last;
+
+        auto delta_x_now = (target.xyz[0] - history_info_.at(history_info_.size() - 2).xyz[0]);
+        auto delta_t_now = (target.timestamp - history_info_.at(history_info_.size() - 2).timestamp);
+        auto v_now = delta_x_now / delta_t_now;
+
+        auto ax = (v_now - v_last) / ((delta_t_now + delta_t_last) / 2);
+
+        SingerState x = {target.xyz[0], v_now, ax};
+
+        if(!is_ekf_init)
+        {
+            ekf.init(x);
+            result << target.xyz[0], target.xyz[1], target.xyz[2];
+            is_available.xyz_status[0] = false;
+            is_ekf_init = true;
+        }
+        else
+        {
+            auto x_model = singer.f(x, u, timestamp);
+
+            //预测
+            auto x_ekf_pred = ekf.predict(singer, u, timestamp);
+            //更新
+            SingerPosMeasure pos = pos_model.h(x);
+            auto x_ekf_update = ekf.update(pos_model, pos);
+            is_available.xyz_status[0] = true;
+            
+            result << x_ekf_update[0], target.xyz[1], target.xyz[2];
+        }
+
+        return false;
     }
 } // armor_processor

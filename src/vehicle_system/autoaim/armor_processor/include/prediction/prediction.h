@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-11-14 08:46:59
+ * @LastEditTime: 2022-11-17 12:49:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.h
  */
 #ifndef PREDICTION_HPP
@@ -27,6 +27,17 @@
 
 #include <stdio.h>
 // #include <lapacke.h> //如果出现找不到此文件夹的错误，注释掉试一试，不行就去官方安装
+
+//运动模型（CV、CA、CTRV、CT、Singer、CS）
+#include "src/vehicle_system/filter/test/system_model.cpp"
+#include "src/vehicle_system/filter/test/measurement_model.cpp"
+
+//Singer Model
+typedef SingerModelState<double> SingerState;
+typedef SingerModelControl<double> SingerControl;
+typedef SingerModel<double> Singer;
+typedef SingerPositionMeasurement<double> SingerPosMeasure;
+typedef SingerPositionMeasurementModel<double> SingerPosModel;
 
 namespace armor_processor
 {
@@ -179,6 +190,7 @@ namespace armor_processor
 
         std::string filter_param_path_;
         YAML::Node config_;
+        
     public:
         TargetInfo final_target_;  //最终击打目标信息
         TargetInfo last_pf_target_; //最后一次粒子滤波后的位置结果
@@ -201,6 +213,20 @@ namespace armor_processor
 
         //移动轨迹拟合预测（小陀螺+横移->旋轮线）
         PredictStatus couple_fitting_predict(Eigen::Vector3d& result, int timestamp);
+    
+    protected:
+        // 控制量
+        SingerControl u;
+        // Singer模型
+        Singer singer;
+        // 观测模型
+        SingerPosModel pos_model;
+        // EKF
+        filter::ExtendKalmanFilter<SingerState> ekf;
+
+        //
+        bool is_ekf_init;
+        PredictStatus predict_ekf_run(TargetInfo target, Eigen::Vector3d& result, int timestamp);
     };
 
 

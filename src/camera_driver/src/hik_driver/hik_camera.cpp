@@ -2,14 +2,14 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:13:23
- * @LastEditTime: 2022-10-09 14:06:56
- * @FilePath: /tup_2023/src/camera_driver/src/hik_driver/hik_camera.cpp
+ * @LastEditTime: 2022-11-14 10:49:42
+ * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp
  */
 #include "../../include/hik_driver/hik_camera.hpp"
 
 namespace camera_driver 
 {
-    hik_camera::hik_camera(const hik_cam_params& cam_params)
+    HikCamera::HikCamera(const HikCamParam& cam_params)
     {
         g_nPayloadSize = 0;
 
@@ -17,7 +17,7 @@ namespace camera_driver
         this->hik_cam_params_ = cam_params;
     }
 
-    hik_camera::~hik_camera()
+    HikCamera::~HikCamera()
     {
         nRet = MV_CC_FreeImageBuffer(handle, (&pFrame));
         if(nRet != MV_OK)
@@ -26,7 +26,7 @@ namespace camera_driver
         }
     } 
 
-    bool hik_camera::open()
+    bool HikCamera::open()
     {
         //TODO:
         set_digital_io_control();
@@ -64,17 +64,17 @@ namespace camera_driver
         return true;
     }
 
-    bool hik_camera::close() 
+    bool HikCamera::close() 
     {
         return false;
     }
 
-    bool hik_camera::is_open()
+    bool HikCamera::is_open()
     {
         return _is_open;
     }
 
-    void hik_camera::start_device(int serial_number)
+    void HikCamera::start_device(int serial_number)
     {   //打开设备
 
         // printf("7\n");
@@ -111,7 +111,7 @@ namespace camera_driver
             //         printf("pDeviceInfo is NULL!\n");
             //         return -1;
             //     }
-            //     hik_camera::PrintDeviceInfo(pDeviceInfo);
+            //     HikCamera::PrintDeviceInfo(pDeviceInfo);
             // }
 
             //打开设备
@@ -137,7 +137,7 @@ namespace camera_driver
         return ;
     }
 
-    bool hik_camera::set_stream_on()
+    bool HikCamera::set_stream_on()
     {   //开始采集
         //设置触发模式为off
         this->nRet = MV_CC_SetEnumValue(handle, "TriggerMode", 0);
@@ -166,7 +166,7 @@ namespace camera_driver
 
         //创建相机图像采集线程
         // pthread_t tid;
-        // nRet = pthread_create(&tid, NULL, hik_camera::WorkThread, handle);
+        // nRet = pthread_create(&tid, NULL, HikCamera::WorkThread, handle);
         // if(MV_OK == nRet)
         // {
         //     printf("pthread_create succeed!\n");
@@ -179,7 +179,7 @@ namespace camera_driver
         // }
     }
 
-    bool hik_camera::set_resolution(int width, int height)
+    bool HikCamera::set_resolution(int width, int height)
     {   //TODO:分辨率根据相机采集上限设置，目前设置为1280*1024
         nRet = MV_OK;
 
@@ -196,14 +196,14 @@ namespace camera_driver
         return true;
     }
 
-    bool hik_camera::set_exposure_time(float ExposureTime)
+    bool HikCamera::set_exposure_time(float ExposureTime)
     {   //设置曝光时间
         nRet = MV_CC_SetFloatValue(this->handle, "ExposureTime", ExposureTime);
         return true;
         // nRetError(nRet, "[CAMERA] set exposure time failed! nRet [%x]\n", nRet);
     }
 
-    bool hik_camera::set_gain(int value, int ExpGain)
+    bool HikCamera::set_gain(int value, int ExpGain)
     {   //曝光增益
         if(value == 0)
         {
@@ -231,14 +231,14 @@ namespace camera_driver
         // nRetError(nRet, "[CAMERA] set exposure gain failed! nRet [%x]\n", nRet);
     }
 
-    bool hik_camera::set_auto_balance()
+    bool HikCamera::set_auto_balance()
     {   //自动白平衡（具有记忆功能）
         this->nRet = MV_CC_SetEnumValue(this->handle, "BalanceWhiteAuto", 1);
         return true;
         // nRetError(nRet, "[CAMERA] set auto balance failed! nRet [%x]\n", nRet);
     }
 
-    bool hik_camera::set_balance(int value, unsigned int value_number)
+    bool HikCamera::set_balance(int value, unsigned int value_number)
     {   //手动白平衡（具有记忆功能））
         //关闭自动白平衡
         this->nRet = MV_CC_SetEnumValue(handle, "BalanceWhiteAuto", MV_BALANCEWHITE_AUTO_OFF);
@@ -263,7 +263,7 @@ namespace camera_driver
         return true;
     }
 
-    bool hik_camera::set_gamma(bool set_status, double dGammaParam)
+    bool HikCamera::set_gamma(bool set_status, double dGammaParam)
     {   //设置Gamma值
         if(set_status == true)
         {
@@ -281,7 +281,7 @@ namespace camera_driver
         return true;
     }
 
-    bool hik_camera::color_correct(bool value)
+    bool HikCamera::color_correct(bool value)
     {   //设置色彩校正
         if(value == true)
         {
@@ -298,7 +298,7 @@ namespace camera_driver
         return true;
     }
 
-    bool hik_camera::set_contrast(bool set_status,int dContrastParam)
+    bool HikCamera::set_contrast(bool set_status,int dContrastParam)
     {   //设置对比度
         if(set_status == true)
         {
@@ -315,7 +315,7 @@ namespace camera_driver
         return true;
     }
 
-    bool hik_camera::update_timestamp(std::chrono::_V2::steady_clock::time_point time_start)
+    bool HikCamera::update_timestamp(std::chrono::_V2::steady_clock::time_point time_start)
     {   //计算时间戳偏移
         std::chrono::_V2::steady_clock::time_point time_end = std::chrono::_V2::steady_clock::now();
         std::chrono::duration<double> time_span = time_end - time_start;
@@ -323,7 +323,7 @@ namespace camera_driver
         return true;
     }
 
-    int hik_camera::get_timestamp()
+    int HikCamera::get_timestamp()
     {   //获取时间戳
         std::chrono::_V2::steady_clock::time_point time_start = std::chrono::_V2::steady_clock::now();
 
@@ -343,7 +343,7 @@ namespace camera_driver
         return ((int)time_start.time_since_epoch().count() - timestamp_offset);
     }
 
-    bool hik_camera::get_frame(::cv::Mat &Src)
+    bool HikCamera::get_frame(::cv::Mat &Src)
     {
         // ch:获取数据包大小 | en:Get payload size
         MVCC_INTVALUE stParam;
@@ -389,7 +389,7 @@ namespace camera_driver
         return true;
     }
 
-    bool hik_camera::set_trigger_mode(unsigned int acquisition_mode,
+    bool HikCamera::set_trigger_mode(unsigned int acquisition_mode,
         const char* acquisition_start,
         const char* acquisition_stop,
         unsigned int acquisition_burst_frame_count,
@@ -468,7 +468,7 @@ namespace camera_driver
         return true;
     }
 
-    bool hik_camera::set_digital_io_control(unsigned int line_selector,
+    bool HikCamera::set_digital_io_control(unsigned int line_selector,
         unsigned int line_mode,
         bool line_status,
         unsigned int trigger_selector)

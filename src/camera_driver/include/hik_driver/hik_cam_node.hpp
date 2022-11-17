@@ -2,12 +2,12 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 02:03:45
- * @LastEditTime: 2022-09-30 13:58:22
- * @FilePath: /tup_2023/src/camera_driver/include/hik_driver/hik_cam_node.hpp
+ * @LastEditTime: 2022-11-14 10:42:44
+ * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/hik_driver/hik_cam_node.hpp
  */
 
-#ifndef HIK_CAM_NODE_HPP
-#define HIK_CAM_NODE_HPP
+#ifndef HIK_CAM_NODE_HPP_
+#define HIK_CAM_NODE_HPP_
 
 #include "hik_camera.hpp"
 // #include "rmoss_master/rmoss_core/rmoss_cam/include/rmoss_cam/cam_server.hpp"
@@ -20,11 +20,11 @@
 
 namespace camera_driver
 {
-    class hik_cam_node : public rclcpp::Node
+    class HikCamNode : public rclcpp::Node
     {
     public:
-        hik_cam_node(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
-        ~hik_cam_node(){};
+        HikCamNode(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+        ~HikCamNode(){};
     
     private:    
         cv::Mat frame;
@@ -46,9 +46,19 @@ namespace camera_driver
         // std::shared_ptr<rmoss_cam::CamServer> cam_server;
         
     private:
-        std::unique_ptr<hik_camera> hik_cam;
-        std::unique_ptr<hik_camera> init_hik_cam();
+        HikCamParam hik_cam_params_;
+        std::unique_ptr<HikCamera> hik_cam;
+        std::unique_ptr<HikCamera> init_hik_cam();
+
+    protected:
+        /**
+         * @brief 动态调参
+         * @param 参数服务器参数
+         * @return 是否修改参数成功
+         */
+        rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
+        OnSetParametersCallbackHandle::SharedPtr callback_handle_;
     };
 } // namespace camera_driver
 
-#endif // HIK_CAM_NODE_HPP
+#endif // HIK_CAM_NODE_HPP_

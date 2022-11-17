@@ -2,8 +2,8 @@
  * @Description is a ros-based project!
  * @AuthorBiao
  * @Date-09-05 03:13:49
- * @LastEditTime-10-09 13:48:18
- * @FilePath_2023/src/camera_driver/include/hik_driver/hik_camera.hpp
+ * @LastEditTime: 2022-11-14 10:50:11
+ * @FilePath_2023/src/camera_driver/include/hik_driver/HikCamera.hpp
  */
 // #include "../camera_driver/camera_driver.hpp"
 
@@ -43,7 +43,7 @@ namespace camera_driver
         B_CHANNEL
     } GAIN_MODE;
 
-    struct hik_cam_params
+    struct HikCamParam
     {
         int hik_cam_id;
         int image_width;
@@ -58,17 +58,17 @@ namespace camera_driver
         int balance_g;
         int balance_r;
 
-        hik_cam_params()
+        HikCamParam()
         {
             auto_balance = false;
         }
     };
     
-    class hik_camera
+    class HikCamera
     {
     public:
-        hik_camera(const hik_cam_params& cam_params);
-        ~hik_camera();
+        HikCamera(const HikCamParam& cam_params);
+        ~HikCamera();
 
         bool open();
         bool close();
@@ -103,14 +103,15 @@ namespace camera_driver
             bool line_status = false,
             unsigned int trigger_selector = 10);
     
-    public:
+    private:
         //camera_params
-        hik_cam_params hik_cam_params_;
+        HikCamParam hik_cam_params_;
 
         bool _is_open; 
         int timestamp_offset = 0;
         std::chrono::_V2::steady_clock::time_point time_start;
 
+    protected:
         int nRet = MV_OK;
         void* handle = NULL;
         MV_CC_PIXEL_CONVERT_PARAM stConvertParam;
@@ -121,5 +122,5 @@ namespace camera_driver
 
         MVCC_FLOATVALUE frame_rate;
         MV_IMAGE_BASIC_INFO stFrameInfo;
-    }; //hik_camera
+    }; //HikCamera
 } //camera_driver
