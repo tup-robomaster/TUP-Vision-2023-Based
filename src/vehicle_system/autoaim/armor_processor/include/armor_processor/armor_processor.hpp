@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-17 00:27:33
- * @LastEditTime: 2022-10-25 23:46:51
+ * @LastEditTime: 2022-11-18 21:54:51
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor/armor_processor.hpp
  */
 #ifndef ARMOR_PRECESSOR_HPP
@@ -49,6 +49,12 @@ namespace armor_processor
         coordsolver::coordsolver coordsolver_;
 
         Eigen::Matrix3d rmat_imu;
+    
+    public:
+        void setMaxTimeDelta(int& max_time_delta);
+        void setMinFittingLens(int& min_fitting_lens);
+        void setMaxVelocity(int& max_v);
+        void setShootDelay(int& shoot_delay);
     };
 } //namespace armor_processor
 

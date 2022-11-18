@@ -38,4 +38,27 @@
     detect_red: true
 
 # 自瞄预测节点参数配置 
-# /armor_processor:
+/armor_processor:
+  ros__parameters:
+    # predict params
+    bullet_speed: 28.0
+    max_time_delta: 1000
+    max_cost: 509
+    max_v: 8
+    min_fitting_lens: 10
+    shoot_delay: 100
+    window_size: 3
+
+    # debug params
+    disable_fitting: false
+    draw_predict: false
+    using_imu: false 
+    show_predict: false
+    show_transformed_info: false
+
+    # filter
+    coord_param_name: "00J90630561" 
+    filter_param_path: "src/global_user/config/filter_param.yaml"
+    coord_param_path: "src/global_user/config/camera.yaml"
+
+    
