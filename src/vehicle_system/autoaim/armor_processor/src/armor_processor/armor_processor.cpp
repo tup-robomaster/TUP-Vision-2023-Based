@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2022-10-25 21:30:12
+ * @LastEditTime: 2022-11-18 09:48:32
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -59,11 +59,11 @@ namespace armor_processor
             aiming_point_ = coordsolver_.worldToCam(aiming_point_world, rmat_imu);
         }
 
-        if(armor_predictor_.debug_param_.show_predict)
-        {
-            auto aiming_2d = coordsolver_.reproject(aiming_point_);
-            // circle(src.img, aiming_2d, 2, {0, 255, 255}, 2);
-        }
+        // if(armor_predictor_.debug_param_.show_predict)
+        // {
+        //     auto aiming_2d = coordsolver_.reproject(aiming_point_);
+        //     // circle(src.img, aiming_2d, 2, {0, 255, 255}, 2);
+        // }
     }
 
 } // armor_processor

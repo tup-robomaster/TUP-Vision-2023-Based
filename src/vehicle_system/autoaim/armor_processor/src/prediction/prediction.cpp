@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-11-18 00:04:40
+ * @LastEditTime: 2022-11-18 13:28:49
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -47,7 +47,9 @@ namespace armor_processor
             config_ = YAML::LoadFile(filter_param_path_);
             pf_pos.initParam(config_, "pos");
             pf_v.initParam(config_, "v");
-
+            
+            debug_param_.draw_predict = true;
+            fitting_disabled_ = true;
             is_init = true;
         }
 
@@ -120,10 +122,10 @@ namespace armor_processor
             }
         }
 
-        if(debug_param_.disable_fitting)
-        {
-            fitting_disabled_ = true;
-        }
+        // if(debug_param_.disable_fitting)
+        // {
+        // }
+        fitting_disabled_ = true;
 
         Eigen::Vector3d result = {0, 0, 0};
         Eigen::Vector3d result_pf = {0, 0, 0};
@@ -136,19 +138,22 @@ namespace armor_processor
         //需注意粒子滤波使用相对时间（自上一次检测时所经过ms数），拟合使用自首帧所经过时间
         if(fitting_disabled_)
         {
+            // std::cout << "fitting_disabled..." << std::endl;
             // auto is_pf_available = predict_pf_run(target, result_pf, delta_time_estimate);
             auto is_ekf_available = predict_ekf_run(target, result_ekf, delta_time_estimate);
         }
         else
         {
+            std::cout << "fitting_abled..." << std::endl;
+
             // auto get_pf_available = std::async(std::launch::async, [=, &result_pf](){return predict_pf_run(target, result_pf, delta_time_estimate);});
             auto get_ekf_available = std::async(std::launch::async, [=, &result_ekf](){return predict_ekf_run(target, result_ekf, delta_time_estimate);});
         
             // 轨迹拟合（解耦）
-            // auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return uncouple_fitting_predict(result_fitting, time_estimate);});
+            auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return uncouple_fitting_predict(result_fitting, time_estimate);});
 
             //小陀螺轨迹拟合（耦合）
-            auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return couple_fitting_predict(result_fitting, time_estimate);});
+            // auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return couple_fitting_predict(result_fitting, time_estimate);});
         
             // is_pf_available = get_pf_available.get();
             is_ekf_available = get_ekf_available.get();
@@ -167,7 +172,7 @@ namespace armor_processor
         // //     is_fitting_available = get_fitting_available.get();
         // // }
         
-        // // 进行融合
+        // 进行融合
         if(is_fitting_available.xyz_status[0] && !fitting_disabled_)
         {
             result[0] = result_fitting[0];
@@ -216,36 +221,40 @@ namespace armor_processor
         // cout<<xyz<<endl;
         // result_pf = target.xyz;
 
-        // if(debug_param_.draw_predict)
-        // {
-        //     double x_offset = 400;
-        //     double y_offset = 400;
-        //     double z_offset = 200;
-        //     if (cnt < 2000)
-        //     {
-        //         auto x = cnt * 5;
-        //         cv::circle(pic_x,cv::Point2f((timestamp) / 10,xyz[0] * 100 + x_offset),1,cv::Scalar(0,0,255),1);
-        //         cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[0] * 100 + x_offset),1,cv::Scalar(0,255,0),1);
-        //         cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[0] * 100 + x_offset),1,cv::Scalar(255,255,0),1);
-        //         // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result[0]+ 200),1,cv::Scalar(255,255,255),1);
+        // std::cout << 1 << std::endl;
+        if(debug_param_.draw_predict)
+        {
+            // std::cout << 2 << std::endl;
+
+            double x_offset = 400;
+            double y_offset = 400;
+            double z_offset = 200;
+            if (cnt < 2000)
+            {
+                auto x = cnt * 5;
+                cv::circle(pic_x, cv::Point2f((timestamp) / 25, xyz[0] * 90 + x_offset), 1, cv::Scalar(0, 0, 255), 1);
+                // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[0] * 100 + x_offset),1,cv::Scalar(0,255,0),1);
+                cv::circle(pic_x, cv::Point2f((timestamp + delta_time_estimate) / 25, result_ekf[0] * 90 + x_offset), 1, cv::Scalar(0, 255, 0), 1);
+                // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[0] * 100 + x_offset),1,cv::Scalar(255,255,0),1);
+                // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result[0]+ 200),1,cv::Scalar(255,255,255),1);
 
 
-        //         cv::circle(pic_y,cv::Point2f((timestamp) / 10,xyz[1] * 100 + y_offset),1,cv::Scalar(0,0,255),1);
-        //         cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[1] * 100 + y_offset),1,cv::Scalar(0,255,0),1);
-        //         cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[1] * 100 + y_offset),1,cv::Scalar(255,255,0),1);
-        //         // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result[1]+ 200),1,cv::Scalar(255,255,255),1);
+                // cv::circle(pic_y,cv::Point2f((timestamp) / 10,xyz[1] * 100 + y_offset),1,cv::Scalar(0,0,255),1);
+                // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[1] * 100 + y_offset),1,cv::Scalar(0,255,0),1);
+                // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[1] * 100 + y_offset),1,cv::Scalar(255,255,0),1);
+                // // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result[1]+ 200),1,cv::Scalar(255,255,255),1);
 
-        //         cv::circle(pic_z,cv::Point2f((timestamp) / 10,xyz[2] * 100 + z_offset),1,cv::Scalar(0,0,255),1);
-        //         cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[2] * 100  + z_offset),1,cv::Scalar(0,255,0),1);
-        //         cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[2] * 100 + z_offset),1,cv::Scalar(255,255,0),1);
-        //         // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result[2]),1,cv::Scalar(255,255,255),1);
-        //         cnt++;
-        //     }
-        //     cv::imshow("result_x",pic_x);
-        //     cv::imshow("result_y",pic_y);
-        //     cv::imshow("result_z",pic_z);
-        //     cv::waitKey(1);
-        // }
+                // cv::circle(pic_z,cv::Point2f((timestamp) / 10,xyz[2] * 100 + z_offset),1,cv::Scalar(0,0,255),1);
+                // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[2] * 100  + z_offset),1,cv::Scalar(0,255,0),1);
+                // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[2] * 100 + z_offset),1,cv::Scalar(255,255,0),1);
+                // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result[2]),1,cv::Scalar(255,255,255),1);
+                cnt++;
+            }
+            cv::imshow("result_x",pic_x);
+            // cv::imshow("result_y",pic_y);
+            // cv::imshow("result_z",pic_z);
+            cv::waitKey(1);
+        }
 
         final_target_ = target;
         // return target.xyz;
@@ -362,7 +371,7 @@ namespace armor_processor
         
         for (auto target_info : history_info_)
         {
-            std::cout << "T : " << target_info.timestamp / 1e3 << " X:" << target_info.xyz[0] << " Y:" << target_info.xyz[1] << std::endl;
+            // std::cout << "T : " << target_info.timestamp / 1e3 << " X:" << target_info.xyz[0] << " Y:" << target_info.xyz[1] << std::endl;
             problem_x.AddResidualBlock (     // 向问题中添加误差项
             // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致
                 new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 2> ( 
@@ -423,8 +432,8 @@ namespace armor_processor
         is_available.xyz_status[1] = (y_cost <= predict_param_.max_cost);
         // cout<<z_cost<<endl;
         
-        std::cout << "X:" << params_x[0] << " " << params_x[1] << " " << params_x[2] << " " << params_x[3] << std::endl; 
-        std::cout << "Y:" << params_y[0] << " " << params_y[1] << " " << params_y[2] << " " << params_y[3] << std::endl;
+        // std::cout << "X:" << params_x[0] << " " << params_x[1] << " " << params_x[2] << " " << params_x[3] << std::endl; 
+        // std::cout << "Y:" << params_y[0] << " " << params_y[1] << " " << params_y[2] << " " << params_y[3] << std::endl;
         // cout<<summary_y.BriefReport()<<endl;
         // cout<<time_estimated<<endl;
         // cout<<bullet_speed<<endl;
@@ -436,8 +445,8 @@ namespace armor_processor
         // auto x_pred = params_x[0] + params_x[1] * cos(params_x[3] * (time_estimated / 1e3)) + params_x[2] * sin(params_x[3] * (time_estimated / 1e3));
         // auto y_pred = params_y[0] + params_y[1] * cos(params_y[3] * (time_estimated / 1e3)) + params_y[2] * sin(params_y[3] * (time_estimated / 1e3));
 
-        std::cout << x_pred << " : " << y_pred << std::endl;
-        std::cout << "..........." << std::endl;
+        // std::cout << x_pred << " : " << y_pred << std::endl;
+        // std::cout << "..........." << std::endl;
         
         result = {x_pred, y_pred, dc[2]};
         return is_available;
@@ -509,7 +518,7 @@ namespace armor_processor
         // 计算目标速度、加速度 
         //取目标t-2、t-1、t时刻的坐标信息
         auto delta_x_last = (history_info_.at(history_info_.size() - 2).xyz[0] - history_info_.at(history_info_.size() - 3).xyz[0]);
-        auto delta_t_last = (history_info_.at(history_info_.size() - 2).timestamp - history_info_.at(history_info_.size() - 3));
+        auto delta_t_last = (history_info_.at(history_info_.size() - 2).timestamp - history_info_.at(history_info_.size() - 3).timestamp);
         auto v_last = delta_x_last / delta_t_last;
 
         auto delta_x_now = (target.xyz[0] - history_info_.at(history_info_.size() - 2).xyz[0]);
@@ -518,7 +527,8 @@ namespace armor_processor
 
         auto ax = (v_now - v_last) / ((delta_t_now + delta_t_last) / 2);
 
-        SingerState x = {target.xyz[0], v_now, ax};
+        SingerState x;
+        x << target.xyz[0], v_now, ax;
 
         if(!is_ekf_init)
         {
@@ -541,6 +551,6 @@ namespace armor_processor
             result << x_ekf_update[0], target.xyz[1], target.xyz[2];
         }
 
-        return false;
+        return is_available;
     }
 } // armor_processor

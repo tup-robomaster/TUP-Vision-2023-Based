@@ -31,10 +31,10 @@
     using_imu: false
     using_roi: true
     show_aim_cross: false
-    show_img: true
-    show_fps: true
+    show_img: false
+    show_fps: false
     print_letency: false
-    print_target_info: true
+    print_target_info: false
     detect_red: true
 
 # 自瞄预测节点参数配置 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-11-17 12:49:55
+ * @LastEditTime: 2022-11-18 13:26:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.h
  */
 #ifndef PREDICTION_HPP
@@ -29,8 +29,8 @@
 // #include <lapacke.h> //如果出现找不到此文件夹的错误，注释掉试一试，不行就去官方安装
 
 //运动模型（CV、CA、CTRV、CT、Singer、CS）
-#include "src/vehicle_system/filter/test/system_model.cpp"
-#include "src/vehicle_system/filter/test/measurement_model.cpp"
+#include "../../../../filter/test/system_model.cpp"
+#include "../../../../filter/test/measurement_model.cpp"
 
 //Singer Model
 typedef SingerModelState<double> SingerState;
@@ -159,10 +159,10 @@ namespace armor_processor
         DebugParam()
         {
             disable_fitting = false;
-            draw_predict = false;
+            draw_predict = true;
 
             using_imu = false;
-            show_predict = true;
+            show_predict = false;
             show_transformed_info = true;
         }
     };
@@ -223,7 +223,8 @@ namespace armor_processor
         SingerPosModel pos_model;
         // EKF
         filter::ExtendKalmanFilter<SingerState> ekf;
-
+    
+    public:
         //
         bool is_ekf_init;
         PredictStatus predict_ekf_run(TargetInfo target, Eigen::Vector3d& result, int timestamp);

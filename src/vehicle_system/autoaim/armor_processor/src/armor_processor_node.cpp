@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-10-25 23:29:48
+ * @LastEditTime: 2022-11-18 13:08:58
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -22,6 +22,9 @@ namespace armor_processor
         }
 
         gimbal_info_pub_ = this->create_publisher<global_interface::msg::Gimbal>("/gimbal_info", 10);
+
+        // Subscriptions transport type
+        transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
 
         // if(processor_->armor_predictor_.debug_param_.using_imu)
         // {
@@ -65,12 +68,49 @@ namespace armor_processor
             //     std::bind(&ArmorProcessorNode::spin_info_callback, this, std::placeholders::_1));
         target_info_sub_ = this->create_subscription<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS(),
             std::bind(&ArmorProcessorNode::target_info_callback, this, std::placeholders::_1));
+
+        // image sub
+        img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
+        std::bind(&ArmorProcessorNode::image_callback, this, std::placeholders::_1), transport_));
+        // img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+        // std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
         // }
 
     }
 
     ArmorProcessorNode::~ArmorProcessorNode()
     {
+        
+    }
+
+    void ArmorProcessorNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
+    {
+        if(!img_info)
+        {
+            return;
+        }
+        
+        // RCLCPP_INFO(this->get_logger(), "...");
+        
+
+        auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
+        // img.copyTo(src.img);
+        draw_predict = true;
+        if(draw_predict)
+        {
+            if(predict_point_ == last_predict_point_)
+            {
+            }
+            else
+            {
+                last_predict_point_ = predict_point_;
+                cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
+                circle(img, point_2d, 2, {0, 255, 255}, 2);
+                cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
+                cv::imshow("ekf_predict", img);
+                cv::waitKey(1);
+            }
+        }
         
     }
 
@@ -156,7 +196,7 @@ namespace armor_processor
         // std::cout << 1 << std::endl;
         if(target_info.target_switched)
         {
-            RCLCPP_INFO(this->get_logger(), "Target switched...");
+            // RCLCPP_INFO(this->get_logger(), "Target switched...");
             Eigen::Vector3d aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
             
             // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
@@ -168,6 +208,7 @@ namespace armor_processor
             gimbal_info.yaw = angle[1]; 
             // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
             // std::cout << std::endl;
+            processor_->armor_predictor_.is_ekf_init = false;
 
             gimbal_info_pub_->publish(gimbal_info);
         }
@@ -177,8 +218,9 @@ namespace armor_processor
             aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
 
             // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
-
+            last_predict_point_ = predict_point_;
             auto aiming_point_world = processor_->armor_predictor_.predict(aiming_point, target_info.timestamp);
+            predict_point_ = aiming_point_world;
 
             // std::cout << "aiming_point_world: " << aiming_point_world[0] << " " << aiming_point_world[1] << " " << aiming_point_world[2] << std::endl;
 

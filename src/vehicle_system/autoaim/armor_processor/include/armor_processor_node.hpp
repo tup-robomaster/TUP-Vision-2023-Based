@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-10-25 22:37:41
+ * @LastEditTime: 2022-11-18 11:54:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP
@@ -21,6 +21,16 @@
 #include <tf2_ros/message_filter.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
+
+//
+#include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <message_filters/sync_policies/approximate_time.h>
+#include <message_filters/synchronizer.h>
+#include <image_transport/image_transport.hpp>
+#include <image_transport/publisher.hpp>
+#include <image_transport/subscriber_filter.hpp>
+#include <cv_bridge/cv_bridge.h>
 
 //std
 #include <memory>
@@ -46,6 +56,10 @@ namespace armor_processor
         message_filters::Subscriber<global_interface::msg::Target> target_point_sub_; 
         void target_info_callback(const global_interface::msg::Target& target_info);
 
+        bool draw_predict;
+        Eigen::Vector3d last_predict_point_;
+        Eigen::Vector3d predict_point_;
+        // coordsolver::coordsolver coordsolver_;
         rclcpp::Publisher<global_interface::msg::Gimbal>::SharedPtr gimbal_info_pub_;
     
     private:
@@ -61,6 +75,15 @@ namespace armor_processor
         std::shared_ptr<tf2_ros::MessageFilter<geometry_msgs::msg::PointStamped>> tf2_filter_;
 
         void msg_callback(const geometry_msgs::msg::PointStamped::SharedPtr point_ptr);
+    
+    protected:
+        // 订阅图像  
+        std::shared_ptr<image_transport::Subscriber> img_sub_;
+        // Image subscriptions transport type
+        std::string transport_;
+        
+        //
+        void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
     
     };
 } //armor_processor

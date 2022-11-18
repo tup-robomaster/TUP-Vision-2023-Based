@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-10-25 23:10:41
-LastEditTime: 2022-11-09 18:38:18
+LastEditTime: 2022-11-18 09:06:46
 FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/launch/armor_processor.launch.py
 '''
 import os
@@ -20,32 +20,32 @@ def generate_launch_description():
     autoaim_config = os.path.join(share_path, "config/autoaim.yaml")
 
     return LaunchDescription([
-        # Node
-        # (
-        #     name = "hik_cam_driver",
-        #     package = "camera_driver",
-        #     executable = "hik_cam_driver_node",
-        #     parameters = [cam_config],
-        #     output = "screen"
-        # ),
-
         Node
         (
-            name = "daheng_cam_driver",
+            name = "hik_cam_driver",
             package = "camera_driver",
-            executable = "daheng_cam_driver_node",
+            executable = "hik_cam_driver_node",
             parameters = [cam_config],
             output = "screen"
         ),
 
-        Node
-        (
-            name = "serialport",
-            package = "serialport",
-            executable = "serial_driver",
-            # parameters = [],
-            output = "screen"
-        ),
+        # Node
+        # (
+        #     name = "daheng_cam_driver",
+        #     package = "camera_driver",
+        #     executable = "daheng_cam_driver_node",
+        #     parameters = [cam_config],
+        #     output = "screen"
+        # ),
+
+        # Node
+        # (
+        #     name = "serialport",
+        #     package = "serialport",
+        #     executable = "serial_driver",
+        #     # parameters = [],
+        #     output = "screen"
+        # ),
 
         Node
         (

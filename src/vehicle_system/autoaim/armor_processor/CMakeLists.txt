@@ -34,6 +34,10 @@ find_package(Ceres REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(angles REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
+
 # find_package(lapack REQUIRED)
 
 find_package(global_interface REQUIRED)
@@ -54,6 +58,9 @@ set(dependencies
   rclcpp_lifecycle
   Eigen3
   Ceres
+  image_transport
+  sensor_msgs
+  cv_bridge
   # lapack 
 
   global_interface

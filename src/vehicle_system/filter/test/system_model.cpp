@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-03 22:59:40
- * @LastEditTime: 2022-11-14 21:49:15
+ * @LastEditTime: 2022-11-18 11:06:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/test/system_model.cpp
  */
 #include "./system_model.hpp"
@@ -241,7 +241,7 @@ public:
         
         this->F.setZero();
 
-        S x_ = x;
+        // S x_ = x;
  
         //状态转移矩阵的雅可比矩阵
         if(alpha != 0)
