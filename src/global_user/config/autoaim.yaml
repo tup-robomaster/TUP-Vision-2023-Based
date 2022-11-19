@@ -61,4 +61,11 @@
     filter_param_path: "src/global_user/config/filter_param.yaml"
     coord_param_path: "src/global_user/config/camera.yaml"
 
+    # Singer model
+    alpha: 0.1
+    a_max: 5
+    p_max: 0.1
+    p0: 0.3
+  
+
     
