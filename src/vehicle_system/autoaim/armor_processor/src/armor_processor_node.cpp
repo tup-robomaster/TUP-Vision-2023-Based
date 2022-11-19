@@ -2,11 +2,12 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-11-18 21:58:51
+ * @LastEditTime: 2022-11-19 13:07:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
 
+using namespace std::placeholders;
 namespace armor_processor
 {
     ArmorProcessorNode::ArmorProcessorNode(const rclcpp::NodeOptions& options)
@@ -69,13 +70,26 @@ namespace armor_processor
         target_info_sub_ = this->create_subscription<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS(),
             std::bind(&ArmorProcessorNode::target_info_callback, this, std::placeholders::_1));
 
-        // image sub
-        img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
-        std::bind(&ArmorProcessorNode::image_callback, this, std::placeholders::_1), transport_));
-        // img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
-        // std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
-        // }
-
+        bool debug_ = false;
+        this->declare_parameter<bool>("debug", false);
+        this->get_parameter("debug", debug_);
+        if(debug_)
+        {
+            // global_user::CameraType camera_type;
+            this->declare_parameter<int>("camera_type", global_user::DaHeng);
+            int camera_type = this->get_parameter("camera_type").as_int();
+            if(camera_type == global_user::DaHeng)
+            {
+                // image sub
+                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
+                std::bind(&ArmorProcessorNode::image_callback, this, std::placeholders::_1), transport_));
+            }
+            else
+            {
+                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+                std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
+            }
+        }
     }
 
     ArmorProcessorNode::~ArmorProcessorNode()
@@ -89,23 +103,19 @@ namespace armor_processor
         {
             return;
         }
-        
         // RCLCPP_INFO(this->get_logger(), "...");
-        
 
         auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
         // img.copyTo(src.img);
-        draw_predict = true;
         if(draw_predict)
         {
             if(predict_point_ == last_predict_point_)
-            {
-            }
+            {}
             else
             {
                 last_predict_point_ = predict_point_;
                 cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
-                circle(img, point_2d, 2, {0, 255, 255}, 2);
+                circle(img, point_2d, 2, {255, 0, 0}, 2);
                 cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
                 cv::imshow("ekf_predict", img);
                 cv::waitKey(1);
@@ -133,6 +143,14 @@ namespace armor_processor
         predict_param_.shoot_delay = this->get_parameter("shoot_delay").as_int();
         predict_param_.window_size = this->get_parameter("window_size").as_int();
 
+        this->declare_parameter<double>("singer_alpha", 0.1);
+        this->declare_parameter<double>("singer_a_max", 5.0);
+        this->declare_parameter<double>("singer_p_max", 0.1);
+        this->declare_parameter<double>("singer_p0", 0.1);
+        singer_model_param_.alpha = this->get_parameter("singer_alpha").as_double();
+        singer_model_param_.a_max = this->get_parameter("singer_a_max").as_double();
+        singer_model_param_.p_max = this->get_parameter("singer_p_max").as_double();
+        singer_model_param_.p0 = this->get_parameter("singer_p0").as_double();
         // std::cout << 2 << std::endl;
 
         this->declare_parameter("disable_fitting", false);
@@ -156,7 +174,7 @@ namespace armor_processor
         coord_param_path_ = this->get_parameter("coord_param_path").as_string();
         coord_param_name_ = this->get_parameter("coord_param_name").as_string();
 
-        return std::make_unique<Processor>(predict_param, debug_param, filter_param_path, coord_param_path, coord_param_name);
+        return std::make_unique<Processor>(predict_param_, singer_model_param_, debug_param_, filter_param_path_, coord_param_path_, coord_param_name_);
     }
 
 
@@ -268,15 +286,14 @@ namespace armor_processor
                     if(param.as_double() >= 0)
                     {
                         RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
                             param.get_name().c_str(),
                             param.get_type_name().c_str(),
                             param.as_double()
                         );
-                        this->predict_param_.bullet_speed = pram.as_double();
+                        this->predict_param_.bullet_speed = param.as_double();
                         this->processor_->coordsolver_.setBulletSpeed(this->predict_param_.bullet_speed);
-                        // this->hik_cam_params_.exposure_time = param.as_int();
-                        // this->hik_cam->set_exposure_time(this->hik_cam_params_.exposure_time);
+                        
                         result.successful = true;
                     }
                 }
@@ -295,8 +312,7 @@ namespace armor_processor
                         );
                         this->predict_param_.max_time_delta = param.as_double();
                         this->processor_->setMaxTimeDelta(this->predict_param_.max_time_delta);
-                        // this->hik_cam_params_.exposure_gain = param.as_int();
-                        // this->hik_cam->set_gain(3, this->hik_cam_params_.exposure_gain);
+                       
                         result.successful = true;
                     }
                 }
@@ -308,13 +324,14 @@ namespace armor_processor
                     if(param.as_int() >= 0)
                     {
                         RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
                             param.get_name().c_str(),
                             param.get_type_name().c_str(),
                             param.as_int()
                         );
-                        // this->hik_cam_params_.balance_b = param.as_int();
-                        // this->hik_cam->set_balance(0, this->hik_cam_params_.balance_b);
+                        this->predict_param_.max_cost = param.as_int();
+                        this->processor_->setMaxCost(this->predict_param_.max_cost);
+                        
                         result.successful = true;
                     }
                 }
@@ -326,15 +343,14 @@ namespace armor_processor
                     if(param.as_double() >= 0)
                     {
                         RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
                             param.get_name().c_str(),
                             param.get_type_name().c_str(),
                             param.as_int()
                         );
                         this->predict_param_.min_fitting_lens = param.as_int();
                         this->processor_->setMinFittingLens(this->predict_param_.min_fitting_lens);
-                        // this->hik_cam_params_.balance_g = param.as_int();
-                        // this->hik_cam->set_balance(1, this->hik_cam_params_.balance_g);
+                       
                         result.successful = true;
                     }
                 }
@@ -353,8 +369,7 @@ namespace armor_processor
                         );
                         this->predict_param_.max_v = param.as_int();
                         this->processor_->setMaxVelocity(this->predict_param_.max_v);
-                        // this->hik_cam_params_.balance_r = param.as_double();
-                        // this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
+                        
                         result.successful = true;
                     }
                 }
@@ -367,15 +382,89 @@ namespace armor_processor
                     if(param.as_int() >= 0)
                     {
                         RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
                             param.get_name().c_str(),
                             param.get_type_name().c_str(),
                             param.as_int()
                         ); 
                         this->predict_param_.shoot_delay = param.as_int();
                         this->processor_->setShootDelay(this->predict_param_.shoot_delay);
-                        // this->hik_cam_params_.balance_r = param.as_double();
-                        // this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
+                        result.successful = true;
+                    }
+                }
+            }
+
+            if(param.get_name() == "singer_alpha")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+                {
+                    if(param.as_double() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_double()
+                        ); 
+                        this->singer_model_param_.alpha = param.as_double();
+                        this->processor_->set_alpha(this->singer_model_param_.alpha);
+                        result.successful = true;
+                    }
+                }
+            }
+
+            if(param.get_name() == "singer_a_max")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+                {
+                    if(param.as_double() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_double()
+                        ); 
+                        this->singer_model_param_.a_max = param.as_double();
+                        this->processor_->set_a_max(this->singer_model_param_.a_max);
+                        result.successful = true;
+                    }
+                }
+            }
+
+            if(param.get_name() == "singer_p_max")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+                {
+                    if(param.as_double() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_double()
+                        ); 
+                        this->singer_model_param_.p_max = param.as_double();
+                        this->processor_->set_p_max(this->singer_model_param_.p_max);
+                        result.successful = true;
+                    }
+                }
+            }
+
+            if(param.get_name() == "singer_p0")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+                {
+                    if(param.as_double() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_double()
+                        ); 
+                        this->singer_model_param_.p0 = param.as_double();
+                        this->processor_->set_p0(this->singer_model_param_.p0);
                         result.successful = true;
                     }
                 }
@@ -405,13 +494,13 @@ namespace armor_processor
                 if(param.get_type() == rclcpp::ParameterType::PARAMETER_BOOL)
                 {
                         RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%d\"",
                             param.get_name().c_str(),
                             param.get_type_name().c_str(),
-                            param.as_bool()
+                            (int)param.as_bool()
                         );
                         this->debug_param_.disable_fitting = param.as_bool();
-                        this->processor_->armor_predictor_.debug_param_.disable_fitting = this->debug_param_.disable_fitting;
+                        this->processor_->disabledFitting(this->debug_param_.disable_fitting);
                         // this->hik_cam_params_.balance_r = param.as_double();
                         // this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
                         result.successful = true;
@@ -423,13 +512,13 @@ namespace armor_processor
                 if(param.get_type() == rclcpp::ParameterType::PARAMETER_BOOL)
                 {
                         RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%d\"",
                             param.get_name().c_str(),
                             param.get_type_name().c_str(),
-                            param.as_bool()
+                            (int)param.as_bool()
                         );
                         this->debug_param_.draw_predict = param.as_bool();
-                        this->processor_->armor_predictor_.debug_param_.draw_predict = this->debug_param_.draw_predict;
+                        this->processor_->drawPredict(this->debug_param_.draw_predict);
                         // this->hik_cam_params_.balance_r = param.as_double();
                         // this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
                         result.successful = true;
@@ -441,10 +530,10 @@ namespace armor_processor
                 if(param.get_type() == rclcpp::ParameterType::PARAMETER_BOOL)
                 {
                         RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%d\"",
                             param.get_name().c_str(),
                             param.get_type_name().c_str(),
-                            param.as_bool()
+                            (int)param.as_bool()
                         );
 
                         this->debug_param_.using_imu = param.as_bool();
@@ -460,14 +549,14 @@ namespace armor_processor
                 if(param.get_type() == rclcpp::ParameterType::PARAMETER_BOOL)
                 {
                         RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%d\"",
                             param.get_name().c_str(),
                             param.get_type_name().c_str(),
-                            param.as_bool()
+                            (int)param.as_bool()
                         );
 
                         this->debug_param_.show_predict = param.as_bool();
-                        this->processor_->armor_predictor_.debug_param_.show_predict = this->debug_param_.show_predict;
+                        this->processor_->showPredict(this->debug_param_.show_predict);
                         // this->hik_cam_params_.balance_r = param.as_double();
                         // this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
                         result.successful = true;
@@ -479,14 +568,14 @@ namespace armor_processor
                 if(param.get_type() == rclcpp::ParameterType::PARAMETER_BOOL)
                 {
                         RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%d\"",
                             param.get_name().c_str(),
                             param.get_type_name().c_str(),
-                            param.as_bool()
+                            (int)param.as_bool()
                         );
 
                         this->debug_param_.show_transformed_info = param.as_bool();
-                        this->processor_->armor_predictor_.debug_param_.show_transformed_info = this->debug_param_.show_transformed_info;
+                        this->processor_->showTransformedInfo(this->debug_param_.show_transformed_info);
                         // this->hik_cam_params_.balance_r = param.as_double();
                         // this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
                         result.successful = true;

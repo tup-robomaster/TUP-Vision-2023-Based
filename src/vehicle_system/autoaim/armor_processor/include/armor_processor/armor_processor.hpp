@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-17 00:27:33
- * @LastEditTime: 2022-11-18 21:54:51
+ * @LastEditTime: 2022-11-19 12:51:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor/armor_processor.hpp
  */
 #ifndef ARMOR_PRECESSOR_HPP
@@ -31,7 +31,9 @@ namespace armor_processor
     class Processor
     {
     public:
-        Processor(const PredictParam& predict_param, DebugParam& debug_param, std::string filter_param_path, std::string coord_param_path, std::string coord_param_name);
+        Processor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param, 
+            const std::string& filter_param_path, const std::string& coord_param_path, 
+            const std::string& coord_param_name);
         ~Processor();
 
         //预测(接收armor_detector节点发布的目标信息进行预测)
@@ -51,10 +53,22 @@ namespace armor_processor
         Eigen::Matrix3d rmat_imu;
     
     public:
+        // Debug dynamically.
         void setMaxTimeDelta(int& max_time_delta);
         void setMinFittingLens(int& min_fitting_lens);
         void setMaxVelocity(int& max_v);
         void setShootDelay(int& shoot_delay);
+        void setMaxCost(int& max_cost);
+        void disabledFitting(bool& diabled_fitting);
+        void drawPredict(bool& draw_predict);
+        void showPredict(bool& show_predict);
+        void usingImu(bool& using_imu);
+        void showTransformedInfo(bool& show_transformed_info);
+        void set_alpha(double& alpha);
+        void set_a_max(double a_max);
+        void set_p_max(double& p_max);
+        void set_p0(double& p0);
+        void set_sigma();
     };
 } //namespace armor_processor
 

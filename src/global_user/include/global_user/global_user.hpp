@@ -2,8 +2,8 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2022-10-14 16:15:41
- * @FilePath: /tup_2023/src/global_user/include/global_user/global_user.hpp
+ * @LastEditTime: 2022-11-19 11:00:24
+ * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 
 #ifndef GLOBAL_USER_HPP
@@ -51,6 +51,12 @@ namespace global_user
         
     private:
         std::string config_path[2];
+    };
+
+    enum CameraType
+    {
+      DaHeng,
+      HikRobot  
     };
 
     enum TargetType 

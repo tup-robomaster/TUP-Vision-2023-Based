@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-11-18 13:28:49
+ * @LastEditTime: 2022-11-19 12:56:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -23,8 +23,8 @@ namespace armor_processor
 
     ArmorPredictor::~ArmorPredictor(){}
 
-    ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, DebugParam& debug_param, std::string filter_param_path)
-    : predict_param_(predict_param), debug_param_(debug_param), filter_param_path_(filter_param_path)
+    ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param, const std::string filter_param_path)
+    : predict_param_(predict_param), singer_model_param_(singer_model_param), debug_param_(debug_param), filter_param_path_(filter_param_path)
     {
         int cnt = 0;
         pic_x = cv::Mat::zeros(500, 2000, CV_8UC3);
@@ -234,7 +234,7 @@ namespace armor_processor
                 auto x = cnt * 5;
                 cv::circle(pic_x, cv::Point2f((timestamp) / 25, xyz[0] * 90 + x_offset), 1, cv::Scalar(0, 0, 255), 1);
                 // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[0] * 100 + x_offset),1,cv::Scalar(0,255,0),1);
-                cv::circle(pic_x, cv::Point2f((timestamp + delta_time_estimate) / 25, result_ekf[0] * 90 + x_offset), 1, cv::Scalar(0, 255, 0), 1);
+                cv::circle(pic_x, cv::Point2f((timestamp + delta_time_estimate) / 25, result_ekf[0] * 90 + x_offset), 1, cv::Scalar(255, 0, 0), 1);
                 // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[0] * 100 + x_offset),1,cv::Scalar(255,255,0),1);
                 // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result[0]+ 200),1,cv::Scalar(255,255,255),1);
 
@@ -552,5 +552,38 @@ namespace armor_processor
         }
 
         return is_available;
+    }
+
+    void ArmorPredictor::setSingerParam(double& alpha, double& a_max, double& p_max, double& p0)
+    {
+        singer.set_alpha(alpha);
+        singer.set_a_max(a_max);
+        singer.set_p_max(p_max);
+        singer.set_p0(p0);       
+        singer.set_sigma(); 
+    }
+
+    void ArmorPredictor::set_singer_alpha(double& alpha)
+    {
+        singer.set_alpha(alpha);
+    }
+    void ArmorPredictor::set_singer_a_max(double& a_max)
+    {
+        singer.set_a_max(a_max);
+    }
+    
+    void ArmorPredictor::set_singer_p_max(double& p_max)
+    {
+        singer.set_p_max(p_max);
+    }
+    
+    void ArmorPredictor::set_singer_p0(double& p0)
+    {
+        singer.set_p0(p0);        
+    }
+
+    void ArmorPredictor::set_singer_sigma()
+    {
+        singer.set_sigma();
     }
 } // armor_processor

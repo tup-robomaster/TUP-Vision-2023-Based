@@ -2,15 +2,17 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2022-11-18 21:55:14
+ * @LastEditTime: 2022-11-19 13:01:51
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
 
 namespace armor_processor
 {
-    Processor::Processor(const PredictParam& predict_param, DebugParam& debug_param, std::string filter_param_path, std::string coord_param_path, std::string coord_param_name)
-    : armor_predictor_(predict_param, debug_param, filter_param_path)
+    Processor::Processor(const PredictParam& predict_param, const SingerModelParam& singer_model_param,
+        const DebugParam& debug_param, const std::string& filter_param_path, 
+        const std::string& coord_param_path, const std::string& coord_param_name)
+    : armor_predictor_(predict_param, singer_model_param, debug_param, filter_param_path)
     {
         // if(!debug_param.using_imu)
         // {
@@ -84,5 +86,59 @@ namespace armor_processor
     void Processor::setShootDelay(int& shoot_delay)
     {
         armor_predictor_.predict_param_.shoot_delay = shoot_delay;
+    }
+
+    void Processor::setMaxCost(int& max_cost)
+    {
+        armor_predictor_.predict_param_.max_cost = max_cost;
+    }
+
+    void Processor::disabledFitting(bool& diabled_fitting)
+    {
+        armor_predictor_.debug_param_.disable_fitting = diabled_fitting;
+    }
+
+    void Processor::drawPredict(bool& draw_predict)
+    {
+        armor_predictor_.debug_param_.draw_predict = draw_predict;
+    }
+
+    void Processor::showPredict(bool& show_predict)
+    {
+        armor_predictor_.debug_param_.show_predict = show_predict;
+    }
+
+    void Processor::usingImu(bool& using_imu)
+    {
+        armor_predictor_.debug_param_.using_imu = using_imu;
+    }
+
+    void Processor::showTransformedInfo(bool& show_transformed_info)
+    {
+        armor_predictor_.debug_param_.show_transformed_info = show_transformed_info;
+    }
+
+    void Processor::set_alpha(double& alpha)
+    {
+        armor_predictor_.set_singer_alpha(alpha);
+    }
+    void Processor::set_a_max(double a_max)
+    {
+        armor_predictor_.set_singer_a_max(a_max);
+    }
+
+    void Processor::set_p_max(double& p_max)
+    {
+        armor_predictor_.set_singer_p_max(p_max);
+    }
+
+    void Processor::set_p0(double& p0)
+    {
+        armor_predictor_.set_singer_p0(p0);
+    }
+
+    void Processor::set_sigma()
+    {
+        armor_predictor_.set_singer_sigma();
     }
 } // armor_processor

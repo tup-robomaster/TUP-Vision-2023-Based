@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-03 22:59:40
- * @LastEditTime: 2022-11-18 11:06:57
+ * @LastEditTime: 2022-11-19 12:40:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/test/system_model.cpp
  */
 #include "./system_model.hpp"
@@ -205,21 +205,47 @@ public:
 template<typename T, template<class> class CovarianceBase = filter::Base>
 class SingerModel : public filter::LinearSystemModel<SingerModelState<T>, SingerModelControl<T>, CovarianceBase>
 {
-public:
+private:
     typedef SingerModelState<T> S;
     typedef SingerModelControl<T> C;
 
+    T alpha_;
+    T a_max_;
+    T p_max_;
+    T p0_;
+    T sigma_;
+    T q_;
+
+public:
+    SingerModel()
+    {
+        alpha_ = 0.01;
+        a_max_ = 5;
+        p_max_ = 0.5;
+        p0_ = 0.01;
+        sigma_ = sqrt((pow(a_max_, 2) * (1 + 4 * p_max_ - p0_)) / 3);
+    }
+    SingerModel(T alpha, T a_max, T p_max, T p0, T q)
+    {
+        alpha_ = alpha;
+        a_max_ = a_max;
+        p_max_ = p_max;
+        p0_ = p0;
+        q_ = q;
+        sigma_ = sqrt((pow(a_max_, 2) * (1 + 4 * p_max_ - p0_)) / 3);
+    }
+
     S f(const S& x, const C& u, const float& dt) const
     {
-        double alpha = 0.01;
+        // double alpha = 0.01;
 
         S x_;
 
-        if(alpha != 0)
+        if(alpha_ != 0)
         {
-            x_.x() = x.x() + x.v() * dt + ((alpha * dt - 1 + exp(-alpha * dt)) / pow(alpha, 2)) * x.a();
-            x_.v() = x.v() + ((1 - exp(-alpha * dt)) / alpha) * x.a();
-            x_.a() = x.a() * exp(-alpha * dt);
+            x_.x() = x.x() + x.v() * dt + ((alpha_ * dt - 1 + exp(-alpha_ * dt)) / pow(alpha_, 2)) * x.a();
+            x_.v() = x.v() + ((1 - exp(-alpha_ * dt)) / alpha_) * x.a();
+            x_.a() = x.a() * exp(-alpha_ * dt);
         }
         else
         {
@@ -233,25 +259,25 @@ public:
 public:
     void updateJacobians(const S& x, const C& u, const float& dt)
     {
-        double alpha = 0.01;
-        double a_max = 5;
-        double p_max = 0.5;
-        double p0 = 0.01;
-        double sigma = sqrt((pow(a_max, 2) * (1 + 4 * p_max - p0)) / 3);
+        // double alpha = 0.01;
+        // double a_max = 5;
+        // double p_max = 0.5;
+        // double p0 = 0.01;
+        // double sigma = sqrt((pow(a_max, 2) * (1 + 4 * p_max - p0)) / 3);
         
         this->F.setZero();
 
         // S x_ = x;
  
         //状态转移矩阵的雅可比矩阵
-        if(alpha != 0)
+        if(alpha_ != 0)
         {   
             this->F(S::X, S::X) = 1;
             this->F(S::X, S::V) = dt;
-            this->F(S::X, S::A) = ((alpha * dt - 1 + exp(-alpha * dt)) / pow(alpha, 2));
+            this->F(S::X, S::A) = ((alpha_ * dt - 1 + exp(-alpha_ * dt)) / pow(alpha_, 2));
             this->F(S::V, S::V) = 1;
-            this->F(S::V, S::A) = (1 - exp(-alpha * dt)) / alpha;
-            this->F(S::A, S::A) = exp(-alpha * dt);
+            this->F(S::V, S::A) = (1 - exp(-alpha_ * dt)) / alpha_;
+            this->F(S::A, S::A) = exp(-alpha_ * dt);
         }
         else
         {
@@ -270,23 +296,23 @@ public:
 
         this->W.setZero();
         double q[3][3] = {0};
-        calProcessNoiseCov(q, alpha, sigma, dt);
+        calProcessNoiseCov(q, dt);
         //过程噪声协方差矩阵
-        if(alpha != 0)
+        if(alpha_ != 0)
         {
-            this->W(S::X, S::X) = 2 * alpha * pow(sigma, 2) * q[0][0];
-            this->W(S::X, S::V) = 2 * alpha * pow(sigma, 2) * q[0][1];
-            this->W(S::X, S::A) = 2 * alpha * pow(sigma, 2) * q[0][2];
-            this->W(S::V, S::X) = 2 * alpha * pow(sigma, 2) * q[1][0];
-            this->W(S::V, S::V) = 2 * alpha * pow(sigma, 2) * q[1][1];
-            this->W(S::V, S::A) = 2 * alpha * pow(sigma, 2) * q[1][2];
-            this->W(S::A, S::X) = 2 * alpha * pow(sigma, 2) * q[2][0];
-            this->W(S::A, S::V) = 2 * alpha * pow(sigma, 2) * q[2][1];
-            this->W(S::A, S::A) = 2 * alpha * pow(sigma, 2) * q[2][2];
+            this->W(S::X, S::X) = 2 * alpha_ * pow(sigma_, 2) * q[0][0];
+            this->W(S::X, S::V) = 2 * alpha_ * pow(sigma_, 2) * q[0][1];
+            this->W(S::X, S::A) = 2 * alpha_ * pow(sigma_, 2) * q[0][2];
+            this->W(S::V, S::X) = 2 * alpha_ * pow(sigma_, 2) * q[1][0];
+            this->W(S::V, S::V) = 2 * alpha_ * pow(sigma_, 2) * q[1][1];
+            this->W(S::V, S::A) = 2 * alpha_ * pow(sigma_, 2) * q[1][2];
+            this->W(S::A, S::X) = 2 * alpha_ * pow(sigma_, 2) * q[2][0];
+            this->W(S::A, S::V) = 2 * alpha_ * pow(sigma_, 2) * q[2][1];
+            this->W(S::A, S::A) = 2 * alpha_ * pow(sigma_, 2) * q[2][2];
         }
         else
         {
-            double q_ = 0.05;
+            // double q_ = 0.05;
             this->W(S::X, S::X) = q_ * q[0][0];
             this->W(S::X, S::V) = q_ * q[0][1];
             this->W(S::X, S::A) = q_ * q[0][2];
@@ -301,19 +327,19 @@ public:
     }
 
 public:
-    void calProcessNoiseCov(double (*q)[3], const double& alpha, const double& sigma, const double& dt)
+    void calProcessNoiseCov(double (*q)[3], const double& dt)
     {
-        if(alpha != 0)
+        if(alpha_ != 0)
         {
-            q[0][0] = (1 - exp(-2 * alpha * dt) + 2 * alpha * dt + ((2 * pow(alpha, 3) * pow(dt, 3)) / 3) - 2 * pow(alpha, 2) * pow(dt, 2) - 4 * alpha * dt * exp(-alpha * dt)) / (2 * pow(alpha, 5));
-            q[0][1] = (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt) + 2 * alpha * dt * exp(-alpha * dt) - 2 * alpha * dt + pow(alpha, 2) * pow(dt, 2)) / (2 * pow(alpha, 4));
-            q[0][2] = (1 - exp(-2 * alpha * dt) - 2 * alpha * dt * exp(-alpha * dt)) / (2 * pow(alpha, 3));
+            q[0][0] = (1 - exp(-2 * alpha_ * dt) + 2 * alpha_ * dt + ((2 * pow(alpha_, 3) * pow(dt, 3)) / 3) - 2 * pow(alpha_, 2) * pow(dt, 2) - 4 * alpha_ * dt * exp(-alpha_ * dt)) / (2 * pow(alpha_, 5));
+            q[0][1] = (exp(-2 * alpha_ * dt) + 1 - 2 * exp(-alpha_ * dt) + 2 * alpha_ * dt * exp(-alpha_ * dt) - 2 * alpha_ * dt + pow(alpha_, 2) * pow(dt, 2)) / (2 * pow(alpha_, 4));
+            q[0][2] = (1 - exp(-2 * alpha_ * dt) - 2 * alpha_ * dt * exp(-alpha_ * dt)) / (2 * pow(alpha_, 3));
             q[1][0] = 0;
-            q[1][1] = (4 * exp(-alpha * dt) - 3 - exp(-2 * alpha * dt) + 2 * alpha * dt) / (2 * pow(alpha, 3));
-            q[1][2] = (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt)) / (2 * pow(alpha, 2));
+            q[1][1] = (4 * exp(-alpha_ * dt) - 3 - exp(-2 * alpha_ * dt) + 2 * alpha_ * dt) / (2 * pow(alpha_, 3));
+            q[1][2] = (exp(-2 * alpha_ * dt) + 1 - 2 * exp(-alpha_ * dt)) / (2 * pow(alpha_, 2));
             q[2][0] = 0;
             q[2][1] = 0;
-            q[2][2] = (1 - exp(-2 * alpha * dt)) / (2 * alpha);
+            q[2][2] = (1 - exp(-2 * alpha_ * dt)) / (2 * alpha_);
         }
         else
         {
@@ -329,4 +355,37 @@ public:
         }
     }
 
+    void setParam(double& alpha, double& a_max, double& p_max, double& p0)
+    {
+        this->alpha_ = alpha;
+        this->a_max_ = a_max;
+        this->p_max_ = p_max;
+        this->p0_ = p0;
+        this->sigma_ = sqrt((pow(a_max_, 2) * (1 + 4 * p_max_ - p0_)) / 3);
+    }
+
+    void set_alpha(double& alpha)
+    {
+        this->alpha_ = alpha;
+    }
+
+    void set_a_max(double& a_max)
+    {
+        this->a_max_ = a_max;
+    }
+
+    void set_p_max(double& p_max)
+    {
+        this->p_max_ = p_max;
+    }
+
+    void set_p0(double& p0)
+    {
+        this->p0_ = p0;
+    }
+
+    void set_sigma()
+    {
+        this->sigma_ = sqrt((pow(a_max_, 2) * (1 + 4 * p_max_ - p0_)) / 3);
+    }
 };

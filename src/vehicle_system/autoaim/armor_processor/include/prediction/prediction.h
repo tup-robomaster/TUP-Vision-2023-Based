@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-11-18 13:26:10
+ * @LastEditTime: 2022-11-19 13:06:24
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.h
  */
 #ifndef PREDICTION_HPP
@@ -133,7 +133,7 @@ namespace armor_processor
         int min_fitting_lens;   //最短队列长度
         int shoot_delay;        //射击延迟
         int window_size;        //滑窗大小
-        
+
         PredictParam()
         {
             bullet_speed = 28;    
@@ -143,6 +143,24 @@ namespace armor_processor
             min_fitting_lens = 10;   
             shoot_delay = 100;       
             window_size = 3;        
+        }
+    };
+
+    struct SingerModelParam
+    {
+        double alpha;
+        double a_max;
+        double p_max;
+        double p0;
+        double sigma;
+
+        SingerModelParam()
+        {
+            alpha = 0.1;
+            a_max = 5;
+            p_max = 0.1;
+            p0 = 0.1;
+            sigma = sqrt((pow(a_max, 2) * (1 + 4 * p_max - p0)) / 3);
         }
     };
 
@@ -186,6 +204,7 @@ namespace armor_processor
     public:
         // set const value or default value
         PredictParam predict_param_;
+        SingerModelParam singer_model_param_;
         DebugParam debug_param_;
 
         std::string filter_param_path_;
@@ -201,7 +220,7 @@ namespace armor_processor
         cv::Mat pic_z;
         
     public:
-        ArmorPredictor(const PredictParam& predict_param, DebugParam& debug_param, std::string filter_param_path);
+        ArmorPredictor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param, const std::string filter_param_path);
         
         Eigen::Vector3d predict(Eigen::Vector3d xyz, int timestamp);
 
@@ -214,7 +233,7 @@ namespace armor_processor
         //移动轨迹拟合预测（小陀螺+横移->旋轮线）
         PredictStatus couple_fitting_predict(Eigen::Vector3d& result, int timestamp);
     
-    protected:
+    public:
         // 控制量
         SingerControl u;
         // Singer模型
@@ -223,6 +242,13 @@ namespace armor_processor
         SingerPosModel pos_model;
         // EKF
         filter::ExtendKalmanFilter<SingerState> ekf;
+        // 
+        void setSingerParam(double& alpha, double& a_max, double& p_max, double& p0);
+        void set_singer_alpha(double& alpha);
+        void set_singer_a_max(double& a_max);
+        void set_singer_p_max(double& p_max);
+        void set_singer_p0(double& p0);
+        void set_singer_sigma();
     
     public:
         //

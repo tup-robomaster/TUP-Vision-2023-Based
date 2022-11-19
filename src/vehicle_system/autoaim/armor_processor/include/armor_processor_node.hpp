@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-11-18 20:45:49
+ * @LastEditTime: 2022-11-19 12:02:19
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP
@@ -87,8 +87,9 @@ namespace armor_processor
     
     public:
         PredictParam predict_param_;
+        SingerModelParam singer_model_param_;
         DebugParam debug_param_;
-        std::string filter_param_path_
+        std::string filter_param_path_;
         std::string coord_param_path_;
         std::string coord_param_name_;
 
@@ -100,6 +101,9 @@ namespace armor_processor
          */
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+
+        // std::shared_ptr<ParamSubcriber> cb_;
+        // std::shared_ptr<ParamCbHandle> param_cb_;
     };
 } //armor_processor
 
