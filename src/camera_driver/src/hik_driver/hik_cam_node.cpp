@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 14:30:38
- * @LastEditTime: 2022-11-19 16:41:04
+ * @LastEditTime: 2022-11-19 17:35:59
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_cam_node.cpp
  */
 #include "../../include/hik_driver/hik_cam_node.hpp"
@@ -27,7 +27,14 @@ namespace camera_driver
         }
         
         // create img publisher
-        this->image_pub = this->create_publisher<sensor_msgs::msg::Image>("hik_img", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort().durability_volatile());
+        rclcpp::QoS qos(0);
+        qos.keep_last(1);
+        qos.best_effort();
+        qos.reliable();
+        qos.durability();
+        // qos.transient_local();
+        qos.durability_volatile();
+        this->image_pub = this->create_publisher<sensor_msgs::msg::Image>("hik_img", qos);
         
         this->image_width = this->get_parameter("image_width").as_int();
         this->image_height = this->get_parameter("image_height").as_int();

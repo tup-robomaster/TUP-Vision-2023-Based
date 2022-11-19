@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-11-19 12:02:19
+ * @LastEditTime: 2022-11-19 18:09:21
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP
@@ -56,7 +56,7 @@ namespace armor_processor
         message_filters::Subscriber<global_interface::msg::Target> target_point_sub_; 
         void target_info_callback(const global_interface::msg::Target& target_info);
 
-        bool draw_predict;
+        // bool draw_predict;
         Eigen::Vector3d last_predict_point_;
         Eigen::Vector3d predict_point_;
         // coordsolver::coordsolver coordsolver_;

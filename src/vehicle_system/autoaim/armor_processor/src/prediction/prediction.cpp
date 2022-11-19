@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-11-19 12:56:55
+ * @LastEditTime: 2022-11-19 18:23:44
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -48,8 +48,8 @@ namespace armor_processor
             pf_pos.initParam(config_, "pos");
             pf_v.initParam(config_, "v");
             
-            debug_param_.draw_predict = true;
-            fitting_disabled_ = true;
+            // debug_param_.draw_predict = true;
+            // fitting_disabled_ = true;
             is_init = true;
         }
 

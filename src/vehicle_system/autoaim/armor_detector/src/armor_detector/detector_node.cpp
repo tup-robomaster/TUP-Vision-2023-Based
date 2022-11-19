@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-11-18 09:40:59
+ * @LastEditTime: 2022-11-19 17:45:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
@@ -75,10 +75,18 @@ namespace armor_detector
         transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
 
         // image sub
-        img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
-        std::bind(&detector_node::image_callback, this, _1), transport_));
-        // img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+        // rclcpp::QoS qos(0);
+        // qos.keep_last(1);
+        // qos.best_effort();
+        // qos.reliable();
+        // qos.durability();
+        // // qos.transient_local();
+        // qos.durability_volatile();
+
+        // img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
         // std::bind(&detector_node::image_callback, this, _1), transport_));
+        img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+        std::bind(&detector_node::image_callback, this, _1), transport_));
 
         // param callback
         param_timer_ = this->create_wall_timer(1000ms, std::bind(&detector_node::param_callback, this));

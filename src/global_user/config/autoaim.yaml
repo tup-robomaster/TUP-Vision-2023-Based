@@ -22,7 +22,8 @@
     max_delta_dist: 0.3
 
     #待改
-    camera_name: "00J90630561" 
+    # camera_name: "00J90630561" 
+    camera_name: "KE0200110075" 
     camera_param_path: src/global_user/config/camera.yaml
     network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
 
@@ -50,16 +51,17 @@
     window_size: 3
 
     # debug params
-    disable_fitting: false
+    disable_fitting: true
     draw_predict: false
     using_imu: false 
-    show_predict: false
+    show_predict: true
     show_transformed_info: false
     debug: true
 
     # filter
     camera_type: 0
-    coord_param_name: "00J90630561" 
+    # coord_param_name: "00J90630561" 
+    coord_param_name: "KE0200110075"
     filter_param_path: "src/global_user/config/filter_param.yaml"
     coord_param_path: "src/global_user/config/camera.yaml"
 

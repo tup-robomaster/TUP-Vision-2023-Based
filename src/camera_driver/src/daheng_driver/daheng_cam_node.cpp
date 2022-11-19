@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 14:25:39
- * @LastEditTime: 2022-11-19 16:40:02
+ * @LastEditTime: 2022-11-19 17:34:14
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
  */
 #include "../../include/daheng_driver/daheng_cam_node.hpp"
@@ -19,8 +19,16 @@ namespace camera_driver
         // camera params initialize 
         daheng_cam = init_daheng_cam();
 
+        rclcpp::QoS qos(0);
+        qos.keep_last(1);
+        qos.best_effort();
+        qos.reliable();
+        qos.durability();
+        // qos.transient_local();
+        qos.durability_volatile();
+
         // create img publisher
-        this->image_pub = this->create_publisher<sensor_msgs::msg::Image>("daheng_img", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort().durability_volatile());
+        this->image_pub = this->create_publisher<sensor_msgs::msg::Image>("daheng_img", qos);
         
         // this->declare_parameter("image_width", 1280);
         // this->image_height = this->declare_parameter("image_height", 1024);
@@ -241,9 +249,9 @@ namespace camera_driver
             image_pub->publish(std::move(msg));
         }
 
-        cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
-        cv::imshow("daheng_cam_frame", frame);
-        cv::waitKey(1);
+        // cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
+        // cv::imshow("daheng_cam_frame", frame);
+        // cv::waitKey(1);
     }
 }
 

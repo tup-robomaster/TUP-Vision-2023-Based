@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-11-19 13:07:04
+ * @LastEditTime: 2022-11-19 18:11:58
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -24,6 +24,15 @@ namespace armor_processor
 
         gimbal_info_pub_ = this->create_publisher<global_interface::msg::Gimbal>("/gimbal_info", 10);
 
+        //QoS
+        // rclcpp::QoS qos(0);
+        // qos.keep_last(1);
+        // qos.best_effort();
+        // qos.reliable();
+        // qos.durability();
+        // // qos.transient_local();
+        // qos.durability_volatile();
+        
         // Subscriptions transport type
         transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
 
@@ -75,19 +84,20 @@ namespace armor_processor
         this->get_parameter("debug", debug_);
         if(debug_)
         {
+            RCLCPP_INFO(this->get_logger(), "debug...");
             // global_user::CameraType camera_type;
             this->declare_parameter<int>("camera_type", global_user::DaHeng);
             int camera_type = this->get_parameter("camera_type").as_int();
             if(camera_type == global_user::DaHeng)
             {
                 // image sub
-                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
-                std::bind(&ArmorProcessorNode::image_callback, this, std::placeholders::_1), transport_));
+                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+                std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
             }
             else
             {
-                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
-                std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
+                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
+                std::bind(&ArmorProcessorNode::image_callback, this, std::placeholders::_1), transport_));
             }
         }
     }
@@ -107,15 +117,16 @@ namespace armor_processor
 
         auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
         // img.copyTo(src.img);
-        if(draw_predict)
+        if(this->debug_param_.show_predict)
         {
+            // RCLCPP_INFO(this->get_logger(), "show prediction...");
             if(predict_point_ == last_predict_point_)
             {}
             else
             {
                 last_predict_point_ = predict_point_;
                 cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
-                circle(img, point_2d, 2, {255, 0, 0}, 2);
+                circle(img, point_2d, 2, {255, 255, 255}, 2);
                 cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
                 cv::imshow("ekf_predict", img);
                 cv::waitKey(1);
@@ -156,8 +167,8 @@ namespace armor_processor
         this->declare_parameter("disable_fitting", false);
         this->declare_parameter("draw_predict", false);
         this->declare_parameter("using_imu", false);
-        this->declare_parameter("show_predict", true);
-        this->declare_parameter("show_transformed_info", true);
+        this->declare_parameter("show_predict", false);
+        this->declare_parameter("show_transformed_info", false);
         debug_param_.disable_fitting = this->get_parameter("disable_fitting").as_bool();
         debug_param_.draw_predict = this->get_parameter("draw_predict").as_bool();
         debug_param_.using_imu = this->get_parameter("using_imu").as_bool();

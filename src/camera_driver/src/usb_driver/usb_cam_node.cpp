@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2022-11-19 16:41:15
+ * @LastEditTime: 2022-11-19 17:35:35
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -18,7 +18,15 @@ namespace camera_driver
        
         usb_cam_ = init_usb_cam();
         
-        frame_pub = this->create_publisher<sensor_msgs::msg::Image>("usb_img", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort().durability_volatile());
+        rclcpp::QoS qos(0);
+        qos.keep_last(1);
+        qos.best_effort();
+        qos.reliable();
+        qos.durability();
+        // qos.transient_local();
+        qos.durability_volatile();
+
+        frame_pub = this->create_publisher<sensor_msgs::msg::Image>("usb_img", qos);
         
         // rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_sensor_data;
         // camera_info_pub = image_transport::create_camera_publisher(this, "image");
