@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 02:02:35
- * @LastEditTime: 2022-11-14 09:11:29
+ * @LastEditTime: 2022-11-20 00:14:23
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_cam_node.hpp
  */
 #ifndef DAHENG_CAM_NODE_HPP_
@@ -18,13 +18,21 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.hpp>
 
+//linux
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+#define IMAGE_WIDTH 1280
+#define IMAGE_HEIGHT 1024
+
 namespace camera_driver
 {
     class DahengCamNode : public rclcpp::Node
     {
     public:
         DahengCamNode(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
-        ~DahengCamNode(){};
+        ~DahengCamNode();
     
     private:    
         cv::Mat frame;
@@ -58,6 +66,16 @@ namespace camera_driver
          */
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+
+    protected:
+        //图像数据内存共享
+        //生成一个key
+        key_t key_;
+        //共享内存的id
+        int shared_memory_id_;
+        //映射共享内存，得到虚拟地址
+        void* shared_memory_ptr = nullptr;
+
     };
 } // namespace camera_driver
 

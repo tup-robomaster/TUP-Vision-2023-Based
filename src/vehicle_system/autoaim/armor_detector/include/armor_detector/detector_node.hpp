@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2022-11-08 21:56:08
+ * @LastEditTime: 2022-11-20 00:35:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -25,6 +25,14 @@
 #include "global_interface/msg/armor.hpp"
 #include "global_interface/msg/armors.hpp"
 #include "global_interface/msg/target.hpp"
+
+//linux
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+#define DAHENG_IMAGE_WIDTH 1280
+#define DAHENG_IMAGE_HEIGHT 1024
 
 namespace armor_detector
 {
@@ -72,6 +80,23 @@ namespace armor_detector
         // rclcpp::Node handle;
         // image_transport::ImageTransport it;
         std::unique_ptr<detector> detector_;
-        std::unique_ptr<detector> init_detector();  
+        std::unique_ptr<detector> init_detector();
+
+    protected:
+        /**
+         * @brief 共享图像数据内存
+         * 
+         */
+        //生成key键
+        key_t key_;
+
+        //获取共享内存id
+        int shared_memory_id_;
+
+        //映射共享内存，得到虚拟地址
+        void* shared_memory_ptr_ = nullptr;
+
+        void detector();
+
     };
 } //namespace detector

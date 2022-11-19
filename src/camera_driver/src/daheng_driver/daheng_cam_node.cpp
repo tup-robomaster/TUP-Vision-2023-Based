@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 14:25:39
- * @LastEditTime: 2022-11-19 17:34:14
+ * @LastEditTime: 2022-11-20 00:19:23
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
  */
 #include "../../include/daheng_driver/daheng_cam_node.hpp"
@@ -19,6 +19,29 @@ namespace camera_driver
         // camera params initialize 
         daheng_cam = init_daheng_cam();
 
+        /**
+         * @brief 创建图像数据共享内存空间
+         * 
+         */
+        
+        // 生成key
+        key_ = ftok("./", 7);
+        
+        // 返回内存id
+        shared_memory_id_ = shmget(key_, IMAGE_WIDTH * IMAGE_HEIGHT * 3, IPC_CREAT | 0666 | IPC_EXCL);
+        if(shared_memory_id_ == -1)
+        {
+            RCLCPP_ERROR(this->get_logger(), "Get shared memory failed...");
+        }
+
+        //映射到内存地址
+        this->shared_memory_ptr = shmat(shared_memory_id_, 0, 0);
+        if(shared_memory_ptr == (void*)-1)
+        {
+            RCLCPP_ERROR(this->get_logger(), "Remapping shared memory failed...");
+        }
+
+        //QoS    
         rclcpp::QoS qos(0);
         qos.keep_last(1);
         qos.best_effort();
@@ -63,6 +86,24 @@ namespace camera_driver
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&DahengCamNode::paramsCallback, this, std::placeholders::_1));
         }
 
+    }
+
+    DahengCamNode::~DahengCamNode()
+    {
+        //解除共享内存映射
+        if(this->shared_memory_ptr)
+        {
+            if(shmdt(this->shared_memory_ptr) == -1)
+            {
+                RCLCPP_ERROR(this->get_logget(), "Dissolution remapping failed...");
+            }
+        }
+        
+        //销毁共享内存
+        if(shmctl(shared_memory_id_, IPC_RMID, NULL) == -1)
+        {
+            RCLCPP_ERROR(this->get_logget(), "Destroy shared memory failed...");        
+        }
     }
 
     std::unique_ptr<DaHengCam> DahengCamNode::init_daheng_cam()
@@ -240,12 +281,13 @@ namespace camera_driver
 
         if(!frame.empty())
         {
+            memcpy(this->shared_memory_ptr, frame.data, IMAGE_WIDTH * IMAGE_HEIGHT * 3);
             this->last_frame = now;
 
             rclcpp::Time timestamp = this->get_clock()->now();
 
             sensor_msgs::msg::Image::UniquePtr msg = convert_frame_to_msg(frame);
-
+            
             image_pub->publish(std::move(msg));
         }
 

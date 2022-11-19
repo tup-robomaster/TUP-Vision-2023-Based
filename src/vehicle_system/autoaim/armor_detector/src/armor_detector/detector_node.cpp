@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-11-19 17:45:50
+ * @LastEditTime: 2022-11-20 00:38:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
@@ -15,6 +15,26 @@ namespace armor_detector
     : Node("armor_detector", options)
     {
         RCLCPP_WARN(this->get_logger(), "Starting detector node...");
+
+        /**
+         * @brief 共享内存配置
+         * 
+         */
+        this->key_ = ftok("./", 7);
+
+        //获取共享内存id
+        shared_memory_id_ = shmget(key_, 0, 0);
+        if(shared_memory_id_ == -1)
+        {
+            RCLCPP_ERROR(this->get_logger(), "Get shared memory id failed...");
+        }
+
+        //映射共享内存，得到虚拟地址
+        shared_memory_ptr_ = shmat(shared_memory_id_, 0, 0);
+        if(shared_memory_ptr_ == (void*)-1)
+        {
+            RCLCPP_ERROR(this->get_logger(), "Remapping shared memory failed...");
+        }
 
         //detector params
         this->declare_parameter<int>("armor_type_wh_thres", 3);
@@ -94,9 +114,31 @@ namespace armor_detector
 
     detector_node::~detector_node()
     {
-
+        //解除映射
+        if(shared_memory_ptr_)
+        {
+            if(shmdt(shared_memory_ptr_) == -1)
+            {
+                RCLCPP_ERROR(this->get_logger(), "Dissolution shared memory failed...");
+            }
+        }
     }
 
+    void detector_node::detector()
+    {
+        global_user::TaskData src;
+
+        //读取共享内存图像数据
+        Mat img;
+        memcpy(img, shared_memory_ptr_, DAHENG_IMAGE_WIDTH * DAHENG_IMAGE_HEIGHT * 3);
+        img.copyTo(src.img);
+
+        cv::namedWindow("image", cv::WINDOW_AUTOSIZE);
+        cv::imshow("image", src.img);
+        cv::waitKey(1);
+
+    }
+    
     void detector_node::param_callback()
     {
         //
