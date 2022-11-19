@@ -55,8 +55,10 @@
     using_imu: false 
     show_predict: false
     show_transformed_info: false
+    debug: true
 
     # filter
+    camera_type: 0
     coord_param_name: "00J90630561" 
     filter_param_path: "src/global_user/config/filter_param.yaml"
     coord_param_path: "src/global_user/config/camera.yaml"
