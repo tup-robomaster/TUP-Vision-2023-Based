@@ -38,7 +38,7 @@
     print_letency: false
     print_target_info: false
     detect_red: true
-    using_shared_memory: false
+    using_shared_memory: true
 
 # 自瞄预测节点参数配置 
 /armor_processor:
@@ -53,7 +53,7 @@
     window_size: 3
 
     # debug params
-    using_shared_memory: false
+    using_shared_memory: true
     disable_fitting: true
     draw_predict: false
     show_predict: true
@@ -67,13 +67,13 @@
     filter_param_path: "src/global_user/config/filter_param.yaml"
     coord_param_path: "src/global_user/config/camera.yaml"
 
-    # Singer model
-    singer_alpha: 0.1 #1/f
-    singer_a_max: 1.0
+    # Singer model(--->CS Model)
+    singer_alpha: 5.0 #1/f
+    singer_a_max: 0.5
     singer_p_max: 0.1
     singer_p0: 0.8
-    singer_dt: 8.0
-    singer_sigma: 0.001
+    singer_dt: 5.0
+    singer_sigma: 0.005
     singer_p: 1.0
     singer_r: 1.0
   

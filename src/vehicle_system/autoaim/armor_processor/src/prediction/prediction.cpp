@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-11-21 10:43:09
+ * @LastEditTime: 2022-11-21 14:11:42
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -259,17 +259,16 @@ namespace armor_processor
         // // {
         // //     result[0] = result_pf[0];
         // // }
-        // else if(is_ekf_available.xyz_status[0])
-        // {
+        if(is_ekf_available.xyz_status[0])
+        {
             // std::cout << "ekf_x..." << std::endl;
             result[0] = result_ekf[0];
-        // }
-        // else
-        // {
-        //     // std::cout << "target_x..." << std::endl;
-
-        //     result[0] = xyz[0];
-        // }
+        }
+        else
+        {
+            // std::cout << "target_x..." << std::endl;
+            result[0] = xyz[0];
+        }
 
         if(is_fitting_available.xyz_status[1] && !fitting_disabled_)
         {
@@ -700,6 +699,27 @@ namespace armor_processor
             control << 1 / alpha * (-dt + alpha * dt * dt / 2 + (1 - exp(-alpha * dt) / alpha)), dt - (1 - exp(-alpha * dt) / alpha), 1 - exp(-alpha * dt);
             
             auto x_pred = F * State + control * State(2, 0);
+            
+            // double q11 = 1 / (2 * pow(alpha, 5)) * (1 - exp(-2 * alpha * dt) + 2 * alpha * dt + 2 * pow(alpha * dt, 3) / 3 - 2 * pow(alpha * dt, 2) - 4 * alpha * dt * exp(-alpha * dt));
+            // double q12 = 1 / (2 * pow(alpha, 4)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt) + 2 * alpha * dt * exp(-alpha * dt) - 2 * alpha * dt + pow(alpha * dt, 2));
+            // double q13 = 1 / (2 * pow(alpha, 3)) * (1 - exp(-2 * alpha * dt) - 2 * alpha * dt * exp(-alpha * dt));
+            // double q22 = 1 / (2 * pow(alpha, 3)) * (4 * exp(-alpha * dt) - 3 - exp(-2 * alpha * dt) + 2 * alpha * dt);
+            // double q23 = 1 / (2 * pow(alpha, 2)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt));
+            // double q33 = 1 / (2 * alpha) * (1 - exp(-2 * alpha * dt));
+
+            // double sigma = singer_param_.sigma;
+            // if(ax > 0)
+            // {
+            //     sigma = ((4 - CV_PI) / CV_PI) * pow(singer_param_.a_max - ax, 2);
+            // }
+            // else
+            // {
+            //     sigma = ((4 - CV_PI) / CV_PI) * pow(singer_param_.a_max + ax, 2);
+            // }
+
+            // kalman_filter_.Q_ << 2 * sigma * alpha * q11, 2 * sigma * alpha * q12, 2 * sigma * alpha * q13,  
+		    //                     2 * sigma * alpha * q12, 2 * sigma * alpha * q22, 2 * sigma * alpha * q23,
+		    //                     2 * sigma * alpha * q13, 2 * sigma * alpha* q23, 2 * sigma * alpha * q33;
             
             result[0] = x_pred(0, 0);
             result[1] = target.xyz[1];

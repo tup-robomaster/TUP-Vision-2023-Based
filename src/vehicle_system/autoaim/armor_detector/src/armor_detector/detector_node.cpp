@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-11-21 11:42:04
+ * @LastEditTime: 2022-11-21 18:24:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
@@ -26,8 +26,17 @@ namespace armor_detector
             std::cerr << e.what() << '\n';
         }
 
+        //QoS    
+        rclcpp::QoS qos(0);
+        qos.keep_last(1);
+        qos.best_effort();
+        qos.reliable();
+        qos.durability();
+        // qos.transient_local();
+        qos.durability_volatile();
+        
         // armors pub
-        armors_pub = this->create_publisher<TargetMsg>("/armor_info", rclcpp::SensorDataQoS());
+        armors_pub = this->create_publisher<TargetMsg>("/armor_info", qos);
 
         time_start = std::chrono::steady_clock::now();
         
@@ -46,6 +55,7 @@ namespace armor_detector
              * @brief 共享内存配置
              * 
              */
+            sleep(1);
             //共享内存读线程
             this->key_ = ftok("./", 9);
 
@@ -64,8 +74,8 @@ namespace armor_detector
             }
 
             //(s)
-            sleep(2);
             this->read_memory_thread_ = std::thread(&detector_node::run, this);
+            // this->read_memory_thread_.join();
         }
         else
         {

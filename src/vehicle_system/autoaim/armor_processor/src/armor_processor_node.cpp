@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-11-21 11:42:25
+ * @LastEditTime: 2022-11-21 18:17:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -57,6 +57,8 @@ namespace armor_processor
                  * @brief 共享内存配置
                  * 
                  */
+                sleep(5);
+
                 this->key_ = ftok("./", 9);
 
                 //获取共享内存id
@@ -74,8 +76,8 @@ namespace armor_processor
                 }
 
                 //
-                sleep(5);
                 this->read_memory_thread_ = std::thread(&ArmorProcessorNode::img_callback, this);
+                // this->read_memory_thread_.join();
             }
             else
             {
@@ -222,8 +224,15 @@ namespace armor_processor
                     {
                         last_predict_point_ = predict_point_;
                         cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
-                        circle(img, point_2d, 8, {255, 255, 0}, -1);
-                        
+                        // for(int i = 0; i < 4; i++)
+                        // {
+                        //     cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {255, 255, 0}, 4);
+                        // }
+                        std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
+                        cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
+                        cv::Rect rect = points_pic_rrect.boundingRect();
+                        cv::rectangle(img, rect, {255, 0, 255}, 5);
+                        cv::circle(img, point_2d, 8, {255, 255, 0}, -1);
                     }
                     cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
                     cv::imshow("ekf_predict", img);
@@ -254,8 +263,15 @@ namespace armor_processor
                 {
                     last_predict_point_ = predict_point_;
                     cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
-                    circle(img, point_2d, 8, {255, 255, 0}, -1);
-                    
+                    // for(int i = 0; i < 4; i++)
+                    // {
+                    //     cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {0, 255, 0}, 4);
+                    // }
+                    std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
+                    cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
+                    cv::Rect rect = points_pic_rrect.boundingRect();
+                    cv::rectangle(img, rect, {255, 0, 255}, 5);
+                    cv::circle(img, point_2d, 8, {255, 255, 0}, -1);
                 }
                 cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
                 cv::imshow("ekf_predict", img);
@@ -355,6 +371,16 @@ namespace armor_processor
 
     void ArmorProcessorNode::target_info_callback(const global_interface::msg::Target& target_info)
     {
+        //
+        apex2d[0].x = target_info.point2d[0].x;
+        apex2d[0].y = target_info.point2d[0].y;
+        apex2d[1].x = target_info.point2d[1].x;
+        apex2d[1].y = target_info.point2d[1].y;
+        apex2d[2].x = target_info.point2d[2].x;
+        apex2d[2].y = target_info.point2d[2].y;
+        apex2d[3].x = target_info.point2d[3].x;
+        apex2d[3].y = target_info.point2d[3].y;
+
         // std::cout << 1 << std::endl;
         if(target_info.target_switched)
         {

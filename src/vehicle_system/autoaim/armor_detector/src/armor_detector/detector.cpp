@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-11-09 20:29:29
+ * @LastEditTime: 2022-11-21 14:46:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector.cpp
  */
 #include "../../include/armor_detector/detector.hpp"
@@ -489,7 +489,15 @@ namespace armor_detector
                 is_target_switched = false;
                 target_info.target_switched = false;
             }
-            
+
+            target_info.point2d[0].x = target.apex2d[0].x;
+            target_info.point2d[0].y = target.apex2d[0].y;
+            target_info.point2d[1].x = target.apex2d[1].x;
+            target_info.point2d[1].y = target.apex2d[1].y;
+            target_info.point2d[2].x = target.apex2d[2].x;
+            target_info.point2d[2].y = target.apex2d[2].y;
+            target_info.point2d[3].x = target.apex2d[3].x;
+            target_info.point2d[3].y = target.apex2d[3].y;
             target_info.aiming_point.x = target.center3d_cam[0];
             target_info.aiming_point.y = target.center3d_cam[1];
             target_info.aiming_point.z = target.center3d_cam[2];
@@ -521,6 +529,15 @@ namespace armor_detector
                 is_target_switched = false;
                 target_info.target_switched = false;
             }
+
+            target_info.point2d[0].x = target.apex2d[0].x;
+            target_info.point2d[0].y = target.apex2d[0].y;
+            target_info.point2d[1].x = target.apex2d[1].x;
+            target_info.point2d[1].y = target.apex2d[1].y;
+            target_info.point2d[2].x = target.apex2d[2].x;
+            target_info.point2d[2].y = target.apex2d[2].y;
+            target_info.point2d[3].x = target.apex2d[3].x;
+            target_info.point2d[3].y = target.apex2d[3].y;
 
             target_info.aiming_point.x = target.center3d_cam[0];
             target_info.aiming_point.y = target.center3d_cam[1];

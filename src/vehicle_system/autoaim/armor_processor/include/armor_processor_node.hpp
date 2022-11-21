@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-11-21 11:04:33
+ * @LastEditTime: 2022-11-21 14:39:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP
@@ -67,6 +67,7 @@ namespace armor_processor
         // bool draw_predict;
         Eigen::Vector3d last_predict_point_;
         Eigen::Vector3d predict_point_;
+        cv::Point2f apex2d[4];
         // coordsolver::coordsolver coordsolver_;
         rclcpp::Publisher<global_interface::msg::Gimbal>::SharedPtr gimbal_info_pub_;
     

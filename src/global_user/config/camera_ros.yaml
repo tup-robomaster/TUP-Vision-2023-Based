@@ -30,7 +30,7 @@
     balance_g: 1.0
     balance_r: 1.548
     debug: true
-    using_shared_memory: false
+    using_shared_memory: true
     
 /usb_cam_driver:
   ros__parameters:
