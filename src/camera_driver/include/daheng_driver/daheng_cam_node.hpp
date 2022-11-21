@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 02:02:35
- * @LastEditTime: 2022-11-20 00:14:23
+ * @LastEditTime: 2022-11-21 11:35:03
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_cam_node.hpp
  */
 #ifndef DAHENG_CAM_NODE_HPP_
@@ -52,6 +52,7 @@ namespace camera_driver
     public:
         std::unique_ptr<sensor_msgs::msg::Image> convert_frame_to_msg(cv::Mat frame);
         void image_callback();
+        // void img_callback();
     
     private:
         DahengCamParam daheng_cam_param_;
@@ -69,6 +70,7 @@ namespace camera_driver
 
     protected:
         //图像数据内存共享
+        bool using_shared_memory;
         //生成一个key
         key_t key_;
         //共享内存的id
@@ -76,6 +78,7 @@ namespace camera_driver
         //映射共享内存，得到虚拟地址
         void* shared_memory_ptr = nullptr;
 
+        std::thread memory_write_thread_;
     };
 } // namespace camera_driver
 

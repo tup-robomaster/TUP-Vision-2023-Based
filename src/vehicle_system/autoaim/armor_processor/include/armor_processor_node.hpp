@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-11-19 18:09:21
+ * @LastEditTime: 2022-11-21 11:04:33
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP
@@ -36,6 +36,14 @@
 #include <memory>
 #include <string>
 #include <vector>
+
+//linux
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+#define DAHENG_IMAGE_WIDTH 1280
+#define DAHENG_IMAGE_HEIGHT 1024
 
 typedef std::chrono::duration<int> SecondsType;
 
@@ -83,11 +91,13 @@ namespace armor_processor
         std::string transport_;
         
         //
+        void img_callback();
         void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
     
     public:
         PredictParam predict_param_;
-        SingerModelParam singer_model_param_;
+        // SingerModelParam singer_model_param_;
+        SingerModel singer_model_param_;
         DebugParam debug_param_;
         std::string filter_param_path_;
         std::string coord_param_path_;
@@ -104,6 +114,27 @@ namespace armor_processor
 
         // std::shared_ptr<ParamSubcriber> cb_;
         // std::shared_ptr<ParamCbHandle> param_cb_;
+    
+    protected:
+        /**
+         * @brief 共享图像数据内存
+         * 
+         */
+        //
+        bool using_shared_memory;
+        
+        //生成key键
+        key_t key_;
+
+        //获取共享内存id
+        int shared_memory_id_;
+
+        //映射共享内存，得到虚拟地址
+        void* shared_memory_ptr_ = nullptr;
+
+        //共享内存读线程
+        std::thread read_memory_thread_;
+
     };
 } //armor_processor
 

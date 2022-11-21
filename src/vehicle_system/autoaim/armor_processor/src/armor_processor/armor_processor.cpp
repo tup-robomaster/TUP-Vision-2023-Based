@@ -2,14 +2,31 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2022-11-19 13:01:51
+ * @LastEditTime: 2022-11-21 10:07:44
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
 
 namespace armor_processor
 {
-    Processor::Processor(const PredictParam& predict_param, const SingerModelParam& singer_model_param,
+    // Processor::Processor(const PredictParam& predict_param, const SingerModelParam& singer_model_param,
+    //     const DebugParam& debug_param, const std::string& filter_param_path, 
+    //     const std::string& coord_param_path, const std::string& coord_param_name)
+    // : armor_predictor_(predict_param, singer_model_param, debug_param, filter_param_path)
+    // {
+    //     // if(!debug_param.using_imu)
+    //     // {
+    //     //     //TODO:暂时未使用陀螺仪数据
+    //     //     rmat_imu = Eigen::Matrix3d::Identity();
+    //     // }
+    //     coord_param_path_ = coord_param_path;
+    //     coord_param_name_ = coord_param_name;
+    //     is_initialized = false;
+
+    //     rmat_imu = Eigen::Matrix3d::Identity();
+    // }
+
+    Processor::Processor(const PredictParam& predict_param, const SingerModel& singer_model_param,
         const DebugParam& debug_param, const std::string& filter_param_path, 
         const std::string& coord_param_path, const std::string& coord_param_name)
     : armor_predictor_(predict_param, singer_model_param, debug_param, filter_param_path)
@@ -137,8 +154,23 @@ namespace armor_processor
         armor_predictor_.set_singer_p0(p0);
     }
 
-    void Processor::set_sigma()
+    void Processor::set_sigma(double& sigma)
     {
-        armor_predictor_.set_singer_sigma();
+        armor_predictor_.set_singer_sigma(sigma);
+    }
+
+    void Processor::set_dt(double& dt)
+    {
+        armor_predictor_.set_singer_sigma(dt);
+    }
+
+    void Processor::set_p(double& p)
+    {
+        armor_predictor_.set_singer_sigma(p);
+    }
+
+    void Processor::set_r(double& r)
+    {
+        armor_predictor_.set_singer_sigma(r);
     }
 } // armor_processor

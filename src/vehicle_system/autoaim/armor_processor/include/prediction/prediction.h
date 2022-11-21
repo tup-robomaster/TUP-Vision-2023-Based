@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-11-19 13:06:24
+ * @LastEditTime: 2022-11-21 09:58:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.h
  */
 #ifndef PREDICTION_HPP
@@ -13,6 +13,7 @@
 #include "../../global_user/include/global_user/global_user.hpp"
 #include "../../global_user/include/coordsolver.hpp"
 #include "../filter/particle_filter.hpp"
+#include "../filter/kalman_filter.hpp"
 
 #include <opencv2/opencv.hpp>
 #include <Eigen/Core>
@@ -146,23 +147,23 @@ namespace armor_processor
         }
     };
 
-    struct SingerModelParam
-    {
-        double alpha;
-        double a_max;
-        double p_max;
-        double p0;
-        double sigma;
+    // struct SingerModelParam
+    // {
+    //     double alpha;
+    //     double a_max;
+    //     double p_max;
+    //     double p0;
+    //     double sigma;
 
-        SingerModelParam()
-        {
-            alpha = 0.1;
-            a_max = 5;
-            p_max = 0.1;
-            p0 = 0.1;
-            sigma = sqrt((pow(a_max, 2) * (1 + 4 * p_max - p0)) / 3);
-        }
-    };
+    //     SingerModelParam()
+    //     {
+    //         alpha = 0.1;
+    //         a_max = 5;
+    //         p_max = 0.1;
+    //         p0 = 0.1;
+    //         sigma = sqrt((pow(a_max, 2) * (1 + 4 * p_max - p0)) / 3);
+    //     }
+    // };
 
     struct DebugParam
     {
@@ -185,6 +186,30 @@ namespace armor_processor
         }
     };
 
+    struct SingerModel
+    {
+        double alpha;
+        double p_max;
+        double p0;
+        double a_max;
+        double sigma;
+        double dt;
+        double p;
+        double r;
+
+        SingerModel()
+        {
+            alpha = 5.0;
+            a_max = 1.0;
+            p_max = 0.2;
+            p0 = 0.2;
+            sigma = 0.1;
+            dt = 5.0;
+            p = 1.0;
+            r = 1.0;
+        }
+    };
+
     class ArmorPredictor
     {
     public:
@@ -204,7 +229,8 @@ namespace armor_processor
     public:
         // set const value or default value
         PredictParam predict_param_;
-        SingerModelParam singer_model_param_;
+        SingerModel singer_param_;
+        // SingerModelParam singer_model_param_;
         DebugParam debug_param_;
 
         std::string filter_param_path_;
@@ -220,7 +246,8 @@ namespace armor_processor
         cv::Mat pic_z;
         
     public:
-        ArmorPredictor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param, const std::string filter_param_path);
+        // ArmorPredictor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param, const std::string filter_param_path);
+        ArmorPredictor(const PredictParam& predict_param, const SingerModel& singer_model_param, const DebugParam& debug_param, const std::string filter_param_path);
         
         Eigen::Vector3d predict(Eigen::Vector3d xyz, int timestamp);
 
@@ -235,25 +262,55 @@ namespace armor_processor
     
     public:
         // 控制量
-        SingerControl u;
-        // Singer模型
-        Singer singer;
-        // 观测模型
-        SingerPosModel pos_model;
-        // EKF
-        filter::ExtendKalmanFilter<SingerState> ekf;
+        // SingerControl u;
+        // // Singer模型
+        // Singer singer;
+        // // 观测模型
+        // SingerPosModel pos_model;
+        // // EKF
+        // filter::ExtendKalmanFilter<SingerState> ekf;
         // 
         void setSingerParam(double& alpha, double& a_max, double& p_max, double& p0);
-        void set_singer_alpha(double& alpha);
+        void set_singer_alpha(double& alpha); 
         void set_singer_a_max(double& a_max);
         void set_singer_p_max(double& p_max);
         void set_singer_p0(double& p0);
-        void set_singer_sigma();
+        void set_singer_sigma(double& sigma);
+        void set_singer_dt(double& dt);
+        void set_singer_p(double& p);
+        void set_singer_r(double& r);
     
+        //
+        KalmanFilter kalman_filter_;
+        void kfInit();
+        
+        // //状态向量
+        // Eigen::Vector3d x_;
+
+        // //状态协方差矩阵
+        // Eigen::Matrix3d P_;
+
+        // //状态转移矩阵
+        // Eigen::MatrixXd F_;
+
+        // //测量矩阵
+        // Eigen::MatrixXd H_;
+
+        // //测量协方差矩阵
+        // Eigen::MatrixXd R_;
+
+        // //过程协方差矩阵
+        // Eigen::MatrixXd Q_;
+
+        // //雅可比矩阵
+        // Eigen::MatrixXd J_;
+
     public:
         //
         bool is_ekf_init;
-        PredictStatus predict_ekf_run(TargetInfo target, Eigen::Vector3d& result, int timestamp);
+        PredictStatus predict_ekf_run(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d& target_v, double& ax, int timestamp);
+
+        // void predict_based_singer(Eigen::Vector3d& result);
     };
 
 

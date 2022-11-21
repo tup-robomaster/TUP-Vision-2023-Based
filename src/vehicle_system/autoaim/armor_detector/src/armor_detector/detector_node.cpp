@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-11-20 00:38:34
+ * @LastEditTime: 2022-11-21 11:42:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
@@ -16,66 +16,6 @@ namespace armor_detector
     {
         RCLCPP_WARN(this->get_logger(), "Starting detector node...");
 
-        /**
-         * @brief 共享内存配置
-         * 
-         */
-        this->key_ = ftok("./", 7);
-
-        //获取共享内存id
-        shared_memory_id_ = shmget(key_, 0, 0);
-        if(shared_memory_id_ == -1)
-        {
-            RCLCPP_ERROR(this->get_logger(), "Get shared memory id failed...");
-        }
-
-        //映射共享内存，得到虚拟地址
-        shared_memory_ptr_ = shmat(shared_memory_id_, 0, 0);
-        if(shared_memory_ptr_ == (void*)-1)
-        {
-            RCLCPP_ERROR(this->get_logger(), "Remapping shared memory failed...");
-        }
-
-        //detector params
-        this->declare_parameter<int>("armor_type_wh_thres", 3);
-        this->declare_parameter<int>("max_lost_cnt", 5);
-        this->declare_parameter<int>("max_armors_cnt", 8);
-        this->declare_parameter<int>("max_v", 8);
-        this->declare_parameter<int>("max_delta_t", 100);
-        this->declare_parameter<double>("no_crop_thres", 1e-2);
-        this->declare_parameter<int>("hero_danger_zone", 4);
-        this->declare_parameter<bool>("color", true);
-        this->declare_parameter<double>("no_crop_ratio", 2e-3);
-        this->declare_parameter<double>("full_crop_ratio", 1e-4);
-        this->declare_parameter<double>("armor_roi_expand_ratio_width", 1.1);
-        this->declare_parameter<double>("armor_roi_expand_ratio_height", 1.5);
-        this->declare_parameter<double>("armor_conf_high_thres", 0.82);
-        
-        //TODO:set by own path
-        this->declare_parameter("camera_name", "00J90630561"); //相机型号
-        this->declare_parameter("camera_param_path", "src/global_user/config/camera.yaml");
-        this->declare_parameter("network_path", "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml");
-        
-        //debug
-        this->declare_parameter("debug_without_com", true);
-        this->declare_parameter("using_imu", false);
-        this->declare_parameter("using_roi", true);
-        this->declare_parameter("show_aim_cross", false);
-        this->declare_parameter("show_img", true);
-        this->declare_parameter("detect_red", true);
-        this->declare_parameter("show_fps", true);
-        this->declare_parameter("print_letency", false);
-        this->declare_parameter("print_target_info", true);
-        
-        //
-        this->declare_parameter("anti_spin_judge_high_thres", 2e4);
-        this->declare_parameter("anti_spin_judge_low_thres", 2e3);
-        this->declare_parameter("anti_spin_max_r_multiple", 4.5);
-        // this->declare_parameter("hero_danger_zone", 99);
-        this->declare_parameter("max_dead_buffer", 2) ;
-        this->declare_parameter("max_delta_dist", 0.3);
-        // this->declare_parameter("max_delta_t", 50);
-
         try
         {
             //detector类初始化
@@ -85,31 +25,78 @@ namespace armor_detector
         {
             std::cerr << e.what() << '\n';
         }
-        
+
         // armors pub
         armors_pub = this->create_publisher<TargetMsg>("/armor_info", rclcpp::SensorDataQoS());
 
         time_start = std::chrono::steady_clock::now();
+        
+        // global_user::CameraType camera_type;
+        this->declare_parameter<int>("camera_type", global_user::DaHeng);
+        int camera_type = this->get_parameter("camera_type").as_int();
 
-        // Subscriptions transport type
         transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
+        
+        //
+        this->declare_parameter("using_shared_memory", false);
+        using_shared_memory = this->get_parameter("using_shared_memory").as_bool();
+        if(using_shared_memory)
+        {
+            /**
+             * @brief 共享内存配置
+             * 
+             */
+            //共享内存读线程
+            this->key_ = ftok("./", 9);
 
-        // image sub
-        // rclcpp::QoS qos(0);
-        // qos.keep_last(1);
-        // qos.best_effort();
-        // qos.reliable();
-        // qos.durability();
-        // // qos.transient_local();
-        // qos.durability_volatile();
+            //获取共享内存id
+            shared_memory_id_ = shmget(key_, 0, 0);
+            if(shared_memory_id_ == -1)
+            {
+                RCLCPP_ERROR(this->get_logger(), "Get shared memory id failed...");
+            }
 
-        // img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
-        // std::bind(&detector_node::image_callback, this, _1), transport_));
-        img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
-        std::bind(&detector_node::image_callback, this, _1), transport_));
+            //映射共享内存，得到虚拟地址
+            shared_memory_ptr_ = shmat(shared_memory_id_, 0, 0);
+            if(shared_memory_ptr_ == (void*)-1)
+            {
+                RCLCPP_ERROR(this->get_logger(), "Remapping shared memory failed...");
+            }
+
+            //(s)
+            sleep(2);
+            this->read_memory_thread_ = std::thread(&detector_node::run, this);
+        }
+        else
+        {
+            // Subscriptions transport type
+
+            //image sub
+            // rclcpp::QoS qos(0);
+            // qos.keep_last(1);
+            // qos.best_effort();
+            // qos.reliable();
+            // qos.durability();
+            // // qos.transient_local();
+            // qos.durability_volatile();
+
+            if(camera_type == global_user::DaHeng)
+            {
+                img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+                    std::bind(&detector_node::image_callback, this, _1), transport_));
+            }
+            else
+            {
+                img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
+                    std::bind(&detector_node::image_callback, this, _1), transport_));
+            }
+        }
+        // std::cout << 1 << std::endl;
 
         // param callback
-        param_timer_ = this->create_wall_timer(1000ms, std::bind(&detector_node::param_callback, this));
+        // param_timer_ = this->create_wall_timer(1000ms, std::bind(&detector_node::param_callback, this));
+        
+        // std::cout << 2 << std::endl;
     }
 
     detector_node::~detector_node()
@@ -124,19 +111,55 @@ namespace armor_detector
         }
     }
 
-    void detector_node::detector()
+    void detector_node::run()
     {
         global_user::TaskData src;
+        std::vector<Armor> armors;
 
-        //读取共享内存图像数据
-        Mat img;
-        memcpy(img, shared_memory_ptr_, DAHENG_IMAGE_WIDTH * DAHENG_IMAGE_HEIGHT * 3);
-        img.copyTo(src.img);
+        Mat img = Mat(DAHENG_IMAGE_HEIGHT, DAHENG_IMAGE_WIDTH, CV_8UC3);
+        // std::cout << 3 << std::endl;
 
-        cv::namedWindow("image", cv::WINDOW_AUTOSIZE);
-        cv::imshow("image", src.img);
-        cv::waitKey(1);
+        while(1)
+        {
+            // std::cout << 4 << std::endl;
+            //读取共享内存图像数据
+            memcpy(img.data, shared_memory_ptr_, DAHENG_IMAGE_HEIGHT * DAHENG_IMAGE_WIDTH * 3);
+            img.copyTo(src.img);
 
+            // RCLCPP_INFO(this->get_logger(), "...");
+
+            // auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
+            // img.copyTo(src.img);
+            // cv::namedWindow("image", cv::WINDOW_AUTOSIZE);
+            // cv::imshow("image", src.img);
+            // cv::waitKey(0);
+
+            TimePoint time_img_sub = std::chrono::steady_clock::now();
+            src.timestamp = (int)(std::chrono::duration<double, std::milli>(time_img_sub - time_start).count());
+            
+            if(detector_->armor_detect(src))
+            {   //find armors
+                // RCLCPP_INFO(this->get_logger(), "armors detector...");
+                TargetMsg target_info;
+                
+                //target's spinning status detect 
+                if(detector_->gyro_detector(src, target_info))
+                {
+                    // global_interface::msg::Target target_info;
+                    // target_info.aiming_point.x = aiming_point_cam[0];
+                    // target_info.aiming_point.y = aiming_point_cam[1];
+                    // target_info.aiming_point.z = aiming_point_cam[2];
+                    target_info.timestamp = src.timestamp;
+
+                    //publish target's information containing 3d point and timestamp.
+                    armors_pub->publish(target_info);
+                }
+                // std::cout << 5 << std::endl;
+                // cv::namedWindow("image", cv::WINDOW_AUTOSIZE);
+                // cv::imshow("image", src.img);
+                // cv::waitKey(1);
+            }
+        }
     }
     
     void detector_node::param_callback()
@@ -188,6 +211,46 @@ namespace armor_detector
 
     std::unique_ptr<detector> detector_node::init_detector()
     {
+        //detector params
+        this->declare_parameter<int>("armor_type_wh_thres", 3);
+        this->declare_parameter<int>("max_lost_cnt", 5);
+        this->declare_parameter<int>("max_armors_cnt", 8);
+        this->declare_parameter<int>("max_v", 8);
+        this->declare_parameter<int>("max_delta_t", 100);
+        this->declare_parameter<double>("no_crop_thres", 1e-2);
+        this->declare_parameter<int>("hero_danger_zone", 4);
+        this->declare_parameter<bool>("color", true);
+        this->declare_parameter<double>("no_crop_ratio", 2e-3);
+        this->declare_parameter<double>("full_crop_ratio", 1e-4);
+        this->declare_parameter<double>("armor_roi_expand_ratio_width", 1.1);
+        this->declare_parameter<double>("armor_roi_expand_ratio_height", 1.5);
+        this->declare_parameter<double>("armor_conf_high_thres", 0.82);
+        
+        //TODO:set by own path
+        this->declare_parameter("camera_name", "00J90630561"); //相机型号
+        this->declare_parameter("camera_param_path", "src/global_user/config/camera.yaml");
+        this->declare_parameter("network_path", "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml");
+        
+        //debug
+        this->declare_parameter("debug_without_com", true);
+        this->declare_parameter("using_imu", false);
+        this->declare_parameter("using_roi", true);
+        this->declare_parameter("show_aim_cross", false);
+        this->declare_parameter("show_img", false);
+        this->declare_parameter("detect_red", true);
+        this->declare_parameter("show_fps", false);
+        this->declare_parameter("print_letency", false);
+        this->declare_parameter("print_target_info", false);
+        
+        //
+        this->declare_parameter("anti_spin_judge_high_thres", 2e4);
+        this->declare_parameter("anti_spin_judge_low_thres", 2e3);
+        this->declare_parameter("anti_spin_max_r_multiple", 4.5);
+        // this->declare_parameter("hero_danger_zone", 99);
+        this->declare_parameter("max_dead_buffer", 2) ;
+        this->declare_parameter("max_delta_dist", 0.3);
+        // this->declare_parameter("max_delta_t", 50);
+        
         //
         getParameters();
 

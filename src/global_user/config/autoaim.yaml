@@ -24,6 +24,7 @@
     #待改
     # camera_name: "00J90630561" 
     camera_name: "KE0200110075" 
+    camera_type: 0
     camera_param_path: src/global_user/config/camera.yaml
     network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
 
@@ -37,6 +38,7 @@
     print_letency: false
     print_target_info: false
     detect_red: true
+    using_shared_memory: false
 
 # 自瞄预测节点参数配置 
 /armor_processor:
@@ -47,13 +49,13 @@
     max_cost: 509
     max_v: 8
     min_fitting_lens: 10
-    shoot_delay: 100
+    shoot_delay: 50
     window_size: 3
 
     # debug params
+    using_shared_memory: false
     disable_fitting: true
     draw_predict: false
-    using_imu: false 
     show_predict: true
     show_transformed_info: false
     debug: true
@@ -66,10 +68,14 @@
     coord_param_path: "src/global_user/config/camera.yaml"
 
     # Singer model
-    alpha: 0.1
-    a_max: 5
-    p_max: 0.1
-    p0: 0.3
+    singer_alpha: 0.1 #1/f
+    singer_a_max: 1.0
+    singer_p_max: 0.1
+    singer_p0: 0.8
+    singer_dt: 8.0
+    singer_sigma: 0.001
+    singer_p: 1.0
+    singer_r: 1.0
   
 
     

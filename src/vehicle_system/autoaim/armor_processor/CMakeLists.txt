@@ -74,6 +74,7 @@ include_directories(include
 add_library(${PROJECT_NAME} SHARED
   src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
   src/filter/particle_filter.cpp 
+  src/filter/kalman_filter.cpp
   src/prediction/prediction.cpp 
 )
 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 02:03:45
- * @LastEditTime: 2022-11-14 10:42:44
+ * @LastEditTime: 2022-11-21 11:50:49
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/hik_driver/hik_cam_node.hpp
  */
 
@@ -18,13 +18,21 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.hpp>
 
+//linux
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+#define IMAGE_WIDTH 1440
+#define IMAGE_HEIGHT 1080
+
 namespace camera_driver
 {
     class HikCamNode : public rclcpp::Node
     {
     public:
         HikCamNode(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
-        ~HikCamNode(){};
+        ~HikCamNode();
     
     private:    
         cv::Mat frame;
@@ -58,6 +66,18 @@ namespace camera_driver
          */
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+    
+    private:
+        //图像数据内存共享
+        bool using_shared_memory;
+        //生成一个key
+        key_t key_;
+        //共享内存的id
+        int shared_memory_id_;
+        //映射共享内存，得到虚拟地址
+        void* shared_memory_ptr = nullptr;
+
+        std::thread memory_write_thread_;
     };
 } // namespace camera_driver
 

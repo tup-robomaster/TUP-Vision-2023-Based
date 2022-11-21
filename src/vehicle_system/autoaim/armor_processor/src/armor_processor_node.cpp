@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-11-19 18:11:58
+ * @LastEditTime: 2022-11-21 11:42:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -21,20 +21,89 @@ namespace armor_processor
             processor_->coordsolver_.loadParam(processor_->coord_param_path_, processor_->coord_param_name_);
             processor_->is_initialized = true;
         }
-
+        
+        //
         gimbal_info_pub_ = this->create_publisher<global_interface::msg::Gimbal>("/gimbal_info", 10);
 
-        //QoS
-        // rclcpp::QoS qos(0);
-        // qos.keep_last(1);
-        // qos.best_effort();
-        // qos.reliable();
-        // qos.durability();
-        // // qos.transient_local();
-        // qos.durability_volatile();
+        //
+        target_info_sub_ = this->create_subscription<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS(),
+            std::bind(&ArmorProcessorNode::target_info_callback, this, std::placeholders::_1));
+
+        //
+        this->declare_parameter<bool>("using_shared_memory", false);
+        using_shared_memory = this->get_parameter("using_shared_memory").as_bool();
+        
+        // global_user::CameraType camera_type;
+        this->declare_parameter<int>("camera_type", global_user::DaHeng);
+        int camera_type = this->get_parameter("camera_type").as_int();
         
         // Subscriptions transport type
         transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
+        
+        //
+        bool debug_ = false;
+        this->declare_parameter<bool>("debug", true);
+        this->get_parameter("debug", debug_);
+        if(debug_)
+        {
+            RCLCPP_INFO(this->get_logger(), "debug...");
+            
+            //动态调参回调
+            callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, std::placeholders::_1));
+            
+            if(using_shared_memory)
+            {
+                /**
+                 * @brief 共享内存配置
+                 * 
+                 */
+                this->key_ = ftok("./", 9);
+
+                //获取共享内存id
+                shared_memory_id_ = shmget(key_, 0, 0);
+                if(shared_memory_id_ == -1)
+                {
+                    RCLCPP_ERROR(this->get_logger(), "Get shared memory id failed...");
+                }
+
+                //映射共享内存，得到虚拟地址
+                shared_memory_ptr_ = shmat(shared_memory_id_, 0, 0);
+                if(shared_memory_ptr_ == (void*)-1)
+                {
+                    RCLCPP_ERROR(this->get_logger(), "Remapping shared memory failed...");
+                }
+
+                //
+                sleep(5);
+                this->read_memory_thread_ = std::thread(&ArmorProcessorNode::img_callback, this);
+            }
+            else
+            {
+                //QoS
+                // rclcpp::QoS qos(0);
+                // qos.keep_last(1);
+                // qos.best_effort();
+                // qos.reliable();
+                // qos.durability();
+                // // qos.transient_local();
+                // qos.durability_volatile();
+                
+                // Subscriptions transport type
+                // transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
+
+                if(camera_type == global_user::DaHeng)
+                {
+                    // image sub
+                    img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+                    std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
+                }
+                else
+                {
+                    img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
+                    std::bind(&ArmorProcessorNode::image_callback, this, std::placeholders::_1), transport_));
+                }
+            }
+        }
 
         // if(processor_->armor_predictor_.debug_param_.using_imu)
         // {
@@ -76,35 +145,92 @@ namespace armor_processor
         // {
             // spin_info_sub = this->create_subscription<global_interface::msg::SpinInfo>("/spin_info", 10,
             //     std::bind(&ArmorProcessorNode::spin_info_callback, this, std::placeholders::_1));
-        target_info_sub_ = this->create_subscription<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS(),
-            std::bind(&ArmorProcessorNode::target_info_callback, this, std::placeholders::_1));
+        // target_info_sub_ = this->create_subscription<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS(),
+        //     std::bind(&ArmorProcessorNode::target_info_callback, this, std::placeholders::_1));
 
-        bool debug_ = false;
-        this->declare_parameter<bool>("debug", false);
-        this->get_parameter("debug", debug_);
-        if(debug_)
-        {
-            RCLCPP_INFO(this->get_logger(), "debug...");
-            // global_user::CameraType camera_type;
-            this->declare_parameter<int>("camera_type", global_user::DaHeng);
-            int camera_type = this->get_parameter("camera_type").as_int();
-            if(camera_type == global_user::DaHeng)
-            {
-                // image sub
-                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
-                std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
-            }
-            else
-            {
-                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
-                std::bind(&ArmorProcessorNode::image_callback, this, std::placeholders::_1), transport_));
-            }
-        }
+        // bool debug_ = false;
+        // this->declare_parameter<bool>("debug", true);
+        // this->get_parameter("debug", debug_);
+        // if(debug_)
+        // {
+        //     RCLCPP_INFO(this->get_logger(), "debug...");
+        //     //动态调参回调
+        //     callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, std::placeholders::_1));
+            
+        //     //
+        //     sleep(5);
+        //     this->read_memory_thread_ = std::thread(&ArmorProcessorNode::img_callback, this);
+
+
+            // // global_user::CameraType camera_type;
+            // this->declare_parameter<int>("camera_type", global_user::DaHeng);
+            // int camera_type = this->get_parameter("camera_type").as_int();
+            // if(camera_type == global_user::DaHeng)
+            // {
+            //     // image sub
+            //     img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+            //     std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
+            // }
+            // else
+            // {
+            //     img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
+            //     std::bind(&ArmorProcessorNode::image_callback, this, std::placeholders::_1), transport_));
+            // }
+        // }
     }
 
     ArmorProcessorNode::~ArmorProcessorNode()
     {
-        
+        if(using_shared_memory)
+        {
+            //解除共享内存映射
+            if(this->shared_memory_ptr_)
+            {
+                if(shmdt(this->shared_memory_ptr_) == -1)
+                {
+                    RCLCPP_ERROR(this->get_logger(), "Dissolution remapping failed...");
+                }
+            }
+            
+            //销毁共享内存
+            if(shmctl(shared_memory_id_, IPC_RMID, NULL) == -1)
+            {
+                RCLCPP_ERROR(this->get_logger(), "Destroy shared memory failed...");        
+            }
+        }
+    }
+
+    void ArmorProcessorNode::img_callback()
+    {
+        cv::Mat img = cv::Mat(DAHENG_IMAGE_HEIGHT, DAHENG_IMAGE_WIDTH, CV_8UC3);
+        // std::cout << 3 << std::endl;
+
+        while(1)
+        {
+            // std::cout << 4 << std::endl;
+            //读取共享内存图像数据
+            memcpy(img.data, shared_memory_ptr_, DAHENG_IMAGE_HEIGHT * DAHENG_IMAGE_WIDTH * 3);
+            // img.copyTo(src.img);
+            if(this->debug_param_.show_predict)
+            {
+                if(!img.empty())
+                {
+                    // RCLCPP_INFO(this->get_logger(), "show prediction...");
+                    if(predict_point_ == last_predict_point_)
+                    {}
+                    else
+                    {
+                        last_predict_point_ = predict_point_;
+                        cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
+                        circle(img, point_2d, 8, {255, 255, 0}, -1);
+                        
+                    }
+                    cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
+                    cv::imshow("ekf_predict", img);
+                    cv::waitKey(1);
+                }
+            }
+        }
     }
 
     void ArmorProcessorNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
@@ -119,20 +245,23 @@ namespace armor_processor
         // img.copyTo(src.img);
         if(this->debug_param_.show_predict)
         {
-            // RCLCPP_INFO(this->get_logger(), "show prediction...");
-            if(predict_point_ == last_predict_point_)
-            {}
-            else
+            if(!img.empty())
             {
-                last_predict_point_ = predict_point_;
-                cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
-                circle(img, point_2d, 2, {255, 255, 255}, 2);
+                // RCLCPP_INFO(this->get_logger(), "show prediction...");
+                if(predict_point_ == last_predict_point_)
+                {}
+                else
+                {
+                    last_predict_point_ = predict_point_;
+                    cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
+                    circle(img, point_2d, 8, {255, 255, 0}, -1);
+                    
+                }
                 cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
                 cv::imshow("ekf_predict", img);
                 cv::waitKey(1);
             }
         }
-        
     }
 
     std::unique_ptr<Processor> ArmorProcessorNode::init_armor_processor()
@@ -154,20 +283,28 @@ namespace armor_processor
         predict_param_.shoot_delay = this->get_parameter("shoot_delay").as_int();
         predict_param_.window_size = this->get_parameter("window_size").as_int();
 
-        this->declare_parameter<double>("singer_alpha", 0.1);
-        this->declare_parameter<double>("singer_a_max", 5.0);
-        this->declare_parameter<double>("singer_p_max", 0.1);
+        this->declare_parameter<double>("singer_alpha", 5.0);
+        this->declare_parameter<double>("singer_a_max", 10.0);
+        this->declare_parameter<double>("singer_p_max", 0.5);
         this->declare_parameter<double>("singer_p0", 0.1);
+        this->declare_parameter<double>("singer_sigma", 0.1);
+        this->declare_parameter<double>("singer_dt", 5.0);
+        this->declare_parameter<double>("singer_p", 1.0);
+        this->declare_parameter<double>("singer_r", 1.0);
         singer_model_param_.alpha = this->get_parameter("singer_alpha").as_double();
         singer_model_param_.a_max = this->get_parameter("singer_a_max").as_double();
         singer_model_param_.p_max = this->get_parameter("singer_p_max").as_double();
         singer_model_param_.p0 = this->get_parameter("singer_p0").as_double();
+        singer_model_param_.sigma = this->get_parameter("singer_sigma").as_double();
+        singer_model_param_.dt = this->get_parameter("singer_dt").as_double();
+        singer_model_param_.p = this->get_parameter("singer_p").as_double();
+        singer_model_param_.r = this->get_parameter("singer_r").as_double();
         // std::cout << 2 << std::endl;
 
-        this->declare_parameter("disable_fitting", false);
+        this->declare_parameter("disable_fitting", true);
         this->declare_parameter("draw_predict", false);
         this->declare_parameter("using_imu", false);
-        this->declare_parameter("show_predict", false);
+        this->declare_parameter("show_predict", true);
         this->declare_parameter("show_transformed_info", false);
         debug_param_.disable_fitting = this->get_parameter("disable_fitting").as_bool();
         debug_param_.draw_predict = this->get_parameter("draw_predict").as_bool();
@@ -233,6 +370,8 @@ namespace armor_processor
             gimbal_info.yaw = angle[1]; 
             // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
             // std::cout << std::endl;
+
+            //
             processor_->armor_predictor_.is_ekf_init = false;
 
             gimbal_info_pub_->publish(gimbal_info);
@@ -476,6 +615,82 @@ namespace armor_processor
                         ); 
                         this->singer_model_param_.p0 = param.as_double();
                         this->processor_->set_p0(this->singer_model_param_.p0);
+                        result.successful = true;
+                    }
+                }
+            }
+
+            if(param.get_name() == "singer_sigma")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+                {
+                    if(param.as_double() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_double()
+                        ); 
+                        this->singer_model_param_.sigma = param.as_double();
+                        this->processor_->set_sigma(this->singer_model_param_.sigma);
+                        result.successful = true;
+                    }
+                }
+            }
+
+            if(param.get_name() == "singer_dt")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+                {
+                    if(param.as_double() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_double()
+                        ); 
+                        this->singer_model_param_.dt = param.as_double();
+                        this->processor_->set_dt(this->singer_model_param_.dt);
+                        result.successful = true;
+                    }
+                }
+            }
+
+            if(param.get_name() == "singer_p")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+                {
+                    if(param.as_double() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_double()
+                        ); 
+                        this->singer_model_param_.p = param.as_double();
+                        this->processor_->set_p(this->singer_model_param_.p);
+                        result.successful = true;
+                    }
+                }
+            }
+
+            if(param.get_name() == "singer_r")
+            {
+                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+                {
+                    if(param.as_double() >= 0)
+                    {
+                        RCLCPP_INFO(this->get_logger(), 
+                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+                            param.get_name().c_str(),
+                            param.get_type_name().c_str(),
+                            param.as_double()
+                        ); 
+                        this->singer_model_param_.r = param.as_double();
+                        this->processor_->set_r(this->singer_model_param_.r);
                         result.successful = true;
                     }
                 }

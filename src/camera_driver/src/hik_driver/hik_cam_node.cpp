@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 14:30:38
- * @LastEditTime: 2022-11-19 17:35:59
+ * @LastEditTime: 2022-11-21 12:01:07
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_cam_node.cpp
  */
 #include "../../include/hik_driver/hik_cam_node.hpp"
@@ -58,7 +58,39 @@ namespace camera_driver
             RCLCPP_INFO(this->get_logger(), "Camera open failed!");
         }
         
-        timer = this->create_wall_timer(1ms, std::bind(&HikCamNode::image_callback, this));
+        //
+        this->declare_parameter("using_shared_memory", false);
+        using_shared_memory = this->get_parameter("using_shared_memory").as_bool();
+        if(using_shared_memory)
+        {
+            /**
+             * @brief 创建图像数据共享内存空间
+             * 
+             */
+            // 生成key
+            key_ = ftok("./", 9);
+            
+            // 返回内存id
+            shared_memory_id_ = shmget(key_, IMAGE_HEIGHT * IMAGE_WIDTH * 3, IPC_CREAT | 0666 | IPC_EXCL);
+            if(shared_memory_id_ == -1)
+            {
+                RCLCPP_ERROR(this->get_logger(), "Get shared memory failed...");
+            }
+
+            //映射到内存地址
+            this->shared_memory_ptr = shmat(shared_memory_id_, 0, 0);
+            if(shared_memory_ptr == (void*)-1)
+            {
+                RCLCPP_ERROR(this->get_logger(), "Remapping shared memory failed...");
+            }
+
+            //内存写入线程
+            memory_write_thread_ = std::thread(&HikCamNode::image_callback, this);     
+        }
+        else
+        {
+            timer = this->create_wall_timer(1ms, std::bind(&HikCamNode::image_callback, this));
+        }
 
         bool debug_;
         this->declare_parameter<bool>("debug", true);
@@ -67,6 +99,27 @@ namespace camera_driver
         {
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&HikCamNode::paramsCallback, this, std::placeholders::_1));
+        }
+    }
+
+    HikCamNode::~HikCamNode()
+    {
+        if(using_shared_memory)
+        {
+            //解除共享内存映射
+            if(this->shared_memory_ptr)
+            {
+                if(shmdt(this->shared_memory_ptr) == -1)
+                {
+                    RCLCPP_ERROR(this->get_logger(), "Dissolution remapping failed...");
+                }
+            }
+            
+            //销毁共享内存
+            if(shmctl(shared_memory_id_, IPC_RMID, NULL) == -1)
+            {
+                RCLCPP_ERROR(this->get_logger(), "Destroy shared memory failed...");        
+            }
         }
     }
 
@@ -101,6 +154,62 @@ namespace camera_driver
         // RCLCPP_INFO(this->get_logger(), "1...");
 
         return std::make_unique<HikCamera>(hik_cam_params_);
+    }
+
+
+    std::unique_ptr<sensor_msgs::msg::Image> HikCamNode::convert_frame_to_msg(cv::Mat frame)
+    {
+        std_msgs::msg::Header header;
+        sensor_msgs::msg::Image ros_image;
+
+        if(frame.size().width != image_width || frame.size().height != image_height)
+        {
+            cv::resize(frame, frame, cv::Size(image_width, image_height));
+            RCLCPP_INFO(this->get_logger(), "resize frame...");
+        }
+
+        ros_image.header.frame_id = this->frame_id;
+        ros_image.width = frame.size().width;
+        ros_image.height = frame.size().height;
+        ros_image.encoding = "bgr8";
+        
+        ros_image.step = static_cast<sensor_msgs::msg::Image::_step_type>(frame.step);  
+        ros_image.is_bigendian = false;
+        ros_image.data.assign(frame.datastart, frame.dataend);
+
+        auto msg_ptr = std::make_unique<sensor_msgs::msg::Image>(ros_image);      
+
+        return msg_ptr;
+    }
+
+    void HikCamNode::image_callback()
+    {
+        if(!hik_cam->get_frame(frame))
+        {
+            RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
+        }
+
+        auto now = std::chrono::steady_clock::now();
+
+        if(!frame.empty())
+        {
+            if(using_shared_memory)
+            {
+                memcpy(this->shared_memory_ptr, frame.data, IMAGE_HEIGHT * IMAGE_WIDTH * 3);
+            }
+            else
+            {
+                this->last_frame = now;
+                rclcpp::Time timestamp = this->get_clock()->now();
+                sensor_msgs::msg::Image::UniquePtr msg = convert_frame_to_msg(frame);
+
+                image_pub->publish(std::move(msg));
+            }
+        }
+
+        // cv::namedWindow("hik_cam_frame", cv::WINDOW_AUTOSIZE);
+        // cv::imshow("hik_cam_frame", frame);
+        // cv::waitKey(1);
     }
 
     rcl_interfaces::msg::SetParametersResult HikCamNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
@@ -204,56 +313,6 @@ namespace camera_driver
         }
         
         return result;
-    }
-
-    std::unique_ptr<sensor_msgs::msg::Image> HikCamNode::convert_frame_to_msg(cv::Mat frame)
-    {
-        std_msgs::msg::Header header;
-        sensor_msgs::msg::Image ros_image;
-
-        if(frame.size().width != image_width || frame.size().height != image_height)
-        {
-            cv::resize(frame, frame, cv::Size(image_width, image_height));
-            RCLCPP_INFO(this->get_logger(), "resize frame...");
-        }
-
-        ros_image.header.frame_id = this->frame_id;
-        ros_image.width = frame.size().width;
-        ros_image.height = frame.size().height;
-        ros_image.encoding = "bgr8";
-        
-        ros_image.step = static_cast<sensor_msgs::msg::Image::_step_type>(frame.step);  
-        ros_image.is_bigendian = false;
-        ros_image.data.assign(frame.datastart, frame.dataend);
-
-        auto msg_ptr = std::make_unique<sensor_msgs::msg::Image>(ros_image);      
-
-        return msg_ptr;
-    }
-
-    void HikCamNode::image_callback()
-    {
-        if(!hik_cam->get_frame(frame))
-        {
-            RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
-        }
-
-        auto now = std::chrono::steady_clock::now();
-
-        if(!frame.empty())
-        {
-            this->last_frame = now;
-
-            rclcpp::Time timestamp = this->get_clock()->now();
-
-            sensor_msgs::msg::Image::UniquePtr msg = convert_frame_to_msg(frame);
-
-            image_pub->publish(std::move(msg));
-        }
-
-        // cv::namedWindow("hik_cam_frame", cv::WINDOW_AUTOSIZE);
-        // cv::imshow("hik_cam_frame", frame);
-        // cv::waitKey(1);
     }
 }
 

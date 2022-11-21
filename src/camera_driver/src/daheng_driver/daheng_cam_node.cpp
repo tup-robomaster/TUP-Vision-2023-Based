@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 14:25:39
- * @LastEditTime: 2022-11-20 00:19:23
+ * @LastEditTime: 2022-11-21 11:58:05
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
  */
 #include "../../include/daheng_driver/daheng_cam_node.hpp"
@@ -18,28 +18,6 @@ namespace camera_driver
         
         // camera params initialize 
         daheng_cam = init_daheng_cam();
-
-        /**
-         * @brief 创建图像数据共享内存空间
-         * 
-         */
-        
-        // 生成key
-        key_ = ftok("./", 7);
-        
-        // 返回内存id
-        shared_memory_id_ = shmget(key_, IMAGE_WIDTH * IMAGE_HEIGHT * 3, IPC_CREAT | 0666 | IPC_EXCL);
-        if(shared_memory_id_ == -1)
-        {
-            RCLCPP_ERROR(this->get_logger(), "Get shared memory failed...");
-        }
-
-        //映射到内存地址
-        this->shared_memory_ptr = shmat(shared_memory_id_, 0, 0);
-        if(shared_memory_ptr == (void*)-1)
-        {
-            RCLCPP_ERROR(this->get_logger(), "Remapping shared memory failed...");
-        }
 
         //QoS    
         rclcpp::QoS qos(0);
@@ -74,8 +52,40 @@ namespace camera_driver
         {
             RCLCPP_INFO(this->get_logger(), "Camera open success!");
         }
-        
-        timer = this->create_wall_timer(1ms, std::bind(&DahengCamNode::image_callback, this));
+
+        //
+        this->declare_parameter("using_shared_memory", false);
+        using_shared_memory = this->get_parameter("using_shared_memory").as_bool();
+        if(using_shared_memory)
+        {
+            /**
+             * @brief 创建图像数据共享内存空间
+             * 
+             */
+            // 生成key
+            key_ = ftok("./", 9);
+            
+            // 返回内存id
+            shared_memory_id_ = shmget(key_, IMAGE_HEIGHT * IMAGE_WIDTH * 3, IPC_CREAT | 0666 | IPC_EXCL);
+            if(shared_memory_id_ == -1)
+            {
+                RCLCPP_ERROR(this->get_logger(), "Get shared memory failed...");
+            }
+
+            //映射到内存地址
+            this->shared_memory_ptr = shmat(shared_memory_id_, 0, 0);
+            if(shared_memory_ptr == (void*)-1)
+            {
+                RCLCPP_ERROR(this->get_logger(), "Remapping shared memory failed...");
+            }
+
+            //内存写入线程
+            memory_write_thread_ = std::thread(&DahengCamNode::image_callback, this);        
+        }
+        else
+        {
+            timer = this->create_wall_timer(1ms, std::bind(&DahengCamNode::image_callback, this));
+        }
 
         bool debug_;
         this->declare_parameter<bool>("debug", true);
@@ -85,24 +95,26 @@ namespace camera_driver
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&DahengCamNode::paramsCallback, this, std::placeholders::_1));
         }
-
     }
 
     DahengCamNode::~DahengCamNode()
     {
-        //解除共享内存映射
-        if(this->shared_memory_ptr)
+        if(using_shared_memory)
         {
-            if(shmdt(this->shared_memory_ptr) == -1)
+            //解除共享内存映射
+            if(this->shared_memory_ptr)
             {
-                RCLCPP_ERROR(this->get_logget(), "Dissolution remapping failed...");
+                if(shmdt(this->shared_memory_ptr) == -1)
+                {
+                    RCLCPP_ERROR(this->get_logger(), "Dissolution remapping failed...");
+                }
             }
-        }
-        
-        //销毁共享内存
-        if(shmctl(shared_memory_id_, IPC_RMID, NULL) == -1)
-        {
-            RCLCPP_ERROR(this->get_logget(), "Destroy shared memory failed...");        
+            
+            //销毁共享内存
+            if(shmctl(shared_memory_id_, IPC_RMID, NULL) == -1)
+            {
+                RCLCPP_ERROR(this->get_logger(), "Destroy shared memory failed...");        
+            }
         }
     }
 
@@ -139,6 +151,65 @@ namespace camera_driver
         daheng_cam_param_.balance_r = this->get_parameter("balance_r").as_double();
 
         return std::make_unique<DaHengCam>(daheng_cam_param_);
+    }
+
+
+
+    std::unique_ptr<sensor_msgs::msg::Image> DahengCamNode::convert_frame_to_msg(cv::Mat frame)
+    {
+        std_msgs::msg::Header header;
+        sensor_msgs::msg::Image ros_image;
+
+        if(frame.size().width != image_width || frame.size().height != image_height)
+        {
+            cv::resize(frame, frame, cv::Size(image_width, image_height));
+            RCLCPP_INFO(this->get_logger(), "resize frame...");
+        }
+
+        ros_image.header.frame_id = this->frame_id;
+        ros_image.width = frame.size().width;
+        ros_image.height = frame.size().height;
+        ros_image.encoding = "bgr8";
+        
+        ros_image.step = static_cast<sensor_msgs::msg::Image::_step_type>(frame.step);  
+        ros_image.is_bigendian = false;
+        ros_image.data.assign(frame.datastart, frame.dataend);
+
+        auto msg_ptr = std::make_unique<sensor_msgs::msg::Image>(ros_image);      
+
+        return msg_ptr;
+    }
+
+    void DahengCamNode::image_callback()
+    {
+        while(1)
+        {
+            if(!daheng_cam->get_frame(frame))
+            {
+                RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
+                return;
+            }
+
+            auto now = std::chrono::steady_clock::now();
+            if(!frame.empty())
+            {
+                if(using_shared_memory)
+                {
+                    memcpy(this->shared_memory_ptr, frame.data, IMAGE_HEIGHT * IMAGE_WIDTH * 3);
+                }
+                else
+                {
+                    this->last_frame = now;
+                    rclcpp::Time timestamp = this->get_clock()->now();
+                    sensor_msgs::msg::Image::UniquePtr msg = convert_frame_to_msg(frame);
+                    
+                    image_pub->publish(std::move(msg));
+                }
+                // cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
+                // cv::imshow("daheng_cam_frame", frame);
+                // cv::waitKey(1);
+            }
+        }
     }
 
     rcl_interfaces::msg::SetParametersResult DahengCamNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
@@ -242,58 +313,6 @@ namespace camera_driver
         }
         
         return result;
-    }
-
-
-    std::unique_ptr<sensor_msgs::msg::Image> DahengCamNode::convert_frame_to_msg(cv::Mat frame)
-    {
-        std_msgs::msg::Header header;
-        sensor_msgs::msg::Image ros_image;
-
-        if(frame.size().width != image_width || frame.size().height != image_height)
-        {
-            cv::resize(frame, frame, cv::Size(image_width, image_height));
-            RCLCPP_INFO(this->get_logger(), "resize frame...");
-        }
-
-        ros_image.header.frame_id = this->frame_id;
-        ros_image.width = frame.size().width;
-        ros_image.height = frame.size().height;
-        ros_image.encoding = "bgr8";
-        
-        ros_image.step = static_cast<sensor_msgs::msg::Image::_step_type>(frame.step);  
-        ros_image.is_bigendian = false;
-        ros_image.data.assign(frame.datastart, frame.dataend);
-
-        auto msg_ptr = std::make_unique<sensor_msgs::msg::Image>(ros_image);      
-
-        return msg_ptr;
-    }
-
-    void DahengCamNode::image_callback()
-    {
-        if(!daheng_cam->get_frame(frame))
-        {
-            RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
-        }
-
-        auto now = std::chrono::steady_clock::now();
-
-        if(!frame.empty())
-        {
-            memcpy(this->shared_memory_ptr, frame.data, IMAGE_WIDTH * IMAGE_HEIGHT * 3);
-            this->last_frame = now;
-
-            rclcpp::Time timestamp = this->get_clock()->now();
-
-            sensor_msgs::msg::Image::UniquePtr msg = convert_frame_to_msg(frame);
-            
-            image_pub->publish(std::move(msg));
-        }
-
-        // cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
-        // cv::imshow("daheng_cam_frame", frame);
-        // cv::waitKey(1);
     }
 }
 

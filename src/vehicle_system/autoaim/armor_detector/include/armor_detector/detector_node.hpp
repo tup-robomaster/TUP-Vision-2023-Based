@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2022-11-20 00:35:09
+ * @LastEditTime: 2022-11-21 11:17:35
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -87,6 +87,9 @@ namespace armor_detector
          * @brief 共享图像数据内存
          * 
          */
+        //
+        bool using_shared_memory;
+        
         //生成key键
         key_t key_;
 
@@ -96,7 +99,10 @@ namespace armor_detector
         //映射共享内存，得到虚拟地址
         void* shared_memory_ptr_ = nullptr;
 
-        void detector();
+        //共享内存读线程
+        std::thread read_memory_thread_;
+
+        void run();
 
     };
 } //namespace detector

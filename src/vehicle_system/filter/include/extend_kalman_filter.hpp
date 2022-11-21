@@ -96,6 +96,7 @@ namespace filter
             
             //计算卡尔曼增益
             //残差的协方差矩阵
+            // Covariance<Measurement> S = (m.H * P * m.H.transpose()) + (m.V * m.getCovariance() * m.V.transpose());
             Covariance<Measurement> S = (m.H * P * m.H.transpose()) + (m.V * m.getCovariance() * m.V.transpose());
             KalmanGain<Measurement> K = P * (m.H.transpose() * S.inverse());
 

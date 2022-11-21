@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-17 00:27:33
- * @LastEditTime: 2022-11-19 12:51:45
+ * @LastEditTime: 2022-11-21 10:08:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor/armor_processor.hpp
  */
 #ifndef ARMOR_PRECESSOR_HPP
@@ -31,7 +31,10 @@ namespace armor_processor
     class Processor
     {
     public:
-        Processor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param, 
+        // Processor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param, 
+        //     const std::string& filter_param_path, const std::string& coord_param_path, 
+        //     const std::string& coord_param_name);
+        Processor(const PredictParam& predict_param, const SingerModel& singer_model_param, const DebugParam& debug_param, 
             const std::string& filter_param_path, const std::string& coord_param_path, 
             const std::string& coord_param_name);
         ~Processor();
@@ -68,7 +71,10 @@ namespace armor_processor
         void set_a_max(double a_max);
         void set_p_max(double& p_max);
         void set_p0(double& p0);
-        void set_sigma();
+        void set_sigma(double& sigma);
+        void set_dt(double& dt);
+        void set_p(double& p);
+        void set_r(double& r);
     };
 } //namespace armor_processor
 

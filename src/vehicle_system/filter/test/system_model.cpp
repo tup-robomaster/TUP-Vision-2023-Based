@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-03 22:59:40
- * @LastEditTime: 2022-11-19 12:40:10
+ * @LastEditTime: 2022-11-20 17:01:21
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/test/system_model.cpp
  */
 #include "./system_model.hpp"
@@ -219,10 +219,10 @@ private:
 public:
     SingerModel()
     {
-        alpha_ = 0.01;
-        a_max_ = 5;
-        p_max_ = 0.5;
-        p0_ = 0.01;
+        alpha_ = 5.0;
+        a_max_ = 1.0;
+        p_max_ = 0.2;
+        p0_ = 0.3;
         sigma_ = sqrt((pow(a_max_, 2) * (1 + 4 * p_max_ - p0_)) / 3);
     }
     SingerModel(T alpha, T a_max, T p_max, T p0, T q)
