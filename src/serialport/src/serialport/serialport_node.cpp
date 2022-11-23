@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2022-10-28 19:48:56
+ * @LastEditTime: 2022-11-23 10:03:20
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport/serialport_node.cpp
  */
 #include "../../include/serialport/serialport_node.hpp"
@@ -102,8 +102,10 @@ namespace serialport
     {
         std::string id = "483/5740/200";
         int baud = 115200;
+        this->declare_parameter("debug_without_com", true);
+        bool debug_without_com = this->get_parameter("debug_without_com").as_bool();
 
-        return std::make_unique<SerialPort>(id, baud);
+        return std::make_unique<SerialPort>(id, baud, debug_without_com);
     }
 
     void serial_driver::handle_imu_data(const std::shared_ptr<global_interface::msg::Imu>& msg)
@@ -124,7 +126,10 @@ namespace serialport
         std::string id = "483/5740/200";
         int baud = 115200;
 
-        return std::make_unique<serialport>(id, baud);
+        this->declare_parameter("debug_without_com", true);
+        bool debug_without_com = this->get_parameter("debug_without_com").as_bool();
+        
+        return std::make_unique<serialport>(id, baud, debug_without_com);
     }    
 
     void serial_driver::receive_data()

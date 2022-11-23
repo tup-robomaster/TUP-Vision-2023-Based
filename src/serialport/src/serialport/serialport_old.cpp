@@ -1,6 +1,7 @@
 #include "../../include/serialport/serialport_old.hpp"
 
-SerialPort::SerialPort(const string ID, const int BAUD)
+SerialPort::SerialPort(const string ID, const int BAUD, bool debug_without_com)
+: debug_without_com_(debug_without_com)
 {
     need_init = true;
     serial_id = ID;
@@ -11,11 +12,15 @@ SerialPort::SerialPort(const string ID, const int BAUD)
     // system(std::string("echo root@233|sudo chmod 777 /dev/ttyUSB0").c_str());
     // cout << system(std::string("pwd").c_str()) << endl;
     // system(std::string("root@233").c_str());
-#ifdef DEBUG_WITHOUT_COM
-    withoutSerialPort();
-#else
-    initSerialPort();
-#endif //DEBUG_WITHOUT_COM
+    if(this->debug_without_com_)
+    {
+        //无串口调试
+        withoutSerialPort();
+    }
+    else
+    {
+        initSerialPort();
+    }
 }
 
 /**
@@ -176,9 +181,9 @@ bool SerialPort::initSerialPort()
     }
     printf("Open successed\n");
 
-#ifdef SAVE_LOG_ALL
-    LOG(INFO) << "[SERIAL] Open "<< alias << " successed"<<endl;
-#endif //SAVE_LOG_ALL
+// #ifdef SAVE_LOG_ALL
+    // LOG(INFO) << "[SERIAL] Open "<< alias << " successed"<<endl;
+// #endif //SAVE_LOG_ALL
 
     last_fd = fd;
     need_init = false;

@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 01:59:06
- * @LastEditTime: 2022-09-28 16:35:50
- * @FilePath: /tup_2023/src/serialport/include/serialport/serialport.hpp
+ * @LastEditTime: 2022-11-23 10:06:37
+ * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport/serialport.hpp
  */
 #ifndef SERIALPORT_HPP
 #define SERIALPORT_HPP
@@ -27,7 +27,7 @@ namespace serialport
     {
     public:
         explicit serialport();
-        explicit serialport(const std::string id, const int baud);
+        explicit serialport(const std::string id, const int baud, bool debug_without_com);
         ~serialport();
 
         void init();
@@ -50,6 +50,7 @@ namespace serialport
         bool get_gyro(std::vector<uint8_t>& data);
         bool get_acc(std::vector<uint8_t>& data);
 
+        bool debug_without_com_;
         bool is_open;
     private:    
 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 16:03:31
- * @LastEditTime: 2022-10-27 18:04:22
+ * @LastEditTime: 2022-11-23 10:09:19
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport/serialport.cpp
  */
 #include "../../include/serialport/serialport.hpp"
@@ -14,9 +14,12 @@ namespace serialport
         
     }
 
-    serialport::serialport(const std::string id, const int baud) : serial_id(id), device_baud(baud)
+    serialport::serialport(const std::string id, const int baud, bool debug_without_com) : serial_id(id), device_baud(baud),debug_without_com_(debug_without_com)
     {
-        init();
+        if(debug_without_com_)
+        {
+            init();
+        }
     }
 
     serialport::~serialport()

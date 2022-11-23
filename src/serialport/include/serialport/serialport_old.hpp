@@ -95,10 +95,10 @@ public:
     std::chrono::_V2::steady_clock::time_point timestamp;
     
     float quat[4]; //四元数
-    float acc[3]; //加速度
+    float acc[3];  //加速度
     float gyro[3]; //角速度
     float bullet_speed;
-    SerialPort(const string ID, const int BUAD);
+    SerialPort(const string ID, const int BUAD, bool debug_without_com);
     SerialPort(char *);
     bool initSerialPort();
     bool get_Mode();
@@ -117,6 +117,8 @@ public:
 private:
     unsigned char Tdata[30];                  // transfrom data
 
+    bool debug_without_com_; //是否无串口调试
+    
     string serial_id;
 
     float exchange_data(unsigned char *data); //将4个uchar合并成一个float
