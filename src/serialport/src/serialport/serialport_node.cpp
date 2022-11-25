@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2022-11-23 10:03:20
+ * @LastEditTime: 2022-11-25 18:46:03
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport/serialport_node.cpp
  */
 #include "../../include/serialport/serialport_node.hpp"
@@ -52,6 +52,31 @@ namespace serialport
         //static transform 
         this->declare_parameter<std::vector<double>>("static_transform", {0, 0, 0});
         this->get_parameter("static_transform", static_transform_);
+         
+        //tf2
+        target_frame_ = this->declare_parameter<std::string>("target_frame", "world");
+
+        std::chrono::duration<int> buffer_timeout(1);
+
+        tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+
+        auto time_interface = std::make_shared<tf2_ros::CreateTimerROS>(
+            this->get_node_base_interface(),
+            this->get_node_timers_interface()
+        );
+
+        tf2_buffer_->setCreateTimerInterface(time_interface);
+        tf2_listener_ = 
+            std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
+
+        gimbal_info_sub_.subscriber(this, "/gimbal_info");
+        tf2_filter_ = std::make_shared<tf2_ros::MessageFilter<global_interface::msg::Gimbal>>(
+            gimbal_info_sub_, *tf2_buffer_, target_frame_, 100, this->get_node_logging_interface(),
+            this->get_node_clock_interface(), buffer_timeout
+        );
+
+        //callback func
+        // tf2_filter_->registerCallback(&);
 
         //initialize the transform broadcaster
         tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);

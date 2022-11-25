@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-11-21 14:39:31
+ * @LastEditTime: 2022-11-25 20:44:28
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP
@@ -42,6 +42,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+#define PARAM_NUM 19
 #define DAHENG_IMAGE_WIDTH 1280
 #define DAHENG_IMAGE_HEIGHT 1024
 
@@ -110,6 +111,8 @@ namespace armor_processor
          * @param 参数服务器参数
          * @return 是否修改参数成功
          */
+        std::string* param_names_;
+        bool setParam(rclcpp::Parameter param);
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
 

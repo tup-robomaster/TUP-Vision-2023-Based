@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2022-10-28 19:39:44
+ * @LastEditTime: 2022-11-24 21:52:45
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP
@@ -15,9 +15,13 @@
 #include <rclcpp/subscription.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/float64.hpp>
+#include <message_filters/subscriber.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/create_timer_ros.h>
+#include <tf2_ros/message_filter.h>
 #include <tf2_ros/transform_broadcaster.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include "./serialport_old.hpp"
 #include "./serialport.hpp"
@@ -61,6 +65,13 @@ namespace serialport
         Eigen::Matrix3d rmat_imu_;
         // global_interface::msg::Target target_info_;
         coordsolver::coordsolver coordsolver_;
+
+        //tf2
+        std::string target_frame_;
+        std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
+        std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
+        message_filters::Subscriber<global_interface::msg::Gimbal> gimbal_info_sub_;
+        std::shared_ptr<tf2_ros::MessageFilter<global_interface::msg::Gimbal> tf2_filter_;
 
     public:
         rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;

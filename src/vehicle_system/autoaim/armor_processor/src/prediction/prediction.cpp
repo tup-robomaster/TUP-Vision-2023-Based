@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-11-21 14:11:42
+ * @LastEditTime: 2022-11-25 21:15:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -82,9 +82,6 @@ namespace armor_processor
             config_ = YAML::LoadFile(filter_param_path_);
             pf_pos.initParam(config_, "pos");
             pf_v.initParam(config_, "v");
-            
-            // debug_param_.draw_predict = true;
-            // fitting_disabled_ = true;
             is_init = true;
         }
 
@@ -152,7 +149,7 @@ namespace armor_processor
             fitting_disabled_ = true;
         }
         else
-        {  //其余状况下皆可以进行拟合
+        {   //其余状况下皆可以进行拟合
             fitting_disabled_ = false;
             //若队列过长，移除首元素
             if(history_info_.size() > history_deque_lens_)
@@ -164,7 +161,7 @@ namespace armor_processor
         //
 
         // 计算目标速度、加速度 
-        //取目标t-2、t-1、t时刻的坐标信息
+        // 取目标t-2、t-1、t时刻的坐标信息
         auto delta_x_last = (history_info_.at(history_info_.size() - 2).xyz[0] - history_info_.at(history_info_.size() - 3).xyz[0]);
         auto delta_y_last = (history_info_.at(history_info_.size() - 2).xyz[1] - history_info_.at(history_info_.size() - 3).xyz[1]);
         auto delta_t_last = (history_info_.at(history_info_.size() - 2).timestamp - history_info_.at(history_info_.size() - 3).timestamp);
@@ -188,8 +185,7 @@ namespace armor_processor
 
         Eigen::Vector2d target_v = measure_v;
         if (!is_v_filter_ready)
-        {
-        }
+        {}
         else
         {  //若位置粒子滤波器已完成初始化且预测值大小恰当,则对目标位置做滤波
             // cout<<"FIL:"<<predict_pos[0] - xyz[0]<<endl;
@@ -197,10 +193,10 @@ namespace armor_processor
             target_v[1] = predict_v_xy[1];
         }
 
-        // if(debug_param_.disable_fitting)
-        // {
-        // }
-        fitting_disabled_ = true;
+        if(debug_param_.disable_fitting)
+        {
+            fitting_disabled_ = true;
+        }
 
         Eigen::Vector3d result = {0, 0, 0};
         Eigen::Vector3d result_pf = {0, 0, 0};
@@ -210,12 +206,9 @@ namespace armor_processor
         PredictStatus is_fitting_available;
         PredictStatus is_ekf_available;
       
-        // std::cout << "..." << std::endl;
         //需注意粒子滤波使用相对时间（自上一次检测时所经过ms数），拟合使用自首帧所经过时间
         if(fitting_disabled_)
         {
-            // std::cout << "ekf..." << std::endl;
-            // std::cout << "fitting_disabled..." << std::endl;
             // auto is_pf_available = predict_pf_run(target, result_pf, delta_time_estimate);
             is_ekf_available = predict_ekf_run(target, result_ekf, target_v, ax, delta_time_estimate);
         }
@@ -301,11 +294,8 @@ namespace armor_processor
         // cout<<xyz<<endl;
         // result_pf = target.xyz;
 
-        // std::cout << 1 << std::endl;
         if(debug_param_.draw_predict)
         {
-            // std::cout << 2 << std::endl;
-
             double x_offset = 400;
             double y_offset = 400;
             double z_offset = 200;
@@ -352,9 +342,9 @@ namespace armor_processor
         //计算最大迭代次数
         auto max_iter = int(history_info_.size() - start_idx) - predict_param_.window_size + 1;
         Eigen::Vector3d total_sum = {0, 0, 0};
-        // cout<<history_info.size()<<endl;
-        // cout<<max_iter<<endl;
-        // cout<<start_idx<<endl;
+        // cout << history_info.size() << endl;
+        // cout << max_iter << endl;
+        // cout << start_idx << endl;
         if (max_iter == 0 || start_idx < 0)
             return history_info_.back().xyz;
         
@@ -365,9 +355,9 @@ namespace armor_processor
                 sum += history_info_.at(start_idx + i + j).xyz;
             total_sum += sum / predict_param_.window_size;
         }
-        // cout<<history_info.back().xyz<<endl;
-        // cout<<total_sum / max_iter<<endl;
-        // cout<<endl;
+        // cout << history_info.back().xyz << endl;
+        // cout << total_sum / max_iter << endl;
+        // cout << endl;
         return total_sum / max_iter;
     }
 
@@ -413,8 +403,6 @@ namespace armor_processor
         }
 
         result << predict_x, predict_y, target.xyz[2];
-        // cout<<result<<endl;
-
         // cout<<result<<endl;
 
         return is_available;
@@ -598,10 +586,14 @@ namespace armor_processor
         double dt = singer_param_.dt;
 
         kalman_filter_.F_ << 1, dt, (alpha * dt - 1 + exp(-alpha * dt)) / alpha / alpha,  
-            0, 1, (1 - exp(-alpha * dt)) / alpha,
-		    0, 0, exp(-alpha * dt);
+                            0, 1, (1 - exp(-alpha * dt)) / alpha,
+		                    0, 0, exp(-alpha * dt);
+
         kalman_filter_.H_ << 1, 0, 0;
-        kalman_filter_.C_ << 1 / alpha * (-dt + alpha * dt * dt / 2 + (1 - exp(-alpha * dt) / alpha)), dt - (1 - exp(-alpha * dt) / alpha), 1 - exp(-alpha * dt);
+
+        kalman_filter_.C_ << 1 / alpha * (-dt + alpha * dt * dt / 2 + (1 - exp(-alpha * dt) / alpha)),
+                            dt - (1 - exp(-alpha * dt) / alpha),
+                            1 - exp(-alpha * dt);
         
         double p = singer_param_.p;
         kalman_filter_.P_ << p, 0, 0,
@@ -616,9 +608,9 @@ namespace armor_processor
         double q33 = 1 / (2 * alpha) * (1 - exp(-2 * alpha * dt));
 
         double sigma = singer_param_.sigma;
-        kalman_filter_.Q_ << 2 * pow(sigma, 2) * alpha * q11, 2 * pow(sigma, 2) * alpha * q12, 2 * pow(sigma, 2) * alpha* q13,  
-		2 * pow(sigma, 2) * alpha* q12, 2 * pow(sigma, 2) * alpha* q22, 2 * pow(sigma, 2) * alpha* q23,
-		2 * pow(sigma, 2) * alpha* q13, 2 * pow(sigma, 2) * alpha* q23, 2 * pow(sigma, 2) * alpha* q33;
+        kalman_filter_.Q_ << 2 * pow(sigma, 2) * alpha * q11, 2 * pow(sigma, 2) * alpha * q12, 2 * pow(sigma, 2) * alpha* q13,
+                            2 * pow(sigma, 2) * alpha* q12, 2 * pow(sigma, 2) * alpha* q22, 2 * pow(sigma, 2) * alpha* q23,
+		                    2 * pow(sigma, 2) * alpha* q13, 2 * pow(sigma, 2) * alpha* q23, 2 * pow(sigma, 2) * alpha* q33;
         
         double meaCov = singer_param_.r;
         kalman_filter_.R_ << meaCov;
@@ -650,36 +642,33 @@ namespace armor_processor
         }
         else
         {
-            
 
-        // // if(!is_ekf_init)
-        // // {
-        // //     ekf.init(x);
-        // //     result << target.xyz[0], target.xyz[1], target.xyz[2];
-        // //     is_available.xyz_status[0] = false;
-        // //     is_ekf_init = true;
-        // // }
-        // // else
-        // // {
-        //     // auto x_model = singer.f(x, u, timestamp);
-        //     ekf.init(x);
+            // if(!is_ekf_init)
+            // {
+            //     ekf.init(x);
+            //     result << target.xyz[0], target.xyz[1], target.xyz[2];
+            //     is_available.xyz_status[0] = false;
+            //     is_ekf_init = true;
+            // }
+            // else
+            // {
+            //     // auto x_model = singer.f(x, u, timestamp);
+            //     ekf.init(x);
 
-        //     //预测
-        //     auto x_ekf_pred = ekf.predict(singer, u, timestamp);
-            
-        //     //更新
-        //     SingerPosMeasure pos = pos_model.h(x);
-        //     auto x_ekf_update = ekf.update(pos_model, pos);
-        //     is_available.xyz_status[0] = true;
+            //     //预测
+            //     auto x_ekf_pred = ekf.predict(singer, u, timestamp);
+                
+            //     //更新
+            //     SingerPosMeasure pos = pos_model.h(x);
+            //     auto x_ekf_update = ekf.update(pos_model, pos);
+            //     is_available.xyz_status[0] = true;
 
-        //     // std::cout << "target_x:" << target.xyz[0] << " pred_x:" << x_model[0] << std::endl;
+            //     // std::cout << "target_x:" << target.xyz[0] << " pred_x:" << x_model[0] << std::endl;
 
-        //     // result << x_ekf_update[0], target.xyz[1], target.xyz[2];
-        //     // result << x_model[0], target.xyz[1], target.xyz[2];
-        //     result << x_ekf_pred[0], target.xyz[1], target.xyz[2];
-        // }
-            double alpha = singer_param_.alpha;
-            double dt = 5 * singer_param_.dt;
+            //     // result << x_ekf_update[0], target.xyz[1], target.xyz[2];
+            //     // result << x_model[0], target.xyz[1], target.xyz[2];
+            //     result << x_ekf_pred[0], target.xyz[1], target.xyz[2];
+            // }
 
             Eigen::MatrixXd measurement = Eigen::MatrixXd(1, 1);
             measurement << target.xyz[0];
@@ -690,13 +679,18 @@ namespace armor_processor
 			Eigen::MatrixXd State(3, 1);
             State << kalman_filter_.x_(0 ,0), kalman_filter_.x_(1, 0), kalman_filter_.x_(2, 0);
             
+            double alpha = singer_param_.alpha;
+            double dt = 5 * singer_param_.dt;
+
             Eigen::MatrixXd F(3, 3);
-            F << 1, dt, (alpha * dt - 1 + exp(-alpha * dt)) / alpha / alpha,
+            F << 1, dt, (alpha * dt - 1 + exp(-alpha * dt)) / pow(alpha, 2),
                 0, 1, (1 - exp(-alpha * dt)) / alpha,
                 0, 0, exp(-alpha * dt); 
 
             Eigen::MatrixXd control(3, 1);
-            control << 1 / alpha * (-dt + alpha * dt * dt / 2 + (1 - exp(-alpha * dt) / alpha)), dt - (1 - exp(-alpha * dt) / alpha), 1 - exp(-alpha * dt);
+            control << 1 / alpha * (-dt + alpha * dt * dt / 2 + (1 - exp(-alpha * dt) / alpha)),
+                    dt - (1 - exp(-alpha * dt) / alpha), 
+                    1 - exp(-alpha * dt);
             
             auto x_pred = F * State + control * State(2, 0);
             

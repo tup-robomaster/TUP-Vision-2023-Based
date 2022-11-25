@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-11-21 18:17:02
+ * @LastEditTime: 2022-11-25 21:10:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -40,7 +40,50 @@ namespace armor_processor
         // Subscriptions transport type
         transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
         
-        //
+        // if(processor_->armor_predictor_.debug_param_.using_imu)
+        // {
+        //     // declare and acquire 'target_frame' parameter
+        //     this->declare_parameter("target_frame", "gyro");
+        //     this->target_frame_ = this->get_parameter("target_frame").as_string();
+
+        //     // buffer timeout
+        //     SecondsType buffer_timeout(1);
+
+        //     tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+
+        //     // create the timer interface before call waitForTransform
+        //     auto timer_interface = std::make_shared<tf2_ros::CreateTimerROS>
+        //     (
+        //         this->get_node_base_interface(),
+        //         this->get_node_timers_interface()
+        //     );
+
+        //     tf2_buffer_->setCreateTimerInterface(timer_interface);
+        //     tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
+        //     target_point_sub_.subscribe(this, "/armor_detector/armor_info");
+
+        //     tf2_filter_ = std::make_shared<tf2_ros::MessageFilter<global_interface::msg::Target>>
+        //     (
+        //         target_point_sub_,
+        //         *tf2_buffer_,
+        //         target_frame_,
+        //         10,
+        //         this->get_node_logging_interface(),
+        //         this->get_node_clock_interface(),
+        //         buffer_timeout
+        //     );
+
+        //     //register a callback
+        //     tf2_filter_->registerCallback(&ArmorProcessorNode::target_info_callback, this); //获取tf关系后进入回调
+        // }
+        // else
+        // {
+        //     spin_info_sub = this->create_subscription<global_interface::msg::SpinInfo>("/spin_info", 10,
+        //         std::bind(&ArmorProcessorNode::spin_info_callback, this, std::placeholders::_1));
+        //     target_info_sub_ = this->create_subscription<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS(),
+        //         std::bind(&ArmorProcessorNode::target_info_callback, this, std::placeholders::_1));
+        // }
+        
         bool debug_ = false;
         this->declare_parameter<bool>("debug", true);
         this->get_parameter("debug", debug_);
@@ -106,79 +149,6 @@ namespace armor_processor
                 }
             }
         }
-
-        // if(processor_->armor_predictor_.debug_param_.using_imu)
-        // {
-        //     // declare and acquire 'target_frame' parameter
-        //     this->declare_parameter("target_frame", "gyro");
-        //     this->target_frame_ = this->get_parameter("target_frame").as_string();
-
-        //     // buffer timeout
-        //     SecondsType buffer_timeout(1);
-
-        //     tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
-
-        //     // create the timer interface before call waitForTransform
-        //     auto timer_interface = std::make_shared<tf2_ros::CreateTimerROS>
-        //     (
-        //         this->get_node_base_interface(),
-        //         this->get_node_timers_interface()
-        //     );
-
-        //     tf2_buffer_->setCreateTimerInterface(timer_interface);
-        //     tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
-        //     target_point_sub_.subscribe(this, "/armor_detector/armor_info");
-
-        //     tf2_filter_ = std::make_shared<tf2_ros::MessageFilter<global_interface::msg::Target>>
-        //     (
-        //         target_point_sub_,
-        //         *tf2_buffer_,
-        //         target_frame_,
-        //         10,
-        //         this->get_node_logging_interface(),
-        //         this->get_node_clock_interface(),
-        //         buffer_timeout
-        //     );
-
-        //     //register a callback
-        //     tf2_filter_->registerCallback(&ArmorProcessorNode::target_info_callback, this); //获取tf关系后进入回调
-        // }
-        // else
-        // {
-            // spin_info_sub = this->create_subscription<global_interface::msg::SpinInfo>("/spin_info", 10,
-            //     std::bind(&ArmorProcessorNode::spin_info_callback, this, std::placeholders::_1));
-        // target_info_sub_ = this->create_subscription<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS(),
-        //     std::bind(&ArmorProcessorNode::target_info_callback, this, std::placeholders::_1));
-
-        // bool debug_ = false;
-        // this->declare_parameter<bool>("debug", true);
-        // this->get_parameter("debug", debug_);
-        // if(debug_)
-        // {
-        //     RCLCPP_INFO(this->get_logger(), "debug...");
-        //     //动态调参回调
-        //     callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, std::placeholders::_1));
-            
-        //     //
-        //     sleep(5);
-        //     this->read_memory_thread_ = std::thread(&ArmorProcessorNode::img_callback, this);
-
-
-            // // global_user::CameraType camera_type;
-            // this->declare_parameter<int>("camera_type", global_user::DaHeng);
-            // int camera_type = this->get_parameter("camera_type").as_int();
-            // if(camera_type == global_user::DaHeng)
-            // {
-            //     // image sub
-            //     img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
-            //     std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
-            // }
-            // else
-            // {
-            //     img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
-            //     std::bind(&ArmorProcessorNode::image_callback, this, std::placeholders::_1), transport_));
-            // }
-        // }
     }
 
     ArmorProcessorNode::~ArmorProcessorNode()
@@ -205,11 +175,9 @@ namespace armor_processor
     void ArmorProcessorNode::img_callback()
     {
         cv::Mat img = cv::Mat(DAHENG_IMAGE_HEIGHT, DAHENG_IMAGE_WIDTH, CV_8UC3);
-        // std::cout << 3 << std::endl;
 
         while(1)
         {
-            // std::cout << 4 << std::endl;
             //读取共享内存图像数据
             memcpy(img.data, shared_memory_ptr_, DAHENG_IMAGE_HEIGHT * DAHENG_IMAGE_WIDTH * 3);
             // img.copyTo(src.img);
@@ -217,7 +185,7 @@ namespace armor_processor
             {
                 if(!img.empty())
                 {
-                    // RCLCPP_INFO(this->get_logger(), "show prediction...");
+                    // RCLCPP_INFO(this->get_logger(), "Show prediction...");
                     if(predict_point_ == last_predict_point_)
                     {}
                     else
@@ -256,7 +224,7 @@ namespace armor_processor
         {
             if(!img.empty())
             {
-                // RCLCPP_INFO(this->get_logger(), "show prediction...");
+                // RCLCPP_INFO(this->get_logger(), "Show prediction...");
                 if(predict_point_ == last_predict_point_)
                 {}
                 else
@@ -282,7 +250,29 @@ namespace armor_processor
 
     std::unique_ptr<Processor> ArmorProcessorNode::init_armor_processor()
     {
-        // std::cout << 1 << std::endl;
+        std::string pName[PARAM_NUM] = 
+        {
+            "bullet_speed",
+            "max_time_delta",
+            "max_cost",
+            "min_fitting_lens",
+            "max_v",
+            "shoot_delay",
+            "alpha",
+            "a_max",
+            "p_max",
+            "p0",
+            "sigma",
+            "dt",
+            "p",
+            "r",
+            "disable_fitting",
+            "draw_predict",
+            "using_imu",
+            "show_predict",
+            "show_transformed_info"  
+        };   
+        param_names_ = pName;
 
         this->declare_parameter<double>("bullet_speed", 28.0);
         this->declare_parameter<int>("max_time_delta", 1000);
@@ -315,7 +305,6 @@ namespace armor_processor
         singer_model_param_.dt = this->get_parameter("singer_dt").as_double();
         singer_model_param_.p = this->get_parameter("singer_p").as_double();
         singer_model_param_.r = this->get_parameter("singer_r").as_double();
-        // std::cout << 2 << std::endl;
 
         this->declare_parameter("disable_fitting", true);
         this->declare_parameter("draw_predict", false);
@@ -328,8 +317,6 @@ namespace armor_processor
         debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
         debug_param_.show_transformed_info = this->get_parameter("show_transformed_info").as_bool();
 
-        // std::cout << 3 << std::endl;
-               
         this->declare_parameter<std::string>("filter_param_path", "src/global_user/config/filter_param.yaml");
         filter_param_path_ = this->get_parameter("filter_param_path").as_string();
 
@@ -371,24 +358,17 @@ namespace armor_processor
 
     void ArmorProcessorNode::target_info_callback(const global_interface::msg::Target& target_info)
     {
-        //
-        apex2d[0].x = target_info.point2d[0].x;
-        apex2d[0].y = target_info.point2d[0].y;
-        apex2d[1].x = target_info.point2d[1].x;
-        apex2d[1].y = target_info.point2d[1].y;
-        apex2d[2].x = target_info.point2d[2].x;
-        apex2d[2].y = target_info.point2d[2].y;
-        apex2d[3].x = target_info.point2d[3].x;
-        apex2d[3].y = target_info.point2d[3].y;
+        //得到目标装甲板的四个角点
+        for(int i = 0; i < 4; ++i)
+        {
+            apex2d[i].x = target_info.point2d[i].x;
+            apex2d[i].y = target_info.point2d[i].y;
+        }
 
-        // std::cout << 1 << std::endl;
         if(target_info.target_switched)
         {
             // RCLCPP_INFO(this->get_logger(), "Target switched...");
             Eigen::Vector3d aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
-            
-            // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
-            
             auto angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
 
             global_interface::msg::Gimbal gimbal_info;
@@ -396,23 +376,18 @@ namespace armor_processor
             gimbal_info.yaw = angle[1]; 
             // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
             // std::cout << std::endl;
-
+            
             //
             processor_->armor_predictor_.is_ekf_init = false;
-
             gimbal_info_pub_->publish(gimbal_info);
         }
         else
         {
             Eigen::Vector3d aiming_point;
             aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
-
-            // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
             last_predict_point_ = predict_point_;
             auto aiming_point_world = processor_->armor_predictor_.predict(aiming_point, target_info.timestamp);
             predict_point_ = aiming_point_world;
-
-            // std::cout << "aiming_point_world: " << aiming_point_world[0] << " " << aiming_point_world[1] << " " << aiming_point_world[2] << std::endl;
 
             // Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, processor_->rmat_imu);
             
@@ -434,7 +409,6 @@ namespace armor_processor
             gimbal_info.distance = aiming_point_world.norm();
             gimbal_info.is_switched = target_info.target_switched;
             gimbal_info.is_spinning = target_info.is_spinning;
-            
             // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
 
             gimbal_info_pub_->publish(gimbal_info);
@@ -447,7 +421,6 @@ namespace armor_processor
     // {
     //     return;
     // }
-    
     rcl_interfaces::msg::SetParametersResult ArmorProcessorNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
     {
         rcl_interfaces::msg::SetParametersResult result;
@@ -455,389 +428,101 @@ namespace armor_processor
         result.reason = "debug";
         for(const auto& param : params)
         {
-            if(param.get_name() == "bullet_speed")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        );
-                        this->predict_param_.bullet_speed = param.as_double();
-                        this->processor_->coordsolver_.setBulletSpeed(this->predict_param_.bullet_speed);
-                        
-                        result.successful = true;
-                    }
-                }
-            }
-            if(param.get_name() == "max_time_delta")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
-                {
-                    if(param.as_int() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_int()
-                        );
-                        this->predict_param_.max_time_delta = param.as_double();
-                        this->processor_->setMaxTimeDelta(this->predict_param_.max_time_delta);
-                       
-                        result.successful = true;
-                    }
-                }
-            }
-            if(param.get_name() == "max_cost")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
-                {
-                    if(param.as_int() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_int()
-                        );
-                        this->predict_param_.max_cost = param.as_int();
-                        this->processor_->setMaxCost(this->predict_param_.max_cost);
-                        
-                        result.successful = true;
-                    }
-                }
-            }
-            if(param.get_name() == "min_fitting_lens")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_int()
-                        );
-                        this->predict_param_.min_fitting_lens = param.as_int();
-                        this->processor_->setMinFittingLens(this->predict_param_.min_fitting_lens);
-                       
-                        result.successful = true;
-                    }
-                }
-            }
-            if(param.get_name() == "max_v")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        );
-                        this->predict_param_.max_v = param.as_int();
-                        this->processor_->setMaxVelocity(this->predict_param_.max_v);
-                        
-                        result.successful = true;
-                    }
-                }
-            }
-
-            if(param.get_name() == "shoot_delay")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
-                {
-                    if(param.as_int() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_int()
-                        ); 
-                        this->predict_param_.shoot_delay = param.as_int();
-                        this->processor_->setShootDelay(this->predict_param_.shoot_delay);
-                        result.successful = true;
-                    }
-                }
-            }
-
-            if(param.get_name() == "singer_alpha")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        ); 
-                        this->singer_model_param_.alpha = param.as_double();
-                        this->processor_->set_alpha(this->singer_model_param_.alpha);
-                        result.successful = true;
-                    }
-                }
-            }
-
-            if(param.get_name() == "singer_a_max")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        ); 
-                        this->singer_model_param_.a_max = param.as_double();
-                        this->processor_->set_a_max(this->singer_model_param_.a_max);
-                        result.successful = true;
-                    }
-                }
-            }
-
-            if(param.get_name() == "singer_p_max")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        ); 
-                        this->singer_model_param_.p_max = param.as_double();
-                        this->processor_->set_p_max(this->singer_model_param_.p_max);
-                        result.successful = true;
-                    }
-                }
-            }
-
-            if(param.get_name() == "singer_p0")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        ); 
-                        this->singer_model_param_.p0 = param.as_double();
-                        this->processor_->set_p0(this->singer_model_param_.p0);
-                        result.successful = true;
-                    }
-                }
-            }
-
-            if(param.get_name() == "singer_sigma")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        ); 
-                        this->singer_model_param_.sigma = param.as_double();
-                        this->processor_->set_sigma(this->singer_model_param_.sigma);
-                        result.successful = true;
-                    }
-                }
-            }
-
-            if(param.get_name() == "singer_dt")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        ); 
-                        this->singer_model_param_.dt = param.as_double();
-                        this->processor_->set_dt(this->singer_model_param_.dt);
-                        result.successful = true;
-                    }
-                }
-            }
-
-            if(param.get_name() == "singer_p")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        ); 
-                        this->singer_model_param_.p = param.as_double();
-                        this->processor_->set_p(this->singer_model_param_.p);
-                        result.successful = true;
-                    }
-                }
-            }
-
-            if(param.get_name() == "singer_r")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        ); 
-                        this->singer_model_param_.r = param.as_double();
-                        this->processor_->set_r(this->singer_model_param_.r);
-                        result.successful = true;
-                    }
-                }
-            }
-
-            // if(param.get_name() == "window_size")
-            // {
-            //     if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
-            //     {
-            //         if(param.as_int() >= 0)
-            //         {
-            //             RCLCPP_INFO(this->get_logger(), 
-            //                 "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-            //                 param.get_name().c_str(),
-            //                 param.get_type_name().c_str(),
-            //                 param.as_int()
-            //             );
-            //             // this->hik_cam_params_.balance_r = param.as_double();
-            //             // this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
-            //             result.successful = true;
-            //         }
-            //     }
-            // }
-
-            if(param.get_name() == "disable_fitting")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_BOOL)
-                {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%d\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            (int)param.as_bool()
-                        );
-                        this->debug_param_.disable_fitting = param.as_bool();
-                        this->processor_->disabledFitting(this->debug_param_.disable_fitting);
-                        // this->hik_cam_params_.balance_r = param.as_double();
-                        // this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
-                        result.successful = true;
-                }
-            }
-
-            if(param.get_name() == "draw_predict")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_BOOL)
-                {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%d\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            (int)param.as_bool()
-                        );
-                        this->debug_param_.draw_predict = param.as_bool();
-                        this->processor_->drawPredict(this->debug_param_.draw_predict);
-                        // this->hik_cam_params_.balance_r = param.as_double();
-                        // this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
-                        result.successful = true;
-                }
-            }
-
-            if(param.get_name() == "using_imu")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_BOOL)
-                {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%d\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            (int)param.as_bool()
-                        );
-
-                        this->debug_param_.using_imu = param.as_bool();
-                        this->processor_->armor_predictor_.debug_param_.using_imu = this->debug_param_.using_imu;
-                        // this->hik_cam_params_.balance_r = param.as_double();
-                        // this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
-                        result.successful = true;
-                }
-            }
-
-            if(param.get_name() == "show_predict")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_BOOL)
-                {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%d\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            (int)param.as_bool()
-                        );
-
-                        this->debug_param_.show_predict = param.as_bool();
-                        this->processor_->showPredict(this->debug_param_.show_predict);
-                        // this->hik_cam_params_.balance_r = param.as_double();
-                        // this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
-                        result.successful = true;
-                }
-            }
-
-            if(param.get_name() == "show_transformed_info")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_BOOL)
-                {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%d\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            (int)param.as_bool()
-                        );
-
-                        this->debug_param_.show_transformed_info = param.as_bool();
-                        this->processor_->showTransformedInfo(this->debug_param_.show_transformed_info);
-                        // this->hik_cam_params_.balance_r = param.as_double();
-                        // this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
-                        result.successful = true;
-                }
-            }
+            result.successful = setParam(param);
         }
-        
         return result;
     }
 
+    bool ArmorProcessorNode::setParam(rclcpp::Parameter param)
+    {   //动态调参
+        for(int i = 0; i < PARAM_NUM; ++i)
+        {
+            if(param.get_name() == (char*)param_names_[i].data())
+            {
+                switch (i)
+                {
+                case 0:
+                    this->predict_param_.bullet_speed = param.as_double();
+                    this->processor_->coordsolver_.setBulletSpeed(this->predict_param_.bullet_speed);
+                    return true;
+                case 1:
+                    this->predict_param_.max_time_delta = param.as_double();
+                    this->processor_->setMaxTimeDelta(this->predict_param_.max_time_delta);
+                    return true;
+                case 2:
+                    this->predict_param_.max_cost = param.as_int();
+                    this->processor_->setMaxCost(this->predict_param_.max_cost);
+                    return true;
+                case 3:
+                    this->predict_param_.min_fitting_lens = param.as_int();
+                    this->processor_->setMinFittingLens(this->predict_param_.min_fitting_lens);
+                    return true;
+                case 4:
+                    this->predict_param_.max_v = param.as_int();
+                    this->processor_->setMaxVelocity(this->predict_param_.max_v);
+                    return true;
+                case 5:
+                    this->predict_param_.shoot_delay = param.as_int();
+                    this->processor_->setShootDelay(this->predict_param_.shoot_delay);
+                    return true;
+                case 6:
+                    this->singer_model_param_.alpha = param.as_double();
+                    this->processor_->set_alpha(this->singer_model_param_.alpha);
+                    return true;
+                case 7:
+                    this->singer_model_param_.a_max = param.as_double();
+                    this->processor_->set_a_max(this->singer_model_param_.a_max);
+                    return true;
+                case 8:
+                    this->singer_model_param_.p_max = param.as_double();
+                    this->processor_->set_p_max(this->singer_model_param_.p_max);
+                    return true;
+                case 9:
+                    this->singer_model_param_.p0 = param.as_double();
+                    this->processor_->set_p0(this->singer_model_param_.p0);
+                    return true;
+                case 10:
+                    this->singer_model_param_.sigma = param.as_double();
+                    this->processor_->set_sigma(this->singer_model_param_.sigma);
+                    return true;
+                case 11:
+                    this->singer_model_param_.dt = param.as_double();
+                    this->processor_->set_dt(this->singer_model_param_.dt);
+                    return true;
+                case 12:
+                    this->singer_model_param_.p = param.as_double();
+                    this->processor_->set_p(this->singer_model_param_.p);
+                    return true;
+                case 13:
+                    this->singer_model_param_.r = param.as_double();
+                    this->processor_->set_r(this->singer_model_param_.r);
+                    return true;
+                case 14:
+                    this->debug_param_.disable_fitting = param.as_bool();
+                    this->processor_->disabledFitting(this->debug_param_.disable_fitting);
+                    return true;
+                case 15:
+                    this->debug_param_.draw_predict = param.as_bool();
+                    this->processor_->drawPredict(this->debug_param_.draw_predict);
+                    return true;
+                case 16:
+                    this->debug_param_.using_imu = param.as_bool();
+                    this->processor_->armor_predictor_.debug_param_.using_imu = this->debug_param_.using_imu;
+                    return true;
+                case 17:
+                    this->debug_param_.show_predict = param.as_bool();
+                    this->processor_->showPredict(this->debug_param_.show_predict);
+                    return true;
+                case 18:
+                    this->debug_param_.show_transformed_info = param.as_bool();
+                    this->processor_->showTransformedInfo(this->debug_param_.show_transformed_info);
+                    return true;
+                default:
+                    return false;
+                }
+            }
+        }
+    }
 } // armor_processor
 
 int main(int argc, char** argv)
