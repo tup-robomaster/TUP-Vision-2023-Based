@@ -2,11 +2,11 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-11-21 09:58:34
+ * @LastEditTime: 2022-11-26 20:04:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.h
  */
-#ifndef PREDICTION_HPP
-#define PREDICTION_HPP
+#ifndef PREDICTION_HPP_
+#define PREDICTION_HPP_
 
 #pragma once
 
@@ -32,6 +32,9 @@
 //运动模型（CV、CA、CTRV、CT、Singer、CS）
 #include "../../../../filter/test/system_model.cpp"
 #include "../../../../filter/test/measurement_model.cpp"
+
+//IMM Model(CV、CA、CT)
+#include "../filter/model_generator.hpp"
 
 //Singer Model
 typedef SingerModelState<double> SingerState;
@@ -167,6 +170,7 @@ namespace armor_processor
 
     struct DebugParam
     {
+        bool disable_filter;
         bool disable_fitting;
         bool draw_predict;
 
@@ -177,6 +181,7 @@ namespace armor_processor
 
         DebugParam()
         {
+            disable_filter = false;
             disable_fitting = false;
             draw_predict = true;
 
@@ -227,11 +232,11 @@ namespace armor_processor
 
         bool is_init;
     public:
-        // set const value or default value
+        // 滤波先验参数/模型先验参数/调试参数
         PredictParam predict_param_;
         SingerModel singer_param_;
-        // SingerModelParam singer_model_param_;
         DebugParam debug_param_;
+        // SingerModelParam singer_model_param_;
 
         std::string filter_param_path_;
         YAML::Node config_;
@@ -260,16 +265,31 @@ namespace armor_processor
         //移动轨迹拟合预测（小陀螺+横移->旋轮线）
         PredictStatus couple_fitting_predict(Eigen::Vector3d& result, int timestamp);
     
+    private:
+        // filter::ExtendKalmanFilter<SingerState> ekf; // EKF
+        // SingerControl u; // 控制量
+        // Singer singer; // Singer模型
+        // SingerPosModel pos_model; // 观测模型
+        // Eigen::Vector3d x_; //状态向量
+        // Eigen::Matrix3d P_; //状态协方差矩阵
+        // Eigen::MatrixXd F_; //状态转移矩阵
+        // Eigen::MatrixXd H_; //测量矩阵
+        // Eigen::MatrixXd R_; //测量协方差矩阵
+        // Eigen::MatrixXd Q_; //过程协方差矩阵
+        // Eigen::MatrixXd J_; //雅可比矩阵
+
+    private:
+        // 卡尔曼滤波
+        bool filter_disabled_; //是否禁用滤波
+        KalmanFilter kalman_filter_;
+        void kfInit(); //滤波参数初始化（矩阵维度、初始值）
     public:
-        // 控制量
-        // SingerControl u;
-        // // Singer模型
-        // Singer singer;
-        // // 观测模型
-        // SingerPosModel pos_model;
-        // // EKF
-        // filter::ExtendKalmanFilter<SingerState> ekf;
-        // 
+        // CS Model
+        bool is_ekf_init;
+        PredictStatus predict_ekf_run(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_v, double ax, int timestamp);
+        // void predict_based_singer(Eigen::Vector3d& result);
+
+        // cs模型参数设置
         void setSingerParam(double& alpha, double& a_max, double& p_max, double& p0);
         void set_singer_alpha(double& alpha); 
         void set_singer_a_max(double& a_max);
@@ -280,39 +300,13 @@ namespace armor_processor
         void set_singer_p(double& p);
         void set_singer_r(double& r);
     
-        //
-        KalmanFilter kalman_filter_;
-        void kfInit();
-        
-        // //状态向量
-        // Eigen::Vector3d x_;
-
-        // //状态协方差矩阵
-        // Eigen::Matrix3d P_;
-
-        // //状态转移矩阵
-        // Eigen::MatrixXd F_;
-
-        // //测量矩阵
-        // Eigen::MatrixXd H_;
-
-        // //测量协方差矩阵
-        // Eigen::MatrixXd R_;
-
-        // //过程协方差矩阵
-        // Eigen::MatrixXd Q_;
-
-        // //雅可比矩阵
-        // Eigen::MatrixXd J_;
-
-    public:
-        //
-        bool is_ekf_init;
-        PredictStatus predict_ekf_run(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d& target_v, double& ax, int timestamp);
-
-        // void predict_based_singer(Eigen::Vector3d& result);
+    private:
+        //IMM Model
+        std::shared_ptr<IMM> imm_;
+        ModelGenerator model_generator_;
+        bool is_imm_init;
+        PredictStatus predict_based_imm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d& target_v, double& ax, int timestamp);
     };
-
 
 } //namespace armor_processor
 

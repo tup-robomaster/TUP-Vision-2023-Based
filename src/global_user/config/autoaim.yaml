@@ -54,6 +54,7 @@
 
     # debug params
     using_shared_memory: true
+    disable_filter: false
     disable_fitting: true
     draw_predict: false
     show_predict: true

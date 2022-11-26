@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-11-25 21:10:04
+ * @LastEditTime: 2022-11-26 15:45:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -22,14 +22,23 @@ namespace armor_processor
             processor_->is_initialized = true;
         }
         
-        //
-        gimbal_info_pub_ = this->create_publisher<global_interface::msg::Gimbal>("/gimbal_info", 10);
+        // QoS
+        rclcpp::QoS qos(0);
+        qos.keep_last(1);
+        qos.best_effort();
+        qos.reliable();
+        qos.durability();
+        // qos.transient_local();
+        qos.durability_volatile();
 
-        //
+        // 发布云台转动信息（pitch、yaw角度）
+        gimbal_info_pub_ = this->create_publisher<global_interface::msg::Gimbal>("/gimbal_info", qos);
+
+        // 订阅目标装甲板信息
         target_info_sub_ = this->create_subscription<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS(),
             std::bind(&ArmorProcessorNode::target_info_callback, this, std::placeholders::_1));
 
-        //
+        // 参数服务器参数声明、获取
         this->declare_parameter<bool>("using_shared_memory", false);
         using_shared_memory = this->get_parameter("using_shared_memory").as_bool();
         
@@ -124,14 +133,6 @@ namespace armor_processor
             }
             else
             {
-                //QoS
-                // rclcpp::QoS qos(0);
-                // qos.keep_last(1);
-                // qos.best_effort();
-                // qos.reliable();
-                // qos.durability();
-                // // qos.transient_local();
-                // qos.durability_volatile();
                 
                 // Subscriptions transport type
                 // transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
@@ -306,11 +307,13 @@ namespace armor_processor
         singer_model_param_.p = this->get_parameter("singer_p").as_double();
         singer_model_param_.r = this->get_parameter("singer_r").as_double();
 
+        this->declare_parameter("disable_filter", false);
         this->declare_parameter("disable_fitting", true);
         this->declare_parameter("draw_predict", false);
         this->declare_parameter("using_imu", false);
         this->declare_parameter("show_predict", true);
         this->declare_parameter("show_transformed_info", false);
+        debug_param_.disable_filter = this->get_parameter("disable_filter").as_bool();
         debug_param_.disable_fitting = this->get_parameter("disable_fitting").as_bool();
         debug_param_.draw_predict = this->get_parameter("draw_predict").as_bool();
         debug_param_.using_imu = this->get_parameter("using_imu").as_bool();
@@ -435,11 +438,11 @@ namespace armor_processor
 
     bool ArmorProcessorNode::setParam(rclcpp::Parameter param)
     {   //动态调参
-        for(int i = 0; i < PARAM_NUM; ++i)
+        for(int ii = 0; ii < PARAM_NUM; ++ii)
         {
-            if(param.get_name() == (char*)param_names_[i].data())
+            if(param.get_name() == (char*)param_names_[ii].data())
             {
-                switch (i)
+                switch (ii)
                 {
                 case 0:
                     this->predict_param_.bullet_speed = param.as_double();

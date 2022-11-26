@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:00:19
- * @LastEditTime: 2022-11-20 21:52:43
+ * @LastEditTime: 2022-11-26 20:33:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/kalman_filter.hpp
  */
 #ifndef KALMAN_FILTER_HPP_
@@ -11,6 +11,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <ceres/ceres.h>
+#include <cassert>
 
 namespace armor_processor
 {
@@ -19,6 +20,10 @@ namespace armor_processor
         public:
             KalmanFilter();
             ~KalmanFilter();
+            virtual KalmanFilter* Clone()
+            {
+                return new KalmanFilter(*this);
+            }
 
             /**
              * @brief Initialize matrix dimension
@@ -57,12 +62,17 @@ namespace armor_processor
              * 
              */
             void Predict();
+            void Predict(const double& dt);
+            virtual void updatePrediction() {}
+            virtual void updateMeasurement() {}
 
             /**
              * @brief 更新状态向量
              * 
              */
-            void Update(const Eigen::MatrixXd& z);
+            void Update(const Eigen::VectorXd& z);
+            void Update(const Eigen::VectorXd& z, int mp);
+            void updateOnce(const double& dt, const Eigen::VectorXd* z);
 
             /**
              * @brief 更新状态向量（EKF）
@@ -71,16 +81,37 @@ namespace armor_processor
             void UpdateEKF(const Eigen::MatrixXd& z);
 
             /**
-             * @brief Jacobians
+             * @brief 雅可比矩阵
              * 
              */
             void UpdateJacobians();
 
+            /**
+             * @brief 返回模型似然值
+             * 
+             */
+            double getLikelihoodValue() const;
+            
+            Eigen::VectorXd x() const { return this->x_; };
+            Eigen::MatrixXd P() const { return this->P_; };
+            Eigen::MatrixXd S() const { return this->S_; };
+            // Eigen::VectorXd* x() { return &this->x_; };
+            // Eigen::MatrixXd* P() { return &this->P_; };
+            void setStateCoveriance(const Eigen::MatrixXd& P) 
+            {
+                this->P_ = P;
+            }
+
+            void setState(const Eigen::VectorXd& x)
+            {
+                this->x_ = x;
+            }
+
         public:
             //状态向量
-            Eigen::MatrixXd x_;
+            Eigen::VectorXd x_;
 
-            //状态协方差矩阵
+            //过程协方差矩阵
             Eigen::MatrixXd P_;
 
             //状态转移矩阵
@@ -92,18 +123,27 @@ namespace armor_processor
             //测量协方差矩阵
             Eigen::MatrixXd R_;
 
-            //过程协方差矩阵
+            //状态协方差矩阵
             Eigen::MatrixXd Q_;
 
             //雅可比矩阵
             Eigen::MatrixXd J_;
 
-            //Control matrix
+            //控制矩阵
             Eigen::MatrixXd C_;
+
+            //残差的协方差矩阵
+            Eigen::MatrixXd S_;
+
+            //测量向量
+            Eigen::VectorXd z_;
         
         private:
-            int cp_;
-
+            int cp_; //控制量个数
+        
+        public:
+            double likelihood_; //似然值
+            double dt; //时间量
     };
 } // armor_processor
 

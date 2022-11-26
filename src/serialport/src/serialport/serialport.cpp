@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 16:03:31
- * @LastEditTime: 2022-11-23 10:09:19
+ * @LastEditTime: 2022-11-26 16:02:33
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport/serialport.cpp
  */
 #include "../../include/serialport/serialport.hpp"
@@ -91,18 +91,15 @@ namespace serialport
         bytes = ::read(fd, &buffer, sizeof(buffer));
         if(buffer.empty())
         {
-            std::cout << 7 << std::endl;
+            std::cout << "Buffer is empty..." << std::endl;
         }
         else
         {
-            std::cout << 9 << std::endl;
             for(auto& info : buffer)
             {
                 std::cout << "data:" << info << std::endl;
             }
         }
-
-        std::cout << 8 << std::endl;
     }
 
     void serialport::write(std::vector<uint8_t>& buffer)

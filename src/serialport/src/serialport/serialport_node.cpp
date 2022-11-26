@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2022-11-25 18:46:03
+ * @LastEditTime: 2022-11-26 16:05:39
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport/serialport_node.cpp
  */
 #include "../../include/serialport/serialport_node.hpp"
@@ -32,8 +32,8 @@ namespace serialport
         //     {
         //         run();
         //     }
-
         // }
+
         this->declare_parameter<bool>("debug_without_com", false);
         this->get_parameter("debug_without_com", debug_without_port);
 
@@ -87,26 +87,19 @@ namespace serialport
             rclcpp::SensorDataQoS(),
             std::bind(&serial_driver::send_data, this, std::placeholders::_1)
         );
-        // std::cout << 1 << std::endl;
+
         // if(serial_port_->debug_without_port())
         // {
-        //     std::cout << 2 << std::endl;
-
         //     serial_port_->open(device_name_, baud_);
-        //     std::cout << 3 << std::endl;
-
         //     if(!serial_port_->is_open)
         //     {
-        //         std::cout << 4 << std::endl;
         //         RCLCPP_INFO(this->get_logger(), "Serial open failed!");
         //     }
         //     else
         //     {
-        //         std::cout << 5 << std::endl;
         //         receive_thread_ = std::thread(&serial_driver::receive_data, this);
         //     }
         // }
-        // std::cout << 2 << std::endl;
 
         if(!debug_without_port)
         {   //use serial port
