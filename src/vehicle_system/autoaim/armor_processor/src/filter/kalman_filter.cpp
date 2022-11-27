@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2022-11-26 20:24:08
+ * @LastEditTime: 2022-11-27 17:35:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/kalman_filter.cpp
  */
 #include "../../include/filter/kalman_filter.hpp"
@@ -125,7 +125,7 @@ namespace armor_processor
 
     void KalmanFilter::updateOnce(const double& dt, const Eigen::VectorXd* z)
     {
-        if(z == nullptr)
+        if(z->isZero())
         {   //若没有观测值传入，则只进行预测
             Predict(dt);
         }

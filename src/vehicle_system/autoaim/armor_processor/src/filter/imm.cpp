@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 16:30:16
- * @LastEditTime: 2022-11-26 20:40:28
+ * @LastEditTime: 2022-11-27 17:33:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/imm.cpp
  */
 #include "../../include/filter/imm.hpp"
@@ -156,18 +156,18 @@ namespace armor_processor
 
     void IMM::updateOnce(const Eigen::VectorXd& z, const double& dt)
     {
-        // if(z)
-        // {
-        //     stateInteraction();
-        //     updateState(z, dt);
-        //     estimateFusion();
-        // }
-        // else
-        // {
+        if(z.isZero())
+        {
+            stateInteraction();
+            updateState(z, dt);
+            estimateFusion();
+        }
+        else
+        {
             stateInteraction();
             updateState(z, dt);
             updateModelProb();
             estimateFusion();
-        // }
+        }
     }
 } //armor_processor
