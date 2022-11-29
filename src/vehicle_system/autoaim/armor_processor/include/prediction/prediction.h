@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-11-26 20:04:59
+ * @LastEditTime: 2022-11-29 19:39:11
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.h
  */
 #ifndef PREDICTION_HPP_
@@ -266,6 +266,11 @@ namespace armor_processor
         PredictStatus couple_fitting_predict(Eigen::Vector3d& result, int timestamp);
     
     private:
+        double history_vx_[4] = {0};
+        double history_acc_[4] = {0};
+        double predict_vx_[4] = {0};
+        double predict_acc_[4] = {0};
+        
         // filter::ExtendKalmanFilter<SingerState> ekf; // EKF
         // SingerControl u; // 控制量
         // Singer singer; // Singer模型
@@ -299,12 +304,12 @@ namespace armor_processor
         void set_singer_dt(double& dt);
         void set_singer_p(double& p);
         void set_singer_r(double& r);
-    
+
+        bool is_imm_init;
     private:
         //IMM Model
         std::shared_ptr<IMM> imm_;
         ModelGenerator model_generator_;
-        bool is_imm_init;
         PredictStatus predict_based_imm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d& target_v, double& ax, int timestamp);
     };
 

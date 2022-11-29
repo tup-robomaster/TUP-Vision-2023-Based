@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-11-26 15:45:45
+ * @LastEditTime: 2022-11-29 19:53:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -33,6 +33,7 @@ namespace armor_processor
 
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<global_interface::msg::Gimbal>("/gimbal_info", qos);
+        predict_info_pub = this->create_publisher<TargetMsg>("/predict_info", qos);
 
         // 订阅目标装甲板信息
         target_info_sub_ = this->create_subscription<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS(),
@@ -368,10 +369,11 @@ namespace armor_processor
             apex2d[i].y = target_info.point2d[i].y;
         }
 
+        Eigen::Vector3d aiming_point;
         if(target_info.target_switched)
         {
             // RCLCPP_INFO(this->get_logger(), "Target switched...");
-            Eigen::Vector3d aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
+            aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
             auto angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
 
             global_interface::msg::Gimbal gimbal_info;
@@ -379,17 +381,19 @@ namespace armor_processor
             gimbal_info.yaw = angle[1]; 
             // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
             // std::cout << std::endl;
+            predict_info = target_info;
             
             //
             processor_->armor_predictor_.is_ekf_init = false;
-            gimbal_info_pub_->publish(gimbal_info);
+            processor_->armor_predictor_.is_imm_init = false;
+            // gimbal_info_pub_->publish(gimbal_info);
         }
         else
         {
-            Eigen::Vector3d aiming_point;
+            // Eigen::Vector3d aiming_point;
             aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
             last_predict_point_ = predict_point_;
-            auto aiming_point_world = processor_->armor_predictor_.predict(aiming_point, target_info.timestamp);
+            aiming_point = processor_->armor_predictor_.predict(aiming_point, target_info.timestamp);
             predict_point_ = aiming_point_world;
 
             // Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, processor_->rmat_imu);
@@ -414,9 +418,17 @@ namespace armor_processor
             gimbal_info.is_spinning = target_info.is_spinning;
             // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
 
-            gimbal_info_pub_->publish(gimbal_info);
-        }
+            predict_info.aiming_point.x = aiming_point[0];
+            predict_info.aiming_point.y = aiming_point[1];
+            predict_info.aiming_point.z = aiming_point[2];
+            predict_info.target_switched = target_info.target_switched;
+            predict_info.is_spinning = target_info.is_spinning;
 
+            // gimbal_info_pub_->publish(gimbal_info);
+        }
+        predict_info_pub->publish(predict_info);
+        gimbal_info_pub_->publish(gimbal_info);
+        
         return;
     }
 

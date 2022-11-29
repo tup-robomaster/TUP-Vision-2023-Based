@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-11-26 20:18:32
+ * @LastEditTime: 2022-11-29 19:43:24
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -199,9 +199,11 @@ namespace armor_processor
         Eigen::Vector3d result_pf = {0, 0, 0};
         Eigen::Vector3d result_fitting = {0, 0, 0};
         Eigen::Vector3d result_ekf = {0, 0, 0};
+        Eigen::Vector3d result_imm = {0, 0, 0};
         PredictStatus is_pf_available;
         PredictStatus is_fitting_available;
         PredictStatus is_ekf_available;
+        PredictStatus is_imm_available;
       
         if(!filter_disabled_ && fitting_disabled_)
         {   //禁用曲线拟合
@@ -222,81 +224,95 @@ namespace armor_processor
             result[2] = xyz[2];
         }
 
-        if(filter_disabled_ && !fitting_disabled_)
-        {   //禁用滤波
-            is_fitting_available = couple_fitting_predict(result_fitting, time_estimate);
+        // if(filter_disabled_ && !fitting_disabled_)
+        // {   //禁用滤波
+        //     is_fitting_available = couple_fitting_predict(result_fitting, time_estimate);
 
-            if(is_fitting_available.xyz_status[0])
-                result[0] = result_fitting[0];
+        //     if(is_fitting_available.xyz_status[0])
+        //         result[0] = result_fitting[0];
+        //     else
+        //         result[0] = xyz[0];
+
+        //     if(is_fitting_available.xyz_status[1])
+        //         result[1] = result_fitting[1];
+        //     else
+        //         result[1] = xyz[1];
+
+        //     if(is_fitting_available.xyz_status[2])
+        //         result[2] = result_fitting[2];
+        //     else
+        //         result[2] = xyz[2];
+        // }
+
+        // if(!fitting_disabled_ && !filter_disabled_)
+        // {   //卡尔曼滤波和曲线拟合异步运行，对二者预测结果进行融合
+
+        //     // auto get_pf_available = std::async(std::launch::async, [=, &result_pf](){return predict_pf_run(target, result_pf, delta_time_estimate);});
+        //     auto get_ekf_available = std::async(std::launch::async, [=, &result_ekf](){return predict_ekf_run(target, result_ekf, target_v, ax, delta_time_estimate);});
+        
+        //     // 轨迹拟合（解耦）
+        //     // auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return uncouple_fitting_predict(result_fitting, time_estimate);});
+
+        //     //小陀螺轨迹拟合（耦合）
+        //     auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return couple_fitting_predict(result_fitting, time_estimate);});
+        
+        //     // is_pf_available = get_pf_available.get();
+        //     is_ekf_available = get_ekf_available.get();
+        //     is_fitting_available = get_fitting_available.get();
+
+        //     // 进行融合
+        //     if(is_fitting_available.xyz_status[0])
+        //     {
+        //         result[0] = result_fitting[0];
+        //     }
+        //     // else if(is_pf_available.xyz_status[0])
+        //     // {
+        //     //     result[0] = result_pf[0];
+        //     // }
+        //     else if(is_ekf_available.xyz_status[0])
+        //     {
+        //         result[0] = result_ekf[0];
+        //     }
+        //     else
+        //     {
+        //         result[0] = xyz[0];
+        //     }
+
+        //     if(is_fitting_available.xyz_status[1])
+        //     {
+        //         result[1] = result_fitting[1];
+        //     }
+        //     // else if(is_pf_available.xyz_status[1])
+        //     // {
+        //     //     result[1] = result_pf[1];
+        //     // }
+        //     else
+        //     {
+        //         result[1] = xyz[1];
+        //     }
+
+        //     if(is_fitting_available.xyz_status[2] && !fitting_disabled_)
+        //     {
+        //         result[2] = result_fitting[2];
+        //     }
+        //     else
+        //     {
+        //         result[2] = xyz[2];
+        //     }
+        // }
+
+        if(!filter_disabled_)
+        {
+            is_imm_available = predict_based_imm(target, result_imm, target_v, ax, delta_time_estimate);
+            if(is_imm_available.xyz_status[0])
+                result[0] = result_imm[0];
             else
                 result[0] = xyz[0];
-
-            if(is_fitting_available.xyz_status[1])
-                result[1] = result_fitting[1];
+            if(is_imm_available.xyz_status[1])
+                result[1] = result_imm[1];
             else
-                result[1] = xyz[1];
-
-            if(is_fitting_available.xyz_status[2])
-                result[2] = result_fitting[2];
-            else
-                result[2] = xyz[2];
-        }
-
-        if(!fitting_disabled_ && !filter_disabled_)
-        {   //卡尔曼滤波和曲线拟合异步运行，对二者预测结果进行融合
-
-            // auto get_pf_available = std::async(std::launch::async, [=, &result_pf](){return predict_pf_run(target, result_pf, delta_time_estimate);});
-            auto get_ekf_available = std::async(std::launch::async, [=, &result_ekf](){return predict_ekf_run(target, result_ekf, target_v, ax, delta_time_estimate);});
-        
-            // 轨迹拟合（解耦）
-            // auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return uncouple_fitting_predict(result_fitting, time_estimate);});
-
-            //小陀螺轨迹拟合（耦合）
-            auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return couple_fitting_predict(result_fitting, time_estimate);});
-        
-            // is_pf_available = get_pf_available.get();
-            is_ekf_available = get_ekf_available.get();
-            is_fitting_available = get_fitting_available.get();
-
-            // 进行融合
-            if(is_fitting_available.xyz_status[0])
-            {
-                result[0] = result_fitting[0];
-            }
-            // else if(is_pf_available.xyz_status[0])
-            // {
-            //     result[0] = result_pf[0];
-            // }
-            else if(is_ekf_available.xyz_status[0])
-            {
-                result[0] = result_ekf[0];
-            }
-            else
-            {
-                result[0] = xyz[0];
-            }
-
-            if(is_fitting_available.xyz_status[1])
-            {
-                result[1] = result_fitting[1];
-            }
-            // else if(is_pf_available.xyz_status[1])
-            // {
-            //     result[1] = result_pf[1];
-            // }
-            else
-            {
-                result[1] = xyz[1];
-            }
-
-            if(is_fitting_available.xyz_status[2] && !fitting_disabled_)
-            {
-                result[2] = result_fitting[2];
-            }
-            else
-            {
-                result[2] = xyz[2];
-            }
+                result[1] = result_imm[1];
+            result[2] = xyz[2];
         }
 
         if(fitting_disabled_ && filter_disabled_)
@@ -311,36 +327,75 @@ namespace armor_processor
         delta_time_estimate = 0;
         // result_pf = target.xyz;
 
-        if(debug_param_.draw_predict)
+        if(debug_param_.draw_predict && is_ekf_available.xyz_status[0])
         {
-            double x_offset = 400;
-            double y_offset = 400;
-            double z_offset = 200;
-            if (cnt < 2000)
-            {
-                auto x = cnt * 5;
-                cv::circle(pic_x, cv::Point2f((timestamp) / 25, xyz[0] * 90 + x_offset), 1, cv::Scalar(0, 0, 255), 1);
-                // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[0] * 100 + x_offset),1,cv::Scalar(0,255,0),1);
-                cv::circle(pic_x, cv::Point2f((timestamp + delta_time_estimate) / 25, result_ekf[0] * 90 + x_offset), 1, cv::Scalar(255, 255, 255), 1);
-                // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[0] * 100 + x_offset),1,cv::Scalar(255,255,0),1);
-                // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result[0]+ 200),1,cv::Scalar(255,255,255),1);
+            // double x_offset = 400;
+            // double y_offset = 400;
+            // double z_offset = 200;
+            // if (cnt < 2000)
+            // {
+            //     auto x = cnt * 5;
+            //     cv::circle(pic_x, cv::Point2f((timestamp) / 25, xyz[0] * 90 + x_offset), 1, cv::Scalar(0, 0, 255), 1);
+            //     // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[0] * 100 + x_offset),1,cv::Scalar(0,255,0),1);
+            //     cv::circle(pic_x, cv::Point2f((timestamp + delta_time_estimate) / 25, result_ekf[0] * 90 + x_offset), 1, cv::Scalar(255, 255, 255), 1);
+            //     // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[0] * 100 + x_offset),1,cv::Scalar(255,255,0),1);
+            //     // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result[0]+ 200),1,cv::Scalar(255,255,255),1);
 
 
-                // cv::circle(pic_y,cv::Point2f((timestamp) / 10,xyz[1] * 100 + y_offset),1,cv::Scalar(0,0,255),1);
-                // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[1] * 100 + y_offset),1,cv::Scalar(0,255,0),1);
-                // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[1] * 100 + y_offset),1,cv::Scalar(255,255,0),1);
-                // // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result[1]+ 200),1,cv::Scalar(255,255,255),1);
+            //     // cv::circle(pic_y,cv::Point2f((timestamp) / 10,xyz[1] * 100 + y_offset),1,cv::Scalar(0,0,255),1);
+            //     // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[1] * 100 + y_offset),1,cv::Scalar(0,255,0),1);
+            //     // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[1] * 100 + y_offset),1,cv::Scalar(255,255,0),1);
+            //     // // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result[1]+ 200),1,cv::Scalar(255,255,255),1);
 
-                // cv::circle(pic_z,cv::Point2f((timestamp) / 10,xyz[2] * 100 + z_offset),1,cv::Scalar(0,0,255),1);
-                // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[2] * 100  + z_offset),1,cv::Scalar(0,255,0),1);
-                // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[2] * 100 + z_offset),1,cv::Scalar(255,255,0),1);
-                // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result[2]),1,cv::Scalar(255,255,255),1);
-                cnt++;
-            }
-            cv::imshow("result_x",pic_x);
-            // cv::imshow("result_y",pic_y);
-            // cv::imshow("result_z",pic_z);
-            cv::waitKey(1);
+            //     // cv::circle(pic_z,cv::Point2f((timestamp) / 10,xyz[2] * 100 + z_offset),1,cv::Scalar(0,0,255),1);
+            //     // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[2] * 100  + z_offset),1,cv::Scalar(0,255,0),1);
+            //     // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[2] * 100 + z_offset),1,cv::Scalar(255,255,0),1);
+            //     // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result[2]),1,cv::Scalar(255,255,255),1);
+            //     cnt++;
+            // }
+            // cv::imshow("result_x",pic_x);
+            // // cv::imshow("result_y",pic_y);
+            // // cv::imshow("result_z",pic_z);
+            // cv::waitKey(1);
+
+            //draw curve
+            float mean_vx = (predict_vx_[0] + predict_vx_[1] + predict_vx_[2] + predict_vx_[3]) / 4.0;
+            char ch1[10];
+            sprintf(ch1, "%.4f", mean_vx);
+            std::string str1 = ch1;
+            float k1 = 50;
+            cv::line(src, cv::Point(0, 250), cv::Point(300, 250), cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
+            cv::line(src, cv::Point(0, 250 + mean_vx * k1), cv::Point(300, 250 + mean_vx * k1), cv::Scalar(255, 255, 0), 1, cv::LINE_AA);
+            cv::putText(src, str1, cv::Point(310, 250 + mean_vx * k1), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(255, 255, 0));
+            cv::line(src, cv::Point(60, 250 + predict_vx_[3] * k1), cv::Point(140, 250 + predict_vx_[2] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+            cv::line(src, cv::Point(140, 250 + predict_vx_[2] * k1), cv::Point(210, 250 + predict_vx_[1] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+            cv::line(src, cv::Point(210, 250 + predict_vx_[1] * k1), cv::Point(300, 250 + predict_vx_[0] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+            
+            // std::cout << "his_vx: " << history_vx_[0] << " " << history_vx_[1] << " " << history_vx_[2] << " " << history_vx_[3] << std::endl;
+
+            float his_mean_vx = (history_vx_[0] + history_vx_[1] + history_vx_[2] + history_vx_[3]) / 4.0;
+            char ch3[10];
+            sprintf(ch3, "%.4f", his_mean_vx);
+            std::string str3 = ch3;
+            float k3 = 30;
+            cv::line(src, cv::Point(300, 250), cv::Point(600, 250), cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
+            cv::line(src, cv::Point(300, 250 + his_mean_vx * k3), cv::Point(600, 250 + his_mean_vx * k3), cv::Scalar(255, 255, 0), 1, cv::LINE_AA);
+            cv::putText(src, str3, cv::Point(610, 250 + his_mean_vx * k3), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(255, 255, 0));
+            cv::line(src, cv::Point(360, 250 + history_vx_[3] * k3), cv::Point(440, 250 + history_vx_[2] * k3), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+            cv::line(src, cv::Point(440, 250 + history_vx_[2] * k3), cv::Point(510, 250 + history_vx_[1] * k3), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+            cv::line(src, cv::Point(510, 250 + history_vx_[1] * k3), cv::Point(600, 250 + history_vx_[0] * k3), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+       
+            // float mean_acc = (predict_acc_[0] + predict_acc_[1] + predict_acc_[2] + predict_acc_[3]) / 4.0;
+            // char ch2[10];
+            // sprintf(ch2, "%.5f", mean_acc);
+            // std::string str2 = ch2;
+            // float k2 = 20000;
+            // cv::line(src, cv::Point(300, 250), cv::Point(600, 250), cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
+            // cv::line(src, cv::Point(300, 250 + mean_acc * k2), cv::Point(600, 250 + mean_acc * k2), cv::Scalar(255, 255, 0), 1, cv::LINE_AA);
+            // cv::putText(src, str2, cv::Point(610, 250 + mean_acc * k2), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(255, 255, 0));
+            // cv::line(src, cv::Point(360, 250 + predict_acc_[3] * k2), cv::Point(440, 250 + predict_acc_[2] * k2), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+            // cv::line(src, cv::Point(440, 250 + predict_acc_[2] * k2), cv::Point(510, 250 + predict_acc_[1] * k2), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+            // cv::line(src, cv::Point(510, 250 + predict_acc_[1] * k2), cv::Point(600, 250 + predict_acc_[0] * k2), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
         }
 
         final_target_ = target;
@@ -652,9 +707,7 @@ namespace armor_processor
 
         if(!is_ekf_init)
         {
-            Eigen::VectorXd x(3);
-            x << target.xyz[0], target_v[0], ax;
-            kalman_filter_.x_ = x;
+            kalman_filter_.x_ << target.xyz[0], target_v[0], ax;
             is_available.xyz_status[0] = false;
             is_ekf_init = true;
         }

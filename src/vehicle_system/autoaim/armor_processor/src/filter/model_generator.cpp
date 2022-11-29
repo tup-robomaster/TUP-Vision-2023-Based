@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 17:45:26
- * @LastEditTime: 2022-11-26 19:22:22
+ * @LastEditTime: 2022-11-29 19:37:46
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/model_generator.cpp
  */
 #include "../../include/filter/model_generator.hpp"
@@ -26,12 +26,13 @@ namespace armor_processor
         imm_ptr->addModel(ct_neg);
 
         Eigen::MatrixXd trans_prob = Eigen::MatrixXd::Zero(4, 4);
-        trans_prob << 0.6, 0.3, 0.05, 0.05,
-                      0.5, 0.4, 0.05, 0.05,
-                      0.1, 0.1, 0.75, 0.05,
-                      0.1, 0.1, 0.05, 0.75;
+        trans_prob << 0.2, 0.6, 0.1, 0.1,
+                      0.2, 0.6, 0.1, 0.1,
+                      0.2, 0.6, 0.1, 0.1,
+                      0.2, 0.6, 0.1, 0.1;
+                      
         Eigen::VectorXd model_prob = Eigen::VectorXd::Zero(4);
-        model_prob << 0.4, 0.3, 0.15, 0.15;
+        model_prob << 0.2, 0.6, 0.1, 0.1;
 
         imm_ptr->init(x, model_prob, trans_prob);
 
