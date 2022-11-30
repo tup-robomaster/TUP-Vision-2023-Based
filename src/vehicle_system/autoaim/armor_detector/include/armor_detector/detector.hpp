@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2022-11-21 14:34:36
+ * @LastEditTime: 2022-11-30 21:01:17
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -28,7 +28,7 @@ typedef std::chrono::_V2::steady_clock::time_point TimePoint;
 
 namespace armor_detector
 {
-    struct debug_params
+    struct DebugParam
     {
         bool debug_without_com;
         bool using_imu;
@@ -41,7 +41,7 @@ namespace armor_detector
         bool print_letency;
         bool print_target_info;
 
-        debug_params()
+        DebugParam()
         {
             debug_without_com = true;
             using_imu = false;
@@ -56,7 +56,7 @@ namespace armor_detector
         }
     };
 
-    struct detector_params
+    struct DetectorParam
     {
         int dw, dh;             //letterbox对原图像resize的padding区域的宽度和高度
         float rescale_ratio;    //缩放比例 
@@ -78,7 +78,7 @@ namespace armor_detector
         double armor_conf_high_thres;
 
         Color color;
-        detector_params()
+        DetectorParam()
         {
             color = RED;
             armor_type_wh_thres = 3;
@@ -97,18 +97,18 @@ namespace armor_detector
         }
     };
     
-    class detector
+    class Detector
     {
     public:
-        detector(const std::string& camera_name, const std::string& camera_param_path, const std::string& network_path,
-            const detector_params& detector_params_, const debug_params& debug_params_, const gyro_params& gyro_params_);
-        ~detector();
+        Detector(const std::string& camera_name, const std::string& camera_param_path, const std::string& network_path,
+            const DetectorParam& detector_params_, const DebugParam& debug_params_, const GyroParam& gyro_params_);
+        ~Detector();
 
     private:
         std::string camera_name;
         std::string camera_param_path;
         std::string network_path;
-        detector_params detector_params_;
+        DetectorParam detector_params_;
 
     public:
         void run();
@@ -119,7 +119,7 @@ namespace armor_detector
         ArmorTracker* chooseTargetTracker(vector<ArmorTracker*> trackers, int timestamp);
         int chooseTargetID(vector<Armor> &armors, int timestamp);
 
-        void debugParams(const detector_params& detector_params, const debug_params& debug_params, const gyro_params& gyro_params);
+        void debugParams(const DetectorParam& detector_params, const DebugParam& debug_params, const GyroParam& gyro_params);
     public:
         std::vector<ArmorObject> objects;
         std::vector<Armor> armors;
@@ -133,7 +133,7 @@ namespace armor_detector
         Armor last_armor;
         coordsolver::coordsolver coordsolver_;
         ArmorDetector detector_;
-        spinning_detector spinning_detector_;
+        SpinningDetector spinning_detector_;
 
         std::vector<ArmorTracker> trackers;
         std::multimap<std::string, ArmorTracker> trackers_map;
@@ -165,6 +165,6 @@ namespace armor_detector
         // coordsolver::coordsolver coordsolver_;
 
         //debug
-        debug_params debug_params_;
+        DebugParam debug_params_;
     }; 
 } //namespace detector

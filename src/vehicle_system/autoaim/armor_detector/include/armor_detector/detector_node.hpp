@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2022-11-21 11:17:35
+ * @LastEditTime: 2022-11-30 20:55:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -36,15 +36,15 @@
 
 namespace armor_detector
 {
-    class detector_node : public rclcpp::Node
+    class DetectorNode : public rclcpp::Node
     {
         typedef std::chrono::_V2::steady_clock::time_point TimePoint;
         typedef global_interface::msg::Armors ArmorsMsg;
         typedef global_interface::msg::Target TargetMsg;
 
     public:
-        detector_node(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
-        ~detector_node();
+        DetectorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
+        ~DetectorNode();
         
     private:
         //订阅图像  
@@ -72,15 +72,15 @@ namespace armor_detector
         // std::vector<Armor> detect_armors(const sensor_msgs::msg::Image::SharedPtr& img);
   
     public:
-        detector_params detector_params_;
-        debug_params debug_;
-        gyro_params gyro_params_;
+        DetectorParam detector_params_;
+        DebugParam debug_;
+        GyroParam gyro_params_;
         void getParameters();
 
         // rclcpp::Node handle;
         // image_transport::ImageTransport it;
-        std::unique_ptr<detector> detector_;
-        std::unique_ptr<detector> init_detector();
+        std::unique_ptr<Detector> detector_;
+        std::unique_ptr<Detector> init_detector();
 
     protected:
         /**

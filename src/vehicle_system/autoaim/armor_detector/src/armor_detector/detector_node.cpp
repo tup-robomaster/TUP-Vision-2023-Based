@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-11-21 18:24:39
+ * @LastEditTime: 2022-11-30 21:26:42
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
@@ -11,7 +11,7 @@ using std::placeholders::_1;
 
 namespace armor_detector
 {
-    detector_node::detector_node(const rclcpp::NodeOptions& options)
+    DetectorNode::DetectorNode(const rclcpp::NodeOptions& options)
     : Node("armor_detector", options)
     {
         RCLCPP_WARN(this->get_logger(), "Starting detector node...");
@@ -74,7 +74,7 @@ namespace armor_detector
             }
 
             //(s)
-            this->read_memory_thread_ = std::thread(&detector_node::run, this);
+            this->read_memory_thread_ = std::thread(&DetectorNode::run, this);
             // this->read_memory_thread_.join();
         }
         else
@@ -93,23 +93,23 @@ namespace armor_detector
             if(camera_type == global_user::DaHeng)
             {
                 img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
-                    std::bind(&detector_node::image_callback, this, _1), transport_));
+                    std::bind(&DetectorNode::image_callback, this, _1), transport_));
             }
             else
             {
                 img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
-                    std::bind(&detector_node::image_callback, this, _1), transport_));
+                    std::bind(&DetectorNode::image_callback, this, _1), transport_));
             }
         }
         // std::cout << 1 << std::endl;
 
         // param callback
-        // param_timer_ = this->create_wall_timer(1000ms, std::bind(&detector_node::param_callback, this));
+        // param_timer_ = this->create_wall_timer(1000ms, std::bind(&DetectorNode::param_callback, this));
         
         // std::cout << 2 << std::endl;
     }
 
-    detector_node::~detector_node()
+    DetectorNode::~DetectorNode()
     {
         //解除映射
         if(shared_memory_ptr_)
@@ -121,7 +121,7 @@ namespace armor_detector
         }
     }
 
-    void detector_node::run()
+    void DetectorNode::run()
     {
         global_user::TaskData src;
         std::vector<Armor> armors;
@@ -219,7 +219,7 @@ namespace armor_detector
         gyro_params_.max_delta_t = this->get_parameter("max_delta_t").as_int();
     }
 
-    std::unique_ptr<detector> detector_node::init_detector()
+    std::unique_ptr<detector> DetectorNode::init_detector()
     {
         //detector params
         this->declare_parameter<int>("armor_type_wh_thres", 3);
@@ -271,7 +271,7 @@ namespace armor_detector
         return std::make_unique<detector>(camera_name, camera_param_path, network_path, detector_params_, debug_, gyro_params_);
     }
 
-    void detector_node::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
+    void DetectorNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
     {
         // RCLCPP_INFO(this->get_logger(), "image callback...");
         global_user::TaskData src;
@@ -333,11 +333,11 @@ namespace armor_detector
 int main(int argc, char** argv)
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<armor_detector::detector_node>());
+    rclcpp::spin(std::make_shared<armor_detector::DetectorNode>());
     rclcpp::shutdown();
 
     return 0;
 }
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(armor_detector::detector_node)
+RCLCPP_COMPONENTS_REGISTER_NODE(armor_detector::DetectorNode)
