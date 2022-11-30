@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-11-29 19:49:19
+ * @LastEditTime: 2022-11-30 16:23:33
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP
@@ -47,6 +47,9 @@
 #define DAHENG_IMAGE_HEIGHT 1024
 
 typedef std::chrono::duration<int> SecondsType;
+typedef global_interface::msg::Target TargetMsg;
+typedef global_interface::msg::Gimbal GimbalMsg;
+typedef global_interface::msg::SpinInfo SpinningMsg;
 
 namespace armor_processor
 {
@@ -57,13 +60,14 @@ namespace armor_processor
         ~ArmorProcessorNode();
 
     private:
-        // rclcpp::Subscription<global_interface::msg::SpinInfo>::SharedPtr spin_info_sub;
-        // void spin_info_callback(const global_interface::msg::SpinInfo::SharedPtr msg) const;
+        // rclcpp::Subscription<SpinningMsg>::SharedPtr spin_info_sub;
+        // void spin_info_callback(const SpinningMsg::SharedPtr msg) const;
         
-        // message_filters::Subscriber<global_interface::msg::Target> target_info_sub;
-        rclcpp::Subscription<global_interface::msg::Target>::SharedPtr target_info_sub_;
-        message_filters::Subscriber<global_interface::msg::Target> target_point_sub_; 
-        void target_info_callback(const global_interface::msg::Target& target_info);
+        // message_filters::Subscriber<TargetMsg> target_info_sub;
+        // std::vector<>;
+        rclcpp::Subscription<TargetMsg>::SharedPtr target_info_sub_;
+        message_filters::Subscriber<TargetMsg> target_point_sub_; 
+        void target_info_callback(const TargetMsg& target_info);
 
         // bool draw_predict;
         Eigen::Vector3d last_predict_point_;
@@ -73,7 +77,7 @@ namespace armor_processor
 
         //
         rclcpp::Publisher<TargetMsg>::SharedPtr predict_info_pub;
-        rclcpp::Publisher<global_interface::msg::Gimbal>::SharedPtr gimbal_info_pub_;
+        rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
     
     private:
         std::unique_ptr<Processor> processor_;
@@ -90,6 +94,7 @@ namespace armor_processor
         void msg_callback(const geometry_msgs::msg::PointStamped::SharedPtr point_ptr);
     
     protected:
+        cv::Mat img;
         // 订阅图像  
         std::shared_ptr<image_transport::Subscriber> img_sub_;
         // Image subscriptions transport type

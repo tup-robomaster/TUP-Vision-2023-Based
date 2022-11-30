@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-11-29 19:53:18
+ * @LastEditTime: 2022-11-30 18:29:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -176,7 +176,7 @@ namespace armor_processor
 
     void ArmorProcessorNode::img_callback()
     {
-        cv::Mat img = cv::Mat(DAHENG_IMAGE_HEIGHT, DAHENG_IMAGE_WIDTH, CV_8UC3);
+        img = cv::Mat(DAHENG_IMAGE_HEIGHT, DAHENG_IMAGE_WIDTH, CV_8UC3);
 
         while(1)
         {
@@ -220,7 +220,7 @@ namespace armor_processor
         }
         // RCLCPP_INFO(this->get_logger(), "...");
 
-        auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
+        img = cv_bridge::toCvShare(img_info, "bgr8")->image;
         // img.copyTo(src.img);
         if(this->debug_param_.show_predict)
         {
@@ -369,6 +369,8 @@ namespace armor_processor
             apex2d[i].y = target_info.point2d[i].y;
         }
 
+        TargetMsg predict_info;
+        GimbalMsg gimbal_info;
         Eigen::Vector3d aiming_point;
         if(target_info.target_switched)
         {
@@ -393,8 +395,10 @@ namespace armor_processor
             // Eigen::Vector3d aiming_point;
             aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
             last_predict_point_ = predict_point_;
-            aiming_point = processor_->armor_predictor_.predict(aiming_point, target_info.timestamp);
-            predict_point_ = aiming_point_world;
+            TargetInfoPtr target_ptr;
+            target_ptr->xyz = aiming_point;
+            aiming_point = processor_->armor_predictor_.predict(img, target_ptr, target_info.timestamp);
+            predict_point_ = aiming_point;
 
             // Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, processor_->rmat_imu);
             
@@ -403,17 +407,17 @@ namespace armor_processor
             // final_point.aiming_point.y = aiming_point[1];
             // final_point.aiming_point.z = aiming_point[2];
 
-            auto angle = processor_->coordsolver_.getAngle(aiming_point_world, processor_->rmat_imu);
+            auto angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
             // //若预测出错直接陀螺仪坐标系下坐标作为打击点
             // if(isnan(angle[0]) || isnan(angle[1]))
             // {
             //     angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
             // }
 
-            global_interface::msg::Gimbal gimbal_info;
+            // global_interface::msg::Gimbal gimbal_info;
             gimbal_info.pitch = angle[0];
             gimbal_info.yaw = angle[1];
-            gimbal_info.distance = aiming_point_world.norm();
+            gimbal_info.distance = aiming_point.norm();
             gimbal_info.is_switched = target_info.target_switched;
             gimbal_info.is_spinning = target_info.is_spinning;
             // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;

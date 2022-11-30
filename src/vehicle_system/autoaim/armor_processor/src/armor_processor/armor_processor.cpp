@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2022-11-21 10:07:44
+ * @LastEditTime: 2022-11-30 18:27:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -48,7 +48,7 @@ namespace armor_processor
 
     }
 
-    void Processor::predictor(global_interface::msg::Target& target_info)
+    void Processor::predictor(cv::Mat& src, global_interface::msg::Target& target_info)
     {
         if(!is_initialized)
         {
@@ -74,7 +74,9 @@ namespace armor_processor
         }
         else
         {
-            auto aiming_point_world = armor_predictor_.predict(target_, target_info.timestamp);
+            TargetInfoPtr target_ptr;
+            target_ptr->xyz = target_;
+            auto aiming_point_world = armor_predictor_.predict(src, target_ptr, target_info.timestamp);
             aiming_point_ = coordsolver_.worldToCam(aiming_point_world, rmat_imu);
         }
 

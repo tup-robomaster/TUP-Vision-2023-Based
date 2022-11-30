@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 12:13:56
- * @LastEditTime: 2022-11-26 20:41:16
+ * @LastEditTime: 2022-11-30 11:14:37
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/motion_model.hpp
  */
 #include "./kalman_filter.hpp"
@@ -14,6 +14,8 @@ namespace armor_processor
     private:
         void updatePrediction();
         void updateMeasurement();
+        void setCoeff(const double& coeff);
+
     public:
         CV();
         ~CV();
@@ -26,6 +28,7 @@ namespace armor_processor
     private:
         void updatePrediction();
         void updateMeasurement();
+        void setCoeff(const double& coeff);
 
     public:
         CA();
@@ -39,7 +42,7 @@ namespace armor_processor
     private:
         void updatePrediction();
         void updateMeasurement();
-
+        void setCoeff(const double& coeff);
         const double w_;
     public:
         CT(const double& w);

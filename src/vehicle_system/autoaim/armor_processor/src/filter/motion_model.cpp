@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 12:36:22
- * @LastEditTime: 2022-11-29 19:32:38
+ * @LastEditTime: 2022-11-30 11:13:05
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/motion_model.cpp
  */
 #include "../../include/filter/motion_model.hpp"
@@ -120,7 +120,7 @@ namespace armor_processor
     void CA::updatePrediction()
     {
         this->F_ << 1, 0, dt,   0, 0.5 * pow(dt, 2),              0,
-                    0, 1,  0,  dt,                 0, 0.5 * (dt, 2),
+                    0, 1,  0,  dt,                 0, 0.5 * pow(dt, 2),
                     0, 0,  1,   0,                dt,             0,
                     0, 0,  0,   1,                 0,            dt,
                     0, 0,  0,   0,                 1,             0,

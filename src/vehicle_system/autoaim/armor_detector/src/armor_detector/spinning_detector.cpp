@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2022-11-08 18:40:23
+ * @LastEditTime: 2022-11-30 11:41:22
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/spinning_detector.cpp
  */
 #include "../../include/armor_detector/spinning_detector.hpp"
@@ -58,12 +58,12 @@ namespace armor_detector
             else
                 spin_status = spin_status_map[(*score).first];
             // cout<<(*score).first<<"--:"<<(*score).second<<" "<<spin_status<<endl;
-            LOG(INFO)<<"[SpinDetection] Current Spin score :"<<(*score).first<<" : "<<(*score).second<<" "<<spin_status;
+            // LOG(INFO)<<"[SpinDetection] Current Spin score :"<<(*score).first<<" : "<<(*score).second<<" "<<spin_status;
             // 若分数过低移除此元素
             if (abs((*score).second) <= gyro_params_.anti_spin_judge_low_thres && spin_status != UNKNOWN)
             {
                 fmt::print(fmt::fg(fmt::color::red), "[SpinDetection] Removing {}.\n", (*score).first);
-                LOG(INFO)<<"[SpinDetection] Removing "<<(*score).first;
+                // LOG(INFO)<<"[SpinDetection] Removing "<<(*score).first;
                 spin_status_map.erase((*score).first);
                 score = spin_score_map.erase(score);
                 continue;
