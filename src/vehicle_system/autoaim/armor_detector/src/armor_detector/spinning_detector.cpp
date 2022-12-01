@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2022-12-01 15:49:45
+ * @LastEditTime: 2022-12-01 19:10:26
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/spinning_detector.cpp
  */
 #include "../../include/armor_detector/spinning_detector.hpp"
@@ -42,7 +42,7 @@ namespace armor_detector
         
     }
 
-    bool spinning_detector::updateSpinScore()
+    bool SpinningDetector::updateSpinScore()
     {
         /**
          * @brief 更新陀螺Score，函数关系在MATLAB中测试得出，在程序帧率恒定100fps
@@ -99,7 +99,7 @@ namespace armor_detector
         return true;
     }
 
-    void spinning_detector::createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map, std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int timestamp, int dead_buffer_cnt)
+    void SpinningDetector::createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map, std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int timestamp, int dead_buffer_cnt)
     {
         /**
          * @brief 生成/分配ArmorTracker
@@ -287,8 +287,8 @@ namespace armor_detector
                             //     (*candidate).second.new_timestamp = new_armor_timestamp;
                             // }
 
-                            auto cnt = spinning_x_map.count(new_tracker->key);
-                            if(cnt == 0)
+                            auto cnts = spinning_x_map.count(new_tracker->key);
+                            if(cnts == 0)
                             {
                                 XCoord x_coord;
                                 x_coord.new_x_font = last_tracker->last_armor.center3d_world[0];

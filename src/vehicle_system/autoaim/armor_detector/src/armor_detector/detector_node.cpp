@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-11-30 21:26:42
+ * @LastEditTime: 2022-12-01 19:03:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
@@ -172,14 +172,14 @@ namespace armor_detector
         }
     }
     
-    void detector_node::param_callback()
+    void DetectorNode::param_callback()
     {
         //
         getParameters();
         this->detector_->debugParams(detector_params_, debug_, gyro_params_);
     }
 
-    void detector_node::getParameters()
+    void DetectorNode::getParameters()
     {
         detector_params_.armor_type_wh_thres = this->get_parameter("armor_type_wh_thres").as_int();
         detector_params_.max_lost_cnt = this->get_parameter("max_lost_cnt").as_int();
@@ -219,7 +219,7 @@ namespace armor_detector
         gyro_params_.max_delta_t = this->get_parameter("max_delta_t").as_int();
     }
 
-    std::unique_ptr<detector> DetectorNode::init_detector()
+    std::unique_ptr<Detector> DetectorNode::init_detector()
     {
         //detector params
         this->declare_parameter<int>("armor_type_wh_thres", 3);
@@ -268,7 +268,7 @@ namespace armor_detector
         std::string camera_param_path = this->get_parameter("camera_param_path").as_string();
         std::string network_path = this->get_parameter("network_path").as_string();
 
-        return std::make_unique<detector>(camera_name, camera_param_path, network_path, detector_params_, debug_, gyro_params_);
+        return std::make_unique<Detector>(camera_name, camera_param_path, network_path, detector_params_, debug_, gyro_params_);
     }
 
     void DetectorNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
