@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-11-30 21:29:23
+ * @LastEditTime: 2022-12-01 15:53:17
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector.cpp
  */
 #include "../../include/armor_Detector/Detector.hpp"
@@ -417,13 +417,13 @@ namespace armor_detector
         //若目标处于陀螺状态，预先瞄准目标中心，待预测值与该点距离较近时开始击打
         SpinHeading spin_status;
         if (spinning_detector_.spin_status_map.count(target_key) == 0)
-        {
+        {   //若未确定打击车辆的陀螺状态
             spin_status = UNKNOWN;
             is_target_spinning = false;
             target_info.is_spinning = false;
         }
         else
-        {
+        {   //若确定打击车辆的陀螺状态
             spin_status = spinning_Detector_.spin_status_map[target_key];
             if (spin_status != UNKNOWN)
             {
@@ -454,6 +454,27 @@ namespace armor_detector
                     continue;
                 }
             }
+            
+            auto cnt = spinning_detector_.spinning_x_map.count(target_key);
+            if(cnt == 1)
+            {
+                anto candidate = spinning_detector_.spinning_x_map.find(target_key);
+
+                auto t = ((*candidate).second.new_timestamp - (*candidate).second.last_timestamp) / 1e3;
+                auto w = (2 * M_PI) / (4 * t);
+                target_info.w = w;
+                if(((*candidate).second.now_x_back - (*candidate).second.last_x_back) > 0.15 && ((*candidate).second.now_x_font - (*candidate).second.last_x_font) > 0.15)
+                {
+                    target_info.is_spinning = true;
+                    target_info.is_still_spinning = false;
+                }
+                else if((*candidate).second.now_x_back - (*candidate).second.last_x_back < 0.09 && ((*candidate).second.now_x_font - (*candidate).second.last_x_font) < 0.09)
+                {
+                    target_info.is_still_spinning = true;
+                    target_info.is_spinning = false;
+                }
+            }
+            
             //若存在一块装甲板
             if (final_armors.size() == 1)
             {
@@ -461,14 +482,14 @@ namespace armor_detector
             }
             //若存在两块装甲板
             else if (final_armors.size() == 2)
-            {
-                //对最终装甲板进行排序，选取与旋转方向相同的装甲板进行更新
+            {   // 选择旋转方向上落后的装甲板进行击打
+                // 对最终装甲板进行排序，选取与旋转方向相同的装甲板进行更新
                 sort(final_armors.begin(),final_armors.end(),[](Armor& prev, Armor& next)
                                     {return prev.center3d_cam[0] < next.center3d_cam[0];});
-                //若顺时针旋转选取右侧装甲板更新
+                // 若顺时针旋转选取右侧装甲板更新
                 if (spin_status == CLOCKWISE)
                     target = final_armors.at(1);
-                //若逆时针旋转选取左侧装甲板更新
+                // 若逆时针旋转选取左侧装甲板更新
                 else if (spin_status == COUNTER_CLOCKWISE)
                     target = final_armors.at(0);
             }
@@ -503,6 +524,9 @@ namespace armor_detector
         }
         else
         {
+            target_info.is_spinning = false;
+            target_info.is_still_spinning = false;
+
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
                 // final_armors.push_back((*iter).second.last_armor);
@@ -548,6 +572,7 @@ namespace armor_detector
         else
             dead_buffer_cnt = 0;
 
+        target_info.timestamp = src.timestamp;
         //获取装甲板中心与装甲板面积以下一次ROI截取使用
         last_roi_center = target.center2d;
         // last_roi_center = Point2i(512,640);

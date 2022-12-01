@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2022-12-01 00:34:52
+ * @LastEditTime: 2022-12-01 15:49:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/spinning_detector.cpp
  */
 #include "../../include/armor_detector/spinning_detector.hpp"
@@ -11,6 +11,8 @@ namespace armor_detector
 {
     SpinningDetector::SpinningDetector()
     {
+        last_add_tracker_timestamp = 0;
+        new_add_tracker_timestamp = 0;
         this->detect_color = RED;
         this->gyro_params_.max_dead_buffer = 2;
         this->gyro_params_.max_delta_dist = 3;
@@ -23,6 +25,8 @@ namespace armor_detector
 
     SpinningDetector::SpinningDetector(Color color, GyroParam _gyro_params_)
     {
+        last_add_tracker_timestamp = 0;
+        new_add_tracker_timestamp = 0;
         this->detect_color = color;
         this->gyro_params_.max_dead_buffer = _gyro_params_.max_dead_buffer;
         this->gyro_params_.max_delta_dist = _gyro_params_.max_delta_dist;
@@ -50,29 +54,32 @@ namespace armor_detector
         for (auto score = spin_score_map.begin(); score != spin_score_map.end();)
         {
             SpinHeading spin_status;
+            
             //若Status_Map不存在该元素
-
             if (spin_score_map.count((*score).first) == 0)
                 spin_status = UNKNOWN;
             else
                 spin_status = spin_status_map[(*score).first];
-            // cout<<(*score).first<<"--:"<<(*score).second<<" "<<spin_status<<endl;
-            // LOG(INFO)<<"[SpinDetection] Current Spin score :"<<(*score).first<<" : "<<(*score).second<<" "<<spin_status;
-            // 若分数过低移除此元素
+            
+            // 若分数过低移且目标陀螺状态已知除此元素
             if (abs((*score).second) <= gyro_params_.anti_spin_judge_low_thres && spin_status != UNKNOWN)
             {
                 fmt::print(fmt::fg(fmt::color::red), "[SpinDetection] Removing {}.\n", (*score).first);
-                // LOG(INFO)<<"[SpinDetection] Removing "<<(*score).first;
                 spin_status_map.erase((*score).first);
                 score = spin_score_map.erase(score);
                 continue;
             }
-            // 
-            if (spin_status != UNKNOWN)
+            
+            if (abs((*score).second) > gyro_params_.anti_spin_judge_low_thres && spin_status != UNKNOWN)
+            {   // 若陀螺分数大于低阈值且状态未确定，则对目前分数按陀螺状态按陀螺状态未确定的衰减函数进行衰减
                 (*score).second = 0.978 * (*score).second - 1 * abs((*score).second) / (*score).second;
+            }
             else
+            {   // 若目前陀螺分数大于低阈值且陀螺状态已知，则对目前分数按陀螺状态已确定的衰减函数进行衰减
                 (*score).second = 0.997 * (*score).second - 1 * abs((*score).second) / (*score).second;
-            //当小于该值时移除该元素
+            }
+            
+            // 当小于该值时移除该元素
             if (abs((*score).second) < 3 || isnan((*score).second))
             {
                 spin_status_map.erase((*score).first);
@@ -80,7 +87,7 @@ namespace armor_detector
                 continue;
             }
             else if (abs((*score).second) >= gyro_params_.anti_spin_judge_high_thres)
-            {
+            {   // 若目标分数高于高阈值，则截断，避免分数过高
                 (*score).second = gyro_params_.anti_spin_judge_high_thres * abs((*score).second) / (*score).second;
                 if ((*score).second > 0)
                     spin_status_map[(*score).first] = CLOCKWISE;
@@ -89,11 +96,6 @@ namespace armor_detector
             }
             ++score;
         }
-        // cout<<"++++++++++++++++++++++++++"<<endl;
-        // for (auto status : spin_status_map)
-        // {
-        //     cout<<status.first<<" : "<<status.second<<endl;
-        // }
         return true;
     }
 
@@ -204,6 +206,16 @@ namespace armor_detector
                     ++next;
                 iter = next;
             }
+
+            for (auto iter = spinning_x_map.begin(); iter != spinning_x_map.end();)
+            {   
+                auto next = iter;
+                if ((timestamp - (*iter).second.new_timestamp) > gyro_params_.max_delta_t * 4)
+                    next = spinning_x_map.erase(iter);
+                else
+                    ++next;
+                iter = next;
+            }
         }
     }
 
@@ -218,9 +230,10 @@ namespace armor_detector
             {
                 int same_armors_cnt = trackers_map.count(cnt.first);
                 if (same_armors_cnt == 2)
-                {   //遍历所有同Key预测器，确定左右侧的Tracker
-                    armor_detector::ArmorTracker *new_tracker = nullptr;
-                    armor_detector::ArmorTracker *last_tracker = nullptr;
+                {   // 若相同key键的tracker存在两个，一个为新增，一个先前存在，且两个tracker本次都有更新，则视为一次陀螺动作（其实就是对应目标车辆小陀螺时两个装甲板同时出现在视野的情况）
+                    // 遍历所有同Key预测器，确定左右侧的Tracker
+                    ArmorTracker *new_tracker = nullptr;
+                    ArmorTracker *last_tracker = nullptr;
                     double last_armor_center;
                     double last_armor_timestamp;
                     double new_armor_center;
@@ -255,16 +268,58 @@ namespace armor_detector
                         //TODO:to be fixed!!!
                         if (abs(spin_movement) > 10 && new_armor_timestamp == new_tracker->prev_timestamp && last_armor_timestamp == new_tracker->prev_timestamp)
                         {
+                            last_add_tracker_timestamp = new_add_tracker_timestamp;
+                            new_add_tracker_timestamp = new_armor_timestamp;
+                            
+                            // 记录新增的装甲板对应的时间戳
+                            // auto cnt = spinning_time_map.count(new_tracker->key);
+                            // if(cnt == 0)
+                            // {   // 若multimap中没有当前key键，则创建
+                            //     Timestamp ts;
+                            //     ts.new_timestamp = new_add_tracker_timestamp;
+                            //     ts.last_timestamp = 0;
+                            //     spinning_time_map.insert(make_pair(new_tracker->key, ts));
+                            // }
+                            // else
+                            // {   // 若multimap中存在上次新增装甲板对应的key键，则更新
+                            //     auto candidate = spinning_time_map.find(new_tracker->key);
+                            //     (*candidate).second.last_timestamp = (*candidate).second.new_timestamp;
+                            //     (*candidate).second.new_timestamp = new_armor_timestamp;
+                            // }
+
+                            auto cnt = spinning_x_map.count(new_tracker->key);
+                            if(cnt == 0)
+                            {
+                                XCoord x_coord;
+                                x_coord.new_x_font = last_tracker->last_armor.center3d_world[0];
+                                x_coord.new_x_back = new_tracker->last_armor.center3d_world[0];
+                                x_coord.new_timestamp = new_armor_timestamp;
+                                x_coord.last_x_back = 0;
+                                x_coord.last_x_back = 0;
+                                x_coord.last_timestamp = 0;
+                                spinning_x_map.insert(make_pair(new_tracker->key, x_coord));
+                            }
+                            else
+                            {
+                                auto candidate = spinning_x_map.find(new_tracker->key);
+                                (*candidate).second.last_x_font = (*candidate).second.new_x_font;
+                                (*candidate).second.last_x_back = (*candidate).second.new_x_back;
+                                (*candidate).second.last_timestamp = (*candidate).second.new_timestamp;
+                                (*candidate).second.new_x_font = last_tracker->last_armor.center3d_world[0];
+                                (*candidate).second.new_x_back = new_tracker->last_armor.center3d_world[0];
+                                (*candidate).second.new_timestamp = new_armor_timestamp;
+                            }
+
                             if (spin_score_map.count(cnt.first) == 0)
-                            {   //若无该元素则插入新元素
+                            {   //若无该元素则插入新元素，为车辆的陀螺分数赋初值
                                 spin_score_map[cnt.first] = 1000 * spin_movement / abs(spin_movement);
                             }
                             else if (spin_movement * spin_score_map[cnt.first] < 0)
-                            {   //若已有该元素且目前旋转方向与记录不同,则对目前分数进行减半惩罚
+                            {   //若已有该元素且目前旋转方向与记录不同,则对目前车辆的陀螺分数进行减半惩罚
                                 spin_score_map[cnt.first] *= 0.5;
                             }
                             else
-                            {   //若已有该元素则更新元素
+                            {   //若目前旋转方向与记录同向，并且已有该元素则更新元素
                                 spin_score_map[cnt.first] = gyro_params_.anti_spin_max_r_multiple * spin_score_map[cnt.first];
                             }
                         }
