@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:40
- * @LastEditTime: 2022-11-21 12:00:25
+ * @LastEditTime: 2022-12-02 17:38:38
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/usb_driver/usb_cam_node.hpp
  */
 #ifndef USB_CAM_NODE_HPP
@@ -47,6 +47,7 @@ namespace camera_driver
         ~usb_cam_node();
     
     private:
+        int frame_cnt;
         cv::Mat frame;
         cv::Mat filpped_frame;
         cv::VideoCapture cap;    
@@ -73,6 +74,13 @@ namespace camera_driver
         std::shared_ptr<sensor_msgs::msg::Image> convert_frame_to_message(cv::Mat &frame);
     
     private:
+        bool is_first_loop;
+        std::shared_ptr<cv::VideoWriter> video_writer_;
+        std::future<void> writer_video_;
+        bool save_video_;
+        bool using_video_;
+        std::string video_path_;
+        
         std::unique_ptr<usb_cam> usb_cam_;
         std::unique_ptr<usb_cam> init_usb_cam();
     

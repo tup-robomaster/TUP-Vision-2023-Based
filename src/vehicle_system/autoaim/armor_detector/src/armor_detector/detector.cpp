@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-12-01 19:07:30
+ * @LastEditTime: 2022-12-01 22:10:28
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector.cpp
  */
 #include "../../include/armor_detector/detector.hpp"
@@ -11,24 +11,24 @@ using namespace std;
 
 namespace armor_detector
 {
-    Detector::Detector(const std::string& camera_name_, const std::string& camera_param_path_, const std::string& network_path_,
-    const DetectorParam& _detector_params_, const DebugParam& _debug_params_, const GyroParam& _gyro_params_) 
+    detector::detector(const std::string& camera_name_, const std::string& camera_param_path_, const std::string& network_path_,
+    const detector_params& _detector_params_, const debug_params& _debug_params_, const gyro_params& _gyro_params_) 
     : spinning_detector_(_detector_params_.color, _gyro_params_), detector_params_(_detector_params_), debug_params_(_debug_params_)
     {
         //参数设置
         this->camera_name = camera_name_;
         this->camera_param_path = camera_param_path_;
         this->network_path = network_path_;
-        // this->Detector_params_.dw = _Detector_params_.dw;
-        // this->Detector_params_.dh = _Detector_params_.dh;
-        // this->Detector_params_.rescale_ratio = _Detector_params_.rescale_ratio;
-        // this->Detector_params_.armor_type_wh_thres = _Detector_params_.armor_type_wh_thres;
-        // this->Detector_params_.max_lost_cnt = _Detector_params_.max_lost_cnt;
-        // this->Detector_params_.max_armors_cnt = _Detector_params_.max_armors_cnt;
-        // this->Detector_params_.max_v = _Detector_params_.max_v;
-        // this->Detector_params_.max_delta_t = _Detector_params_.max_delta_t;
-        // this->Detector_params_.no_crop_thres = _Detector_params_.no_crop_thres;
-        // this->Detector_params_.hero_danger_zone = _Detector_params_.hero_danger_zone;
+        // this->detector_params_.dw = _detector_params_.dw;
+        // this->detector_params_.dh = _detector_params_.dh;
+        // this->detector_params_.rescale_ratio = _detector_params_.rescale_ratio;
+        // this->detector_params_.armor_type_wh_thres = _detector_params_.armor_type_wh_thres;
+        // this->detector_params_.max_lost_cnt = _detector_params_.max_lost_cnt;
+        // this->detector_params_.max_armors_cnt = _detector_params_.max_armors_cnt;
+        // this->detector_params_.max_v = _detector_params_.max_v;
+        // this->detector_params_.max_delta_t = _detector_params_.max_delta_t;
+        // this->detector_params_.no_crop_thres = _detector_params_.no_crop_thres;
+        // this->detector_params_.hero_danger_zone = _detector_params_.hero_danger_zone;
                    
         //网络模型初始化
         
@@ -55,7 +55,7 @@ namespace armor_detector
         // spinning_detector_ = spinning_detector(_detector_params_.color, _gyro_params_);
     }
 
-    Detector::~Detector()
+    detector::~detector()
     {
         if(is_save_data)
         {
@@ -63,9 +63,9 @@ namespace armor_detector
         }
     }
 
-    void Detector::debugParams(const DetectorParam& detector_params, const DebugParam& debug_params, const GyroParam& gyro_params) 
+    void detector::debugParams(const detector_params& detector_params, const debug_params& debug_params, const gyro_params& gyro_params)
     {
-        //Detector params
+        //detector params
         this->detector_params_.dw = detector_params.dw;
         this->detector_params_.dh = detector_params.dh;
         this->detector_params_.rescale_ratio = detector_params.rescale_ratio;
@@ -88,7 +88,7 @@ namespace armor_detector
         this->debug_params_.print_target_info = debug_params.print_target_info;
     }
     
-    bool Detector::armor_detect(global_user::TaskData &src)
+    bool detector::armor_detect(global_user::TaskData &src)
     {
         if(!is_init)
         {
@@ -134,6 +134,7 @@ namespace armor_detector
             rmat_imu = Eigen::Matrix3d::Identity();
         }
 
+        // std::cout << 2 << std::endl;
         if(debug_params_.using_roi)
         {   //启用roi
             //吊射模式采用固定ROI
@@ -347,7 +348,7 @@ namespace armor_detector
             }
 
             //更新陀螺分数
-            spinning_detector_.updateSpinScore();
+            spinning_detector_.update_spin_score();
 
             lost_cnt++;
             is_last_target_exists = false;
@@ -362,23 +363,25 @@ namespace armor_detector
         return true;
     }
 
-    bool Detector::gyro_detector(global_user::TaskData &src, global_interface::msg::Target& target_info)
+    bool detector::gyro_detector(global_user::TaskData &src, global_interface::msg::Target& target_info, TargetInfoPtr& target_ptr)
     {
         /**
          * @brief 车辆小陀螺状态检测
         */
 
         //Create ArmorTracker for new armors 
-        spinning_detector_.createArmorTracker(trackers_map, armors, new_armors_cnt_map, timestamp, dead_buffer_cnt);
+        spinning_detector_.create_armor_tracker(trackers_map, armors, new_armors_cnt_map, timestamp, dead_buffer_cnt);
 
         //Detect armors status
-        spinning_detector_.isSpinning(trackers_map, new_armors_cnt_map);
+        spinning_detector_.is_spinning(trackers_map, new_armors_cnt_map);
 
         //Update spinning score
-        spinning_detector_.updateSpinScore();
+        spinning_detector_.update_spin_score();
+        // std::cout << 9 << std::endl;
 
         //Choose target vehicle
         auto target_id = chooseTargetID(armors, timestamp);
+        // std::cout << 10 << std::endl;
 
         string target_key;
         if (detector_params_.color == BLUE)
@@ -407,6 +410,7 @@ namespace armor_detector
             return false;
         }
         auto ID_candiadates = trackers_map.equal_range(target_key);
+        // std::cout << 14 << std::endl;
 
         ///---------------------------acqusition final armor's sequences---------------------------------------
         bool is_target_spinning;
@@ -417,13 +421,13 @@ namespace armor_detector
         //若目标处于陀螺状态，预先瞄准目标中心，待预测值与该点距离较近时开始击打
         SpinHeading spin_status;
         if (spinning_detector_.spin_status_map.count(target_key) == 0)
-        {   //若未确定打击车辆的陀螺状态
+        {
             spin_status = UNKNOWN;
             is_target_spinning = false;
             target_info.is_spinning = false;
         }
         else
-        {   //若确定打击车辆的陀螺状态
+        {
             spin_status = spinning_detector_.spin_status_map[target_key];
             if (spin_status != UNKNOWN)
             {
@@ -436,14 +440,20 @@ namespace armor_detector
                 target_info.is_spinning = false;
             }
         }
+        // std::cout << 13 << std::endl;
 
         ///----------------------------------反陀螺击打---------------------------------------
+        target_ptr->is_spinning = false;
+
+        target_info.is_spinning = false;
+        target_info.is_still_spinning = false;
         if (spin_status != UNKNOWN)
         {
             //------------------------------尝试确定旋转中心-----------------------------------
             auto available_candidates_cnt = 0;
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
+                // std::cout << 15 << std::endl;
                 if ((*iter).second.last_timestamp == src.timestamp)
                 {
                     final_armors.push_back((*iter).second.last_armor);
@@ -454,10 +464,18 @@ namespace armor_detector
                     continue;
                 }
             }
+            // std::cout << 16 << std::endl;
             
+            target_ptr->is_spinning = false;
+
+            target_info.is_spinning = false;
+            target_info.is_still_spinning = false;
             auto cnt = spinning_detector_.spinning_x_map.count(target_key);
+            // std::cout << 17 << std::endl;
             if(cnt == 1)
             {
+                // std::cout << 18 << std::endl;
+
                 auto candidate = spinning_detector_.spinning_x_map.find(target_key);
 
                 auto t = ((*candidate).second.new_timestamp - (*candidate).second.last_timestamp) / 1e3;
@@ -465,16 +483,24 @@ namespace armor_detector
                 target_info.w = w;
                 if(((*candidate).second.new_x_back - (*candidate).second.last_x_back) > 0.15 && ((*candidate).second.new_x_font - (*candidate).second.last_x_font) > 0.15)
                 {
+                    target_ptr->is_spinning = true;
+                    target_ptr->spinning_status = MOVEMENT_SPINNING;
+                    
                     target_info.is_spinning = true;
                     target_info.is_still_spinning = false;
                 }
                 else if((*candidate).second.new_x_back - (*candidate).second.last_x_back < 0.09 && ((*candidate).second.new_x_font - (*candidate).second.last_x_font) < 0.09)
                 {
+                    target_ptr->is_spinning = true;
+                    target_ptr->spinning_status = STILL_SPINNING;
+
                     target_info.is_still_spinning = true;
                     target_info.is_spinning = false;
                 }
             }
-            
+
+            // std::cout << 19 << std::endl;
+
             //若存在一块装甲板
             if (final_armors.size() == 1)
             {
@@ -482,14 +508,14 @@ namespace armor_detector
             }
             //若存在两块装甲板
             else if (final_armors.size() == 2)
-            {   // 选择旋转方向上落后的装甲板进行击打
-                // 对最终装甲板进行排序，选取与旋转方向相同的装甲板进行更新
+            {
+                //对最终装甲板进行排序，选取与旋转方向相同的装甲板进行更新
                 sort(final_armors.begin(),final_armors.end(),[](Armor& prev, Armor& next)
                                     {return prev.center3d_cam[0] < next.center3d_cam[0];});
-                // 若顺时针旋转选取右侧装甲板更新
+                //若顺时针旋转选取右侧装甲板更新
                 if (spin_status == CLOCKWISE)
                     target = final_armors.at(1);
-                // 若逆时针旋转选取左侧装甲板更新
+                //若逆时针旋转选取左侧装甲板更新
                 else if (spin_status == COUNTER_CLOCKWISE)
                     target = final_armors.at(0);
             }
@@ -524,9 +550,7 @@ namespace armor_detector
         }
         else
         {
-            target_info.is_spinning = false;
-            target_info.is_still_spinning = false;
-
+            // std::cout << 20 << std::endl;
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
                 // final_armors.push_back((*iter).second.last_armor);
@@ -565,6 +589,9 @@ namespace armor_detector
             target_info.aiming_point.x = target.center3d_cam[0];
             target_info.aiming_point.y = target.center3d_cam[1];
             target_info.aiming_point.z = target.center3d_cam[2];
+
+            // std::cout << 21 << std::endl;
+
         }
 
         if (target.color == 2)
@@ -573,6 +600,7 @@ namespace armor_detector
             dead_buffer_cnt = 0;
 
         target_info.timestamp = src.timestamp;
+
         //获取装甲板中心与装甲板面积以下一次ROI截取使用
         last_roi_center = target.center2d;
         // last_roi_center = Point2i(512,640);
@@ -586,6 +614,8 @@ namespace armor_detector
         is_last_target_exists = true;
         last_armors.clear();
         last_armors = armors;
+
+        // std::cout << 22 << std::endl;
 
         if(debug_params_.show_aim_cross)
         {
@@ -675,6 +705,7 @@ namespace armor_detector
         if (isnan(angle[0]) || isnan(angle[1]))
         {
             // LOG(ERROR)<<"NAN Detected! Data Transmit Aborted!";
+            // std::cout << "3..." << std::endl;
             return false;
         }
 
@@ -684,35 +715,36 @@ namespace armor_detector
             imshow("dst",src.img);
             waitKey(1);
         }
+        // std::cout << 23 << std::endl;
 
         return true;
     }
 
-    Point2i Detector::cropImageByROI(Mat &img)
+    Point2i detector::cropImageByROI(Mat &img)
     {
         // if (!is_last_target_exists)
         // {
         //     //当丢失目标帧数过多或lost_cnt为初值
-        //     if (lost_cnt > this->Detector_params_.max_lost_cnt || lost_cnt == 0)
+        //     if (lost_cnt > this->detector_params_.max_lost_cnt || lost_cnt == 0)
         //     {
         //         return Point2i(0,0);
         //     }
         // }
 
         // //若目标大小大于阈值
-        // if ((last_target_area / img.size().area()) > this->Detector_params_.no_crop_thres)
+        // if ((last_target_area / img.size().area()) > this->detector_params_.no_crop_thres)
         // {
         //     return Point2i(0,0);
         // }
         // //处理X越界
         
         // // 计算上一帧roi中心在原图像中的坐标
-        // Point2i last_armor_center = Point2i(last_roi_center.x - this->Detector_params_.dw, last_roi_center.y - this->Detector_params_.dh) * (1 / this->Detector_params_.rescale_ratio);
+        // Point2i last_armor_center = Point2i(last_roi_center.x - this->detector_params_.dw, last_roi_center.y - this->detector_params_.dh) * (1 / this->detector_params_.rescale_ratio);
 
         // float armor_h = global_user::calcDistance(last_armor.apex2d[0], last_armor.apex2d[1]);
         // float armor_w = global_user::calcDistance(last_armor.apex2d[1], last_armor.apex2d[2]);
-        // int roi_width = MAX(armor_h, armor_w) * (1 / this->Detector_params_.rescale_ratio);
-        // int roi_height = MIN(armor_h, armor_w) * (1 / this->Detector_params_.rescale_ratio);
+        // int roi_width = MAX(armor_h, armor_w) * (1 / this->detector_params_.rescale_ratio);
+        // int roi_height = MIN(armor_h, armor_w) * (1 / this->detector_params_.rescale_ratio);
 
         // //根据丢失帧数逐渐扩大ROI大小
         // if(lost_cnt == 2)
@@ -817,7 +849,7 @@ namespace armor_detector
         return offset;
     }
     
-    ArmorTracker* Detector::chooseTargetTracker(vector<ArmorTracker*> trackers, int timestamp)
+    ArmorTracker* detector::chooseTargetTracker(vector<ArmorTracker*> trackers, int timestamp)
     {
         //TODO:优化打击逻辑
         //TODO:本逻辑为哨兵逻辑
@@ -852,7 +884,7 @@ namespace armor_detector
         return trackers[target_idx];
     }   
 
-    int Detector::chooseTargetID(vector<Armor> &armors, int timestamp)
+    int detector::chooseTargetID(vector<Armor> &armors, int timestamp)
     {
         //TODO:自瞄逻辑修改
         bool is_last_id_exists = false;
@@ -882,4 +914,4 @@ namespace armor_detector
         else
             return (*armors.begin()).id;
     }
-} //namespace Detector
+} //namespace detector

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 02:03:45
- * @LastEditTime: 2022-11-21 11:50:49
+ * @LastEditTime: 2022-12-02 17:56:05
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/hik_driver/hik_cam_node.hpp
  */
 
@@ -54,6 +54,12 @@ namespace camera_driver
         // std::shared_ptr<rmoss_cam::CamServer> cam_server;
         
     private:
+        int frame_cnt; 
+        bool save_video_;
+        bool is_first_loop;
+        std::shared_ptr<cv::VideoWriter> video_writer_;
+        std::future<void> writer_video_;
+        
         HikCamParam hik_cam_params_;
         std::unique_ptr<HikCamera> hik_cam;
         std::unique_ptr<HikCamera> init_hik_cam();

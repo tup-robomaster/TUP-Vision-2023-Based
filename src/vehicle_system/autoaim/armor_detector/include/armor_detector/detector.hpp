@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2022-11-30 21:01:17
+ * @LastEditTime: 2022-12-01 21:59:43
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -10,6 +10,7 @@
 #include "global_interface/msg/point2f.hpp"
 #include "global_interface/msg/target.hpp"
 
+// #include "../prediction/prediction.h"
 #include "./armor_tracker.h"
 // #include "./inference.h"
 #include "./inference_api2.hpp"
@@ -28,7 +29,7 @@ typedef std::chrono::_V2::steady_clock::time_point TimePoint;
 
 namespace armor_detector
 {
-    struct DebugParam
+    struct debug_params
     {
         bool debug_without_com;
         bool using_imu;
@@ -41,7 +42,7 @@ namespace armor_detector
         bool print_letency;
         bool print_target_info;
 
-        DebugParam()
+        debug_params()
         {
             debug_without_com = true;
             using_imu = false;
@@ -56,7 +57,7 @@ namespace armor_detector
         }
     };
 
-    struct DetectorParam
+    struct detector_params
     {
         int dw, dh;             //letterbox对原图像resize的padding区域的宽度和高度
         float rescale_ratio;    //缩放比例 
@@ -78,7 +79,7 @@ namespace armor_detector
         double armor_conf_high_thres;
 
         Color color;
-        DetectorParam()
+        detector_params()
         {
             color = RED;
             armor_type_wh_thres = 3;
@@ -96,30 +97,67 @@ namespace armor_detector
             armor_conf_high_thres = 0.82;
         }
     };
+
+    typedef enum OutpostStatus
+    {
+        NORMAL,     // 常速旋转
+        CONTROLLED, // 速度减半
+        STILL       // 静止
+    } OutpostStatus;
+
+    typedef enum SpinningStatus
+    {
+        STILL_SPINNING,
+        MOVEMENT_SPINNING
+    } SpinningStatus;
+
+    typedef enum SystemModel
+    {
+        CVMODEL,
+        CAMODEL,
+        CTMODEL,
+        CTRVMODEL,
+        CTRAMODEL,
+        SINGERMODEL,
+        CSMODEL,
+        IMMMODEL
+    } SystemModel;
+
+    typedef struct TargetInfo
+    {
+        Eigen::Vector3d xyz;
+        int dist;
+        int timestamp;
+        bool is_spinning;
+        bool is_sentry_mode;
+        SpinningStatus spinning_status;
+        OutpostStatus sentry_armor_status;
+        SystemModel system_model;
+    } TargetInfo, *TargetInfoPtr;
     
-    class Detector
+    class detector
     {
     public:
-        Detector(const std::string& camera_name, const std::string& camera_param_path, const std::string& network_path,
-            const DetectorParam& detector_params_, const DebugParam& debug_params_, const GyroParam& gyro_params_);
-        ~Detector();
+        detector(const std::string& camera_name, const std::string& camera_param_path, const std::string& network_path,
+            const detector_params& detector_params_, const debug_params& debug_params_, const gyro_params& gyro_params_);
+        ~detector();
 
     private:
         std::string camera_name;
         std::string camera_param_path;
         std::string network_path;
-        DetectorParam detector_params_;
+        detector_params detector_params_;
 
     public:
         void run();
         bool armor_detect(global_user::TaskData &src);
-        bool gyro_detector(global_user::TaskData &src, global_interface::msg::Target& target_info);
+        bool gyro_detector(global_user::TaskData &src, global_interface::msg::Target& target_info, TargetInfoPtr& target_ptr);
 
         Point2i cropImageByROI(Mat &img);
         ArmorTracker* chooseTargetTracker(vector<ArmorTracker*> trackers, int timestamp);
         int chooseTargetID(vector<Armor> &armors, int timestamp);
 
-        void debugParams(const DetectorParam& detector_params, const DebugParam& debug_params, const GyroParam& gyro_params);
+        void debugParams(const detector_params& detector_params, const debug_params& debug_params, const gyro_params& gyro_params);
     public:
         std::vector<ArmorObject> objects;
         std::vector<Armor> armors;
@@ -133,16 +171,19 @@ namespace armor_detector
         Armor last_armor;
         coordsolver::coordsolver coordsolver_;
         ArmorDetector detector_;
-        SpinningDetector spinning_detector_;
+        spinning_detector spinning_detector_;
 
         std::vector<ArmorTracker> trackers;
         std::multimap<std::string, ArmorTracker> trackers_map;
         std::map<string, int> new_armors_cnt_map;    //装甲板计数map，记录新增装甲板数
         
         Eigen::Matrix3d rmat_imu;
+    
+    public:
+        TimePoint time_start;
+    
     private:
         int count;
-        TimePoint time_start;
         TimePoint time_infer;
         TimePoint time_crop;
         
@@ -165,6 +206,6 @@ namespace armor_detector
         // coordsolver::coordsolver coordsolver_;
 
         //debug
-        DebugParam debug_params_;
+        debug_params debug_params_;
     }; 
 } //namespace detector

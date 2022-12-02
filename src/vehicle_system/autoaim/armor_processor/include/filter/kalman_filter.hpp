@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:00:19
- * @LastEditTime: 2022-11-30 11:15:47
+ * @LastEditTime: 2022-11-26 20:33:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/kalman_filter.hpp
  */
 #ifndef KALMAN_FILTER_HPP_
@@ -65,7 +65,6 @@ namespace armor_processor
             void Predict(const double& dt);
             virtual void updatePrediction() {}
             virtual void updateMeasurement() {}
-            virtual void setCoeff(const double&) {}
 
             /**
              * @brief 更新状态向量

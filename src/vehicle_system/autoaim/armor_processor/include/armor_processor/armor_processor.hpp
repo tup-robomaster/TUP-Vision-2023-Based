@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-17 00:27:33
- * @LastEditTime: 2022-11-30 11:11:26
+ * @LastEditTime: 2022-11-21 10:08:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor/armor_processor.hpp
  */
 #ifndef ARMOR_PRECESSOR_HPP
@@ -40,7 +40,7 @@ namespace armor_processor
         ~Processor();
 
         //预测(接收armor_detector节点发布的目标信息进行预测)
-        void predictor(cv::Mat& src, global_interface::msg::Target& target_info);
+        void predictor(global_interface::msg::Target& target_info);
 
     private:
         Eigen::Vector3d aiming_point_;

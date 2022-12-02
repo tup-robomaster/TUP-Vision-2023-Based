@@ -13,6 +13,7 @@
     balance_r: 2022
     debug: true
     using_shared_memory: false
+    save_video: false
 
 /daheng_cam_driver:
   ros__parameters:
@@ -21,7 +22,7 @@
     image_height: 1024
     width_scale: 1
     height_scale: 1
-    exposure_time: 1000
+    exposure_time: 3000
     exposure_gain: 14
     exposure_gain_b: 0
     exposure_gain_g: 0
@@ -30,7 +31,8 @@
     balance_g: 1.0
     balance_r: 1.548
     debug: true
-    using_shared_memory: true
+    using_shared_memory: false
+    save_video: false
     
 /usb_cam_driver:
   ros__parameters:
@@ -41,3 +43,6 @@
     fps: 30
     debug: true
     using_shared_memory: false
+    using_video: true
+    video_path: "/home/tup/Videos/gyro_video.webm"
+    save_video: false

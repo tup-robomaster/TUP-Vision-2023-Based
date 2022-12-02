@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 14:30:38
- * @LastEditTime: 2022-11-21 12:01:07
+ * @LastEditTime: 2022-12-02 18:09:44
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_cam_node.cpp
  */
 #include "../../include/hik_driver/hik_cam_node.hpp"
@@ -24,6 +24,28 @@ namespace camera_driver
         catch(const std::exception& e)
         {
             std::cerr << e.what() << '\n';
+        }
+
+        this->declare_parameter<bool>("save_video", false);
+        save_video_ = this->get_parameter("save_video").as_bool();
+        if(save_video_)
+        {
+            // Video save
+            frame_cnt = 0;
+            const std::string &storage_location = "src/camera_driver/video/";
+            char now[64];
+            std::time_t tt;
+            struct tm *ttime;
+            int width = IMAGE_WIDTH;
+            int height = IMAGE_HEIGHT;
+
+            tt = time(nullptr);
+            ttime = localtime(&tt);
+            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", ttime);  // 以时间为名字
+            std::string now_string(now);
+            std::string path(std::string(storage_location + now_string).append(".avi"));
+            video_writer_ = std::make_shared<cv::VideoWriter>(path, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30.0, cv::Size(width, height));    // Avi format
+            is_first_loop = true;
         }
         
         // create img publisher
@@ -184,32 +206,70 @@ namespace camera_driver
 
     void HikCamNode::image_callback()
     {
-        if(!hik_cam->get_frame(frame))
+        if(using_shared_memory)
         {
-            RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
+            while(1)
+            {
+                if(!hik_cam->get_frame(frame))
+                {
+                    RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
+                }
+
+                if(!frame.empty())
+                {
+                    memcpy(this->shared_memory_ptr, frame.data, IMAGE_HEIGHT * IMAGE_WIDTH * 3);
+                }
+
+                if(save_video_)
+                {
+                    // Video recorder
+                    frame_cnt++;
+                    if(frame_cnt % 10 == 0)
+                    {
+                        frame_cnt = 0;
+                        //异步读写加速,避免阻塞生产者
+                        if (is_first_loop)
+                            is_first_loop = false;
+                        else
+                            writer_video_.wait();
+                        writer_video_ = std::async(std::launch::async, [&](){video_writer_->write(frame);});
+                    }
+                }
+
+                // cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
+                // cv::imshow("daheng_cam_frame", frame);
+                // cv::waitKey(1);
+            }
         }
-
-        auto now = std::chrono::steady_clock::now();
-
-        if(!frame.empty())
+        else 
         {
-            if(using_shared_memory)
-            {
-                memcpy(this->shared_memory_ptr, frame.data, IMAGE_HEIGHT * IMAGE_WIDTH * 3);
-            }
-            else
-            {
-                this->last_frame = now;
-                rclcpp::Time timestamp = this->get_clock()->now();
-                sensor_msgs::msg::Image::UniquePtr msg = convert_frame_to_msg(frame);
+            auto now = std::chrono::steady_clock::now();
+            this->last_frame = now;
+            rclcpp::Time timestamp = this->get_clock()->now();
+            sensor_msgs::msg::Image::UniquePtr msg = convert_frame_to_msg(frame);
 
-                image_pub->publish(std::move(msg));
+            image_pub->publish(std::move(msg));
+
+            if(save_video_)
+            {
+                // Video recorder
+                frame_cnt++;
+                if(frame_cnt % 10 == 0)
+                {
+                    frame_cnt = 0;
+                    //异步读写加速,避免阻塞生产者
+                    if (is_first_loop)
+                        is_first_loop = false;
+                    else
+                        writer_video_.wait();
+                    writer_video_ = std::async(std::launch::async, [&](){video_writer_->write(frame);});
+                }
             }
+
+            // cv::namedWindow("hik_cam_frame", cv::WINDOW_AUTOSIZE);
+            // cv::imshow("hik_cam_frame", frame);
+            // cv::waitKey(1);
         }
-
-        // cv::namedWindow("hik_cam_frame", cv::WINDOW_AUTOSIZE);
-        // cv::imshow("hik_cam_frame", frame);
-        // cv::waitKey(1);
     }
 
     rcl_interfaces::msg::SetParametersResult HikCamNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)

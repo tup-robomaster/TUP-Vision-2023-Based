@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2022-11-21 11:58:40
+ * @LastEditTime: 2022-12-02 17:54:39
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -15,9 +15,31 @@ namespace camera_driver
     : Node("usb_driver", option), is_filpped(false)
     {
         RCLCPP_WARN(this->get_logger(), "Camera driver node...");
-       
+        
         usb_cam_ = init_usb_cam();
         
+        this->declare_parameter<bool>("save_video", false);
+        save_video_ = this->get_parameter("save_video").as_bool();
+        if(save_video_)
+        {
+            // Video save
+            frame_cnt = 0;
+            const std::string &storage_location = "src/camera_driver/video/";
+            char now[64];
+            std::time_t tt;
+            struct tm *ttime;
+            int width = IMAGE_WIDTH;
+            int height = IMAGE_HEIGHT;
+
+            tt = time(nullptr);
+            ttime = localtime(&tt);
+            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", ttime);  // 以时间为名字
+            std::string now_string(now);
+            std::string path(std::string(storage_location + now_string).append(".avi"));
+            video_writer_ = std::make_shared<cv::VideoWriter>(path, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30.0, cv::Size(width, height));    // Avi format
+            is_first_loop = true;
+        }
+
         rclcpp::QoS qos(0);
         qos.keep_last(1);
         qos.best_effort();
@@ -33,11 +55,26 @@ namespace camera_driver
 
         // auto camera_calibr_file = this->declare_parameter("camera_calibration_file", "file://config/camera.yaml");
         // cam_info_manager->loadCameraInfo(camera_calibr_file);
-
-        cap.open(usb_cam_->usb_cam_params_.camera_id);
-        if(cap.isOpened())
+        this->declare_parameter<bool>("using_video", true);
+        using_video_ = this->get_parameter("using_video").as_bool();
+        this->declare_parameter<std::string>("video_path", " ");
+        video_path_ = this->get_parameter("video_path").as_string();
+        
+        if(using_video_)
         {
-            RCLCPP_INFO(this->get_logger(), "open camera success!");
+            cap.open(video_path_);
+            if(!cap.isOpened())
+            {
+                RCLCPP_ERROR(this->get_logger(), "Open camera failed!");
+            }
+        }
+        else
+        {
+            cap.open(usb_cam_->usb_cam_params_.camera_id);
+            if(cap.isOpened())
+            {
+                RCLCPP_INFO(this->get_logger(), "Open camera success!");
+            }
         }
 
         cap.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_->usb_cam_params_.image_width);
@@ -197,7 +234,7 @@ namespace camera_driver
         if(frame.rows != usb_cam_->usb_cam_params_.image_width || frame.cols != usb_cam_->usb_cam_params_.image_height)
         { 
             cv::resize(frame, frame, cv::Size(usb_cam_->usb_cam_params_.image_width, usb_cam_->usb_cam_params_.image_height));
-            RCLCPP_INFO(this->get_logger(), "resize frame...");
+            RCLCPP_INFO(this->get_logger(), "Resize frame...");
         }
 
         ros_image.header = header;
@@ -209,7 +246,7 @@ namespace camera_driver
         ros_image.is_bigendian = false;
         ros_image.data.assign(frame.datastart, frame.dataend);
 
-        RCLCPP_INFO(this->get_logger(), "copy frame...");
+        RCLCPP_INFO(this->get_logger(), "Copy frame...");
         // ros_image.is_bigendian = (std::endian::native == std::endian::big);
         // ros_image.step = frame.cols * frame.elemSize();
         // size_t size = ros_image.step * frame.rows;
@@ -243,7 +280,7 @@ namespace camera_driver
 
         auto msg_ptr = std::make_shared<sensor_msgs::msg::Image>(ros_image);
 
-        RCLCPP_INFO(this->get_logger(), "msg_ptr...");
+        // RCLCPP_INFO(this->get_logger(), "Msg_ptr...");
   
         // cv::namedWindow("raw", cv::WINDOW_AUTOSIZE);
         // cv::imshow("raw", frame);
@@ -254,7 +291,7 @@ namespace camera_driver
     void usb_cam_node::image_callback()
     {
         cap >> frame;
-
+        
         // RCLCPP_INFO(this->get_logger(), "frame stream...");
         auto now = std::chrono::steady_clock::now();
         
@@ -311,6 +348,22 @@ namespace camera_driver
 
                 // camera_info_pub.publish(image_msg, camera_info_msg);
                 frame_pub->publish(std::move(msg));
+            }
+
+            if(save_video_)
+            {
+                // Video recorder
+                frame_cnt++;
+                if(frame_cnt % 10 == 0)
+                {
+                    frame_cnt = 0;
+                    //异步读写加速,避免阻塞生产者
+                    if (is_first_loop)
+                        is_first_loop = false;
+                    else
+                        writer_video_.wait();
+                    writer_video_ = std::async(std::launch::async, [&](){video_writer_->write(frame);});
+                }
             }
 
             // cv::namedWindow("raw_image", cv::WINDOW_AUTOSIZE);

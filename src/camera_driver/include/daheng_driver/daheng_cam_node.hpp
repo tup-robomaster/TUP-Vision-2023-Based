@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 02:02:35
- * @LastEditTime: 2022-11-21 11:35:03
+ * @LastEditTime: 2022-12-02 17:58:59
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_cam_node.hpp
  */
 #ifndef DAHENG_CAM_NODE_HPP_
@@ -55,6 +55,12 @@ namespace camera_driver
         // void img_callback();
     
     private:
+        int frame_cnt; 
+        bool save_video_;
+        bool is_first_loop;
+        std::shared_ptr<cv::VideoWriter> video_writer_;
+        std::future<void> writer_video_;
+
         DahengCamParam daheng_cam_param_;
         std::unique_ptr<DaHengCam> daheng_cam;
         std::unique_ptr<DaHengCam> init_daheng_cam();

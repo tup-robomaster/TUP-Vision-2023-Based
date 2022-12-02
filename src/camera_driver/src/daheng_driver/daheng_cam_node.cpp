@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 14:25:39
- * @LastEditTime: 2022-11-21 11:58:05
+ * @LastEditTime: 2022-12-02 18:11:31
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
  */
 #include "../../include/daheng_driver/daheng_cam_node.hpp"
@@ -18,6 +18,28 @@ namespace camera_driver
         
         // camera params initialize 
         daheng_cam = init_daheng_cam();
+
+        this->declare_parameter<bool>("save_video", false);
+        save_video_ = this->get_parameter("save_video").as_bool();
+        if(save_video_)
+        {
+            // Video save
+            frame_cnt = 0;
+            const std::string &storage_location = "src/camera_driver/video/";
+            char now[64];
+            std::time_t tt;
+            struct tm *ttime;
+            int width = IMAGE_WIDTH;
+            int height = IMAGE_HEIGHT;
+
+            tt = time(nullptr);
+            ttime = localtime(&tt);
+            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", ttime);  // 以时间为名字
+            std::string now_string(now);
+            std::string path(std::string(storage_location + now_string).append(".avi"));
+            video_writer_ = std::make_shared<cv::VideoWriter>(path, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30.0, cv::Size(width, height));    // Avi format
+            is_first_loop = true;
+        }
 
         //QoS    
         rclcpp::QoS qos(0);
@@ -63,7 +85,7 @@ namespace camera_driver
              * 
              */
             // 生成key
-            key_ = ftok("./", 9);
+            key_ = ftok("./", 5);
             
             // 返回内存id
             shared_memory_id_ = shmget(key_, IMAGE_HEIGHT * IMAGE_WIDTH * 3, IPC_CREAT | 0666 | IPC_EXCL);
@@ -182,7 +204,43 @@ namespace camera_driver
 
     void DahengCamNode::image_callback()
     {
-        while(1)
+        if(using_shared_memory)
+        {
+            while(1)
+            {
+                if(!daheng_cam->get_frame(frame))
+                {
+                    RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
+                    return;
+                }
+
+                if(!frame.empty())
+                {
+                    memcpy(this->shared_memory_ptr, frame.data, IMAGE_HEIGHT * IMAGE_WIDTH * 3);
+                }
+
+                if(save_video_)
+                {
+                    // Video recorder
+                    frame_cnt++;
+                    if(frame_cnt % 10 == 0)
+                    {
+                        frame_cnt = 0;
+                        //异步读写加速,避免阻塞生产者
+                        if (is_first_loop)
+                            is_first_loop = false;
+                        else
+                            writer_video_.wait();
+                        writer_video_ = std::async(std::launch::async, [&](){video_writer_->write(frame);});
+                    }
+                }
+
+                // cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
+                // cv::imshow("daheng_cam_frame", frame);
+                // cv::waitKey(1);
+            }
+        }
+        else
         {
             if(!daheng_cam->get_frame(frame))
             {
@@ -191,24 +249,30 @@ namespace camera_driver
             }
 
             auto now = std::chrono::steady_clock::now();
-            if(!frame.empty())
+            this->last_frame = now;
+            rclcpp::Time timestamp = this->get_clock()->now();
+            sensor_msgs::msg::Image::UniquePtr msg = convert_frame_to_msg(frame);
+            image_pub->publish(std::move(msg));
+
+            if(save_video_)
             {
-                if(using_shared_memory)
+                // Video recorder
+                frame_cnt++;
+                if(frame_cnt % 10 == 0)
                 {
-                    memcpy(this->shared_memory_ptr, frame.data, IMAGE_HEIGHT * IMAGE_WIDTH * 3);
+                    frame_cnt = 0;
+                    //异步读写加速,避免阻塞生产者
+                    if (is_first_loop)
+                        is_first_loop = false;
+                    else
+                        writer_video_.wait();
+                    writer_video_ = std::async(std::launch::async, [&](){video_writer_->write(frame);});
                 }
-                else
-                {
-                    this->last_frame = now;
-                    rclcpp::Time timestamp = this->get_clock()->now();
-                    sensor_msgs::msg::Image::UniquePtr msg = convert_frame_to_msg(frame);
-                    
-                    image_pub->publish(std::move(msg));
-                }
-                // cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
-                // cv::imshow("daheng_cam_frame", frame);
-                // cv::waitKey(1);
             }
+            
+            // cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
+            // cv::imshow("daheng_cam_frame", frame);
+            // cv::waitKey(1);
         }
     }
 

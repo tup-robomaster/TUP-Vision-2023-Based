@@ -96,9 +96,20 @@ add_executable(armor_detector_node
   src/armor_detector/armor_tracker.cpp 
   src/armor_detector/detector.cpp 
   src/armor_detector/spinning_detector.cpp
-  include/armor_detector/inference_api2.hpp
+  # include/armor_detector/inference_api2.hpp
   src/armor_detector/inference_api2.cpp
-  src/armor_detector/detector_node.cpp 
+  src/armor_detector/detector_node.cpp
+  # include/armor_processor/armor_processor.hpp 
+  src/armor_processor/armor_processor.cpp
+  # include/filter/kalman_filter.hpp
+  src/filter/kalman_filter.cpp
+  src/filter/motion_model.cpp 
+  src/filter/imm.cpp 
+  src/filter/model_generator.cpp 
+  # include/filter/particle_filter.hpp
+  src/filter/particle_filter.cpp
+  # include/prediction/prediction.h
+  src/prediction/prediction.cpp
 )
 
 # add_executable(testing
@@ -121,6 +132,8 @@ target_link_libraries(armor_detector_node
   yaml-cpp.so 
   glog.so 
   fmt.so
+  ceres.so
+  lapack.so 
 )
 
 # rclcpp_components_register_nodes(${PROJECT_NAME}

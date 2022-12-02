@@ -26,19 +26,38 @@
     camera_name: "KE0200110075" 
     camera_type: 0
     camera_param_path: src/global_user/config/camera.yaml
-    network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
+    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
+    network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
 
     #debug
     debug_without_com: true
     using_imu: false
     using_roi: true
+    draw_predict: true
     show_aim_cross: false
     show_img: false
     show_fps: false
     print_letency: false
     print_target_info: false
     detect_red: true
-    using_shared_memory: true
+    using_shared_memory: false
+
+    # debug params
+    debug: true
+    disable_filter: false
+    disable_fitting: false
+    show_predict: false
+    show_transformed_info: false
+
+    # Singer model(--->CS Model)
+    singer_alpha: 1.0 #1/f
+    singer_a_max: 0.1
+    singer_p_max: 0.1
+    singer_p0: 0.8
+    singer_dt: 1.2
+    singer_sigma: 0.1
+    singer_p: 1.0
+    singer_r: 1.0
 
 # 自瞄预测节点参数配置 
 /armor_processor:
@@ -74,7 +93,7 @@
     singer_p_max: 0.1
     singer_p0: 0.8
     singer_dt: 5.0
-    singer_sigma: 0.005
+    singer_sigma: 0.1
     singer_p: 1.0
     singer_r: 1.0
   

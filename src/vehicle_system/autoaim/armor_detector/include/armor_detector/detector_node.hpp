@@ -2,11 +2,12 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2022-11-30 20:55:50
+ * @LastEditTime: 2022-12-01 21:13:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector_node.hpp
  */
+#include "../armor_processor/armor_processor.hpp"
 #include "../../global_user/include/global_user/global_user.hpp"
-#include "./detector.hpp"
+// #include "./detector.hpp"
 
 //ros
 #include <rclcpp/rclcpp.hpp>
@@ -36,15 +37,15 @@
 
 namespace armor_detector
 {
-    class DetectorNode : public rclcpp::Node
+    class detector_node : public rclcpp::Node
     {
         typedef std::chrono::_V2::steady_clock::time_point TimePoint;
         typedef global_interface::msg::Armors ArmorsMsg;
         typedef global_interface::msg::Target TargetMsg;
 
     public:
-        DetectorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
-        ~DetectorNode();
+        detector_node(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
+        ~detector_node();
         
     private:
         //订阅图像  
@@ -61,6 +62,12 @@ namespace armor_detector
         //发布装甲信息
         ArmorsMsg armors_info;
         rclcpp::Publisher<TargetMsg>::SharedPtr armors_pub;
+
+        TargetInfoPtr target_ptr;
+
+        //
+        rclcpp::Publisher<TargetMsg>::SharedPtr predict_info_pub;
+        rclcpp::Publisher<global_interface::msg::Gimbal>::SharedPtr gimbal_info_pub_;
     
     private:    
         //params callback
@@ -72,16 +79,27 @@ namespace armor_detector
         // std::vector<Armor> detect_armors(const sensor_msgs::msg::Image::SharedPtr& img);
   
     public:
-        DetectorParam detector_params_;
-        DebugParam debug_;
-        GyroParam gyro_params_;
+        detector_params detector_params_;
+        debug_params debug_;
+        gyro_params gyro_params_;
         void getParameters();
 
         // rclcpp::Node handle;
         // image_transport::ImageTransport it;
-        std::unique_ptr<Detector> detector_;
-        std::unique_ptr<Detector> init_detector();
+        std::unique_ptr<detector> detector_;
+        std::unique_ptr<detector> init_detector();
+    
+    private:
+        PredictParam predict_param_;
+        // SingerModelParam singer_model_param_;
+        SingerModel singer_model_param_;
+        DebugParam debug_param_;
+        std::string filter_param_path_;
+        std::string coord_param_path_;
+        std::string coord_param_name_;
 
+        std::unique_ptr<Processor> processor_;
+        std::unique_ptr<Processor> init_armor_processor();
     protected:
         /**
          * @brief 共享图像数据内存

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-11-30 19:41:47
+ * @LastEditTime: 2022-11-26 20:04:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.h
  */
 #ifndef PREDICTION_HPP_
@@ -45,41 +45,11 @@ typedef SingerPositionMeasurementModel<double> SingerPosModel;
 
 namespace armor_processor
 {
-    typedef enum SentryArmorStatus
-    {
-        NORMAL,     // 常速旋转
-        CONTROLLED, // 速度减半
-        STILL       // 静止
-    } SentryArmorStatus;
-
-    typedef enum SpinningStatus
-    {
-        STILL_SPINNING,
-        MOVEMENT_SPINNING
-    } SpinningStatus;
-
-    typedef enum SystemModel
-    {
-        CV,
-        CA,
-        CT,
-        CTRV,
-        CTRA,
-        SINGER,
-        CS,
-        IMM
-    } SystemModel;
-
     typedef struct TargetInfo
     {
         Eigen::Vector3d xyz;
         int dist;
         int timestamp;
-        bool is_spinning;
-        bool is_sentry_mode;
-        SpinningStatus spinning_status;
-        SentryArmorStatus sentry_armor_status;
-        SystemModel system_model;
     } TargetInfo, *TargetInfoPtr;
 
     struct PredictStatus
@@ -96,11 +66,10 @@ namespace armor_processor
 
     struct CurveFittingCost
     {
-        const bool _axis;
-        const double _x, _y, _t, _coeff;
+        const double _x, _y;
 
-        CurveFittingCost(bool axis, double x, double y, double t, double coeff)
-        : _axis(axis), _x (x), _y(y), _t(t), _coeff(coeff) {}
+        CurveFittingCost(double x, double y)
+        : _x (x), _y(y) {}
 
         //计算残差
         template<class T>
@@ -108,35 +77,20 @@ namespace armor_processor
             const T* const params, // 模型参数，有3维
             T* residual) const     // 残差
         {
-            // residual[0] = T (_x) - params[0] * T(_t); // f(x) = a0 + a1 * t + a2 * t^2 
-            residual[0] = T (_x) - params[0] * T(_t) - params[1] * T(_t) * T(_t); // f(x) = a0 + a1 * t + a2 * t^2 
-            // residual[0] = T (_x) - params[0] * ceres::cos(params[1] * T (_t) + params[2]); // f(x) = a0 + a1 * cos(wt + THETA)
-            // residual[0] = T (_x) - params[0] * ceres::cos(params[2] * T (_t)) - params[1] * ceres::sin(params[2] * T (_t)); // f(x) = a0 + a1 * cos(wt) + b1 * sin(wt) 
+            // residual[0] = T (_y) - params[0] * T(_x); // f(x) = a0 + a1 * x + a2 * x^2 
+            residual[0] = T (_y) - params[0] * T(_x) - params[1] * T(_x) * T(_x); // f(x) = a0 + a1 * x + a2 * x^2 
+            // residual[0] = T (_y) - params[0] * ceres::cos(params[1] * T (_x) + params[2]); // f(x) = a0 + a1 * cos(wx + THETA)
+            // residual[0] = T (_y) - params[0] * ceres::cos(params[2] * T (_x)) - params[1] * ceres::sin(params[2] * T (_x)); // f(x) = a0 + a1 * cos(wx) + b1 * sin(wx) 
+
             return true;
         }
+    };
 
-        // 前哨站旋转装甲板轨迹拟合
-        template<class T>
-        bool operator()
-        (
-            const T* const x0,
-            const T* const y0,
-            const T* const theta,
-            T* residual
-        ) const
-        {
-            if(!_axis)
-            {   // x轴
-                residual[0] = x0[0] + 0.2765 * ceres::cos(0.8 * M_PI * _coeff * _t + theta[0]) - _x;
-            }
-            else
-            {   // y轴
-                residual[0] = y0[0] + 0.2765 * ceres::sin(0.8 * M_PI * _coeff * _t + theta[0]) - _y;
-            }
-            return true;
-        }
+    struct XAxisFitting
+    {
+        double _x, _y, _t;
+        XAxisFitting(double x, double y, double t) : _x(x), _y(y), _t(t) {}
 
-        //小陀螺+左右横移运动轨迹拟合（反陀螺）
         template <class T>
         bool operator()
         (
@@ -148,60 +102,32 @@ namespace armor_processor
             T* residual
         ) const
         {
-            if(!_axis)
-            {   //x轴
-                residual[0] = x0[0] + 0.25 * ceres::cos(w[0] * T(_t)) + V[0] * T(_t) * ceres::cos(theta[0]) * _coeff - _x;
-            }
-            else
-            {   //y轴
-                residual[0] = y0[0] + 0.25 * ceres::sin(w[0] * T(_t)) + V[0] * T(_t) * ceres::sin(theta[0]) * _coeff - _y;
-            }
-            return true;
+            residual[0] = x0[0] + 0.25 * ceres::cos(w[0] * T(_t)) + V[0] * T(_t) * ceres::cos(theta[0]) - _x;
+            return 0;
         }
     };
 
-    // struct XAxisFitting
-    // {
-    //     double _x, _y, _t;
-    //     XAxisFitting(double x, double y, double t) : _x(x), _y(y), _t(t) {}
+    struct YAxisFitting
+    {
+        double _x, _y, _t;
+        YAxisFitting(double x, double y, double t) : _x(x), _y(y), _t(t) {}
 
-    //     template <class T>
-    //     bool operator()
-    //     (
-    //         const T* const w,
-    //         const T* const theta,
-    //         const T* const V,
-    //         const T* const x0,
-    //         const T* const y0,
-    //         T* residual
-    //     ) const
-    //     {
-    //         residual[0] = x0[0] + 0.25 * ceres::cos(w[0] * T(_t)) + V[0] * T(_t) * ceres::cos(theta[0]) - _x;
-    //         return true;
-    //     }
-    // };
+        template <class T>
+        bool operator()
+        (
+            const T* const w,
+            const T* const theta,
+            const T* const V,
+            const T* const x0,
+            const T* const y0,
+            T* residual
+        ) const
+        {
+            residual[0] = y0[0] + 0.25 * ceres::sin(w[0] * T(_t)) + V[0] * T(_t) * ceres::sin(theta[0]) - _y;
+            return 0;
+        }
+    };
 
-    // struct YAxisFitting
-    // {
-    //     double _x, _y, _t;
-    //     YAxisFitting(double x, double y, double t) : _x(x), _y(y), _t(t) {}
-
-    //     template <class T>
-    //     bool operator()
-    //     (
-    //         const T* const w,
-    //         const T* const theta,
-    //         const T* const V,
-    //         const T* const x0,
-    //         const T* const y0,
-    //         T* residual
-    //     ) const
-    //     {
-    //         residual[0] = y0[0] + 0.25 * ceres::sin(w[0] * T(_t)) + V[0] * T(_t) * ceres::sin(theta[0]) - _y;
-    //         return true;
-    //     }
-    // };
-    
     struct PredictParam
     {
         double bullet_speed;    //弹速
@@ -218,7 +144,7 @@ namespace armor_processor
             max_time_delta = 1000;     
             max_cost = 509;           
             max_v = 8;              
-            min_fitting_lens = 20;   
+            min_fitting_lens = 10;   
             shoot_delay = 100;       
             window_size = 3;        
         }
@@ -328,7 +254,7 @@ namespace armor_processor
         // ArmorPredictor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param, const std::string filter_param_path);
         ArmorPredictor(const PredictParam& predict_param, const SingerModel& singer_model_param, const DebugParam& debug_param, const std::string filter_param_path);
         
-        Eigen::Vector3d predict(cv::Mat& src, TargetInfoPtr target_ptr, int timestamp);
+        Eigen::Vector3d predict(Eigen::Vector3d xyz, int timestamp);
 
         bool setBulletSpeed(double speed);
         Eigen::Vector3d shiftWindowFilter(int start_idx);
@@ -336,15 +262,10 @@ namespace armor_processor
         PredictStatus predict_pf_run(TargetInfo target, Vector3d& result, int timestamp);
         PredictStatus uncouple_fitting_predict(Eigen::Vector3d& result, int timestamp);
 
-        //移动轨迹拟合预测（小陀螺+横移->旋轮线，若目标处于原地小陀螺状态，则剔除掉模型中的横移项）
-        PredictStatus couple_fitting_predict(bool is_still_spinning, Eigen::Vector3d& result, int timestamp);
+        //移动轨迹拟合预测（小陀螺+横移->旋轮线）
+        PredictStatus couple_fitting_predict(Eigen::Vector3d& result, int timestamp);
     
     private:
-        double history_vx_[4] = {0};
-        double history_acc_[4] = {0};
-        double predict_vx_[4] = {0};
-        double predict_acc_[4] = {0};
-        
         // filter::ExtendKalmanFilter<SingerState> ekf; // EKF
         // SingerControl u; // 控制量
         // Singer singer; // Singer模型
@@ -378,16 +299,13 @@ namespace armor_processor
         void set_singer_dt(double& dt);
         void set_singer_p(double& p);
         void set_singer_r(double& r);
-
-        bool is_imm_init;
+    
     private:
         //IMM Model
         std::shared_ptr<IMM> imm_;
         ModelGenerator model_generator_;
+        bool is_imm_init;
         PredictStatus predict_based_imm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d& target_v, double& ax, int timestamp);
-    
-    private:
-        PredictStatus spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int timestamp);
     };
 
 } //namespace armor_processor

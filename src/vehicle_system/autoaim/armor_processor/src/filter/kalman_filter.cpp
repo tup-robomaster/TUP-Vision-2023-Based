@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2022-11-29 19:25:47
+ * @LastEditTime: 2022-11-27 17:35:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/kalman_filter.cpp
  */
 #include "../../include/filter/kalman_filter.hpp"
@@ -102,7 +102,7 @@ namespace armor_processor
         updateMeasurement();
 
         // 测量值与预测值之间的残差
-        Eigen::VectorXd v = z - this->H_ * this->x_;
+        Eigen::VectorXd v = z - this->x_;
         
         // 残差的协方差矩阵
         Eigen::MatrixXd S = this->H_ * this->P_ * this->H_.transpose() + this->R_;
@@ -118,7 +118,7 @@ namespace armor_processor
         //更新
         this->x_ = this->x_ + K * v;
         Eigen::MatrixXd I;
-        I.setIdentity(6, 6);
+        I.setIdentity();
         Eigen::MatrixXd C = (I - K * this->H_);
         this->P_ = C * this->P_ * C.transpose() + K * this->R_ * K.transpose();
     }

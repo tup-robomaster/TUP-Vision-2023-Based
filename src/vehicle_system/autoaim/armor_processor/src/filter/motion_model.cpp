@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 12:36:22
- * @LastEditTime: 2022-11-30 11:13:05
+ * @LastEditTime: 2022-11-26 20:43:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/motion_model.cpp
  */
 #include "../../include/filter/motion_model.hpp"
@@ -21,14 +21,12 @@ namespace armor_processor
             exit(1);
         }
 
-        this->P_.setIdentity(6, 6);
-
+        this->P_.setIdentity();
         this->R_.resize(4, 4);
-        this->R_ << 60,    0,   0,   0,
-                    0,    60,   0,   0,
-                    0,    0,   30,   0,
-                    0,    0,   0,   30;
-
+        this->R_ << 0.25, 0, 0, 0,
+                    0, 0.25, 0, 0,
+                    0, 0, 5, 0, 0,
+                    0, 0, 0, 0, 5;
         this->x_ = x;  //x(x, y, theta, v)
         this->F_.resize(6, 6);
         this->H_.resize(4, 6);
@@ -64,25 +62,7 @@ namespace armor_processor
         E << 400, 0,
                0, 400;
         
-        this->Q_.setIdentity();
-        // this->Q_ = G * E * G.transpose();
-
-        this->Q_ << 0.4, 0, 0, 0,  0, 0,
-                    0, 0.4, 0,  0, 0, 0,
-                    0, 0, 0.3,  0,  0, 0,
-                    0, 0, 0,  0.3,  0, 0,
-                    0, 0, 0,  0,  0.2, 0,
-                    0, 0, 0,  0,  0, 0.2;
-    }
-
-    void CV::setCoeff(const double& coeff)
-    {
-        this->F_ << 1, 0, coeff * dt, 0,  0, 0,
-                    0, 1, 0,  coeff * dt, 0, 0,
-                    0, 0, 1,  0,  0, 0,
-                    0, 0, 0,  1,  0, 0,
-                    0, 0, 0,  0,  1, 0,
-                    0, 0, 0,  0,  0, 1;
+        this->Q_ = G * E * G.transpose();
     }
 
     void CV::updateMeasurement()
@@ -100,13 +80,12 @@ namespace armor_processor
         }
         this->x_ = x;
 
-        this->P_.setIdentity(6, 6);
+        this->P_.setIdentity();
         this->R_.resize(4, 4);
-        this->R_ << 60,    0,   0,   0,
-                    0,    60,   0,   0,
-                    0,    0,   30,   0,
-                    0,    0,   0,   30;
-
+        this->R_ << 0.25,    0,   0,   0,
+                       0, 0.25,   0,   0,
+                       0,    0, 5.0,   0,
+                       0,    0,   0, 5.0;
         this->F_.resize(6, 6);
         this->H_.resize(4, 6);
         this->H_ << 1, 0,  0, 0, 0, 0,
@@ -120,7 +99,7 @@ namespace armor_processor
     void CA::updatePrediction()
     {
         this->F_ << 1, 0, dt,   0, 0.5 * pow(dt, 2),              0,
-                    0, 1,  0,  dt,                 0, 0.5 * pow(dt, 2),
+                    0, 1,  0,  dt,                 0, 0.5 * (dt, 2),
                     0, 0,  1,   0,                dt,             0,
                     0, 0,  0,   1,                 0,            dt,
                     0, 0,  0,   0,                 1,             0,
@@ -138,27 +117,8 @@ namespace armor_processor
         Eigen::Matrix2d E;
         E << 400,   0,
                0, 400;
-               
-        this->Q_.setIdentity(6, 6);
-        // this->Q_ = G * E * G.transpose();    
-
-        this->Q_ << 0.4, 0, 0, 0,  0, 0,
-                    0, 0.4, 0,  0, 0, 0,
-                    0, 0, 0.3,  0,  0, 0,
-                    0, 0, 0,  0.3,  0, 0,
-                    0, 0, 0,  0,  0.2, 0,
-                    0, 0, 0,  0,  0, 0.2;
+        this->Q_ = G * E * G.transpose();    
     }   
-
-    void CA::setCoeff(const double& coeff)
-    {
-        this->F_ << 1, 0, coeff * dt,   0, 0.5 * pow(coeff * dt, 2),              0,
-                    0, 1,  0,  coeff * dt,                 0, 0.5 * pow(coeff * dt, 2),
-                    0, 0,  1,   0,                coeff * dt,             0,
-                    0, 0,  0,   1,                 0,            coeff * dt,
-                    0, 0,  0,   0,                 1,             0,
-                    0, 0,  0,   0,                 0,             1;
-    }
 
     void CA::updateMeasurement()
     {}
@@ -173,11 +133,10 @@ namespace armor_processor
 
         this->P_.setIdentity(6, 6);
         this->R_.resize(4, 4);
-        this->R_ << 60,    0,   0,   0,
-                    0,    60,   0,   0,
-                    0,    0,   30,   0,
-                    0,    0,   0,   30;
-
+        this->R_ << 0.25,    0,   0,   0,
+                       0, 0.25,   0,   0,
+                       0,    0, 5.0,   0,
+                       0,    0,   0, 5.0;
         this->F_.resize(6, 6);
         this->H_.resize(4, 6);
         this->H_ << 1, 0,  0, 0, 0, 0,
@@ -211,25 +170,8 @@ namespace armor_processor
             E << 400,   0,
                    0, 400;
 
-            this->Q_.setIdentity(6, 6); 
-            // this->Q_ = G * E * G.transpose();
-            this->Q_ << 0.4, 0, 0, 0,  0, 0,
-                        0, 0.4, 0,  0, 0, 0,
-                        0, 0, 0.3,  0,  0, 0,
-                        0, 0, 0,  0.3,  0, 0,
-                        0, 0, 0,  0,  0.2, 0,
-                        0, 0, 0,  0,  0, 0.2;
-        }
-    }
-
-    void CT::setCoeff(const double& coeff)
-    {
-        this->F_ << 1, 0,       sin(w_ * coeff * dt) / w_, (cos(w_ * coeff * dt) - 1) / w_, 0, 0,
-                            0, 1, (1 - cos(w_ * coeff * dt)) / w_,       sin(w_ * coeff * dt) / w_, 0, 0,
-                            0, 0,            cos(w_ * coeff * dt),           -sin(w_ * coeff * dt), 0, 0,
-                            0, 0,            sin(w_ * coeff * dt),            cos(w_ * coeff * dt), 0, 0,
-                            0, 0,                       0,                       0, 0, 0,
-                            0, 0,                       0,                       0, 0, 0;
+            this->Q_ = G * E * G.transpose();
+        }           
     }
 
     void CT::updateMeasurement()

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-11-30 19:51:07
+ * @LastEditTime: 2022-11-26 20:18:32
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -77,7 +77,7 @@ namespace armor_processor
             is_ekf_init = false;
     }
     
-    Eigen::Vector3d ArmorPredictor::predict(cv::Mat& src, TargetInfoPtr target_ptr, int timestamp)
+    Eigen::Vector3d ArmorPredictor::predict(Eigen::Vector3d xyz, int timestamp)
     {
         if(!is_init)
         {
@@ -88,7 +88,7 @@ namespace armor_processor
         }
 
         auto t1 = std::chrono::steady_clock::now();
-        TargetInfo target = {target_ptr->xyz, (int)target_ptr->xyz.norm(), timestamp};
+        TargetInfo target = {xyz, (int)xyz.norm(), timestamp};
         
         // -----------------对位置进行粒子滤波,以降低测距噪声影响-------------------------------------
         // Eigen::VectorXd measure (2);
@@ -139,7 +139,7 @@ namespace armor_processor
         if (history_info_.size() < 4)
         {
             final_target_ = target;
-            return target.xyz;
+            return xyz;
         }
         else if (history_info_.size() < predict_param_.min_fitting_lens)
         {  //当队列长度不足时不使用拟合
@@ -199,150 +199,109 @@ namespace armor_processor
         Eigen::Vector3d result_pf = {0, 0, 0};
         Eigen::Vector3d result_fitting = {0, 0, 0};
         Eigen::Vector3d result_ekf = {0, 0, 0};
-        Eigen::Vector3d result_imm = {0, 0, 0};
         PredictStatus is_pf_available;
         PredictStatus is_fitting_available;
         PredictStatus is_ekf_available;
-        PredictStatus is_imm_available;
       
         if(!filter_disabled_ && fitting_disabled_)
         {   //禁用曲线拟合
             //需注意粒子滤波使用相对时间（自上一次检测时所经过ms数），拟合使用自首帧所经过时间
             // auto is_pf_available = predict_pf_run(target, result_pf, delta_time_estimate);
-            
-            if(target_ptr->system_model == CS)
-            {   // 基于CS模型的卡尔曼滤波
-                is_ekf_available = predict_ekf_run(target, result_ekf, target_v, ax, delta_time_estimate);
-            }
-            else if(target_ptr->system_model == IMM)
-            {
-                is_imm_available = predict_based_imm(target, result_imm, target_v, ax, delta_time_estimate);
-            }
+            is_ekf_available = predict_ekf_run(target, result_ekf, target_v, ax, delta_time_estimate);
 
             if(is_ekf_available.xyz_status[0])
             {   //目前kf仅对x方向机动做预测
                 result[0] = result_ekf[0];
             }
-            else if(is_imm_available.xyz_status[0])
-                result[0] = result_imm[0];
             else
-                result[0] = target.xyz[0];
+            {
+                result[0] = xyz[0];
+            }
             
-            if(is_imm_available.xyz_status[1])
-                result[1] = result_imm[1];
-            else if(is_ekf_available.xyz_status[1])
-                result[1] = result_ekf[1];
-            else
-                result[1] = target.xyz[1];
-                       
-            if(is_imm_available.xyz_status[2])
-                result[2] = result_imm[2];
-            else if(is_ekf_available.xyz_status[2])
-                result[2] = result_ekf[2];
-            else
-                result[2] = target.xyz[2];
+            result[1] = xyz[1];
+            result[2] = xyz[2];
         }
 
         if(filter_disabled_ && !fitting_disabled_)
         {   //禁用滤波
-
-            // 击打前哨站模式
-            if(target_ptr->is_sentry_mode && target_ptr->sentry_armor_status == NORMAL)
-            {
-                is_fitting_available = spinningPredict(false, target_ptr, result, time_estimate);  
-            }
-            else if(target_ptr->is_sentry_mode && target_ptr->sentry_armor_status == CONTROLLED)
-            {
-                is_fitting_available = spinningPredict(true, target_ptr, result, time_estimate);  
-            }
-
-            // 反陀螺模式
-            if(target_ptr->is_spinning && target_ptr->spinning_status == STILL_SPINNING)
-            {
-                is_fitting_available = couple_fitting_predict(true, result, time_estimate);  
-            }
-            else if(target_ptr->is_spinning && target_ptr->spinning_status == MOVEMENT_SPINNING)
-            {
-                is_fitting_available = couple_fitting_predict(false, result, time_estimate);  
-            }
+            is_fitting_available = couple_fitting_predict(result_fitting, time_estimate);
 
             if(is_fitting_available.xyz_status[0])
                 result[0] = result_fitting[0];
             else
-                result[0] = target.xyz[0];
+                result[0] = xyz[0];
 
             if(is_fitting_available.xyz_status[1])
                 result[1] = result_fitting[1];
             else
-                result[1] = target.xyz[1];
+                result[1] = xyz[1];
 
             if(is_fitting_available.xyz_status[2])
                 result[2] = result_fitting[2];
             else
-                result[2] = target.xyz[2];
+                result[2] = xyz[2];
         }
 
-        // if(!fitting_disabled_ && !filter_disabled_)
-        // {   //卡尔曼滤波和曲线拟合异步运行，对二者预测结果进行融合
+        if(!fitting_disabled_ && !filter_disabled_)
+        {   //卡尔曼滤波和曲线拟合异步运行，对二者预测结果进行融合
 
-        //     // auto get_pf_available = std::async(std::launch::async, [=, &result_pf](){return predict_pf_run(target, result_pf, delta_time_estimate);});
-        //     auto get_ekf_available = std::async(std::launch::async, [=, &result_ekf](){return predict_ekf_run(target, result_ekf, target_v, ax, delta_time_estimate);});
+            // auto get_pf_available = std::async(std::launch::async, [=, &result_pf](){return predict_pf_run(target, result_pf, delta_time_estimate);});
+            auto get_ekf_available = std::async(std::launch::async, [=, &result_ekf](){return predict_ekf_run(target, result_ekf, target_v, ax, delta_time_estimate);});
         
-        //     // 轨迹拟合（解耦）
-        //     // auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return uncouple_fitting_predict(result_fitting, time_estimate);});
+            // 轨迹拟合（解耦）
+            // auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return uncouple_fitting_predict(result_fitting, time_estimate);});
 
-        //     //小陀螺轨迹拟合（耦合）
-        //     auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return couple_fitting_predict(result_fitting, time_estimate);});
+            //小陀螺轨迹拟合（耦合）
+            auto get_fitting_available = std::async(std::launch::async, [=, &result_fitting](){return couple_fitting_predict(result_fitting, time_estimate);});
         
-        //     // is_pf_available = get_pf_available.get();
-        //     is_ekf_available = get_ekf_available.get();
-        //     is_fitting_available = get_fitting_available.get();
+            // is_pf_available = get_pf_available.get();
+            is_ekf_available = get_ekf_available.get();
+            is_fitting_available = get_fitting_available.get();
 
-        //     // 进行融合
-        //     if(is_fitting_available.xyz_status[0])
-        //     {
-        //         result[0] = result_fitting[0];
-        //     }
-        //     // else if(is_pf_available.xyz_status[0])
-        //     // {
-        //     //     result[0] = result_pf[0];
-        //     // }
-        //     else if(is_ekf_available.xyz_status[0])
-        //     {
-        //         result[0] = result_ekf[0];
-        //     }
-        //     else
-        //     {
-        //         result[0] = target.xyz[0];
-        //     }
+            // 进行融合
+            if(is_fitting_available.xyz_status[0])
+            {
+                result[0] = result_fitting[0];
+            }
+            // else if(is_pf_available.xyz_status[0])
+            // {
+            //     result[0] = result_pf[0];
+            // }
+            else if(is_ekf_available.xyz_status[0])
+            {
+                result[0] = result_ekf[0];
+            }
+            else
+            {
+                result[0] = xyz[0];
+            }
 
-        //     if(is_fitting_available.xyz_status[1])
-        //     {
-        //         result[1] = result_fitting[1];
-        //     }
-        //     // else if(is_pf_available.xyz_status[1])
-        //     // {
-        //     //     result[1] = result_pf[1];
-        //     // }
-        //     else
-        //     {
-        //         result[1] = target.xyz[1];
-        //     }
+            if(is_fitting_available.xyz_status[1])
+            {
+                result[1] = result_fitting[1];
+            }
+            // else if(is_pf_available.xyz_status[1])
+            // {
+            //     result[1] = result_pf[1];
+            // }
+            else
+            {
+                result[1] = xyz[1];
+            }
 
-        //     if(is_fitting_available.xyz_status[2] && !fitting_disabled_)
-        //     {
-        //         result[2] = result_fitting[2];
-        //     }
-        //     else
-        //     {
-        //         result[2] = target.xyz[2];
-        //     }
-        // }
-
+            if(is_fitting_available.xyz_status[2] && !fitting_disabled_)
+            {
+                result[2] = result_fitting[2];
+            }
+            else
+            {
+                result[2] = xyz[2];
+            }
+        }
 
         if(fitting_disabled_ && filter_disabled_)
         {
-            result = target.xyz;
+            result = xyz;
         }
 
         // result = result_pf;
@@ -352,75 +311,36 @@ namespace armor_processor
         delta_time_estimate = 0;
         // result_pf = target.xyz;
 
-        if(debug_param_.draw_predict && is_ekf_available.xyz_status[0])
+        if(debug_param_.draw_predict)
         {
-            // double x_offset = 400;
-            // double y_offset = 400;
-            // double z_offset = 200;
-            // if (cnt < 2000)
-            // {
-            //     auto x = cnt * 5;
-            //     cv::circle(pic_x, cv::Point2f((timestamp) / 25, xyz[0] * 90 + x_offset), 1, cv::Scalar(0, 0, 255), 1);
-            //     // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[0] * 100 + x_offset),1,cv::Scalar(0,255,0),1);
-            //     cv::circle(pic_x, cv::Point2f((timestamp + delta_time_estimate) / 25, result_ekf[0] * 90 + x_offset), 1, cv::Scalar(255, 255, 255), 1);
-            //     // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[0] * 100 + x_offset),1,cv::Scalar(255,255,0),1);
-            //     // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result[0]+ 200),1,cv::Scalar(255,255,255),1);
+            double x_offset = 400;
+            double y_offset = 400;
+            double z_offset = 200;
+            if (cnt < 2000)
+            {
+                auto x = cnt * 5;
+                cv::circle(pic_x, cv::Point2f((timestamp) / 25, xyz[0] * 90 + x_offset), 1, cv::Scalar(0, 0, 255), 1);
+                // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[0] * 100 + x_offset),1,cv::Scalar(0,255,0),1);
+                cv::circle(pic_x, cv::Point2f((timestamp + delta_time_estimate) / 25, result_ekf[0] * 90 + x_offset), 1, cv::Scalar(255, 255, 255), 1);
+                // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[0] * 100 + x_offset),1,cv::Scalar(255,255,0),1);
+                // cv::circle(pic_x,cv::Point2f((timestamp + delta_time_estimate) / 10,result[0]+ 200),1,cv::Scalar(255,255,255),1);
 
 
-            //     // cv::circle(pic_y,cv::Point2f((timestamp) / 10,xyz[1] * 100 + y_offset),1,cv::Scalar(0,0,255),1);
-            //     // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[1] * 100 + y_offset),1,cv::Scalar(0,255,0),1);
-            //     // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[1] * 100 + y_offset),1,cv::Scalar(255,255,0),1);
-            //     // // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result[1]+ 200),1,cv::Scalar(255,255,255),1);
+                // cv::circle(pic_y,cv::Point2f((timestamp) / 10,xyz[1] * 100 + y_offset),1,cv::Scalar(0,0,255),1);
+                // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[1] * 100 + y_offset),1,cv::Scalar(0,255,0),1);
+                // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[1] * 100 + y_offset),1,cv::Scalar(255,255,0),1);
+                // // cv::circle(pic_y,cv::Point2f((timestamp + delta_time_estimate) / 10,result[1]+ 200),1,cv::Scalar(255,255,255),1);
 
-            //     // cv::circle(pic_z,cv::Point2f((timestamp) / 10,xyz[2] * 100 + z_offset),1,cv::Scalar(0,0,255),1);
-            //     // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[2] * 100  + z_offset),1,cv::Scalar(0,255,0),1);
-            //     // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[2] * 100 + z_offset),1,cv::Scalar(255,255,0),1);
-            //     // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result[2]),1,cv::Scalar(255,255,255),1);
-            //     cnt++;
-            // }
-            // cv::imshow("result_x",pic_x);
-            // // cv::imshow("result_y",pic_y);
-            // // cv::imshow("result_z",pic_z);
-            // cv::waitKey(1);
-
-            //draw curve
-            float mean_vx = (predict_vx_[0] + predict_vx_[1] + predict_vx_[2] + predict_vx_[3]) / 4.0;
-            char ch1[10];
-            sprintf(ch1, "%.4f", mean_vx);
-            std::string str1 = ch1;
-            float k1 = 50;
-            cv::line(src, cv::Point(0, 250), cv::Point(300, 250), cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
-            cv::line(src, cv::Point(0, 250 + mean_vx * k1), cv::Point(300, 250 + mean_vx * k1), cv::Scalar(255, 255, 0), 1, cv::LINE_AA);
-            cv::putText(src, str1, cv::Point(310, 250 + mean_vx * k1), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(255, 255, 0));
-            cv::line(src, cv::Point(60, 250 + predict_vx_[3] * k1), cv::Point(140, 250 + predict_vx_[2] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
-            cv::line(src, cv::Point(140, 250 + predict_vx_[2] * k1), cv::Point(210, 250 + predict_vx_[1] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
-            cv::line(src, cv::Point(210, 250 + predict_vx_[1] * k1), cv::Point(300, 250 + predict_vx_[0] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
-            
-            // std::cout << "his_vx: " << history_vx_[0] << " " << history_vx_[1] << " " << history_vx_[2] << " " << history_vx_[3] << std::endl;
-
-            float his_mean_vx = (history_vx_[0] + history_vx_[1] + history_vx_[2] + history_vx_[3]) / 4.0;
-            char ch3[10];
-            sprintf(ch3, "%.4f", his_mean_vx);
-            std::string str3 = ch3;
-            float k3 = 30;
-            cv::line(src, cv::Point(300, 250), cv::Point(600, 250), cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
-            cv::line(src, cv::Point(300, 250 + his_mean_vx * k3), cv::Point(600, 250 + his_mean_vx * k3), cv::Scalar(255, 255, 0), 1, cv::LINE_AA);
-            cv::putText(src, str3, cv::Point(610, 250 + his_mean_vx * k3), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(255, 255, 0));
-            cv::line(src, cv::Point(360, 250 + history_vx_[3] * k3), cv::Point(440, 250 + history_vx_[2] * k3), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
-            cv::line(src, cv::Point(440, 250 + history_vx_[2] * k3), cv::Point(510, 250 + history_vx_[1] * k3), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
-            cv::line(src, cv::Point(510, 250 + history_vx_[1] * k3), cv::Point(600, 250 + history_vx_[0] * k3), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
-       
-            // float mean_acc = (predict_acc_[0] + predict_acc_[1] + predict_acc_[2] + predict_acc_[3]) / 4.0;
-            // char ch2[10];
-            // sprintf(ch2, "%.5f", mean_acc);
-            // std::string str2 = ch2;
-            // float k2 = 20000;
-            // cv::line(src, cv::Point(300, 250), cv::Point(600, 250), cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
-            // cv::line(src, cv::Point(300, 250 + mean_acc * k2), cv::Point(600, 250 + mean_acc * k2), cv::Scalar(255, 255, 0), 1, cv::LINE_AA);
-            // cv::putText(src, str2, cv::Point(610, 250 + mean_acc * k2), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(255, 255, 0));
-            // cv::line(src, cv::Point(360, 250 + predict_acc_[3] * k2), cv::Point(440, 250 + predict_acc_[2] * k2), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
-            // cv::line(src, cv::Point(440, 250 + predict_acc_[2] * k2), cv::Point(510, 250 + predict_acc_[1] * k2), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
-            // cv::line(src, cv::Point(510, 250 + predict_acc_[1] * k2), cv::Point(600, 250 + predict_acc_[0] * k2), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+                // cv::circle(pic_z,cv::Point2f((timestamp) / 10,xyz[2] * 100 + z_offset),1,cv::Scalar(0,0,255),1);
+                // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_pf[2] * 100  + z_offset),1,cv::Scalar(0,255,0),1);
+                // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result_fitting[2] * 100 + z_offset),1,cv::Scalar(255,255,0),1);
+                // cv::circle(pic_z,cv::Point2f((timestamp + delta_time_estimate) / 10,result[2]),1,cv::Scalar(255,255,255),1);
+                cnt++;
+            }
+            cv::imshow("result_x",pic_x);
+            // cv::imshow("result_y",pic_y);
+            // cv::imshow("result_z",pic_z);
+            cv::waitKey(1);
         }
 
         final_target_ = target;
@@ -540,7 +460,7 @@ namespace armor_processor
             problem_x.AddResidualBlock (     // 向问题中添加误差项
             // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致
                 new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 2> ( 
-                    new CurveFittingCost (0, target_info.timestamp / 1e3, 0, (target_info.xyz[0] - params_x[0]), 0)
+                    new CurveFittingCost (target_info.timestamp / 1e3, (target_info.xyz[0] - params_x[0]))
                 ),
                 new ceres::CauchyLoss(0.5),            // 核函数，这里不使用，为空
                 &params_x[1]                 // 待估计参数
@@ -548,7 +468,7 @@ namespace armor_processor
             problem_y.AddResidualBlock(     // 向问题中添加误差项 
             // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致
                 new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 2> ( 
-                    new CurveFittingCost (0, target_info.timestamp / 1e3, 0, (target_info.xyz[1] - params_y[0]), 0)
+                    new CurveFittingCost (target_info.timestamp / 1e3, (target_info.xyz[1] - params_y[0]))
                 ),
             new ceres::CauchyLoss(0.5),            // 核函数，这里不使用，为空
                 &params_y[1]                 // 待估计参数
@@ -617,13 +537,8 @@ namespace armor_processor
         return is_available;
     }
 
-    PredictStatus ArmorPredictor::couple_fitting_predict(bool is_still_spinning, Eigen::Vector3d& result, int time_estimated)
-    {   
-        /**
-         * @brief 车辆小陀螺运动轨迹拟合(已知量：角速度&陀螺半径）
-         * 若目标仅处于原地小陀螺状态，则剔除掉模型中的横移项，直接给平动项乘以系数0。
-         */
-        
+    PredictStatus ArmorPredictor::couple_fitting_predict(Eigen::Vector3d& result, int time_estimated)
+    {
         auto time_start = std::chrono::steady_clock::now();
         double params[] = {0, 0, 0, 0, 0};
 
@@ -635,90 +550,33 @@ namespace armor_processor
         options.linear_solver_type = ceres::DENSE_QR;
         options.minimizer_progress_to_stdout = false;
 
-        if(!is_still_spinning)
+        for(auto& target_info : history_info_)
         {
-            for(auto& target_info : history_info_)
-            {   
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1, 1, 1>
-                    (
-                        new CurveFittingCost(0, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3, 1)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &params[0],
-                    &params[1],
-                    &params[2],
-                    &params[3],
-                    &params[4]
-                );
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1, 1, 1>
-                    (
-                        new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3, 1)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &params[0],
-                    &params[1],
-                    &params[2],
-                    &params[3],
-                    &params[4]
-                );
-                // problem.AddResidualBlock(
-                //     new ceres::AutoDiffCostFunction<XAxisFitting, 1, 1, 1, 1, 1, 1>
-                //     (
-                //         new XAxisFitting(target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3)
-                //     ),
-                //     new ceres::CauchyLoss(0.5),
-                //     &params[0],
-                //     &params[1],
-                //     &params[2],
-                //     &params[3],
-                //     &params[4]
-                // );
+            problem.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<XAxisFitting, 1, 1, 1, 1, 1, 1>
+                (
+                    new XAxisFitting(target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3)
+                ),
+                new ceres::CauchyLoss(0.5),
+                &params[0],
+                &params[1],
+                &params[2],
+                &params[3],
+                &params[4]
+            );
 
-                // problem.AddResidualBlock(
-                //     new ceres::AutoDiffCostFunction<YAxisFitting, 1, 1, 1, 1, 1, 1>
-                //     (
-                //         new YAxisFitting(target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3)
-                //     ),
-                //     new ceres::CauchyLoss(0.5),
-                //     &params[0],
-                //     &params[1],
-                //     &params[2],
-                //     &params[3],
-                //     &params[4]
-                // );
-            }
-        }
-        else
-        {
-            for(auto& target_info : history_info_)
-            {   
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1, 1, 1>
-                    (
-                        new CurveFittingCost(0, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3, 0)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &params[0],
-                    &params[1],
-                    &params[2],
-                    &params[3],
-                    &params[4]
-                );
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1, 1, 1>
-                    (
-                        new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3, 0)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &params[0],
-                    &params[1],
-                    &params[2],
-                    &params[3],
-                    &params[4]
-                );
-            }
+            problem.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<YAxisFitting, 1, 1, 1, 1, 1, 1>
+                (
+                    new YAxisFitting(target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3)
+                ),
+                new ceres::CauchyLoss(0.5),
+                &params[0],
+                &params[1],
+                &params[2],
+                &params[3],
+                &params[4]
+            );
         }
 
         ceres::Solve(options, &problem, &summary);
@@ -731,115 +589,8 @@ namespace armor_processor
         is_available.xyz_status[0] = (summary.final_cost <= predict_param_.max_cost);
         is_available.xyz_status[1] = (summary.final_cost <= predict_param_.max_cost);
 
-        double x_pred, y_pred;
-        if(!is_still_spinning)
-        {
-            x_pred = params[3] + 0.25 * ceres::cos(params[0] * (time_estimated / 1e3)) + params[2] * (time_estimated / 1e3) * ceres::cos(params[1]);
-            y_pred = params[4] + 0.25 * ceres::sin(params[0] * (time_estimated / 1e3)) + params[2] * (time_estimated / 1e3) * ceres::sin(params[1]);
-        }
-        else
-        {
-            x_pred = params[3] + 0.25 * ceres::cos(params[0] * (time_estimated / 1e3));
-            y_pred = params[4] + 0.25 * ceres::sin(params[0] * (time_estimated / 1e3));
-        }
-
-        result = {x_pred, y_pred, history_info_.end()->xyz[2]};
-        
-        return is_available;
-    }
-
-    PredictStatus ArmorPredictor::spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int time_estimated)
-    {  
-        /**
-         * @brief 前哨站旋转装甲运动预测（已知量：旋转半径&转速），考虑我方占领控制区旋转装甲板转速减半，应加入条件判断。
-         * 
-         */
-        //轨迹拟合
-        auto time_start = std::chrono::steady_clock::now();
-        double x0, y0, theta;
-
-        ceres::Problem problem;
-        ceres::Solver::Options options;
-        ceres::Solver::Summary summary;
-
-        options.max_num_iterations = 200;
-        options.linear_solver_type = ceres::DENSE_QR;
-        options.minimizer_progress_to_stdout = false;
-
-        if(!is_controlled)
-        {
-            for(auto& target_info : history_info_)
-            {   
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1>
-                    (
-                        new CurveFittingCost(0, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3, 1)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &x0,
-                    &y0,
-                    &theta
-                );
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1>
-                    (
-                        new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3, 1)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &x0,
-                    &y0,
-                    &theta
-                );
-            }
-        }
-        else
-        {
-            for(auto& target_info : history_info_)
-            {   
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1>
-                    (
-                        new CurveFittingCost(0, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3, 0.5)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &x0,
-                    &y0,
-                    &theta
-                );
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1>
-                    (
-                        new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e3, 0.5)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &x0,
-                    &y0,
-                    &theta
-                );
-            }
-        }
-
-        ceres::Solve(options, &problem, &summary);
-
-        auto time_now = std::chrono::steady_clock::now();
-        auto t = std::chrono::duration<double, std::milli>(time_now - time_start).count();
-        std::cout << "fitting_fime:" << t / 1e3 << "ms" << std::endl;
-
-        PredictStatus is_available;
-        is_available.xyz_status[0] = (summary.final_cost <= predict_param_.max_cost);
-        is_available.xyz_status[1] = (summary.final_cost <= predict_param_.max_cost);
-
-        double x_pred, y_pred;
-        if(!is_controlled)
-        {
-            x_pred = x0 + 0.2765 * ceres::cos(0.8 * M_PI * (time_estimated / 1e3) + theta);
-            y_pred = y0 + 0.2765 * ceres::sin(0.8 * M_PI * (time_estimated / 1e3) + theta);
-        }
-        else
-        {
-            x_pred = x0 + 0.2765 * ceres::cos(0.4 * M_PI * (time_estimated / 1e3) + theta);
-            y_pred = y0 + 0.2765 * ceres::sin(0.4 * M_PI * (time_estimated / 1e3) + theta);
-        }
+        auto x_pred = params[3] + 0.25 * ceres::cos(params[0] * (time_estimated / 1e3)) + params[2] * (time_estimated / 1e3) * ceres::cos(params[1]);
+        auto y_pred = params[4] + 0.25 * ceres::sin(params[0] * (time_estimated / 1e3)) + params[2] * (time_estimated / 1e3) * ceres::sin(params[1]);
 
         result = {x_pred, y_pred, history_info_.end()->xyz[2]};
         
@@ -901,7 +652,9 @@ namespace armor_processor
 
         if(!is_ekf_init)
         {
-            kalman_filter_.x_ << target.xyz[0], target_v[0], ax;
+            Eigen::VectorXd x(3);
+            x << target.xyz[0], target_v[0], ax;
+            kalman_filter_.x_ = x;
             is_available.xyz_status[0] = false;
             is_ekf_init = true;
         }
