@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2022-12-01 21:13:09
+ * @LastEditTime: 2022-12-02 20:57:19
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector_node.hpp
  */
 #include "../armor_processor/armor_processor.hpp"
@@ -97,6 +97,9 @@ namespace armor_detector
         std::string filter_param_path_;
         std::string coord_param_path_;
         std::string coord_param_name_;
+        std::string camera_name_;
+        std::string camera_param_path_;
+        std::string network_path_;
 
         std::unique_ptr<Processor> processor_;
         std::unique_ptr<Processor> init_armor_processor();

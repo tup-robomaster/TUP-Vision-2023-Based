@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-12-01 22:10:28
+ * @LastEditTime: 2022-12-04 17:13:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector.cpp
  */
 #include "../../include/armor_detector/detector.hpp"
@@ -373,7 +373,7 @@ namespace armor_detector
         spinning_detector_.create_armor_tracker(trackers_map, armors, new_armors_cnt_map, timestamp, dead_buffer_cnt);
 
         //Detect armors status
-        spinning_detector_.is_spinning(trackers_map, new_armors_cnt_map);
+        spinning_detector_.is_spinning(trackers_map, new_armors_cnt_map, timestamp);
 
         //Update spinning score
         spinning_detector_.update_spin_score();
@@ -467,35 +467,63 @@ namespace armor_detector
             // std::cout << 16 << std::endl;
             
             target_ptr->is_spinning = false;
-
             target_info.is_spinning = false;
             target_info.is_still_spinning = false;
+            
             auto cnt = spinning_detector_.spinning_x_map.count(target_key);
             // std::cout << 17 << std::endl;
-            if(cnt == 1)
+            
+            if(is_target_spinning)
             {
-                // std::cout << 18 << std::endl;
-
-                auto candidate = spinning_detector_.spinning_x_map.find(target_key);
-
-                auto t = ((*candidate).second.new_timestamp - (*candidate).second.last_timestamp) / 1e3;
-                auto w = (2 * M_PI) / (4 * t);
-                target_info.w = w;
-                if(((*candidate).second.new_x_back - (*candidate).second.last_x_back) > 0.15 && ((*candidate).second.new_x_font - (*candidate).second.last_x_font) > 0.15)
+                if(cnt == 1)
                 {
-                    target_ptr->is_spinning = true;
-                    target_ptr->spinning_status = MOVEMENT_SPINNING;
+                    auto candidate = spinning_detector_.spinning_x_map.find(target_key);
+
+                    auto t = ((*candidate).second.new_timestamp - (*candidate).second.last_timestamp) / 1e3;
+                    auto w = (2 * M_PI) / (4 * t);
+                    target_info.w = w;
+                    double delta_x_back = abs((*candidate).second.new_x_back - (*candidate).second.last_x_back);
+                    double delta_x_font = abs((*candidate).second.new_x_font - (*candidate).second.last_x_font);
+                    int delta_x_back_2d = abs((*candidate).second.new_x_back_2d - (*candidate).second.last_x_back_2d);
+                    int delta_x_font_2d = abs((*candidate).second.new_x_font_2d - (*candidate).second.last_x_font_2d);
+                    double ave_x_3d = (delta_x_back + delta_x_font) / 2;
+                    double ave_x_2d = (delta_x_back_2d + delta_x_font_2d) / 2;
+
+                    // std::cout << std::endl;
+                    // std::cout << "delta_x_back: " << delta_x_back << std::endl;
+                    // std::cout << "delta_x_font: " << delta_x_font << std::endl;
+                    // std::cout << "x_ave: " << (delta_x_back + delta_x_font) / 2 << std::endl;
+                    // std::cout << std::endl;
                     
-                    target_info.is_spinning = true;
-                    target_info.is_still_spinning = false;
-                }
-                else if((*candidate).second.new_x_back - (*candidate).second.last_x_back < 0.09 && ((*candidate).second.new_x_font - (*candidate).second.last_x_font) < 0.09)
-                {
-                    target_ptr->is_spinning = true;
-                    target_ptr->spinning_status = STILL_SPINNING;
+                    // std::cout << "delta_x_back_2d: " << delta_x_back_2d << std::endl; 
+                    // std::cout << "delta_x_font_2d: " << delta_x_font_2d << std::endl;
+                    // std::cout << "x_2d_ave: " << (delta_x_back_2d + delta_x_font_2d) / 2 << std::endl;
+                    // std::cout << std::endl;
+                    
+                    if((ave_x_2d > spinning_detector_.gyro_params_.delta_x_2d_higher_thresh || ave_x_3d > spinning_detector_.gyro_params_.delta_x_3d_higher_thresh) 
+                    || (ave_x_2d > spinning_detector_.gyro_params_.delta_x_2d_high_thresh && ave_x_3d > spinning_detector_.gyro_params_.delta_x_3d_high_thresh))
+                    // if(ave_x_2d > 51)
+                    {
+                        target_ptr->is_spinning = true;
+                        target_ptr->spinning_status = MOVEMENT_SPINNING;
+                        
+                        target_info.is_spinning = true;
+                        target_info.is_still_spinning = false;
+                    }
+                    else if((ave_x_2d < spinning_detector_.gyro_params_.delta_x_2d_lower_thresh) 
+                    || (ave_x_2d < spinning_detector_.gyro_params_.delta_x_2d_low_thresh && ave_x_3d < spinning_detector_.gyro_params_.delta_x_3d_low_thresh))
+                    // else if(ave_x_2d < 48)
+                    {
+                        target_ptr->is_spinning = true;
+                        target_ptr->spinning_status = STILL_SPINNING;
 
-                    target_info.is_still_spinning = true;
-                    target_info.is_spinning = false;
+                        target_info.is_still_spinning = true;
+                        target_info.is_spinning = false;
+                    }
+                    else
+                    {
+                        target_ptr->is_spinning = false;
+                    }
                 }
             }
 

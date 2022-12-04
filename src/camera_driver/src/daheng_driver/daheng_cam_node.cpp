@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 14:25:39
- * @LastEditTime: 2022-12-02 18:11:31
+ * @LastEditTime: 2022-12-03 21:21:10
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
  */
 #include "../../include/daheng_driver/daheng_cam_node.hpp"
@@ -258,7 +258,7 @@ namespace camera_driver
             {
                 // Video recorder
                 frame_cnt++;
-                if(frame_cnt % 10 == 0)
+                if(frame_cnt % 3 == 0)
                 {
                     frame_cnt = 0;
                     //异步读写加速,避免阻塞生产者

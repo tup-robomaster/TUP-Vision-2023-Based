@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2022-12-02 17:54:39
+ * @LastEditTime: 2022-12-04 10:14:07
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -36,12 +36,12 @@ namespace camera_driver
             strftime(now, 64, "%Y-%m-%d_%H_%M_%S", ttime);  // 以时间为名字
             std::string now_string(now);
             std::string path(std::string(storage_location + now_string).append(".avi"));
-            video_writer_ = std::make_shared<cv::VideoWriter>(path, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30.0, cv::Size(width, height));    // Avi format
+            video_writer_ = std::make_shared<cv::VideoWriter>(path, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 100.0, cv::Size(width, height));    // Avi format
             is_first_loop = true;
         }
 
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(10);
         qos.best_effort();
         qos.reliable();
         qos.durability();
@@ -60,6 +60,7 @@ namespace camera_driver
         this->declare_parameter<std::string>("video_path", " ");
         video_path_ = this->get_parameter("video_path").as_string();
         
+        sleep(10);
         if(using_video_)
         {
             cap.open(video_path_);
@@ -308,6 +309,8 @@ namespace camera_driver
             }
             else
             {
+                // std::cout << "Pub img..." << std::endl;
+
                 // if(!is_filpped)
                 // {
                 //     RCLCPP_INFO(this->get_logger(), "is_filpped...");
@@ -354,7 +357,7 @@ namespace camera_driver
             {
                 // Video recorder
                 frame_cnt++;
-                if(frame_cnt % 10 == 0)
+                if(frame_cnt % 3 == 0)
                 {
                     frame_cnt = 0;
                     //异步读写加速,避免阻塞生产者

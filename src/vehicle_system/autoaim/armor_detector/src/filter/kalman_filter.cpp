@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2022-12-02 14:59:36
+ * @LastEditTime: 2022-12-02 20:14:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/filter/kalman_filter.cpp
  */
 #include "../../include/filter/kalman_filter.hpp"
@@ -75,7 +75,7 @@ namespace armor_detector
         this->dt = dt;
         updatePrediction();
         this->P_ = this->F_ * this->P_ * this->F_.transpose() + this->Q_;
-        std::cout << 12 << std::endl;
+        // std::cout << 12 << std::endl;
     }
 
     void KalmanFilter::Update(const VectorXd& z)

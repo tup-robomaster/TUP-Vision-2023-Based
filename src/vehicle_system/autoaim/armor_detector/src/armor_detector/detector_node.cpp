@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-12-02 14:59:53
+ * @LastEditTime: 2022-12-04 17:30:46
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
@@ -105,16 +105,30 @@ namespace armor_detector
             // // qos.transient_local();
             // qos.durability_volatile();
 
-            if(camera_type == global_user::DaHeng)
+            // if(camera_type == global_user::DaHeng)
+            // {
+            //     img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+            //         std::bind(&detector_node::image_callback, this, _1), transport_));
+            // }
+            // else
+            // {
+            //     img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
+            //         std::bind(&detector_node::image_callback, this, _1), transport_));
+            // }
+            if(!detector_->is_init)
             {
-                img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
-                    std::bind(&detector_node::image_callback, this, _1), transport_));
+                detector_->detector_.initModel(network_path_);
+                detector_->coordsolver_.loadParam(camera_param_path_, camera_name_);
+                if(detector_->is_save_data)
+                {
+                    detector_->data_save.open("src/data/dis_info_1.txt", ios::out | ios::trunc);
+                    detector_->data_save << fixed;
+                }
+                detector_->is_init = true;
             }
-            else
-            {
-                img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
+
+            img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/usb_img",
                     std::bind(&detector_node::image_callback, this, _1), transport_));
-            }
         }
         // std::cout << 1 << std::endl;
 
@@ -261,13 +275,13 @@ namespace armor_detector
                     predict_info_pub->publish(predict_info);
                 }
                 
-                auto time_predict = std::chrono::steady_clock::now();
-                double dr_full_ms = std::chrono::duration<double,std::milli>(time_predict - detector_->time_start).count();
-                putText(src.img, fmt::format("FPS: {}", int(1000 / dr_full_ms)), {10, 25}, cv::FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
+                // auto time_predict = std::chrono::steady_clock::now();
+                // double dr_full_ms = std::chrono::duration<double,std::milli>(time_predict - detector_->time_start).count();
+                // putText(src.img, fmt::format("FPS: {}", int(1000 / dr_full_ms)), {10, 25}, cv::FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
                 // std::cout << 5 << std::endl;
-                cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
-                cv::imshow("dst", src.img);
-                cv::waitKey(1);
+                // cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
+                // cv::imshow("dst", src.img);
+                // cv::waitKey(1);
             }
         }
     }
@@ -315,8 +329,22 @@ namespace armor_detector
         gyro_params_.anti_spin_max_r_multiple = this->get_parameter("anti_spin_max_r_multiple").as_double();
         gyro_params_.hero_danger_zone = this->get_parameter("hero_danger_zone").as_int();
         gyro_params_.max_dead_buffer = this->get_parameter("max_dead_buffer").as_int() ;
+
+        // std::cout << "dist: " << this->get_parameter("max_delta_dist").as_double() << endl;
+
         gyro_params_.max_delta_dist = this->get_parameter("max_delta_dist").as_double();
         gyro_params_.max_delta_t = this->get_parameter("max_delta_t").as_int();
+        gyro_params_.delta_x_3d_high_thresh = this->get_parameter("delta_x_3d_high_thresh").as_double();
+        gyro_params_.delta_x_3d_higher_thresh = this->get_parameter("delta_x_3d_higher_thresh").as_double();
+        gyro_params_.delta_x_3d_low_thresh = this->get_parameter("delta_x_3d_low_thresh").as_double();
+        gyro_params_.delta_x_3d_lower_thresh = this->get_parameter("delta_x_3d_lower_thresh").as_double();
+
+        gyro_params_.delta_x_2d_high_thresh = this->get_parameter("delta_x_2d_high_thresh").as_double();
+        gyro_params_.delta_x_2d_higher_thresh = this->get_parameter("delta_x_2d_higher_thresh").as_double();
+        gyro_params_.delta_x_2d_low_thresh = this->get_parameter("delta_x_2d_low_thresh").as_double();
+        gyro_params_.delta_x_2d_lower_thresh = this->get_parameter("delta_x_2d_lower_thresh").as_double();
+
+        // std::cout << "delta_dist: " << gyro_params_.max_delta_dist << std::endl;
     }
 
     std::unique_ptr<detector> detector_node::init_detector()
@@ -357,18 +385,29 @@ namespace armor_detector
         this->declare_parameter("anti_spin_judge_low_thres", 2e3);
         this->declare_parameter("anti_spin_max_r_multiple", 4.5);
         // this->declare_parameter("hero_danger_zone", 99);
-        this->declare_parameter("max_dead_buffer", 2) ;
-        this->declare_parameter("max_delta_dist", 0.3);
+        this->declare_parameter<int>("max_dead_buffer", 2) ;
+        this->declare_parameter<double>("max_delta_dist", 0.3);
         // this->declare_parameter("max_delta_t", 50);
-        
+
+        this->declare_parameter<double>("delta_x_3d_high_thresh", 0.37);
+        this->declare_parameter<double>("delta_x_3d_higher_thresh", 0.44);
+        this->declare_parameter<double>("delta_x_3d_low_thresh", 0.23);
+        this->declare_parameter<double>("delta_x_3d_lower_thresh", 0.15);
+        this->declare_parameter<double>("delta_x_2d_high_thresh", 65.0);
+        this->declare_parameter<double>("delta_x_2d_higher_thresh", 85.0);
+        this->declare_parameter<double>("delta_x_2d_low_thresh", 35.0);
+        this->declare_parameter<double>("delta_x_2d_lower_thresh", 24.0);
+
         //
         getParameters();
 
-        std::string camera_name = this->get_parameter("camera_name").as_string();
-        std::string camera_param_path = this->get_parameter("camera_param_path").as_string();
-        std::string network_path = this->get_parameter("network_path").as_string();
+        camera_name_ = this->get_parameter("camera_name").as_string();
+        camera_param_path_ = this->get_parameter("camera_param_path").as_string();
+        network_path_ = this->get_parameter("network_path").as_string();
 
-        return std::make_unique<detector>(camera_name, camera_param_path, network_path, detector_params_, debug_, gyro_params_);
+        // std::cout << "delta_dist: " << gyro_params_.max_delta_dist << std::endl;
+
+        return std::make_unique<detector>(camera_name_, camera_param_path_, network_path_, detector_params_, debug_, gyro_params_);
     }
 
     std::unique_ptr<Processor> detector_node::init_armor_processor()
@@ -444,7 +483,7 @@ namespace armor_detector
         {
             return;
         }
-        
+
         // RCLCPP_INFO(this->get_logger(), "...");
 
         auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
@@ -579,6 +618,7 @@ namespace armor_detector
         {
             // std::cout << 6 << std::endl;
         }
+        // std::cout << 1 << std::endl;
         
         cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
         cv::imshow("dst", src.img);

@@ -44,5 +44,6 @@
     debug: true
     using_shared_memory: false
     using_video: true
-    video_path: "/home/tup/Videos/gyro_video.webm"
+    # video_path: "src/camera_driver/video/still_gyro.avi"
+    video_path: "src/camera_driver/video/gyro1.avi"
     save_video: false

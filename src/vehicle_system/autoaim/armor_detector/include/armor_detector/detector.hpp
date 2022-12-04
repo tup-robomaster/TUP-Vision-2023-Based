@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2022-12-01 21:59:43
+ * @LastEditTime: 2022-12-04 16:24:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -90,6 +90,7 @@ namespace armor_detector
             no_crop_thres = 2e-3;
             no_crop_ratio = 2e-3;
             full_crop_ratio = 1e-4;
+            max_delta_dist = 0.5;
 
             hero_danger_zone = 4.0;
             armor_roi_expand_ratio_width = 1.1;
@@ -166,13 +167,14 @@ namespace armor_detector
 
         ofstream data_save;
         bool is_save_data;
-    private:
+    public:
         bool is_init;
         Armor last_armor;
         coordsolver::coordsolver coordsolver_;
         ArmorDetector detector_;
         spinning_detector spinning_detector_;
-
+    
+    private:
         std::vector<ArmorTracker> trackers;
         std::multimap<std::string, ArmorTracker> trackers_map;
         std::map<string, int> new_armors_cnt_map;    //装甲板计数map，记录新增装甲板数
