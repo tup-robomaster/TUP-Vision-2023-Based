@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-12-04 17:13:02
+ * @LastEditTime: 2022-12-06 10:08:17
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector.cpp
  */
 #include "../../include/armor_detector/detector.hpp"
@@ -53,6 +53,8 @@ namespace armor_detector
        
         //gyro_detect_params
         // spinning_detector_ = spinning_detector(_detector_params_.color, _gyro_params_);
+    
+        last_last_status_ = last_status_ = cur_status_ = NONE;
     }
 
     detector::~detector()
@@ -155,7 +157,7 @@ namespace armor_detector
         armors.clear();
         
         if(!detector_.detect(input, objects))
-        {   //若未检测到目标
+        {   // 若未检测到目标
             if(debug_params_.show_aim_cross)
             {
                 line(src.img, Point2f(src.img.size().width / 2, 0), Point2f(src.img.size().width / 2, src.img.size().height), {0,255,0}, 1);
@@ -176,17 +178,17 @@ namespace armor_detector
 
         time_infer = std::chrono::steady_clock::now();
         
-        //将对象排序，保留面积较大的对象
+        // 将对象排序，保留面积较大的对象
         sort(objects.begin(),objects.end(),[](ArmorObject& prev, ArmorObject& next)
         {
             return prev.area > next.area;
         });
 
-        //若对象较多保留前按面积排序后的前max_armors个
+        // 若对象较多保留前按面积排序后的前max_armors个
         if (objects.size() > this->detector_params_.max_armors_cnt)
             objects.resize(this->detector_params_.max_armors_cnt);
         
-        //生成装甲板对象
+        // 生成装甲板对象
         for (auto object : objects)
         {
             if(detector_params_.color == RED)
@@ -275,7 +277,7 @@ namespace armor_detector
                     if (!is_this_armor_available)
                     {
                         continue;
-                        cout<<"IGN"<<endl;
+                        std::cout << "IGN" << std::endl;
                     }
                 }
             }
@@ -303,6 +305,7 @@ namespace armor_detector
             //单目PnP
             auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_IPPE);
             
+
             //防止装甲板类型出错导致解算问题，首先尝试切换装甲板类型，若仍无效则直接跳过该装甲板
             if (pnp_result.armor_cam.norm() > 10 ||
                 isnan(pnp_result.armor_cam[0]) ||
@@ -322,6 +325,12 @@ namespace armor_detector
                         continue;
                     }
             }
+
+            // double yy = pnp_result.armor_cam[2];
+            // pnp_result.armor_cam[2] = pnp_result.armor_cam[1];
+            // pnp_result.armor_cam[1] = yy;
+            
+            // std::cout << "x:" << pnp_result.armor_cam[0] << " y:" << pnp_result.armor_cam[1] << " z:" << pnp_result.armor_cam[2] << std::endl;
 
             armor.center3d_world = pnp_result.armor_world;
             armor.center3d_cam = pnp_result.armor_cam;
@@ -532,20 +541,55 @@ namespace armor_detector
             //若存在一块装甲板
             if (final_armors.size() == 1)
             {
+                if(!cur_frame_.empty())
+                {
+                    cur_frame_.copyTo(last_frame_);
+                    src.img.copyTo(cur_frame_);
+                }
+                else
+                {
+                    src.img.copyTo(cur_frame_);
+                }
+
+                last_last_status_ = last_status_;
+                last_status_ = cur_status_;
+                cur_status_ = SINGER;
+
+                std::cout << "one..." << std::endl;
                 target = final_armors.at(0);
             }
             //若存在两块装甲板
             else if (final_armors.size() == 2)
             {
+                if(!cur_frame_.empty())
+                {
+                    cur_frame_.copyTo(last_frame_);
+                    src.img.copyTo(cur_frame_);
+                }
+                else
+                {
+                    src.img.copyTo(cur_frame_);
+                }
+
+                last_last_status_ = last_status_;
+                last_status_ = cur_status_;
+                cur_status_ = DOUBLE;
+
                 //对最终装甲板进行排序，选取与旋转方向相同的装甲板进行更新
                 sort(final_armors.begin(),final_armors.end(),[](Armor& prev, Armor& next)
                                     {return prev.center3d_cam[0] < next.center3d_cam[0];});
                 //若顺时针旋转选取右侧装甲板更新
                 if (spin_status == CLOCKWISE)
+                {
+                    std::cout << "right..." << std::endl;
                     target = final_armors.at(1);
+                }
                 //若逆时针旋转选取左侧装甲板更新
                 else if (spin_status == COUNTER_CLOCKWISE)
+                {
+                    std::cout << "left..." << std::endl;
                     target = final_armors.at(0);
+                }
             }
 
             //判断装甲板是否切换，若切换将变量置1
@@ -578,6 +622,8 @@ namespace armor_detector
         }
         else
         {
+            last_last_status_ = last_status_ = cur_status_ = NONE;
+
             // std::cout << 20 << std::endl;
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
@@ -620,6 +666,44 @@ namespace armor_detector
 
             // std::cout << 21 << std::endl;
 
+        }
+
+        if(last_last_status_ == DOUBLE && last_status_ == SINGER && cur_status_ == DOUBLE)
+        {
+            // char now[64];
+            // std::time_t tt;
+            // struct tm *ttime;
+            // tt = time(nullptr);
+            // ttime = localtime(&tt);
+            // strftime(now, 64, "%Y-%m-%d_%H_%M_%S", ttime);  // 以时间为名字
+            // std::string now_string(now);
+            // const std::string &storage_location = "src/vehicle_system/autoaim/armor_detector/image/";
+            // std::string path(std::string(storage_location + now_string).append(".png"));
+            
+            std::string img_name = path_prefix + to_string(src.timestamp) + ".jpg";
+            cv::imwrite(img_name, last_frame_);
+
+            std::string label_name = path_prefix + to_string(src.timestamp) + ".txt";
+            std::string content;
+
+            int cls = 0;
+            if(target.id == 7)
+                cls = 9 * target.color - 1;
+            if(target.id != 7)
+                cls = target.id + target.color * 9;
+            
+            content.append(to_string(cls) + " ");
+            for(auto apex : target.apex2d)
+            {
+                content.append(to_string((apex.x - roi_offset.x) / input_size.width));
+                content.append(" ");
+                content.append(to_string((apex.y - roi_offset.y) / input_size.height));
+                content.append(" ");
+            }
+            content.pop_back();
+            file.open(label_name, std::ofstream::app);
+            file << content;
+            file.close();
         }
 
         if (target.color == 2)

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-12-04 17:30:46
+ * @LastEditTime: 2022-12-05 21:11:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
@@ -189,6 +189,7 @@ namespace armor_detector
                     {
                         // RCLCPP_INFO(this->get_logger(), "Target switched...");
                         aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
+                        std::cout << "x: " << target_info.aiming_point.x << " y:" << target_info.aiming_point.y << std::endl;
                         
                         // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
                         
@@ -211,6 +212,7 @@ namespace armor_detector
                         // Eigen::Vector3d aiming_point;
                         aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
 
+                        std::cout << "x: " << target_info.aiming_point.x << " y:" << target_info.aiming_point.y << std::endl;
                         // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
                         // last_predict_point_ = predict_point_;
                         // TargetInfoPtr target_ptr;
@@ -510,6 +512,7 @@ namespace armor_detector
 
                     // RCLCPP_INFO(this->get_logger(), "Target switched...");
                     aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
+                    // std::cout << "x: " << target_info.aiming_point.x << " y:" << target_info.aiming_point.y << std::endl;
                     
                     // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
                     
@@ -535,7 +538,8 @@ namespace armor_detector
 
                     // Eigen::Vector3d aiming_point;
                     aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
-
+                    // std::cout << "x: " << target_info.aiming_point.x << " y:" << target_info.aiming_point.y << std::endl;
+                    // std::cout << "z: " << target_info.aiming_point.z << std::endl;
                     // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
                     // last_predict_point_ = predict_point_;
                     // TargetInfoPtr target_ptr = new TargetInfo();

@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-11-08 17:54:17
-LastEditTime: 2022-12-02 19:00:52
+LastEditTime: 2022-12-05 14:35:17
 FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/launch/armor_detector.launch.py
 '''
 from argparse import Namespace

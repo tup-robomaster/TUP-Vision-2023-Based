@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2022-12-04 10:14:07
+ * @LastEditTime: 2022-12-06 09:34:43
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -25,12 +25,12 @@ namespace camera_driver
             // Video save
             frame_cnt = 0;
             const std::string &storage_location = "src/camera_driver/video/";
-            char now[64];
-            std::time_t tt;
-            struct tm *ttime;
             int width = IMAGE_WIDTH;
             int height = IMAGE_HEIGHT;
 
+            char now[64];
+            std::time_t tt;
+            struct tm *ttime;
             tt = time(nullptr);
             ttime = localtime(&tt);
             strftime(now, 64, "%Y-%m-%d_%H_%M_%S", ttime);  // 以时间为名字
@@ -369,6 +369,7 @@ namespace camera_driver
                 }
             }
 
+            usleep(20000);
             // cv::namedWindow("raw_image", cv::WINDOW_AUTOSIZE);
             // cv::imshow("raw_image", frame);
             // cv::waitKey(1);

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-12-03 22:01:48
+ * @LastEditTime: 2022-12-05 20:05:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/prediction/prediction.h
  */
 #ifndef PREDICTION_HPP_
@@ -146,20 +146,21 @@ namespace armor_detector
             const T* const V,
             const T* const x0,
             const T* const y0,
-            const T* const r,
+            const T* const a,
+            const T* const b,
             const T* const phi,
             T* residual
         ) const
         {
             if(!_axis)
             {   //x轴
-                residual[0] = x0[0] + r[0] * ceres::cos(w[0] * T(_t)) + V[0] * T(_t) * ceres::cos(theta[0]) * _coeff - _x;
-                // residual[0] = x0[0] + r[0] * ceres::cos(w[0] * T(_t) + phi[0]) + V[0] * T(_t) * ceres::cos(theta[0]) * _coeff - _x;
+                // residual[0] = x0[0] + a[0] * ceres::cos(w[0] * T(_t)) + V[0] * T(_t) * ceres::cos(theta[0]) * _coeff - _x;
+                residual[0] = x0[0] + a[0] * ceres::cos(w[0] * T(_t) + phi[0]) + V[0] * T(_t) * ceres::cos(theta[0]) * _coeff - _x;
             }
             else
             {   //y轴
-                residual[0] = y0[0] + r[0] * ceres::sin(w[0] * T(_t)) + V[0] * T(_t) * ceres::sin(theta[0]) * _coeff - _y;
-                // residual[0] = y0[0] + r[0] * ceres::sin(w[0] * T(_t) + phi[0]) + V[0] * T(_t) * ceres::sin(theta[0]) * _coeff - _y;
+                // residual[0] = y0[0] + b[0] * ceres::sin(w[0] * T(_t)) + V[0] * T(_t) * ceres::sin(theta[0]) * _coeff - _y;
+                residual[0] = y0[0] + b[0] * ceres::sin(w[0] * T(_t) + phi[0]) + V[0] * T(_t) * ceres::sin(theta[0]) * _coeff - _y;
             }
             return true;
         }
@@ -181,8 +182,10 @@ namespace armor_detector
             }  
             else
             {   //y(t)=a*(k^2)*(t^2)+(2kad+kb)*t+a(d^2)+bd+c
-                residual[0] = a[0] * pow(k[0], 2) * pow(T(_t), 2) + (2 * k[0] * a[0] * d[0] + k[0] * b[0]) * T(_t) + a[0] * pow(d[0], 2) + b[0] * d[0] + c[0] - _y; 
+                residual[0] = a[0] * pow(k[0], 2) * pow(T(_t), 2) + ((2.0 * (k[0] * a[0] * d[0])) + (k[0] * b[0])) * T(_t) + a[0] * pow(d[0], 2) + b[0] * d[0] + c[0] - _y; 
             }
+
+            return true;
         }
     };
 
@@ -363,7 +366,10 @@ namespace armor_detector
         PredictStatus uncouple_fitting_predict(Eigen::Vector3d& result, int timestamp);
 
         //移动轨迹拟合预测（小陀螺+横移->旋轮线，若目标处于原地小陀螺状态，则剔除掉模型中的横移项）
-        PredictStatus couple_fitting_predict(bool is_still_spinning, Eigen::Vector3d& result, int timestamp);
+        // double fitting_params_[8] = {M_PI, 0, 0, 0, 0, 0.25, 0.25, 0};
+        double fitting_params_[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+        PredictStatus couple_fitting_predict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, int timestamp);
     
     private:
         double history_vx_[4] = {0};

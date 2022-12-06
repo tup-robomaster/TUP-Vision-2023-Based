@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2022-12-04 16:24:31
+ * @LastEditTime: 2022-12-06 09:52:17
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -135,6 +135,13 @@ namespace armor_detector
         OutpostStatus sentry_armor_status;
         SystemModel system_model;
     } TargetInfo, *TargetInfoPtr;
+
+    typedef enum SwitchStatus
+    {
+        NONE,
+        SINGER,
+        DOUBLE
+    } SwitchStatus;
     
     class detector
     {
@@ -209,5 +216,16 @@ namespace armor_detector
 
         //debug
         debug_params debug_params_;
+    
+    private:
+        cv::Mat last_frame_;
+        cv::Mat cur_frame_;
+        SwitchStatus last_last_status_;
+        SwitchStatus last_status_;
+        SwitchStatus cur_status_;
+    
+    private:
+        ofstream file;
+        const std::string path_prefix = "src/vehicle_system/autoaim/armor_detector/dataset/";
     }; 
 } //namespace detector

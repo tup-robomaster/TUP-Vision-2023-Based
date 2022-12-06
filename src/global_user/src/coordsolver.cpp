@@ -2,8 +2,8 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2022-10-14 16:03:23
- * @FilePath: /tup_2023/src/global_user/src/coordsolver.cpp
+ * @LastEditTime: 2022-12-05 20:12:08
+ * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
 
@@ -162,6 +162,9 @@ namespace coordsolver
             result.euler = ::global_user::rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;
         }
+        // std::cout << std::endl;
+        // std::cout << "x:" << result.armor_cam[0] << " y:" << result.armor_cam[1] << " z:" << result.armor_cam[2] << std::endl;
+        // std::cout << std::endl;
         
         return result;
     }
