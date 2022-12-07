@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2022-12-04 16:30:07
+ * @LastEditTime: 2022-12-07 13:37:14
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/spinning_detector.cpp
  */
 #include "../../include/armor_detector/spinning_detector.hpp"
@@ -320,7 +320,7 @@ namespace armor_detector
                         // std::cout << std::endl;
                         // std::cout << "spin: " << abs(spin_movement) << std::endl;
                         //TODO:to be fixed!!!
-                        if (abs(spin_movement) > 80 && abs(spin_delta) > 0.15  && new_armor_timestamp == timestamp && last_armor_timestamp == timestamp)
+                        if (abs(spin_movement) > 80 && abs(spin_delta) > 0.15 && new_armor_timestamp == timestamp && last_armor_timestamp == timestamp)
                         {
                             // std::cout << "Armor switched..." << std::endl;
                             //TODO:

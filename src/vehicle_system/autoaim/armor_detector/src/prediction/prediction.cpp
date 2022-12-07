@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-12-06 21:52:38
+ * @LastEditTime: 2022-12-07 20:18:44
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -77,8 +77,19 @@ namespace armor_detector
             is_init = false;
             is_ekf_init = false;
     }
-    
-    Eigen::Vector3d ArmorPredictor::predict(cv::Mat& src, TargetInfoPtr target_ptr, int timestamp)
+
+    void ArmorPredictor::init(bool target_switched)
+    {
+        if(target_switched)
+        {
+            history_origin_info_.clear();
+            // history_delta_x_pred_.clear();
+            is_predicted = false;
+            return;
+        }
+    }
+
+    Eigen::Vector3d ArmorPredictor::predict(cv::Mat& src, TargetInfoPtr target_ptr, int timestamp, int& sleep_time)
     {
         if(!is_init)
         {
@@ -93,9 +104,11 @@ namespace armor_detector
         {
             target_ptr->xyz, (int)target_ptr->xyz.norm(), timestamp,
             target_ptr->period, target_ptr->is_target_switched, target_ptr->is_spinning, target_ptr->is_sentry_mode,
-            target_ptr->spinning_status, target_ptr->sentry_armor_status, target_ptr->system_model
+            target_ptr->is_clockwise, target_ptr->spinning_status, target_ptr->sentry_armor_status, target_ptr->system_model
         };
-        
+
+        // std::cout << "x_:" << target_ptr->xyz[0] << std::endl;
+
         // -----------------对位置进行粒子滤波,以降低测距噪声影响-------------------------------------
         // Eigen::VectorXd measure (2);
         // measure << xyz[0], xyz[1];
@@ -121,9 +134,9 @@ namespace armor_detector
         else
         {
             history_info_.clear();
+            history_origin_info_.push_back(history_info_.front().xyz[0]);
             history_info_.push_back(target);
         }
-
         
         // std::cout << std::endl;
         // std::cout << "target_switched: " << target.is_target_switched << std::endl;
@@ -148,25 +161,41 @@ namespace armor_detector
         auto delta_time_estimate = (last_dist / predict_param_.bullet_speed) * 1e3 + predict_param_.shoot_delay;
         auto time_estimate = delta_time_estimate + history_info_.back().timestamp;
 
-        if (history_info_.size() < 3)
+        sleep_time = delta_time_estimate;
+
+        if (history_info_.size() < 4)
         {
             final_target_ = target;
 
             if(is_predicted)
             {
+                double last_to_now_timestamp = history_info_.back().timestamp - last_start_timestamp_;
+                double tt = time_estimate - last_start_timestamp_;
+                
+                double last_pred_x = fitting_params_[0] * (last_to_now_timestamp / 1e3) + fitting_params_[1];
+               
+                double delta_y = last_pred_x - target.xyz[0]; 
                 // double tt = time_estimate / 1e3;
-                result[0] = fitting_params_[0] * (delta_time_estimate / 1e3) + history_info_.front().xyz[0];
+                // result[0] = fitting_params_[0] * (delta_time_estimate * history_info_.size() / 1e3) + history_info_.front().xyz[0]; // x(t)=kt+x0
+                result[0] = fitting_params_[0] * (tt / 1e3) + fitting_params_[1] - delta_y; // x(t)=kt+d
                 result[1] = target.xyz[1];
                 result[2] = target.xyz[2];
                 
                 // std::cout << "deque_size: " << history_info_.size() << std::endl;
                 // std::cout << "time: " << tt << std::endl;
-                // std::cout << "x: " << target.xyz[0] << std::endl;
-                // std::cout << "x_pred: " << result[0] << std::endl;
+                // std::cout << std::endl;
+                // std::cout << "x:" << target.xyz[0] << " x_pred:" << result[0] << std::endl;
+                // std::cout << std::endl;
+                
                 return result;
             }
 
             return target.xyz;
+        }
+
+        if(history_origin_info_.size() > 2)
+        {   // Reserve history fitting front element.
+            history_origin_info_.pop_front();    
         }
 
         //如速度过大,可认为为噪声干扰,进行滑窗滤波滤除
@@ -314,12 +343,12 @@ namespace armor_detector
             // 反陀螺模式
             if(target_ptr->is_spinning && target_ptr->spinning_status == STILL_SPINNING)
             {   
-                std::cout << "STILL_SPINNING"  << std::endl;
+                // std::cout << "STILL_SPINNING"  << std::endl;
                 is_fitting_available = couple_fitting_predict(true, target, result, time_estimate);  
             }
             else if(target_ptr->is_spinning && target_ptr->spinning_status == MOVEMENT_SPINNING)
             {
-                std::cout << "MOVEMENT_SPINNING" << std::endl;
+                // std::cout << "MOVEMENT_SPINNING" << std::endl;
 
                 is_fitting_available = couple_fitting_predict(false, target, result, time_estimate);  
             }
@@ -700,6 +729,7 @@ namespace armor_detector
 
         double x0 = history_info_.front().xyz[0];
         int st = history_info_.begin()->timestamp;
+        last_start_timestamp_ = st;
 
         double x_sum = 0;
         double y_sum = 0;
@@ -880,7 +910,7 @@ namespace armor_detector
         
         auto time_now = std::chrono::steady_clock::now();
         auto t = std::chrono::duration<double, std::milli>(time_now - time_start).count();
-        std::cout << "fitting_time:" << t << "ms" << std::endl;
+        // std::cout << "fitting_time:" << t << "ms" << std::endl;
 
         PredictStatus is_available;
         is_available.xyz_status[0] = (summary.final_cost <= predict_param_.max_cost);
@@ -889,7 +919,7 @@ namespace armor_detector
         else
             is_predicted = false;
         
-        std::cout << "is_predicted: " << is_predicted << std::endl;
+        // std::cout << "is_predicted: " << is_predicted << std::endl;
         // is_available.xyz_status[1] = (summary.final_cost <= predict_param_.max_cost);
         // std::cout << "xyz_status[0]:" << is_available.xyz_status[0] << std::endl;
         // std::cout << "xyz_status[1]:" << is_available.xyz_status[1] << std::endl;
@@ -911,25 +941,117 @@ namespace armor_detector
             double start_point = history_info_.front().timestamp;            
             if((time_estimated - start_point) / 1e3 < target.period)
             {
-                x_pred = params[0] * ((time_estimated - st) / 1e3) + x0;
+                // x_pred = params[0] * ((time_estimated - st) / 1e3) + x0; // x(t)=k(t+dt)+x0
+                x_pred = params[0] * ((time_estimated - st) / 1e3) + params[1]; // x(t)=k(t+dt)+d
             }
             else
             {
-                int flag = -1;
-                double tt = (time_estimated - start_point) / 1e3 - target.period;
-                for(int ii = 0; ii < history_info_.size(); ii++)
+                if(history_origin_info_.size() == 2)
                 {
-                    if(history_info_[ii].timestamp < (start_point + tt))
-                        continue;
+                    // double last_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 2) - history_origin_info_.at(history_origin_info_.size() - 3);
+                    double cur_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 1) - history_origin_info_.at(history_origin_info_.size() - 2);
+                    // double delta_ave = (last_delta_x0 + cur_delta_x0) / 2.0;
+                    
+                    // std::cout << "cur_delta:" << cur_delta_x0 << std::endl;
+                    
+                    // double x_pred_sum = 0;
+                    // double ave_x_pred = 0;
+                    // if(history_delta_x_pred_.size() != 0)
+                    // {
+                    //     for(auto& delta_x_pred : history_delta_x_pred_)
+                    //         x_pred_sum += delta_x_pred;
+                    //     ave_x_pred = x_pred_sum / history_delta_x_pred_.size();
+                    // }
+                    
+                    if(!is_still_spinning)
+                        x_pred = params[0] * ((time_estimated - st) / 1e3 - target.period) + params[1] - cur_delta_x0; // x(t)=k(t+dt-T)+d
                     else
-                    {   
-                        flag = ii;
-                        break;
+                        x_pred = params[0] * ((time_estimated - st) / 1e3 - target.period) + params[1]; // x(t)=k(t+dt-T)+d
+
+                    // if(ave_x_pred)
+                    // {
+                    //     double xx = x_pred - target.xyz[0];
+                    //     if(abs(xx) > abs(ave_x_pred))
+                    //         x_pred = target.xyz[0] + ave_x_pred;
+                    // }
+                    // int flag = -1;
+                    // for(auto& aim : history_info_)
+                    // {
+                        // if(x_origin > 0)
+                        // {
+                        
+                        // std::cout << "Target_direction: " <<  target.is_clockwise << std::endl;
+                        double x_origin = history_origin_info_.at(history_origin_info_.size() - 1);
+                        if(target.is_clockwise)
+                        {
+                            if(x_pred > x_origin * 0.85)
+                                x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+                        }
+                        else
+                        {
+                            if(x_pred < x_origin * 0.85)
+                                x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+                        }
+
+                        // }
+                        // if(x_origin < 0)
+                        // {
+                            // if()
+                        // }
+                    // }
+                    // std::cout << "x_pred: " << x_pred << std::endl;
+                    // std::cout << std::endl;
+                }
+                else
+                {
+                    if(is_still_spinning)
+                    {
+                        x_pred = params[0] * ((time_estimated - st) / 1e3 - target.period) + params[1]; // x(t)=k(t+dt-T)+d
+                        
+                        double x_origin = history_origin_info_.at(history_origin_info_.size() - 1);
+                        if(target.is_clockwise)
+                        {
+                            if(x_pred > x_origin * 0.85)
+                                x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+                        }
+                        else
+                        {
+                            if(x_pred < x_origin * 0.85)
+                                x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+                        }
                     }
+                    else
+                        x_pred = history_info_.at(history_info_.size() - 1).xyz[0];
                 }
 
-                x_pred = history_info_.at(flag).xyz[0];
-                // x_pred = params[0] * (target.timestamp / 1e3 - target.period) + params[1];
+                // double tt = (time_estimated - start_point) / 1e3 - target.period;
+                // if(history_info_.size() > 6)
+                // {
+                    // int flag = -1;
+                    // std::cout << "delta_t:" << tt << std::endl;
+                    // for(int ii = 0; ii < history_info_.size(); ii++)
+                    // {
+                    //     if(history_info_[ii].timestamp > (start_point + tt))
+                    //     {   
+                    //         flag = ii;
+                    //         break;
+                    //     }
+                    //     else
+                    //         continue;
+                    // }
+                    // std::cout << "id:" << flag << std::endl;
+                    // x_pred = history_info_.at(flag).xyz[0];
+
+                    // x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+                // }
+                // else
+                // {
+                    // x_pred = params[0] * ((target.timestamp - st) / 1e3 - target.period) + x0; // x(t)=k(t+dt-T)+x0
+                    // x_pred = params[0] * ((target.timestamp - st) / 1e3 - target.period) + params[1]; // x(t)=k(t+dt-T)+d
+                    // x_pred = target.xyz[0];
+                //     x_pred = history_info_.at(3).xyz[0];
+                // }
+                    // x_pred = history_info_.at(history_info_.size() - 1).xyz[0];
             }
             // x(t)=kt+d
             // y(t)=a*(k^2)*(t^2)+(2kad+kb)*t+a(d^2)+bd+c
@@ -944,16 +1066,17 @@ namespace armor_detector
         // std::cout << "w:" << params[0] << " theta:" << params[1] << " V:" << params[2] << " x0:" 
         //           << params[3] << " y0:" << params[4] << " a:" << params[5] << " b:" << params[6] << " phi:" << params[7] << std::endl;
 
-        std::cout << "k:" << params[0] << " d:" << params[1] << " a:" << params[2] << " b:" 
-                  << params[3] << " c:" << params[4] << std::endl;
+        // std::cout << "k:" << params[0] << " d:" << params[1] << " a:" << params[2] << " b:" 
+        //           << params[3] << " c:" << params[4] << std::endl;
 
+        // std::cout << "x_: " << target.xyz[0] << " x_pred: " << x_pred << std::endl; 
         // std::cout << std::endl;
         // std::cout << "x:" << x_pred << " y:" << target.xyz[1] << " z:" << target.xyz[2] << " y_pred:" << y_pred << std::endl;
         // std::cout << std::endl;
 
         double x_front = history_info_.front().xyz[0];
         double x_back = history_info_.back().xyz[0];
-
+        last_end_x_ = x_back;
         // if(x_back < 0)
         // {
         //     if(abs(x_pred) + 0.15 < abs(x_back))
@@ -972,6 +1095,18 @@ namespace armor_detector
         //     if(abs(x_pred) > abs(history_info_.front().xyz[0])) // Back in time.
         //         x_pred = history_info_.at(4).xyz[0];
         // // }
+
+        // double delta_x_to_pred = x_pred - target.xyz[0];
+        // if(history_delta_x_pred_.size() < 1)
+        // {
+        //     history_delta_x_pred_.push_back(delta_x_to_pred);
+        // }
+        // else
+        // {
+        //     history_delta_x_pred_.pop_front();
+        //     history_delta_x_pred_.push_back(delta_x_to_pred);
+        // }
+        
         result = {x_pred, target.xyz[1], target.xyz[2]};
         
         return is_available;

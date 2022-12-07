@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-12-07 12:56:40
+ * @LastEditTime: 2022-12-07 17:22:35
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
@@ -175,7 +175,8 @@ namespace armor_detector
 
             TimePoint time_img_sub = std::chrono::steady_clock::now();
             src.timestamp = (int)(std::chrono::duration<double, std::milli>(time_img_sub - time_start).count());
-            
+            int sleep_time = 0;
+
             if(detector_->armor_detect(src))
             {   //find armors
                 // RCLCPP_INFO(this->get_logger(), "armors detector...");
@@ -218,7 +219,7 @@ namespace armor_detector
                         // TargetInfoPtr target_ptr;
                         target_ptr->xyz = aiming_point;
                         // std::cout << 24 << std::endl;
-                        aiming_point = processor_->armor_predictor_.predict(src.img, target_ptr, target_info.timestamp);
+                        aiming_point = processor_->armor_predictor_.predict(src.img, target_ptr, target_info.timestamp, sleep_time);
                         // predict_point_ = aiming_point_world;
                         // std::cout << 2 << std::endl;
                         // std::cout << "aiming_point_world: " << aiming_point_world[0] << " " << aiming_point_world[1] << " " << aiming_point_world[2] << std::endl;
@@ -496,6 +497,7 @@ namespace armor_detector
 
         TimePoint time_img_sub = std::chrono::steady_clock::now();
         src.timestamp = (int)(std::chrono::duration<double, std::milli>(time_img_sub - time_start).count());
+        int sleep_time = 0;
 
         if(detector_->armor_detect(src))
         {   //find armors
@@ -513,8 +515,9 @@ namespace armor_detector
                     // RCLCPP_INFO(this->get_logger(), "Target switched...");
                     aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
                     // std::cout << "x: " << target_info.aiming_point.x << " y:" << target_info.aiming_point.y << std::endl;
-                    
                     // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
+                    
+                    processor_->armor_predictor_.init(target_info.target_switched);
                     
                     auto angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
 
@@ -531,10 +534,12 @@ namespace armor_detector
                     processor_->armor_predictor_.is_imm_init = false;
                     // std::cout << 28 << std::endl;
                     // gimbal_info_pub_->publish(gimbal_info);
+                    // std::cout << "target_switched..." << std::endl;
                 }
                 else
                 {
                     // std::cout << 27 << std::endl;
+                    // std::cout << "target_switched..." << std::endl;
 
                     // Eigen::Vector3d aiming_point;
                     aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
@@ -550,7 +555,7 @@ namespace armor_detector
                     target_ptr->is_target_switched = target_info.spinning_switched;
 
                     // std::cout << 25 << std::endl;
-                    aiming_point = processor_->armor_predictor_.predict(src.img, target_ptr, src.timestamp);
+                    aiming_point = processor_->armor_predictor_.predict(src.img, target_ptr, src.timestamp, sleep_time);
                     // predict_point_ = aiming_point_world;
 
                     // std::cout << 3 << std::endl;
@@ -609,8 +614,8 @@ namespace armor_detector
                 // target_info.aiming_point.x = aiming_point_cam[0];
                 // target_info.aiming_point.y = aiming_point_cam[1];
                 // target_info.aiming_point.z = aiming_point_cam[2];
-                predict_info.header.stamp = this->get_clock()->now();
-                target_info.header.stamp = this->get_clock()->now();
+                // predict_info.header.stamp = this->get_clock()->now();
+                // target_info.header.stamp = this->get_clock()->now();
 
                 predict_info.timestamp = src.timestamp;
                 target_info.timestamp = src.timestamp;
@@ -618,6 +623,9 @@ namespace armor_detector
                 //publish target's information containing 3d point and timestamp.
                 armors_pub->publish(target_info);
                 
+                int us = sleep_time * 1e3;
+                // std::cout << "delay_time: " << (us / 1e6) << std::endl;
+                // usleep(us);
                 predict_info_pub->publish(predict_info);
             }
             else

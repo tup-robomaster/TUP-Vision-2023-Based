@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-12-07 12:25:10
+ * @LastEditTime: 2022-12-07 18:18:53
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector.cpp
  */
 #include "../../include/armor_detector/detector.hpp"
@@ -524,15 +524,14 @@ namespace armor_detector
                     // std::cout << " T:" << cur_ave_period_ << std::endl;
                     // std::cout << std::endl;
 
-                    if(abs(per_sum / history_period_.size() - cur_period_) < 0.05)
+                    if(abs(cur_ave_period_ - cur_period_) < 0.05)
                     {
                         last_period_ = cur_period_;
-                        if(history_period_.size() >= 3 && history_period_.size() < 9)
+                        if(history_period_.size() < 9)
                         {
                             history_period_.push_back(cur_period_);
                         }
-                        
-                        if(history_period_.size() >= 9)
+                        else
                         {
                             history_period_.pop_front();
                         }
@@ -588,13 +587,24 @@ namespace armor_detector
                 }
                 else
                 {
-                    target_ptr->is_spinning = false;
+                    target_ptr->is_spinning = true;
                 }
             }
 
             //若存在一块装甲板
             if (final_armors.size() == 1)
             {
+                if(spin_status == CLOCKWISE)
+                {
+                    target_info.clockwise = CLOCKWISE;
+                    target_ptr->is_clockwise = CLOCKWISE;
+                }
+                else
+                {
+                    target_info.clockwise = false;
+                    target_ptr->is_clockwise = false;
+                }
+                
                 if(save_image_)
                 {
                     if(!cur_frame_.empty())
@@ -641,12 +651,16 @@ namespace armor_detector
                 //若顺时针旋转选取右侧装甲板更新
                 if (spin_status == CLOCKWISE)
                 {
+                    target_info.clockwise = CLOCKWISE;
+                    target_ptr->is_clockwise = CLOCKWISE;
                     // std::cout << "right..." << std::endl;
                     target = final_armors.at(1);
                 }
                 //若逆时针旋转选取左侧装甲板更新
                 else if (spin_status == COUNTER_CLOCKWISE)
                 {
+                    target_info.clockwise = false;
+                    target_ptr->is_clockwise = false;
                     // std::cout << "left..." << std::endl;
                     target = final_armors.at(0);
                 }
@@ -731,6 +745,8 @@ namespace armor_detector
 
         }
 
+        // std::cout << "period: " << target_info.period << std::endl;
+
         target_info.spinning_switched = false;
         if(last_status_ == SINGER && cur_status_ == DOUBLE)
         {
@@ -743,6 +759,8 @@ namespace armor_detector
         // std::cout << "Target_switched: " << target_info.target_switched << std::endl;
         // std::cout << std::endl;
 
+        // std::cout << "Spinning_status: " << spin_status << std::endl;
+ 
         if(save_image_)
         {
             if(last_last_status_ == DOUBLE && last_status_ == SINGER && cur_status_ == DOUBLE)

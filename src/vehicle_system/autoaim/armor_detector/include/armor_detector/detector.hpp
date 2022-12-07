@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2022-12-06 15:38:10
+ * @LastEditTime: 2022-12-07 18:12:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -133,6 +133,7 @@ namespace armor_detector
         bool is_target_switched;
         bool is_spinning;
         bool is_sentry_mode;
+        bool is_clockwise;
         SpinningStatus spinning_status;
         OutpostStatus sentry_armor_status;
         SystemModel system_model;

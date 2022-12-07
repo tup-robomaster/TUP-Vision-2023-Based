@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-12-06 21:49:52
+ * @LastEditTime: 2022-12-07 19:27:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/prediction/prediction.h
  */
 #ifndef PREDICTION_HPP_
@@ -178,7 +178,8 @@ namespace armor_detector
         {
             if(!_axis)
             {   //x轴 
-                residual[0] = k[0] * T(_t) + _coeff - _x; //x(t)=kt+d
+                // residual[0] = k[0] * T(_t) + _coeff - _x; //x(t)=kt+x0
+                residual[0] = k[0] * T(_t) + d[0] - _x; //x(t)=kt+d
             }  
             else
             {   //y(t)=a*(k^2)*(t^2)+(2kad+kb)*t+a(d^2)+bd+c
@@ -345,6 +346,10 @@ namespace armor_detector
         YAML::Node config_;
         
     public:
+        std::deque<double> history_delta_x_pred_;
+        std::deque<double> history_origin_info_;
+        double last_start_timestamp_;
+        double last_end_x_;
         bool is_predicted;
         TargetInfo final_target_;  //最终击打目标信息
         TargetInfo last_pf_target_; //最后一次粒子滤波后的位置结果
@@ -358,7 +363,8 @@ namespace armor_detector
         // ArmorPredictor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param, const std::string filter_param_path);
         ArmorPredictor(const PredictParam& predict_param, const SingerModel& singer_model_param, const DebugParam& debug_param, const std::string filter_param_path);
         
-        Eigen::Vector3d predict(cv::Mat& src, TargetInfoPtr target_ptr, int timestamp);
+        void init(bool target_switched);
+        Eigen::Vector3d predict(cv::Mat& src, TargetInfoPtr target_ptr, int timestamp, int& sleep_time);
 
         bool setBulletSpeed(double speed);
         Eigen::Vector3d shiftWindowFilter(int start_idx);
