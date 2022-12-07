@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-12-06 10:08:17
+ * @LastEditTime: 2022-12-07 12:25:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector.cpp
  */
 #include "../../include/armor_detector/detector.hpp"
@@ -53,8 +53,9 @@ namespace armor_detector
        
         //gyro_detect_params
         // spinning_detector_ = spinning_detector(_detector_params_.color, _gyro_params_);
-    
+        last_period_ = 0;
         last_last_status_ = last_status_ = cur_status_ = NONE;
+        save_image_ = false;
     }
 
     detector::~detector()
@@ -449,7 +450,7 @@ namespace armor_detector
                 target_info.is_spinning = false;
             }
         }
-        // std::cout << 13 << std::endl;
+
 
         ///----------------------------------反陀螺击打---------------------------------------
         target_ptr->is_spinning = false;
@@ -482,93 +483,152 @@ namespace armor_detector
             auto cnt = spinning_detector_.spinning_x_map.count(target_key);
             // std::cout << 17 << std::endl;
             
-            if(is_target_spinning)
+            // if(target_info.spinning_switched)
+            // {
+            //     cur_ave_period_ = 0;
+            //     last_period_ = 0;
+            //     history_period_.clear();
+            // }
+
+            if(cnt == 1)
             {
-                if(cnt == 1)
+                auto candidate = spinning_detector_.spinning_x_map.find(target_key);
+
+                cur_period_ = ((*candidate).second.new_timestamp - (*candidate).second.last_timestamp) / 1e3;
+                double w = (2 * M_PI) / (4 * cur_period_);
+                
+                if(last_period_ == 0)
                 {
-                    auto candidate = spinning_detector_.spinning_x_map.find(target_key);
+                    last_period_ = cur_period_;
+                }
 
-                    auto t = ((*candidate).second.new_timestamp - (*candidate).second.last_timestamp) / 1e3;
-                    auto w = (2 * M_PI) / (4 * t);
-                    target_info.w = w;
-                    double delta_x_back = abs((*candidate).second.new_x_back - (*candidate).second.last_x_back);
-                    double delta_x_font = abs((*candidate).second.new_x_font - (*candidate).second.last_x_font);
-                    int delta_x_back_2d = abs((*candidate).second.new_x_back_2d - (*candidate).second.last_x_back_2d);
-                    int delta_x_font_2d = abs((*candidate).second.new_x_font_2d - (*candidate).second.last_x_font_2d);
-                    double ave_x_3d = (delta_x_back + delta_x_font) / 2;
-                    double ave_x_2d = (delta_x_back_2d + delta_x_font_2d) / 2;
+                if(history_period_.size() < 3)
+                {
+                    history_period_.push_back(cur_period_);
+                }
+                // std::cout << std::endl;
+                // std::cout << "period:" << cur_period_ << std::endl;
+                double per_sum = 0;
 
-                    // std::cout << std::endl;
-                    // std::cout << "delta_x_back: " << delta_x_back << std::endl;
-                    // std::cout << "delta_x_font: " << delta_x_font << std::endl;
-                    // std::cout << "x_ave: " << (delta_x_back + delta_x_font) / 2 << std::endl;
-                    // std::cout << std::endl;
-                    
-                    // std::cout << "delta_x_back_2d: " << delta_x_back_2d << std::endl; 
-                    // std::cout << "delta_x_font_2d: " << delta_x_font_2d << std::endl;
-                    // std::cout << "x_2d_ave: " << (delta_x_back_2d + delta_x_font_2d) / 2 << std::endl;
-                    // std::cout << std::endl;
-                    
-                    if((ave_x_2d > spinning_detector_.gyro_params_.delta_x_2d_higher_thresh || ave_x_3d > spinning_detector_.gyro_params_.delta_x_3d_higher_thresh) 
-                    || (ave_x_2d > spinning_detector_.gyro_params_.delta_x_2d_high_thresh && ave_x_3d > spinning_detector_.gyro_params_.delta_x_3d_high_thresh))
-                    // if(ave_x_2d > 51)
+                last_ave_period_ = cur_ave_period_;
+                if(history_period_.size() >= 3)
+                {
+                    for(auto &per : history_period_)
                     {
-                        target_ptr->is_spinning = true;
-                        target_ptr->spinning_status = MOVEMENT_SPINNING;
+                        per_sum += per;
+                    }
+                    
+                    cur_ave_period_ = (per_sum / history_period_.size());
+                    
+                    // std::cout << std::endl;
+                    // std::cout << " T:" << cur_ave_period_ << std::endl;
+                    // std::cout << std::endl;
+
+                    if(abs(per_sum / history_period_.size() - cur_period_) < 0.05)
+                    {
+                        last_period_ = cur_period_;
+                        if(history_period_.size() >= 3 && history_period_.size() < 9)
+                        {
+                            history_period_.push_back(cur_period_);
+                        }
                         
-                        target_info.is_spinning = true;
-                        target_info.is_still_spinning = false;
-                    }
-                    else if((ave_x_2d < spinning_detector_.gyro_params_.delta_x_2d_lower_thresh) 
-                    || (ave_x_2d < spinning_detector_.gyro_params_.delta_x_2d_low_thresh && ave_x_3d < spinning_detector_.gyro_params_.delta_x_3d_low_thresh))
-                    // else if(ave_x_2d < 48)
-                    {
-                        target_ptr->is_spinning = true;
-                        target_ptr->spinning_status = STILL_SPINNING;
-
-                        target_info.is_still_spinning = true;
-                        target_info.is_spinning = false;
-                    }
-                    else
-                    {
-                        target_ptr->is_spinning = false;
+                        if(history_period_.size() >= 9)
+                        {
+                            history_period_.pop_front();
+                        }
                     }
                 }
-            }
 
-            // std::cout << 19 << std::endl;
+                if(last_ave_period_ == cur_ave_period_) 
+                    target_info.period = last_ave_period_;
+                else if(last_ave_period_ != cur_ave_period_ != 0)
+                    target_info.period = cur_ave_period_;
+
+                // std::cout << "period: " << target_info.period << std::endl;
+                
+                target_info.w = w;
+                
+                double delta_x_back = abs((*candidate).second.new_x_back - (*candidate).second.last_x_back);
+                double delta_x_font = abs((*candidate).second.new_x_font - (*candidate).second.last_x_font);
+                int delta_x_back_2d = abs((*candidate).second.new_x_back_2d - (*candidate).second.last_x_back_2d);
+                int delta_x_font_2d = abs((*candidate).second.new_x_font_2d - (*candidate).second.last_x_font_2d);
+                double ave_x_3d = (delta_x_back + delta_x_font) / 2;
+                double ave_x_2d = (delta_x_back_2d + delta_x_font_2d) / 2;
+
+                // std::cout << std::endl;
+                // std::cout << "delta_x_back: " << delta_x_back << std::endl;
+                // std::cout << "delta_x_font: " << delta_x_font << std::endl;
+                // std::cout << "x_ave: " << (delta_x_back + delta_x_font) / 2 << std::endl;
+                // std::cout << std::endl;
+                
+                // std::cout << "delta_x_back_2d: " << delta_x_back_2d << std::endl; 
+                // std::cout << "delta_x_font_2d: " << delta_x_font_2d << std::endl;
+                // std::cout << "x_2d_ave: " << (delta_x_back_2d + delta_x_font_2d) / 2 << std::endl;
+                // std::cout << std::endl;
+                
+                if((ave_x_2d > spinning_detector_.gyro_params_.delta_x_2d_higher_thresh || ave_x_3d > spinning_detector_.gyro_params_.delta_x_3d_higher_thresh) 
+                || (ave_x_2d > spinning_detector_.gyro_params_.delta_x_2d_high_thresh && ave_x_3d > spinning_detector_.gyro_params_.delta_x_3d_high_thresh))
+                // if(ave_x_2d > 51)
+                {
+                    target_ptr->is_spinning = true;
+                    target_ptr->spinning_status = MOVEMENT_SPINNING;
+                    
+                    target_info.is_spinning = true;
+                    target_info.is_still_spinning = false;
+                }
+                else if((ave_x_2d < spinning_detector_.gyro_params_.delta_x_2d_lower_thresh) 
+                || (ave_x_2d < spinning_detector_.gyro_params_.delta_x_2d_low_thresh && ave_x_3d < spinning_detector_.gyro_params_.delta_x_3d_low_thresh))
+                // else if(ave_x_2d < 48)
+                {
+                    target_ptr->is_spinning = true;
+                    target_ptr->spinning_status = STILL_SPINNING;
+
+                    target_info.is_still_spinning = true;
+                    target_info.is_spinning = false;
+                }
+                else
+                {
+                    target_ptr->is_spinning = false;
+                }
+            }
 
             //若存在一块装甲板
             if (final_armors.size() == 1)
             {
-                if(!cur_frame_.empty())
+                if(save_image_)
                 {
-                    cur_frame_.copyTo(last_frame_);
-                    src.img.copyTo(cur_frame_);
-                }
-                else
-                {
-                    src.img.copyTo(cur_frame_);
+                    if(!cur_frame_.empty())
+                    {
+                        cur_frame_.copyTo(last_frame_);
+                        src.img.copyTo(cur_frame_);
+                    }
+                    else
+                    {
+                        src.img.copyTo(cur_frame_);
+                    }
                 }
 
                 last_last_status_ = last_status_;
                 last_status_ = cur_status_;
                 cur_status_ = SINGER;
 
-                std::cout << "one..." << std::endl;
+                // std::cout << "one..." << std::endl;
                 target = final_armors.at(0);
             }
             //若存在两块装甲板
             else if (final_armors.size() == 2)
             {
-                if(!cur_frame_.empty())
+                if(save_image_)
                 {
-                    cur_frame_.copyTo(last_frame_);
-                    src.img.copyTo(cur_frame_);
-                }
-                else
-                {
-                    src.img.copyTo(cur_frame_);
+                    if(!cur_frame_.empty())
+                    {
+                        cur_frame_.copyTo(last_frame_);
+                        src.img.copyTo(cur_frame_);
+                    }
+                    else
+                    {
+                        src.img.copyTo(cur_frame_);
+                    }
                 }
 
                 last_last_status_ = last_status_;
@@ -581,13 +641,13 @@ namespace armor_detector
                 //若顺时针旋转选取右侧装甲板更新
                 if (spin_status == CLOCKWISE)
                 {
-                    std::cout << "right..." << std::endl;
+                    // std::cout << "right..." << std::endl;
                     target = final_armors.at(1);
                 }
                 //若逆时针旋转选取左侧装甲板更新
                 else if (spin_status == COUNTER_CLOCKWISE)
                 {
-                    std::cout << "left..." << std::endl;
+                    // std::cout << "left..." << std::endl;
                     target = final_armors.at(0);
                 }
             }
@@ -622,7 +682,10 @@ namespace armor_detector
         }
         else
         {
+            cur_ave_period_ = 0;
+            last_period_ = 0;
             last_last_status_ = last_status_ = cur_status_ = NONE;
+            history_period_.clear();
 
             // std::cout << 20 << std::endl;
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
@@ -668,42 +731,57 @@ namespace armor_detector
 
         }
 
-        if(last_last_status_ == DOUBLE && last_status_ == SINGER && cur_status_ == DOUBLE)
+        target_info.spinning_switched = false;
+        if(last_status_ == SINGER && cur_status_ == DOUBLE)
         {
-            // char now[64];
-            // std::time_t tt;
-            // struct tm *ttime;
-            // tt = time(nullptr);
-            // ttime = localtime(&tt);
-            // strftime(now, 64, "%Y-%m-%d_%H_%M_%S", ttime);  // 以时间为名字
-            // std::string now_string(now);
-            // const std::string &storage_location = "src/vehicle_system/autoaim/armor_detector/image/";
-            // std::string path(std::string(storage_location + now_string).append(".png"));
-            
-            std::string img_name = path_prefix + to_string(src.timestamp) + ".jpg";
-            cv::imwrite(img_name, last_frame_);
+            // std::cout << 1 << std::endl;
+            target_info.spinning_switched = true;
+            // std::cout << target_info.target_switched << std::endl;
+        }
 
-            std::string label_name = path_prefix + to_string(src.timestamp) + ".txt";
-            std::string content;
+        // std::cout << std::endl;
+        // std::cout << "Target_switched: " << target_info.target_switched << std::endl;
+        // std::cout << std::endl;
 
-            int cls = 0;
-            if(target.id == 7)
-                cls = 9 * target.color - 1;
-            if(target.id != 7)
-                cls = target.id + target.color * 9;
-            
-            content.append(to_string(cls) + " ");
-            for(auto apex : target.apex2d)
+        if(save_image_)
+        {
+            if(last_last_status_ == DOUBLE && last_status_ == SINGER && cur_status_ == DOUBLE)
             {
-                content.append(to_string((apex.x - roi_offset.x) / input_size.width));
-                content.append(" ");
-                content.append(to_string((apex.y - roi_offset.y) / input_size.height));
-                content.append(" ");
+                // char now[64];
+                // std::time_t tt;
+                // struct tm *ttime;
+                // tt = time(nullptr);
+                // ttime = localtime(&tt);
+                // strftime(now, 64, "%Y-%m-%d_%H_%M_%S", ttime);  // 以时间为名字
+                // std::string now_string(now);
+                // const std::string &storage_location = "src/vehicle_system/autoaim/armor_detector/image/";
+                // std::string path(std::string(storage_location + now_string).append(".png"));
+                
+                std::string img_name = path_prefix + to_string(src.timestamp) + ".jpg";
+                cv::imwrite(img_name, last_frame_);
+
+                std::string label_name = path_prefix + to_string(src.timestamp) + ".txt";
+                std::string content;
+
+                int cls = 0;
+                if(target.id == 7)
+                    cls = 9 * target.color - 1;
+                if(target.id != 7)
+                    cls = target.id + target.color * 9;
+                
+                content.append(to_string(cls) + " ");
+                for(auto apex : target.apex2d)
+                {
+                    content.append(to_string((apex.x - roi_offset.x) / input_size.width));
+                    content.append(" ");
+                    content.append(to_string((apex.y - roi_offset.y) / input_size.height));
+                    content.append(" ");
+                }
+                content.pop_back();
+                file.open(label_name, std::ofstream::app);
+                file << content;
+                file.close();
             }
-            content.pop_back();
-            file.open(label_name, std::ofstream::app);
-            file << content;
-            file.close();
         }
 
         if (target.color == 2)

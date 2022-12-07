@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2022-12-06 09:52:17
+ * @LastEditTime: 2022-12-06 15:38:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -129,6 +129,8 @@ namespace armor_detector
         Eigen::Vector3d xyz;
         int dist;
         int timestamp;
+        double period;
+        bool is_target_switched;
         bool is_spinning;
         bool is_sentry_mode;
         SpinningStatus spinning_status;
@@ -225,7 +227,15 @@ namespace armor_detector
         SwitchStatus cur_status_;
     
     private:
+        bool save_image_;
         ofstream file;
         const std::string path_prefix = "src/vehicle_system/autoaim/armor_detector/dataset/";
+
+    private:
+        double cur_period_;
+        double last_period_;
+        deque<double> history_period_;
+        double last_ave_period_;
+        double cur_ave_period_;
     }; 
 } //namespace detector

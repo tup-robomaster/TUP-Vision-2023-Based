@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-12-05 21:11:39
+ * @LastEditTime: 2022-12-07 12:56:40
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
@@ -543,8 +543,11 @@ namespace armor_detector
                     // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
                     // last_predict_point_ = predict_point_;
                     // TargetInfoPtr target_ptr = new TargetInfo();
+                    target_ptr->timestamp = src.timestamp;
                     target_ptr->xyz = aiming_point;
-                    // target_ptr->
+                    if(target_info.is_spinning)
+                        target_ptr->period = target_info.period;
+                    target_ptr->is_target_switched = target_info.spinning_switched;
 
                     // std::cout << 25 << std::endl;
                     aiming_point = processor_->armor_predictor_.predict(src.img, target_ptr, src.timestamp);
@@ -606,10 +609,15 @@ namespace armor_detector
                 // target_info.aiming_point.x = aiming_point_cam[0];
                 // target_info.aiming_point.y = aiming_point_cam[1];
                 // target_info.aiming_point.z = aiming_point_cam[2];
+                predict_info.header.stamp = this->get_clock()->now();
+                target_info.header.stamp = this->get_clock()->now();
+
+                predict_info.timestamp = src.timestamp;
                 target_info.timestamp = src.timestamp;
 
                 //publish target's information containing 3d point and timestamp.
                 armors_pub->publish(target_info);
+                
                 predict_info_pub->publish(predict_info);
             }
             else

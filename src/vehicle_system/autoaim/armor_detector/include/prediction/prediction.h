@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-12-05 20:05:57
+ * @LastEditTime: 2022-12-06 21:49:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/prediction/prediction.h
  */
 #ifndef PREDICTION_HPP_
@@ -178,7 +178,7 @@ namespace armor_detector
         {
             if(!_axis)
             {   //x轴 
-                residual[0] = k[0] * T(_t) + d[0] - _x; //x(t)=kt+d
+                residual[0] = k[0] * T(_t) + _coeff - _x; //x(t)=kt+d
             }  
             else
             {   //y(t)=a*(k^2)*(t^2)+(2kad+kb)*t+a(d^2)+bd+c
@@ -345,6 +345,7 @@ namespace armor_detector
         YAML::Node config_;
         
     public:
+        bool is_predicted;
         TargetInfo final_target_;  //最终击打目标信息
         TargetInfo last_pf_target_; //最后一次粒子滤波后的位置结果
 
@@ -367,7 +368,7 @@ namespace armor_detector
 
         //移动轨迹拟合预测（小陀螺+横移->旋轮线，若目标处于原地小陀螺状态，则剔除掉模型中的横移项）
         // double fitting_params_[8] = {M_PI, 0, 0, 0, 0, 0.25, 0.25, 0};
-        double fitting_params_[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+        double fitting_params_[8] = {0.1, 0, 0, 0, 0, 0, 0, 0};
 
         PredictStatus couple_fitting_predict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, int timestamp);
     

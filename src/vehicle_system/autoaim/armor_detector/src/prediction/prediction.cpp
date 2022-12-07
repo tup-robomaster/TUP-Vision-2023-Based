@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-12-05 21:15:22
+ * @LastEditTime: 2022-12-06 21:52:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -26,6 +26,7 @@ namespace armor_detector
         fitting_disabled_ = false;
         is_init = false;
         is_ekf_init = false;
+        is_predicted = false;
     }
 
     ArmorPredictor::~ArmorPredictor(){}
@@ -88,7 +89,12 @@ namespace armor_detector
         }
 
         auto t1 = std::chrono::steady_clock::now();
-        TargetInfo target = {target_ptr->xyz, (int)target_ptr->xyz.norm(), timestamp};
+        TargetInfo target = 
+        {
+            target_ptr->xyz, (int)target_ptr->xyz.norm(), timestamp,
+            target_ptr->period, target_ptr->is_target_switched, target_ptr->is_spinning, target_ptr->is_sentry_mode,
+            target_ptr->spinning_status, target_ptr->sentry_armor_status, target_ptr->system_model
+        };
         
         // -----------------对位置进行粒子滤波,以降低测距噪声影响-------------------------------------
         // Eigen::VectorXd measure (2);
@@ -97,9 +103,31 @@ namespace armor_detector
         // bool is_pos_filter_ready = pf_pos.update(measure);
         // Eigen::VectorXd predict_pos_xy = pf_pos.predict();
         // Eigen::Vector3d predict_pos = {predict_pos_xy[0], predict_pos_xy[1], xyz[2]};
+
+        Eigen::Vector3d result = {0, 0, 0};
+        Eigen::Vector3d result_pf = {0, 0, 0};
+        Eigen::Vector3d result_fitting = {0, 0, 0};
+        Eigen::Vector3d result_ekf = {0, 0, 0};
+        Eigen::Vector3d result_imm = {0, 0, 0};
+        PredictStatus is_pf_available;
+        PredictStatus is_fitting_available;
+        PredictStatus is_ekf_available;
+        PredictStatus is_imm_available;
+
+        if(!target.is_target_switched)
+        {
+            history_info_.push_back(target);
+        }
+        else
+        {
+            history_info_.clear();
+            history_info_.push_back(target);
+        }
+
         
-        history_info_.push_back(target);
-        
+        // std::cout << std::endl;
+        // std::cout << "target_switched: " << target.is_target_switched << std::endl;
+        // std::cout << std::endl;
         // // //若位置粒子滤波器未完成初始化或滤波结果与目前位置相距过远,则本次不对目标位置做滤波,直接向队列压入原值
         // if (!is_pos_filter_ready || (predict_pos - xyz).norm() > 0.1)
         // {
@@ -120,6 +148,26 @@ namespace armor_detector
         auto delta_time_estimate = (last_dist / predict_param_.bullet_speed) * 1e3 + predict_param_.shoot_delay;
         auto time_estimate = delta_time_estimate + history_info_.back().timestamp;
 
+        if (history_info_.size() < 3)
+        {
+            final_target_ = target;
+
+            if(is_predicted)
+            {
+                // double tt = time_estimate / 1e3;
+                result[0] = fitting_params_[0] * (delta_time_estimate / 1e3) + history_info_.front().xyz[0];
+                result[1] = target.xyz[1];
+                result[2] = target.xyz[2];
+                
+                // std::cout << "deque_size: " << history_info_.size() << std::endl;
+                // std::cout << "time: " << tt << std::endl;
+                // std::cout << "x: " << target.xyz[0] << std::endl;
+                // std::cout << "x_pred: " << result[0] << std::endl;
+                return result;
+            }
+
+            return target.xyz;
+        }
 
         //如速度过大,可认为为噪声干扰,进行滑窗滤波滤除
         // if (((d_xyz.norm() / delta_t) * 1e3) >= max_v)
@@ -136,30 +184,30 @@ namespace armor_detector
 
         //---------------根据目前队列长度选用合适的滤波器------------------------------------
         //当队列长度小于3，仅更新队列
-        if (history_info_.size() < 3)
-        {
-            final_target_ = target;
-            return target.xyz;
-        }
-        else if (history_info_.size() < predict_param_.min_fitting_lens - 1)
-        {  //当队列长度不足时不使用拟合
-            fitting_disabled_ = true;
-        }
+        // if (history_info_.size() < 5)
+        // {
+        //     final_target_ = target;
+        //     return target.xyz;
+        // }
+        // else if (history_info_.size() < predict_param_.min_fitting_lens - 1)
+        // {  //当队列长度不足时不使用拟合
+        //     fitting_disabled_ = true;
+        // }
         // else if (target.timestamp - history_info_.front().timestamp >= predict_param_.max_time_delta)
         // {  //当队列时间跨度过长时不使用拟合
         //     history_info_.pop_front();
         //     fitting_disabled_ = true;
         // }
-        else
-        {   //其余状况下皆可以进行拟合
-            fitting_disabled_ = false;
-            history_deque_lens_ = 10;
-            //若队列过长，移除首元素
-            if(history_info_.size() > history_deque_lens_)
-            {
-                history_info_.pop_front();
-            }
-        }
+        // else
+        // {   //其余状况下皆可以进行拟合
+        //     fitting_disabled_ = false;
+        //     history_deque_lens_ = 10;
+        //     //若队列过长，移除首元素
+        //     if(history_info_.size() > history_deque_lens_)
+        //     {
+        //         history_info_.pop_front();
+        //     }
+        // }
         // std::cout << "size: " << history_info_.size() << std::endl;
         // 计算目标速度、加速度 
         // 取目标t-2、t-1、t时刻的坐标信息
@@ -181,116 +229,116 @@ namespace armor_detector
         
         Eigen::VectorXd measure_v(2);
         measure_v << vx_now, vy_now;
-        bool is_v_filter_ready = pf_v.update(measure_v);
-        Eigen::Vector2d predict_v_xy = pf_v.predict();
+        // bool is_v_filter_ready = pf_v.update(measure_v);
+        // Eigen::Vector2d predict_v_xy = pf_v.predict();
 
         Eigen::Vector2d target_v = measure_v;
-        if(is_v_filter_ready)
-        {   //若速度粒子滤波器已完成初始化且预测值大小恰当，则对目标速度做滤波
-            target_v[0] = predict_v_xy[0];
-            target_v[1] = predict_v_xy[1];
-        }
+        // if(is_v_filter_ready)
+        // {   //若速度粒子滤波器已完成初始化且预测值大小恰当，则对目标速度做滤波
+        //     target_v[0] = predict_v_xy[0];
+        //     target_v[1] = predict_v_xy[1];
+        // }
 
         if(debug_param_.disable_fitting)
         {
             fitting_disabled_ = false;
         }
 
-        Eigen::Vector3d result = {0, 0, 0};
-        Eigen::Vector3d result_pf = {0, 0, 0};
-        Eigen::Vector3d result_fitting = {0, 0, 0};
-        Eigen::Vector3d result_ekf = {0, 0, 0};
-        Eigen::Vector3d result_imm = {0, 0, 0};
-        PredictStatus is_pf_available;
-        PredictStatus is_fitting_available;
-        PredictStatus is_ekf_available;
-        PredictStatus is_imm_available;
+        // Eigen::Vector3d result = {0, 0, 0};
+        // Eigen::Vector3d result_pf = {0, 0, 0};
+        // Eigen::Vector3d result_fitting = {0, 0, 0};
+        // Eigen::Vector3d result_ekf = {0, 0, 0};
+        // Eigen::Vector3d result_imm = {0, 0, 0};
+        // PredictStatus is_pf_available;
+        // PredictStatus is_fitting_available;
+        // PredictStatus is_ekf_available;
+        // PredictStatus is_imm_available;
 
         // std::cout << "fitting_status: " << fitting_disabled_ << std::endl;
         // std::cout << "filter_status: " << filter_disabled_ << std::endl;
-        // if(!filter_disabled_ && fitting_disabled_)
-        // {   //禁用曲线拟合
-        //     //需注意粒子滤波使用相对时间（自上一次检测时所经过ms数），拟合使用自首帧所经过时间
-        //     // auto is_pf_available = predict_pf_run(target, result_pf, delta_time_estimate);
-        //     // std::cout << "Model_based:" << target_ptr->system_model << std::endl; 
-        //     if(target_ptr->system_model == CSMODEL)
-        //     {   // 基于CS模型的卡尔曼滤波
-        //         is_ekf_available = predict_ekf_run(target, result_ekf, target_v, ax, delta_time_estimate);
-        //         // std::cout << "cs pred..." << std::endl;
-        //     }
-        //     else if(target_ptr->system_model == IMMMODEL)
-        //     {   //IMM
-        //         is_imm_available = predict_based_imm(target, result_imm, target_v, ax, delta_time_estimate);
-        //         // std::cout << "imm pred..." << std::endl;
-        //     }
+        if(!filter_disabled_ && fitting_disabled_)
+        {   //禁用曲线拟合
+            //需注意粒子滤波使用相对时间（自上一次检测时所经过ms数），拟合使用自首帧所经过时间
+            // auto is_pf_available = predict_pf_run(target, result_pf, delta_time_estimate);
+            // std::cout << "Model_based:" << target_ptr->system_model << std::endl; 
+            if(target_ptr->system_model == CSMODEL)
+            {   // 基于CS模型的卡尔曼滤波
+                is_ekf_available = predict_ekf_run(target, result_ekf, target_v, ax, delta_time_estimate);
+                // std::cout << "cs pred..." << std::endl;
+            }
+            else if(target_ptr->system_model == IMMMODEL)
+            {   //IMM
+                is_imm_available = predict_based_imm(target, result_imm, target_v, ax, delta_time_estimate);
+                // std::cout << "imm pred..." << std::endl;
+            }
 
-        //     if(is_ekf_available.xyz_status[0])
-        //     {   //目前SingerModel仅对x方向机动做预测
-        //         result[0] = result_ekf[0];
-        //     }
-        //     else if(is_imm_available.xyz_status[0])
-        //         result[0] = result_imm[0];
-        //     else
-        //         result[0] = target.xyz[0];
+            if(is_ekf_available.xyz_status[0])
+            {   //目前SingerModel仅对x方向机动做预测
+                result[0] = result_ekf[0];
+            }
+            else if(is_imm_available.xyz_status[0])
+                result[0] = result_imm[0];
+            else
+                result[0] = target.xyz[0];
             
-        //     if(is_imm_available.xyz_status[1])
-        //         result[1] = result_imm[1];
-        //     else if(is_ekf_available.xyz_status[1])
-        //         result[1] = result_ekf[1];
-        //     else
-        //         result[1] = target.xyz[1];
+            if(is_imm_available.xyz_status[1])
+                result[1] = result_imm[1];
+            else if(is_ekf_available.xyz_status[1])
+                result[1] = result_ekf[1];
+            else
+                result[1] = target.xyz[1];
                        
-        //     if(is_imm_available.xyz_status[2])
-        //         result[2] = result_imm[2];
-        //     else if(is_ekf_available.xyz_status[2])
-        //         result[2] = result_ekf[2];
-        //     else
-        //         result[2] = target.xyz[2];
-        // }
+            if(is_imm_available.xyz_status[2])
+                result[2] = result_imm[2];
+            else if(is_ekf_available.xyz_status[2])
+                result[2] = result_ekf[2];
+            else
+                result[2] = target.xyz[2];
+        }
 
-        // if(filter_disabled_ && !fitting_disabled_)
-        // {   //禁用滤波
+        if(filter_disabled_ && !fitting_disabled_)
+        {   //禁用滤波
 
-        //     // std::cout << "fitting pred..." << std::endl;
+            // std::cout << "fitting pred..." << std::endl;
 
-        //     // 击打前哨站模式
-        //     if(target_ptr->is_sentry_mode && target_ptr->sentry_armor_status == NORMAL)
-        //     {
-        //         is_fitting_available = spinningPredict(false, target, result, time_estimate);  
-        //     }
-        //     else if(target_ptr->is_sentry_mode && target_ptr->sentry_armor_status == CONTROLLED)
-        //     {
-        //         is_fitting_available = spinningPredict(true, target, result, time_estimate);  
-        //     }
+            // 击打前哨站模式
+            if(target_ptr->is_sentry_mode && target_ptr->sentry_armor_status == NORMAL)
+            {
+                is_fitting_available = spinningPredict(false, target, result, time_estimate);  
+            }
+            else if(target_ptr->is_sentry_mode && target_ptr->sentry_armor_status == CONTROLLED)
+            {
+                is_fitting_available = spinningPredict(true, target, result, time_estimate);  
+            }
 
-        //     // 反陀螺模式
-        //     if(target_ptr->is_spinning && target_ptr->spinning_status == STILL_SPINNING)
-        //     {   
-        //         std::cout << "STILL_SPINNING"  << std::endl;
-        //         is_fitting_available = couple_fitting_predict(true, target, result, time_estimate);  
-        //     }
-        //     else if(target_ptr->is_spinning && target_ptr->spinning_status == MOVEMENT_SPINNING)
-        //     {
-        //         std::cout << "MOVEMENT_SPINNING" << std::endl;
+            // 反陀螺模式
+            if(target_ptr->is_spinning && target_ptr->spinning_status == STILL_SPINNING)
+            {   
+                std::cout << "STILL_SPINNING"  << std::endl;
+                is_fitting_available = couple_fitting_predict(true, target, result, time_estimate);  
+            }
+            else if(target_ptr->is_spinning && target_ptr->spinning_status == MOVEMENT_SPINNING)
+            {
+                std::cout << "MOVEMENT_SPINNING" << std::endl;
 
-        //         is_fitting_available = couple_fitting_predict(false, target, result, time_estimate);  
-        //     }
+                is_fitting_available = couple_fitting_predict(false, target, result, time_estimate);  
+            }
 
-        //     if(is_fitting_available.xyz_status[0])
-        //         result[0] = result[0];
-        //     else
-        //         result[0] = target.xyz[0];
+            if(is_fitting_available.xyz_status[0])
+                result[0] = result[0];
+            else
+                result[0] = target.xyz[0];
 
-        //     if(is_fitting_available.xyz_status[1])
-        //         result[1] = result[1];
-        //     else
-        //         result[1] = target.xyz[1];
+            if(is_fitting_available.xyz_status[1])
+                result[1] = result[1];
+            else
+                result[1] = target.xyz[1];
 
-        //     if(is_fitting_available.xyz_status[2])
-        //         result[2] = result[2];
-        //     else
-        //         result[2] = target.xyz[2];
-        // }
+            if(is_fitting_available.xyz_status[2])
+                result[2] = result[2];
+            else
+                result[2] = target.xyz[2];
+        }
 
         // std::cout << 1 << std::endl;
         // if(!fitting_disabled_ && !filter_disabled_)
@@ -646,54 +694,55 @@ namespace armor_detector
         ceres::Solver::Options options;
         ceres::Solver::Summary summary;
 
-        options.max_num_iterations = 500;
+        options.max_num_iterations = 20;
         options.linear_solver_type = ceres::DENSE_QR;
         options.minimizer_progress_to_stdout = false;
-        
+
+        double x0 = history_info_.front().xyz[0];
         int st = history_info_.begin()->timestamp;
 
         double x_sum = 0;
         double y_sum = 0;
-        if(!is_still_spinning)
-        {
-            for(auto& target_info : history_info_)
-            {   
-                x_sum += target_info.xyz[0];
-                y_sum += target_info.xyz[2];
-                // std::cout << std::endl;
-                // std::cout << "t:" << (target_info.timestamp - st) / 1e3 << std::endl;
-                // std::cout << std::endl;
+        // if(!is_still_spinning)
+        // {
+        //     for(auto& target_info : history_info_)
+        //     {   
+        //         x_sum += target_info.xyz[0];
+        //         y_sum += target_info.xyz[2];
+        //         // std::cout << std::endl;
+        //         // std::cout << "t:" << (target_info.timestamp - st) / 1e3 << std::endl;
+        //         // std::cout << std::endl;
 
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1, 1, 1, 1, 1, 1>
-                    (
-                        new CurveFittingCost(0, target_info.xyz[0], target_info.xyz[2], (target_info.timestamp) / 1e3, 1)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &params[0],
-                    &params[1],
-                    &params[2],
-                    &params[3],
-                    &params[4],
-                    &params[5],
-                    &params[6],
-                    &params[7]
-                );
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1, 1, 1, 1, 1, 1>
-                    (
-                        new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[2], (target_info.timestamp) / 1e3, 1)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &params[0],
-                    &params[1],
-                    &params[2],
-                    &params[3],
-                    &params[4],
-                    &params[5],
-                    &params[6],
-                    &params[7]
-                );
+        //         problem.AddResidualBlock(
+        //             new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1, 1, 1, 1, 1, 1>
+        //             (
+        //                 new CurveFittingCost(0, target_info.xyz[0], target_info.xyz[2], (target_info.timestamp) / 1e3, 1)
+        //             ),
+        //             new ceres::CauchyLoss(0.5),
+        //             &params[0],
+        //             &params[1],
+        //             &params[2],
+        //             &params[3],
+        //             &params[4],
+        //             &params[5],
+        //             &params[6],
+        //             &params[7]
+        //         );
+        //         problem.AddResidualBlock(
+        //             new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1, 1, 1, 1, 1, 1>
+        //             (
+        //                 new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[2], (target_info.timestamp) / 1e3, 1)
+        //             ),
+        //             new ceres::CauchyLoss(0.5),
+        //             &params[0],
+        //             &params[1],
+        //             &params[2],
+        //             &params[3],
+        //             &params[4],
+        //             &params[5],
+        //             &params[6],
+        //             &params[7]
+        //         );
                 // problem.AddResidualBlock(
                 //     new ceres::AutoDiffCostFunction<XAxisFitting, 1, 1, 1, 1, 1, 1>
                 //     (
@@ -719,14 +768,14 @@ namespace armor_detector
                 //     &params[3],
                 //     &params[4]
                 // );
-            }
-        }
-        else
-        {
+        //     }
+        // }
+        // else
+        // {
             for(auto& target_info : history_info_)
             {   
                 // std::cout << std::endl;
-                // std::cout << "t:" << (target_info.timestamp - st) / 1e3 << std::endl;
+                // std::cout << "t:" << (target_info.timestamp- st) / 1e3 << std::endl;
                 // std::cout << std::endl;
 
                 // problem.AddResidualBlock(
@@ -764,7 +813,7 @@ namespace armor_detector
                     new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1, 1, 1>
                     (
                         // new CurveFittingCost(0, target_info.xyz[0], target_info.xyz[2], (target_info.timestamp - st) / 1e3, 0)
-                        new CurveFittingCost(0, target_info.xyz[0], target_info.xyz[2], (target_info.timestamp) / 1e3, 0)
+                        new CurveFittingCost(0, target_info.xyz[0], target_info.xyz[2], (target_info.timestamp - st) / 1e3, x0)
                     ),
                     new ceres::CauchyLoss(0.5),
                     &params[0],
@@ -774,21 +823,21 @@ namespace armor_detector
                     &params[4]
                 );
 
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1, 1, 1>
-                    (
-                        // new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[2], (target_info.timestamp - st) / 1e3, 0)
-                        new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[2], (target_info.timestamp) / 1e3, 0)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &params[0],
-                    &params[1],
-                    &params[2],
-                    &params[3],
-                    &params[4]
-                );
+                // problem.AddResidualBlock(
+                //     new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1, 1, 1>
+                //     (
+                //         // new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[2], (target_info.timestamp - st) / 1e3, 0)
+                //         new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[2], (target_info.timestamp) / 1e3, 0)
+                //     ),
+                //     new ceres::CauchyLoss(0.5),
+                //     &params[0],
+                //     &params[1],
+                //     &params[2],
+                //     &params[3],
+                //     &params[4]
+                // );
             }
-        }
+        // }
         // problem.SetParameterUpperBound(&params[0], 0, 4 * M_PI);
         // problem.SetParameterLowerBound(&params[0], 0, 0.25 * M_PI);
 
@@ -812,55 +861,83 @@ namespace armor_detector
         // problem.SetParameterUpperBound(&params[7], 0, 0.5 * M_PI);
         // problem.SetParameterLowerBound(&params[7], 0, -0.5 * M_PI);
 
-        problem.SetParameterUpperBound(&params[0], 0, 2.0);
-        problem.SetParameterLowerBound(&params[0], 0, 0.1);
+        // problem.SetParameterUpperBound(&params[0], 0, 2.0);
+        // problem.SetParameterLowerBound(&params[0], 0, 0.1);
 
-        problem.SetParameterUpperBound(&params[1], 0, 100);
-        problem.SetParameterLowerBound(&params[1], 0, 0.1);
+        // problem.SetParameterUpperBound(&params[1], 0, 100);
+        // problem.SetParameterLowerBound(&params[1], 0, 0.1);
         
-        problem.SetParameterUpperBound(&params[2], 0, 100);
-        problem.SetParameterLowerBound(&params[2], 0, 0.1);
+        // problem.SetParameterUpperBound(&params[2], 0, 100);
+        // problem.SetParameterLowerBound(&params[2], 0, 0.1);
         
-        problem.SetParameterUpperBound(&params[3], 0, 100);
-        problem.SetParameterLowerBound(&params[3], 0, 0.1);
+        // problem.SetParameterUpperBound(&params[3], 0, 100);
+        // problem.SetParameterLowerBound(&params[3], 0, 0.1);
         
-        problem.SetParameterUpperBound(&params[4], 0, 100);
-        problem.SetParameterLowerBound(&params[4], 0, 0.1);
+        // problem.SetParameterUpperBound(&params[4], 0, 100);
+        // problem.SetParameterLowerBound(&params[4], 0, 0.1);
 
         ceres::Solve(options, &problem, &summary);
         
         auto time_now = std::chrono::steady_clock::now();
         auto t = std::chrono::duration<double, std::milli>(time_now - time_start).count();
-        std::cout << "fitting_time:" << t / 1e3 << "s" << std::endl;
+        std::cout << "fitting_time:" << t << "ms" << std::endl;
 
         PredictStatus is_available;
         is_available.xyz_status[0] = (summary.final_cost <= predict_param_.max_cost);
+        if(is_available.xyz_status[0])
+            is_predicted = true;
+        else
+            is_predicted = false;
+        
+        std::cout << "is_predicted: " << is_predicted << std::endl;
         // is_available.xyz_status[1] = (summary.final_cost <= predict_param_.max_cost);
         // std::cout << "xyz_status[0]:" << is_available.xyz_status[0] << std::endl;
         // std::cout << "xyz_status[1]:" << is_available.xyz_status[1] << std::endl;
 
         // std::cout << std::endl;
-        // std::cout << "estimated_time: " << time_estimated << std::endl;
+        // std::cout << "estimated_time: " << time_estimated / 1e3 << std::endl;
         // std::cout << std::endl;
         double x_pred, y_pred;
-        if(!is_still_spinning)
-        {
-            x_pred = params[3] - params[5] * ceres::cos(params[0] * ((time_estimated - st) / 1e3) + params[7]) + params[2] * ((time_estimated - st) / 1e3) * ceres::cos(params[1]);
-            y_pred = params[4] - params[6] * ceres::sin(params[0] * ((time_estimated - st) / 1e3) + params[7]) + params[2] * ((time_estimated - st) / 1e3) * ceres::sin(params[1]);
-        }
-        else
-        {
+        // if(!is_still_spinning)
+        // {
+        //     x_pred = params[3] - params[5] * ceres::cos(params[0] * ((time_estimated - st) / 1e3) + params[7]) + params[2] * ((time_estimated - st) / 1e3) * ceres::cos(params[1]);
+        //     y_pred = params[4] - params[6] * ceres::sin(params[0] * ((time_estimated - st) / 1e3) + params[7]) + params[2] * ((time_estimated - st) / 1e3) * ceres::sin(params[1]);
+        // }
+        // else
+        // {
             // x_pred = params[3] - params[5] * ceres::cos(params[0] * ((time_estimated - st) / 1e3) + params[7]);
             // y_pred = params[4] - params[6] * ceres::sin(params[0] * ((time_estimated - st) / 1e3) + params[7]);
 
+            double start_point = history_info_.front().timestamp;            
+            if((time_estimated - start_point) / 1e3 < target.period)
+            {
+                x_pred = params[0] * ((time_estimated - st) / 1e3) + x0;
+            }
+            else
+            {
+                int flag = -1;
+                double tt = (time_estimated - start_point) / 1e3 - target.period;
+                for(int ii = 0; ii < history_info_.size(); ii++)
+                {
+                    if(history_info_[ii].timestamp < (start_point + tt))
+                        continue;
+                    else
+                    {   
+                        flag = ii;
+                        break;
+                    }
+                }
+
+                x_pred = history_info_.at(flag).xyz[0];
+                // x_pred = params[0] * (target.timestamp / 1e3 - target.period) + params[1];
+            }
             // x(t)=kt+d
-            x_pred = params[0] * ((time_estimated) / 1e3) + params[1];
             // y(t)=a*(k^2)*(t^2)+(2kad+kb)*t+a(d^2)+bd+c
-            y_pred = params[2] * pow(params[0], 2) * pow(((time_estimated) / 1e3), 2) + 
-                (2 * params[0] * params[2] * params[1] + params[0] * params[3]) *
-                ((time_estimated) / 1e3) + params[2] * pow(params[1], 2) + 
-                params[3] * params[1] + params[4];
-        }
+            // y_pred = params[2] * pow(params[0], 2) * pow(((time_estimated) / 1e3), 2) + 
+            //     (2 * params[0] * params[2] * params[1] + params[0] * params[3]) *
+            //     ((time_estimated) / 1e3) + params[2] * pow(params[1], 2) + 
+            //     params[3] * params[1] + params[4];
+        // }
 
         std::memcpy(fitting_params_, params, sizeof(fitting_params_));
 
@@ -873,7 +950,29 @@ namespace armor_detector
         // std::cout << std::endl;
         // std::cout << "x:" << x_pred << " y:" << target.xyz[1] << " z:" << target.xyz[2] << " y_pred:" << y_pred << std::endl;
         // std::cout << std::endl;
-        result = {x_pred, target.xyz[1], y_pred};
+
+        double x_front = history_info_.front().xyz[0];
+        double x_back = history_info_.back().xyz[0];
+
+        // if(x_back < 0)
+        // {
+        //     if(abs(x_pred) + 0.15 < abs(x_back))
+        //     {
+        //         x_pred = x_back + 0.15;
+        //     }
+        // }
+        // else
+        // {
+        //     if(x_pred > (x_back + 0.15))
+        //     {
+        //         x_pred = (x_back + 0.15);
+        //     }
+        // }
+
+        //     if(abs(x_pred) > abs(history_info_.front().xyz[0])) // Back in time.
+        //         x_pred = history_info_.at(4).xyz[0];
+        // // }
+        result = {x_pred, target.xyz[1], target.xyz[2]};
         
         return is_available;
     }
