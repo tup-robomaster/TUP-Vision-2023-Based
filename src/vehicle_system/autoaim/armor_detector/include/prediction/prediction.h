@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-12-07 19:27:39
+ * @LastEditTime: 2022-12-08 20:12:43
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/prediction/prediction.h
  */
 #ifndef PREDICTION_HPP_
@@ -183,7 +183,18 @@ namespace armor_detector
             }  
             else
             {   //y(t)=a*(k^2)*(t^2)+(2kad+kb)*t+a(d^2)+bd+c
-                residual[0] = a[0] * pow(k[0], 2) * pow(T(_t), 2) + ((2.0 * (k[0] * a[0] * d[0])) + (k[0] * b[0])) * T(_t) + a[0] * pow(d[0], 2) + b[0] * d[0] + c[0] - _y; 
+                // residual[0] = a[0] * pow(k[0], 2) * pow(T(_t), 2) 
+                //             + ((2.0 * (k[0] * a[0] * d[0])) + (k[0] * b[0])) * T(_t) 
+                //             + a[0] * pow(d[0], 2) + b[0] * d[0] + c[0] - _y; 
+
+                //f(t)=a*(t^2)+b*t+c
+                // residual[0] = a[0] * pow(T(_t), 2) + b[0] * T(_t) + c[0] - _y;
+
+                //f(t)=(a/t) + b
+                // residual[0] = b[0] / T(_t) + c[0] - _y;
+
+                //f(t)=(a/t) + b
+                residual[0] = (1.0 / T(_t)) + c[0] - _y;
             }
 
             return true;
@@ -346,8 +357,9 @@ namespace armor_detector
         YAML::Node config_;
         
     public:
-        std::deque<double> history_delta_x_pred_;
-        std::deque<double> history_origin_info_;
+        std::deque<cv::Point2d> history_pred_info_;
+        std::deque<cv::Point2d> history_origin_info_;
+        std::deque<double> history_y_info_;
         double last_start_timestamp_;
         double last_end_x_;
         bool is_predicted;
@@ -375,6 +387,7 @@ namespace armor_detector
         //移动轨迹拟合预测（小陀螺+横移->旋轮线，若目标处于原地小陀螺状态，则剔除掉模型中的横移项）
         // double fitting_params_[8] = {M_PI, 0, 0, 0, 0, 0.25, 0.25, 0};
         double fitting_params_[8] = {0.1, 0, 0, 0, 0, 0, 0, 0};
+        double fitting_y_params_[8] = {0.1, 0, 0, 0, 0, 0, 0, 0};
 
         PredictStatus couple_fitting_predict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, int timestamp);
     

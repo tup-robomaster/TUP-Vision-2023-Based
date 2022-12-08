@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-12-07 17:22:35
+ * @LastEditTime: 2022-12-08 19:20:22
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
@@ -610,12 +610,19 @@ namespace armor_detector
                 putText(src.img, fmt::format("FPS: {}", int(1000 / dr_full_ms)), {10, 25}, cv::FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
                 cv::circle(src.img, point_2d, 10, {255, 255, 0}, -1);
                 
+                int us = sleep_time * 1e3;
+
                 // global_interface::msg::Target target_info;
                 // target_info.aiming_point.x = aiming_point_cam[0];
                 // target_info.aiming_point.y = aiming_point_cam[1];
                 // target_info.aiming_point.z = aiming_point_cam[2];
-                // predict_info.header.stamp = this->get_clock()->now();
-                // target_info.header.stamp = this->get_clock()->now();
+                target_info.header.stamp = this->get_clock()->now();
+                predict_info.header.stamp = this->get_clock()->now();
+                predict_info.header.stamp.nanosec += (us * 1e3);
+                // predict_info.header.stamp.sec = (predict_info.header.stamp.nanosec / 1e-9);
+
+                // std::cout << "tt:" << target_info.header.stamp.sec << std::endl;
+                // std::cout << "pt:" << predict_info.header.stamp.sec << std::endl;
 
                 predict_info.timestamp = src.timestamp;
                 target_info.timestamp = src.timestamp;
@@ -623,7 +630,6 @@ namespace armor_detector
                 //publish target's information containing 3d point and timestamp.
                 armors_pub->publish(target_info);
                 
-                int us = sleep_time * 1e3;
                 // std::cout << "delay_time: " << (us / 1e6) << std::endl;
                 // usleep(us);
                 predict_info_pub->publish(predict_info);

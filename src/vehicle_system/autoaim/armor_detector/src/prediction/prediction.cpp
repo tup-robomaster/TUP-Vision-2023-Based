@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-12-07 20:18:44
+ * @LastEditTime: 2022-12-08 20:29:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -82,7 +82,8 @@ namespace armor_detector
     {
         if(target_switched)
         {
-            history_origin_info_.clear();
+            if(history_origin_info_.size() != 0)
+                history_origin_info_.clear();
             // history_delta_x_pred_.clear();
             is_predicted = false;
             return;
@@ -91,6 +92,8 @@ namespace armor_detector
 
     Eigen::Vector3d ArmorPredictor::predict(cv::Mat& src, TargetInfoPtr target_ptr, int timestamp, int& sleep_time)
     {
+        // std::cout << 1 << std::endl;
+
         if(!is_init)
         {
             config_ = YAML::LoadFile(filter_param_path_);
@@ -110,12 +113,14 @@ namespace armor_detector
         // std::cout << "x_:" << target_ptr->xyz[0] << std::endl;
 
         // -----------------对位置进行粒子滤波,以降低测距噪声影响-------------------------------------
-        // Eigen::VectorXd measure (2);
-        // measure << xyz[0], xyz[1];
+        Eigen::VectorXd measure (2);
+
+        // Y-axis matches to camera frame.
+        measure << target.xyz[0], target.xyz[2];
         
-        // bool is_pos_filter_ready = pf_pos.update(measure);
-        // Eigen::VectorXd predict_pos_xy = pf_pos.predict();
-        // Eigen::Vector3d predict_pos = {predict_pos_xy[0], predict_pos_xy[1], xyz[2]};
+        bool is_pos_filter_ready = pf_pos.update(measure);
+        Eigen::VectorXd predict_pos_xy = pf_pos.predict();
+        Eigen::Vector3d predict_pos = {predict_pos_xy[0], predict_pos_xy[1], target.xyz[2]};
 
         Eigen::Vector3d result = {0, 0, 0};
         Eigen::Vector3d result_pf = {0, 0, 0};
@@ -127,14 +132,22 @@ namespace armor_detector
         PredictStatus is_ekf_available;
         PredictStatus is_imm_available;
 
+        if(is_pos_filter_ready || abs(target.xyz[2] - predict_pos[1]) < 0.20)
+        {   //对位置进行粒子滤波,以降低测距噪声影响
+            target.xyz[2] = predict_pos[1];
+        }
+
         if(!target.is_target_switched)
         {
             history_info_.push_back(target);
         }
         else
         {
-            history_info_.clear();
-            history_origin_info_.push_back(history_info_.front().xyz[0]);
+            if(history_info_.size() != 0)
+            {
+                history_origin_info_.push_back(cv::Point2d(history_info_.front().xyz[0], history_info_.front().xyz[2]));
+                history_info_.clear();
+            }
             history_info_.push_back(target);
         }
         
@@ -169,25 +182,28 @@ namespace armor_detector
 
             if(is_predicted)
             {
-                double last_to_now_timestamp = history_info_.back().timestamp - last_start_timestamp_;
-                double tt = time_estimate - last_start_timestamp_;
+                if(history_info_.size() != 0)
+                {
+                    double last_to_now_timestamp = history_info_.back().timestamp - last_start_timestamp_;
+                    double tt = time_estimate - last_start_timestamp_;
+                    
+                    double last_pred_x = fitting_params_[0] * (last_to_now_timestamp / 1e3) + fitting_params_[1];
                 
-                double last_pred_x = fitting_params_[0] * (last_to_now_timestamp / 1e3) + fitting_params_[1];
-               
-                double delta_y = last_pred_x - target.xyz[0]; 
-                // double tt = time_estimate / 1e3;
-                // result[0] = fitting_params_[0] * (delta_time_estimate * history_info_.size() / 1e3) + history_info_.front().xyz[0]; // x(t)=kt+x0
-                result[0] = fitting_params_[0] * (tt / 1e3) + fitting_params_[1] - delta_y; // x(t)=kt+d
-                result[1] = target.xyz[1];
-                result[2] = target.xyz[2];
-                
+                    double delta_y = last_pred_x - target.xyz[0]; 
+                    // double tt = time_estimate / 1e3;
+                    // result[0] = fitting_params_[0] * (delta_time_estimate * history_info_.size() / 1e3) + history_info_.front().xyz[0]; // x(t)=kt+x0
+                    result[0] = fitting_params_[0] * (tt / 1e3) + fitting_params_[1] - delta_y; // x(t)=kt+d
+                    result[1] = target.xyz[1];
+                    result[2] = target.xyz[2];
+                    return result;
+                }
+                    
                 // std::cout << "deque_size: " << history_info_.size() << std::endl;
                 // std::cout << "time: " << tt << std::endl;
                 // std::cout << std::endl;
                 // std::cout << "x:" << target.xyz[0] << " x_pred:" << result[0] << std::endl;
                 // std::cout << std::endl;
                 
-                return result;
             }
 
             return target.xyz;
@@ -333,38 +349,38 @@ namespace armor_detector
             // 击打前哨站模式
             if(target_ptr->is_sentry_mode && target_ptr->sentry_armor_status == NORMAL)
             {
-                is_fitting_available = spinningPredict(false, target, result, time_estimate);  
+                is_fitting_available = spinningPredict(false, target, result_fitting, time_estimate);  
             }
             else if(target_ptr->is_sentry_mode && target_ptr->sentry_armor_status == CONTROLLED)
             {
-                is_fitting_available = spinningPredict(true, target, result, time_estimate);  
+                is_fitting_available = spinningPredict(true, target, result_fitting, time_estimate);  
             }
 
             // 反陀螺模式
             if(target_ptr->is_spinning && target_ptr->spinning_status == STILL_SPINNING)
             {   
                 // std::cout << "STILL_SPINNING"  << std::endl;
-                is_fitting_available = couple_fitting_predict(true, target, result, time_estimate);  
+                is_fitting_available = couple_fitting_predict(true, target, result_fitting, time_estimate);  
             }
             else if(target_ptr->is_spinning && target_ptr->spinning_status == MOVEMENT_SPINNING)
             {
                 // std::cout << "MOVEMENT_SPINNING" << std::endl;
 
-                is_fitting_available = couple_fitting_predict(false, target, result, time_estimate);  
+                is_fitting_available = couple_fitting_predict(false, target, result_fitting, time_estimate);  
             }
 
             if(is_fitting_available.xyz_status[0])
-                result[0] = result[0];
+                result[0] = result_fitting[0];
             else
                 result[0] = target.xyz[0];
 
             if(is_fitting_available.xyz_status[1])
-                result[1] = result[1];
+                result[1] = result_fitting[1];
             else
                 result[1] = target.xyz[1];
 
             if(is_fitting_available.xyz_status[2])
-                result[2] = result[2];
+                result[2] = result_fitting[2];
             else
                 result[2] = target.xyz[2];
         }
@@ -719,17 +735,31 @@ namespace armor_detector
             fitting_params_[4], fitting_params_[5], fitting_params_[6], fitting_params_[7]};
         // double params[] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
+        double params_y[8] = {0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01};
+
+        // x-axis
         ceres::Problem problem;
         ceres::Solver::Options options;
         ceres::Solver::Summary summary;
-
+        
         options.max_num_iterations = 20;
         options.linear_solver_type = ceres::DENSE_QR;
         options.minimizer_progress_to_stdout = false;
-
+        
         double x0 = history_info_.front().xyz[0];
         int st = history_info_.begin()->timestamp;
         last_start_timestamp_ = st;
+
+        // y-axis
+        ceres::Problem problem_y;
+        ceres::Solver::Options options_y;
+        ceres::Solver::Summary summary_y;
+        options_y.max_num_iterations = 20;
+        options_y.linear_solver_type = ceres::DENSE_QR;
+        options.minimizer_progress_to_stdout =false;
+
+        //TODO: camera frame's y coord matches to gyro frame's z.
+        double y0 = history_info_.front().xyz[2];
 
         double x_sum = 0;
         double y_sum = 0;
@@ -804,6 +834,9 @@ namespace armor_detector
         // {
             for(auto& target_info : history_info_)
             {   
+                // Y-axis matches to camera.
+                y_sum += target_info.xyz[2];
+                
                 // std::cout << std::endl;
                 // std::cout << "t:" << (target_info.timestamp- st) / 1e3 << std::endl;
                 // std::cout << std::endl;
@@ -851,6 +884,20 @@ namespace armor_detector
                     &params[2],
                     &params[3],
                     &params[4]
+                );
+
+                problem_y.AddResidualBlock(
+                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1, 1, 1>
+                    (
+                        // new CurveFittingCost(0, target_info.xyz[0], target_info.xyz[2], (target_info.timestamp - st) / 1e3, 0)
+                        new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[2], (target_info.timestamp), y0)
+                    ),
+                    new ceres::CauchyLoss(0.25),
+                    &params_y[0],
+                    &params_y[1],
+                    &params_y[2],
+                    &params_y[3],
+                    &params_y[4]
                 );
 
                 // problem.AddResidualBlock(
@@ -906,14 +953,25 @@ namespace armor_detector
         // problem.SetParameterUpperBound(&params[4], 0, 100);
         // problem.SetParameterLowerBound(&params[4], 0, 0.1);
 
-        ceres::Solve(options, &problem, &summary);
+        // ceres::Solve(options, &problem, &summary);
+        auto x_future = std::async(std::launch::deferred, [&](){ceres::Solve(options, &problem, &summary);});
+        auto y_future = std::async(std::launch::deferred, [&](){ceres::Solve(options_y, &problem_y, &summary_y);});
+
+        x_future.wait();
+        y_future.wait();
+
+        auto x_cost = summary.final_cost;
+        auto y_cost = summary_y.final_cost;
         
         auto time_now = std::chrono::steady_clock::now();
         auto t = std::chrono::duration<double, std::milli>(time_now - time_start).count();
-        // std::cout << "fitting_time:" << t << "ms" << std::endl;
+        std::cout << "fitting_time: " << t << "ms" << std::endl;
+        std::cout << "x_cost:" << x_cost << " y_cost:" << y_cost << std::endl;
 
         PredictStatus is_available;
-        is_available.xyz_status[0] = (summary.final_cost <= predict_param_.max_cost);
+        is_available.xyz_status[0] = (x_cost <= predict_param_.max_cost);
+        is_available.xyz_status[2] = (y_cost <= predict_param_.max_cost);        
+
         if(is_available.xyz_status[0])
             is_predicted = true;
         else
@@ -943,13 +1001,27 @@ namespace armor_detector
             {
                 // x_pred = params[0] * ((time_estimated - st) / 1e3) + x0; // x(t)=k(t+dt)+x0
                 x_pred = params[0] * ((time_estimated - st) / 1e3) + params[1]; // x(t)=k(t+dt)+d
+
+                //y(t)=a*(k^2)*(t^2)+(2kad+kb)*t+a(d^2)+bd+c
+                // y_pred = params_y[2] * pow(params_y[0], 2) * pow(((time_estimated - st) / 1e3), 2) + ((2.0 * (params_y[0] * params_y[2] * params_y[1]))
+                // + (params_y[0] * params_y[3])) * ((time_estimated - st) / 1e3) + params_y[2] * pow(params_y[1], 2) + params_y[3] * params_y[1] + params_y[4];
+
+                //f(t)=a*(t^2)+b*t+c
+                // y_pred = params_y[2] * pow(((time_estimated - st) / 1e3), 2) + params_y[3] * ((time_estimated - st) / 1e3) + params_y[4];
+            
+                //f(t)=(b/t)+c
+                // y_pred = params_y[3] / (time_estimated) + params_y[4];
+            
+                //f(t)=(1/t)+c
+                y_pred = (1.0 / (time_estimated )) + params_y[4];
             }
             else
             {
                 if(history_origin_info_.size() == 2)
                 {
                     // double last_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 2) - history_origin_info_.at(history_origin_info_.size() - 3);
-                    double cur_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 1) - history_origin_info_.at(history_origin_info_.size() - 2);
+                    double cur_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 1).x - history_origin_info_.at(history_origin_info_.size() - 2).x;
+                    double cur_delta_y0 = history_origin_info_.at(history_origin_info_.size() - 1).y - history_origin_info_.at(history_origin_info_.size() - 2).y;
                     // double delta_ave = (last_delta_x0 + cur_delta_x0) / 2.0;
                     
                     // std::cout << "cur_delta:" << cur_delta_x0 << std::endl;
@@ -964,9 +1036,41 @@ namespace armor_detector
                     // }
                     
                     if(!is_still_spinning)
+                    {
                         x_pred = params[0] * ((time_estimated - st) / 1e3 - target.period) + params[1] - cur_delta_x0; // x(t)=k(t+dt-T)+d
+                        // y_pred = params_y[2] * pow(params_y[0], 2) * pow(((time_estimated - st) / 1e3 - target.period), 2)
+                        //         + ((2.0 * (params_y[0] * params_y[2] * params_y[1]))
+                        //         + (params_y[0] * params_y[3])) * ((time_estimated - st) / 1e3 - target.period)
+                        //         + params_y[2] * pow(params_y[1], 2) + params_y[3] * params_y[1] + params_y[4] - cur_delta_y0;
+
+                        //f(t)=a*(t^2)+b*t+c
+                        // y_pred = params_y[2] * pow(((time_estimated - st) / 1e3 - target.period), 2)
+                        //         + params_y[3] * ((time_estimated - st) / 1e3 - target.period) + params_y[4] - cur_delta_y0;
+
+                        //f(t)=(b/t)+c
+                        // y_pred = params_y[3] / ((time_estimated) - target.period * 1e3) + params_y[4] - cur_delta_y0;
+
+                        //f(t)=(1/t)+c
+                        y_pred = (1.0 / (time_estimated - target.period * 1e3)) + params_y[4];
+                    }
                     else
+                    {
                         x_pred = params[0] * ((time_estimated - st) / 1e3 - target.period) + params[1]; // x(t)=k(t+dt-T)+d
+                        // y_pred = params_y[2] * pow(params_y[0], 2) * pow(((time_estimated - st) / 1e3 - target.period), 2)
+                        //         + ((2.0 * (params_y[0] * params_y[2] * params_y[1]))
+                        //         + (params_y[0] * params_y[3])) * ((time_estimated - st) / 1e3 - target.period)
+                        //         + params_y[2] * pow(params_y[1], 2) + params_y[3] * params_y[1] + params_y[4];
+                       
+                        //f(t)=a*(t^2)+b*t+c
+                        // y_pred = params_y[2] * pow(((time_estimated - st) / 1e3 - target.period), 2)
+                        //         + params_y[3] * ((time_estimated - st) / 1e3 - target.period) + params_y[4];
+
+                        //f(t)=(b/t)+c
+                        // y_pred = params_y[3] / ((time_estimated) - target.period * 1e3) + params_y[4];
+
+                        //f(t)=(1/t)+c
+                        y_pred = (1.0 / ((time_estimated - target.period * 1e3))) + params_y[4];
+                    }
 
                     // if(ave_x_pred)
                     // {
@@ -981,16 +1085,22 @@ namespace armor_detector
                         // {
                         
                         // std::cout << "Target_direction: " <<  target.is_clockwise << std::endl;
-                        double x_origin = history_origin_info_.at(history_origin_info_.size() - 1);
+                        double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).x;
+                        double y_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
                         if(target.is_clockwise)
                         {
                             if(x_pred > x_origin * 0.85)
                                 x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+                            if(y_pred > y_origin * 0.85)
+                                y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[2];
+
                         }
                         else
                         {
                             if(x_pred < x_origin * 0.85)
                                 x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+                            if(y_pred < y_origin * 0.85)
+                                y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[2];
                         }
 
                         // }
@@ -1007,23 +1117,48 @@ namespace armor_detector
                     if(is_still_spinning)
                     {
                         x_pred = params[0] * ((time_estimated - st) / 1e3 - target.period) + params[1]; // x(t)=k(t+dt-T)+d
-                        
-                        double x_origin = history_origin_info_.at(history_origin_info_.size() - 1);
-                        if(target.is_clockwise)
+                        // y_pred = params_y[2] * pow(params_y[0], 2) * pow(((time_estimated - st) / 1e3 - target.period), 2)
+                        //         + ((2.0 * (params_y[0] * params_y[2] * params_y[1]))
+                        //         + (params_y[0] * params_y[3])) * ((time_estimated - st) / 1e3 - target.period)
+                        //         + params_y[2] * pow(params_y[1], 2) + params_y[3] * params_y[1] + params_y[4];
+
+                        //f(t)=a*(t^2)+b*t+c
+                        // y_pred = params_y[2] * pow(((time_estimated - st) / 1e3 - target.period), 2)
+                        //         + params_y[3] * ((time_estimated - st) / 1e3 - target.period) + params_y[4];
+
+                        //f(t)=(b/t)+c
+                        // y_pred = params_y[3] / ((time_estimated) - target.period * 1e3) + params_y[4];
+
+                        y_pred = (1.0 / ((time_estimated - target.period * 1e3))) + params_y[4];
+                            
+                        if(history_origin_info_.size() != 0)
                         {
-                            if(x_pred > x_origin * 0.85)
-                                x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
-                        }
-                        else
-                        {
-                            if(x_pred < x_origin * 0.85)
-                                x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+                            double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).x;
+                            double y_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
+                            if(target.is_clockwise)
+                            {
+                                if(x_pred > x_origin * 0.80)
+                                    x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+                                if(y_pred > y_origin * 0.80)
+                                    y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[2];
+                            }
+                            else
+                            {
+                                if(x_pred < x_origin * 0.80)
+                                    x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+                                if(y_pred < y_origin * 0.80)
+                                    y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[2];
+                            }
                         }
                     }
                     else
+                    {
                         x_pred = history_info_.at(history_info_.size() - 1).xyz[0];
+                        y_pred = history_info_.at(history_info_.size() - 1).xyz[2];
+                    }
                 }
 
+                y_pred = y_sum / history_info_.size();
                 // double tt = (time_estimated - start_point) / 1e3 - target.period;
                 // if(history_info_.size() > 6)
                 // {
@@ -1062,12 +1197,16 @@ namespace armor_detector
         // }
 
         std::memcpy(fitting_params_, params, sizeof(fitting_params_));
+        std::memcpy(fitting_y_params_, params_y, sizeof(fitting_y_params_));
 
         // std::cout << "w:" << params[0] << " theta:" << params[1] << " V:" << params[2] << " x0:" 
         //           << params[3] << " y0:" << params[4] << " a:" << params[5] << " b:" << params[6] << " phi:" << params[7] << std::endl;
 
         // std::cout << "k:" << params[0] << " d:" << params[1] << " a:" << params[2] << " b:" 
         //           << params[3] << " c:" << params[4] << std::endl;
+
+        std::cout << "k:" << params_y[0] << " d:" << params_y[1] << " a:" << params_y[2] << " b:" 
+                  << params_y[3] << " c:" << params_y[4] << std::endl;
 
         // std::cout << "x_: " << target.xyz[0] << " x_pred: " << x_pred << std::endl; 
         // std::cout << std::endl;
@@ -1107,8 +1246,13 @@ namespace armor_detector
         //     history_delta_x_pred_.push_back(delta_x_to_pred);
         // }
         
-        result = {x_pred, target.xyz[1], target.xyz[2]};
+        // result = {x_pred, target.xyz[1], target.xyz[2]};
+        // result = {x_pred, target.xyz[1], y_pred}; //camera frame
+        result = {target.xyz[0], target.xyz[1], y_pred}; //camera frame
         
+        // std::cout << "x:" << target.xyz[0] << " x_pred:" << x_pred << std::endl;
+        std::cout << "y:" << target.xyz[2] << " y_pred:" << y_pred << std::endl;
+
         return is_available;
     }
 
