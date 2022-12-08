@@ -333,6 +333,7 @@ namespace armor_detector
         // Step 2. Configure input & output
         //  Prepare input blobs
         InputInfo::Ptr input_info = network.getInputsInfo().begin()->second;
+        input_info->setPrecision(Precision::U8);
         input_name = network.getInputsInfo().begin()->first;
 
 
@@ -385,22 +386,20 @@ namespace armor_detector
         imshow("network_input",pr_img);
         waitKey(1);
     #endif //SHOW_INPUT
-        cv::Mat pre;
         cv::Mat pre_split[3];
-        pr_img.convertTo(pre,CV_32F);
-        cv::split(pre,pre_split);
+        cv::split(src, pre_split);
 
         Blob::Ptr imgBlob = infer_request.GetBlob(input_name);     // just wrap Mat data by Blob::Ptr
         InferenceEngine::MemoryBlob::Ptr mblob = InferenceEngine::as<InferenceEngine::MemoryBlob>(imgBlob);
         // locked memory holder should be alive all time while access to its buffer happens
         auto mblobHolder = mblob->wmap();
-        float *blob_data = mblobHolder.as<float *>();
+        u_int8_t *blob_data = mblobHolder.as<u_int8_t *>();
 
         auto img_offset = INPUT_W * INPUT_H;
         //Copy img into blob
         for(int c = 0;c < 3;c++)
         {
-            memcpy(blob_data, pre_split[c].data, INPUT_W * INPUT_H * sizeof(float));
+            memcpy(blob_data, pre_split[c].data, INPUT_W * INPUT_H * sizeof(u_int8_t));
             blob_data += img_offset;
         }
 
