@@ -1,3 +1,0 @@
----
-sensor_msgs/CameraInfo camera_info # The camera_info to store
-bool success

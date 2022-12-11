@@ -7,6 +7,8 @@ V1.0
 程序基于ros-galactic框架
 
 ## 开发日志
+Date:2022-12-11 Update buff node.
+
 Date:2022-12-01 Merge armor_detector node and armor_processor node to one node.
 
 Date:2022-11-11 添加ros2 parameter callback，配合rqt_reconfigure插件可以实现节点动态调参(目前仅可在usb相机驱动节点使用)。

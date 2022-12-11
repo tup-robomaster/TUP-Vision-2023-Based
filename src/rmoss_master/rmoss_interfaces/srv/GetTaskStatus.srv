@@ -1,7 +1,0 @@
----
-# response constants
-uint8 RUNNING = 1
-uint8 IDLE = 2
-uint8 ERROR = 3
-# response data
-uint8 status
