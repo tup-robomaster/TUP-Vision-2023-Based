@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-12-08 20:12:43
+ * @LastEditTime: 2022-12-08 21:02:05
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/prediction/prediction.h
  */
 #ifndef PREDICTION_HPP_
@@ -329,6 +329,16 @@ namespace armor_detector
             r = 1.0;
         }
     };
+    
+    typedef enum PredictDirection
+    {
+        CAMERA_X_DIRECTION,
+        CAMERA_Y_DIRECTION,
+        CAMERA_Z_DIRECTION,
+        GYRO_X_DIRECTION,
+        GYRO_Y_DIRECTION,
+        GYRO_Z_DIRECTION
+    } PredictDirection;
 
     class ArmorPredictor
     {
@@ -416,7 +426,7 @@ namespace armor_detector
     public:
         // CS Model
         bool is_ekf_init;
-        PredictStatus predict_ekf_run(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_v, double ax, int timestamp);
+        PredictStatus predict_ekf_run(PredictDirection predictDirection, TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, int timestamp);
         // void predict_based_singer(Eigen::Vector3d& result);
 
         // cs模型参数设置

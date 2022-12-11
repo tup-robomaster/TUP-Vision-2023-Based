@@ -40,8 +40,8 @@
     camera_name: "KE0200110075" 
     camera_type: 0
     camera_param_path: src/global_user/config/camera.yaml
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
-    network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
+    network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
+    # network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
 
     #debug
     debug_without_com: true
@@ -58,7 +58,7 @@
 
     # debug params
     debug: true
-    disable_filter: true
+    disable_filter: false
     disable_fitting: true
     show_predict: false
     show_transformed_info: false

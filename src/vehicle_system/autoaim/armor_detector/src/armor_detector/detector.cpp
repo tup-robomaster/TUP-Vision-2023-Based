@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-12-07 18:18:53
+ * @LastEditTime: 2022-12-09 10:08:47
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector.cpp
  */
 #include "../../include/armor_detector/detector.hpp"
@@ -304,9 +304,9 @@ namespace armor_detector
                 target_type = global_user::BIG;
 
             //单目PnP
-            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_IPPE);
+            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_ITERATIVE);
+            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_IPPE);
             
-
             //防止装甲板类型出错导致解算问题，首先尝试切换装甲板类型，若仍无效则直接跳过该装甲板
             if (pnp_result.armor_cam.norm() > 10 ||
                 isnan(pnp_result.armor_cam[0]) ||
@@ -317,7 +317,8 @@ namespace armor_detector
                     target_type = global_user::BIG;
                 else if (target_type == global_user::BIG)
                     target_type = global_user::SMALL;
-                pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_IPPE);
+                pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_ITERATIVE);
+                // pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_IPPE);
                 if (pnp_result.armor_cam.norm() > 10 ||
                     isnan(pnp_result.armor_cam[0]) ||
                     isnan(pnp_result.armor_cam[1]) ||
@@ -763,8 +764,8 @@ namespace armor_detector
  
         if(save_image_)
         {
-            if(last_last_status_ == DOUBLE && last_status_ == SINGER && cur_status_ == DOUBLE)
-            {
+            // if(last_last_status_ == DOUBLE && last_status_ == SINGER && cur_status_ == DOUBLE)
+            // {
                 // char now[64];
                 // std::time_t tt;
                 // struct tm *ttime;
@@ -776,7 +777,7 @@ namespace armor_detector
                 // std::string path(std::string(storage_location + now_string).append(".png"));
                 
                 std::string img_name = path_prefix + to_string(src.timestamp) + ".jpg";
-                cv::imwrite(img_name, last_frame_);
+                cv::imwrite(img_name, src.img);
 
                 std::string label_name = path_prefix + to_string(src.timestamp) + ".txt";
                 std::string content;
@@ -799,7 +800,7 @@ namespace armor_detector
                 file.open(label_name, std::ofstream::app);
                 file << content;
                 file.close();
-            }
+            // }
         }
 
         if (target.color == 2)

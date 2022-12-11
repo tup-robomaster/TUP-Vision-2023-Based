@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2022-11-19 11:00:24
+ * @LastEditTime: 2022-12-11 13:19:55
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 
@@ -56,7 +56,9 @@ namespace global_user
     enum CameraType
     {
       DaHeng,
-      HikRobot  
+      HikRobot,
+      MVSCam,
+      USBCam,
     };
 
     enum TargetType 

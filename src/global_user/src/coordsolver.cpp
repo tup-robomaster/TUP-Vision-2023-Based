@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2022-12-05 20:12:08
+ * @LastEditTime: 2022-12-11 14:32:09
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -13,7 +13,7 @@ namespace coordsolver
      * @brief Construct a new Coord Solver:: Coord Solver object
      * 
      */
-    coordsolver::coordsolver()
+    CoordSolver::CoordSolver()
     {  
     }
 
@@ -21,18 +21,18 @@ namespace coordsolver
      * @brief Destroy the Coord Solver:: Coord Solver object
      * 
      */
-    coordsolver::~coordsolver()
+    CoordSolver::~CoordSolver()
     {   
     }
 
     /**
-     * @brief 加载coordsolver参数
+     * @brief 加载CoordSolver参数
      * 
      * @param coord_path 参数文件路径
      * @param param_name 参数组名称
      * @return bool 加载是否成功
      */
-    bool coordsolver::loadParam(std::string coord_path, std::string param_name)
+    bool CoordSolver::loadParam(std::string coord_path, std::string param_name)
     {
         YAML::Node config = YAML::LoadFile(coord_path);
 
@@ -90,7 +90,7 @@ namespace coordsolver
      * @param method PnP解算方法
      * @return PnPInfo 
      */
-    PnPInfo coordsolver::pnp(const std::vector<cv::Point2f> &points_pic, const Eigen::Matrix3d &rmat_imu, enum ::global_user::TargetType type, int method = cv::SOLVEPNP_IPPE)
+    PnPInfo CoordSolver::pnp(const std::vector<cv::Point2f> &points_pic, const Eigen::Matrix3d &rmat_imu, enum ::global_user::TargetType type, int method = cv::SOLVEPNP_IPPE)
     {
         std::vector<cv::Point3d> points_world;
 
@@ -176,7 +176,7 @@ namespace coordsolver
      * @param rmat IMU旋转矩阵
      * @return Eigen::Vector2d yaw,pitch
      */
-    Eigen::Vector2d coordsolver::getAngle(Eigen::Vector3d &xyz_cam, Eigen::Matrix3d &rmat)
+    Eigen::Vector2d CoordSolver::getAngle(Eigen::Vector3d &xyz_cam, Eigen::Matrix3d &rmat)
     {
         // cout<<xyz_cam<<endl;
         // cout<<endl;
@@ -215,7 +215,7 @@ namespace coordsolver
      * @param xyz 目标三维坐标
      * @return cv::Point2f 图像坐标系上坐标(x,y)
      */
-    cv::Point2f coordsolver::reproject(Eigen::Vector3d &xyz)
+    cv::Point2f CoordSolver::reproject(Eigen::Vector3d &xyz)
     {
         Eigen::Matrix3d mat_intrinsic;
         cv2eigen(intrinsic, mat_intrinsic);
@@ -224,7 +224,7 @@ namespace coordsolver
         return cv::Point2f(result[0], result[1]);
     }
 
-    // cv::Point2f coordsolver::getHeading(Eigen::Vector3d &xyz_cam)
+    // cv::Point2f CoordSolver::getHeading(Eigen::Vector3d &xyz_cam)
     // {
     //     auto xyz_offseted = staticCoordOffset(xyz_cam);
     //     auto xyz_normed = xyz_offset.normalized();
@@ -236,7 +236,7 @@ namespace coordsolver
      * @param xyz 待补偿坐标
      * @return Eigen::Vector3d 补偿后坐标
      */
-    inline Eigen::Vector3d coordsolver::staticCoordOffset(Eigen::Vector3d &xyz)
+    inline Eigen::Vector3d CoordSolver::staticCoordOffset(Eigen::Vector3d &xyz)
     {
         return xyz + xyz_offset;
     }
@@ -247,12 +247,12 @@ namespace coordsolver
      * @param angle 待补偿角度
      * @return Eigen::Vector2d 补偿后角度
      */
-    inline Eigen::Vector2d coordsolver::staticAngleOffset(Eigen::Vector2d &angle)
+    inline Eigen::Vector2d CoordSolver::staticAngleOffset(Eigen::Vector2d &angle)
     {
         return angle + angle_offset;
     }
 
-    inline double coordsolver::calcYaw(Eigen::Vector3d &xyz)
+    inline double CoordSolver::calcYaw(Eigen::Vector3d &xyz)
     {
         return atan2(xyz[0], xyz[2]) * 180 / CV_PI;
     }
@@ -263,7 +263,7 @@ namespace coordsolver
      * @param xyz 坐标
      * @return double Pitch角度
      */
-    inline double coordsolver::calcPitch(Eigen::Vector3d &xyz)
+    inline double CoordSolver::calcPitch(Eigen::Vector3d &xyz)
     {
         return -(atan2(xyz[1], sqrt(xyz[0] * xyz[0] + xyz[2] * xyz[2])) * 180 / CV_PI);
         // return (atan2(xyz[1], sqrt(xyz[0] * xyz[0] + xyz[2] * xyz[2])) * 180 / CV_PI);
@@ -273,7 +273,7 @@ namespace coordsolver
      * @brief 计算目标Yaw,Pitch角度
      * @return Yaw与Pitch
     */
-    inline Eigen::Vector2d coordsolver::calcYawPitch(Eigen::Vector3d &xyz)
+    inline Eigen::Vector2d CoordSolver::calcYawPitch(Eigen::Vector3d &xyz)
     {
         Eigen::Vector2d angle;
         //Yaw(逆时针)
@@ -288,7 +288,7 @@ namespace coordsolver
      * @param xyz 坐标
      * @return double Pitch偏移量
      */
-    inline double coordsolver::dynamicCalcPitchOffset(Eigen::Vector3d &xyz)
+    inline double CoordSolver::dynamicCalcPitchOffset(Eigen::Vector3d &xyz)
     {
         //TODO:根据陀螺仪安装位置调整距离求解方式
         //降维，坐标系Y轴以垂直向上为正方向
@@ -359,7 +359,7 @@ namespace coordsolver
      * @param rmat 由陀螺仪四元数解算出的旋转矩阵
      * @return 世界坐标系下坐标
      * **/
-    Eigen::Vector3d coordsolver::camToWorld(const Eigen::Vector3d &point_camera, const Eigen::Matrix3d &rmat)
+    Eigen::Vector3d CoordSolver::camToWorld(const Eigen::Vector3d &point_camera, const Eigen::Matrix3d &rmat)
     {
         //升高维度
         Eigen::Vector4d point_camera_tmp;
@@ -380,7 +380,7 @@ namespace coordsolver
      * @param rmat 由陀螺仪四元数解算出的旋转矩阵
      * @return 相机坐标系下坐标
      * **/
-    Eigen::Vector3d coordsolver::worldToCam(const Eigen::Vector3d &point_world, const Eigen::Matrix3d &rmat)
+    Eigen::Vector3d CoordSolver::worldToCam(const Eigen::Vector3d &point_world, const Eigen::Matrix3d &rmat)
     {
         
         Eigen::Vector4d point_camera_tmp;
@@ -397,7 +397,7 @@ namespace coordsolver
         return point_camera;
     }
 
-    bool coordsolver::setBulletSpeed(double speed)
+    bool CoordSolver::setBulletSpeed(double speed)
     {
         bullet_speed = speed;
         return true;

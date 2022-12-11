@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-12-08 19:20:22
+ * @LastEditTime: 2022-12-08 21:19:35
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector_node.cpp
  */
 #include "../../include/armor_detector/detector_node.hpp"
@@ -27,7 +27,7 @@ namespace armor_detector
         }
 
         target_ptr = new TargetInfo();
-        target_ptr->system_model = IMMMODEL;
+        target_ptr->system_model = CSMODEL;
         
         //
         processor_ = init_armor_processor();

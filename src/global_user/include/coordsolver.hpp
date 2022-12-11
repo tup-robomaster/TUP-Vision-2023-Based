@@ -2,8 +2,8 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:13
- * @LastEditTime: 2022-10-14 16:16:30
- * @FilePath: /tup_2023/src/global_user/include/coordsolver.hpp
+ * @LastEditTime: 2022-12-11 14:30:10
+ * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/coordsolver.hpp
  */
 
 #include <yaml-cpp/yaml.h>
@@ -28,11 +28,11 @@ namespace coordsolver
         Eigen::Matrix3d rmat;
     };
 
-    class coordsolver : public global_user::global_user
+    class CoordSolver : public global_user::global_user
     {
     public:
-        coordsolver();
-        ~coordsolver();
+        CoordSolver();
+        ~CoordSolver();
         bool loadParam(std::string coord_path, std::string param_name);
 
         double dynamicCalcPitchOffset(Eigen::Vector3d &xyz);

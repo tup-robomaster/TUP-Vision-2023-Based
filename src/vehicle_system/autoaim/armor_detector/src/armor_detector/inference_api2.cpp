@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2022-11-09 18:12:31
+ * @LastEditTime: 2022-12-09 10:06:21
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/inference_api2.cpp
  */
 #include "../../include/armor_detector/inference_api2.hpp"
@@ -464,38 +464,38 @@ bool ArmorDetector::detect(cv::Mat &src, std::vector<ArmorObject>& objects)
     for (auto object = objects.begin(); object != objects.end(); ++object)
     {
         //对候选框预测角点进行平均,降低误差
-        // if ((*object).pts.size() >= 8)
-        // {
-        //     auto N = (*object).pts.size();
-        //     cv::Point2f pts_final[4];
+        if ((*object).pts.size() >= 8)
+        {
+            auto N = (*object).pts.size();
+            cv::Point2f pts_final[4];
 
-        //     for (int i = 0; i < N; i++)
-        //     {
-        //         pts_final[i % 4]+=(*object).pts[i];
-        //     }
+            for (int i = 0; i < N; i++)
+            {
+                pts_final[i % 4]+=(*object).pts[i];
+            }
 
-        //     for (int i = 0; i < 4; i++)
-        //     {
-        //         pts_final[i].x = pts_final[i].x / (N / 4);
-        //         pts_final[i].y = pts_final[i].y / (N / 4);
-        //     }
+            for (int i = 0; i < 4; i++)
+            {
+                pts_final[i].x = pts_final[i].x / (N / 4);
+                pts_final[i].y = pts_final[i].y / (N / 4);
+            }
 
-        //     (*object).apex[0] = pts_final[0];
-        //     (*object).apex[1] = pts_final[1];
-        //     (*object).apex[2] = pts_final[2];
-        //     (*object).apex[3] = pts_final[3];
-        // }
+            (*object).apex[0] = pts_final[0];
+            (*object).apex[1] = pts_final[1];
+            (*object).apex[2] = pts_final[2];
+            (*object).apex[3] = pts_final[3];
+        }
 
         //
-        cv::Point2f pts_final[4];
-        for(int ii = 0; ii < 4; ii++)
-        {
-            pts_final[ii] = (*object).pts[ii];
-        }
-        (*object).apex[0] = pts_final[0];
-        (*object).apex[1] = pts_final[1];
-        (*object).apex[2] = pts_final[2];
-        (*object).apex[3] = pts_final[3];
+        // cv::Point2f pts_final[4];
+        // for(int ii = 0; ii < 4; ii++)
+        // {
+        //     pts_final[ii] = (*object).pts[ii];
+        // }
+        // (*object).apex[0] = pts_final[0];
+        // (*object).apex[1] = pts_final[1];
+        // (*object).apex[2] = pts_final[2];
+        // (*object).apex[3] = pts_final[3];
         
         (*object).area = (int)(calcTetragonArea((*object).apex));
     }

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-12-08 20:29:59
+ * @LastEditTime: 2022-12-08 21:44:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -113,14 +113,14 @@ namespace armor_detector
         // std::cout << "x_:" << target_ptr->xyz[0] << std::endl;
 
         // -----------------对位置进行粒子滤波,以降低测距噪声影响-------------------------------------
-        Eigen::VectorXd measure (2);
+        // Eigen::VectorXd measure (2);
 
-        // Y-axis matches to camera frame.
-        measure << target.xyz[0], target.xyz[2];
+        // // Y-axis matches to camera frame.
+        // measure << target.xyz[0], target.xyz[2];
         
-        bool is_pos_filter_ready = pf_pos.update(measure);
-        Eigen::VectorXd predict_pos_xy = pf_pos.predict();
-        Eigen::Vector3d predict_pos = {predict_pos_xy[0], predict_pos_xy[1], target.xyz[2]};
+        // bool is_pos_filter_ready = pf_pos.update(measure);
+        // Eigen::VectorXd predict_pos_xy = pf_pos.predict();
+        // Eigen::Vector3d predict_pos = {predict_pos_xy[0], predict_pos_xy[1], target.xyz[2]};
 
         Eigen::Vector3d result = {0, 0, 0};
         Eigen::Vector3d result_pf = {0, 0, 0};
@@ -132,25 +132,26 @@ namespace armor_detector
         PredictStatus is_ekf_available;
         PredictStatus is_imm_available;
 
-        if(is_pos_filter_ready || abs(target.xyz[2] - predict_pos[1]) < 0.20)
-        {   //对位置进行粒子滤波,以降低测距噪声影响
-            target.xyz[2] = predict_pos[1];
-        }
-
-        if(!target.is_target_switched)
+        // if(is_pos_filter_ready || abs(target.xyz[2] - predict_pos[1]) < 0.20)
+        // {   //对位置进行粒子滤波,以降低测距噪声影响
+        //     target.xyz[2] = predict_pos[1];
+        // }
+        if(!fitting_disabled_)
         {
-            history_info_.push_back(target);
-        }
-        else
-        {
-            if(history_info_.size() != 0)
+            if(!target.is_target_switched)
             {
-                history_origin_info_.push_back(cv::Point2d(history_info_.front().xyz[0], history_info_.front().xyz[2]));
-                history_info_.clear();
+                history_info_.push_back(target);
             }
-            history_info_.push_back(target);
+            else
+            {
+                if(history_info_.size() != 0)
+                {
+                    history_origin_info_.push_back(cv::Point2d(history_info_.front().xyz[0], history_info_.front().xyz[2]));
+                    history_info_.clear();
+                }
+                history_info_.push_back(target);
+            }
         }
-        
         // std::cout << std::endl;
         // std::cout << "target_switched: " << target.is_target_switched << std::endl;
         // std::cout << std::endl;
@@ -175,35 +176,37 @@ namespace armor_detector
         auto time_estimate = delta_time_estimate + history_info_.back().timestamp;
 
         sleep_time = delta_time_estimate;
-
+        
         if (history_info_.size() < 4)
         {
             final_target_ = target;
 
-            if(is_predicted)
+            if(!fitting_disabled_)
             {
-                if(history_info_.size() != 0)
+                if(is_predicted)
                 {
-                    double last_to_now_timestamp = history_info_.back().timestamp - last_start_timestamp_;
-                    double tt = time_estimate - last_start_timestamp_;
+                    if(history_info_.size() != 0)
+                    {
+                        double last_to_now_timestamp = history_info_.back().timestamp - last_start_timestamp_;
+                        double tt = time_estimate - last_start_timestamp_;
+                        
+                        double last_pred_x = fitting_params_[0] * (last_to_now_timestamp / 1e3) + fitting_params_[1];
                     
-                    double last_pred_x = fitting_params_[0] * (last_to_now_timestamp / 1e3) + fitting_params_[1];
-                
-                    double delta_y = last_pred_x - target.xyz[0]; 
-                    // double tt = time_estimate / 1e3;
-                    // result[0] = fitting_params_[0] * (delta_time_estimate * history_info_.size() / 1e3) + history_info_.front().xyz[0]; // x(t)=kt+x0
-                    result[0] = fitting_params_[0] * (tt / 1e3) + fitting_params_[1] - delta_y; // x(t)=kt+d
-                    result[1] = target.xyz[1];
-                    result[2] = target.xyz[2];
-                    return result;
+                        double delta_y = last_pred_x - target.xyz[0]; 
+                        // double tt = time_estimate / 1e3;
+                        // result[0] = fitting_params_[0] * (delta_time_estimate * history_info_.size() / 1e3) + history_info_.front().xyz[0]; // x(t)=kt+x0
+                        result[0] = fitting_params_[0] * (tt / 1e3) + fitting_params_[1] - delta_y; // x(t)=kt+d
+                        result[1] = target.xyz[1];
+                        result[2] = target.xyz[2];
+                        return result;
+                    }
+                        
+                    // std::cout << "deque_size: " << history_info_.size() << std::endl;
+                    // std::cout << "time: " << tt << std::endl;
+                    // std::cout << std::endl;
+                    // std::cout << "x:" << target.xyz[0] << " x_pred:" << result[0] << std::endl;
+                    // std::cout << std::endl;
                 }
-                    
-                // std::cout << "deque_size: " << history_info_.size() << std::endl;
-                // std::cout << "time: " << tt << std::endl;
-                // std::cout << std::endl;
-                // std::cout << "x:" << target.xyz[0] << " x_pred:" << result[0] << std::endl;
-                // std::cout << std::endl;
-                
             }
 
             return target.xyz;
@@ -272,12 +275,14 @@ namespace armor_detector
         auto ax = (vx_now - vx_last) / ((delta_t_now + delta_t_last) / 2);
         auto ay = (vy_now - vy_last) / ((delta_t_now + delta_t_last) / 2);
         
-        Eigen::VectorXd measure_v(2);
-        measure_v << vx_now, vy_now;
+        Eigen::VectorXd measure_vel(2), measure_acc(2);
+        measure_vel << vx_now, vy_now;
+        measure_acc << ax, ay;
         // bool is_v_filter_ready = pf_v.update(measure_v);
         // Eigen::Vector2d predict_v_xy = pf_v.predict();
 
-        Eigen::Vector2d target_v = measure_v;
+        Eigen::Vector2d target_vel = measure_vel;
+        Eigen::Vector2d target_acc = measure_acc;
         // if(is_v_filter_ready)
         // {   //若速度粒子滤波器已完成初始化且预测值大小恰当，则对目标速度做滤波
         //     target_v[0] = predict_v_xy[0];
@@ -286,7 +291,7 @@ namespace armor_detector
 
         if(debug_param_.disable_fitting)
         {
-            fitting_disabled_ = false;
+            fitting_disabled_ = true;
         }
 
         // Eigen::Vector3d result = {0, 0, 0};
@@ -308,13 +313,13 @@ namespace armor_detector
             // std::cout << "Model_based:" << target_ptr->system_model << std::endl; 
             if(target_ptr->system_model == CSMODEL)
             {   // 基于CS模型的卡尔曼滤波
-                is_ekf_available = predict_ekf_run(target, result_ekf, target_v, ax, delta_time_estimate);
-                // std::cout << "cs pred..." << std::endl;
+                is_ekf_available = predict_ekf_run(CAMERA_Z_DIRECTION, target, result_ekf, target_vel, target_acc, delta_time_estimate);
+                std::cout << "cs pred..." << std::endl;
             }
             else if(target_ptr->system_model == IMMMODEL)
             {   //IMM
-                is_imm_available = predict_based_imm(target, result_imm, target_v, ax, delta_time_estimate);
-                // std::cout << "imm pred..." << std::endl;
+                is_imm_available = predict_based_imm(target, result_imm, target_vel, ax, delta_time_estimate);
+                std::cout << "imm pred..." << std::endl;
             }
 
             if(is_ekf_available.xyz_status[0])
@@ -1390,7 +1395,7 @@ namespace armor_detector
         kalman_filter_.R_ << meaCov;
     }
 
-    PredictStatus ArmorPredictor::predict_ekf_run(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_v, double ax, int timestamp)
+    PredictStatus ArmorPredictor::predict_ekf_run(PredictDirection predictDirection, TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, int timestamp)
     {
         PredictStatus is_available;
         // 计算目标速度、加速度 
@@ -1408,8 +1413,20 @@ namespace armor_detector
         // SingerState x;
 
         if(!is_ekf_init)
-        {
-            kalman_filter_.x_ << target.xyz[0], target_v[0], ax;
+        {   
+            if(predictDirection == CAMERA_X_DIRECTION)
+                kalman_filter_.x_ << target.xyz[0], target_vel[0], target_acc[0];
+            else if(predictDirection == CAMERA_Y_DIRECTION)
+                kalman_filter_.x_ << target.xyz[1], 0, 0;
+            else if(predictDirection == CAMERA_Z_DIRECTION)
+                kalman_filter_.x_ << target.xyz[2], target_vel[1], target_acc[1]; 
+            else if(predictDirection == GYRO_X_DIRECTION)
+                kalman_filter_.x_ << target.xyz[0], target_vel[0], target_acc[0];
+            else if(predictDirection == GYRO_Y_DIRECTION)
+                kalman_filter_.x_ << target.xyz[1], target_vel[1], target_acc[1];
+            else if(predictDirection == GYRO_Z_DIRECTION)
+                kalman_filter_.x_ << target.xyz[2], 0, 0;
+            
             is_available.xyz_status[0] = false;
             is_ekf_init = true;
         }
@@ -1444,7 +1461,20 @@ namespace armor_detector
             // }
             
             Eigen::VectorXd measurement = Eigen::VectorXd(1);
-            measurement << target.xyz[0];
+            
+            if(predictDirection == CAMERA_X_DIRECTION)
+                measurement << target.xyz[0];
+            else if(predictDirection == CAMERA_Y_DIRECTION)
+                measurement << target.xyz[1];
+            else if(predictDirection == CAMERA_Z_DIRECTION)
+                measurement << target.xyz[2];
+            else if(predictDirection == GYRO_X_DIRECTION)
+                measurement << target.xyz[0];
+            else if(predictDirection == GYRO_Y_DIRECTION)
+                measurement << target.xyz[1];
+            else if(predictDirection == GYRO_Z_DIRECTION)
+                measurement << target.xyz[2];
+            
             kalman_filter_.Predict();
             kalman_filter_.Update(measurement);
 
@@ -1488,12 +1518,51 @@ namespace armor_detector
 		    //                     2 * sigma * alpha * q12, 2 * sigma * alpha * q22, 2 * sigma * alpha * q23,
 		    //                     2 * sigma * alpha * q13, 2 * sigma * alpha* q23, 2 * sigma * alpha * q33;
             
-            result[0] = x_pred[0];
-            result[1] = target.xyz[1];
-            result[2] = history_info_.end()->xyz[2];
+            if(predictDirection == CAMERA_X_DIRECTION)
+            {
+                result[0] = x_pred[0];
+                result[1] = target.xyz[1];
+                result[2] = target.xyz[2];
+                is_available.xyz_status[0] = true;
+            }
+            else if(predictDirection == CAMERA_Y_DIRECTION)
+            {
+                result[0] = target.xyz[0];
+                result[1] = x_pred[0];
+                result[2] = target.xyz[2];
+                is_available.xyz_status[1] = true;
+            }
+            else if(predictDirection == CAMERA_Z_DIRECTION)
+            {
+                result[0] = target.xyz[0];
+                result[1] = target.xyz[1];
+                result[2] = x_pred[0];
+                is_available.xyz_status[2] = true;
+            }
+            else if(predictDirection == GYRO_X_DIRECTION)
+            {
+                result[0] = x_pred[0];
+                result[1] = target.xyz[1];
+                result[2] = target.xyz[2];
+                is_available.xyz_status[0] = true;
+            }
+            else if(predictDirection == GYRO_Y_DIRECTION)
+            {
+                result[0] = target.xyz[0];
+                result[1] = x_pred[0];
+                result[2] = target.xyz[2];
+                is_available.xyz_status[1] = true;
 
+            }
+            else if(predictDirection == GYRO_Z_DIRECTION)
+            {
+                result[0] = target.xyz[0];
+                result[1] = target.xyz[1];
+                result[2] = x_pred[0];
+                is_available.xyz_status[2] = true;
+            }
+            
             // std::cout << "..." << std::endl;
-            is_available.xyz_status[0] = true;
         }
 
         return is_available;

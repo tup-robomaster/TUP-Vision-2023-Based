@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2022-12-08 15:55:49
+ * @LastEditTime: 2022-12-08 22:07:16
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -372,7 +372,7 @@ namespace camera_driver
             usleep(20000);
             // cv::namedWindow("raw_image", cv::WINDOW_AUTOSIZE);
             // cv::imshow("raw_image", frame);
-            // cv::waitKey(1);
+            // cv::waitKey(2000);
         }
     }
 
