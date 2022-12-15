@@ -7,18 +7,24 @@ namespace buff
 {
     Buff::Buff()
     {
-        detector.initModel(path_param_.network_path);
-        coordsolver.loadParam(path_param_.camera_param_path, path_param_.camera_name);
+        // detector.initModel(path_param_.network_path);
+        // coordsolver.loadParam(path_param_.camera_param_path, path_param_.camera_name);
         lost_cnt = 0;
         is_last_target_exists = false;
         // input_size = {640,384};
         input_size = {640, 640};
         last_bullet_speed = 0;
-        fmt::print(fmt::fg(fmt::color::pale_violet_red), "[BUFF] Buff init model success! Size: {} {}\n", input_size.height, input_size.width);
+        // fmt::print(fmt::fg(fmt::color::pale_violet_red), "[BUFF] Buff init model success! Size: {} {}\n", input_size.height, input_size.width);
     }
 
     Buff::Buff(const BuffParam& buff_param, const PredictorParam& perdictor_param, const PathParam& path_param, const DebugParam& debug_param)
+    : buff_param_(buff_param), path_param_(path_param), debug_param_(debug_param)
     {
+        lost_cnt = 0;
+        is_last_target_exists = false;
+        // input_size = {640,384};
+        input_size = {640, 640};
+        last_bullet_speed = 0;
     }
 
     Buff::~Buff()
@@ -107,6 +113,13 @@ namespace buff
         vector<Fan> fans;
         auto input = src.img;
 
+        if(!is_init_)
+        {
+            detector.initModel(path_param_.network_path);
+            coordsolver.loadParam(path_param_.camera_param_path, path_param_.camera_name);
+            is_init_ = true;
+        }
+
         if(!debug_param_.debug_without_com)
         {
             if (src.bullet_speed > 10)
@@ -119,7 +132,6 @@ namespace buff
                     coordsolver.setBulletSpeed(bullet_speed);
                     last_bullet_speed = bullet_speed;
                 }
-                
             }
         }
 
@@ -150,12 +162,12 @@ namespace buff
                 line(src.img, Point2f(0, src.img.size().height / 2), Point2f(src.img.size().width, src.img.size().height / 2), Scalar(0,255,0), 1);
             }
 
-            if(debug_param_.show_img)
-            {
-                namedWindow("dst",0);
-                imshow("dst",src.img);
-                waitKey(1);
-            }
+            // if(debug_param_.show_img)
+            // {
+            //     namedWindow("dst",0);
+            //     imshow("dst",src.img);
+            //     waitKey(1);
+            // }
             
             lost_cnt++;
             is_last_target_exists = false;

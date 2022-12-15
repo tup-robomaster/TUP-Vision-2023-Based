@@ -56,8 +56,8 @@ namespace buff
 
         if(!buff_->is_init_)
         {
-            // buff_->detector_.initModel(network_path_);
-            // buff_->coordsolver_.loadParam(camera_param_path_, camera_name_);
+            buff_->detector.initModel(this->path_param_.network_path_);
+            buff_->coordsolver.loadParam(this->path_param_.camera_param_path_, this->path_param_.camera_name_);
             // if(buff_->is_save_data)
             // {
             //     buff_->data_save.open("src/data/dis_info_1.txt", ios::out | ios::trunc);
@@ -145,7 +145,7 @@ namespace buff
         TargetInfo target_info;
         if(buff_->run(src, target_info))
         {
-
+            
         }
         cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
         imshow("dst",src.img);

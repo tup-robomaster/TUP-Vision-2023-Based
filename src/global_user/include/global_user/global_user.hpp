@@ -74,7 +74,7 @@ namespace global_user
         double bullet_speed;
         cv::Mat img;
         Eigen::Quaterniond quat;
-        int timestamp; 
+        double timestamp; 
     };
 
     struct GridAndStride
