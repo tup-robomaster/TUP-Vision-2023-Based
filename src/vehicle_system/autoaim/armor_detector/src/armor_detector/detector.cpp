@@ -380,17 +380,17 @@ namespace armor_detector
          * @brief 车辆小陀螺状态检测
         */
 
-        //Create ArmorTracker for new armors 
+        // Create ArmorTracker for new found armors. 
         spinning_detector_.create_armor_tracker(trackers_map, armors, new_armors_cnt_map, timestamp, dead_buffer_cnt);
 
-        //Detect armors status
+        // Detect armors status(maneuvering or spinning).
         spinning_detector_.is_spinning(trackers_map, new_armors_cnt_map, timestamp);
 
-        //Update spinning score
+        // Update spinning score.
         spinning_detector_.update_spin_score();
         // std::cout << 9 << std::endl;
 
-        //Choose target vehicle
+        // Choose target vehicle.
         auto target_id = chooseTargetID(armors, timestamp);
         // std::cout << 10 << std::endl;
 

@@ -110,6 +110,17 @@ namespace armor_detector
             target_ptr->is_clockwise, target_ptr->spinning_status, target_ptr->sentry_armor_status, target_ptr->system_model
         };
 
+        if(target.is_sentry_mode || target.is_spinning)
+        {
+            fitting_disabled_ = false;
+            filter_disabled_ = true;
+        }
+        else
+        {
+            fitting_disabled_ = true;
+            filter_disabled_ = false;
+        }
+
         // std::cout << "x_:" << target_ptr->xyz[0] << std::endl;
 
         // -----------------对位置进行粒子滤波,以降低测距噪声影响-------------------------------------
@@ -168,7 +179,6 @@ namespace armor_detector
         //     history_info_.push_back(target);
         // }
         
-        //-----------------进行滑窗滤波,备选方案,暂未使用-------------------------------------
         auto d_xyz = target.xyz - final_target_.xyz;
         auto delta_t = timestamp - final_target_.timestamp;
         auto last_dist = history_info_.back().dist;
@@ -217,6 +227,7 @@ namespace armor_detector
             history_origin_info_.pop_front();    
         }
 
+        //-----------------进行滑窗滤波,备选方案,暂未使用-------------------------------------
         //如速度过大,可认为为噪声干扰,进行滑窗滤波滤除
         // if (((d_xyz.norm() / delta_t) * 1e3) >= max_v)
         // {
@@ -289,10 +300,11 @@ namespace armor_detector
         //     target_v[1] = predict_v_xy[1];
         // }
 
-        if(debug_param_.disable_fitting)
-        {
-            fitting_disabled_ = true;
-        }
+        // if(debug_param_.disable_fitting)
+        // {   // 单独使用曲线拟合做预测（调试用）
+        //     fitting_disabled_ = false;
+        //     filter_disabled_ = true;
+        // }
 
         // Eigen::Vector3d result = {0, 0, 0};
         // Eigen::Vector3d result_pf = {0, 0, 0};
@@ -313,37 +325,67 @@ namespace armor_detector
             // std::cout << "Model_based:" << target_ptr->system_model << std::endl; 
             if(target_ptr->system_model == CSMODEL)
             {   // 基于CS模型的卡尔曼滤波
-                is_ekf_available = predict_ekf_run(CAMERA_Z_DIRECTION, target, result_ekf, target_vel, target_acc, delta_time_estimate);
                 std::cout << "cs pred..." << std::endl;
+                is_ekf_available = predict_ekf_run(CAMERA_Z_DIRECTION, target, result_ekf, target_vel, target_acc, delta_time_estimate);
+
+                if(is_ekf_available.xyz_status[0])
+                    result[0] = result_ekf[0];
+                else    
+                    result[0] = target.xyz[0];
+                
+                if(is_ekf_available.xyz_status[1])
+                    result[1] = result_ekf[1];
+                else
+                    result[1] = target.xyz[1];
+
+                if(is_ekf_available.xyz_status[2])
+                    result[2] = result_ekf[2];
+                else
+                    result[2] = target.xyz[2];
             }
             else if(target_ptr->system_model == IMMMODEL)
             {   //IMM
-                is_imm_available = predict_based_imm(target, result_imm, target_vel, ax, delta_time_estimate);
                 std::cout << "imm pred..." << std::endl;
+                is_imm_available = predict_based_imm(target, result_imm, target_vel, ax, delta_time_estimate);
+
+                if(is_imm_available.xyz_status[0])
+                    result[0] = result_imm[0];
+                else    
+                    result[0] = target.xyz[0];
+                
+                if(is_imm_available.xyz_status[1])
+                    result[1] = result_imm[1];
+                else
+                    result[1] = target.xyz[1];
+
+                if(is_imm_available.xyz_status[2])
+                    result[2] = result_imm[2];
+                else
+                    result[2] = target.xyz[2];
             }
 
-            if(is_ekf_available.xyz_status[0])
-            {   //目前SingerModel仅对x方向机动做预测
-                result[0] = result_ekf[0];
-            }
-            else if(is_imm_available.xyz_status[0])
-                result[0] = result_imm[0];
-            else
-                result[0] = target.xyz[0];
+            // if(is_ekf_available.xyz_status[0])
+            // {   //目前SingerModel仅对x方向机动做预测
+            //     result[0] = result_ekf[0];
+            // }
+            // else if(is_imm_available.xyz_status[0])
+            //     result[0] = result_imm[0];
+            // else
+            //     result[0] = target.xyz[0];
             
-            if(is_imm_available.xyz_status[1])
-                result[1] = result_imm[1];
-            else if(is_ekf_available.xyz_status[1])
-                result[1] = result_ekf[1];
-            else
-                result[1] = target.xyz[1];
+            // if(is_imm_available.xyz_status[1])
+            //     result[1] = result_imm[1];
+            // else if(is_ekf_available.xyz_status[1])
+            //     result[1] = result_ekf[1];
+            // else
+            //     result[1] = target.xyz[1];
                        
-            if(is_imm_available.xyz_status[2])
-                result[2] = result_imm[2];
-            else if(is_ekf_available.xyz_status[2])
-                result[2] = result_ekf[2];
-            else
-                result[2] = target.xyz[2];
+            // if(is_imm_available.xyz_status[2])
+            //     result[2] = result_imm[2];
+            // else if(is_ekf_available.xyz_status[2])
+            //     result[2] = result_ekf[2];
+            // else
+            //     result[2] = target.xyz[2];
         }
 
         if(filter_disabled_ && !fitting_disabled_)
@@ -370,7 +412,6 @@ namespace armor_detector
             else if(target_ptr->is_spinning && target_ptr->spinning_status == MOVEMENT_SPINNING)
             {
                 // std::cout << "MOVEMENT_SPINNING" << std::endl;
-
                 is_fitting_available = couple_fitting_predict(false, target, result_fitting, time_estimate);  
             }
 
@@ -977,6 +1018,11 @@ namespace armor_detector
         is_available.xyz_status[0] = (x_cost <= predict_param_.max_cost);
         is_available.xyz_status[2] = (y_cost <= predict_param_.max_cost);        
 
+        auto x_rmse = evalRMSE(params, CAMERA_X_DIRECTION);
+        auto y_rmse = evalRMSE(params_y, CAMERA_Z_DIRECTION);
+        is_available.xyz_status[0] = (x_rmse <= predict_param_.max_cost);
+        is_available.xyz_status[2] = (y_rmse <= predict_param_.max_cost);        
+
         if(is_available.xyz_status[0])
             is_predicted = true;
         else
@@ -1018,7 +1064,7 @@ namespace armor_detector
                 // y_pred = params_y[3] / (time_estimated) + params_y[4];
             
                 //f(t)=(1/t)+c
-                y_pred = (1.0 / (time_estimated )) + params_y[4];
+                y_pred = (1.0 / (time_estimated)) + params_y[4];
             }
             else
             {
@@ -1204,6 +1250,9 @@ namespace armor_detector
         std::memcpy(fitting_params_, params, sizeof(fitting_params_));
         std::memcpy(fitting_y_params_, params_y, sizeof(fitting_y_params_));
 
+        // 对距离方向做滑窗滤波
+        auto shift_window_pred = shiftWindowFilter(0);
+        auto y_shift_pred = shift_window_pred[2];
         // std::cout << "w:" << params[0] << " theta:" << params[1] << " V:" << params[2] << " x0:" 
         //           << params[3] << " y0:" << params[4] << " a:" << params[5] << " b:" << params[6] << " phi:" << params[7] << std::endl;
 
@@ -1252,13 +1301,41 @@ namespace armor_detector
         // }
         
         // result = {x_pred, target.xyz[1], target.xyz[2]};
-        // result = {x_pred, target.xyz[1], y_pred}; //camera frame
-        result = {target.xyz[0], target.xyz[1], y_pred}; //camera frame
+        result = {x_pred, target.xyz[1], y_shift_pred}; //camera frame
+        // result = {target.xyz[0], target.xyz[1], y_pred}; //camera frame
         
         // std::cout << "x:" << target.xyz[0] << " x_pred:" << x_pred << std::endl;
         std::cout << "y:" << target.xyz[2] << " y_pred:" << y_pred << std::endl;
 
         return is_available;
+    }
+
+    /**
+     * @brief 计算RMSE指标
+     * 
+     * @param params 参数首地址指针
+     * @return RMSE值 
+     */
+    double ArmorPredictor::evalRMSE(double* params, PredictDirection predict_direction)
+    {
+        double rmse_sum = 0;
+        double rmse = 0;
+        double pred = 0;
+        double measure = 0;
+        for (auto& target_info : history_info_)
+        {
+            auto t = (double)(target_info.timestamp) / 1e3;
+            if(predict_direction == CAMERA_X_DIRECTION)
+            {
+                pred = params[0] * t + params[1]; //f(t)=kt+b
+                measure = target_info.xyz[0];
+            }
+            else if(predict_direction == CAMERA_Z_DIRECTION)
+            {}
+            rmse_sum += pow((pred - measure), 2);
+        }
+        rmse = sqrt(rmse_sum / history_info_.size());
+        return rmse;
     }
 
     PredictStatus ArmorPredictor::spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int time_estimated)
@@ -1275,14 +1352,16 @@ namespace armor_detector
         ceres::Solver::Options options;
         ceres::Solver::Summary summary;
 
-        options.max_num_iterations = 200;
+        options.max_num_iterations = 20;
         options.linear_solver_type = ceres::DENSE_QR;
         options.minimizer_progress_to_stdout = false;
 
+        Eigen::Vector3d xyz_sum = {0, 0, 0};
         if(!is_controlled)
         {
             for(auto& target_info : history_info_)
             {   
+                xyz_sum += target_info.xyz;
                 problem.AddResidualBlock(
                     new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1>
                     (
@@ -1309,6 +1388,7 @@ namespace armor_detector
         {
             for(auto& target_info : history_info_)
             {   
+                xyz_sum += target_info.xyz;
                 problem.AddResidualBlock(
                     new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1>
                     (
@@ -1332,6 +1412,17 @@ namespace armor_detector
             }
         }
 
+        auto xyz_ave = (xyz_sum / history_info_.size());
+
+        problem.SetParameterUpperBound(&params[0], 0, xyz_ave[0] + 0.6);
+        problem.SetParameterLowerBound(&params[0], 0, xyz_ave[0] - 0.6);
+
+        problem.SetParameterUpperBound(&params[1], 0, xyz_ave[1] + 0.6);
+        problem.SetParameterLowerBound(&params[1], 0, xyz_ave[1] - 0.6);
+        
+        problem.SetParameterUpperBound(&params[2], 0, M_PI / 2);
+        problem.SetParameterLowerBound(&params[2], 0, -M_PI / 2);
+
         ceres::Solve(options, &problem, &summary);
 
         auto time_now = std::chrono::steady_clock::now();
@@ -1339,6 +1430,7 @@ namespace armor_detector
         // std::cout << "fitting_fime:" << t / 1e3 << "ms" << std::endl;
 
         PredictStatus is_available;
+        // auto rmse = evalRMSE()
         is_available.xyz_status[0] = (summary.final_cost <= predict_param_.max_cost);
         is_available.xyz_status[1] = (summary.final_cost <= predict_param_.max_cost);
 
@@ -1358,6 +1450,7 @@ namespace armor_detector
         
         return is_available;
     }
+
 
     void ArmorPredictor::kfInit()
     {
@@ -1483,7 +1576,7 @@ namespace armor_detector
             State << kalman_filter_.x_[0], kalman_filter_.x_[1], kalman_filter_.x_[2];
             
             double alpha = singer_param_.alpha;
-            double dt = 5 * singer_param_.dt;
+            double dt = 2 * singer_param_.dt;
 
             Eigen::MatrixXd F(3, 3);
             F << 1, dt, (alpha * dt - 1 + exp(-alpha * dt)) / pow(alpha, 2),

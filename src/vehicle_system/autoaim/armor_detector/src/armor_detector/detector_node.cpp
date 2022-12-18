@@ -29,7 +29,7 @@ namespace armor_detector
         target_ptr = new TargetInfo();
         target_ptr->system_model = CSMODEL;
         
-        //
+        // init node params.
         processor_ = init_armor_processor();
         if(!processor_->is_initialized)
         {
@@ -46,11 +46,11 @@ namespace armor_detector
         // qos.transient_local();
         qos.durability_volatile();
         
-        // armors pub
+        // armors pub.
         armors_pub = this->create_publisher<TargetMsg>("/armor_info", qos);
         predict_info_pub = this->create_publisher<TargetMsg>("/predict_info", qos);
 
-        //
+        // gimbal info pub.
         gimbal_info_pub_ = this->create_publisher<global_interface::msg::Gimbal>("/gimbal_info", qos);
 
         time_start = std::chrono::steady_clock::now();
@@ -150,144 +150,6 @@ namespace armor_detector
         }
     }
 
-    void detector_node::run()
-    {
-        global_user::TaskData src;
-        std::vector<Armor> armors;
-
-        Mat img = Mat(DAHENG_IMAGE_HEIGHT, DAHENG_IMAGE_WIDTH, CV_8UC3);
-        // std::cout << 3 << std::endl;
-
-        while(1)
-        {
-            // std::cout << 4 << std::endl;
-            //读取共享内存图像数据
-            memcpy(img.data, shared_memory_ptr_, DAHENG_IMAGE_HEIGHT * DAHENG_IMAGE_WIDTH * 3);
-            img.copyTo(src.img);
-
-            // RCLCPP_INFO(this->get_logger(), "...");
-
-            // auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
-            // img.copyTo(src.img);
-            // cv::namedWindow("image", cv::WINDOW_AUTOSIZE);
-            // cv::imshow("image", src.img);
-            // cv::waitKey(0);
-
-            TimePoint time_img_sub = std::chrono::steady_clock::now();
-            src.timestamp = (int)(std::chrono::duration<double, std::milli>(time_img_sub - time_start).count());
-            int sleep_time = 0;
-
-            if(detector_->armor_detect(src))
-            {   //find armors
-                // RCLCPP_INFO(this->get_logger(), "armors detector...");
-                TargetMsg target_info;
-                TargetMsg predict_info;
-                Eigen::Vector3d aiming_point;
-                //target's spinning status detect 
-                if(detector_->gyro_detector(src, target_info, target_ptr))
-                {
-                    if(target_info.target_switched)
-                    {
-                        // RCLCPP_INFO(this->get_logger(), "Target switched...");
-                        aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
-                        std::cout << "x: " << target_info.aiming_point.x << " y:" << target_info.aiming_point.y << std::endl;
-                        
-                        // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
-                        
-                        auto angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
-
-                        global_interface::msg::Gimbal gimbal_info;
-                        gimbal_info.pitch = angle[0];
-                        gimbal_info.yaw = angle[1]; 
-
-                        predict_info = target_info;
-                        // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
-                        // std::cout << std::endl;
-
-                        //
-                        processor_->armor_predictor_.is_ekf_init = false;
-                        gimbal_info_pub_->publish(gimbal_info);
-                    }
-                    else
-                    {
-                        // Eigen::Vector3d aiming_point;
-                        aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
-
-                        std::cout << "x: " << target_info.aiming_point.x << " y:" << target_info.aiming_point.y << std::endl;
-                        // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
-                        // last_predict_point_ = predict_point_;
-                        // TargetInfoPtr target_ptr;
-                        target_ptr->xyz = aiming_point;
-                        // std::cout << 24 << std::endl;
-                        aiming_point = processor_->armor_predictor_.predict(src.img, target_ptr, target_info.timestamp, sleep_time);
-                        // predict_point_ = aiming_point_world;
-                        // std::cout << 2 << std::endl;
-                        // std::cout << "aiming_point_world: " << aiming_point_world[0] << " " << aiming_point_world[1] << " " << aiming_point_world[2] << std::endl;
-
-                        // Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, processor_->rmat_imu);
-                        
-                        // global_interface::msg::Target final_point;
-                        // final_point.aiming_point.x = aiming_point[0];
-                        // final_point.aiming_point.y = aiming_point[1];
-                        // final_point.aiming_point.z = aiming_point[2];
-
-                        auto angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
-                        // //若预测出错直接陀螺仪坐标系下坐标作为打击点
-                        // if(isnan(angle[0]) || isnan(angle[1]))
-                        // {
-                        //     angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
-                        // }
-
-                        global_interface::msg::Gimbal gimbal_info;
-                        gimbal_info.pitch = angle[0];
-                        gimbal_info.yaw = angle[1];
-                        gimbal_info.distance = aiming_point.norm();
-                        gimbal_info.is_switched = target_info.target_switched;
-                        gimbal_info.is_spinning = target_info.is_spinning;
-                        
-                        predict_info.aiming_point.x = aiming_point[0];
-                        predict_info.aiming_point.y = aiming_point[1];
-                        predict_info.aiming_point.z = aiming_point[2];
-                        predict_info.target_switched = target_info.target_switched;
-                        predict_info.is_spinning = target_info.is_spinning;
-                        // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
-
-                        gimbal_info_pub_->publish(gimbal_info);
-                    }
-
-                    cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point);
-                    // for(int i = 0; i < 4; i++)
-                    // {
-                    //     cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {0, 255, 0}, 4);
-                    // }
-                    // std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
-                    // cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
-                    // cv::Rect rect = points_pic_rrect.boundingRect();
-                    // cv::rectangle(img, rect, {255, 0, 255}, 5);
-
-                    cv::circle(src.img, point_2d, 10, {255, 255, 0}, -1);
-                    
-                    // global_interface::msg::Target target_info;
-                    // target_info.aiming_point.x = aiming_point_cam[0];
-                    // target_info.aiming_point.y = aiming_point_cam[1];
-                    // target_info.aiming_point.z = aiming_point_cam[2];
-                    target_info.timestamp = src.timestamp;
-
-                    //publish target's information containing 3d point and timestamp.
-                    armors_pub->publish(target_info);
-                    predict_info_pub->publish(predict_info);
-                }
-                
-                // auto time_predict = std::chrono::steady_clock::now();
-                // double dr_full_ms = std::chrono::duration<double,std::milli>(time_predict - detector_->time_start).count();
-                // putText(src.img, fmt::format("FPS: {}", int(1000 / dr_full_ms)), {10, 25}, cv::FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
-                // std::cout << 5 << std::endl;
-                // cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
-                // cv::imshow("dst", src.img);
-                // cv::waitKey(1);
-            }
-        }
-    }
     
     void detector_node::param_callback()
     {
@@ -650,6 +512,146 @@ namespace armor_detector
         cv::imshow("dst", src.img);
         cv::waitKey(1);
     }
+
+    void detector_node::run()
+    {
+        global_user::TaskData src;
+        std::vector<Armor> armors;
+
+        Mat img = Mat(DAHENG_IMAGE_HEIGHT, DAHENG_IMAGE_WIDTH, CV_8UC3);
+        // std::cout << 3 << std::endl;
+
+        while(1)
+        {
+            // std::cout << 4 << std::endl;
+            //读取共享内存图像数据
+            memcpy(img.data, shared_memory_ptr_, DAHENG_IMAGE_HEIGHT * DAHENG_IMAGE_WIDTH * 3);
+            img.copyTo(src.img);
+
+            // RCLCPP_INFO(this->get_logger(), "...");
+
+            // auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
+            // img.copyTo(src.img);
+            // cv::namedWindow("image", cv::WINDOW_AUTOSIZE);
+            // cv::imshow("image", src.img);
+            // cv::waitKey(0);
+
+            TimePoint time_img_sub = std::chrono::steady_clock::now();
+            src.timestamp = (int)(std::chrono::duration<double, std::milli>(time_img_sub - time_start).count());
+            int sleep_time = 0;
+
+            if(detector_->armor_detect(src))
+            {   //find armors
+                // RCLCPP_INFO(this->get_logger(), "armors detector...");
+                TargetMsg target_info;
+                TargetMsg predict_info;
+                Eigen::Vector3d aiming_point;
+                //target's spinning status detect 
+                if(detector_->gyro_detector(src, target_info, target_ptr))
+                {
+                    if(target_info.target_switched)
+                    {
+                        // RCLCPP_INFO(this->get_logger(), "Target switched...");
+                        aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
+                        std::cout << "x: " << target_info.aiming_point.x << " y:" << target_info.aiming_point.y << std::endl;
+                        
+                        // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
+                        
+                        auto angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
+
+                        global_interface::msg::Gimbal gimbal_info;
+                        gimbal_info.pitch = angle[0];
+                        gimbal_info.yaw = angle[1]; 
+
+                        predict_info = target_info;
+                        // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
+                        // std::cout << std::endl;
+
+                        //
+                        processor_->armor_predictor_.is_ekf_init = false;
+                        gimbal_info_pub_->publish(gimbal_info);
+                    }
+                    else
+                    {
+                        // Eigen::Vector3d aiming_point;
+                        aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
+
+                        std::cout << "x: " << target_info.aiming_point.x << " y:" << target_info.aiming_point.y << std::endl;
+                        // std::cout << "aiming_point: " << aiming_point[0] << " " << aiming_point[1] << " " << aiming_point[2] << std::endl;
+                        // last_predict_point_ = predict_point_;
+                        // TargetInfoPtr target_ptr;
+                        target_ptr->xyz = aiming_point;
+                        // std::cout << 24 << std::endl;
+                        aiming_point = processor_->armor_predictor_.predict(src.img, target_ptr, target_info.timestamp, sleep_time);
+                        // predict_point_ = aiming_point_world;
+                        // std::cout << 2 << std::endl;
+                        // std::cout << "aiming_point_world: " << aiming_point_world[0] << " " << aiming_point_world[1] << " " << aiming_point_world[2] << std::endl;
+
+                        // Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, processor_->rmat_imu);
+                        
+                        // global_interface::msg::Target final_point;
+                        // final_point.aiming_point.x = aiming_point[0];
+                        // final_point.aiming_point.y = aiming_point[1];
+                        // final_point.aiming_point.z = aiming_point[2];
+
+                        auto angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
+                        // //若预测出错直接陀螺仪坐标系下坐标作为打击点
+                        // if(isnan(angle[0]) || isnan(angle[1]))
+                        // {
+                        //     angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
+                        // }
+
+                        global_interface::msg::Gimbal gimbal_info;
+                        gimbal_info.pitch = angle[0];
+                        gimbal_info.yaw = angle[1];
+                        gimbal_info.distance = aiming_point.norm();
+                        gimbal_info.is_switched = target_info.target_switched;
+                        gimbal_info.is_spinning = target_info.is_spinning;
+                        
+                        predict_info.aiming_point.x = aiming_point[0];
+                        predict_info.aiming_point.y = aiming_point[1];
+                        predict_info.aiming_point.z = aiming_point[2];
+                        predict_info.target_switched = target_info.target_switched;
+                        predict_info.is_spinning = target_info.is_spinning;
+                        // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
+
+                        gimbal_info_pub_->publish(gimbal_info);
+                    }
+
+                    cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point);
+                    // for(int i = 0; i < 4; i++)
+                    // {
+                    //     cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {0, 255, 0}, 4);
+                    // }
+                    // std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
+                    // cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
+                    // cv::Rect rect = points_pic_rrect.boundingRect();
+                    // cv::rectangle(img, rect, {255, 0, 255}, 5);
+
+                    cv::circle(src.img, point_2d, 10, {255, 255, 0}, -1);
+                    
+                    // global_interface::msg::Target target_info;
+                    // target_info.aiming_point.x = aiming_point_cam[0];
+                    // target_info.aiming_point.y = aiming_point_cam[1];
+                    // target_info.aiming_point.z = aiming_point_cam[2];
+                    target_info.timestamp = src.timestamp;
+
+                    //publish target's information containing 3d point and timestamp.
+                    armors_pub->publish(target_info);
+                    predict_info_pub->publish(predict_info);
+                }
+                
+                // auto time_predict = std::chrono::steady_clock::now();
+                // double dr_full_ms = std::chrono::duration<double,std::milli>(time_predict - detector_->time_start).count();
+                // putText(src.img, fmt::format("FPS: {}", int(1000 / dr_full_ms)), {10, 25}, cv::FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
+                // std::cout << 5 << std::endl;
+                // cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
+                // cv::imshow("dst", src.img);
+                // cv::waitKey(1);
+            }
+        }
+    }
+
 } //namespace detector
 
 int main(int argc, char** argv)

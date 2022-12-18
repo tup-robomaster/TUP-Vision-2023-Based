@@ -178,11 +178,11 @@ namespace armor_detector
         {
             if(!_axis)
             {   //x轴 
-                // residual[0] = k[0] * T(_t) + _coeff - _x; //x(t)=kt+x0
-                residual[0] = k[0] * T(_t) + d[0] - _x; //x(t)=kt+d
+                // residual[0] = k[0] * T(_t) + _coeff - _x; //f(t)=kt+x0
+                residual[0] = k[0] * T(_t) + d[0] - _x; //f(t)=kt+d
             }  
             else
-            {   //y(t)=a*(k^2)*(t^2)+(2kad+kb)*t+a(d^2)+bd+c
+            {   //f(t)=a*(k^2)*(t^2)+(2kad+kb)*t+a(d^2)+bd+c
                 // residual[0] = a[0] * pow(k[0], 2) * pow(T(_t), 2) 
                 //             + ((2.0 * (k[0] * a[0] * d[0])) + (k[0] * b[0])) * T(_t) 
                 //             + a[0] * pow(d[0], 2) + b[0] * d[0] + c[0] - _y; 
@@ -193,7 +193,7 @@ namespace armor_detector
                 //f(t)=(a/t) + b
                 // residual[0] = b[0] / T(_t) + c[0] - _y;
 
-                //f(t)=(a/t) + b
+                //f(t)=(1/t) + b
                 residual[0] = (1.0 / T(_t)) + c[0] - _y;
             }
 
@@ -382,6 +382,8 @@ namespace armor_detector
         cv::Mat pic_z;
         
     public:
+        double evalRMSE(double* params, PredictDirection predict_direction);
+        
         // ArmorPredictor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param, const std::string filter_param_path);
         ArmorPredictor(const PredictParam& predict_param, const SingerModel& singer_model_param, const DebugParam& debug_param, const std::string filter_param_path);
         
