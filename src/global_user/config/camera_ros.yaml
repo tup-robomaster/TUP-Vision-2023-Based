@@ -1,6 +1,7 @@
 /hik_cam_driver:
   ros__parameters:
     hik_cam_id: 0
+    frame_id: hik_cam
     image_width: 1440
     image_height: 1080
     exposure_time: 4000
@@ -18,6 +19,7 @@
 /daheng_cam_driver:
   ros__parameters:
     daheng_cam_id: 1
+    frame_id: daheng_cam
     image_width: 1280
     image_height: 1024
     width_scale: 1
@@ -47,3 +49,8 @@
     video_path: "src/camera_driver/video/still_gyro.avi"
     # video_path: "src/camera_driver/video/gyro1.avi"
     save_video: false
+
+/mvs_cam_driver:
+  ros_parameters:
+    mvs_cam_id: 0
+    frame_id: mvs_cam

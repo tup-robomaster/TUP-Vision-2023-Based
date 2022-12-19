@@ -105,16 +105,27 @@ namespace armor_detector
             // // qos.transient_local();
             // qos.durability_volatile();
 
-            // if(camera_type == global_user::DaHeng)
-            // {
-            //     img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
-            //         std::bind(&detector_node::image_callback, this, _1), transport_));
-            // }
-            // else
-            // {
-            //     img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
-            //         std::bind(&detector_node::image_callback, this, _1), transport_));
-            // }
+            if(camera_type == global_user::DaHeng)
+            {
+                img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+                    std::bind(&detector_node::image_callback, this, _1), transport_));
+            }
+            else if(camera_type == global_user::HikRobot)
+            {
+                img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
+                    std::bind(&detector_node::image_callback, this, _1), transport_));
+            }
+            else if(camera_type == global_user::USBCam)
+            {
+                img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/usb_img",
+                    std::bind(&detector_node::image_callback, this, _1), transport_));
+            }
+            else if(camera_type == global_user::MVSCam)
+            {
+                img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/mvs_img",
+                    std::bind(&detector_node::image_callback, this, _1), transport_));
+            }
+
             if(!detector_->is_init)
             {
                 detector_->detector_.initModel(network_path_);
@@ -127,15 +138,10 @@ namespace armor_detector
                 detector_->is_init = true;
             }
 
-            img_sub = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/usb_img",
-                    std::bind(&detector_node::image_callback, this, _1), transport_));
         }
-        // std::cout << 1 << std::endl;
 
         // param callback
         // param_timer_ = this->create_wall_timer(1000ms, std::bind(&detector_node::param_callback, this));
-        
-        // std::cout << 2 << std::endl;
     }
 
     detector_node::~detector_node()
@@ -153,7 +159,7 @@ namespace armor_detector
     
     void detector_node::param_callback()
     {
-        //
+        // get parameters from param server.
         getParameters();
         this->detector_->debugParams(detector_params_, debug_, gyro_params_);
     }
@@ -195,8 +201,6 @@ namespace armor_detector
         gyro_params_.hero_danger_zone = this->get_parameter("hero_danger_zone").as_int();
         gyro_params_.max_dead_buffer = this->get_parameter("max_dead_buffer").as_int() ;
 
-        // std::cout << "dist: " << this->get_parameter("max_delta_dist").as_double() << endl;
-
         gyro_params_.max_delta_dist = this->get_parameter("max_delta_dist").as_double();
         gyro_params_.max_delta_t = this->get_parameter("max_delta_t").as_int();
         gyro_params_.delta_x_3d_high_thresh = this->get_parameter("delta_x_3d_high_thresh").as_double();
@@ -209,12 +213,11 @@ namespace armor_detector
         gyro_params_.delta_x_2d_low_thresh = this->get_parameter("delta_x_2d_low_thresh").as_double();
         gyro_params_.delta_x_2d_lower_thresh = this->get_parameter("delta_x_2d_lower_thresh").as_double();
 
-        // std::cout << "delta_dist: " << gyro_params_.max_delta_dist << std::endl;
     }
 
     std::unique_ptr<detector> detector_node::init_detector()
     {
-        //detector params
+        // detector params.
         this->declare_parameter<int>("armor_type_wh_thres", 3);
         this->declare_parameter<int>("max_lost_cnt", 5);
         this->declare_parameter<int>("max_armors_cnt", 8);
@@ -229,12 +232,12 @@ namespace armor_detector
         this->declare_parameter<double>("armor_roi_expand_ratio_height", 1.5);
         this->declare_parameter<double>("armor_conf_high_thres", 0.82);
         
-        //TODO:set by own path
+        // TODO:Set by your own path.
         this->declare_parameter("camera_name", "00J90630561"); //相机型号
         this->declare_parameter("camera_param_path", "src/global_user/config/camera.yaml");
         this->declare_parameter("network_path", "src/vehicle_system/autoaim/armor_detector/model/yolox.xml");
         
-        //debug
+        // debug
         this->declare_parameter("debug_without_com", true);
         this->declare_parameter("using_imu", false);
         this->declare_parameter("using_roi", true);
@@ -245,7 +248,7 @@ namespace armor_detector
         this->declare_parameter("print_letency", false);
         this->declare_parameter("print_target_info", false);
         
-        //
+        // spinning params.
         this->declare_parameter("anti_spin_judge_high_thres", 2e4);
         this->declare_parameter("anti_spin_judge_low_thres", 2e3);
         this->declare_parameter("anti_spin_max_r_multiple", 4.5);
@@ -253,7 +256,6 @@ namespace armor_detector
         this->declare_parameter<int>("max_dead_buffer", 2) ;
         this->declare_parameter<double>("max_delta_dist", 0.3);
         // this->declare_parameter("max_delta_t", 50);
-
         this->declare_parameter<double>("delta_x_3d_high_thresh", 0.37);
         this->declare_parameter<double>("delta_x_3d_higher_thresh", 0.44);
         this->declare_parameter<double>("delta_x_3d_low_thresh", 0.23);
@@ -263,22 +265,19 @@ namespace armor_detector
         this->declare_parameter<double>("delta_x_2d_low_thresh", 35.0);
         this->declare_parameter<double>("delta_x_2d_lower_thresh", 24.0);
 
-        //
+        // get params from param server.
         getParameters();
 
         camera_name_ = this->get_parameter("camera_name").as_string();
         camera_param_path_ = this->get_parameter("camera_param_path").as_string();
         network_path_ = this->get_parameter("network_path").as_string();
 
-        // std::cout << "delta_dist: " << gyro_params_.max_delta_dist << std::endl;
-
         return std::make_unique<detector>(camera_name_, camera_param_path_, network_path_, detector_params_, debug_, gyro_params_);
     }
 
     std::unique_ptr<Processor> detector_node::init_armor_processor()
     {
-        // std::cout << 1 << std::endl;
-
+        // armor processor params.
         this->declare_parameter<double>("bullet_speed", 28.0);
         this->declare_parameter<int>("max_time_delta", 1000);
         this->declare_parameter<int>("max_cost", 509);
@@ -294,6 +293,7 @@ namespace armor_detector
         predict_param_.shoot_delay = this->get_parameter("shoot_delay").as_int();
         predict_param_.window_size = this->get_parameter("window_size").as_int();
 
+        // cs model params.
         this->declare_parameter<double>("singer_alpha", 5.0);
         this->declare_parameter<double>("singer_a_max", 10.0);
         this->declare_parameter<double>("singer_p_max", 0.5);
@@ -310,8 +310,8 @@ namespace armor_detector
         singer_model_param_.dt = this->get_parameter("singer_dt").as_double();
         singer_model_param_.p = this->get_parameter("singer_p").as_double();
         singer_model_param_.r = this->get_parameter("singer_r").as_double();
-        // std::cout << 2 << std::endl;
 
+        // debug params.
         this->declare_parameter("disable_filter", false);
         this->declare_parameter("disable_fitting", true);
         this->declare_parameter("draw_predict", false);
@@ -325,8 +325,6 @@ namespace armor_detector
         debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
         debug_param_.show_transformed_info = this->get_parameter("show_transformed_info").as_bool();
 
-        // std::cout << 3 << std::endl;
-               
         this->declare_parameter<std::string>("filter_param_path", "src/global_user/config/filter_param.yaml");
         filter_param_path_ = this->get_parameter("filter_param_path").as_string();
 
@@ -345,29 +343,23 @@ namespace armor_detector
         std::vector<Armor> armors;
 
         if(!img_info)
-        {
             return;
-        }
-
-        // RCLCPP_INFO(this->get_logger(), "...");
-
         auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
         img.copyTo(src.img);
-        // cv::namedWindow("image", cv::WINDOW_AUTOSIZE);
-        // cv::imshow("image", src.img);
-        // cv::waitKey(0);
-
+        
         TimePoint time_img_sub = std::chrono::steady_clock::now();
         src.timestamp = (int)(std::chrono::duration<double, std::milli>(time_img_sub - time_start).count());
         int sleep_time = 0;
 
+        // Detect armors.
         if(detector_->armor_detect(src))
-        {   //find armors
+        { 
             // RCLCPP_INFO(this->get_logger(), "armors detector...");
             TargetMsg target_info;
             TargetMsg predict_info;
             Eigen::Vector3d aiming_point;
-            //target's spinning status detect 
+            
+            // Detect spinning status.
             if(detector_->gyro_detector(src, target_info, target_ptr))
             {
                 if(target_info.target_switched)
@@ -496,17 +488,7 @@ namespace armor_detector
                 // usleep(us);
                 predict_info_pub->publish(predict_info);
             }
-            else
-            {
-                // std::cout << 4 << std::endl;
-            }
-            // std::cout << 5 << std::endl;
         }
-        else
-        {
-            // std::cout << 6 << std::endl;
-        }
-        // std::cout << 1 << std::endl;
         
         cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
         cv::imshow("dst", src.img);
@@ -540,13 +522,15 @@ namespace armor_detector
             src.timestamp = (int)(std::chrono::duration<double, std::milli>(time_img_sub - time_start).count());
             int sleep_time = 0;
 
+            // Detect armors.
             if(detector_->armor_detect(src))
-            {   //find armors
+            {   
                 // RCLCPP_INFO(this->get_logger(), "armors detector...");
                 TargetMsg target_info;
                 TargetMsg predict_info;
                 Eigen::Vector3d aiming_point;
-                //target's spinning status detect 
+                
+                // Detect spinning status.
                 if(detector_->gyro_detector(src, target_info, target_ptr))
                 {
                     if(target_info.target_switched)
@@ -567,7 +551,7 @@ namespace armor_detector
                         // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
                         // std::cout << std::endl;
 
-                        //
+                        // gimbal info pub.
                         processor_->armor_predictor_.is_ekf_init = false;
                         gimbal_info_pub_->publish(gimbal_info);
                     }

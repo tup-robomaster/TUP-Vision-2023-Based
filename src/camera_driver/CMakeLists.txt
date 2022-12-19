@@ -128,7 +128,8 @@ add_library(${PROJECT_NAME} SHARED
 # endif()
 
 target_compile_definitions(${PROJECT_NAME}
-PRIVATE "COMPOSITION_BUILDING_DLL")
+  PRIVATE "COMPOSITION_BUILDING_DLL"
+)
 
 # target_include_directories(${PROJECT_NAME}
 #   PUBLIC
@@ -154,15 +155,7 @@ set(node_plugins "")
 #   "rclcpp_components"
 #   "std_msgs")
 
-rclcpp_components_register_nodes(${PROJECT_NAME} "camera_driver::usb_cam_node")
-set(node_plugins "${node_plugins}camera_driver::usb_cam_node;&<TARGET_FILE:usb_cam_node\n")
 
-rclcpp_components_register_nodes(${PROJECT_NAME} "camera_driver::hik_cam_node")
-set(node_plugins "${node_plugins}camera_driver::hik_cam_node;$<TARGET_FILE:hik_cam_node>\n")
-
-rclcpp_components_register_nodes(${PROJECT_NAME} "camera_driver::daheng_cam_node")
-set(node_plugins "${node_plugins}camera_driver::daheng_cam_node;$<TARGET_FILE:daheng_cam_node>\n")
- 
 # install cam driver lib
 # install(
 #     FILES ${GXI_LIB_SO}
@@ -197,35 +190,34 @@ add_executable(daheng_cam_driver_node
 
 target_link_libraries(usb_cam_driver_node
   ${PROJECT_NAME}
-
   MvCameraControl
   MVRender
   FormatConversion
   MediaProcess
   gxiapi
 )
-  
+
 # target_include_directories(hik_cam_driver_node PUBLIC hik_sdk/include)
 # if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
-  # target_link_directories(hik_cam_driver_node PUBLIC dependencies/hik_sdk/MVS/lib/64)
-  # install(
-  #   DIRECTORY dependencies/hik_sdk/MVS/lib/64/
-  #   DESTINATION lib
-  #   )
-    # endif()
-  
+# target_link_directories(hik_cam_driver_node PUBLIC dependencies/hik_sdk/MVS/lib/64)
+# install(
+#   DIRECTORY dependencies/hik_sdk/MVS/lib/64/
+#   DESTINATION lib
+#   )
+# endif()
+
 ament_target_dependencies(usb_cam_driver_node
   ${dependencies}
 )
-  
+
 ament_target_dependencies(hik_cam_driver_node
   ${dependencies}  
 )
-
+  
 ament_target_dependencies(daheng_cam_driver_node
   ${dependencies}  
 )
-
+  
   # target_link_libraries(hik_cam_driver_node
   #   # FormatConversion
   #   # MediaProcess
@@ -234,7 +226,7 @@ ament_target_dependencies(daheng_cam_driver_node
   #   MVRender
   #   # MvUsb3vTL
   # )
-
+  
 target_link_libraries(hik_cam_driver_node 
   ${PROJECT_NAME}
   MvCameraControl
@@ -243,7 +235,7 @@ target_link_libraries(hik_cam_driver_node
   MediaProcess
   gxiapi
 )
-
+  
 target_link_libraries(daheng_cam_driver_node
   ${PROJECT_NAME}
   gxiapi
@@ -254,8 +246,31 @@ target_link_libraries(daheng_cam_driver_node
   # DxImageProc
   # GxIAPI
 )
-
-
+    
+rclcpp_components_register_nodes(${PROJECT_NAME} 
+  PLUGIN "camera_driver::usb_cam_node"
+  EXECUTABLE usb_cam_driver_node 
+)
+set(node_plugins 
+  "${node_plugins}camera_driver::usb_cam_node;&<TARGET_FILE:usb_cam_node\n"
+)
+  
+rclcpp_components_register_nodes(${PROJECT_NAME} 
+  PLUGIN "camera_driver::hik_cam_node"
+  EXECUTABLE hik_cam_driver_node
+)
+set(node_plugins 
+  "${node_plugins}camera_driver::hik_cam_node;$<TARGET_FILE:hik_cam_node>\n"
+)
+  
+rclcpp_components_register_nodes(${PROJECT_NAME}
+  PLUGIN "camera_driver::daheng_cam_node"
+  EXECUTABLE daheng_cam_driver_node
+)
+set(node_plugins 
+  "${node_plugins}camera_driver::daheng_cam_node;$<TARGET_FILE:daheng_cam_node>\n"
+)
+    
 # install cam driver lib
 # install(
 #   FILES ${MVS_LIB_SO}

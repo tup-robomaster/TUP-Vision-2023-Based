@@ -136,10 +136,10 @@ target_link_libraries(armor_detector_node
   lapack.so 
 )
 
-# rclcpp_components_register_nodes(${PROJECT_NAME}
-#   PLUGIN "armor_detector::detector_node"
-#   EXECUTABLE armor_detector_node
-# )
+rclcpp_components_register_nodes(${PROJECT_NAME}
+  PLUGIN "armor_detector::detector_node"
+  EXECUTABLE armor_detector_node
+)
 
 # target_link_libraries(testing
 #   ${PROJECT_NAME}

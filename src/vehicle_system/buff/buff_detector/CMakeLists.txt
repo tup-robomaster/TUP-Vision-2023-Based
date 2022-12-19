@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(buff)
+project(buff_detector)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -15,11 +15,6 @@ endif()
   
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17 -Os -pthread -g")
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
@@ -29,31 +24,18 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(tf2_ros REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(rclpy REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(laser_geometry REQUIRED)
 find_package(message_filters REQUIRED)
-find_package(map_msgs REQUIRED)
-find_package(pluginlib REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_sensor_msgs REQUIRED)
-find_package(visualization_msgs REQUIRED)
-find_package(angles REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(OpenVINO REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(Ceres REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(fmt REQUIRED)
-find_package(InferenceEngine REQUIRED)
-find_package(OpenCV 4 REQUIRED)
-find_package(Ceres REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(message_filters REQUIRED)
-find_package(image_transport REQUIRED)
-
-# custom package
 find_package(global_interface REQUIRED)
 find_package(global_user REQUIRED)
 find_package(filter REQUIRED)
@@ -85,14 +67,7 @@ set(dependencies
   global_interface
   filter
 )
-  
-# add_library(${PROJECT_NAME} 
-#   src/vehicle_system/buff/src/fan_tracker/fan_tracker.cpp
-#   src/vehicle_system/buff/src/detector/inference.cpp
-#   src/vehicle_system/buff/src/buff/buff.cpp
-#   src/vehicle_system/buff/src/predictor/predictor.cpp
-# )
-  
+
 include_directories(include)
 add_executable(${PROJECT_NAME}_node 
   src/fan_tracker/fan_tracker.cpp
@@ -120,22 +95,25 @@ target_link_libraries(${PROJECT_NAME}_node
   lapack.so 
 )
 
+rclcpp_components_register_nodes(${PROJECT_NAME} 
+  PLUGIN "buff_detector::BuffDetectorNode"
+  EXECUTABLE ${PROJECT_NAME}_node  
+)
+
 install(TARGETS 
   ${PROJECT_NAME}_node 
-  # testing 
   DESTINATION lib/${PROJECT_NAME}
 )
 
 install(DIRECTORY 
   launch
-  # config
   DESTINATION share/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
-find_package(ament_lint_auto REQUIRED)
-# the following line skips the linter which checks for copyrights
-# uncomment the line when a copyright and license is not present in all source files
+  find_package(ament_lint_auto REQUIRED)
+  # the following line skips the linter which checks for copyrights
+  # uncomment the line when a copyright and license is not present in all source files
   #set(ament_cmake_copyright_FOUND TRUE)
   # the following line skips cpplint (only works in a git repo)
   # uncomment the line when this package is not in a git repo

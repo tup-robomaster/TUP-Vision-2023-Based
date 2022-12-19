@@ -1,0 +1,21 @@
+/buff_detector:
+  ros__parameters:
+    armor_type_wh_thres: 3
+    max_lost_cnt: 5
+    max_armors_cnt: 8
+    max_v: 8
+    max_delta_t: 100
+    no_crop_thres: 1e-2
+    hero_danger_zone: 4
+    color: true # red: true
+                # blue: false
+
+/buff_processor:
+  ros__parameters:
+    bullet_speed: 28.0
+    max_time_delta: 1000
+    max_cost: 10
+    max_v: 8
+    min_fitting_lens: 10
+    shoot_delay: 50
+    window_size: 3
