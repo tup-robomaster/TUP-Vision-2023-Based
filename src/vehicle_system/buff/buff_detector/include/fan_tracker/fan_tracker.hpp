@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:53:56
- * @LastEditTime: 2022-12-11 14:15:39
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/include/fan_tracker/fan_tracker.hpp
+ * @LastEditTime: 2022-12-20 16:52:57
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/fan_tracker/fan_tracker.hpp
  */
 #ifndef FAN_TRACKER_HPP_
 #define FAN_TRACKER_HPP_
@@ -20,7 +20,7 @@
 using namespace cv;
 using namespace std;
 
-namespace buff
+namespace buff_detector
 {
     struct Fan
     {
@@ -64,6 +64,6 @@ namespace buff
         bool update(Fan new_fan, int new_timestamp);
     };
 
-} //namespace buff
+} //namespace buff_detector
 
 #endif

@@ -430,7 +430,7 @@ namespace buff
         }
 
         ///------------------------计算击打点----------------------------
-        //将角度转化至[-PI,PI范围内]
+        //将角度转化至[-PI,PI]范围内
         // cout<<theta_offset<<endl;
         // theta_offset = rangedAngleRad(theta_offset);
         // cout<<theta_offset<<endl;

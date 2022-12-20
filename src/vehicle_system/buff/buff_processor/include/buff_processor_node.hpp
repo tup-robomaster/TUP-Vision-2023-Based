@@ -2,10 +2,11 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:10:59
- * @LastEditTime: 2022-12-19 23:19:31
+ * @LastEditTime: 2022-12-20 18:40:23
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/buff_processor_node.hpp
  */
 #include "./buff_processor/buff_processor.hpp"
+#include "global_interface/include/global_interface/msg/buff.hpp"
 
 //ros
 #include <rclcpp/rclcpp.hpp>
@@ -15,15 +16,17 @@ namespace buff_processor
 {
     class BuffProcessorNode : public rclcpp::Node
     {
+        typedef global_interface::msg::Buff BuffMsg;
+
     public:
         explicit BuffProcessorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         ~BuffProcessorNode();
     
     private:
-        // message_filters::Subscriber<global_interface::msg::Target> target_info_sub;
-        rclcpp::Subscription<global_interface::msg::Target>::SharedPtr target_info_sub_;
-        message_filters::Subscriber<global_interface::msg::Target> target_point_sub_; 
-        void target_info_callback(const global_interface::msg::Target& target_info);
+        // message_filters::Subscriber<BuffMsg> target_info_sub;
+        rclcpp::Subscription<BuffMsg>::SharedPtr target_info_sub_;
+        // message_filters::Subscriber<BuffMsg> target_point_sub_; 
+        void target_info_callback(const BuffMsg& target_info);
     
     private:
         std::unique_ptr<Processor> buff_processor_;

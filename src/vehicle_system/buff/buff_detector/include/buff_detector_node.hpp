@@ -2,9 +2,12 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2022-12-19 23:07:33
+ * @LastEditTime: 2022-12-20 18:10:53
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector_node.hpp
  */
+#ifndef BUFF_DETECTOR_NODE_HPP_
+#define BUFF_DETECTOR_NODE_HPP_
+
 #include "./buff_detector/buff_detector.hpp"
 
 //ros
@@ -20,10 +23,7 @@
 #include <cv_bridge/cv_bridge.h>
 
 //custom message
-#include "global_interface/msg/gimbal.hpp"
-#include "global_interface/msg/armor.hpp"
-#include "global_interface/msg/armors.hpp"
-#include "global_interface/msg/target.hpp"
+#include "global_interface/include/global_interface/msg/buff.hpp"
 
 //linux
 #include <sys/types.h>
@@ -37,17 +37,26 @@
 #define USB_IMAGE_WIDTH 640
 #define USB_IAMGE_HEIGHT 480
 
+using namespace global_user;
+using namespace coordsolver;
+
 namespace buff_detector
 {
     class BuffDetectorNode : public rclcpp::Node
     {
+        typedef global_interface::msg::Buff BuffMsg;
+
     public:
-        BuffNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
-        ~BuffNode();
+        BuffDetectorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
+        ~BuffDetectorNode();
     
     private:
-        std::unique_ptr<Buff> buff_detector_;
-        std::unique_ptr<Buff> init_buff_detector();
+        BuffParam buff_param_;
+        PathParam path_param_;
+        DebugParam debug_param_;
+
+        std::unique_ptr<Detector> detector_;
+        std::unique_ptr<Detector> init_detector();
     
     private:
         std::string transport_;
@@ -56,16 +65,15 @@ namespace buff_detector
     
     private:
         rclcpp::Time time_start_;
-        rclcpp::Publisher<TargetMsg>::SharedPtr buff_info_pub_; //buff msgs pub.
+        rclcpp::Publisher<BuffMsg>::SharedPtr buff_info_pub_; //buff msgs pub.
     
     protected:
-        //params callback
+        // params callback.
         rclcpp::TimerBase::SharedPtr param_timer_;
         void param_callback();
     
     private:
         // Shared memory.
-        void run();                         //
         bool using_shared_memory_;          //
         key_t key_;                         //生成key键
         int shared_memory_id_;              //获取共享内存id
@@ -73,3 +81,5 @@ namespace buff_detector
         std::thread read_memory_thread_;    //共享内存读线程
     };
 } // namespace buff_detector
+
+#endif

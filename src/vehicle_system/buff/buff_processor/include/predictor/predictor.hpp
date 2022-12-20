@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2022-12-11 20:49:25
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/include/predictor/predictor.hpp
+ * @LastEditTime: 2022-12-20 19:16:39
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
 #define PREDICTOR_HPP_
@@ -18,7 +18,6 @@
 
 #include <ceres/ceres.h>
 #include <Eigen/Core>
-// #include <matplotlibcpp.h>
 #include <opencv2/opencv.hpp>
 #include <yaml-cpp/yaml.h>
 
@@ -29,7 +28,7 @@ using namespace std;
 using namespace cv;
 using namespace filter;
 
-namespace buff
+namespace buff_processor
 {
     struct PredictorParam
     {
@@ -61,6 +60,32 @@ namespace buff
             delay_big = 100.0;
             window_size = 2;
         }     
+    };
+
+    struct PathParam
+    {
+        string network_path;
+        string camera_param_path;
+        string camera_name;
+
+        PathParam()
+        {
+            camera_name = "KE0200110075";
+            network_path = "src/vehicle_system/buff/model/buff.xml";
+            camera_param_path = "src/global_user/config/camera.yaml";
+        }
+    };
+
+    struct DebugParam
+    {
+        bool using_imu;
+        bool show_predict;
+
+        DebugParam()
+        {
+            using_imu = false;
+            show_predict = true;
+        }
     };
 
 
@@ -143,6 +168,6 @@ namespace buff
         double evalMAPE(double params[4]);
     };
 
-} // namespace buff
+} // namespace buff_processor
 
 #endif

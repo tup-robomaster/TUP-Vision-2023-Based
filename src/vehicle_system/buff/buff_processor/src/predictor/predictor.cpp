@@ -2,12 +2,12 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2022-12-11 20:43:22
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/src/predictor/predictor.cpp
+ * @LastEditTime: 2022-12-20 22:00:16
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
 
-namespace buff
+namespace buff_processor
 {
     BuffPredictor::BuffPredictor()
     {
@@ -35,7 +35,7 @@ namespace buff
     */
     bool BuffPredictor::predict(double speed, double dist, double timestamp, double &result)
     {
-        auto t1=std::chrono::steady_clock::now();
+        auto t1 = std::chrono::steady_clock::now();
         TargetInfo target = {speed, dist, timestamp};
         if (mode != last_mode)
         {
@@ -68,10 +68,9 @@ namespace buff
         if (is_ready)
         {
             auto predict = pf.predict();
-            // cout<<predict<<" : "<<speed<<endl;
             target.speed = predict[0];
         }
-        // cout<<"Mode :"<<mode<<endl;
+
         int deque_len = 0;
         if (mode == 0)
         {
@@ -103,13 +102,12 @@ namespace buff
             history_info.push_back(target);
         }
 
-        //计算旋转方向
+        // 计算旋转方向
         double rotate_speed_sum = 0;
         int rotate_sign;
         for (auto target_info : history_info)
             rotate_speed_sum += target_info.speed;
         auto mean_velocity = rotate_speed_sum / history_info.size();
-        // cout<<rotate_speed_sum<<endl;
 
         if (mode == 0)
         {   //TODO:小符模式不需要额外计算,也可增加判断，小符模式给定恒定转速进行击打
@@ -137,7 +135,7 @@ namespace buff
                     problem.AddResidualBlock (     // 向问题中添加误差项
                     // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致
                         new ceres::AutoDiffCostFunction<CURVE_FITTING_COST, 1, 4> ( 
-                            new CURVE_FITTING_COST (target_info.speed  * rotate_sign, (float)(target_info.timestamp) / 1e3)
+                            new CURVE_FITTING_COST (target_info.speed  * rotate_sign, (double)(target_info.timestamp) / 1e3)
                         ),
                         new ceres::CauchyLoss(0.5),
                         params_fitting                 // 待估计参数
@@ -193,8 +191,8 @@ namespace buff
                 }
 
                 //设置上下限
-                problem.SetParameterLowerBound(&phase, 0, -CV_PI);
                 problem.SetParameterUpperBound(&phase, 0, CV_PI);
+                problem.SetParameterLowerBound(&phase, 0, -CV_PI);
 
                 ceres::Solve(options, &problem, &summary);
                 double params_new[4] = {params[0], params[1], phase, params[3]};
@@ -220,29 +218,7 @@ namespace buff
         // cout<<delta_time_estimate<<endl;     
         result = calcAimingAngleOffset(params, timespan / 1e3, time_estimate / 1e3, mode);
         last_target = target;
-
-        // if(draw_predict)
-        // {
-            // if (target.timestamp % 10 == 0)
-            // {
-            //     std::vector<double> plt_time;
-            //     std::vector<double> plt_speed;
-            //     std::vector<double> plt_fitted;
-            //     for (auto target_info : history_info)
-            //     {
-            //         auto t = (float)(target_info.timestamp) / 1e3;
-                    // plt_time.push_back(t);
-                    // plt_speed.push_back(target_info.speed);
-                    // plt_fitted.push_back(params[0] * sin (params[1] * t + params[2]) + params[3]);
-                // }
-                // plt::clf();
-                // plt::plot(plt_time, plt_speed,"bx");
-                // plt::plot(plt_time, plt_fitted,"r-");
-                // plt::pause(0.001);
-
-            // }
-            // plt::show();
-        // }
+        
         return true;
     }
 
@@ -262,9 +238,8 @@ namespace buff
         auto b = params[3]; 
         double theta1;
         double theta0;
-        // cout<<"t1: "<<t1<<endl;
-        // cout<<"t0: "<<t0<<endl;
-        //f(x) = a * sin(ω * t + θ) + b
+       
+        //f(t) = a * sin(ω * t + θ) + b
         //对目标函数进行积分
         if (mode == 0)//适用于小符模式
         {
@@ -276,7 +251,6 @@ namespace buff
             theta0 = (b * t0 - (a / omega) * cos(omega * t0 + theta));
             theta1 = (b * t1 - (a / omega) * cos(omega * t1 + theta));
         }
-        // cout<<(theta1 - theta0) * 180 / CV_PI<<endl;
         return theta1 - theta0;
     }
 
@@ -291,7 +265,6 @@ namespace buff
         //TODO:修改传入参数，由start_idx改为max_iter
         //计算最大迭代次数
         auto max_iter = int(history_info.size() - start_idx) - predictor_param_.window_size + 1;
-        // cout<<max_iter<<endl;
 
         if (max_iter <= 0 || start_idx < 0)
             return history_info.back().speed;
@@ -301,15 +274,12 @@ namespace buff
         // cout<<start_idx + 3<<":"<<history_info.at(start_idx + 3).speed<<endl;
         
         double total_sum = 0;
-        // cout<<max_iter<<endl;
         for (int i = 0; i < max_iter; i++)
         {
-            // cout<<"i:"<<i<<endl;
             double sum = 0;
             for (int j = 0; j < predictor_param_.window_size; j++)
                 sum += history_info.at(start_idx + i + j).speed;
             total_sum += sum / predictor_param_.window_size;
-            // cout<<total_sum<<endl;
         }
         return total_sum / max_iter;
     }
@@ -365,11 +335,9 @@ namespace buff
             auto measure = target_info.speed;
 
             mape_sum += abs((measure - pred) / measure);
-            // cout<<abs((measure - pred) / measure)<<endl;
         }
         mape = mape_sum / history_info.size() * 100;
-        // cout<<mape<<endl;
         return mape;
     }
 
-} //namespace buff
+} //namespace buff_processor

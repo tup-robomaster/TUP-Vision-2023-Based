@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:55:36
- * @LastEditTime: 2022-12-11 14:13:47
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/include/detector/inference.hpp
+ * @LastEditTime: 2022-12-20 16:43:27
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/inference/inference.hpp
  */
 #ifndef INFERENCE_HPP_
 #define INFERENCE_HPP_
@@ -26,7 +26,7 @@ using namespace InferenceEngine;
 
 using namespace global_user;
 
-namespace buff
+namespace buff_detector
 {
     struct BuffObject
     {
@@ -60,6 +60,6 @@ namespace buff
         bool initModel(string path);
 
     };
-} //namespace buff
+} //namespace buff_detector
 
 #endif

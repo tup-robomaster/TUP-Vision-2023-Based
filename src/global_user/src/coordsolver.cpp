@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2022-12-11 14:32:09
+ * @LastEditTime: 2022-12-20 23:56:31
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -99,29 +99,35 @@ namespace coordsolver
         //大于长宽比阈值使用大装甲板世界坐标
         if (type == ::global_user::BIG)
         {
-            points_world = {
-                {-0.1125,0.027,0},
-                {-0.1125,-0.027,0},
-                {0.1125,-0.027,0},
-                {0.1125,0.027,0}};
+            points_world = 
+            {
+                {-0.1125, 0.027, 0},
+                {-0.1125, -0.027, 0},
+                {0.1125, -0.027, 0},
+                {0.1125, 0.027, 0}
+            };
         }
         else if (type == ::global_user::SMALL)
         {
-            points_world = {
-                {-0.066,0.027,0},
-                {-0.066,-0.027,0},
-                {0.066,-0.027,0},
-                {0.066,0.027,0}};
+            points_world = 
+            {
+                {-0.066, 0.027, 0},
+                {-0.066, -0.027, 0},
+                {0.066, -0.027, 0},
+                {0.066, 0.027, 0}
+            };
         }
         //长度为5进入大符模式
         else if (type == ::global_user::BUFF)
         {
-            points_world = {
-            {-0.1125,0.027,0},
-            {-0.1125,-0.027,0},
-            {0,-0.7,-0.05},
-            {0.1125,-0.027,0},
-            {0.1125,0.027,0}};
+            points_world = 
+            {
+                {-0.1125, 0.027, 0},
+                {-0.1125, -0.027, 0},
+                {0, -0.7, -0.05},
+                {0.1125, -0.027, 0},
+                {0.1125, 0.027, 0}
+            };
             // points_world = {
             // {-0.1125,0.027,0},
             // {-0.1125,-0.027,0},
@@ -133,7 +139,7 @@ namespace coordsolver
         cv::Mat rmat;
         cv::Mat tvec;
         Eigen::Matrix3d rmat_eigen;
-        Eigen::Vector3d R_center_world = {0,-0.7,-0.05};
+        Eigen::Vector3d R_center_world = {0, -0.7, -0.05};
         Eigen::Vector3d tvec_eigen;
         Eigen::Vector3d coord_camera;
 
@@ -141,9 +147,10 @@ namespace coordsolver
 
         PnPInfo result;
         //Pc = R * Pw + T
-        Rodrigues(rvec,rmat);
+        Rodrigues(rvec, rmat);
         cv2eigen(rmat, rmat_eigen);
         cv2eigen(tvec, tvec_eigen);
+
         if (type == ::global_user::BIG || type == ::global_user::SMALL)
         {
             result.armor_cam = tvec_eigen;
@@ -162,10 +169,6 @@ namespace coordsolver
             result.euler = ::global_user::rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;
         }
-        // std::cout << std::endl;
-        // std::cout << "x:" << result.armor_cam[0] << " y:" << result.armor_cam[1] << " z:" << result.armor_cam[2] << std::endl;
-        // std::cout << std::endl;
-        
         return result;
     }
 
