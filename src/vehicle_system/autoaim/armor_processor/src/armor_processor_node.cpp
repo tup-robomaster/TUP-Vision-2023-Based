@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-11-26 15:45:45
+ * @LastEditTime: 2022-12-22 00:24:35
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -32,21 +32,21 @@ namespace armor_processor
         qos.durability_volatile();
 
         // 发布云台转动信息（pitch、yaw角度）
-        gimbal_info_pub_ = this->create_publisher<global_interface::msg::Gimbal>("/gimbal_info", qos);
+        gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/gimbal_info", qos);
 
         // 订阅目标装甲板信息
-        target_info_sub_ = this->create_subscription<global_interface::msg::Target>("/armor_info", rclcpp::SensorDataQoS(),
-            std::bind(&ArmorProcessorNode::target_info_callback, this, std::placeholders::_1));
+        target_info_sub_ = this->create_subscription<TargetMsg>("/armor_info", qos,
+            std::bind(&ArmorProcessorNode::target_info_callback, this, _1));
 
-        // 参数服务器参数声明、获取
+        // 是否使用共享内存
         this->declare_parameter<bool>("using_shared_memory", false);
         using_shared_memory = this->get_parameter("using_shared_memory").as_bool();
         
-        // global_user::CameraType camera_type;
+        // 相机类型
         this->declare_parameter<int>("camera_type", global_user::DaHeng);
         int camera_type = this->get_parameter("camera_type").as_int();
         
-        // Subscriptions transport type
+        // 图像的传输方式
         transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
         
         // if(processor_->armor_predictor_.debug_param_.using_imu)
@@ -93,15 +93,15 @@ namespace armor_processor
         //         std::bind(&ArmorProcessorNode::target_info_callback, this, std::placeholders::_1));
         // }
         
-        bool debug_ = false;
+        bool debug = false;
         this->declare_parameter<bool>("debug", true);
-        this->get_parameter("debug", debug_);
-        if(debug_)
+        this->get_parameter("debug", debug);
+        if(debug)
         {
             RCLCPP_INFO(this->get_logger(), "debug...");
             
             //动态调参回调
-            callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, std::placeholders::_1));
+            callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, _1));
             
             if(using_shared_memory)
             {
@@ -113,40 +113,35 @@ namespace armor_processor
 
                 this->key_ = ftok("./", 9);
 
-                //获取共享内存id
+                // 获取共享内存id
                 shared_memory_id_ = shmget(key_, 0, 0);
                 if(shared_memory_id_ == -1)
                 {
                     RCLCPP_ERROR(this->get_logger(), "Get shared memory id failed...");
                 }
 
-                //映射共享内存，得到虚拟地址
+                // 映射共享内存，得到虚拟地址
                 shared_memory_ptr_ = shmat(shared_memory_id_, 0, 0);
                 if(shared_memory_ptr_ == (void*)-1)
-                {
                     RCLCPP_ERROR(this->get_logger(), "Remapping shared memory failed...");
-                }
 
-                //
+                // 图像读取线程
                 this->read_memory_thread_ = std::thread(&ArmorProcessorNode::img_callback, this);
                 // this->read_memory_thread_.join();
             }
             else
             {
-                
-                // Subscriptions transport type
-                // transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
-
                 if(camera_type == global_user::DaHeng)
                 {
-                    // image sub
+                    // daheng image sub.
                     img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
                     std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
                 }
                 else
                 {
+                    // hik image sub.
                     img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
-                    std::bind(&ArmorProcessorNode::image_callback, this, std::placeholders::_1), transport_));
+                    std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
                 }
             }
         }
@@ -156,7 +151,7 @@ namespace armor_processor
     {
         if(using_shared_memory)
         {
-            //解除共享内存映射
+            // 解除共享内存映射
             if(this->shared_memory_ptr_)
             {
                 if(shmdt(this->shared_memory_ptr_) == -1)
@@ -165,7 +160,7 @@ namespace armor_processor
                 }
             }
             
-            //销毁共享内存
+            // 销毁共享内存
             if(shmctl(shared_memory_id_, IPC_RMID, NULL) == -1)
             {
                 RCLCPP_ERROR(this->get_logger(), "Destroy shared memory failed...");        
@@ -179,7 +174,7 @@ namespace armor_processor
 
         while(1)
         {
-            //读取共享内存图像数据
+            // 读取共享内存图像数据
             memcpy(img.data, shared_memory_ptr_, DAHENG_IMAGE_HEIGHT * DAHENG_IMAGE_WIDTH * 3);
             // img.copyTo(src.img);
             if(this->debug_param_.show_predict)
@@ -248,6 +243,82 @@ namespace armor_processor
             }
         }
     }
+
+
+
+    void ArmorProcessorNode::msg_callback(const geometry_msgs::msg::PointStamped::SharedPtr point_ptr)
+    {
+        geometry_msgs::msg::PointStamped point_out;
+
+        try
+        {
+            tf2_buffer_->transform(*point_ptr, point_out, target_frame_); //输出相对于target_frame_坐标系的坐标
+            if(processor_->armor_predictor_.debug_param_.show_transformed_info)
+            {
+                RCLCPP_INFO(this->get_logger(), "Point of target in frame of %s: x:%f y:%f z:%f\n",
+                    this->target_frame_,
+                    point_out.point.x,
+                    point_out.point.y,
+                    point_out.point.z
+                );
+            }
+        }
+        catch(const std::exception& e)
+        {   // Print warning info.
+            RCLCPP_WARN(this->get_logger(), "Transforme failed : %s\n", e.what());
+        } 
+    }
+
+    void ArmorProcessorNode::target_info_callback(const TargetMsg& target_info)
+    {
+        // Get target 2d cornor points.
+        for(int i = 0; i < 4; ++i)
+        {
+            apex2d[i].x = target_info.point2d[i].x;
+            apex2d[i].y = target_info.point2d[i].y;
+        }
+
+        Eigen::Vector2d angle = {0, 0};
+        Eigen::Vector3d aiming_point = {0, 0, 0};
+        if(target_info.target_switched)
+        {
+            aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
+            angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
+            processor_->armor_predictor_.is_ekf_init = false;
+        }
+        else
+        {
+            aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
+            last_predict_point_ = predict_point_;
+            Eigen::Vector3d aiming_point_world = processor_->armor_predictor_.predict(aiming_point, target_info.timestamp);
+            Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, processor_->rmat_imu);
+            predict_point_ = aiming_point_cam;
+            angle = processor_->coordsolver_.getAngle(aiming_point_cam, processor_->rmat_imu);
+            //若预测出错直接陀螺仪坐标系下坐标作为打击点
+            if(isnan(angle[0]) || isnan(angle[1]))
+            {
+                angle = processor_->coordsolver_.getAngle(aiming_point_world, processor_->rmat_imu);
+            }
+        }
+
+        // gimbal info pub.
+        global_interface::msg::Gimbal gimbal_info;
+        gimbal_info.header.frame_id = "gimbal";
+        gimbal_info.header.stamp = this->get_clock()->now();
+        gimbal_info.pitch = angle[0];
+        gimbal_info.yaw = angle[1];
+        gimbal_info.distance = aiming_point_world.norm();
+        gimbal_info.is_switched = target_info.target_switched;
+        gimbal_info.is_spinning = target_info.is_spinning;
+        gimbal_info_pub_->publish(gimbal_info);
+
+        return;
+    }
+
+    // void ArmorProcessorNode::spin_info_callback(const global_interface::msg::SpinInfo::SharedPtr msg) const
+    // {
+    //     return;
+    // }
 
     std::unique_ptr<Processor> ArmorProcessorNode::init_armor_processor()
     {
@@ -331,101 +402,8 @@ namespace armor_processor
         return std::make_unique<Processor>(predict_param_, singer_model_param_, debug_param_, filter_param_path_, coord_param_path_, coord_param_name_);
     }
 
-
-    void ArmorProcessorNode::msg_callback(const geometry_msgs::msg::PointStamped::SharedPtr point_ptr)
-    {
-        geometry_msgs::msg::PointStamped point_out;
-
-        try
-        {
-            tf2_buffer_->transform(*point_ptr, point_out, target_frame_); //输出相对于target_frame_坐标系的坐标
-            if(processor_->armor_predictor_.debug_param_.show_transformed_info)
-            {
-                RCLCPP_INFO(this->get_logger(), "Point of target in frame of %s: x:%f y:%f z:%f\n",
-                    this->target_frame_,
-                    point_out.point.x,
-                    point_out.point.y,
-                    point_out.point.z
-                );
-            }
-        }
-        catch(const std::exception& e)
-        {   //print warning info
-            RCLCPP_WARN(
-                this->get_logger(),
-                "Transforme failed : %s\n",
-                e.what()
-            );
-        } 
-    }
-
-    void ArmorProcessorNode::target_info_callback(const global_interface::msg::Target& target_info)
-    {
-        //得到目标装甲板的四个角点
-        for(int i = 0; i < 4; ++i)
-        {
-            apex2d[i].x = target_info.point2d[i].x;
-            apex2d[i].y = target_info.point2d[i].y;
-        }
-
-        if(target_info.target_switched)
-        {
-            // RCLCPP_INFO(this->get_logger(), "Target switched...");
-            Eigen::Vector3d aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
-            auto angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
-
-            global_interface::msg::Gimbal gimbal_info;
-            gimbal_info.pitch = angle[0];
-            gimbal_info.yaw = angle[1]; 
-            // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
-            // std::cout << std::endl;
-            
-            //
-            processor_->armor_predictor_.is_ekf_init = false;
-            gimbal_info_pub_->publish(gimbal_info);
-        }
-        else
-        {
-            Eigen::Vector3d aiming_point;
-            aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
-            last_predict_point_ = predict_point_;
-            auto aiming_point_world = processor_->armor_predictor_.predict(aiming_point, target_info.timestamp);
-            predict_point_ = aiming_point_world;
-
-            // Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, processor_->rmat_imu);
-            
-            // global_interface::msg::Target final_point;
-            // final_point.aiming_point.x = aiming_point[0];
-            // final_point.aiming_point.y = aiming_point[1];
-            // final_point.aiming_point.z = aiming_point[2];
-
-            auto angle = processor_->coordsolver_.getAngle(aiming_point_world, processor_->rmat_imu);
-            // //若预测出错直接陀螺仪坐标系下坐标作为打击点
-            // if(isnan(angle[0]) || isnan(angle[1]))
-            // {
-            //     angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
-            // }
-
-            global_interface::msg::Gimbal gimbal_info;
-            gimbal_info.pitch = angle[0];
-            gimbal_info.yaw = angle[1];
-            gimbal_info.distance = aiming_point_world.norm();
-            gimbal_info.is_switched = target_info.target_switched;
-            gimbal_info.is_spinning = target_info.is_spinning;
-            // std::cout << "pitch:" << angle[0] << " " << "yaw:" << angle[1] << std::endl;
-
-            gimbal_info_pub_->publish(gimbal_info);
-        }
-
-        return;
-    }
-
-    // void ArmorProcessorNode::spin_info_callback(const global_interface::msg::SpinInfo::SharedPtr msg) const
-    // {
-    //     return;
-    // }
     rcl_interfaces::msg::SetParametersResult ArmorProcessorNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
-    {
+    { 
         rcl_interfaces::msg::SetParametersResult result;
         result.successful = false;
         result.reason = "debug";
@@ -437,7 +415,7 @@ namespace armor_processor
     }
 
     bool ArmorProcessorNode::setParam(rclcpp::Parameter param)
-    {   //动态调参
+    {   // 动态调参(与rqt_reconfigure一块使用)
         for(int ii = 0; ii < PARAM_NUM; ++ii)
         {
             if(param.get_name() == (char*)param_names_[ii].data())

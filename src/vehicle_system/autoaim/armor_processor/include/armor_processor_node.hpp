@@ -2,11 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
-<<<<<<< HEAD
- * @LastEditTime: 2022-11-21 18:53:33
-=======
- * @LastEditTime: 2022-11-25 20:44:28
->>>>>>> 5c923fbae28e564bccc8007ffec0920ca3fb6a6e
+ * @LastEditTime: 2022-12-21 23:05:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP
@@ -56,25 +52,29 @@ namespace armor_processor
 {
     class ArmorProcessorNode : public rclcpp::Node 
     {
+        typedef global_interface::msg::Target TargetMsg;
+        typedef global_interface::msg::SpinInfo SpinMsg;
+        typedef global_interface::msg::Gimbal GimbalMsg;
+
     public:
         explicit ArmorProcessorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         ~ArmorProcessorNode();
 
     private:
-        // rclcpp::Subscription<global_interface::msg::SpinInfo>::SharedPtr spin_info_sub;
-        // void spin_info_callback(const global_interface::msg::SpinInfo::SharedPtr msg) const;
+        // rclcpp::Subscription<SpinInfo>::SharedPtr spin_info_sub;
+        // void spin_info_callback(const SpinMsg::SharedPtr msg) const;
         
-        // message_filters::Subscriber<global_interface::msg::Target> target_info_sub;
-        rclcpp::Subscription<global_interface::msg::Target>::SharedPtr target_info_sub_;
-        message_filters::Subscriber<global_interface::msg::Target> target_point_sub_; 
-        void target_info_callback(const global_interface::msg::Target& target_info);
+        // message_filters::Subscriber<TargetMsg> target_info_sub;
+        rclcpp::Subscription<TargetMsg>::SharedPtr target_info_sub_;
+        message_filters::Subscriber<TargetMsg> target_point_sub_; 
+        void target_info_callback(const TargetMsg& target_info);
 
         // bool draw_predict;
         Eigen::Vector3d last_predict_point_;
         Eigen::Vector3d predict_point_;
         Point2f apex2d[4];
         // coordsolver::coordsolver coordsolver_;
-        rclcpp::Publisher<global_interface::msg::Gimbal>::SharedPtr gimbal_info_pub_;
+        rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
     
     private:
         std::unique_ptr<Processor> processor_;
@@ -91,12 +91,12 @@ namespace armor_processor
         void msg_callback(const geometry_msgs::msg::PointStamped::SharedPtr point_ptr);
     
     protected:
-        // 订阅图像  
+        // sub image.
         std::shared_ptr<image_transport::Subscriber> img_sub_;
-        // Image subscriptions transport type
+        // Image subscriptions transport type.
         std::string transport_;
         
-        //
+        // image callback.
         void img_callback();
         void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
     
@@ -119,30 +119,15 @@ namespace armor_processor
         bool setParam(rclcpp::Parameter param);
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
-
         // std::shared_ptr<ParamSubcriber> cb_;
         // std::shared_ptr<ParamCbHandle> param_cb_;
-    
     protected:
-        /**
-         * @brief 共享图像数据内存
-         * 
-         */
-        //
+        // 共享图像数据内存
         bool using_shared_memory;
-        
-        //生成key键
-        key_t key_;
-
-        //获取共享内存id
-        int shared_memory_id_;
-
-        //映射共享内存，得到虚拟地址
-        void* shared_memory_ptr_ = nullptr;
-
-        //共享内存读线程
-        std::thread read_memory_thread_;
-
+        key_t key_; //生成key键
+        int shared_memory_id_; //获取共享内存id
+        void* shared_memory_ptr_ = nullptr; //映射共享内存，得到虚拟地址
+        std::thread read_memory_thread_; //共享内存读线程
     };
 } //armor_processor
 

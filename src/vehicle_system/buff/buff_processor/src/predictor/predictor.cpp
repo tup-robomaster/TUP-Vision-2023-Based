@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2022-12-20 22:00:16
+ * @LastEditTime: 2022-12-21 20:48:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -178,12 +178,13 @@ namespace buff_processor
                 {
                     problem.AddResidualBlock( // 向问题中添加误差项
                     // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致
-                        new ceres::AutoDiffCostFunction<CURVE_FITTING_COST_PHASE, 1, 1> ( 
+                        new ceres::AutoDiffCostFunction<CURVE_FITTING_COST_PHASE, 1, 1> 
+                        ( 
                             new CURVE_FITTING_COST_PHASE ((target_info.speed - params[3]) * rotate_sign, 
-                                                    (float)(target_info.timestamp) / 1e3,
-                                                    params[0], 
-                                                    params[1], 
-                                                    params[3])
+                            (float)(target_info.timestamp) / 1e3,
+                            params[0], 
+                            params[1], 
+                            params[3])
                         ),
                         new ceres::CauchyLoss(1e1),
                         &phase // 待估计参数

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2022-12-21 17:08:08
+ * @LastEditTime: 2022-12-21 23:53:26
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -52,9 +52,7 @@ namespace buff_processor
     }
 
     BuffProcessorNode::~BuffProcessorNode()
-    {
-        
-    }
+    {}
 
     void BuffProcessorNode::target_info_callback(const BuffMsg& target_info)
     {
@@ -143,3 +141,15 @@ namespace buff_processor
         return std::make_unique<Processor>(predict_param_, path_param_, debug_param_);
     }
 } //namespace buff_processor
+
+int main(int argc, char** argv)
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_unique<buff_detector::BuffDetectorNode>());
+    rclcpp::shutdown();
+    
+    return 0;
+}
+
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(buff_processor::BuffProcessorNode)

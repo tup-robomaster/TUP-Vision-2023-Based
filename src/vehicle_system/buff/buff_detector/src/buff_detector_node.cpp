@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2022-12-20 18:28:38
+ * @LastEditTime: 2022-12-21 23:53:44
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -159,3 +159,15 @@ namespace buff_detector
     }
     
 } // namespace buff_detector
+
+int main(int argc, char** argv)
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_unique<buff_detector::BuffDetectorNode>());
+    rclcpp::shutdown();
+
+    return 0;
+}
+
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(buff_detector::BuffDetectorNode)
