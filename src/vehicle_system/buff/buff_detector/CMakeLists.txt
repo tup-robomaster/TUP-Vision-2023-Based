@@ -43,19 +43,19 @@ find_package(filter REQUIRED)
 include_directories(include 
   ${OpenCV_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
-  ${InferenceEngine_INCLUDE_DIRS}
+  ${OPENVINO_INCLUDE_DIRS}
 )
 
 set(dependencies 
   rclcpp 
   rclcpp_components
   OpenCV
+  OpenVINO
   geometry_msgs
   tf2_geometry_msgs
   tf2_ros
   Ceres 
   Eigen3 
-  InferenceEngine 
   rclpy 
   tf2 
   tf2_sensor_msgs
@@ -71,10 +71,9 @@ set(dependencies
 include_directories(include)
 add_executable(${PROJECT_NAME}_node 
   src/fan_tracker/fan_tracker.cpp
-  src/detector/inference.cpp
-  src/buff/buff.cpp
-  src/predictor/predictor.cpp
-  src/buff_node.cpp
+  src/inference/inference.cpp 
+  src/buff_detector/buff_detector.cpp 
+  src/buff_detector_node.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME}_node 
@@ -87,7 +86,7 @@ target_link_libraries(${PROJECT_NAME}_node
   # ${InferenceEngine_LIBRARIES}
   openvino::runtime 
   ${Eigen3_LIBRARIES}
-
+  
   yaml-cpp.so 
   glog.so 
   fmt.so

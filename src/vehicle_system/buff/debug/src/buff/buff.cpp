@@ -435,6 +435,8 @@ namespace buff
         // theta_offset = rangedAngleRad(theta_offset);
         // cout<<theta_offset<<endl;
         //由offset生成欧拉角和旋转矩阵
+
+        //TODO:
         Eigen::Vector3d hit_point_world = {sin(theta_offset) * buff_param_.fan_length, (cos(theta_offset) - 1) * buff_param_.fan_length, 0};
         // cout<<hit_point_world<<endl;
         Eigen::Vector3d hit_point_cam = {0,0,0};
@@ -455,6 +457,7 @@ namespace buff
         bool is_switched = false;
         auto delta_t = src.timestamp - last_timestamp;
         auto relative_rmat = last_fan.rmat.transpose() * target.rmat;
+        
         //TODO:使用点乘判断旋转方向
         auto angle_axisd = Eigen::AngleAxisd(relative_rmat);
         // sign = ((*fan).centerR3d_world.dot(angle_axisd.axis()) > 0 ) ? 1 : -1;

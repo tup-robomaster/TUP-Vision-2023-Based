@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2022-12-20 19:16:39
+ * @LastEditTime: 2022-12-21 16:44:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
@@ -64,14 +64,11 @@ namespace buff_processor
 
     struct PathParam
     {
-        string network_path;
         string camera_param_path;
         string camera_name;
-
         PathParam()
         {
             camera_name = "KE0200110075";
-            network_path = "src/vehicle_system/buff/model/buff.xml";
             camera_param_path = "src/global_user/config/camera.yaml";
         }
     };

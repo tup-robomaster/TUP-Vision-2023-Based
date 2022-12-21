@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:45:06
- * @LastEditTime: 2022-12-20 19:25:50
+ * @LastEditTime: 2022-12-21 15:33:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/buff_processor/buff_processor.hpp
  */
 #ifndef BUFF_PROCESSOR_HPP_
@@ -18,6 +18,21 @@ using namespace coordsolver;
 
 namespace buff_processor
 {
+    struct TargetInfo
+    {   
+        Eigen::Vector3d armor3d_world;
+        Eigen::Vector3d hit_point_world;
+
+        Eigen::Vector3d armor3d_cam;
+        Eigen::Vector3d hit_point_cam;
+
+        Eigen::Vector2d angle;
+        Eigen::Matrix3d rmat_imu;
+
+        bool target_switched;
+        int buff_mode;
+    };
+
     class Processor
     {
         typedef global_interface::msg::Buff BuffMsg;
@@ -29,7 +44,6 @@ namespace buff_processor
 
     private:
         std::unique_ptr<BuffPredictor> buff_predictor_;
-        std::unique_ptr<CoordSolver> coordsolver_;
 
     public:
         bool is_initialized;
@@ -38,7 +52,8 @@ namespace buff_processor
         Eigen::Matrix3d rmat_imu_;
         PredictorParam predictor_param_;
 
-        bool predictor(BuffMsg& buff_msg);
+        std::unique_ptr<CoordSolver> coordsolver_;
+        bool predictor(BuffMsg& buff_msg, TargetInfo& target_info);
     };
 } //namespace buff_processor
 

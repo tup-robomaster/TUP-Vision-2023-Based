@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2022-12-20 21:23:59
+ * @LastEditTime: 2022-12-21 16:01:33
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -282,11 +282,23 @@ namespace buff_detector
         target_info.rotate_speed = mean_rotate_speed;
         target_info.r_center = mean_r_center;
 
+        // 判断扇叶是否发生切换
+        bool is_switched = false;
+        double delta_t = src.timestamp - last_timestamp_;
+        auto relative_rmat = last_fan_.rmat.transpose() * target.rmat;
+        auto angle_axisd = Eigen::AngleAxisd(relative_rmat);
+
+        double rotate_spd = (angle_axisd.angle() / delta_t * 1e3);
+        if(abs(rotate_spd) > buff_param_.max_v)
+            is_switched = true;
+        target_info.target_switched = is_switched;
+
         lost_cnt_ = 0;
         last_roi_center_ = center2d_src;
         last_timestamp_ = src.timestamp;
         last_fan_ = target;
         is_last_target_exists_ = true;
+        
         return true;
     }
 

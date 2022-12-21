@@ -1,21 +1,48 @@
 /buff_detector:
   ros__parameters:
-    armor_type_wh_thres: 3
-    max_lost_cnt: 5
-    max_armors_cnt: 8
-    max_v: 8
-    max_delta_t: 100
-    no_crop_thres: 1e-2
-    hero_danger_zone: 4
-    color: true # red: true
-                # blue: false
+    # detector params.
+    max_lost_cnt: 4 
+    max_v: 4   
+    max_delta_t: 100 
+    fan_length: 0.7
+    no_crop_thres: 2e-3
+
+    # path.
+    network_path: "src/vehicle_system/buff/model/buff.xml"
+    camera_param_path: "src/global_user/config/camera.yaml"
+    camera_name: "KE0200110075"
+    path_prefix: "src/vehicle_system/buff/dataset/"
+
+    # debug.
+    using_imu: false
+    using_roi: false
+    detect_red: true
+    show_all_fans: true
+    show_fps: true
+    print_target_info: false 
+    prinf_latency: false
+    assist_label: false
 
 /buff_processor:
   ros__parameters:
+    # predict params.
+    pf_path: "src/global_user/config/filter_param.yaml"
     bullet_speed: 28.0
-    max_time_delta: 1000
-    max_cost: 10
-    max_v: 8
-    min_fitting_lens: 10
-    shoot_delay: 50
-    window_size: 3
+    max_timespan: 20000.0       
+    max_rmse: 0.5
+    max_v: 3.0
+    max_a: 8.0
+    history_deque_len_cos: 250
+    history_deque_len_phase: 100
+    history_deque_len_uniform: 100
+    delay_small: 175.0
+    delay_big: 100.0
+    window_size: 2
+
+    # path.
+    camera_name: "KE0200110075"
+    camera_param_path: "src/global_user/config/camera.yaml"
+
+    # debug.
+    using_imu: false
+    show_predict: true
