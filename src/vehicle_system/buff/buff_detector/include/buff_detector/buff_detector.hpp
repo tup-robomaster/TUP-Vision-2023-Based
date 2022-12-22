@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2022-12-20 21:22:39
+ * @LastEditTime: 2022-12-22 23:05:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
@@ -102,16 +102,19 @@ namespace buff_detector
         Detector(const BuffParam& buff_param, const PathParam& path_param, const DebugParam& debug_param);
         ~Detector();
     
-    public:
+        bool run(TaskData& src, TargetInfo& target_info); //能量机关检测主函数
+    private:
         BuffParam buff_param_;
         PathParam path_param_;
         DebugParam debug_param_;
+    
+    public:
         bool is_initialized_;
         BuffDetector buff_detector_;
         CoordSolver coordsolver_;
-    
-        bool run(TaskData& src, TargetInfo& target_info); //能量机关检测主函数
-    
+
+        void setDetectorParam(double& param, int idx);
+        void setDebugParam(bool& param, int idx);
     private:
         bool is_last_target_exists_;
         int lost_cnt_;

@@ -2,11 +2,12 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2022-12-21 23:53:44
+ * @LastEditTime: 2022-12-22 23:29:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
 
+using namespace std::placeholders;
 namespace buff_detector
 {
     BuffDetectorNode::BuffDetectorNode(const rclcpp::NodeOptions& options)
@@ -69,6 +70,13 @@ namespace buff_detector
                 std::bind(&BuffDetectorNode::image_callback, this, _1), transport_));
         }
 
+        bool debug = false;
+        this->declare_parameter<bool>("debug", true);
+        debug = this->get_parameter("debug").as_bool();
+        if(debug)
+        {
+            callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffDetectorNode::paramsCallback, this, _1));
+        }
     }
 
     BuffDetectorNode::~BuffDetectorNode()
@@ -108,13 +116,86 @@ namespace buff_detector
         cv::waitKey(1);
     }
 
-    void BuffDetectorNode::param_callback()
+    rcl_interfaces::msg::SetParametersResult BuffDetectorNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
     {
+        rcl_interfaces::msg::SetParametersResult result;
+        result.successful = false;
+        result.reason = "debug";
+        for(const auto& param : params)
+        {
+            result.successful = setParam(param);
+        }
+        return result;
+    }
 
+    bool BuffDetectorNode::setParam(rclcpp::Parameter& param)
+    {
+        auto param_idx = param_map_[param.get_name()];
+        switch (param_idx)
+        {
+        case 0:
+            detector_->setDetectorParam(param.as_double(), 1);
+            break;
+        case 1:
+            detector_->setDetectorParam(param.as_double(), 2);
+            break;
+        case 2:
+            detector_->setDetectorParam(param.as_double(), 3);
+            break;
+        case 3:
+            detector_->setDetectorParam(param.as_double(), 4);
+            break;
+        case 4:
+            detector_->setDetectorParam(param.as_double(), 5);
+            break;
+        case 5:
+            detector_->setDebugParam(param.as_bool(), 1);
+            break;
+        case 6:
+            detector_->setDebugParam(param.as_bool(), 2);
+            break;
+        case 7:
+            detector_->setDebugParam(param.as_bool(), 3);
+            break;
+        case 8:
+            detector_->setDebugParam(param.as_bool(), 4);
+            break;
+        case 9:
+            detector_->setDebugParam(param.as_bool(), 5);
+            break;
+        case 10:
+            detector_->setDebugParam(param.as_bool(), 6);
+            break;
+        case 11:
+            detector_->setDebugParam(param.as_bool(), 7);
+            break;
+        case 12:
+            detector_->setDebugParam(param.as_bool(), 8);
+            break;
+        default:
+            break;
+        }
+        return true;
     }
 
     std::unique_ptr<Buff> BuffDetectorNode::init_detector()
     {
+        param_map_ = 
+        {
+            {"fan_length", 0}
+            {"max_delta_t", 1},
+            {"max_lost_cnt", 2},
+            {"max_v", 3},
+            {"no_crop_thres", 4},
+            {"assist_label", 5},
+            {"detect_red", 6},
+            {"print_target_info", 7},
+            {"show_all_fans", 8},
+            {"show_fps", 9},
+            {"using_imu", 10},
+            {"using_roi", 11}
+        };
+
         this->declare_parameter<double>("fan_length", 0.7);
         this->declare_parameter<int>("max_delta_t", 100);
         this->declare_parameter<int>("max_lost_cnt", 4);
@@ -157,7 +238,7 @@ namespace buff_detector
 
         return std::make_unique<Detector>(buff_param_, path_param_, debug_param_);
     }
-    
+
 } // namespace buff_detector
 
 int main(int argc, char** argv)

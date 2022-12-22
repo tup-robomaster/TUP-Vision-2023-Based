@@ -2,11 +2,11 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-12-21 23:05:57
+ * @LastEditTime: 2022-12-22 16:49:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
-#ifndef ARMOR_PROCESSOR_NODE_HPP
-#define ARMOR_PROCESSOR_NODE_HPP
+#ifndef ARMOR_PROCESSOR_NODE_HPP_
+#define ARMOR_PROCESSOR_NODE_HPP_
 
 #include "./armor_processor/armor_processor.hpp"
 #include "global_interface/msg/spin_info.hpp"
@@ -21,8 +21,6 @@
 #include <tf2_ros/message_filter.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
-
-//
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -33,6 +31,7 @@
 #include <cv_bridge/cv_bridge.h>
 
 //std
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -42,11 +41,8 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
-#define PARAM_NUM 19
 #define DAHENG_IMAGE_WIDTH 1280
 #define DAHENG_IMAGE_HEIGHT 1024
-
-typedef std::chrono::duration<int> SecondsType;
 
 namespace armor_processor
 {
@@ -102,7 +98,6 @@ namespace armor_processor
     
     public:
         PredictParam predict_param_;
-        // SingerModelParam singer_model_param_;
         SingerModel singer_model_param_;
         DebugParam debug_param_;
         std::string filter_param_path_;
@@ -115,12 +110,12 @@ namespace armor_processor
          * @param 参数服务器参数
          * @return 是否修改参数成功
          */
-        std::string* param_names_;
         bool setParam(rclcpp::Parameter param);
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
         // std::shared_ptr<ParamSubcriber> cb_;
         // std::shared_ptr<ParamCbHandle> param_cb_;
+        std::map<std::string, int> params_map_;
     protected:
         // 共享图像数据内存
         bool using_shared_memory;

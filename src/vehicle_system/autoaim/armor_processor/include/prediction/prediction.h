@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-11-26 20:04:59
+ * @LastEditTime: 2022-12-22 22:46:22
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.h
  */
 #ifndef PREDICTION_HPP_
@@ -131,7 +131,7 @@ namespace armor_processor
     struct PredictParam
     {
         double bullet_speed;    //弹速
-        int max_time_delta;     //最大时间跨度，大于该值则重置预测器
+        int max_delta_time;     //最大时间跨度，大于该值则重置预测器
         int max_cost;           //回归函数最大cost
         int max_v;              //
         int min_fitting_lens;   //最短队列长度
@@ -141,7 +141,7 @@ namespace armor_processor
         PredictParam()
         {
             bullet_speed = 28;    
-            max_time_delta = 1000;     
+            max_delta_time = 1000;     
             max_cost = 509;           
             max_v = 8;              
             min_fitting_lens = 10;   
@@ -193,25 +193,25 @@ namespace armor_processor
 
     struct SingerModel
     {
-        double alpha;
-        double p_max;
-        double p0;
-        double a_max;
-        double sigma;
-        double dt;
-        double p;
-        double r;
+        double singer_alpha;
+        double singer_p_max;
+        double singer_p0;
+        double singer_a_max;
+        double singer_sigma;
+        double singer_dt;
+        double singer_p;
+        double singer_r;
 
         SingerModel()
         {
-            alpha = 5.0;
-            a_max = 1.0;
-            p_max = 0.2;
-            p0 = 0.2;
-            sigma = 0.1;
-            dt = 5.0;
-            p = 1.0;
-            r = 1.0;
+            singer_alpha = 5.0;
+            singer_a_max = 1.0;
+            singer_p_max = 0.2;
+            singer_p0 = 0.2;
+            singer_sigma = 0.1;
+            singer_dt = 5.0;
+            singer_p = 1.0;
+            singer_r = 1.0;
         }
     };
 
@@ -289,17 +289,9 @@ namespace armor_processor
         PredictStatus predict_ekf_run(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_v, double ax, int timestamp);
         // void predict_based_singer(Eigen::Vector3d& result);
 
-        // cs模型参数设置
-        void setSingerParam(double& alpha, double& a_max, double& p_max, double& p0);
-        void set_singer_alpha(double& alpha); 
-        void set_singer_a_max(double& a_max);
-        void set_singer_p_max(double& p_max);
-        void set_singer_p0(double& p0);
-        void set_singer_sigma(double& sigma);
-        void set_singer_dt(double& dt);
-        void set_singer_p(double& p);
-        void set_singer_r(double& r);
-    
+        // CS模型参数设置
+        void setSingerParam(double& param, int idx);
+        
     private:
         //IMM Model
         std::shared_ptr<IMM> imm_;

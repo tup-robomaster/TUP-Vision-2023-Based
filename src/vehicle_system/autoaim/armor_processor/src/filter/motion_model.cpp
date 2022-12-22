@@ -2,14 +2,18 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 12:36:22
- * @LastEditTime: 2022-11-26 20:43:10
+ * @LastEditTime: 2022-12-22 19:06:20
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/motion_model.cpp
  */
 #include "../../include/filter/motion_model.hpp"
 
 namespace armor_processor
 {
-    CV::CV() {}
+    CV::CV()
+    {
+        r1_ = 60, r2_ = 60, r3_ = 30, r4_ = 30;
+        q1_ = 0.4, q2_ = 0.4, q3_ = 0.3, q4_ = 0.3, q5_ = 0.2, q5_ = 0.2;
+    }
     CV::~CV() {}
     
     void CV::init(const Eigen::VectorXd& x, const double& dt)
@@ -23,10 +27,11 @@ namespace armor_processor
 
         this->P_.setIdentity();
         this->R_.resize(4, 4);
-        this->R_ << 0.25, 0, 0, 0,
-                    0, 0.25, 0, 0,
-                    0, 0, 5, 0, 0,
-                    0, 0, 0, 0, 5;
+        this->R_ << r1_, 0,   0,   0,
+                    0,   r2_, 0,   0,
+                    0,   0,   r3_, 0,
+                    0,   0,   0,   r4_;
+                    
         this->x_ = x;  //x(x, y, theta, v)
         this->F_.resize(6, 6);
         this->H_.resize(4, 6);
@@ -51,24 +56,35 @@ namespace armor_processor
         this->x_ = this->F_ * this->x_;
 
         //计算状态协方差矩阵
-        Eigen::Matrix<double, 6, 2> G;
-        G << 0.5 * pow(dt, 2),                0,
-                            0, 0.5 * pow(dt, 2),
-                            dt,               0,
-                            0,               dt,
-                            0,                0,
-                            0,                0;
-        Eigen::Matrix2d E;
-        E << 400, 0,
-               0, 400;
+        // Eigen::Matrix<double, 6, 2> G;
+        // G << 0.5 * pow(dt, 2),                0,
+        //                     0, 0.5 * pow(dt, 2),
+        //                     dt,               0,
+        //                     0,               dt,
+        //                     0,                0,
+        //                     0,                0;
+        // Eigen::Matrix2d E;
+        // E << 400, 0,
+        //        0, 400;
         
-        this->Q_ = G * E * G.transpose();
+        // this->Q_ = G * E * G.transpose();
+        this->Q_.setIdentity(6, 6);
+        this->Q_ << q1_, 0,   0,   0,   0,   0,
+                    0,   q2_, 0,   0,   0,   0,
+                    0,   0,   q3_, 0,   0,   0,
+                    0,   0,   0,   q4_, 0,   0,
+                    0,   0,   0,   0,   q5_, 0,
+                    0,   0,   0,   0,   0,   q6_;
     }
 
     void CV::updateMeasurement()
     {}
 
-    CA::CA(){}
+    CA::CA()
+    {
+        r1_ = 60, r2_ = 60, r3_ = 30, r4_ = 30;
+        q1_ = 0.4, q2_ = 0.4, q3_ = 0.3, q4_ = 0.3, q5_ = 0.2, q5_ = 0.2;
+    }
     CA::~CA(){}
 
     void CA::init(const Eigen::VectorXd& x, const double& dt)
@@ -82,10 +98,11 @@ namespace armor_processor
 
         this->P_.setIdentity();
         this->R_.resize(4, 4);
-        this->R_ << 0.25,    0,   0,   0,
-                       0, 0.25,   0,   0,
-                       0,    0, 5.0,   0,
-                       0,    0,   0, 5.0;
+        this->R_ << r1_, 0,   0,   0,
+                    0,   r2_, 0,   0,
+                    0,   0,   r3_, 0,
+                    0,   0,   0,   r4_;
+
         this->F_.resize(6, 6);
         this->H_.resize(4, 6);
         this->H_ << 1, 0,  0, 0, 0, 0,
@@ -107,23 +124,34 @@ namespace armor_processor
         this->x_ = this->F_ * this->x_;
 
         //计算状态协方差矩阵
-        Eigen::Matrix<double, 6, 2> G;
-        G << 1 / 6.0 * pow(dt, 3),                    0,
-                                0, 1 / 6.0 * pow(dt, 3), 
-             1 / 2.0 * pow(dt, 2),                    0,
-                                0, 1 / 2.0 * pow(dt, 2),
-                               dt,                    0, 
-                                0,                   dt;
-        Eigen::Matrix2d E;
-        E << 400,   0,
-               0, 400;
-        this->Q_ = G * E * G.transpose();    
+        // Eigen::Matrix<double, 6, 2> G;
+        // G << 1 / 6.0 * pow(dt, 3),                    0,
+        //                         0, 1 / 6.0 * pow(dt, 3), 
+        //      1 / 2.0 * pow(dt, 2),                    0,
+        //                         0, 1 / 2.0 * pow(dt, 2),
+        //                        dt,                    0, 
+        //                         0,                   dt;
+        // Eigen::Matrix2d E;
+        // E << 400,   0,
+        //        0, 400;
+        // this->Q_ = G * E * G.transpose();    
+        this->Q_.setIdentity(6, 6);
+        this->Q_ << q1_, 0,   0,   0,   0,   0,
+                    0,   q2_, 0,   0,   0,   0,
+                    0,   0,   q3_, 0,   0,   0,
+                    0,   0,   0,   q4_, 0,   0,
+                    0,   0,   0,   0,   q5_, 0,
+                    0,   0,   0,   0,   0,   q6_;
     }   
 
     void CA::updateMeasurement()
     {}
 
-    CT::CT(const double& w):w_(w) {}
+    CT::CT(const double& w):w_(w) 
+    {
+        r1_ = 60, r2_ = 60, r3_ = 30, r4_ = 30;
+        q1_ = 0.4, q2_ = 0.4, q3_ = 0.3, q4_ = 0.3, q5_ = 0.2, q5_ = 0.2;
+    }
     CT::~CT() {}
 
     void CT::init(const Eigen::VectorXd& x, const double& dt)
@@ -133,10 +161,11 @@ namespace armor_processor
 
         this->P_.setIdentity(6, 6);
         this->R_.resize(4, 4);
-        this->R_ << 0.25,    0,   0,   0,
-                       0, 0.25,   0,   0,
-                       0,    0, 5.0,   0,
-                       0,    0,   0, 5.0;
+        this->R_ << r1_, 0,   0,   0,
+                    0,   r2_, 0,   0,
+                    0,   0,   r3_, 0,
+                    0,   0,   0,   r4_;
+
         this->F_.resize(6, 6);
         this->H_.resize(4, 6);
         this->H_ << 1, 0,  0, 0, 0, 0,
@@ -158,19 +187,26 @@ namespace armor_processor
 
         //计算状态协方差矩阵
         {
-            Eigen::Matrix<double, 6, 2> G;
-            G << 0.5 * pow(dt, 2),                0,
-                                0, 0.5 * pow(dt, 2),
-                               dt,                0,
-                                0,               dt,
-                                0,                0,
-                                0,                0;
+            // Eigen::Matrix<double, 6, 2> G;
+            // G << 0.5 * pow(dt, 2),                0,
+            //                     0, 0.5 * pow(dt, 2),
+            //                    dt,                0,
+            //                     0,               dt,
+            //                     0,                0,
+            //                     0,                0;
             
-            Eigen::Matrix2d E;
-            E << 400,   0,
-                   0, 400;
+            // Eigen::Matrix2d E;
+            // E << 400,   0,
+            //        0, 400;
 
-            this->Q_ = G * E * G.transpose();
+            // this->Q_ = G * E * G.transpose();
+            this->Q_.setIdentity(6, 6);
+            this->Q_ << q1_, 0,   0,   0,   0,   0,
+                    0,   q2_, 0,   0,   0,   0,
+                    0,   0,   q3_, 0,   0,   0,
+                    0,   0,   0,   q4_, 0,   0,
+                    0,   0,   0,   0,   q5_, 0,
+                    0,   0,   0,   0,   0,   q6_;
         }           
     }
 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:45:06
- * @LastEditTime: 2022-12-21 15:33:02
+ * @LastEditTime: 2022-12-22 23:43:05
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/buff_processor/buff_processor.hpp
  */
 #ifndef BUFF_PROCESSOR_HPP_
@@ -43,17 +43,20 @@ namespace buff_processor
         ~Processor();
 
     private:
-        std::unique_ptr<BuffPredictor> buff_predictor_;
-
-    public:
-        bool is_initialized;
         PathParam path_param_;
         DebugParam debug_param_;
-        Eigen::Matrix3d rmat_imu_;
         PredictorParam predictor_param_;
 
+        std::unique_ptr<BuffPredictor> buff_predictor_;
+    public:
+        bool is_initialized;
+        Eigen::Matrix3d rmat_imu_;
         std::unique_ptr<CoordSolver> coordsolver_;
+        
         bool predictor(BuffMsg& buff_msg, TargetInfo& target_info);
+
+        void setPredictorParam(double& param, int idx);
+        void setDebugParam(double& param, int idx);
     };
 } //namespace buff_processor
 

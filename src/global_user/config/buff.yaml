@@ -1,19 +1,19 @@
 /buff_detector:
   ros__parameters:
-    # detector params.
+  # Detector params.
     max_lost_cnt: 4 
     max_v: 4   
     max_delta_t: 100 
     fan_length: 0.7
     no_crop_thres: 2e-3
 
-    # path.
+  # Paths.
     network_path: "src/vehicle_system/buff/model/buff.xml"
     camera_param_path: "src/global_user/config/camera.yaml"
     camera_name: "KE0200110075"
     path_prefix: "src/vehicle_system/buff/dataset/"
 
-    # debug.
+  # Debug.
     using_imu: false
     using_roi: false
     detect_red: true
@@ -25,8 +25,7 @@
 
 /buff_processor:
   ros__parameters:
-    # predict params.
-    pf_path: "src/global_user/config/filter_param.yaml"
+  # Predict params.
     bullet_speed: 28.0
     max_timespan: 20000.0       
     max_rmse: 0.5
@@ -39,10 +38,11 @@
     delay_big: 100.0
     window_size: 2
 
-    # path.
+  # Paths.
     camera_name: "KE0200110075"
+    pf_path: "src/global_user/config/filter_param.yaml"
     camera_param_path: "src/global_user/config/camera.yaml"
 
-    # debug.
+  # Debug.
     using_imu: false
     show_predict: true

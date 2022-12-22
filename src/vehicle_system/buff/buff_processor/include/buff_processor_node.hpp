@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:10:59
- * @LastEditTime: 2022-12-21 17:05:38
+ * @LastEditTime: 2022-12-22 23:32:19
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/buff_processor_node.hpp
  */
 #ifndef BUFF_PROCESSOR_NODE_HPP_
@@ -49,6 +49,8 @@ namespace buff_processor
         std::string filter_param_path_;
     
     private:
+        // params callback.
+        std::map<std::string, int> param_map_;
         bool setParam(rclcpp::Parameter param);
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;

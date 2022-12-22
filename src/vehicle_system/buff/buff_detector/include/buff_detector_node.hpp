@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2022-12-20 18:10:53
+ * @LastEditTime: 2022-12-22 23:25:16
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector_node.hpp
  */
 #ifndef BUFF_DETECTOR_NODE_HPP_
@@ -69,9 +69,11 @@ namespace buff_detector
     
     protected:
         // params callback.
-        rclcpp::TimerBase::SharedPtr param_timer_;
-        void param_callback();
-    
+        std::map<std::string, int> param_map_;
+        OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+        bool setParam(rclcpp::Parameter& param);
+        rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
+
     private:
         // Shared memory.
         bool using_shared_memory_;          //

@@ -2,11 +2,11 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-17 00:27:33
- * @LastEditTime: 2022-11-21 10:08:31
+ * @LastEditTime: 2022-12-22 21:15:23
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor/armor_processor.hpp
  */
-#ifndef ARMOR_PRECESSOR_HPP
-#define ARMOR_PROCESSOR_HPP
+#ifndef ARMOR_PRECESSOR_HPP_
+#define ARMOR_PROCESSOR_HPP_
 
 #pragma once 
 
@@ -24,12 +24,13 @@
 // #include <fmt/format.h>
 // #include <yaml-cpp/yaml.h>
 
-typedef geometry_msgs::msg::Point GeometryPoint;
-
+using namespace global_user;
+using namespace coordsolver;
 namespace armor_processor
 {
     class Processor
     {
+        typedef geometry_msgs::msg::Point GeometryPoint;
     public:
         // Processor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param, 
         //     const std::string& filter_param_path, const std::string& coord_param_path, 
@@ -51,30 +52,15 @@ namespace armor_processor
         std::string coord_param_name_;
         bool is_initialized;
         ArmorPredictor armor_predictor_;
-        coordsolver::coordsolver coordsolver_;
+        CoordSolver coordsolver_;
 
         Eigen::Matrix3d rmat_imu;
     
     public:
         // Debug dynamically.
-        void setMaxTimeDelta(int& max_time_delta);
-        void setMinFittingLens(int& min_fitting_lens);
-        void setMaxVelocity(int& max_v);
-        void setShootDelay(int& shoot_delay);
-        void setMaxCost(int& max_cost);
-        void disabledFitting(bool& diabled_fitting);
-        void drawPredict(bool& draw_predict);
-        void showPredict(bool& show_predict);
-        void usingImu(bool& using_imu);
-        void showTransformedInfo(bool& show_transformed_info);
-        void set_alpha(double& alpha);
-        void set_a_max(double a_max);
-        void set_p_max(double& p_max);
-        void set_p0(double& p0);
-        void set_sigma(double& sigma);
-        void set_dt(double& dt);
-        void set_p(double& p);
-        void set_r(double& r);
+        void setPredictParam(int& param, int idx);
+        void setDebugParam(bool& param, int idx);
+        void setSingerParam(double& param, int idx);
     };
 } //namespace armor_processor
 

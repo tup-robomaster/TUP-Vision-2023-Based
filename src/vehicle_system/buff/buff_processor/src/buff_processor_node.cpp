@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2022-12-21 23:53:26
+ * @LastEditTime: 2022-12-22 23:53:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -84,11 +84,6 @@ namespace buff_processor
         }
     }
 
-    bool BuffProcessorNode::setParam(rclcpp::Parameter param)
-    {
-        
-    }
-
     rcl_interfaces::msg::SetParametersResult BuffProcessorNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
     {
         rcl_interfaces::msg::SetParametersResult result;
@@ -101,8 +96,76 @@ namespace buff_processor
         return result;
     }
 
+    bool BuffProcessorNode::setParam(rclcpp::Parameter param)
+    {
+        auto param_idx = param_map_[param.get_name()];
+        switch (param_idx)
+        {
+        case 0:
+            buff_processor_->setPredictorParam(param.as_double(), 1);
+            break;
+        case 1:
+            buff_processor_->setPredictorParam(param.as_double(), 2);
+            break;
+        case 2:
+            buff_processor_->setPredictorParam(param.as_double(), 3);
+            break;
+        case 3:
+            buff_processor_->setPredictorParam(param.as_double(), 4);
+            break;
+        case 4:
+            buff_processor_->setPredictorParam(param.as_double(), 5);
+            break;
+        case 5:
+            buff_processor_->setPredictorParam(param.as_double(), 6);
+            break;
+        case 6:
+            buff_processor_->setPredictorParam(param.as_double(), 7);
+            break;
+        case 7:
+            buff_processor_->setPredictorParam(param.as_double(), 8);
+            break;
+        case 8:
+            buff_processor_->setPredictorParam(param.as_double(), 9);
+            break;
+        case 9:
+            buff_processor_->setPredictorParam(param.as_double(), 10);
+            break;
+        case 10:
+            buff_processor_->setPredictorParam(param.as_double(), 11);
+            break;
+        case 11:
+            buff_processor_->setDebugParam(param.as_bool(), 1);
+            break;        
+        case 12:
+            buff_processor_->setDebugParam(param.as_bool(), 2);
+            break;        
+        default:
+            break;
+        }
+        return true;
+    }
+
+
     std::unique_ptr<Processor> BuffProcessorNode::init_buff_processor()
     {
+        param_map_ = 
+        {
+            {"bullet_speed", 0},
+            {"delay_big", 1},
+            {"delay_small", 2},
+            {"history_deque_len_cos", 3},
+            {"history_deque_len_phase", 4},
+            {"history_deque_len_uniform", 5},
+            {"max_a", 6},
+            {"max_rmse", 7},
+            {"max_timespan", 8},
+            {"max_v", 9},
+            {"window_size", 10},
+            {"show_predict", 11},
+            {"using_imu", 12}
+        };
+
         this->declare_parameter<std::string>("pf_path", "src/global_user/config/filter_param.yaml");
         this->declare_parameter<double>("bullet_speed", 28.0);
         this->declare_parameter<double>("delay_big", 175.0);

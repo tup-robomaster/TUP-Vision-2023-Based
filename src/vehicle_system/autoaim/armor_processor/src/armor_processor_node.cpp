@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-12-22 00:24:35
+ * @LastEditTime: 2022-12-22 21:28:37
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -322,29 +322,28 @@ namespace armor_processor
 
     std::unique_ptr<Processor> ArmorProcessorNode::init_armor_processor()
     {
-        std::string pName[PARAM_NUM] = 
+        params_map_ = 
         {
-            "bullet_speed",
-            "max_time_delta",
-            "max_cost",
-            "min_fitting_lens",
-            "max_v",
-            "shoot_delay",
-            "alpha",
-            "a_max",
-            "p_max",
-            "p0",
-            "sigma",
-            "dt",
-            "p",
-            "r",
-            "disable_fitting",
-            "draw_predict",
-            "using_imu",
-            "show_predict",
-            "show_transformed_info"  
-        };   
-        param_names_ = pName;
+            {"bullet_speed", 0},
+            {"max_delta_time", 1},
+            {"max_cost", 2},
+            {"min_fitting_lens", 3},
+            {"max_v", 4},
+            {"shoot_delay", 5},
+            {"singer_alpha", 6},
+            {"singer_a_max", 7},
+            {"singer_p_max", 8},
+            {"singer_p0", 9},
+            {"singer_sigma", 10},
+            {"singer_dt", 11},
+            {"singer_p", 12},
+            {"singer_r", 13},
+            {"disable_fitting", 14},
+            {"draw_predict", 15},
+            {"using_imu", 16},
+            {"show_predict", 17},
+            {"show_transformed_info", 18}
+        };
 
         this->declare_parameter<double>("bullet_speed", 28.0);
         this->declare_parameter<int>("max_time_delta", 1000);
@@ -392,10 +391,10 @@ namespace armor_processor
         debug_param_.show_transformed_info = this->get_parameter("show_transformed_info").as_bool();
 
         this->declare_parameter<std::string>("filter_param_path", "src/global_user/config/filter_param.yaml");
-        filter_param_path_ = this->get_parameter("filter_param_path").as_string();
-
         this->declare_parameter<std::string>("coord_param_path", "src/global_user/config/camera.yaml");
         this->declare_parameter<std::string>("coord_param_name", "00J90630561");
+
+        filter_param_path_ = this->get_parameter("filter_param_path").as_string();
         coord_param_path_ = this->get_parameter("coord_param_path").as_string();
         coord_param_name_ = this->get_parameter("coord_param_name").as_string();
 
@@ -416,93 +415,89 @@ namespace armor_processor
 
     bool ArmorProcessorNode::setParam(rclcpp::Parameter param)
     {   // 动态调参(与rqt_reconfigure一块使用)
-        for(int ii = 0; ii < PARAM_NUM; ++ii)
+        auto param_idx = params_map_[param.get_name()];
+        switch (param_idx)
         {
-            if(param.get_name() == (char*)param_names_[ii].data())
-            {
-                switch (ii)
-                {
-                case 0:
-                    this->predict_param_.bullet_speed = param.as_double();
-                    this->processor_->coordsolver_.setBulletSpeed(this->predict_param_.bullet_speed);
-                    return true;
-                case 1:
-                    this->predict_param_.max_time_delta = param.as_double();
-                    this->processor_->setMaxTimeDelta(this->predict_param_.max_time_delta);
-                    return true;
-                case 2:
-                    this->predict_param_.max_cost = param.as_int();
-                    this->processor_->setMaxCost(this->predict_param_.max_cost);
-                    return true;
-                case 3:
-                    this->predict_param_.min_fitting_lens = param.as_int();
-                    this->processor_->setMinFittingLens(this->predict_param_.min_fitting_lens);
-                    return true;
-                case 4:
-                    this->predict_param_.max_v = param.as_int();
-                    this->processor_->setMaxVelocity(this->predict_param_.max_v);
-                    return true;
-                case 5:
-                    this->predict_param_.shoot_delay = param.as_int();
-                    this->processor_->setShootDelay(this->predict_param_.shoot_delay);
-                    return true;
-                case 6:
-                    this->singer_model_param_.alpha = param.as_double();
-                    this->processor_->set_alpha(this->singer_model_param_.alpha);
-                    return true;
-                case 7:
-                    this->singer_model_param_.a_max = param.as_double();
-                    this->processor_->set_a_max(this->singer_model_param_.a_max);
-                    return true;
-                case 8:
-                    this->singer_model_param_.p_max = param.as_double();
-                    this->processor_->set_p_max(this->singer_model_param_.p_max);
-                    return true;
-                case 9:
-                    this->singer_model_param_.p0 = param.as_double();
-                    this->processor_->set_p0(this->singer_model_param_.p0);
-                    return true;
-                case 10:
-                    this->singer_model_param_.sigma = param.as_double();
-                    this->processor_->set_sigma(this->singer_model_param_.sigma);
-                    return true;
-                case 11:
-                    this->singer_model_param_.dt = param.as_double();
-                    this->processor_->set_dt(this->singer_model_param_.dt);
-                    return true;
-                case 12:
-                    this->singer_model_param_.p = param.as_double();
-                    this->processor_->set_p(this->singer_model_param_.p);
-                    return true;
-                case 13:
-                    this->singer_model_param_.r = param.as_double();
-                    this->processor_->set_r(this->singer_model_param_.r);
-                    return true;
-                case 14:
-                    this->debug_param_.disable_fitting = param.as_bool();
-                    this->processor_->disabledFitting(this->debug_param_.disable_fitting);
-                    return true;
-                case 15:
-                    this->debug_param_.draw_predict = param.as_bool();
-                    this->processor_->drawPredict(this->debug_param_.draw_predict);
-                    return true;
-                case 16:
-                    this->debug_param_.using_imu = param.as_bool();
-                    this->processor_->armor_predictor_.debug_param_.using_imu = this->debug_param_.using_imu;
-                    return true;
-                case 17:
-                    this->debug_param_.show_predict = param.as_bool();
-                    this->processor_->showPredict(this->debug_param_.show_predict);
-                    return true;
-                case 18:
-                    this->debug_param_.show_transformed_info = param.as_bool();
-                    this->processor_->showTransformedInfo(this->debug_param_.show_transformed_info);
-                    return true;
-                default:
-                    return false;
-                }
-            }
+        case 0:
+            this->predict_param_.bullet_speed = param.as_double();
+            this->processor_->coordsolver_.setBulletSpeed(this->predict_param_.bullet_speed);
+            break;
+        case 1:
+            this->predict_param_.max_delta_time = param.as_double();
+            this->processor_->setPredictParam(this->predict_param_.max_delta_time, 1);
+            break;
+        case 2:
+            this->predict_param_.max_cost = param.as_int();
+            this->processor_->setPredictParam(this->predict_param_.max_cost, 2);
+            break;
+        case 3:
+            this->predict_param_.min_fitting_lens = param.as_int();
+            this->processor_->setPredictParam(this->predict_param_.min_fitting_lens, 3);
+            break;
+        case 4:
+            this->predict_param_.max_v = param.as_int();
+            this->processor_->setPredictParam(this->predict_param_.max_v, 4);
+            break;
+        case 5:
+            this->predict_param_.shoot_delay = param.as_int();
+            this->processor_->setPredictParam(this->predict_param_, 5);
+            break;
+        case 6:
+            this->singer_model_param_.alpha = param.as_double();
+            this->processor_->setSingerParam(this->singer_model_param_.singer_alpha, 1);
+            break;
+        case 7:
+            this->singer_model_param_.a_max = param.as_double();
+            this->processor_->setSingerParam(this->singer_model_param_.singer_a_max, 2);
+            break;
+        case 8:
+            this->singer_model_param_.p_max = param.as_double();
+            this->processor_->setSingerParam(this->singer_model_param_.singer_p_max, 3);
+            break;
+        case 9:
+            this->singer_model_param_.p0 = param.as_double();
+            this->processor_->setSingerParam(this->singer_model_param_.singer_p0, 4);
+            break;
+        case 10:
+            this->singer_model_param_.sigma = param.as_double();
+            this->processor_->setSingerParam(this->singer_model_param_.singer_sigma, 5);
+            break;
+        case 11:
+            this->singer_model_param_.dt = param.as_double();
+            this->processor_->setSingerParam(this->singer_model_param_.singer_dt, 6);
+            break;
+        case 12:
+            this->singer_model_param_.p = param.as_double();
+            this->processor_->setSingerParam(this->singer_model_param_.singer_p, 7);
+            break;
+        case 13:
+            this->singer_model_param_.r = param.as_double();
+            this->processor_->setSingerParam(this->singer_model_param_.singer_r, 8);
+            break;
+        case 14:
+            this->debug_param_.disable_fitting = param.as_bool();
+            this->processor_->setDebugParam(this->debug_param_.disable_fitting, 1);
+            break;
+        case 15:
+            this->debug_param_.draw_predict = param.as_bool();
+            this->processor_->setDebugParam(this->debug_param_.draw_predict, 2);
+            break;
+        case 16:
+            this->debug_param_.using_imu = param.as_bool();
+            this->processor_->setDebugParam(this->debug_param_.using_imu, 3);
+            break;
+        case 17:
+            this->debug_param_.show_predict = param.as_bool();
+            this->processor_->setDebugParam(this->debug_param_.show_predict, 4);
+            break;
+        case 18:
+            this->debug_param_.show_transformed_info = param.as_bool();
+            this->processor_->setDebugParam(this->debug_param_.show_transformed_info, 5);
+            break;
+        default:
+            break;
         }
+        return true;
     }
 } // armor_processor
 

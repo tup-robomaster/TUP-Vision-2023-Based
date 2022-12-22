@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-11-26 20:18:32
+ * @LastEditTime: 2022-12-22 21:07:30
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -698,7 +698,7 @@ namespace armor_processor
             State << kalman_filter_.x_[0], kalman_filter_.x_[1], kalman_filter_.x_[2];
             
             double alpha = singer_param_.alpha;
-            double dt = 5 * singer_param_.dt;
+            double dt = 2 * singer_param_.dt;
 
             Eigen::MatrixXd F(3, 3);
             F << 1, dt, (alpha * dt - 1 + exp(-alpha * dt)) / pow(alpha, 2),
@@ -773,57 +773,36 @@ namespace armor_processor
         return is_available;
     }
 
-    void ArmorPredictor::setSingerParam(double& alpha, double& a_max, double& p_max, double& p0)
+    void ArmorPredictor::setSingerParam(double& param, int idx)
     {
-        // singer.set_alpha(alpha);
-        // singer.set_a_max(a_max);
-        // singer.set_p_max(p_max);
-        // singer.set_p0(p0);       
-        // singer.set_sigma(); 
-    }
-
-    void ArmorPredictor::set_singer_alpha(double& alpha)
-    {
-        // singer.set_alpha(alpha);
-        this->singer_param_.alpha = alpha;
-    }
-    void ArmorPredictor::set_singer_a_max(double& a_max)
-    {
-        // singer.set_a_max(a_max);
-        this->singer_param_.a_max = a_max;
-    }
-    
-    void ArmorPredictor::set_singer_p_max(double& p_max)
-    {
-        // singer.set_p_max(p_max);
-        this->singer_param_.p_max = p_max;
-    }
-    
-    void ArmorPredictor::set_singer_p0(double& p0)
-    {
-        // singer.set_p0(p0);    
-        this->singer_param_.p0 = p0;    
-    }
-
-    void ArmorPredictor::set_singer_sigma(double& sigma)
-    {
-        // singer.set_sigma();
-        this->singer_param_.sigma = sigma;
-    }
-
-    void ArmorPredictor::set_singer_dt(double& dt)
-    {
-        // singer.set_sigma();
-        this->singer_param_.dt = dt;
-    }
-
-    void ArmorPredictor::set_singer_p(double& p)
-    {
-        singer_param_.p = p;
-    }
-
-    void ArmorPredictor::set_singer_r(double& r)
-    {
-        singer_param_.r = r;
+        switch (idx)
+        {
+        case 1:
+            this->singer_param_.singer_alpha = param;
+            break;
+        case 2:
+            this->singer_param_.singer_a_max = param;
+            break;
+        case 3:
+            this->singer_param_.singer_p_max = param;
+            break;
+        case 4:
+            this->singer_param_.singer_p0 = param;
+            break;
+        case 5:
+            this->singer_param_.singer_sigma = param;
+            break;
+        case 6:
+            this->singer_param_.singer_dt = param;
+            break;
+        case 7:
+            this->singer_param_.singer_p = param;
+            break;
+        case 8:
+            this->singer_param_.singer_r = param;
+            break;
+        default:
+            break;
+        }         
     }
 } // armor_processor

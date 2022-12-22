@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2022-11-21 10:07:44
+ * @LastEditTime: 2022-12-22 21:12:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -85,92 +85,87 @@ namespace armor_processor
         // }
     }
 
-    void Processor::setMaxTimeDelta(int& max_time_delta)
+    void Processor::setPredictParam(int& param, int idx)
     {
-        armor_predictor_.predict_param_.max_time_delta = max_time_delta;
+        switch (idx)
+        {
+        case 1:
+            armor_predictor_.predict_param_.max_time_delta = param;
+            break;
+        case 2:
+            armor_predictor_.predict_param_.min_fitting_lens = param;
+            break;
+        case 3:
+            armor_predictor_.predict_param_.max_v = param;
+            break;
+        case 4:
+            armor_predictor_.predict_param_.shoot_delay = param;
+            break;
+        case 5:
+            armor_predictor_.predict_param_.max_cost = param;
+            break;
+        default:
+            break;
+        }
     }
 
-    void Processor::setMinFittingLens(int& min_fitting_lens)
+    void Processor::setDebugParam(bool& param, int idx)
     {
-        armor_predictor_.predict_param_.min_fitting_lens = min_fitting_lens;
+        switch (idx)
+        {
+        case 1:
+            armor_predictor_.debug_param_.disable_fitting = param;
+            break;
+        case 2:
+            armor_predictor_.debug_param_.disable_filter = param;
+            break;
+        case 3:
+            armor_predictor_.debug_param_.draw_predict = param;
+            break;
+        case 4:
+            armor_predictor_.debug_param_.show_predict = param;
+            break;
+        case 5:
+            armor_predictor_.debug_param_.show_transformed_info = param;
+            break;
+        case 6:
+            armor_predictor_.debug_param_.using_imu = param;
+            break;
+        default:
+            break;
+        }
     }
 
-    void Processor::setMaxVelocity(int& max_v)
+    void Processor::setSingerParam(double& param, int idx)
     {
-        armor_predictor_.predict_param_.max_v = max_v;
-    }
-
-    void Processor::setShootDelay(int& shoot_delay)
-    {
-        armor_predictor_.predict_param_.shoot_delay = shoot_delay;
-    }
-
-    void Processor::setMaxCost(int& max_cost)
-    {
-        armor_predictor_.predict_param_.max_cost = max_cost;
-    }
-
-    void Processor::disabledFitting(bool& diabled_fitting)
-    {
-        armor_predictor_.debug_param_.disable_fitting = diabled_fitting;
-    }
-
-    void Processor::drawPredict(bool& draw_predict)
-    {
-        armor_predictor_.debug_param_.draw_predict = draw_predict;
-    }
-
-    void Processor::showPredict(bool& show_predict)
-    {
-        armor_predictor_.debug_param_.show_predict = show_predict;
-    }
-
-    void Processor::usingImu(bool& using_imu)
-    {
-        armor_predictor_.debug_param_.using_imu = using_imu;
-    }
-
-    void Processor::showTransformedInfo(bool& show_transformed_info)
-    {
-        armor_predictor_.debug_param_.show_transformed_info = show_transformed_info;
-    }
-
-    void Processor::set_alpha(double& alpha)
-    {
-        armor_predictor_.set_singer_alpha(alpha);
-    }
-    void Processor::set_a_max(double a_max)
-    {
-        armor_predictor_.set_singer_a_max(a_max);
-    }
-
-    void Processor::set_p_max(double& p_max)
-    {
-        armor_predictor_.set_singer_p_max(p_max);
-    }
-
-    void Processor::set_p0(double& p0)
-    {
-        armor_predictor_.set_singer_p0(p0);
-    }
-
-    void Processor::set_sigma(double& sigma)
-    {
-        armor_predictor_.set_singer_sigma(sigma);
-    }
-
-    void Processor::set_dt(double& dt)
-    {
-        armor_predictor_.set_singer_sigma(dt);
-    }
-
-    void Processor::set_p(double& p)
-    {
-        armor_predictor_.set_singer_sigma(p);
-    }
-
-    void Processor::set_r(double& r)
-    {
-        armor_predictor_.set_singer_sigma(r);
+        switch (idx)
+        {
+        case 1:
+            armor_predictor_.setSingerParam(param, 1);
+            break;
+        case 2:
+            armor_predictor_.setSingerParam(param, 2);
+            break;
+        case 3:
+            armor_predictor_.setSingerParam(param, 3);
+            break;
+        case 4:
+            armor_predictor_.setSingerParam(param, 4);
+            break;
+        case 5:
+            armor_predictor_.setSingerParam(param, 5);
+            break;
+        case 6:
+            armor_predictor_.setSingerParam(param, 6);
+            break;
+        case 7:
+            armor_predictor_.setSingerParam(param, 7);
+            break;
+        case 8:
+            armor_predictor_.setSingerParam(param, 8);
+            break;
+        default:
+            break;
+        }
     }
 } // armor_processor
