@@ -2,10 +2,9 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 12:12:19
- * @LastEditTime: 2022-12-23 20:09:47
+ * @LastEditTime: 2022-12-23 23:33:39
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_camera.hpp
  */
-
 //daheng
 #include "../../dependencies/daheng_sdk/include/DxImageProc.h"
 #include "../../dependencies/daheng_sdk/include/GxIAPI.h"
@@ -18,8 +17,8 @@
 #include <opencv2/core/core.hpp>
 
 //geogle
-// #include <fmt/format.h>
-// #include <fmt/color.h>
+#include <fmt/format.h>
+#include <fmt/color.h>
 
 using namespace std;
 using namespace cv;

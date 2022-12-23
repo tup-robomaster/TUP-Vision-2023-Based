@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 14:30:38
- * @LastEditTime: 2022-12-02 18:09:44
+ * @LastEditTime: 2022-12-24 00:13:42
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_cam_node.cpp
  */
 #include "../../include/hik_driver/hik_cam_node.hpp"
@@ -145,38 +145,6 @@ namespace camera_driver
         }
     }
 
-    std::unique_ptr<HikCamera> HikCamNode::init_hik_cam()
-    {
-        this->declare_parameter("hik_cam_id", 0);
-        this->declare_parameter("image_width", 1440);
-        this->declare_parameter("image_height", 1080);
-        this->declare_parameter("exposure_time", 3000);
-        this->declare_parameter("exposure_gain", 7);
-        this->declare_parameter("exposure_gain_b", 0);
-        this->declare_parameter("exposure_gain_g", 0);
-        this->declare_parameter("exposure_gain_r", 0);
-        this->declare_parameter("auto_balance", false);
-        this->declare_parameter("balance_b", 1690);
-        this->declare_parameter("balance_g", 1024); 
-        this->declare_parameter("balance_r", 2022);
-
-        hik_cam_params_.hik_cam_id = this->get_parameter("hik_cam_id").as_int();
-        hik_cam_params_.image_width = this->get_parameter("image_width").as_int();
-        hik_cam_params_.image_height = this->get_parameter("image_height").as_int();
-        hik_cam_params_.exposure_time = this->get_parameter("exposure_time").as_int();
-        hik_cam_params_.exposure_gain = this->get_parameter("exposure_gain").as_int();
-        hik_cam_params_.exposure_gain_b = this->get_parameter("exposure_gain_b").as_int();
-        hik_cam_params_.exposure_gain_g = this->get_parameter("exposure_gain_g").as_int();
-        hik_cam_params_.exposure_gain_r = this->get_parameter("exposure_gain_r").as_int();
-        hik_cam_params_.auto_balance = this->get_parameter("auto_balance").as_bool();
-        hik_cam_params_.balance_b = this->get_parameter("balance_b").as_int();
-        hik_cam_params_.balance_g = this->get_parameter("balance_g").as_int();
-        hik_cam_params_.balance_r = this->get_parameter("balance_r").as_int();
-
-        // RCLCPP_INFO(this->get_logger(), "1...");
-
-        return std::make_unique<HikCamera>(hik_cam_params_);
-    }
 
 
     std::unique_ptr<sensor_msgs::msg::Image> HikCamNode::convert_frame_to_msg(cv::Mat frame)
@@ -271,6 +239,31 @@ namespace camera_driver
             // cv::waitKey(1);
         }
     }
+    
+    bool HikCamNode::setParam(rclcpp::Parameter param)
+    {
+        auto param_idx = param_map_[param.get_name()];
+        switch (param_idx)
+        {
+        case 0:
+            hik_cam->set_exposure_time(param.as_double());
+            break;
+        case 1:
+            hik_cam->set_gain(3, param.as_int());
+            break;
+        case 2:
+            hik_cam->set_balance(0, param.as_int());
+            break;
+        case 3:
+            hik_cam->set_balance(1, param.as_int());
+            break;
+        case 4:
+            hik_cam->set_balance(2, param.as_int());
+            break;
+        default:
+            break;
+        }
+    }
 
     rcl_interfaces::msg::SetParametersResult HikCamNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
     {
@@ -279,100 +272,145 @@ namespace camera_driver
         result.reason = "debug";
         for(const auto& param : params)
         {
-            if(param.get_name() == "exposure_time")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
-                {
-                    if(param.as_int() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_int()
-                        );
-
-                        this->hik_cam_params_.exposure_time = param.as_int();
-                        this->hik_cam->set_exposure_time(this->hik_cam_params_.exposure_time);
-                        result.successful = true;
-                    }
-                }
-            }
-            if(param.get_name() == "exposure_gain")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
-                {
-                    if(param.as_int() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_int()
-                        );
-                        this->hik_cam_params_.exposure_gain = param.as_int();
-                        this->hik_cam->set_gain(3, this->hik_cam_params_.exposure_gain);
-                        result.successful = true;
-                    }
-                }
-            }
-            if(param.get_name() == "balance_b")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        );
-                        this->hik_cam_params_.balance_b = param.as_double();
-                        this->hik_cam->set_balance(0, this->hik_cam_params_.balance_b);
-                        result.successful = true;
-                    }
-                }
-            }
-            if(param.get_name() == "balance_g")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        );
-                        this->hik_cam_params_.balance_g = param.as_double();
-                        this->hik_cam->set_balance(1, this->hik_cam_params_.balance_g);
-                        result.successful = true;
-                    }
-                }
-            }
-            if(param.get_name() == "balance_r")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        );
-                        this->hik_cam_params_.balance_r = param.as_double();
-                        this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
-                        result.successful = true;
-                    }
-                }
-            }
+            result.successful = setParam(param);
         }
-        
         return result;
+    //     for(const auto& param : params)
+    //     {
+    //         if(param.get_name() == "exposure_time")
+    //         {
+    //             if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
+    //             {
+    //                 if(param.as_int() >= 0)
+    //                 {
+    //                     RCLCPP_INFO(this->get_logger(), 
+    //                         "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+    //                         param.get_name().c_str(),
+    //                         param.get_type_name().c_str(),
+    //                         param.as_int()
+    //                     );
+
+    //                     this->hik_cam_params_.exposure_time = param.as_int();
+    //                     this->hik_cam->set_exposure_time(this->hik_cam_params_.exposure_time);
+    //                     result.successful = true;
+    //                 }
+    //             }
+    //         }
+    //         if(param.get_name() == "exposure_gain")
+    //         {
+    //             if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
+    //             {
+    //                 if(param.as_int() >= 0)
+    //                 {
+    //                     RCLCPP_INFO(this->get_logger(), 
+    //                         "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+    //                         param.get_name().c_str(),
+    //                         param.get_type_name().c_str(),
+    //                         param.as_int()
+    //                     );
+    //                     this->hik_cam_params_.exposure_gain = param.as_int();
+    //                     this->hik_cam->set_gain(3, this->hik_cam_params_.exposure_gain);
+    //                     result.successful = true;
+    //                 }
+    //             }
+    //         }
+    //         if(param.get_name() == "balance_b")
+    //         {
+    //             if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+    //             {
+    //                 if(param.as_double() >= 0)
+    //                 {
+    //                     RCLCPP_INFO(this->get_logger(), 
+    //                         "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+    //                         param.get_name().c_str(),
+    //                         param.get_type_name().c_str(),
+    //                         param.as_double()
+    //                     );
+    //                     this->hik_cam_params_.balance_b = param.as_double();
+    //                     this->hik_cam->set_balance(0, this->hik_cam_params_.balance_b);
+    //                     result.successful = true;
+    //                 }
+    //             }
+    //         }
+    //         if(param.get_name() == "balance_g")
+    //         {
+    //             if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+    //             {
+    //                 if(param.as_double() >= 0)
+    //                 {
+    //                     RCLCPP_INFO(this->get_logger(), 
+    //                         "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+    //                         param.get_name().c_str(),
+    //                         param.get_type_name().c_str(),
+    //                         param.as_double()
+    //                     );
+    //                     this->hik_cam_params_.balance_g = param.as_double();
+    //                     this->hik_cam->set_balance(1, this->hik_cam_params_.balance_g);
+    //                     result.successful = true;
+    //                 }
+    //             }
+    //         }
+    //         if(param.get_name() == "balance_r")
+    //         {
+    //             if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+    //             {
+    //                 if(param.as_double() >= 0)
+    //                 {
+    //                     RCLCPP_INFO(this->get_logger(), 
+    //                         "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+    //                         param.get_name().c_str(),
+    //                         param.get_type_name().c_str(),
+    //                         param.as_double()
+    //                     );
+    //                     this->hik_cam_params_.balance_r = param.as_double();
+    //                     this->hik_cam->set_balance(2, this->hik_cam_params_.balance_r);
+    //                     result.successful = true;
+    //                 }
+    //             }
+    //         }
+    //     }
+        
+    //     return result;
+    }
+
+    std::unique_ptr<HikCamera> HikCamNode::init_hik_cam()
+    {
+        param_map_ = 
+        {
+            {"exposure_time", 0},
+            {"exposure_gain", 1},
+            {"balance_b", 2},
+            {"balance_g", 3},
+            {"balance_r", 4}
+        };
+
+        this->declare_parameter("hik_cam_id", 0);
+        this->declare_parameter("image_width", 1440);
+        this->declare_parameter("image_height", 1080);
+        this->declare_parameter("exposure_time", 3000);
+        this->declare_parameter("exposure_gain", 7);
+        this->declare_parameter("exposure_gain_b", 0);
+        this->declare_parameter("exposure_gain_g", 0);
+        this->declare_parameter("exposure_gain_r", 0);
+        this->declare_parameter("auto_balance", false);
+        this->declare_parameter("balance_b", 1690);
+        this->declare_parameter("balance_g", 1024); 
+        this->declare_parameter("balance_r", 2022);
+
+        hik_cam_params_.hik_cam_id = this->get_parameter("hik_cam_id").as_int();
+        hik_cam_params_.image_width = this->get_parameter("image_width").as_int();
+        hik_cam_params_.image_height = this->get_parameter("image_height").as_int();
+        hik_cam_params_.exposure_time = this->get_parameter("exposure_time").as_int();
+        hik_cam_params_.exposure_gain = this->get_parameter("exposure_gain").as_int();
+        hik_cam_params_.exposure_gain_b = this->get_parameter("exposure_gain_b").as_int();
+        hik_cam_params_.exposure_gain_g = this->get_parameter("exposure_gain_g").as_int();
+        hik_cam_params_.exposure_gain_r = this->get_parameter("exposure_gain_r").as_int();
+        hik_cam_params_.auto_balance = this->get_parameter("auto_balance").as_bool();
+        hik_cam_params_.balance_b = this->get_parameter("balance_b").as_int();
+        hik_cam_params_.balance_g = this->get_parameter("balance_g").as_int();
+        hik_cam_params_.balance_r = this->get_parameter("balance_r").as_int();
+
+        return std::make_unique<HikCamera>(hik_cam_params_);
     }
 }
 
@@ -384,17 +422,13 @@ int main(int argc, char** argv)
     // rclcpp::spin(cam_node);
     // rclcpp::shutdown();
 
-    // printf("2\n");
     setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
     rclcpp::init(argc, argv);
     rclcpp::executors::SingleThreadedExecutor exec;
-
     const rclcpp::NodeOptions options;
-
-    auto HikCamNode = std::make_shared<camera_driver::HikCamNode>(options);
-
-    exec.add_node(HikCamNode);
+    auto hik_cam_node = std::make_shared<camera_driver::HikCamNode>(options);
+    exec.add_node(hik_cam_node);
     exec.spin();
 
     rclcpp::shutdown();

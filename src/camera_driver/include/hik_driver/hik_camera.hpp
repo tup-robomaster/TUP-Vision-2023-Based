@@ -2,7 +2,7 @@
  * @Description is a ros-based project!
  * @AuthorBiao
  * @Date-09-05 03:13:49
- * @LastEditTime: 2022-12-23 22:05:25
+ * @LastEditTime: 2022-12-24 00:16:01
  * @FilePath_2023/src/camera_driver/include/hik_driver/HikCamera.hpp
  */
 //c++
@@ -72,18 +72,20 @@ namespace camera_driver
         bool close();
         bool is_open();
 
+        bool get_frame(cv::Mat &src);
+        bool set_gain(int value, int exp_gain);
+        bool set_exposure_time(float exposure_time);
+        bool set_balance(int value, unsigned int value_num);
+    
+    private:
         void start_device(int serial_number);
         bool set_stream_on();
         bool set_resolution(int width, int height);
-        bool set_exposure_time(float exposure_time);
-        bool set_gain(int value, int exp_gain);
         bool set_auto_balance();
-        bool set_balance(int value, unsigned int value_num);
         bool set_gamma(bool set_status, double gamma_param);
         bool color_correct(bool value);
         bool set_contrast(bool set_status, int contrast_param);
         bool update_timestamp(std::chrono::_V2::steady_clock::time_point time_start);
-        bool get_frame(cv::Mat &src);
         int get_timestamp();
 
         bool set_trigger_mode(unsigned int acquisition_mode = 2,

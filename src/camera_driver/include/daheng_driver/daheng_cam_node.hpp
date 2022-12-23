@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 02:02:35
- * @LastEditTime: 2022-12-23 20:17:29
+ * @LastEditTime: 2022-12-23 23:47:34
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_cam_node.hpp
  */
 #ifndef DAHENG_CAM_NODE_HPP_
@@ -56,7 +56,7 @@ namespace camera_driver
         bool is_first_loop;
         std::shared_ptr<cv::VideoWriter> video_writer_;
         std::future<void> writer_video_;
-        
+
         DahengCamParam daheng_cam_param_;
         std::unique_ptr<DaHengCam> daheng_cam;
         std::unique_ptr<DaHengCam> init_daheng_cam();
@@ -67,8 +67,10 @@ namespace camera_driver
          * @param 参数服务器参数
          * @return 是否修改参数成功
          */
-        rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
+        std::map<std::string, int> param_map_;
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+        bool setParam(rclcpp::Parameter param);
+        rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
 
     protected:
         //图像数据内存共享

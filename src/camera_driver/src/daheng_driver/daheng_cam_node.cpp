@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 14:25:39
- * @LastEditTime: 2022-12-03 21:21:10
+ * @LastEditTime: 2022-12-24 00:15:10
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
  */
 #include "../../include/daheng_driver/daheng_cam_node.hpp"
@@ -53,14 +53,15 @@ namespace camera_driver
         // create img publisher
         this->image_pub = this->create_publisher<sensor_msgs::msg::Image>("daheng_img", qos);
         
+        this->declare_parameter("frame_id", "daheng_cam");
+        this->frame_id = this->get_parameter("frame_id").as_string();
+        
         // this->declare_parameter("image_width", 1280);
         // this->image_height = this->declare_parameter("image_height", 1024);
         // this->daheng_cam_id = this->declare_parameter("daheng_cam_id", 0);
-        this->frame_id = this->declare_parameter("frame_id", "daheng_cam");
 
         this->image_width = this->get_parameter("image_width").as_int();
         this->image_height = this->get_parameter("image_height").as_int();
-        this->frame_id = this->get_parameter("frame_id").as_string();
 
         // acquisition system clock
         last_frame = std::chrono::steady_clock::now();
@@ -140,40 +141,6 @@ namespace camera_driver
         }
     }
 
-    std::unique_ptr<DaHengCam> DahengCamNode::init_daheng_cam()
-    {
-        this->declare_parameter("daheng_cam_id", 1);
-        this->declare_parameter("image_width", 1280);
-        this->declare_parameter("image_height", 1024);
-        this->declare_parameter("width_scale", 1);
-        this->declare_parameter("height_scale", 1);
-        this->declare_parameter("exposure_time", 6000);
-        this->declare_parameter("exposure_gain", 14);
-        this->declare_parameter("exposure_gain_b", 0);
-        this->declare_parameter("exposure_gain_g", 0);
-        this->declare_parameter("exposure_gain_r", 0);
-        this->declare_parameter("auto_balance", false);
-        this->declare_parameter("balance_b", 1.56);
-        this->declare_parameter("balance_g", 1.0); 
-        this->declare_parameter("balance_r", 1.548);
-
-        daheng_cam_param_.daheng_cam_id = this->get_parameter("daheng_cam_id").as_int();
-        daheng_cam_param_.image_width = this->get_parameter("image_width").as_int();
-        daheng_cam_param_.image_height = this->get_parameter("image_height").as_int();
-        daheng_cam_param_.width_scale = this->get_parameter("width_scale").as_int();
-        daheng_cam_param_.height_scale = this->get_parameter("height_scale").as_int();
-        daheng_cam_param_.exposure_time = this->get_parameter("exposure_time").as_int();
-        daheng_cam_param_.exposure_gain = this->get_parameter("exposure_gain").as_int();
-        daheng_cam_param_.exposure_gain_b = this->get_parameter("exposure_gain_b").as_int();
-        daheng_cam_param_.exposure_gain_g = this->get_parameter("exposure_gain_g").as_int();
-        daheng_cam_param_.exposure_gain_r = this->get_parameter("exposure_gain_r").as_int();
-        daheng_cam_param_.auto_balance = this->get_parameter("auto_balance").as_bool();
-        daheng_cam_param_.balance_b = this->get_parameter("balance_b").as_double();
-        daheng_cam_param_.balance_g = this->get_parameter("balance_g").as_double();
-        daheng_cam_param_.balance_r = this->get_parameter("balance_r").as_double();
-
-        return std::make_unique<DaHengCam>(daheng_cam_param_);
-    }
 
 
 
@@ -276,6 +243,31 @@ namespace camera_driver
         }
     }
 
+    bool DahengCamNode::setParam(rclcpp::Parameter param)
+    {
+        auto param_idx = param_map_[param.get_name()];
+        switch (param_idx)
+        {
+        case 0:
+            daheng_cam->SetExposureTime(param.as_int());
+            break;
+        case 1:
+            daheng_cam->SetGAIN(3, param.as_int());
+            break;
+        case 2:
+            daheng_cam->Set_BALANCE(0, param.as_double());
+            break;
+        case 3:
+            daheng_cam->Set_BALANCE(1, param.as_double());
+            break;
+        case 4:
+            daheng_cam->Set_BALANCE(2, param.as_double());
+            break;
+        default:
+            break;
+        }
+    }
+
     rcl_interfaces::msg::SetParametersResult DahengCamNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
     {
         rcl_interfaces::msg::SetParametersResult result;
@@ -283,100 +275,150 @@ namespace camera_driver
         result.reason = "debug";
         for(const auto& param : params)
         {
-            if(param.get_name() == "exposure_time")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
-                {
-                    if(param.as_int() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_int()
-                        );
-
-                        this->daheng_cam_param_.exposure_time = param.as_int();
-                        this->daheng_cam->SetExposureTime(this->daheng_cam_param_.exposure_time);
-                        result.successful = true;
-                    }
-                }
-            }
-            if(param.get_name() == "exposure_gain")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
-                {
-                    if(param.as_int() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_int()
-                        );
-                        this->daheng_cam_param_.exposure_gain = param.as_int();
-                        this->daheng_cam->SetGAIN(3, this->daheng_cam_param_.exposure_gain);
-                        result.successful = true;
-                    }
-                }
-            }
-            if(param.get_name() == "balance_b")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        );
-                        this->daheng_cam_param_.balance_b = param.as_double();
-                        this->daheng_cam->Set_BALANCE(0, this->daheng_cam_param_.balance_b);
-                        result.successful = true;
-                    }
-                }
-            }
-            if(param.get_name() == "balance_g")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        );
-                        this->daheng_cam_param_.balance_g = param.as_double();
-                        this->daheng_cam->Set_BALANCE(1, this->daheng_cam_param_.balance_g);
-                        result.successful = true;
-                    }
-                }
-            }
-            if(param.get_name() == "balance_r")
-            {
-                if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
-                {
-                    if(param.as_double() >= 0)
-                    {
-                        RCLCPP_INFO(this->get_logger(), 
-                            "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
-                            param.get_name().c_str(),
-                            param.get_type_name().c_str(),
-                            param.as_double()
-                        );
-                        this->daheng_cam_param_.balance_r = param.as_double();
-                        this->daheng_cam->Set_BALANCE(2, this->daheng_cam_param_.balance_r);
-                        result.successful = true;
-                    }
-                }
-            }
+            result.successful = setParam(param);
         }
-        
         return result;
+
+        // for(const auto& param : params)
+        // {
+        //     if(param.get_name() == "exposure_time")
+        //     {
+        //         if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
+        //         {
+        //             if(param.as_int() >= 0)
+        //             {
+        //                 RCLCPP_INFO(this->get_logger(), 
+        //                     "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+        //                     param.get_name().c_str(),
+        //                     param.get_type_name().c_str(),
+        //                     param.as_int()
+        //                 );
+
+        //                 this->daheng_cam_param_.exposure_time = param.as_int();
+        //                 this->daheng_cam->SetExposureTime(this->daheng_cam_param_.exposure_time);
+        //                 result.successful = true;
+        //             }
+        //         }
+        //     }
+        //     if(param.get_name() == "exposure_gain")
+        //     {
+        //         if(param.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER)
+        //         {
+        //             if(param.as_int() >= 0)
+        //             {
+        //                 RCLCPP_INFO(this->get_logger(), 
+        //                     "Param callback: Receive update to parameter\"%s\" of type %s: \"%ld\"",
+        //                     param.get_name().c_str(),
+        //                     param.get_type_name().c_str(),
+        //                     param.as_int()
+        //                 );
+        //                 this->daheng_cam_param_.exposure_gain = param.as_int();
+        //                 this->daheng_cam->SetGAIN(3, this->daheng_cam_param_.exposure_gain);
+        //                 result.successful = true;
+        //             }
+        //         }
+        //     }
+        //     if(param.get_name() == "balance_b")
+        //     {
+        //         if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+        //         {
+        //             if(param.as_double() >= 0)
+        //             {
+        //                 RCLCPP_INFO(this->get_logger(), 
+        //                     "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+        //                     param.get_name().c_str(),
+        //                     param.get_type_name().c_str(),
+        //                     param.as_double()
+        //                 );
+        //                 this->daheng_cam_param_.balance_b = param.as_double();
+        //                 this->daheng_cam->Set_BALANCE(0, this->daheng_cam_param_.balance_b);
+        //                 result.successful = true;
+        //             }
+        //         }
+        //     }
+        //     if(param.get_name() == "balance_g")
+        //     {
+        //         if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+        //         {
+        //             if(param.as_double() >= 0)
+        //             {
+        //                 RCLCPP_INFO(this->get_logger(), 
+        //                     "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+        //                     param.get_name().c_str(),
+        //                     param.get_type_name().c_str(),
+        //                     param.as_double()
+        //                 );
+        //                 this->daheng_cam_param_.balance_g = param.as_double();
+        //                 this->daheng_cam->Set_BALANCE(1, this->daheng_cam_param_.balance_g);
+        //                 result.successful = true;
+        //             }
+        //         }
+        //     }
+        //     if(param.get_name() == "balance_r")
+        //     {
+        //         if(param.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE)
+        //         {
+        //             if(param.as_double() >= 0)
+        //             {
+        //                 RCLCPP_INFO(this->get_logger(), 
+        //                     "Param callback: Receive update to parameter\"%s\" of type %s: \"%lf\"",
+        //                     param.get_name().c_str(),
+        //                     param.get_type_name().c_str(),
+        //                     param.as_double()
+        //                 );
+        //                 this->daheng_cam_param_.balance_r = param.as_double();
+        //                 this->daheng_cam->Set_BALANCE(2, this->daheng_cam_param_.balance_r);
+        //                 result.successful = true;
+        //             }
+        //         }
+        //     }
+        // }
+        
+        // return result;
+    }
+
+    std::unique_ptr<DaHengCam> DahengCamNode::init_daheng_cam()
+    {
+        param_map_ = 
+        {
+            {"exposure_time", 0},
+            {"exposure_gain", 1},
+            {"balance_b", 2},
+            {"balance_g", 3},
+            {"balance_r", 4}
+        };
+
+        this->declare_parameter("daheng_cam_id", 1);
+        this->declare_parameter("image_width", 1280);
+        this->declare_parameter("image_height", 1024);
+        this->declare_parameter("width_scale", 1);
+        this->declare_parameter("height_scale", 1);
+        this->declare_parameter("exposure_time", 6000);
+        this->declare_parameter("exposure_gain", 14);
+        this->declare_parameter("exposure_gain_b", 0);
+        this->declare_parameter("exposure_gain_g", 0);
+        this->declare_parameter("exposure_gain_r", 0);
+        this->declare_parameter("auto_balance", false);
+        this->declare_parameter("balance_b", 1.56);
+        this->declare_parameter("balance_g", 1.0); 
+        this->declare_parameter("balance_r", 1.548);
+
+        daheng_cam_param_.daheng_cam_id = this->get_parameter("daheng_cam_id").as_int();
+        daheng_cam_param_.image_width = this->get_parameter("image_width").as_int();
+        daheng_cam_param_.image_height = this->get_parameter("image_height").as_int();
+        daheng_cam_param_.width_scale = this->get_parameter("width_scale").as_int();
+        daheng_cam_param_.height_scale = this->get_parameter("height_scale").as_int();
+        daheng_cam_param_.exposure_time = this->get_parameter("exposure_time").as_int();
+        daheng_cam_param_.exposure_gain = this->get_parameter("exposure_gain").as_int();
+        daheng_cam_param_.exposure_gain_b = this->get_parameter("exposure_gain_b").as_int();
+        daheng_cam_param_.exposure_gain_g = this->get_parameter("exposure_gain_g").as_int();
+        daheng_cam_param_.exposure_gain_r = this->get_parameter("exposure_gain_r").as_int();
+        daheng_cam_param_.auto_balance = this->get_parameter("auto_balance").as_bool();
+        daheng_cam_param_.balance_b = this->get_parameter("balance_b").as_double();
+        daheng_cam_param_.balance_g = this->get_parameter("balance_g").as_double();
+        daheng_cam_param_.balance_r = this->get_parameter("balance_r").as_double();
+
+        return std::make_unique<DaHengCam>(daheng_cam_param_);
     }
 }
 

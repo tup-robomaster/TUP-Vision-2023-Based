@@ -5,6 +5,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON) # 添加-fPIC编译，即：装成一个动态库
 # option(WITH_MVSSDK "Build with hikMVSSDK" ON)
 
 # find dependencies
@@ -82,7 +83,7 @@ set(dependencies
   Eigen3
 
   glog
-  fmt #TODO:version
+  # fmt #TODO:version
   yaml-cpp
 
   global_user
@@ -93,7 +94,7 @@ include_directories(include)
 add_library(${PROJECT_NAME} SHARED
   src/usb_driver/usb_cam.cpp
   src/hik_driver/hik_camera.cpp
-  src/daheng_driver/daheng_camera.cpp
+  # src/daheng_driver/daheng_camera.cpp
 )
   
 # # DaHeng相机
@@ -157,17 +158,19 @@ set(node_plugins "")
 
 # link_directories(${MVS_LIB_DIR})
 add_executable(usb_cam_driver_node
+  src/usb_driver/usb_cam.cpp
   src/usb_driver/usb_cam_node.cpp
 )
 
 add_executable(hik_cam_driver_node
+  src/hik_driver/hik_camera.cpp
   src/hik_driver/hik_cam_node.cpp
 )
 
 add_executable(daheng_cam_driver_node
+  src/daheng_driver/daheng_camera.cpp
   src/daheng_driver/daheng_cam_node.cpp
 )
-
 
 # target_include_directories(hik_cam_driver_node PUBLIC hik_sdk/include)
 # if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
@@ -199,7 +202,8 @@ target_link_libraries(hik_cam_driver_node
 )
   
 target_link_libraries(daheng_cam_driver_node
-  ${PROJECT_NAME}
+  gxiapi
+  fmt.so
 )
     
 rclcpp_components_register_nodes(${PROJECT_NAME} 

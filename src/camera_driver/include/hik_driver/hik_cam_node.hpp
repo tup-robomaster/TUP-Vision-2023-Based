@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 02:03:45
- * @LastEditTime: 2022-12-23 22:07:35
+ * @LastEditTime: 2022-12-24 00:07:25
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/hik_driver/hik_cam_node.hpp
  */
 
@@ -65,24 +65,17 @@ namespace camera_driver
         std::unique_ptr<HikCamera> init_hik_cam();
 
     protected:
-        /**
-         * @brief 动态调参
-         * @param 参数服务器参数
-         * @return 是否修改参数成功
-         */
-        rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
+        //动态调参
+        std::map<std::string, int> param_map_;
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+        bool setParam(rclcpp::Parameter param);
+        rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
     
     private:
-        //图像数据内存共享
-        bool using_shared_memory;
-        //生成一个key
-        key_t key_;
-        //共享内存的id
-        int shared_memory_id_;
-        //映射共享内存，得到虚拟地址
-        void* shared_memory_ptr = nullptr;
-
+        bool using_shared_memory;           //图像数据内存共享
+        key_t key_;                         //生成一个key
+        int shared_memory_id_;              //共享内存的id
+        void* shared_memory_ptr = nullptr;  //映射共享内存，得到虚拟地址
         std::thread memory_write_thread_;
     };
 } // namespace camera_driver
