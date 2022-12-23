@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 16:19:57
- * @LastEditTime: 2022-09-28 16:25:55
- * @FilePath: /tup_2023/src/serialport/include/serialport/packet.hpp
+ * @LastEditTime: 2022-12-23 11:57:00
+ * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport/packet.hpp
  */
 #ifndef PACKET_H
 #define PACKET_H
@@ -58,7 +58,7 @@ namespace serialport
         float quat[4];
         float acc[3];
         float gyro[3];
-        float bullet_speed = 27;
+        float bullet_speed = 28.0;
 
         uint16_t check_sum = 0;
     } ReceivePacket;

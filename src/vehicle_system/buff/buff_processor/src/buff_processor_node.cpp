@@ -2,13 +2,12 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2022-12-22 23:53:54
+ * @LastEditTime: 2022-12-23 20:02:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
 
 using namespace std::placeholders;
-
 namespace buff_processor
 {
     BuffProcessorNode::BuffProcessorNode(const rclcpp::NodeOptions& options)
@@ -25,10 +24,10 @@ namespace buff_processor
             std::cerr << e.what() << '\n';
         }
 
-        if(!predict_param_.is_initialized)
+        if(!buff_processor_->is_initialized)
         {
-            predict_param_.coordsolver_->loadParam(predict_param_.path_param_.camera_param_path, predict_param_.path_param_.camera_name);
-            predict_param_.is_initialized = true;
+            buff_processor_->coordsolver_->loadParam(path_param_.camera_param_path, path_param_.camera_name);
+            buff_processor_->is_initialized = true;
         }
         
         // QoS
@@ -49,6 +48,14 @@ namespace buff_processor
         // 订阅待打击目标信息
         target_info_sub_ = this->create_subscription<BuffMsg>("/buff_info", qos,
             std::bind(&BuffProcessorNode::target_info_callback, this, _1));
+        
+        bool debug = false;
+        this->declare_parameter<bool>("debug", true);
+        this->get_parameter("debug", debug);
+        if(debug)
+        {
+            callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffProcessorNode::paramsCallback, this, _1));
+        }
     }
 
     BuffProcessorNode::~BuffProcessorNode()
@@ -61,7 +68,7 @@ namespace buff_processor
             RCLCPP_INFO(this->get_logger(), "Target switched...");    
         }
         TargetInfo target;
-        if(predict_param_.predictor(target_info, target))
+        if(buff_processor_->predictor(target_info, target))
         {
             GimbalMsg gimbal_msg;
             gimbal_msg.header.frame_id = "gimbal";
@@ -80,7 +87,7 @@ namespace buff_processor
             predict_info.predict_point.y = target.hit_point_cam[1];
             predict_info.predict_point.z = target.hit_point_cam[2];
 
-            predict_info_pub_->publish(predict_point);
+            predict_info_pub_->publish(predict_info);
         }
     }
 
@@ -146,7 +153,6 @@ namespace buff_processor
         return true;
     }
 
-
     std::unique_ptr<Processor> BuffProcessorNode::init_buff_processor()
     {
         param_map_ = 
@@ -208,7 +214,7 @@ namespace buff_processor
 int main(int argc, char** argv)
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_unique<buff_detector::BuffDetectorNode>());
+    rclcpp::spin(std::make_unique<buff_processor::BuffProcessorNode>());
     rclcpp::shutdown();
     
     return 0;

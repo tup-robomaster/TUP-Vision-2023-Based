@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2022-12-21 16:44:59
+ * @LastEditTime: 2022-12-23 19:55:53
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
@@ -22,7 +22,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "../../../filter/include/particle_filter.hpp"
-#include "../../../global_user/include/global_user/global_user.hpp"
+#include "../../../../global_user/include/global_user/global_user.hpp"
 
 using namespace std;
 using namespace cv;
@@ -44,6 +44,7 @@ namespace buff_processor
         double delay_small;             //小符发弹延迟
         double delay_big;               //大符发弹延迟
         int window_size;                //滑动窗口大小
+        double fan_length;              //能量机关旋转半径
 
         PredictorParam()
         {
@@ -59,6 +60,7 @@ namespace buff_processor
             delay_small = 175.0;
             delay_big = 100.0;
             window_size = 2;
+            fan_length = 0.7;
         }     
     };
 
@@ -142,10 +144,10 @@ namespace buff_processor
 
     public:
         PredictorParam predictor_param_;
+        std::deque<TargetInfo> history_info;                                    //目标队列
     
     private:
         double params[4];
-        std::deque<TargetInfo> history_info;                                    //目标队列
 
     public:
         TargetInfo last_target;                                                  //最后目标

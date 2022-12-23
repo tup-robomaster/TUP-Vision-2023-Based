@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 02:02:35
- * @LastEditTime: 2022-12-02 17:58:59
+ * @LastEditTime: 2022-12-23 20:17:29
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_cam_node.hpp
  */
 #ifndef DAHENG_CAM_NODE_HPP_
@@ -39,20 +39,16 @@ namespace camera_driver
         rclcpp::TimerBase::SharedPtr timer;
         rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub;
 
-
         int daheng_cam_id;
         std::string frame_id;
         int image_width;
         int image_height;
 
         std::chrono::steady_clock::time_point last_frame;
-
         std::shared_ptr<sensor_msgs::msg::Image> image_msg;
-
     public:
         std::unique_ptr<sensor_msgs::msg::Image> convert_frame_to_msg(cv::Mat frame);
         void image_callback();
-        // void img_callback();
     
     private:
         int frame_cnt; 
@@ -60,7 +56,7 @@ namespace camera_driver
         bool is_first_loop;
         std::shared_ptr<cv::VideoWriter> video_writer_;
         std::future<void> writer_video_;
-
+        
         DahengCamParam daheng_cam_param_;
         std::unique_ptr<DaHengCam> daheng_cam;
         std::unique_ptr<DaHengCam> init_daheng_cam();

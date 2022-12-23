@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:47:32
- * @LastEditTime: 2022-12-22 23:48:28
+ * @LastEditTime: 2022-12-23 20:04:14
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor/buff_processor.cpp
  */
 #include "../../include/buff_processor/buff_processor.hpp"
@@ -29,7 +29,7 @@ namespace buff_processor
 
     }
 
-    bool Processor::predictor(BuffMsg& buff_msg, TargetInfo& target_info)
+    bool Processor::predictor(BuffMsg buff_msg, TargetInfo& target_info)
     {
         buff_predictor_->mode = target_info.buff_mode;
         buff_predictor_->last_mode = buff_predictor_->mode;
@@ -45,7 +45,11 @@ namespace buff_processor
                 // 计算击打点世界坐标
                 Eigen::Vector3d hit_point_world = {sin(theta_offset) * this->predictor_param_.fan_length, (cos(theta_offset) - 1) * this->predictor_param_.fan_length, 0};
                 Eigen::Vector3d armor3d_world = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
-                Eigen::Matrix3d rmat << buff_msg.rmat.x, buff_msg.rmat.y, buff_msg.rmat.z;
+                Eigen::Matrix3d rmat;
+                rmat << buff_msg.rmat.x, 
+                        buff_msg.rmat.y, 
+                        buff_msg.rmat.z;
+                
                 hit_point_world = rmat * hit_point_world + armor3d_world;
 
                 // 转换到相机系
@@ -64,7 +68,7 @@ namespace buff_processor
         }
     }
 
-    void Processor::setPredictorParam(double& param, int idx)
+    void Processor::setPredictorParam(double param, int idx)
     {
         switch (idx)
         {
@@ -106,7 +110,7 @@ namespace buff_processor
         }
     }
 
-    void Processor::setDebugParam(double& param, int idx)
+    void Processor::setDebugParam(double param, int idx)
     {
         switch (idx)
         {

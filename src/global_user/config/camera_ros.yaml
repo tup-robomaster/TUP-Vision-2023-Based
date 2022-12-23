@@ -51,6 +51,11 @@
     save_video: false
 
 /mvs_cam_driver:
-  ros_parameters:
+  ros__parameters:
     mvs_cam_id: 0
     frame_id: mvs_cam
+  
+/serialport:
+  ros__parameters:
+    debug_without_com: true
+    baud: 115200

@@ -1,3 +1,10 @@
+'''
+Description: This is a ros-based project!
+Author: Liu Biao
+Date: 2022-12-22 01:49:00
+LastEditTime: 2022-12-23 19:26:40
+FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.laumch.py
+'''
 import os
 
 from ament_index_python.packages import get_package_share_directory

@@ -55,25 +55,26 @@ def generate_launch_description():
         camera_type,
         use_serial,
 
-        Node(
-            package='camera_driver',
-            executable='daheng_cam_node',
-            name='daheng_cam_node',
-            output='screen',
-            emulate_tty=True,
-            parameters=[{
-                'camera_type':LaunchConfiguration('camera_type'),
-            }]
-        ),
+        # Node(
+        #     package='camera_driver',
+        #     executable='daheng_cam_node',
+        #     name='daheng_cam_node',
+        #     output='screen',
+        #     emulate_tty=True,
+        #     parameters=[{
+        #         'camera_type':LaunchConfiguration('camera_type'),
+        #     }]
+        # ),
 
         Node(
             package='serialport',
-            executable='serialport',
+            executable='serialport_node',
             name='serialport',
             output='screen',
             emulate_tty=True,
             parameters=[{
                 'using_imu':LaunchConfiguration('using_imu'),
+                'debug_without_com': 'false'
             }],
             condition=IfCondition(PythonExpression([LaunchConfiguration('using_imu'), "== 'true'"]))
         ),

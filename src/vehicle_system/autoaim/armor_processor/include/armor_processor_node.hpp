@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-12-22 16:49:27
+ * @LastEditTime: 2022-12-23 19:32:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -68,7 +68,7 @@ namespace armor_processor
         // bool draw_predict;
         Eigen::Vector3d last_predict_point_;
         Eigen::Vector3d predict_point_;
-        Point2f apex2d[4];
+        cv::Point2f apex2d[4];
         // coordsolver::coordsolver coordsolver_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
     
@@ -113,9 +113,10 @@ namespace armor_processor
         bool setParam(rclcpp::Parameter param);
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+        std::map<std::string, int> params_map_;
+        
         // std::shared_ptr<ParamSubcriber> cb_;
         // std::shared_ptr<ParamCbHandle> param_cb_;
-        std::map<std::string, int> params_map_;
     protected:
         // 共享图像数据内存
         bool using_shared_memory;

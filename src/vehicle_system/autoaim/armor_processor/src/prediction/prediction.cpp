@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-12-22 21:07:30
+ * @LastEditTime: 2022-12-23 19:32:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.h"
@@ -145,7 +145,7 @@ namespace armor_processor
         {  //当队列长度不足时不使用拟合
             fitting_disabled_ = true;
         }
-        else if (target.timestamp - history_info_.front().timestamp >= predict_param_.max_time_delta)
+        else if (target.timestamp - history_info_.front().timestamp >= predict_param_.max_delta_time)
         {  //当队列时间跨度过长时不使用拟合
             history_info_.pop_front();
             fitting_disabled_ = true;
@@ -599,8 +599,8 @@ namespace armor_processor
 
     void ArmorPredictor::kfInit()
     {
-        double alpha = singer_param_.alpha;
-        double dt = singer_param_.dt;
+        double alpha = singer_param_.singer_alpha;
+        double dt = singer_param_.singer_dt;
 
         kalman_filter_.F_ << 1, dt, (alpha * dt - 1 + exp(-alpha * dt)) / alpha / alpha,  
                             0, 1, (1 - exp(-alpha * dt)) / alpha,
@@ -612,7 +612,7 @@ namespace armor_processor
                             dt - (1 - exp(-alpha * dt) / alpha),
                             1 - exp(-alpha * dt);
         
-        double p = singer_param_.p;
+        double p = singer_param_.singer_p;
         kalman_filter_.P_ << p, 0, 0,
                              0, p, 0,
                              0, 0, p;
@@ -624,12 +624,12 @@ namespace armor_processor
         double q23 = 1 / (2 * pow(alpha, 2)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt));
         double q33 = 1 / (2 * alpha) * (1 - exp(-2 * alpha * dt));
 
-        double sigma = singer_param_.sigma;
+        double sigma = singer_param_.singer_sigma;
         kalman_filter_.Q_ << 2 * pow(sigma, 2) * alpha * q11, 2 * pow(sigma, 2) * alpha * q12, 2 * pow(sigma, 2) * alpha* q13,
                             2 * pow(sigma, 2) * alpha* q12, 2 * pow(sigma, 2) * alpha* q22, 2 * pow(sigma, 2) * alpha* q23,
 		                    2 * pow(sigma, 2) * alpha* q13, 2 * pow(sigma, 2) * alpha* q23, 2 * pow(sigma, 2) * alpha* q33;
         
-        double meaCov = singer_param_.r;
+        double meaCov = singer_param_.singer_r;
         kalman_filter_.R_ << meaCov;
     }
 
@@ -697,8 +697,8 @@ namespace armor_processor
 			Eigen::VectorXd State(3, 1);
             State << kalman_filter_.x_[0], kalman_filter_.x_[1], kalman_filter_.x_[2];
             
-            double alpha = singer_param_.alpha;
-            double dt = 2 * singer_param_.dt;
+            double alpha = singer_param_.singer_alpha;
+            double dt = 2 * singer_param_.singer_dt;
 
             Eigen::MatrixXd F(3, 3);
             F << 1, dt, (alpha * dt - 1 + exp(-alpha * dt)) / pow(alpha, 2),
@@ -747,7 +747,7 @@ namespace armor_processor
     PredictStatus ArmorPredictor::predict_based_imm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d& target_v, double& ax, int timestamp)
     {
         PredictStatus is_available;
-        double dt = singer_param_.dt;   
+        double dt = singer_param_.singer_dt;   
         if(!is_imm_init)
         {
             Eigen::VectorXd x(6);

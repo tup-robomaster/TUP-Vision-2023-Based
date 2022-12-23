@@ -22,6 +22,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclpy REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -58,7 +59,6 @@ set(dependencies
   tf2 
   tf2_sensor_msgs
   message_filters
-  image_transport
   cv_bridge
   
   global_user
@@ -87,7 +87,21 @@ target_link_libraries(${PROJECT_NAME}_node
   lapack.so 
 )
 
-rclcpp_components_register_nodes(${PROJECT_NAME} 
+add_library(${PROJECT_NAME} SHARED
+  include/buff_processor/buff_processor.hpp
+  include/predictor/predictor.hpp
+  include/buff_processor_node.hpp
+  
+  src/predictor/predictor.cpp
+  src/buff_processor/buff_processor.cpp
+  src/buff_processor_node.cpp
+)
+
+ament_target_dependencies(${PROJECT_NAME} 
+  ${dependencies}
+)
+
+rclcpp_components_register_nodes(${PROJECT_NAME}
   PLUGIN "buff_processor::BuffProcessorNode"
   EXECUTABLE ${PROJECT_NAME}_node  
 )

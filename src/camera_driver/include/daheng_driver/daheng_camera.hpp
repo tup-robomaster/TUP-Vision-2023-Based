@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 12:12:19
- * @LastEditTime: 2022-11-14 09:33:51
+ * @LastEditTime: 2022-12-23 20:09:47
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_camera.hpp
  */
 
@@ -33,14 +33,14 @@ namespace camera_driver
         int width_scale;
         int height_scale;
         int exposure_time;
-        int exposure_gain;
+        double exposure_gain;
         bool auto_balance;
-        int exposure_gain_b;
-        int exposure_gain_g;
-        int exposure_gain_r;
-        int balance_b;
-        int balance_g;
-        int balance_r;
+        double exposure_gain_b;
+        double exposure_gain_g;
+        double exposure_gain_r;
+        double balance_b;
+        double balance_g;
+        double balance_r;
     };
     
     //本类现只应对使用单个相机的情况

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2022-12-22 21:12:18
+ * @LastEditTime: 2022-12-23 19:30:56
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -90,7 +90,7 @@ namespace armor_processor
         switch (idx)
         {
         case 1:
-            armor_predictor_.predict_param_.max_time_delta = param;
+            armor_predictor_.predict_param_.max_delta_time = param;
             break;
         case 2:
             armor_predictor_.predict_param_.min_fitting_lens = param;

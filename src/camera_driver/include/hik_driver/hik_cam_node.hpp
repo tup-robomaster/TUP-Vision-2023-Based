@@ -2,16 +2,16 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 02:03:45
- * @LastEditTime: 2022-12-02 17:56:05
+ * @LastEditTime: 2022-12-23 22:07:35
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/hik_driver/hik_cam_node.hpp
  */
 
 #ifndef HIK_CAM_NODE_HPP_
 #define HIK_CAM_NODE_HPP_
 
-#include "hik_camera.hpp"
-// #include "rmoss_master/rmoss_core/rmoss_cam/include/rmoss_cam/cam_server.hpp"
+#include "./hik_camera.hpp"
 
+#include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/image_encodings.hpp>
 // #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/msg/image.hpp>

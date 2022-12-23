@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-12-22 21:28:37
+ * @LastEditTime: 2022-12-23 19:34:44
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -307,7 +307,7 @@ namespace armor_processor
         gimbal_info.header.stamp = this->get_clock()->now();
         gimbal_info.pitch = angle[0];
         gimbal_info.yaw = angle[1];
-        gimbal_info.distance = aiming_point_world.norm();
+        gimbal_info.distance = aiming_point.norm();
         gimbal_info.is_switched = target_info.target_switched;
         gimbal_info.is_spinning = target_info.is_spinning;
         gimbal_info_pub_->publish(gimbal_info);
@@ -353,7 +353,7 @@ namespace armor_processor
         this->declare_parameter<int>("shoot_delay", 100);
         this->declare_parameter<int>("window_size", 3);
         predict_param_.bullet_speed = this->get_parameter("bullet_speed").as_double();
-        predict_param_.max_time_delta = this->get_parameter("max_time_delta").as_int();
+        predict_param_.max_delta_time = this->get_parameter("max_time_delta").as_int();
         predict_param_.max_cost = this->get_parameter("max_cost").as_int();
         predict_param_.max_v = this->get_parameter("max_v").as_int();
         predict_param_.min_fitting_lens = this->get_parameter("min_fitting_lens").as_int();
@@ -368,14 +368,14 @@ namespace armor_processor
         this->declare_parameter<double>("singer_dt", 5.0);
         this->declare_parameter<double>("singer_p", 1.0);
         this->declare_parameter<double>("singer_r", 1.0);
-        singer_model_param_.alpha = this->get_parameter("singer_alpha").as_double();
-        singer_model_param_.a_max = this->get_parameter("singer_a_max").as_double();
-        singer_model_param_.p_max = this->get_parameter("singer_p_max").as_double();
-        singer_model_param_.p0 = this->get_parameter("singer_p0").as_double();
-        singer_model_param_.sigma = this->get_parameter("singer_sigma").as_double();
-        singer_model_param_.dt = this->get_parameter("singer_dt").as_double();
-        singer_model_param_.p = this->get_parameter("singer_p").as_double();
-        singer_model_param_.r = this->get_parameter("singer_r").as_double();
+        singer_model_param_.singer_alpha = this->get_parameter("singer_alpha").as_double();
+        singer_model_param_.singer_a_max = this->get_parameter("singer_a_max").as_double();
+        singer_model_param_.singer_p_max = this->get_parameter("singer_p_max").as_double();
+        singer_model_param_.singer_p0 = this->get_parameter("singer_p0").as_double();
+        singer_model_param_.singer_sigma = this->get_parameter("singer_sigma").as_double();
+        singer_model_param_.singer_dt = this->get_parameter("singer_dt").as_double();
+        singer_model_param_.singer_p = this->get_parameter("singer_p").as_double();
+        singer_model_param_.singer_r = this->get_parameter("singer_r").as_double();
 
         this->declare_parameter("disable_filter", false);
         this->declare_parameter("disable_fitting", true);
@@ -440,38 +440,38 @@ namespace armor_processor
             break;
         case 5:
             this->predict_param_.shoot_delay = param.as_int();
-            this->processor_->setPredictParam(this->predict_param_, 5);
+            this->processor_->setPredictParam(this->predict_param_.shoot_delay, 5);
             break;
         case 6:
-            this->singer_model_param_.alpha = param.as_double();
+            this->singer_model_param_.singer_alpha = param.as_double();
             this->processor_->setSingerParam(this->singer_model_param_.singer_alpha, 1);
             break;
         case 7:
-            this->singer_model_param_.a_max = param.as_double();
+            this->singer_model_param_.singer_a_max = param.as_double();
             this->processor_->setSingerParam(this->singer_model_param_.singer_a_max, 2);
             break;
         case 8:
-            this->singer_model_param_.p_max = param.as_double();
+            this->singer_model_param_.singer_p_max = param.as_double();
             this->processor_->setSingerParam(this->singer_model_param_.singer_p_max, 3);
             break;
         case 9:
-            this->singer_model_param_.p0 = param.as_double();
+            this->singer_model_param_.singer_p0 = param.as_double();
             this->processor_->setSingerParam(this->singer_model_param_.singer_p0, 4);
             break;
         case 10:
-            this->singer_model_param_.sigma = param.as_double();
+            this->singer_model_param_.singer_sigma = param.as_double();
             this->processor_->setSingerParam(this->singer_model_param_.singer_sigma, 5);
             break;
         case 11:
-            this->singer_model_param_.dt = param.as_double();
+            this->singer_model_param_.singer_dt = param.as_double();
             this->processor_->setSingerParam(this->singer_model_param_.singer_dt, 6);
             break;
         case 12:
-            this->singer_model_param_.p = param.as_double();
+            this->singer_model_param_.singer_p = param.as_double();
             this->processor_->setSingerParam(this->singer_model_param_.singer_p, 7);
             break;
         case 13:
-            this->singer_model_param_.r = param.as_double();
+            this->singer_model_param_.singer_r = param.as_double();
             this->processor_->setSingerParam(this->singer_model_param_.singer_r, 8);
             break;
         case 14:

@@ -2,33 +2,31 @@
  * @Description is a ros-based project!
  * @AuthorBiao
  * @Date-09-05 03:13:49
- * @LastEditTime: 2022-11-14 10:50:11
+ * @LastEditTime: 2022-12-23 22:05:25
  * @FilePath_2023/src/camera_driver/include/hik_driver/HikCamera.hpp
  */
-// #include "../camera_driver/camera_driver.hpp"
-
-#include "rclcpp/rclcpp.hpp"
-
+//c++
+#include <string>
 #include <vector>
 #include <thread>
 #include <memory>
-#include <string>
 #include <iterator>
-#include <unistd.h>
-#include <string>
 
 #include <fstream>
+#include <unistd.h>
 #include <yaml-cpp/yaml.h>
-// #include <fmt/format.h>
-// #include <fmt/color.h>
+#include <fmt/format.h>
+#include <fmt/color.h>
 #include <glog/logging.h>
 
-// #include <exception/exception.hpp>
-
+//opencv
 #include <opencv2/opencv.hpp>
+
+//eigen
 #include <Eigen/Dense>
 #include <Eigen/Core>
 
+//hik
 #include "../../dependencies/hik_sdk/include/MvCameraControl.h"                         
 #include "../../dependencies/hik_sdk/include/MvISPErrorDefine.h"                         
 #include "../../dependencies/hik_sdk/include/MvErrorDefine.h"                         
@@ -49,10 +47,10 @@ namespace camera_driver
         int image_width;
         int image_height;
         int exposure_time;
-        int exposure_gain;           
-        int exposure_gain_b;            
-        int exposure_gain_g;            
-        int exposure_gain_r;  
+        double exposure_gain;           
+        double exposure_gain_b;            
+        double exposure_gain_g;            
+        double exposure_gain_r;  
         bool auto_balance;         
         int balance_b;
         int balance_g;
@@ -104,7 +102,7 @@ namespace camera_driver
             unsigned int trigger_selector = 10);
     
     private:
-        //camera_params
+        // Camera params.
         HikCamParam hik_cam_params_;
 
         bool _is_open; 
