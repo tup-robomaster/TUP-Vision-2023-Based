@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2022-12-20 17:28:15
+ * @LastEditTime: 2022-12-24 18:30:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/detector_node.hpp
  */
 #include "../armor_processor/armor_processor.hpp"
@@ -27,14 +27,7 @@
 #include "global_interface/msg/armors.hpp"
 #include "global_interface/msg/target.hpp"
 
-//linux
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-
-#define DAHENG_IMAGE_WIDTH 1280
-#define DAHENG_IMAGE_HEIGHT 1024
-
+using namespace global_user;
 namespace armor_detector
 {
     class detector_node : public rclcpp::Node
@@ -54,8 +47,9 @@ namespace armor_detector
 
         // Image subscriptions transport type
         std::string transport_;
-        TimePoint time_start;
-        
+        rclcpp::Time time_start_;
+        int image_width_;
+        int image_height_;
         // std::shared_ptr<sensor_msgs::msg::CameraInfo> cam_info;
         // rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr cam_info_sub;
 
@@ -104,26 +98,9 @@ namespace armor_detector
         std::unique_ptr<Processor> processor_;
         std::unique_ptr<Processor> init_armor_processor();
     protected:
-        /**
-         * @brief 共享图像数据内存
-         * 
-         */
-        //
         bool using_shared_memory;
-        
-        //生成key键
-        key_t key_;
-
-        //获取共享内存id
-        int shared_memory_id_;
-
-        //映射共享内存，得到虚拟地址
-        void* shared_memory_ptr_ = nullptr;
-
-        //共享内存读线程
-        std::thread read_memory_thread_;
-
+        SharedMemoryParam shared_memory_param_;
+        std::thread read_memory_thread_; //共享内存读线程
         void run();
-
     };
 } //namespace detector

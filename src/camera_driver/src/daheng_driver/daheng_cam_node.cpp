@@ -2,12 +2,12 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 14:25:39
- * @LastEditTime: 2022-12-24 00:15:10
+ * @LastEditTime: 2022-12-24 17:44:45
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
  */
 #include "../../include/daheng_driver/daheng_cam_node.hpp"
 
-using namespace std::chrono_literals;
+using namespace std::placeholders;
 
 namespace camera_driver
 {
@@ -22,23 +22,8 @@ namespace camera_driver
         this->declare_parameter<bool>("save_video", false);
         save_video_ = this->get_parameter("save_video").as_bool();
         if(save_video_)
-        {
-            // Video save
-            frame_cnt = 0;
-            const std::string &storage_location = "src/camera_driver/video/";
-            char now[64];
-            std::time_t tt;
-            struct tm *ttime;
-            int width = IMAGE_WIDTH;
-            int height = IMAGE_HEIGHT;
-
-            tt = time(nullptr);
-            ttime = localtime(&tt);
-            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", ttime);  // 以时间为名字
-            std::string now_string(now);
-            std::string path(std::string(storage_location + now_string).append(".avi"));
-            video_writer_ = std::make_shared<cv::VideoWriter>(path, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30.0, cv::Size(width, height));    // Avi format
-            is_first_loop = true;
+        {   // Video save.
+            videoRecorder(video_record_param_);
         }
 
         //QoS    
@@ -63,46 +48,29 @@ namespace camera_driver
         this->image_width = this->get_parameter("image_width").as_int();
         this->image_height = this->get_parameter("image_height").as_int();
 
-        // acquisition system clock
-        last_frame = std::chrono::steady_clock::now();
+        // Acquisition system clock.
+        last_frame_ = this->get_clock()->now();
 
-        // open DaHengCam
+        // Open daheng cam.
         if(!daheng_cam->open())
-        {
             RCLCPP_WARN(this->get_logger(), "Camera open failed!");
-        }
-        else
-        {
-            RCLCPP_INFO(this->get_logger(), "Camera open success!");
-        }
 
-        //
+        // Use shared memory.
         this->declare_parameter("using_shared_memory", false);
-        using_shared_memory = this->get_parameter("using_shared_memory").as_bool();
-        if(using_shared_memory)
+        using_shared_memory_ = this->get_parameter("using_shared_memory").as_bool();
+        if(using_shared_memory_)
         {
-            /**
-             * @brief 创建图像数据共享内存空间
-             * 
-             */
-            // 生成key
-            key_ = ftok("./", 5);
-            
-            // 返回内存id
-            shared_memory_id_ = shmget(key_, IMAGE_HEIGHT * IMAGE_WIDTH * 3, IPC_CREAT | 0666 | IPC_EXCL);
-            if(shared_memory_id_ == -1)
+            try
             {
-                RCLCPP_ERROR(this->get_logger(), "Get shared memory failed...");
+                if(!setSharedMemory(shared_memory_param_, 5, this->image_width, this->image_height))
+                    RCLCPP_ERROR(this->get_logger(), "Shared memory init failed...");
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
             }
 
-            //映射到内存地址
-            this->shared_memory_ptr = shmat(shared_memory_id_, 0, 0);
-            if(shared_memory_ptr == (void*)-1)
-            {
-                RCLCPP_ERROR(this->get_logger(), "Remapping shared memory failed...");
-            }
-
-            //内存写入线程
+            // 内存写入线程
             memory_write_thread_ = std::thread(&DahengCamNode::image_callback, this);        
         }
         else
@@ -114,35 +82,19 @@ namespace camera_driver
         this->declare_parameter<bool>("debug", true);
         this->get_parameter("debug", debug_);
         if(debug_)
-        {
-            //动态调参回调
-            callback_handle_ = this->add_on_set_parameters_callback(std::bind(&DahengCamNode::paramsCallback, this, std::placeholders::_1));
+        {   //动态调参回调
+            callback_handle_ = this->add_on_set_parameters_callback(std::bind(&DahengCamNode::paramsCallback, this, _1));
         }
     }
 
     DahengCamNode::~DahengCamNode()
     {
-        if(using_shared_memory)
+        if(using_shared_memory_)
         {
-            //解除共享内存映射
-            if(this->shared_memory_ptr)
-            {
-                if(shmdt(this->shared_memory_ptr) == -1)
-                {
-                    RCLCPP_ERROR(this->get_logger(), "Dissolution remapping failed...");
-                }
-            }
-            
-            //销毁共享内存
-            if(shmctl(shared_memory_id_, IPC_RMID, NULL) == -1)
-            {
-                RCLCPP_ERROR(this->get_logger(), "Destroy shared memory failed...");        
-            }
+            if(!destorySharedMemory(shared_memory_param_))
+                RCLCPP_ERROR(this->get_logger(), "Destory shared memory failed...");
         }
     }
-
-
-
 
     std::unique_ptr<sensor_msgs::msg::Image> DahengCamNode::convert_frame_to_msg(cv::Mat frame)
     {
@@ -156,6 +108,7 @@ namespace camera_driver
         }
 
         ros_image.header.frame_id = this->frame_id;
+        ros_image.header.stamp = this->get_clock()->now();
         ros_image.width = frame.size().width;
         ros_image.height = frame.size().height;
         ros_image.encoding = "bgr8";
@@ -165,13 +118,12 @@ namespace camera_driver
         ros_image.data.assign(frame.datastart, frame.dataend);
 
         auto msg_ptr = std::make_unique<sensor_msgs::msg::Image>(ros_image);      
-
         return msg_ptr;
     }
 
     void DahengCamNode::image_callback()
     {
-        if(using_shared_memory)
+        if(using_shared_memory_)
         {
             while(1)
             {
@@ -182,24 +134,11 @@ namespace camera_driver
                 }
 
                 if(!frame.empty())
-                {
-                    memcpy(this->shared_memory_ptr, frame.data, IMAGE_HEIGHT * IMAGE_WIDTH * 3);
-                }
+                    memcpy(shared_memory_param_.shared_memory_ptr, frame.data, DAHENG_IMAGE_HEIGHT * DAHENG_IMAGE_WIDTH * 3);
 
                 if(save_video_)
-                {
-                    // Video recorder
-                    frame_cnt++;
-                    if(frame_cnt % 10 == 0)
-                    {
-                        frame_cnt = 0;
-                        //异步读写加速,避免阻塞生产者
-                        if (is_first_loop)
-                            is_first_loop = false;
-                        else
-                            writer_video_.wait();
-                        writer_video_ = std::async(std::launch::async, [&](){video_writer_->write(frame);});
-                    }
+                {   // Video recorder.
+                    videoRecorder(video_record_param_, &frame);
                 }
 
                 // cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
@@ -215,26 +154,15 @@ namespace camera_driver
                 return;
             }
 
-            auto now = std::chrono::steady_clock::now();
-            this->last_frame = now;
-            rclcpp::Time timestamp = this->get_clock()->now();
+            auto now = this->get_clock()->now();;
+            this->last_frame_ = now;
+            // rclcpp::Time timestamp = now;
             sensor_msgs::msg::Image::UniquePtr msg = convert_frame_to_msg(frame);
             image_pub->publish(std::move(msg));
 
             if(save_video_)
-            {
-                // Video recorder
-                frame_cnt++;
-                if(frame_cnt % 3 == 0)
-                {
-                    frame_cnt = 0;
-                    //异步读写加速,避免阻塞生产者
-                    if (is_first_loop)
-                        is_first_loop = false;
-                    else
-                        writer_video_.wait();
-                    writer_video_ = std::async(std::launch::async, [&](){video_writer_->write(frame);});
-                }
+            {   // Video recorder.
+                videoRecorder(video_record_param_, &frame);
             }
             
             // cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
@@ -243,6 +171,11 @@ namespace camera_driver
         }
     }
 
+    /**
+     * @brief 动态调参
+     * @param 参数服务器参数
+     * @return 是否修改参数成功
+    */
     bool DahengCamNode::setParam(rclcpp::Parameter param)
     {
         auto param_idx = param_map_[param.get_name()];

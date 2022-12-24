@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-11 11:30:51
- * @LastEditTime: 2022-12-11 21:13:49
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/include/buff_node.hpp
+ * @LastEditTime: 2022-12-24 18:32:23
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/test/include/buff_node.hpp
  */
 #include "./buff/buff.hpp"
 
@@ -25,18 +25,8 @@
 #include "global_interface/msg/armors.hpp"
 #include "global_interface/msg/target.hpp"
 
-//linux
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-
-#define DAHENG_IMAGE_WIDTH 1280
-#define DAHENG_IMAGE_HEIGHT 1024
-#define HIK_IMAGE_WIDTH 1440
-#define HIK_IAMGE_HEIGHT 1080
-#define USB_IMAGE_WIDTH 640
-#define USB_IAMGE_HEIGHT 480
-
+using namespace global_user;
+using namespace coordsolver;
 namespace buff
 {
     class BuffNode : public rclcpp::Node

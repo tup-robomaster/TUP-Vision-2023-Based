@@ -2,25 +2,13 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 14:01:05
- * @LastEditTime: 2022-10-14 16:03:34
- * @FilePath: /tup_2023/src/global_user/src/global_user.cpp
+ * @LastEditTime: 2022-12-24 18:45:46
+ * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/global_user.cpp
  */
 #include "../include/global_user/global_user.hpp"
 
 namespace global_user
 {
-    global_user::global_user()
-    {
-        config_path[0] = config_file_autoaim;
-        config_path[1] = config_file_buff;
-    }
-
-    global_user::~global_user()
-    {
-        
-    }
-
-
     float calcTriangleArea(cv::Point2f pts[3])
     {
         /**
@@ -237,5 +225,102 @@ namespace global_user
     {
         return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
     }
+
+    void videoRecorder(VideoRecordParam& video_param, cv::Mat* src)
+    {
+        if(video_param.is_initialized)
+        {
+            video_param.frame_cnt = 0;
+            char now[64];
+            std::time_t tt;
+            struct tm *ttime;
+
+            tt = time(nullptr);
+            ttime = localtime(&tt);
+            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", ttime);  // 以时间为名字
+            std::string now_string(now);
+            std::string path(std::string(video_param.save_path + now_string).append(".avi"));
+            video_param.video_recorder = cv::VideoWriter(path, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30.0, cv::Size(video_param.image_width, video_param.image_height));    // Avi format
+            video_param.is_first_loop = true;
+            video_param.is_initialized = true;
+        }
+        else
+        {
+            video_param.frame_cnt++;
+            if(video_param.frame_cnt % 3 == 0)
+            {
+                video_param.frame_cnt = 0;
+                //异步读写加速,避免阻塞生产者
+                if (video_param.is_first_loop)
+                    video_param.is_first_loop = false;
+                else
+                    video_param.writer.wait();
+                video_param.writer = std::async(std::launch::async, [&](){video_param.video_recorder.write(*src);});
+            }
+        }
+    }
     
+    /**
+     * @brief 创建图像数据共享内存空间
+     * 
+    */
+    bool setSharedMemory(SharedMemoryParam& shared_memory_param, int id, int image_width, int image_height)
+    {
+        // 生成key
+        shared_memory_param.key = ftok("./", id);
+        
+        // 返回内存id
+        shared_memory_param.shared_memory_id = shmget(shared_memory_param.key, image_width * image_height * 3, IPC_CREAT | 0666 | IPC_EXCL);
+        if(shared_memory_param.shared_memory_id == -1)
+            return false;
+
+        // 映射到内存地址
+        shared_memory_param.shared_memory_ptr = shmat(shared_memory_param.shared_memory_id, 0, 0);
+        if(shared_memory_param.shared_memory_ptr == (void*)-1)
+            return false;
+        
+        return true;
+    }
+
+    bool destorySharedMemory(SharedMemoryParam& shared_memory_param)
+    {
+        //解除共享内存映射
+        if(shared_memory_param.shared_memory_ptr)
+        {
+            if(shmdt(shared_memory_param.shared_memory_ptr) == -1)
+            {
+                // printf("Dissolution remapping failed...");
+                return false;
+            }
+        }
+        //销毁共享内存
+        if(shmctl(shared_memory_param.shared_memory_id, IPC_RMID, NULL) == -1)
+        {
+            // printf("Destroy shared memory failed...");     
+            return false;   
+        }
+
+        return true;
+    }
+
+    bool getSharedMemory(SharedMemoryParam& shared_memory_param, int id)
+    {
+        shared_memory_param.key = ftok("./", id);
+        // 获取共享内存id
+        shared_memory_param.shared_memory_id = shmget(shared_memory_param.key, 0, 0);
+        if(shared_memory_param.shared_memory_id == -1)
+        {
+            // RCLCPP_ERROR(this->get_logger(), "Get shared memory id failed...");
+            return false;
+        }
+
+        // 映射共享内存，得到虚拟地址
+        shared_memory_param.shared_memory_ptr = shmat(shared_memory_param.shared_memory_id, 0, 0);
+        if(shared_memory_param.shared_memory_ptr == (void*)-1)
+        {
+            // RCLCPP_ERROR(this->get_logger(), "Remapping shared memory failed...");
+            return false;
+        }
+        return true;
+    }
 } //global_user

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-12-23 19:34:44
+ * @LastEditTime: 2022-12-24 19:22:20
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -110,20 +110,8 @@ namespace armor_processor
                  * 
                  */
                 sleep(5);
-
-                this->key_ = ftok("./", 9);
-
-                // 获取共享内存id
-                shared_memory_id_ = shmget(key_, 0, 0);
-                if(shared_memory_id_ == -1)
-                {
-                    RCLCPP_ERROR(this->get_logger(), "Get shared memory id failed...");
-                }
-
-                // 映射共享内存，得到虚拟地址
-                shared_memory_ptr_ = shmat(shared_memory_id_, 0, 0);
-                if(shared_memory_ptr_ == (void*)-1)
-                    RCLCPP_ERROR(this->get_logger(), "Remapping shared memory failed...");
+                if(!getSharedMemory(shared_memory_param_, 5))
+                    RCLCPP_ERROR(this->get_logger(), "Shared memory init failed...");
 
                 // 图像读取线程
                 this->read_memory_thread_ = std::thread(&ArmorProcessorNode::img_callback, this);
@@ -131,17 +119,41 @@ namespace armor_processor
             }
             else
             {
-                if(camera_type == global_user::DaHeng)
+                if(camera_type == DaHeng)
                 {
+                    image_width = DAHENG_IMAGE_WIDTH;
+                    image_height = DAHENG_IMAGE_HEIGHT;
+                    
                     // daheng image sub.
                     img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
-                    std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
+                        std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
                 }
-                else
+                else if(camera_type == HikRobot)
                 {
+                    image_width = HIK_IMAGE_WIDTH;
+                    image_height = HIK_IMAGE_HEIGHT;
+
                     // hik image sub.
                     img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
-                    std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
+                        std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
+                }
+                else if(camera_type == MVSCam)
+                {
+                    image_width = MVS_IMAGE_WIDTH;
+                    image_height = MVS_IMAGE_HEIGHT;
+
+                    // mvs image sub.
+                    img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/mvs_img",
+                        std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
+                }
+                else if(camera_type == USBCam)
+                {
+                    image_width = USB_IMAGE_WIDTH;
+                    image_height = USB_IMAGE_HEIGHT;
+
+                    // usb image sub.
+                    img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/usb_img", 
+                        std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
                 }
             }
         }
@@ -151,31 +163,19 @@ namespace armor_processor
     {
         if(using_shared_memory)
         {
-            // 解除共享内存映射
-            if(this->shared_memory_ptr_)
-            {
-                if(shmdt(this->shared_memory_ptr_) == -1)
-                {
-                    RCLCPP_ERROR(this->get_logger(), "Dissolution remapping failed...");
-                }
-            }
-            
-            // 销毁共享内存
-            if(shmctl(shared_memory_id_, IPC_RMID, NULL) == -1)
-            {
-                RCLCPP_ERROR(this->get_logger(), "Destroy shared memory failed...");        
-            }
+            if(!destorySharedMemory(shared_memory_param_))
+                RCLCPP_ERROR(this->get_logger(), "Destory shared memory failed...");
         }
     }
 
     void ArmorProcessorNode::img_callback()
     {
-        cv::Mat img = cv::Mat(DAHENG_IMAGE_HEIGHT, DAHENG_IMAGE_WIDTH, CV_8UC3);
+        cv::Mat img = cv::Mat(this->image_height, this->image_width, CV_8UC3);
 
         while(1)
         {
             // 读取共享内存图像数据
-            memcpy(img.data, shared_memory_ptr_, DAHENG_IMAGE_HEIGHT * DAHENG_IMAGE_WIDTH * 3);
+            memcpy(img.data, shared_memory_param_.shared_memory_ptr, this->image_height * this->image_width * 3);
             // img.copyTo(src.img);
             if(this->debug_param_.show_predict)
             {
@@ -243,8 +243,6 @@ namespace armor_processor
             }
         }
     }
-
-
 
     void ArmorProcessorNode::msg_callback(const geometry_msgs::msg::PointStamped::SharedPtr point_ptr)
     {
@@ -413,6 +411,11 @@ namespace armor_processor
         return result;
     }
 
+    /**
+     * @brief 动态调参
+     * @param 参数服务器参数
+     * @return 是否修改参数成功
+    */
     bool ArmorProcessorNode::setParam(rclcpp::Parameter param)
     {   // 动态调参(与rqt_reconfigure一块使用)
         auto param_idx = params_map_[param.get_name()];

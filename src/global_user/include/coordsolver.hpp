@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:13
- * @LastEditTime: 2022-12-11 14:30:10
+ * @LastEditTime: 2022-12-24 15:25:27
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/coordsolver.hpp
  */
 
@@ -28,7 +28,7 @@ namespace coordsolver
         Eigen::Matrix3d rmat;
     };
 
-    class CoordSolver : public global_user::global_user
+    class CoordSolver
     {
     public:
         CoordSolver();

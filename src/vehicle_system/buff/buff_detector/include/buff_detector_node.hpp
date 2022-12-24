@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2022-12-22 23:25:16
+ * @LastEditTime: 2022-12-24 19:17:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector_node.hpp
  */
 #ifndef BUFF_DETECTOR_NODE_HPP_
@@ -25,21 +25,8 @@
 //custom message
 #include "global_interface/include/global_interface/msg/buff.hpp"
 
-//linux
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-
-#define DAHENG_IMAGE_WIDTH 1280
-#define DAHENG_IMAGE_HEIGHT 1024
-#define HIK_IMAGE_WIDTH 1440
-#define HIK_IAMGE_HEIGHT 1080
-#define USB_IMAGE_WIDTH 640
-#define USB_IAMGE_HEIGHT 480
-
 using namespace global_user;
 using namespace coordsolver;
-
 namespace buff_detector
 {
     class BuffDetectorNode : public rclcpp::Node
@@ -76,10 +63,8 @@ namespace buff_detector
 
     private:
         // Shared memory.
-        bool using_shared_memory_;          //
-        key_t key_;                         //生成key键
-        int shared_memory_id_;              //获取共享内存id
-        void* shared_memory_ptr_ = nullptr; //映射共享内存，得到虚拟地址
+        bool using_shared_memory_;          
+        SharedMemoryParam shared_memory_param_;
         std::thread read_memory_thread_;    //共享内存读线程
     };
 } // namespace buff_detector

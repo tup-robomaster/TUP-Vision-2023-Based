@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2022-12-20 23:56:31
+ * @LastEditTime: 2022-12-24 15:25:48
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -385,7 +385,6 @@ namespace coordsolver
      * **/
     Eigen::Vector3d CoordSolver::worldToCam(const Eigen::Vector3d &point_world, const Eigen::Matrix3d &rmat)
     {
-        
         Eigen::Vector4d point_camera_tmp;
         Eigen::Vector4d point_imu_tmp;
         Eigen::Vector3d point_imu;

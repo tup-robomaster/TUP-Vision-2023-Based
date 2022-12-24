@@ -2,13 +2,13 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2022-12-23 22:08:01
+ * @LastEditTime: 2022-12-24 17:48:27
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
 
+using namespace std::placeholders;
 using namespace std::chrono_literals;
-
 namespace camera_driver
 {
     UsbCamNode::UsbCamNode(const rclcpp::NodeOptions& option)
@@ -28,23 +28,8 @@ namespace camera_driver
         this->declare_parameter<bool>("save_video", false);
         save_video_ = this->get_parameter("save_video").as_bool();
         if(save_video_)
-        {
-            // Video save
-            frame_cnt = 0;
-            const std::string &storage_location = "src/camera_driver/video/";
-            int width = IMAGE_WIDTH;
-            int height = IMAGE_HEIGHT;
-
-            char now[64];
-            std::time_t tt;
-            struct tm *ttime;
-            tt = time(nullptr);
-            ttime = localtime(&tt);
-            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", ttime);  // 以时间为名字
-            std::string now_string(now);
-            std::string path(std::string(storage_location + now_string).append(".avi"));
-            video_writer_ = std::make_shared<cv::VideoWriter>(path, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 100.0, cv::Size(width, height));    // Avi format
-            is_first_loop = true;
+        {   // Video save.
+            videoRecorder(video_record_param_);
         }
 
         rclcpp::QoS qos(0);
@@ -88,32 +73,21 @@ namespace camera_driver
         cap.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_width);
         cap.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_height);
 
-        last_frame = std::chrono::steady_clock::now();
+        last_frame_ = this->get_clock()->now();
 
-        //
+        // Using shared memory.
         this->declare_parameter("using_shared_memory", false);
-        using_shared_memory = this->get_parameter("using_shared_memory").as_bool();
-        if(using_shared_memory)
+        using_shared_memory_ = this->get_parameter("using_shared_memory").as_bool();
+        if(using_shared_memory_)
         {
-            /**
-             * @brief 创建图像数据共享内存空间
-             * 
-             */
-            // 生成key
-            key_ = ftok("./", 9);
-            
-            // 返回内存id
-            shared_memory_id_ = shmget(key_, IMAGE_HEIGHT * IMAGE_WIDTH * 3, IPC_CREAT | 0666 | IPC_EXCL);
-            if(shared_memory_id_ == -1)
+            try
             {
-                RCLCPP_ERROR(this->get_logger(), "Get shared memory failed...");
+                if(!setSharedMemory(shared_memory_param_, 5, usb_cam_params_.image_width, usb_cam_params_.image_height))
+                    RCLCPP_ERROR(this->get_logger(), "Shared memory init failed...");
             }
-
-            //映射到内存地址
-            this->shared_memory_ptr = shmat(shared_memory_id_, 0, 0);
-            if(shared_memory_ptr == (void*)-1)
+            catch(const std::exception& e)
             {
-                RCLCPP_ERROR(this->get_logger(), "Remapping shared memory failed...");
+                std::cerr << e.what() << '\n';
             }
 
             //内存写入线程
@@ -130,7 +104,7 @@ namespace camera_driver
         if(debug_)
         {
             //动态调参回调
-            callback_handle_ = this->add_on_set_parameters_callback(std::bind(&UsbCamNode::paramsCallback, this, std::placeholders::_1));
+            callback_handle_ = this->add_on_set_parameters_callback(std::bind(&UsbCamNode::paramsCallback, this, _1));
             
             //创建参数订阅者监测参数改变情况
             //既可以用于本节点也可以是其他节点
@@ -183,36 +157,17 @@ namespace camera_driver
 
     UsbCamNode::~UsbCamNode()
     {
-        if(using_shared_memory)
+        if(using_shared_memory_)
         {
-            //解除共享内存映射
-            if(this->shared_memory_ptr)
-            {
-                if(shmdt(this->shared_memory_ptr) == -1)
-                {
-                    RCLCPP_ERROR(this->get_logger(), "Dissolution remapping failed...");
-                }
-            }
-            
-            //销毁共享内存
-            if(shmctl(shared_memory_id_, IPC_RMID, NULL) == -1)
-            {
-                RCLCPP_ERROR(this->get_logger(), "Destroy shared memory failed...");        
-            }
+            if(!destorySharedMemory(shared_memory_param_))
+                RCLCPP_ERROR(this->get_logger(), "Destory shared memory failed...");
         }
     }
-
-
 
     std::shared_ptr<sensor_msgs::msg::Image> UsbCamNode::convert_frame_to_message(cv::Mat &frame)
     {
         std_msgs::msg::Header header;
-
         sensor_msgs::msg::Image ros_image;
-
-        // cv::namedWindow("raw", cv::WINDOW_AUTOSIZE);
-        // cv::imshow("raw", frame);
-        // cv::waitKey(0);
 
         if(frame.rows != usb_cam_params_.image_width || frame.cols != usb_cam_params_.image_height)
         { 
@@ -263,8 +218,6 @@ namespace camera_driver
 
         auto msg_ptr = std::make_shared<sensor_msgs::msg::Image>(ros_image);
 
-        // RCLCPP_INFO(this->get_logger(), "Msg_ptr...");
-  
         // cv::namedWindow("raw", cv::WINDOW_AUTOSIZE);
         // cv::imshow("raw", frame);
         // cv::waitKey(1);
@@ -276,17 +229,16 @@ namespace camera_driver
         cap >> frame;
         
         // RCLCPP_INFO(this->get_logger(), "frame stream...");
-        auto now = std::chrono::steady_clock::now();
+        auto now = this->get_clock()->now();
 
-        auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_frame).count();
+        auto dt = (now.nanoseconds() - last_frame_.nanoseconds()) / 1e6;
         if(!frame.empty() && 
             dt > (1 / usb_cam_params_.fps * 1000))
         {
-            last_frame = now;
-            
-            if(using_shared_memory)
+            last_frame_ = now;
+            if(using_shared_memory_)
             {
-                memcpy(this->shared_memory_ptr, frame.data, IMAGE_HEIGHT * IMAGE_WIDTH * 3);
+                memcpy(shared_memory_param_.shared_memory_ptr, frame.data, USB_IMAGE_HEIGHT * USB_IMAGE_WIDTH * 3);
             }
             else
             {
@@ -335,19 +287,8 @@ namespace camera_driver
             }
 
             if(save_video_)
-            {
-                // Video recorder
-                frame_cnt++;
-                if(frame_cnt % 3 == 0)
-                {
-                    frame_cnt = 0;
-                    //异步读写加速,避免阻塞生产者
-                    if (is_first_loop)
-                        is_first_loop = false;
-                    else
-                        writer_video_.wait();
-                    writer_video_ = std::async(std::launch::async, [&](){video_writer_->write(frame);});
-                }
+            {   // Video recorder.
+                videoRecorder(video_record_param_, &frame);
             }
 
             usleep(20000);

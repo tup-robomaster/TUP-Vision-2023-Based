@@ -25,8 +25,6 @@
 //ros
 #include <rclcpp/rclcpp.hpp>
 
-typedef std::chrono::_V2::steady_clock::time_point TimePoint;
-
 namespace armor_detector
 {
     struct debug_params
@@ -148,6 +146,8 @@ namespace armor_detector
     
     class detector
     {
+        typedef std::chrono::_V2::steady_clock::time_point TimePoint;
+
     public:
         detector(const std::string& camera_name, const std::string& camera_param_path, const std::string& network_path,
             const detector_params& detector_params_, const debug_params& debug_params_, const gyro_params& gyro_params_);

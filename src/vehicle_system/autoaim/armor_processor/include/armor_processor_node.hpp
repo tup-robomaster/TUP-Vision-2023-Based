@@ -2,13 +2,15 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-12-23 19:32:52
+ * @LastEditTime: 2022-12-24 19:05:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
 #define ARMOR_PROCESSOR_NODE_HPP_
 
 #include "./armor_processor/armor_processor.hpp"
+
+#include "../../global_user/include/global_user/global_user.hpp"
 #include "global_interface/msg/spin_info.hpp"
 #include "global_interface/msg/gimbal.hpp"
 
@@ -36,14 +38,8 @@
 #include <string>
 #include <vector>
 
-//linux
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-
-#define DAHENG_IMAGE_WIDTH 1280
-#define DAHENG_IMAGE_HEIGHT 1024
-
+using namespace global_user;
+using namespace coordsolver;
 namespace armor_processor
 {
     class ArmorProcessorNode : public rclcpp::Node 
@@ -91,6 +87,8 @@ namespace armor_processor
         std::shared_ptr<image_transport::Subscriber> img_sub_;
         // Image subscriptions transport type.
         std::string transport_;
+        int image_width;
+        int image_height;
         
         // image callback.
         void img_callback();
@@ -105,24 +103,17 @@ namespace armor_processor
         std::string coord_param_name_;
 
     private:
-        /**
-         * @brief 动态调参
-         * @param 参数服务器参数
-         * @return 是否修改参数成功
-         */
+        std::map<std::string, int> params_map_;
         bool setParam(rclcpp::Parameter param);
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
-        std::map<std::string, int> params_map_;
         
         // std::shared_ptr<ParamSubcriber> cb_;
         // std::shared_ptr<ParamCbHandle> param_cb_;
     protected:
         // 共享图像数据内存
         bool using_shared_memory;
-        key_t key_; //生成key键
-        int shared_memory_id_; //获取共享内存id
-        void* shared_memory_ptr_ = nullptr; //映射共享内存，得到虚拟地址
+        SharedMemoryParam shared_memory_param_;
         std::thread read_memory_thread_; //共享内存读线程
     };
 } //armor_processor
