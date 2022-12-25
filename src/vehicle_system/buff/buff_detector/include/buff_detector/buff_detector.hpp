@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2022-12-22 23:05:10
+ * @LastEditTime: 2022-12-25 17:15:48
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
@@ -16,7 +16,12 @@
 
 #include <future>
 #include <vector>
+
+//eigen
 #include <Eigen/Core>
+
+//ros
+#include <rclcpp/rclcpp.hpp>
 
 using namespace global_user;
 using namespace coordsolver;
@@ -109,6 +114,7 @@ namespace buff_detector
         DebugParam debug_param_;
     
     public:
+        rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         bool is_initialized_;
         BuffDetector buff_detector_;
         CoordSolver coordsolver_;
@@ -130,6 +136,7 @@ namespace buff_detector
 
         bool chooseTarget(std::vector<Fan> &fans, Fan &target);
         cv::Point2i cropImageByROI(cv::Mat &img); //roi裁剪
+        void printTargetInfo(int idx);
     };
 } // namespace buff_detector
 

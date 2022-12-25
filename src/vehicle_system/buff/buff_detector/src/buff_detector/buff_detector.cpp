@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2022-12-22 23:15:06
+ * @LastEditTime: 2022-12-25 17:19:00
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -34,7 +34,7 @@ namespace buff_detector
 
     bool Detector::run(TaskData& src, TargetInfo& target_info)
     {
-        auto time_start = std::chrono::steady_clock::now();
+        auto time_start = steady_clock_.now();
 
         vector<BuffObject> objects;
         vector<Fan> fans;
@@ -53,7 +53,7 @@ namespace buff_detector
             if (src.bullet_speed > 10)
             {
                 double bullet_speed = 0.0;
-                if (abs(src.bullet_speed - last_bullet_speed) < 0.5 || abs(src.bullet_speed - last_bullet_speed) > 1.5)
+                if (abs(src.bullet_speed - last_bullet_speed_) < 0.5 || abs(src.bullet_speed - last_bullet_speed_) > 1.5)
                 {
                     bullet_speed = src.bullet_speed;
                     coordsolver_.setBulletSpeed(bullet_speed);
@@ -77,7 +77,7 @@ namespace buff_detector
             imwrite(img_name, input);
         }
 
-        auto time_crop = std::chrono::steady_clock::now();
+        auto time_crop = steady_clock_.now();
 
         if (!buff_detector_.detect(input, objects))
         {   //若未检测到目标
@@ -87,7 +87,7 @@ namespace buff_detector
             return false;
         }
 
-        auto time_infer = std::chrono::steady_clock::now();
+        auto time_infer = steady_clock_.now();
 
         // 创建扇叶对象
         for (auto object : objects)
@@ -192,7 +192,7 @@ namespace buff_detector
                         sign = ((*fan).centerR3d_world.dot(rotate_axis_world) > 0 ) ? 1 : -1;
                     }
                     // 计算角速度(rad/s)
-                    rotate_speed = sign * (angle_axisd.angle()) / (delta_t / 1e3);
+                    rotate_speed = sign * (angle_axisd.angle()) / (delta_t / 1e9);
                     if (abs(rotate_speed) <= min_v && abs(rotate_speed) <= buff_param_.max_v && (src.timestamp - (*iter).last_timestamp) <= min_last_delta_t)
                     {
                         min_last_delta_t = src.timestamp - (*iter).last_timestamp;
@@ -225,7 +225,6 @@ namespace buff_detector
         // 检查待激活扇叶是否存在
         Fan target;
         bool is_target_exists = chooseTarget(fans, target);
-
         // 若不存在待击打扇叶则返回false
         if (!is_target_exists)
         {
@@ -278,6 +277,7 @@ namespace buff_detector
         mean_r_center = r_center_sum / avail_tracker_cnt;
         auto r_center_cam = coordsolver_.worldToCam(target.centerR3d_world, rmat_imu_);
         auto center2d_src = coordsolver_.reproject(r_center_cam);
+        auto angle = coordsolver_.getAngle(target.armor3d_cam, rmat_imu_);
 
         target_info.rotate_speed = mean_rotate_speed;
         target_info.r_center = mean_r_center;
@@ -288,7 +288,7 @@ namespace buff_detector
         auto relative_rmat = last_fan_.rmat.transpose() * target.rmat;
         auto angle_axisd = Eigen::AngleAxisd(relative_rmat);
 
-        double rotate_spd = (angle_axisd.angle() / delta_t * 1e3);
+        double rotate_spd = (angle_axisd.angle() / delta_t * 1e9);
         if(abs(rotate_spd) > buff_param_.max_v)
             is_switched = true;
         target_info.target_switched = is_switched;
@@ -298,8 +298,69 @@ namespace buff_detector
         last_timestamp_ = src.timestamp;
         last_fan_ = target;
         is_last_target_exists_ = true;
+
+        if (isnan(angle[0]) || isnan(angle[1]))
+            return false;
         
+        auto time_detect = steady_clock_.now();
+        double dr_full_ns = (time_detect - time_start).nanoseconds();
+        double dr_crop_ns = (time_crop - time_start).nanoseconds();
+        double dr_infer_ns = (time_infer - time_start).nanoseconds();
+
+        if(debug_param_.show_all_fans)
+        {
+            for (auto fan : fans)
+            {
+                putText(src.img, fmt::format("{:.2f}", fan.conf),fan.apex2d[4],FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
+                if (fan.color == 0)
+                    putText(src.img, fmt::format("{}",fan.key), fan.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
+                if (fan.color == 1)
+                    putText(src.img, fmt::format("{}",fan.key), fan.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
+                for(int i = 0; i < 5; i++)
+                    line(src.img, fan.apex2d[i % 5], fan.apex2d[(i + 1) % 5], Scalar(0,255,0), 1);
+                auto fan_armor_center = coordsolver.reproject(fan.armor3d_cam);
+                circle(src.img, fan_armor_center, 4, {0, 0, 255}, 2);
+            }
+        }
+
+        if(debug_param_.show_fps)
+        {
+            putText(src.img, fmt::format("FPS: {}",int(1e9 / dr_full_ns)), {10, 25}, FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
+        }
+
+        if(debug_param_.prinf_latency)
+        {
+            //降低输出频率，避免影响帧率
+            if (src.timestamp % 10 == 0)
+            {
+                fmt::print(fmt::fg(fmt::color::gray), "-----------TIME------------\n");
+                fmt::print(fmt::fg(fmt::color::blue_violet), "Crop: {} ms\n", (dr_crop_ns / 1e6));
+                fmt::print(fmt::fg(fmt::color::golden_rod), "Infer: {} ms\n", (dr_infer_ns / 1e6));
+                fmt::print(fmt::fg(fmt::color::orange_red), "Total: {} ms\n", (dr_full_ns / 1e6));
+            }
+        }
+        if(debug_param_.print_target_info)
+        {
+            fmt::print(fmt::fg(fmt::color::gray), "-----------INFO------------\n");
+            fmt::print(fmt::fg(fmt::color::blue_violet), "Yaw: {} \n", angle[0]);
+            fmt::print(fmt::fg(fmt::color::golden_rod), "Pitch: {} \n", angle[1]);
+            fmt::print(fmt::fg(fmt::color::green_yellow), "Dist: {} m\n", (float)target.armor3d_cam.norm());
+            fmt::print(fmt::fg(fmt::color::orange_red), "Is Switched: {} \n", is_switched);
+        }
+
         return true;
+    }
+
+    void Detector::printTargetInfo(int idx)
+    {
+        switch (idx)
+        {
+        case 0:
+            /* code */
+            break;
+        default:
+            break;
+        }
     }
 
     bool Detector::chooseTarget(std::vector<Fan> &fans, Fan &target)
@@ -323,17 +384,17 @@ namespace buff_detector
 
     cv::Point2i Detector::cropImageByROI(cv::Mat& img)
     {
-        if (!is_last_target_exists)
+        if (!is_last_target_exists_)
         {
             // 当丢失目标帧数过多或lost_cnt为初值
-            if (lost_cnt > buff_param_.max_lost_cnt || lost_cnt == 0)
+            if (lost_cnt_ > buff_param_.max_lost_cnt || lost_cnt_ == 0)
             {
                 return Point2i(0,0);
             }
         }
 
         // 若目标大小大于阈值
-        if ((last_target_area / img.size().area()) > buff_param_.no_crop_thres)
+        if ((last_target_area_ / img.size().area()) > buff_param_.no_crop_thres)
         {
             return Point2i(0,0);
         }
@@ -350,8 +411,8 @@ namespace buff_detector
             last_roi_center.y = img.size().height - input_size.height / 2;
 
         // 左上角顶点
-        auto offset = last_roi_center - Point2i(input_size.width / 2, input_size.height / 2);
-        Rect roi_rect = Rect(offset, input_size);
+        auto offset = last_roi_center_ - Point2i(input_size.width / 2, input_size.height / 2);
+        Rect roi_rect = Rect(offset, input_size_);
         img(roi_rect).copyTo(img);
 
         return offset;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-12-24 19:05:08
+ * @LastEditTime: 2022-12-25 19:03:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -80,7 +80,7 @@ namespace armor_processor
         message_filters::Subscriber<geometry_msgs::msg::PointStamped> point_sub_;
         std::shared_ptr<tf2_ros::MessageFilter<geometry_msgs::msg::PointStamped>> tf2_filter_;
 
-        void msg_callback(const geometry_msgs::msg::PointStamped::SharedPtr point_ptr);
+        // void msg_callback(const geometry_msgs::msg::PointStamped::SharedPtr point_ptr);
     
     protected:
         // sub image.
@@ -91,8 +91,8 @@ namespace armor_processor
         int image_height;
         
         // image callback.
-        void img_callback();
-        void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
+        // void img_callback();
+        // void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
     
     public:
         PredictParam predict_param_;

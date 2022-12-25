@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2022-12-24 19:17:59
+ * @LastEditTime: 2022-12-25 17:34:26
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector_node.hpp
  */
 #ifndef BUFF_DETECTOR_NODE_HPP_
@@ -52,6 +52,7 @@ namespace buff_detector
     
     private:
         rclcpp::Time time_start_;
+        // rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         rclcpp::Publisher<BuffMsg>::SharedPtr buff_info_pub_; //buff msgs pub.
     
     protected:

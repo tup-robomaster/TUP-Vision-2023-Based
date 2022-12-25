@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2022-12-23 11:51:27
+ * @LastEditTime: 2022-12-25 17:35:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -14,8 +14,7 @@ namespace buff_detector
     : Node("buff_detector", options)
     {
         RCLCPP_INFO("buff detector node...");
-        
-        time_start_ = this->get_clock()->now();
+        time_start_ = detector_->steady_clock_.now();
 
         try
         {
@@ -94,21 +93,21 @@ namespace buff_detector
         auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
         img.copyTo(src.img);
         
-        rclcpp::Time time_img_sub = this->get_clock()->now();
-        src.timestamp = time_img_sub.nanoseconds() - time_start_.nanoseconds();
+        rclcpp::Time time_img_sub = detector_->steady_clock_.now();
+        src.timestamp = (time_img_sub - time_start_).nanoseconds();
 
         TargetInfo target_info;
-        BuffMsg buff_msg;
+        std::unique_ptr<BuffMsg> buff_msg;
         if(detector_->run(src, target_info))
         {
-            buff_msg.header.frame_id = "buff_detector";
-            buff_msg.header.stamp = this->get_clock()->now();
-            buff_msg.r_center = target_info.r_center;
-            buff_msg.rotate_speed = target_info.rotate_speed;
-            buff_msg.target_switched = target_info.target_switched;
+            buff_msg->header.frame_id = "buff_detector";
+            buff_msg->header.stamp = this->get_clock()->now();
+            buff_msg->r_center = target_info.r_center;
+            buff_msg->rotate_speed = target_info.rotate_speed;
+            buff_msg->target_switched = target_info.target_switched;
             
             // publish buff info.
-            buff_info_pub_->publish(buff_msg);
+            buff_info_pub_->publish(std::move(buff_msg));
         }
 
         cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
