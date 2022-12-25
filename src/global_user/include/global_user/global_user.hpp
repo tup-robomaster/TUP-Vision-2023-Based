@@ -2,20 +2,20 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2022-11-19 11:00:24
+ * @LastEditTime: 2022-12-26 02:36:31
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 
-#ifndef GLOBAL_USER_HPP
-#define GLOBAL_USER_HPP
+#ifndef GLOBAL_USER_HPP_
+#define GLOBAL_USER_HPP_
 
+#include <string>
 #include <vector>
 #include <thread>
 #include <memory>
-#include <string>
 #include <iterator>
 #include <unistd.h>
-#include <string>
+#include <future>
 
 #include <fstream>
 #include <yaml-cpp/yaml.h>
@@ -23,40 +23,43 @@
 #include <fmt/color.h>
 #include <glog/logging.h>
 
+//opencv
 #include <opencv2/opencv.hpp>
 
+//eigen
 #include <Eigen/Dense>
 #include <Eigen/Core>
 
-// #include "rclcpp/rclcpp.hpp"
+//linux
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+// daheng
+#define DAHENG_IMAGE_WIDTH 1280
+#define DAHENG_IMAGE_HEIGHT 1024
+// hik
+#define HIK_IMAGE_WIDTH 1440
+#define HIK_IMAGE_HEIGHT 1080
+// usb
+#define USB_IMAGE_WIDTH 640
+#define USB_IMAGE_HEIGHT 480
+// mvs
+#define MVS_IMAGE_WIDTH 1280
+#define MVS_IMAGE_HEIGHT 1024
 
 namespace global_user
-{
-    const std::string config_file_autoaim = "/home/liubiao/tup_2023/src/params_common/config/autoaim.yaml";
-    const std::string config_file_buff = "/home/liubiao/tup_2023/src/params_common/config/buff.yaml";
-    
+{   
     /**
-     * @brief abstract
+     * @brief Global variables and funcs.
      * 
      */
-    class global_user
-    {
-    public:
-        global_user();
-        ~global_user();
-        // virtual ~global_user() = 0;
-        // virtual bool load() = 0;
-        // virtual bool armor_init() = 0;
-        // virtual bool buff_init() = 0;
-        
-    private:
-        std::string config_path[2];
-    };
-
     enum CameraType
     {
       DaHeng,
-      HikRobot  
+      HikRobot,
+      MVSCam,
+      USBCam,
     };
 
     enum TargetType 
@@ -72,7 +75,7 @@ namespace global_user
         double bullet_speed;
         cv::Mat img;
         Eigen::Quaterniond quat;
-        int timestamp; 
+        double timestamp; 
     };
 
     struct GridAndStride
@@ -80,6 +83,60 @@ namespace global_user
         int grid0;
         int grid1;
         int stride;
+    };
+
+    struct ObjectBase
+    {
+        int id;
+        int color;
+        double conf;
+        string key;
+        Eigen::Vector3d armor3d_cam;
+        Eigen::Vector3d armor3d_world;
+        Eigen::Vector3d euler;
+        Eigen::Vector3d rmat;
+    };
+    
+    struct Object
+    {
+        cv::Rect_<float> rect;
+        int cls;
+        int color;
+        float prob;
+        std::vector<cv::Point2f> pts;
+    }
+
+    struct VideoRecordParam
+    {
+        std::future<void> writer;
+        cv::VideoWriter video_recorder;
+        std::string save_path;
+        bool is_initialized;
+        bool is_first_loop;
+        int frame_cnt;
+        int image_width;
+        int image_height;
+
+        VideoRecordParam()
+        {
+            save_path = "src/camera_driver/video/";
+            is_initialized = false;
+            is_first_loop = true;
+            frame_cnt = 0;
+            image_width = 1280; //FIXME:根据相机类型设置
+            image_height = 1024;
+        }
+    };
+
+    struct SharedMemoryParam
+    {
+        key_t key;               //生成一个key
+        int shared_memory_id;    //共享内存的id
+        void* shared_memory_ptr; //映射共享内存，得到虚拟地址
+        SharedMemoryParam()
+        {
+            shared_memory_ptr = nullptr;
+        }
     };
 
     template<typename T>
@@ -115,6 +172,11 @@ namespace global_user
     Eigen::AngleAxisd eulerToAngleAxisd(Eigen::Vector3d euler);
     Eigen::Matrix3d eulerToRotationMatrix(Eigen::Vector3d &theta);
     float calcDistance(cv::Point2f& p1, cv::Point2f& p2);
-}
+
+    void videoRecorder(VideoRecordParam& video_param, cv::Mat* src = nullptr);  
+    bool setSharedMemory(SharedMemoryParam& shared_memory_param, int id, int image_width = 1280, int image_height = 1024);
+    bool getSharedMemory(SharedMemoryParam& shared_memory_param, int id);
+    bool destorySharedMemory(SharedMemoryParam& shared_memory_param);
+} // namespace global_user
 
 #endif

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:00:19
- * @LastEditTime: 2022-11-30 11:15:47
+ * @LastEditTime: 2022-12-22 20:38:53
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/kalman_filter.hpp
  */
 #ifndef KALMAN_FILTER_HPP_
@@ -65,7 +65,6 @@ namespace armor_processor
             void Predict(const double& dt);
             virtual void updatePrediction() {}
             virtual void updateMeasurement() {}
-            virtual void setCoeff(const double&) {}
 
             /**
              * @brief 更新状态向量
@@ -145,6 +144,58 @@ namespace armor_processor
         public:
             double likelihood_; //似然值
             double dt; //时间量
+        
+        public:
+            double r1_, r2_, r3_, r4_;
+            double q1_, q2_, q3_, q4_, q5_, q6_;
+
+            void setRCoeff(double& r, int idx)
+            {
+                switch (idx)
+                {
+                case 1:
+                    r1_ = r;
+                    break;
+                case 2:
+                    r2_ = r;
+                    break;
+                case 3:
+                    r3_ = r;
+                    break;
+                case 4:
+                    r4_ = r;
+                    break;
+                default:
+                    break;
+                }
+            }
+
+            void setQCoeff(double& q, int idx)
+            {
+                switch (idx)
+                {
+                case 1:
+                    q1_ = q;
+                    break;
+                case 2:
+                    q2_ = q;
+                    break;
+                case 3:
+                    q3_ = q;
+                    break;
+                case 4:
+                    q4_ = q;
+                    break;
+                case 5:
+                    q5_ = q;
+                    break;
+                case 6:
+                    q6_ = q;
+                    break;
+                default:
+                    break;
+                }
+            }
     };
 } // armor_processor
 

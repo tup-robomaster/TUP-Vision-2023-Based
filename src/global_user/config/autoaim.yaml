@@ -1,11 +1,11 @@
 /armor_detector:
   ros__parameters:
-  # 自瞄检测节点参数配置
+  # Detector params.
     armor_type_wh_thres: 3
     max_lost_cnt: 5
     max_armors_cnt: 8
     max_v: 8
-    max_delta_t: 50
+    max_delta_t: 100
     no_crop_thres: 1e-2
     hero_danger_zone: 4
     color: true # red: true
@@ -15,44 +15,74 @@
     armor_roi_expand_ratio_width: 1.1
     armor_roi_expand_ratio_height: 1.5
     armor_conf_high_thres: 0.82
+
+  # Spinning params.
     anti_spin_judge_high_thres: 2e4
     anti_spin_judge_low_thres: 2e3
     anti_spin_max_r_multiple: 4.5
     max_dead_buffer: 2
-    max_delta_dist: 0.3
+    max_delta_dist: 0.5
+    min_fitting_lens: 10
+    shoot_delay: 50
+    max_cost: 500
+    delta_x_3d_high_thresh: 0.37
+    delta_x_3d_higher_thresh: 0.44
+    delta_x_3d_low_thresh: 0.23
+    delta_x_3d_lower_thresh: 0.15
+    delta_x_2d_high_thresh: 65.0
+    delta_x_2d_higher_thresh: 85.0
+    delta_x_2d_low_thresh: 35.0
+    delta_x_2d_lower_thresh: 24.0
 
-    #待改
+  # Camera config params.
     # camera_name: "00J90630561" 
     camera_name: "KE0200110075" 
     camera_type: 0
-    camera_param_path: src/global_user/config/camera.yaml
-    network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
+    camera_param_path: "src/global_user/config/camera.yaml"
 
-    #debug
-    debug_without_com: true
+  # Network model path.
+    network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
+    # network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
+
+  # Debug params.
+    debug: true
     using_imu: false
     using_roi: true
-    show_aim_cross: false
+    draw_predict: true
     show_img: false
     show_fps: false
     print_letency: false
     print_target_info: false
     detect_red: true
-    using_shared_memory: true
+    using_shared_memory: false
+    disable_filter: false
+    disable_fitting: true
+    show_predict: false
+    show_transformed_info: false
+    auto_label: false
 
-# 自瞄预测节点参数配置 
+  # Singer model(--->CS Model).
+    singer_alpha: 1.0 # 1/f
+    singer_a_max: 0.1
+    singer_p_max: 0.1
+    singer_p0: 0.8
+    singer_dt: 1.2
+    singer_sigma: 0.1
+    singer_p: 1.0
+    singer_r: 1.0
+
 /armor_processor:
   ros__parameters:
-    # predict params
+  # Predict params.
     bullet_speed: 28.0
     max_time_delta: 1000
-    max_cost: 509
+    max_cost: 10
     max_v: 8
     min_fitting_lens: 10
     shoot_delay: 50
     window_size: 3
 
-    # debug params
+  # Debug params.
     using_shared_memory: true
     disable_filter: false
     disable_fitting: true
@@ -61,20 +91,22 @@
     show_transformed_info: false
     debug: true
 
-    # filter
+  # Camera params.
     camera_type: 0
     # coord_param_name: "00J90630561" 
     coord_param_name: "KE0200110075"
-    filter_param_path: "src/global_user/config/filter_param.yaml"
     coord_param_path: "src/global_user/config/camera.yaml"
+    
+  # Filter params.
+    filter_param_path: "src/global_user/config/filter_param.yaml"
 
-    # Singer model(--->CS Model)
-    singer_alpha: 5.0 #1/f
+  # Singer model(--->CS Model).
+    singer_alpha: 5.0 # 1/f（机动频率倒数） 
     singer_a_max: 0.5
     singer_p_max: 0.1
     singer_p0: 0.8
     singer_dt: 5.0
-    singer_sigma: 0.005
+    singer_sigma: 0.1
     singer_p: 1.0
     singer_r: 1.0
   

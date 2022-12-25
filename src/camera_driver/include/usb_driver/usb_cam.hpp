@@ -2,16 +2,15 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 16:51:24
- * @LastEditTime: 2022-09-29 00:02:39
- * @FilePath: /tup_2023/src/camera_driver/include/usb_cam.hpp
+ * @LastEditTime: 2022-12-24 17:52:31
+ * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/usb_driver/usb_cam.hpp
  */
-// #include "camera_driver/camera_driver.hpp"
-#include "global_user/global_user.hpp"
-#include "global_interface/msg/gimbal.hpp"
+#include <iostream>
+#include <opencv2/opencv.hpp>
 
 namespace camera_driver
 {
-    struct usb_cam_params
+    struct UsbCamParam
     {
         std::string frame_id;
         int camera_id;
@@ -20,11 +19,11 @@ namespace camera_driver
         int fps;
     };
     
-    class usb_cam
+    class UsbCam
     {
-    public:     
+    private:     
         // std::string device_path;
-        usb_cam_params usb_cam_params_;
+        UsbCamParam usb_cam_params_;
 
     public:
         cv::VideoCapture cap;
@@ -32,25 +31,14 @@ namespace camera_driver
         cv::Mat src;
 
     public:
-        // usb_cam(){}
-        usb_cam(usb_cam_params usb_params);
-        ~usb_cam();
+        UsbCam();
+        UsbCam(UsbCamParam usb_params);
+        ~UsbCam();
+
+        void init();
 
         // void get_params();
-        void init();
-        // int start_device(int serial_num) override;
-        // bool update_timestamp(std::chrono::_V2::steady_clock::time_point time_start) override;
-        // bool get_frame(cv::Mat &src) override;
-        // int get_timestamp() override;
-
-        // bool set_stream_on() override;
-        // bool set_resolution(int width, int height) override;
-        // bool set_exposure_time(float exposure_time) override;
-        // bool set_gain(int value, int exp_gain) override;
-        // bool set_auto_balance() override;
-        // bool set_balance(int value, unsigned int value_num) override;
-        // bool set_gamma(bool set_status, double gamma_param) override;
-        // bool color_correct(bool value) override;
-        // bool set_contrast(bool set_status, int contrast_param) override;    
+        // int start_device(int serial_num);
+        // bool get_frame(cv::Mat &src);
     }; // usb_cam
 } // camera_driver

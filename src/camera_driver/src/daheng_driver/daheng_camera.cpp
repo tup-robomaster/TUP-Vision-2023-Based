@@ -12,10 +12,10 @@ namespace camera_driver
         //检测初始化是否成功
         if (status != GX_STATUS_SUCCESS)
         {
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 相机库初始化失败!\n");
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 相机库初始化失败!\n");
         }
 
-        // camera initilizes
+        // Camera initialize.
         this->daheng_cam_param_ = daheng_param;
     }
 
@@ -30,7 +30,7 @@ namespace camera_driver
         status = GXCloseDevice(hDevice);
         //释放库
         status = GXCloseLib();
-        // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 析构!\n");
+        fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 析构!\n");
     }
 
     bool DaHengCam::open()
@@ -41,7 +41,6 @@ namespace camera_driver
         if(StartDevice(daheng_cam_param_.daheng_cam_id) == -1)
         {
             printf("Start device failed...\n");
-
             return false;
         }
         
@@ -86,10 +85,9 @@ namespace camera_driver
         return true;
     }
 
-
     /**
      * @brief 打开相机
-     * @param serial_number为要打开设备的序列号
+     * @param serial_number 要打开设备的序列号
      * @return 返回检测到的连接相机个数
      */
     int DaHengCam::StartDevice(int serial_number)
@@ -99,22 +97,22 @@ namespace camera_driver
         status = GXUpdateDeviceList(&nDeviceNum, 1000);
         if (serial_number > int(nDeviceNum))
         {
-            printf("[CAMERA] 设备号错误，超过所枚举数量\n");
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 设备号错误，超过所枚举数量\n");
+            // printf("[CAMERA] 设备号错误，超过所枚举数量\n");
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 设备号错误，超过所枚举数量\n");
             return -1;
         }
         //打 开 设 备
         status = GXOpenDeviceByIndex(serial_number, &hDevice);
         if (status == GX_STATUS_SUCCESS)
         {
-            printf("[CAMERA] 设备打开成功!\n");
-            // fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 设备打开成功!\n");
+            // printf("[CAMERA] 设备打开成功!\n");
+            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 设备打开成功!\n");
             return nDeviceNum;
         }
         else
         {
-            printf("[CAMERA] 设备打开失败!\n");
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 设备打开失败!\n");
+            // printf("[CAMERA] 设备打开失败!\n");
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 设备打开失败!\n");
             return -1;
         }
     }
@@ -164,43 +162,32 @@ namespace camera_driver
         //设 置 采 集 buffer 个 数
         status = GXSetAcqusitionBufferNumber(hDevice, 2);
         if (status == GX_STATUS_SUCCESS)
-        {
-            // fmt::print(fmt::fg(fmt::color::green), "[CAMERA] buffer设置成功!\n");
-        }
+            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] buffer设置成功!\n");
         else
-        {
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] buffer设置失败!\n");
-        }
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] buffer设置失败!\n");
 
         status = GXSetBool(hDevice, GX_BOOL_CHUNKMODE_ACTIVE, true);
         if (status == GX_STATUS_SUCCESS)
-        {
-            // fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 帧信息模式已设置为使能!\n");
-        }
+            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 帧信息模式已设置为使能!\n");
         else
-        {
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 帧信息模式设置失败!\n");
-        }
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 帧信息模式设置失败!\n");
 
         status = GXSetEnum(hDevice, GX_ENUM_CHUNK_SELECTOR, GX_CHUNK_SELECTOR_CHUNK_TIME_STAMP);
         if (status == GX_STATUS_SUCCESS)
-        {
-            // fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 时间戳帧信息已启用!\n");
-        }
+            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 时间戳帧信息已启用!\n");
         else
-        {
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 时间戳帧信息启用失败!\n");
-        }
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 时间戳帧信息启用失败!\n");
+
         //开 采
         status = GXStreamOn(hDevice);
         if (status == GX_STATUS_SUCCESS)
         {
-            // fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 开始采集图像!\n");
+            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 开始采集图像!\n");
             return true;
         }
         else
         {
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 采集失败!\n");
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 采集失败!\n");
             return false;
         }
     }
@@ -366,7 +353,7 @@ namespace camera_driver
             VxInt32 DxStatus = DxRaw8toRGB24(pFrameBuffer->pImgBuf, pRGB24Buf, pFrameBuffer->nWidth, pFrameBuffer->nHeight, cvtype, nBayerType, bFlip);
             if (DxStatus != DX_OK)
             {
-                // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] Raw8 to RGB24 failed!\n");
+                fmt::print(fmt::fg(fmt::color::red), "[CAMERA] Raw8 to RGB24 failed!\n");
                 if (pRGB24Buf != NULL)
                 {
                     delete[] pRGB24Buf;
@@ -385,10 +372,7 @@ namespace camera_driver
             {
                 DxStatus = DxImageImprovment(pRGB24Buf, pRGB24Buf,pFrameBuffer->nWidth, pFrameBuffer->nHeight, nColorCorrectionParam,NULL,pGammaLut);
                 if (DxStatus != DX_OK)
-                {
-
-                }
-                    // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] Color Set Failed!\n");
+                fmt::print(fmt::fg(fmt::color::red), "[CAMERA] Color Set Failed!\n");
             }
             // if (set_saturation)
             // {
@@ -410,7 +394,7 @@ namespace camera_driver
         else
         {
             // cout << "读取图片缓冲失败" << endl;
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] GetMat:读取图片缓冲失败\n");
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] GetMat:读取图片缓冲失败\n");
             status = GXQBuf(hDevice, pFrameBuffer);
             return false;
         }
@@ -442,14 +426,14 @@ namespace camera_driver
         status = GXSetInt(hDevice, GX_INT_DECIMATION_VERTICAL, nDecimationV);
         if (status == GX_STATUS_SUCCESS)
         {
-            printf("[CAMERA] 分辨率设置成功\n");
-            // fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 分辨率设置成功\n");
+            // printf("[CAMERA] 分辨率设置成功\n");
+            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 分辨率设置成功\n");
             return true;
         }
         else
         {
-            printf("[CAMERA] 分辨率设置失败\n");
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 分辨率设置失败\n");
+            // printf("[CAMERA] 分辨率设置失败\n");
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 分辨率设置失败\n");
             return false;
         }
     }
@@ -465,12 +449,12 @@ namespace camera_driver
         status = GXSetFloat(hDevice, GX_FLOAT_EXPOSURE_TIME, ExposureTime);
         if (status == GX_STATUS_SUCCESS)
         {
-            // fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 曝光值设置成功\n");
+            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 曝光值设置成功\n");
             return true;
         }
         else
         {
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 曝光值设置失败\n");
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 曝光值设置失败\n");
             return false;
         }
     }
@@ -518,12 +502,12 @@ namespace camera_driver
         status = GXSetEnum(hDevice, GX_ENUM_BALANCE_WHITE_AUTO, value);
         if (status == GX_STATUS_SUCCESS)
         {
-            // fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 自动白平衡设置成功\n");
+            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 自动白平衡设置成功\n");
             return true;
         }
         else
         {
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 自动白平衡设置失败\n");
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 自动白平衡设置失败\n");
             return false;
         }
     }
@@ -588,12 +572,12 @@ namespace camera_driver
         }
         status = GXSetFloat(hDevice, GX_FLOAT_BALANCE_RATIO, (float)value_number);
         if (status == GX_STATUS_SUCCESS){
-            // fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 白平衡 {} 设置成功\n",value);
+            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 白平衡 {} 设置成功\n",value);
             return true;
         }
         else
         {
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 白平衡 {} 设置失败\n",value);
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 白平衡 {} 设置失败\n",value);
             return false;
         }
     }
@@ -623,7 +607,7 @@ namespace camera_driver
             //     return false;
             // }
         
-            // fmt::print(fmt::fg(fmt::color::green), "[CAMERA] Gamma {} 设置成功\n",dGammaParam);
+            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] Gamma {} 设置成功\n",dGammaParam);
 
             do
             {
@@ -651,7 +635,7 @@ namespace camera_driver
         }
         else
         {
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] NOT Seting Gamma Value!\n");
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] NOT Seting Gamma Value!\n");
             return -1;
         }
     }
@@ -668,12 +652,12 @@ namespace camera_driver
         if(set_status)
         {
             contrast_factor = dContrastParam;
-            // fmt::print(fmt::fg(fmt::color::green), "[CAMERA] Contrast {} 设置成功\n",dContrastParam);
+            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] Contrast {} 设置成功\n",dContrastParam);
             return true;
         }
         else
         {
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] Using Default Contrast Value!\n");
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] Using Default Contrast Value!\n");
             return -1;
         }
     }
@@ -690,12 +674,12 @@ namespace camera_driver
         if(set_status)
         {
             saturation_factor = dSaturationParam;
-            // fmt::print(fmt::fg(fmt::color::green), "[CAMERA] Saturation {} 设置成功\n",saturation_factor);
+            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] Saturation {} 设置成功\n",saturation_factor);
             return true;
         }
         else
         {
-            // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] Using Default Saturation Value!\n");
+            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] Using Default Saturation Value!\n");
             return -1;
         }
     }

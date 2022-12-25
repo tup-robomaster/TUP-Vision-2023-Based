@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 16:30:16
- * @LastEditTime: 2022-11-29 19:36:11
+ * @LastEditTime: 2022-11-27 17:33:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/imm.cpp
  */
 #include "../../include/filter/imm.hpp"
@@ -104,7 +104,7 @@ namespace armor_processor
             Eigen::MatrixXd P = Eigen::MatrixXd::Zero(this->model_num_, this->model_num_);
             for(int j = 0; j < this->model_num_; j++)
             {
-                Eigen::MatrixXd s = X.col(i) - X.col(j);
+                Eigen::VectorXd s = this->X_.col(i) - this->X_.col(j);
                 P += U(i, j) * (this->models_[i]->P() + s * s.transpose());
             }
             this->models_[i]->setStateCoveriance(P);
@@ -144,17 +144,13 @@ namespace armor_processor
 
     void IMM::estimateFusion()
     {
-        // this->x_ = this->X_ * this->model_prob_;
+        this->x_ = this->X_ * this->model_prob_;
 
-        this->x_.setZero();
         for(size_t i = 0; i < this->model_num_; i++)
         {
-            this->models_[i]->setCoeff(5.0);
-            this->x_ += this->models_[i]->F_ * this->models_[i]->x() * this->model_prob_[i];
-
             //TODO:
-            // Eigen::MatrixXd v = this->X_.col(i) - this->x_;
-            // this->P_ += this->model_prob_[i] * (this->models_[i]->P() + v * v.transpose());
+            Eigen::MatrixXd v = this->X_.col(i) - this->x_;
+            this->P_ += this->model_prob_[i] * (this->models_[i]->P() + v * v.transpose());
         } 
     }
 

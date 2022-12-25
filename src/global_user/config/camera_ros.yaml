@@ -1,6 +1,7 @@
 /hik_cam_driver:
   ros__parameters:
     hik_cam_id: 0
+    frame_id: hik_cam
     image_width: 1440
     image_height: 1080
     exposure_time: 4000
@@ -13,15 +14,17 @@
     balance_r: 2022
     debug: true
     using_shared_memory: false
+    save_video: false
 
 /daheng_cam_driver:
   ros__parameters:
     daheng_cam_id: 1
+    frame_id: daheng_cam
     image_width: 1280
     image_height: 1024
     width_scale: 1
     height_scale: 1
-    exposure_time: 1000
+    exposure_time: 3000
     exposure_gain: 14
     exposure_gain_b: 0
     exposure_gain_g: 0
@@ -30,7 +33,8 @@
     balance_g: 1.0
     balance_r: 1.548
     debug: true
-    using_shared_memory: true
+    using_shared_memory: false
+    save_video: false
     
 /usb_cam_driver:
   ros__parameters:
@@ -41,3 +45,17 @@
     fps: 30
     debug: true
     using_shared_memory: false
+    using_video: true
+    video_path: "src/camera_driver/video/still_gyro.avi"
+    # video_path: "src/camera_driver/video/gyro1.avi"
+    save_video: false
+
+/mvs_cam_driver:
+  ros__parameters:
+    mvs_cam_id: 0
+    frame_id: mvs_cam
+  
+/serialport:
+  ros__parameters:
+    debug_without_com: true
+    baud: 115200

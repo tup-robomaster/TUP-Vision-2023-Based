@@ -2,11 +2,9 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2022-09-30 10:08:14
- * @FilePath: /tup_2023/src/camera_driver/include/camera_driver/camera_driver.hpp
+ * @LastEditTime: 2022-12-23 20:11:14
+ * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver.hpp
  */
-// #include "global_user/include/global_user/global_user.hpp"
-// #include "rmoss_master/rmoss_core/rmoss_cam/include/rmoss_cam/cam_interface.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 #include <vector>

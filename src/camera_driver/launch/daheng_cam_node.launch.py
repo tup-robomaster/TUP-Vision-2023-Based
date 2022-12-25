@@ -1,3 +1,10 @@
+'''
+Description: This is a ros-based project!
+Author: Liu Biao
+Date: 2022-12-15 22:01:49
+LastEditTime: 2022-12-24 15:20:56
+FilePath: /TUP-Vision-2023-Based/src/camera_driver/launch/daheng_cam_node.launch.py
+'''
 import os
 from launch import LaunchDescription
 from launch_ros.actions import Node
@@ -20,6 +27,7 @@ def generate_launch_description():
             executable = "daheng_cam_driver_node",
             parameters = [LaunchConfiguration('params_file')],
             namespace = "",    
-            output = 'screen'
+            output = 'screen',
+            emulate_tty=True,
         )
     ])

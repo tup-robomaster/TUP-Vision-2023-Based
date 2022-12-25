@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 02:02:35
- * @LastEditTime: 2022-11-21 11:35:03
+ * @LastEditTime: 2022-12-24 17:44:07
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_cam_node.hpp
  */
 #ifndef DAHENG_CAM_NODE_HPP_
@@ -12,24 +12,20 @@
 
 //ros
 #include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/image_encodings.hpp>
-// #include <sensor_msgs/CameraInfo.h>
-#include <sensor_msgs/msg/image.hpp>
 #include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/msg/image.hpp>
+// #include <sensor_msgs/CameraInfo.h>
+#include <sensor_msgs/image_encodings.hpp>
 #include <image_transport/image_transport.hpp>
 
-//linux
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
+#include "../../global_user/include/global_user/global_user.hpp"
 
-#define IMAGE_WIDTH 1280
-#define IMAGE_HEIGHT 1024
-
+using namespace global_user;
 namespace camera_driver
 {
     class DahengCamNode : public rclcpp::Node
     {
+        typedef sensor_msgs::msg::Image ImageMsg;
     public:
         DahengCamNode(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
         ~DahengCamNode();
@@ -37,47 +33,36 @@ namespace camera_driver
     private:    
         cv::Mat frame;
         rclcpp::TimerBase::SharedPtr timer;
-        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub;
-
+        rclcpp::Publisher<ImageMsg>::SharedPtr image_pub;
 
         int daheng_cam_id;
         std::string frame_id;
         int image_width;
         int image_height;
 
-        std::chrono::steady_clock::time_point last_frame;
-
-        std::shared_ptr<sensor_msgs::msg::Image> image_msg;
-
+        // std::chrono::steady_clock::time_point last_frame;
+        rclcpp::Time last_frame_;
+        std::shared_ptr<ImageMsg> image_msg;
     public:
-        std::unique_ptr<sensor_msgs::msg::Image> convert_frame_to_msg(cv::Mat frame);
+        std::unique_ptr<ImageMsg> convert_frame_to_msg(cv::Mat frame);
         void image_callback();
-        // void img_callback();
     
     private:
+        bool save_video_;
+        VideoRecordParam video_record_param_;
         DahengCamParam daheng_cam_param_;
         std::unique_ptr<DaHengCam> daheng_cam;
         std::unique_ptr<DaHengCam> init_daheng_cam();
     
     protected:
-        /**
-         * @brief 动态调参
-         * @param 参数服务器参数
-         * @return 是否修改参数成功
-         */
-        rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
+        std::map<std::string, int> param_map_;
+        bool setParam(rclcpp::Parameter param);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+        rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
 
     protected:
-        //图像数据内存共享
-        bool using_shared_memory;
-        //生成一个key
-        key_t key_;
-        //共享内存的id
-        int shared_memory_id_;
-        //映射共享内存，得到虚拟地址
-        void* shared_memory_ptr = nullptr;
-
+        bool using_shared_memory_; //图像数据内存共享
+        SharedMemoryParam shared_memory_param_;
         std::thread memory_write_thread_;
     };
 } // namespace camera_driver
