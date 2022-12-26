@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2022-12-26 00:56:26
+ * @LastEditTime: 2022-12-26 18:41:19
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -25,76 +25,83 @@ namespace armor_processor
 
     //     rmat_imu = Eigen::Matrix3d::Identity();
     // }
+
+    Processor::Processor(const PredictParam& predict_param, const SingerModel& singer_model_param, const PathParam& path_param, const DebugParam& debug_param)
+    : ArmorPredictor(predict_param, singer_model_param, path_param, debug_param)
+    {
+        is_init = false;
+        is_imm_init = false;
+        is_ekf_init = false;
+        init(path_param.coord_path, path_param.coord_name);
+    }
+    
     Processor::Processor()
-    : is_init(false), is_ekf_init(false), is_imm_init(false)
+    : ArmorPredictor()
     {
-        
+        PathParam path;
+        init(path.coord_path, path.coord_name);
     }
 
-    Processor::Processor(const PredictParam& predict_param, const SingerModel& singer_model_param,
-        const DebugParam& debug_param, const std::string& filter_param_path, 
-        const std::string& coord_param_path, const std::string& coord_param_name)
-    {
-        armor_predictor_->predict_param_ = predict_param;
-        armor_predictor_->singer_param_ = singer_model_param;
-        armor_predictor_->filter_param_path_ = filter_param_path;
-        // if(!debug_param.using_imu)
-        // {
-        //     //TODO:暂时未使用陀螺仪数据
-        //     rmat_imu = Eigen::Matrix3d::Identity();
-        // }
-        coord_param_path_ = coord_param_path;
-        coord_param_name_ = coord_param_name;
-        is_initialized_ = false;
+    // Processor::Processor(const PredictParam& predict_param, const SingerModel& singer_model_param,
+    //     const DebugParam& debug_param, const std::string& filter_param_path, 
+    //     const std::string& coord_param_path, const std::string& coord_param_name)
+    // {
+    //     predict_param_ = predict_param;
+    //     singer_param_ = singer_model_param;
+    //     filter_param_path_ = filter_param_path;
+    //     // if(!debug_param.using_imu)
+    //     // {
+    //     //     //TODO:暂时未使用陀螺仪数据
+    //     //     rmat_imu = Eigen::Matrix3d::Identity();
+    //     // }
+    //     coord_param_path_ = coord_param_path;
+    //     coord_param_name_ = coord_param_name;
+    //     is_initialized_ = false;
 
-        // rmat_imu = Eigen::Matrix3d::Identity();
-    }
+    //     // rmat_imu = Eigen::Matrix3d::Identity();
+    // }
 
     Processor::~Processor()
     {
-
-    }
-    
-    void Processor::predictor(TargetInfo& target)
-    {
         
     }
-    
-    void Processor::predictor(TaskData& src, TargetInfo& target_info)
+
+    void Processor::init(std::string coord_path, std::string coord_name)
     {
-        // if(!is_initialized)
-        // {
-        //     coordsolver_.loadParam(coord_param_path_, coord_param_name_);
-        //     is_initialized = true;
-        // }
-        if(!is_ekf_initialized_)
+        try
         {
-            armor_predictor_->is_ekf_init = false;
+            auto success = coordsolver_.loadParam(coord_path, coord_name);
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+    }
+
+    Eigen::Vector3d&& Processor::predictor(TargetMsg& target, double& sleep_time)
+    {
+        if(target.target_switched)
+        {
+            is_ekf_init = false;
+            is_imm_init = false;
+            reInitialize();
         }
 
-        // Eigen::Vector3d target_ = {target_info.xyz[0], target_info.aiming_point.y, target_[2] = target_info.aiming_point.z};
-        // if(armor_predictor_.debug_param_.using_imu)
-        // {
-        //     rmat_imu[0] = target_info.rmat_imu.x;
-        //     rmat_imu[1] = target_info.rmat_imu.y;
-        //     rmat_imu[2] = target_info.rmat_imu.z;
-        // }
-        double sleep_time = 0;
-        if(target_info.is_target_switched)
+        auto hit_point = predict(target, target.timestamp, sleep_time);
+        return std::move(hit_point);
+    }
+    
+    Eigen::Vector3d&& Processor::predictor(cv::Mat& src, TargetMsg& target, double& sleep_time)
+    {
+        if(target.target_switched)
         {
-            aiming_point_ = target_info.xyz;
-        }
-        else
-        {
-            auto aiming_point_world = armor_predictor_->predict(target_info, src.timestamp, sleep_time, &src.img);
-            // aiming_point_ = coordsolver_.worldToCam(aiming_point_world, rmat_imu);
+            is_ekf_init = false;
+            is_imm_init = false;
+            reInitialize();
         }
 
-        // if(armor_predictor_.debug_param_.show_predict)
-        // {
-        //     auto aiming_2d = coordsolver_.reproject(aiming_point_);
-        //     // circle(src.img, aiming_2d, 2, {0, 255, 255}, 2);
-        // }
+        auto hit_point = predict(target, target.timestamp, sleep_time, &src);
+        return std::move(hit_point);
     }
 
     void Processor::setPredictParam(int& param, int idx)
@@ -102,19 +109,19 @@ namespace armor_processor
         switch (idx)
         {
         case 1:
-            armor_predictor_->predict_param_.max_delta_time = param;
+            predict_param_.max_delta_time = param;
             break;
         case 2:
-            armor_predictor_->predict_param_.min_fitting_lens = param;
+            predict_param_.min_fitting_lens = param;
             break;
         case 3:
-            armor_predictor_->predict_param_.max_v = param;
+            predict_param_.max_v = param;
             break;
         case 4:
-            armor_predictor_->predict_param_.shoot_delay = param;
+            predict_param_.shoot_delay = param;
             break;
         case 5:
-            armor_predictor_->predict_param_.max_cost = param;
+            predict_param_.max_cost = param;
             break;
         default:
             break;
@@ -126,22 +133,22 @@ namespace armor_processor
         switch (idx)
         {
         case 1:
-            armor_predictor_->debug_param_.disable_fitting = param;
+            debug_param_.disable_fitting = param;
             break;
         case 2:
-            armor_predictor_->debug_param_.disable_filter = param;
+            debug_param_.disable_filter = param;
             break;
         case 3:
-            armor_predictor_->debug_param_.draw_predict = param;
+            debug_param_.draw_predict = param;
             break;
         case 4:
-            armor_predictor_->debug_param_.show_predict = param;
+            debug_param_.show_predict = param;
             break;
         case 5:
-            armor_predictor_->debug_param_.show_transformed_info = param;
+            debug_param_.show_transformed_info = param;
             break;
         case 6:
-            armor_predictor_->debug_param_.using_imu = param;
+            debug_param_.using_imu = param;
             break;
         default:
             break;
@@ -153,28 +160,28 @@ namespace armor_processor
         switch (idx)
         {
         case 1:
-            armor_predictor_->setSingerParam(param, 1);
+            setSingerParam(param, 1);
             break;
         case 2:
-            armor_predictor_->setSingerParam(param, 2);
+            setSingerParam(param, 2);
             break;
         case 3:
-            armor_predictor_->setSingerParam(param, 3);
+            setSingerParam(param, 3);
             break;
         case 4:
-            armor_predictor_->setSingerParam(param, 4);
+            setSingerParam(param, 4);
             break;
         case 5:
-            armor_predictor_->setSingerParam(param, 5);
+            setSingerParam(param, 5);
             break;
         case 6:
-            armor_predictor_->setSingerParam(param, 6);
+            setSingerParam(param, 6);
             break;
         case 7:
-            armor_predictor_->setSingerParam(param, 7);
+            setSingerParam(param, 7);
             break;
         case 8:
-            armor_predictor_->setSingerParam(param, 8);
+            setSingerParam(param, 8);
             break;
         default:
             break;

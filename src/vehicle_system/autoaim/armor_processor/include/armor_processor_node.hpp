@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-12-25 19:03:52
+ * @LastEditTime: 2022-12-26 18:49:19
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -98,9 +98,7 @@ namespace armor_processor
         PredictParam predict_param_;
         SingerModel singer_model_param_;
         DebugParam debug_param_;
-        std::string filter_param_path_;
-        std::string coord_param_path_;
-        std::string coord_param_name_;
+        PathParam path_param_;
 
     private:
         std::map<std::string, int> params_map_;
@@ -112,7 +110,7 @@ namespace armor_processor
         // std::shared_ptr<ParamCbHandle> param_cb_;
     protected:
         // 共享图像数据内存
-        bool using_shared_memory;
+        bool using_shared_memory_;
         SharedMemoryParam shared_memory_param_;
         std::thread read_memory_thread_; //共享内存读线程
     };

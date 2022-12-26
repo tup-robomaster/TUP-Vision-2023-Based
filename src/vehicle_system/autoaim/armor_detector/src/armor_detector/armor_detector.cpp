@@ -2,13 +2,12 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-12-01 19:07:30
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/detector.cpp
+ * @LastEditTime: 2022-12-26 15:19:41
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
-#include "../../include/armor_detector/detector.hpp"
+#include "../../include/armor_detector/armor_detector.hpp"
 
 using namespace std;
-
 namespace armor_detector
 {
     Detector::Detector(const std::string& camera_name_, const std::string& camera_param_path_, const std::string& network_path_,
@@ -88,7 +87,7 @@ namespace armor_detector
         this->debug_params_.print_target_info = debug_params.print_target_info;
     }
     
-    bool Detector::armor_detect(global_user::TaskData &src)
+    bool Detector::armor_detect(TaskData &src)
     {
         if(!is_init)
         {
@@ -104,7 +103,8 @@ namespace armor_detector
             is_init = true;
         }
 
-        time_start = std::chrono::steady_clock::now();
+        time_start = steady_clock_.now();
+
         auto input = src.img;
         timestamp = src.timestamp;
         
@@ -148,7 +148,7 @@ namespace armor_detector
             }
         }
 
-        time_crop = std::chrono::steady_clock::now();
+        time_crop = steady_clock_.now();
 
         objects.clear();
         armors.clear();
@@ -173,7 +173,7 @@ namespace armor_detector
             return false;
         }
 
-        time_infer = std::chrono::steady_clock::now();
+        time_infer = steady_clock_.now();
         
         //将对象排序，保留面积较大的对象
         sort(objects.begin(),objects.end(),[](ArmorObject& prev, ArmorObject& next)
@@ -227,7 +227,7 @@ namespace armor_detector
             
             // std::vector<Point2f> tmp;
             // for (auto rrect.)
-            // global_user::TargetType target_type = global_user::SMALL;
+            // TargetType target_type = SMALL;
 
             // //计算长宽比,确定装甲板类型
             // RotatedRect points_pic_rrect = minAreaRect(points_pic);
@@ -236,7 +236,7 @@ namespace armor_detector
             
             // //若大于长宽阈值或为哨兵、英雄装甲板
             // if (apex_wh_ratio > this->detector_params_.armor_type_wh_thres || object.cls == 1 || object.cls == 0)
-            //     target_type = global_user::BIG;
+            //     target_type = BIG;
             // for (auto pic : points_pic)
             //     cout<<pic<<endl;
             // cout<<target_type<<endl;
@@ -284,20 +284,20 @@ namespace armor_detector
                 pnp_method = SOLVEPNP_ITERATIVE;
             else
                 pnp_method = SOLVEPNP_IPPE;
-            global_user::TargetType target_type = global_user::SMALL;
+            TargetType target_type = SMALL;
 
             //计算长宽比,确定装甲板类型
             auto apex_wh_ratio = max(points_pic_rrect.size.height, points_pic_rrect.size.width) /
                                     min(points_pic_rrect.size.height, points_pic_rrect.size.width);
             //若大于长宽阈值或为哨兵、英雄装甲板
             if (object.cls == 1 || object.cls == 0)
-                target_type = global_user::BIG;
+                target_type = BIG;
 
             //FIXME：若存在平衡步兵需要对此处步兵装甲板类型进行修改
             else if (object.cls == 2 || object.cls == 3 || object.cls == 4 || object.cls == 5 || object.cls == 6)
-                target_type = global_user::SMALL;
+                target_type = SMALL;
             else if(apex_wh_ratio > detector_params_.armor_type_wh_thres)
-                target_type = global_user::BIG;
+                target_type = BIG;
 
             //单目PnP
             auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_IPPE);
@@ -308,10 +308,10 @@ namespace armor_detector
                 isnan(pnp_result.armor_cam[1]) ||
                 isnan(pnp_result.armor_cam[2]))
             {
-                if (target_type == global_user::SMALL)
-                    target_type = global_user::BIG;
-                else if (target_type == global_user::BIG)
-                    target_type = global_user::SMALL;
+                if (target_type == SMALL)
+                    target_type = BIG;
+                else if (target_type == BIG)
+                    target_type = SMALL;
                 pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_IPPE);
                 if (pnp_result.armor_cam.norm() > 10 ||
                     isnan(pnp_result.armor_cam[0]) ||
@@ -362,7 +362,7 @@ namespace armor_detector
         return true;
     }
 
-    bool Detector::gyro_detector(global_user::TaskData &src, global_interface::msg::Target& target_info)
+    bool Detector::gyro_detector(TaskData &src, global_interface::msg::Target& target_info)
     {
         /**
          * @brief 车辆小陀螺状态检测
@@ -460,7 +460,7 @@ namespace armor_detector
             {
                 auto candidate = spinning_detector_.spinning_x_map.find(target_key);
 
-                auto t = ((*candidate).second.new_timestamp - (*candidate).second.last_timestamp) / 1e3;
+                auto t = ((*candidate).second.new_timestamp - (*candidate).second.last_timestamp) / 1e9;
                 auto w = (2 * M_PI) / (4 * t);
                 target_info.w = w;
                 if(((*candidate).second.new_x_back - (*candidate).second.last_x_back) > 0.15 && ((*candidate).second.new_x_font - (*candidate).second.last_x_font) > 0.15)
@@ -497,7 +497,7 @@ namespace armor_detector
             //判断装甲板是否切换，若切换将变量置1
             auto delta_t = src.timestamp - prev_timestamp;
             auto delta_dist = (target.center3d_world - last_armor.center3d_world).norm();
-            auto velocity = (delta_dist / delta_t) * 1e3;
+            auto velocity = (delta_dist / delta_t) * 1e9;
             if ((target.id != last_armor.id || !last_armor.roi.contains((target.center2d))) &&
                 !is_last_target_exists)
             {
@@ -510,17 +510,17 @@ namespace armor_detector
                 target_info.target_switched = false;
             }
 
-            target_info.point2d[0].x = target.apex2d[0].x;
-            target_info.point2d[0].y = target.apex2d[0].y;
-            target_info.point2d[1].x = target.apex2d[1].x;
-            target_info.point2d[1].y = target.apex2d[1].y;
-            target_info.point2d[2].x = target.apex2d[2].x;
-            target_info.point2d[2].y = target.apex2d[2].y;
-            target_info.point2d[3].x = target.apex2d[3].x;
-            target_info.point2d[3].y = target.apex2d[3].y;
-            target_info.aiming_point.x = target.center3d_cam[0];
-            target_info.aiming_point.y = target.center3d_cam[1];
-            target_info.aiming_point.z = target.center3d_cam[2];
+            // target_info.point2d[0].x = target.apex2d[0].x;
+            // target_info.point2d[0].y = target.apex2d[0].y;
+            // target_info.point2d[1].x = target.apex2d[1].x;
+            // target_info.point2d[1].y = target.apex2d[1].y;
+            // target_info.point2d[2].x = target.apex2d[2].x;
+            // target_info.point2d[2].y = target.apex2d[2].y;
+            // target_info.point2d[3].x = target.apex2d[3].x;
+            // target_info.point2d[3].y = target.apex2d[3].y;
+            // target_info.aiming_point.x = target.center3d_cam[0];
+            // target_info.aiming_point.y = target.center3d_cam[1];
+            // target_info.aiming_point.z = target.center3d_cam[2];
         }
         else
         {
@@ -540,7 +540,7 @@ namespace armor_detector
             //判断装甲板是否切换，若切换将变量置1
             auto delta_t = src.timestamp - prev_timestamp;
             auto delta_dist = (target.center3d_world - last_armor.center3d_world).norm();
-            auto velocity = (delta_dist / delta_t) * 1e3;
+            auto velocity = (delta_dist / delta_t) * 1e9;
             // cout<<(delta_dist >= max_delta_dist)<<" "<<!last_armor.roi.contains(target.center2d)<<endl;
             if ((target.id != last_armor.id || !last_armor.roi.contains((target.center2d))) && !is_last_target_exists)
             {
@@ -552,20 +552,18 @@ namespace armor_detector
                 is_target_switched = false;
                 target_info.target_switched = false;
             }
-
-            target_info.point2d[0].x = target.apex2d[0].x;
-            target_info.point2d[0].y = target.apex2d[0].y;
-            target_info.point2d[1].x = target.apex2d[1].x;
-            target_info.point2d[1].y = target.apex2d[1].y;
-            target_info.point2d[2].x = target.apex2d[2].x;
-            target_info.point2d[2].y = target.apex2d[2].y;
-            target_info.point2d[3].x = target.apex2d[3].x;
-            target_info.point2d[3].y = target.apex2d[3].y;
-
-            target_info.aiming_point.x = target.center3d_cam[0];
-            target_info.aiming_point.y = target.center3d_cam[1];
-            target_info.aiming_point.z = target.center3d_cam[2];
         }
+        target_info.point2d[0].x = target.apex2d[0].x;
+        target_info.point2d[0].y = target.apex2d[0].y;
+        target_info.point2d[1].x = target.apex2d[1].x;
+        target_info.point2d[1].y = target.apex2d[1].y;
+        target_info.point2d[2].x = target.apex2d[2].x;
+        target_info.point2d[2].y = target.apex2d[2].y;
+        target_info.point2d[3].x = target.apex2d[3].x;
+        target_info.point2d[3].y = target.apex2d[3].y;
+        target_info.aiming_point.x = target.center3d_cam[0];
+        target_info.aiming_point.y = target.center3d_cam[1];
+        target_info.aiming_point.z = target.center3d_cam[2];
 
         if (target.color == 2)
             dead_buffer_cnt++;
@@ -618,16 +616,16 @@ namespace armor_detector
         //若预测出错则直接世界坐标系下坐标作为击打点
         if (isnan(angle[0]) || isnan(angle[1]))
             angle = coordsolver_.getAngle(last_aiming_point, rmat_imu);
-        auto time_predict = std::chrono::steady_clock::now();
+        auto time_predict = steady_clock_.now();
 
-        double dr_crop_ms = std::chrono::duration<double,std::milli>(time_crop - time_start).count();
-        double dr_infer_ms = std::chrono::duration<double,std::milli>(time_infer - time_crop).count();
-        // double dr_predict_ms = std::chrono::duration<double,std::milli>(time_predict - time_infer).count();
-        double dr_full_ms = std::chrono::duration<double,std::milli>(time_predict - time_start).count();
+        double dr_crop_ns = (time_crop - time_start).nanoseconds();
+        double dr_infer_ns = (time_infer - time_crop).nanoseconds();
+        // double dr_predict_ns = (time_predict - time_infer).nanoseconds();
+        double dr_full_ns = (time_predict - time_start).nanoseconds();
 
         if(debug_params_.show_fps)
         {
-            putText(src.img, fmt::format("FPS: {}", int(1000 / dr_full_ms)), {10, 25}, FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
+            putText(src.img, fmt::format("FPS: {}", int(1e9 / dr_full_ns)), {10, 25}, FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
         }
 
         if(debug_params_.print_letency)
@@ -636,10 +634,10 @@ namespace armor_detector
             if (count % 5 == 0)
             {
                 fmt::print(fmt::fg(fmt::color::gray), "-----------TIME------------\n");
-                fmt::print(fmt::fg(fmt::color::blue_violet), "Crop: {} ms\n"   ,dr_crop_ms);
-                fmt::print(fmt::fg(fmt::color::golden_rod), "Infer: {} ms\n",dr_infer_ms);
-                // fmt::print(fmt::fg(fmt::color::green_yellow), "Predict: {} ms\n",dr_predict_ms);
-                fmt::print(fmt::fg(fmt::color::orange_red), "Total: {} ms\n",dr_full_ms);
+                fmt::print(fmt::fg(fmt::color::blue_violet), "Crop: {} ms\n", (dr_crop_ns / 1e6));
+                fmt::print(fmt::fg(fmt::color::golden_rod), "Infer: {} ms\n", (dr_infer_ns / 1e6));
+                // fmt::print(fmt::fg(fmt::color::green_yellow), "Predict: {} ms\n", (dr_predict_ns / 1e6));
+                fmt::print(fmt::fg(fmt::color::orange_red), "Total: {} ms\n", (dr_full_ns / 1e6));
             }
         }
         // cout<<target.center3d_world<<endl;
@@ -654,7 +652,7 @@ namespace armor_detector
                 fmt::print(fmt::fg(fmt::color::golden_rod), "Pitch: {} \n",angle[1]);
                 fmt::print(fmt::fg(fmt::color::green_yellow), "Dist: {} m\n",(float)target.center3d_cam.norm());
                 fmt::print(fmt::fg(fmt::color::white), "Target: {} \n",target.key);
-                fmt::print(fmt::fg(fmt::color::white), "Target Type: {} \n",target.type == global_user::SMALL ? "SMALL" : "BIG");
+                fmt::print(fmt::fg(fmt::color::white), "Target Type: {} \n",target.type == SMALL ? "SMALL" : "BIG");
                 fmt::print(fmt::fg(fmt::color::orange_red), "Is Spinning: {} \n",is_target_spinning);
                 fmt::print(fmt::fg(fmt::color::orange_red), "Is Switched: {} \n",is_target_switched);
 
@@ -673,10 +671,7 @@ namespace armor_detector
 
         //若预测出错取消本次数据发送
         if (isnan(angle[0]) || isnan(angle[1]))
-        {
-            // LOG(ERROR)<<"NAN Detected! Data Transmit Aborted!";
             return false;
-        }
 
         if(debug_params_.show_img)
         {
@@ -709,8 +704,8 @@ namespace armor_detector
         // // 计算上一帧roi中心在原图像中的坐标
         // Point2i last_armor_center = Point2i(last_roi_center.x - this->Detector_params_.dw, last_roi_center.y - this->Detector_params_.dh) * (1 / this->Detector_params_.rescale_ratio);
 
-        // float armor_h = global_user::calcDistance(last_armor.apex2d[0], last_armor.apex2d[1]);
-        // float armor_w = global_user::calcDistance(last_armor.apex2d[1], last_armor.apex2d[2]);
+        // float armor_h = calcDistance(last_armor.apex2d[0], last_armor.apex2d[1]);
+        // float armor_w = calcDistance(last_armor.apex2d[1], last_armor.apex2d[2]);
         // int roi_width = MAX(armor_h, armor_w) * (1 / this->Detector_params_.rescale_ratio);
         // int roi_height = MIN(armor_h, armor_w) * (1 / this->Detector_params_.rescale_ratio);
 
@@ -881,5 +876,86 @@ namespace armor_detector
             return target_id;
         else
             return (*armors.begin()).id;
+    }
+
+    void Detector::setDetectorParam(double& param, int idx)
+    {
+        switch (idx)
+        {
+        case 1:
+            detector_params_.armor_conf_high_thres = param;
+            break;
+        case 2:
+            detector_params_.armor_roi_expand_ratio_height = param;
+            break;
+        case 3:
+            detector_params_.armor_roi_expand_ratio_width = param;
+            break;
+        case 4:
+            detector_params_.armor_type_wh_thres = param;
+            break;
+        case 5:
+            detector_params_.color = param;
+            break;
+        case 6:
+            detector_params_.dh = param;
+            break;
+        case 7:
+            detector_params_.dw = param;
+            break;
+        case 8:
+            detector_params_.full_crop_ratio = param;
+            break;
+        case 9:
+            detector_params_.hero_danger_zone = param;
+            break;
+        case 10:
+            detector_params_.max_armors_cnt = param;
+            break;
+        case 11:
+            detector_params_.max_delta_dist = param;
+            break;
+        case 12:
+            detector_params_.max_delta_t = param;
+            break;
+        default:
+            break;
+        }
+    }
+
+    void Detector::setDebugParam(bool& param, int idx)
+    {
+        switch (idx)
+        {
+        case 1:
+            debug_params_.debug_without_com = param;
+            break;
+        case 2:
+            debug_params_.detect_red = param;
+            break;
+        case 3:
+            debug_params_.print_letency = param;
+            break;
+        case 4:
+            debug_params_.print_target_info = param;
+            break;
+        case 5:
+            debug_params_.show_aim_cross = param;
+            break;
+        case 6:
+            debug_params_.show_fps = param;
+            break;
+        case 7:
+            debug_params_.show_img = param;
+            break;
+        case 8:
+            debug_params_.using_imu = param;
+            break;
+        case 9:
+            debug_params_.using_roi = param;
+            break;
+        default:
+            break;
+        }
     }
 } //namespace Detector

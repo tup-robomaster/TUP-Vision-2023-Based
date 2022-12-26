@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2022-12-26 02:04:28
+ * @LastEditTime: 2022-12-26 14:13:12
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -22,7 +22,8 @@
 
 //ros
 #include <rclcpp/rclcpp.hpp>
-
+using namespace global_user;
+using namespace coordsolver;
 namespace armor_detector
 {
     struct DebugParam
@@ -102,6 +103,8 @@ namespace armor_detector
         ~Detector();
 
     private:
+        //debug
+        DebugParam debug_params_;
         std::string camera_name;
         std::string camera_param_path;
         std::string network_path;
@@ -129,7 +132,7 @@ namespace armor_detector
         bool is_init;
         Armor last_armor;
         std::vector<ArmorObject> objects;
-        coordsolver::coordsolver coordsolver_;
+        CoordSolver coordsolver_;
         ArmorDetector detector_;
         SpinningDetector spinning_detector_;
 
@@ -144,7 +147,7 @@ namespace armor_detector
         rclcpp::Time time_infer;
         rclcpp::Time time_crop;
         
-        int timestamp;
+        double timestamp;
         int dead_buffer_cnt;
 
         bool is_last_target_exists;
@@ -159,10 +162,9 @@ namespace armor_detector
         
         Point2i roi_offset;
         Size2i input_size;
-
-        // coordsolver::coordsolver coordsolver_;
-
-        //debug
-        DebugParam debug_params_;
+    
+    public:
+        void setDetectorParam(double& param, int idx);
+        void setDebugParam(bool& param, int idx);
     }; 
 } //namespace detector

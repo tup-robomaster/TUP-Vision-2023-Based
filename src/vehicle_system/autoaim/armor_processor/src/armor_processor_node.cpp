@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-12-25 19:10:10
+ * @LastEditTime: 2022-12-26 19:11:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -40,7 +40,7 @@ namespace armor_processor
 
         // 是否使用共享内存
         this->declare_parameter<bool>("using_shared_memory", false);
-        using_shared_memory = this->get_parameter("using_shared_memory").as_bool();
+        using_shared_memory_ = this->get_parameter("using_shared_memory").as_bool();
         
         // 相机类型
         this->declare_parameter<int>("camera_type", global_user::DaHeng);
@@ -82,7 +82,7 @@ namespace armor_processor
         //         buffer_timeout
         //     );
 
-        //     //register a callback
+        //     // Register a callback func.
         //     tf2_filter_->registerCallback(&ArmorProcessorNode::target_info_callback, this); //获取tf关系后进入回调
         // }
         // else
@@ -103,7 +103,7 @@ namespace armor_processor
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, _1));
             
-        //     if(using_shared_memory)
+        //     if(using_shared_memory_)
         //     {
         //         sleep(5);
         //         // 共享内存配置
@@ -158,11 +158,11 @@ namespace armor_processor
 
     ArmorProcessorNode::~ArmorProcessorNode()
     {
-        if(using_shared_memory)
-        {
-            if(!destorySharedMemory(shared_memory_param_))
-                RCLCPP_ERROR(this->get_logger(), "Destory shared memory failed...");
-        }
+        // if(using_shared_memory_)
+        // {
+        //     if(!destorySharedMemory(shared_memory_param_))
+        //         RCLCPP_ERROR(this->get_logger(), "Destory shared memory failed...");
+        // }
     }
 
     // void ArmorProcessorNode::img_callback()
@@ -270,28 +270,34 @@ namespace armor_processor
             apex2d[i].y = target_info.point2d[i].y;
         }
 
-        Eigen::Vector2d angle = {0, 0};
-        Eigen::Vector3d aiming_point = {0, 0, 0};
-        if(target_info.target_switched)
-        {
-            aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
-            // angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
-            processor_->is_ekf_initialized_ = false;
-        }
-        else
-        {
-            aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
-            // last_predict_point_ = predict_point_;
-            // Eigen::Vector3d aiming_point_world = processor_->armor_predictor_.predict(aiming_point, target_info.timestamp);
-            // Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, processor_->rmat_imu);
-            // predict_point_ = aiming_point_cam;
-            // angle = processor_->coordsolver_.getAngle(aiming_point_cam, processor_->rmat_imu);
-            //若预测出错直接陀螺仪坐标系下坐标作为打击点
-            // if(isnan(angle[0]) || isnan(angle[1]))
-            // {
-            //     angle = processor_->coordsolver_.getAngle(aiming_point_world, processor_->rmat_imu);
-            // }
-        }
+        double sleep_time = 0.0;
+        TargetMsg target = std::move(target_info);
+        Eigen::Vector3d aiming_point_world = processor_->predictor(target, sleep_time);
+        Eigen::Quaternion quat_imu = std::move(Eigen::Quaternion{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
+        Eigen::Matrix3d rmat_imu = quat_imu.toRotationMatrix();
+        Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
+        Eigen::Vector2d angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
+
+        // if(target_info.target_switched)
+        // {
+        //     aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
+        //     // angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
+        //     processor_->is_ekf_initialized_ = false;
+        // }
+        // else
+        // {
+        //     aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
+        //     last_predict_point_ = predict_point_;
+        //     Eigen::Vector3d aiming_point_world = processor_->armor_predictor_.predict(aiming_point, target_info.timestamp);
+        //     Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, processor_->rmat_imu);
+        //     predict_point_ = aiming_point_cam;
+        //     angle = processor_->coordsolver_.getAngle(aiming_point_cam, processor_->rmat_imu);
+        //     // 若预测出错直接陀螺仪坐标系下坐标作为打击点
+        //     if(isnan(angle[0]) || isnan(angle[1]))
+        //     {
+        //         angle = processor_->coordsolver_.getAngle(aiming_point_world, processor_->rmat_imu);
+        //     }
+        // }
 
         // Gimbal info pub.
         std::unique_ptr<GimbalMsg> gimbal_info;
@@ -299,7 +305,7 @@ namespace armor_processor
         gimbal_info->header.stamp = this->get_clock()->now();
         gimbal_info->pitch = angle[0];
         gimbal_info->yaw = angle[1];
-        gimbal_info->distance = aiming_point.norm();
+        gimbal_info->distance = aiming_point_cam.norm();
         gimbal_info->is_switched = target_info.target_switched;
         gimbal_info->is_spinning = target_info.is_spinning;
         gimbal_info_pub_->publish(std::move(gimbal_info));
@@ -386,11 +392,11 @@ namespace armor_processor
         this->declare_parameter<std::string>("coord_param_path", "src/global_user/config/camera.yaml");
         this->declare_parameter<std::string>("coord_param_name", "00J90630561");
 
-        filter_param_path_ = this->get_parameter("filter_param_path").as_string();
-        coord_param_path_ = this->get_parameter("coord_param_path").as_string();
-        coord_param_name_ = this->get_parameter("coord_param_name").as_string();
+        path_param_.coord_path = this->get_parameter("filter_param_path").as_string();
+        path_param_.filter_path = this->get_parameter("coord_param_path").as_string();
+        path_param_.coord_name = this->get_parameter("coord_param_name").as_string();
 
-        return std::make_unique<Processor>(predict_param_, singer_model_param_, debug_param_, filter_param_path_, coord_param_path_, coord_param_name_);
+        return std::make_unique<Processor>(predict_param_, singer_model_param_, path_param_, debug_param_);
     }
 
     rcl_interfaces::msg::SetParametersResult ArmorProcessorNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)

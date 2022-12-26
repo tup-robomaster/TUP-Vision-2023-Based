@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-12-26 00:54:21
+ * @LastEditTime: 2022-12-26 18:17:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -52,6 +52,10 @@
 // typedef SingerPositionMeasurement<double> SingerPosMeasure;
 // typedef SingerPositionMeasurementModel<double> SingerPosModel;
 
+#include "global_interface/msg/target.hpp"
+
+using namespace global_user;
+using namespace coordsolver;
 namespace armor_processor
 {
     typedef enum OutpostStatus
@@ -340,6 +344,20 @@ namespace armor_processor
             singer_r = 1.0;
         }
     };
+
+    struct PathParam
+    {
+        std::string coord_path; 
+        std::string coord_name;
+        std::string filter_path;
+
+        PathParam()
+        {
+            coord_path = "src/global_user/config/camera.yaml";
+            coord_name = "KE0200110075";
+            filter_path = "src/global_user/config/filter_param.yaml";
+        }
+    };
     
     typedef enum PredictDirection
     {
@@ -353,13 +371,15 @@ namespace armor_processor
 
     class ArmorPredictor
     {
+        typedef global_interface::msg::Target TargetMsg;
+        
     public:
         ArmorPredictor();
         ~ArmorPredictor();
         // ArmorPredictor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param,
                         // const std::string filter_param_path);
         ArmorPredictor(const PredictParam& predict_param, const SingerModel& singer_model_param, 
-                        const DebugParam& debug_param, const std::string filter_param_path);
+                        const PathParam& path_param, const DebugParam& debug_param);
     
     private:
         ParticleFilter pf_pos;  // 目前坐标粒子滤波
@@ -378,12 +398,10 @@ namespace armor_processor
         std::string filter_param_path_;
         YAML::Node config_;
         
-        Eigen::Vector3d predict(TargetInfo target, double timestamp, double& sleep_time, cv::Mat* src = nullptr);
-
-        // Eigen::Vector3d&& fittingPredictor(TargetInfo& target);
-        // Eigen::Vector3d&& filterPredictor(TargetInfo& target);
-
+        void reInitialize();
         bool setBulletSpeed(double speed);
+        void loadParam(std::string filter_param_path);
+        Eigen::Vector3d predict(TargetMsg& target_msg, double timestamp, double& sleep_time, cv::Mat* src = nullptr);
     private:
         std::deque<cv::Point2d> history_pred_info_;
         std::deque<cv::Point2d> history_origin_info_;
@@ -402,7 +420,6 @@ namespace armor_processor
     private:
         double evalRMSE(double* params, PredictDirection predict_direction);
         
-        void init(bool target_switched);
         Eigen::Vector3d shiftWindowFilter(int start_idx);
 
         PredictStatus predict_pf_run(TargetInfo target, Vector3d& result, double timestamp);

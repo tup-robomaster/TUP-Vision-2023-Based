@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2022-12-26 02:36:31
+ * @LastEditTime: 2022-12-26 18:37:18
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 
@@ -90,7 +90,7 @@ namespace global_user
         int id;
         int color;
         double conf;
-        string key;
+        std::string key;
         Eigen::Vector3d armor3d_cam;
         Eigen::Vector3d armor3d_world;
         Eigen::Vector3d euler;
@@ -104,7 +104,7 @@ namespace global_user
         int color;
         float prob;
         std::vector<cv::Point2f> pts;
-    }
+    };
 
     struct VideoRecordParam
     {

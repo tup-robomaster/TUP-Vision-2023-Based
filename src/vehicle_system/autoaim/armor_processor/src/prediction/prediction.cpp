@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-12-26 00:34:53
+ * @LastEditTime: 2022-12-26 18:46:19
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -16,11 +16,14 @@ namespace armor_processor
         // pic_y = cv::Mat::zeros(500, 2000, CV_8UC3);
         // pic_z = cv::Mat::zeros(500, 2000, CV_8UC3);
 
-        //kf initializing
+        // KF initialized.
         kalman_filter_.Init(3, 1, 1);
 
         // SingerModel singer;
         kfInit();
+
+        // Load pf param.
+        loadParam(filter_param_path_);
 
         filter_disabled_ = false;
         fitting_disabled_ = false;
@@ -54,8 +57,9 @@ namespace armor_processor
     //     is_ekf_init = false;
     // }
 
-    ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, const SingerModel& singer_model_param, const DebugParam& debug_param, const std::string filter_param_path)
-    : predict_param_(predict_param), singer_param_(singer_model_param), debug_param_(debug_param), filter_param_path_(filter_param_path)
+    ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, const SingerModel& singer_model_param, 
+                        const PathParam& path_param, const DebugParam& debug_param)
+    : predict_param_(predict_param), singer_param_(singer_model_param), filter_param_path_(path_param.filter_path), debug_param_(debug_param)
     {
             // int cnt = 0;
             // pic_x = cv::Mat::zeros(500, 2000, CV_8UC3);
@@ -66,31 +70,30 @@ namespace armor_processor
             // pf_pos.initParam(config_, "pos");
             // pf_v.initParam(config_, "v");
 
-            //kf initializing
+            // KF initialized.
             kalman_filter_.Init(3, 1, 1);
 
             // SingerModel singer;
             kfInit();
-            
+
+            // Load pf param.
+            loadParam(filter_param_path_);
+
             filter_disabled_ = debug_param_.disable_filter;
             fitting_disabled_ = false;
             is_init = false;
             is_ekf_init = false;
     }
 
-    void ArmorPredictor::init(bool target_switched)
+    void ArmorPredictor::reInitialize()
     {
-        if(target_switched)
-        {
-            if(history_origin_info_.size() != 0)
-                history_origin_info_.clear();
+        if(history_origin_info_.size() != 0)
+            history_origin_info_.clear();
             // history_delta_x_pred_.clear();
-            is_predicted = false;
-            return;
-        }
+        is_predicted = false;
     }
 
-    Eigen::Vector3d ArmorPredictor::predict(TargetInfo target, double timestamp, double& sleep_time, cv::Mat* src)
+    void ArmorPredictor::loadParam(std::string filter_param_path)
     {
         if(!is_init)
         {
@@ -99,8 +102,38 @@ namespace armor_processor
             pf_v.initParam(config_, "v");
             is_init = true;
         }
+    }
 
+    Eigen::Vector3d ArmorPredictor::predict(TargetMsg& target_msg, double timestamp, double& sleep_time, cv::Mat* src)
+    {
         auto t1 = steady_clock_.now();
+
+        // Eigen::Vector3d xyz;
+        // int dist;
+        // double timestamp;
+        // double period;
+        // bool is_target_switched;
+        // bool is_spinning;
+        // bool is_sentry_mode;
+        // bool is_clockwise;
+        // SpinningStatus spinning_status;
+        OutpostStatus sentry_armor_status;
+        // SystemModel system_model;
+        Eigen::Vector3d xyz = {target_msg.aiming_point.x, target_msg.aiming_point.y, target_msg.aiming_point.z};
+        TargetInfo target = 
+        {
+            std::move(xyz),
+            xyz.norm(),
+            target_msg.timestamp,
+            target_msg.period,
+            target_msg.target_switched,
+            target_msg.is_spinning,
+            false,
+            target_msg.clockwise,
+            (SpinningStatus)(target_msg.is_still_spinning),
+            NORMAL,
+            CSMODEL
+        };
 
         if(target.is_sentry_mode || target.is_spinning)
         {
@@ -380,9 +413,6 @@ namespace armor_processor
 
         if(filter_disabled_ && !fitting_disabled_)
         {   //禁用滤波
-
-            // std::cout << "fitting pred..." << std::endl;
-
             // 击打前哨站模式
             if(target.is_sentry_mode && target.sentry_armor_status == NORMAL)
             {
@@ -421,7 +451,6 @@ namespace armor_processor
                 result[2] = target.xyz[2];
         }
 
-        // std::cout << 1 << std::endl;
         // if(!fitting_disabled_ && !filter_disabled_)
         // {   //卡尔曼滤波和曲线拟合异步运行，对二者预测结果进行融合
 
@@ -1417,7 +1446,7 @@ namespace armor_processor
 
         auto time_now = steady_clock_.now();
         auto dt_ns = (time_now - time_start).nanoseconds();
-        std::cout << "fitting_time:" << t / 1e9 << "s" << std::endl;
+        std::cout << "fitting_time:" << (dt_ns / 1e9) << "s" << std::endl;
 
         PredictStatus is_available;
         // auto rmse = evalRMSE()
@@ -1500,15 +1529,15 @@ namespace armor_processor
             if(predictDirection == CAMERA_X_DIRECTION)
                 kalman_filter_.x_ << target.xyz[0], target_vel[0], target_acc[0];
             else if(predictDirection == CAMERA_Y_DIRECTION)
-                kalman_filter_.x_ << target.xyz[1], 0, 0;
+                kalman_filter_.x_ << target.xyz[2], target_vel[2], target_acc[2];
             else if(predictDirection == CAMERA_Z_DIRECTION)
-                kalman_filter_.x_ << target.xyz[2], target_vel[1], target_acc[1]; 
+                kalman_filter_.x_ << target.xyz[1], target_vel[1], target_acc[1]; 
             else if(predictDirection == GYRO_X_DIRECTION)
                 kalman_filter_.x_ << target.xyz[0], target_vel[0], target_acc[0];
             else if(predictDirection == GYRO_Y_DIRECTION)
                 kalman_filter_.x_ << target.xyz[1], target_vel[1], target_acc[1];
             else if(predictDirection == GYRO_Z_DIRECTION)
-                kalman_filter_.x_ << target.xyz[2], 0, 0;
+                kalman_filter_.x_ << target.xyz[2], target_vel[2], target_acc[2];
             
             is_available.xyz_status[0] = false;
             is_ekf_init = true;
@@ -1548,9 +1577,9 @@ namespace armor_processor
             if(predictDirection == CAMERA_X_DIRECTION)
                 measurement << target.xyz[0];
             else if(predictDirection == CAMERA_Y_DIRECTION)
-                measurement << target.xyz[1];
-            else if(predictDirection == CAMERA_Z_DIRECTION)
                 measurement << target.xyz[2];
+            else if(predictDirection == CAMERA_Z_DIRECTION)
+                measurement << target.xyz[1];
             else if(predictDirection == GYRO_X_DIRECTION)
                 measurement << target.xyz[0];
             else if(predictDirection == GYRO_Y_DIRECTION)
@@ -1611,15 +1640,15 @@ namespace armor_processor
             else if(predictDirection == CAMERA_Y_DIRECTION)
             {
                 result[0] = target.xyz[0];
-                result[1] = x_pred[0];
-                result[2] = target.xyz[2];
+                result[1] = target.xyz[1];
+                result[2] = x_pred[0];
                 is_available.xyz_status[1] = true;
             }
             else if(predictDirection == CAMERA_Z_DIRECTION)
             {
                 result[0] = target.xyz[0];
-                result[1] = target.xyz[1];
-                result[2] = x_pred[0];
+                result[1] = x_pred[0];
+                result[2] = target.xyz[2];
                 is_available.xyz_status[2] = true;
             }
             else if(predictDirection == GYRO_X_DIRECTION)

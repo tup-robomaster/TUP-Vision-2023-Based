@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-15 11:25:33
- * @LastEditTime: 2022-12-26 01:28:05
+ * @LastEditTime: 2022-12-26 13:40:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/spinning_detector/spinning_detector.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -51,10 +51,10 @@ namespace armor_detector
     {
         double last_x_font;
         double last_x_back;
-        int last_timestamp;
+        double last_timestamp;
         double new_x_font;
         double new_x_back;    
-        int new_timestamp;
+        double new_timestamp;
     } XCoord;
 
     class SpinningDetector

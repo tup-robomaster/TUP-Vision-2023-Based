@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-12-26 02:09:16
+ * @LastEditTime: 2022-12-26 14:25:48
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../../include/detector_node.hpp"
@@ -38,8 +38,8 @@ namespace armor_detector
 
         time_start_ = detector_->steady_clock_.now();
         
-        // global_user::CameraType camera_type;
-        this->declare_parameter<int>("camera_type", global_user::DaHeng);
+        // CameraType camera_type;
+        this->declare_parameter<int>("camera_type", DaHeng);
         int camera_type = this->get_parameter("camera_type").as_int();
 
         // Subscriptions transport type.
@@ -68,28 +68,28 @@ namespace armor_detector
         else
         {
             // image sub.
-            if(camera_type == global_user::DaHeng)
+            if(camera_type == DaHeng)
             {
                 this->image_width_ = DAHENG_IMAGE_WIDTH;
                 this->image_height_ = DAHENG_IMAGE_HEIGHT;
                 img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
                     std::bind(&DetectorNode::image_callback, this, _1), transport_));
             }
-            else if(camera_type == global_user::HikRobot)
+            else if(camera_type == HikRobot)
             {
                 this->image_width_ = HIK_IMAGE_WIDTH;
                 this->image_height_ = HIK_IMAGE_HEIGHT;
                 img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
                     std::bind(&DetectorNode::image_callback, this, _1), transport_));
             }
-            else if(camera_type == global_user::USBCam)
+            else if(camera_type == USBCam)
             {
                 this->image_width_ = USB_IMAGE_WIDTH;
                 this->image_height_ = USB_IMAGE_HEIGHT;
                 img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/usb_img",
                     std::bind(&DetectorNode::image_callback, this, _1), transport_));
             }
-            else if(camera_type == global_user::MVSCam)
+            else if(camera_type == MVSCam)
             {
                 this->image_width_ = MVS_IMAGE_WIDTH;
                 this->image_height_ = MVS_IMAGE_HEIGHT;
@@ -121,7 +121,7 @@ namespace armor_detector
     void DetectorNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
     {
         // RCLCPP_INFO(this->get_logger(), "image callback...");
-        global_user::TaskData src;
+        TaskData src;
         std::vector<Armor> armors;
 
         if(!img_info)
@@ -133,28 +133,30 @@ namespace armor_detector
         src.timestamp = (img_sub_time - time_start_).nanoseconds();
         
         if(detector_->armor_detect(src))
-        {   //find armors
+        {   
             // RCLCPP_INFO(this->get_logger(), "armors detector...");
             TargetMsg target_info;
-            
-            //target's spinning status detect 
             if(detector_->gyro_detector(src, target_info))
             {
-                // global_interface::msg::Target target_info;
-                // target_info.aiming_point.x = aiming_point_cam[0];
-                // target_info.aiming_point.y = aiming_point_cam[1];
-                // target_info.aiming_point.z = aiming_point_cam[2];
+                target_info.header.frame_id = "armor_detector";
+                target_info.header.stamp = this->get_clock()->now();
                 target_info.timestamp = src.timestamp;
+                // Publish target's information containing 3d point and timestamp.
+                armors_pub->publish(std::move(target_info));
+            }
 
-                //publish target's information containing 3d point and timestamp.
-                armors_pub->publish(target_info);
+            if(debug_.show_img)
+            {
+                cv::namedWindow("src", cv::WINDOW_AUTOSIZE);
+                cv::imshow("src", src.img);
+                cv::waitKey(1);
             }
         }
     }
 
     void DetectorNode::run()
     {
-        global_user::TaskData src;
+        TaskData src;
         std::vector<Armor> armors;
 
         Mat img = Mat(this->image_height_, this->image_width_, CV_8UC3);
@@ -175,19 +177,20 @@ namespace armor_detector
                 // Target spinning detector. 
                 if(detector_->gyro_detector(src, target_info))
                 {
-                    // global_interface::msg::Target target_info;
-                    // target_info.aiming_point.x = aiming_point_cam[0];
-                    // target_info.aiming_point.y = aiming_point_cam[1];
-                    // target_info.aiming_point.z = aiming_point_cam[2];
+                    target_info.header.frame_id = "armor_detector";
+                    target_info.header.stamp = this->get_clock()->now();
                     target_info.timestamp = src.timestamp;
 
-                    //publish target's information containing 3d point and timestamp.
-                    armors_pub->publish(target_info);
+                    // Publish target's information containing 3d point and timestamp.
+                    armors_pub->publish(std::move(target_info));
                 }
                 
-                // cv::namedWindow("image", cv::WINDOW_AUTOSIZE);
-                // cv::imshow("image", src.img);
-                // cv::waitKey(1);
+                if(debug_.show_img)
+                {
+                    cv::namedWindow("src", cv::WINDOW_AUTOSIZE);
+                    cv::imshow("src", src.img);
+                    cv::waitKey(1);
+                }
             }
         }
     }
@@ -209,20 +212,124 @@ namespace armor_detector
         auto param_idx = params_map_[param.get_name()];
         switch (param_idx)
         {
-        case /* constant-expression */:
-            /* code */
+        case 0:
+            detector_->setDetectorParam(param.as_double(), 1);
             break;
-        
+        case 1:
+            detector_->setDetectorParam(param.as_double(), 2);
+            break;
+        case 2:
+            detector_->setDetectorParam(param.as_double(), 3);
+            break;
+        case 3:
+            detector_->setDetectorParam(param.as_double(), 4);
+            break;
+        case 4:
+            detector_->setDetectorParam(param.as_double(), 5);
+            break;
+        case 5:
+            detector_->setDetectorParam(param.as_double(), 6);
+            break;
+        case 6:
+            detector_->setDetectorParam(param.as_double(), 7);
+            break;
+        case 7:
+            detector_->setDetectorParam(param.as_double(), 8);
+            break;
+        case 8:
+            detector_->setDetectorParam(param.as_double(), 9);
+            break;
+        case 9:
+            detector_->setDetectorParam(param.as_double(), 11);
+            break;
+        case 10:
+            detector_->setDetectorParam(param.as_double(), 12);
+            break;
+        case 11:
+            detector_->setDetectorParam(param.as_double(), 13);
+            break;
+        case 12:
+            detector_->setDetectorParam(param.as_double(), 14);
+            break;
+        case 13:
+            detector_->setDetectorParam(param.as_double(), 15);
+            break;
+        case 14:
+            detector_->setDetectorParam(param.as_double(), 16);
+            break;
+        case 15:
+            detector_->setDetectorParam(param.as_double(), 17);
+            break;
+        case 16:
+            detector_->setDebugParam(param.as_bool(), 1);
+            break;
+        case 17:
+            detector_->setDebugParam(param.as_bool(), 2);
+            break;
+        case 18:
+            detector_->setDebugParam(param.as_bool(), 3);
+            break;
+        case 19:
+            detector_->setDebugParam(param.as_bool(), 4);
+            break;
+        case 20:
+            detector_->setDebugParam(param.as_bool(), 5);
+            break;
+        case 21:
+            detector_->setDebugParam(param.as_bool(), 6);
+            break;
+        case 22:
+            detector_->setDebugParam(param.as_bool(), 7);
+            break;
+        case 23:
+            detector_->setDebugParam(param.as_bool(), 8);
+            break;
+        case 24:
+            detector_->setDebugParam(param.as_bool(), 9);
+            break;
+        case 25:
+            detector_->setDebugParam(param.as_bool(), 10);
+            break;
+        case 26:
+            detector_->setDebugParam(param.as_bool(), 11);
+            break;
         default:
             break;
         }
+        return true;
     }
 
     std::unique_ptr<Detector> DetectorNode::init_detector()
     {
         params_map_ = 
         {
-            {}
+            {"armor_type_wh_thres", 0},
+            {"max_lost_cnt", 1},
+            {"max_armors_cnt", 2},
+            {"max_v", 3},
+            {"max_delta_t", 4},
+            {"no_crop_thres", 5},
+            {"hero_danger_zone", 6},
+            {"color", 7},
+            {"no_crop_ratio", 8},
+            {"full_crop_ratio", 9},
+            {"armor_roi_expand_ratio_width", 10},
+            {"armor_roi_expand_ratio_height", 11},
+            {"armor_conf_high_thres", 12},
+            {"anti_spin_judge_high_thres", 13},
+            {"anti_spin_judge_low_thres", 14},
+            {"anti_spin_max_r_multiple", 15},
+            {"max_dead_buffer", 16},
+            {"max_delta_dist", 17},
+            {"debug_without_com", 18},
+            {"using_imu", 19},
+            {"using_roi", 20},
+            {"show_aim_cross", 21},
+            {"show_img", 22},
+            {"detect_red", 23},
+            {"show_fps", 24},
+            {"print_letency", 25},
+            {"print_target_info", 26},
         };
         
         // detector params.
@@ -260,10 +367,8 @@ namespace armor_detector
         this->declare_parameter("anti_spin_judge_high_thres", 2e4);
         this->declare_parameter("anti_spin_judge_low_thres", 2e3);
         this->declare_parameter("anti_spin_max_r_multiple", 4.5);
-        // this->declare_parameter("hero_danger_zone", 99);
         this->declare_parameter("max_dead_buffer", 2) ;
         this->declare_parameter("max_delta_dist", 0.3);
-        // this->declare_parameter("max_delta_t", 50);
         
         detector_params_.armor_type_wh_thres = this->get_parameter("armor_type_wh_thres").as_int();
         detector_params_.max_lost_cnt = this->get_parameter("max_lost_cnt").as_int();

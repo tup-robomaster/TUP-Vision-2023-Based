@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2022-12-26 02:02:41
+ * @LastEditTime: 2022-12-26 13:56:20
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
