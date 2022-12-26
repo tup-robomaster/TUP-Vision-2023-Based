@@ -2,10 +2,10 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-12-26 14:25:48
+ * @LastEditTime: 2022-12-26 23:47:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
-#include "../../include/detector_node.hpp"
+#include "../include/detector_node.hpp"
 
 using namespace std::placeholders;
 namespace armor_detector
@@ -142,15 +142,16 @@ namespace armor_detector
                 target_info.header.stamp = this->get_clock()->now();
                 target_info.timestamp = src.timestamp;
                 // Publish target's information containing 3d point and timestamp.
-                armors_pub->publish(std::move(target_info));
+                armor_info_pub_->publish(std::move(target_info));
             }
 
-            if(debug_.show_img)
-            {
-                cv::namedWindow("src", cv::WINDOW_AUTOSIZE);
-                cv::imshow("src", src.img);
-                cv::waitKey(1);
-            }
+        }
+
+        if(debug_.show_img)
+        {
+            cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
+            cv::imshow("dst", src.img);
+            cv::waitKey(1);
         }
     }
 
@@ -182,15 +183,15 @@ namespace armor_detector
                     target_info.timestamp = src.timestamp;
 
                     // Publish target's information containing 3d point and timestamp.
-                    armors_pub->publish(std::move(target_info));
+                    armor_info_pub_->publish(std::move(target_info));
                 }
                 
-                if(debug_.show_img)
-                {
-                    cv::namedWindow("src", cv::WINDOW_AUTOSIZE);
-                    cv::imshow("src", src.img);
-                    cv::waitKey(1);
-                }
+            }
+            if(debug_.show_img)
+            {
+                cv::namedWindow("src", cv::WINDOW_AUTOSIZE);
+                cv::imshow("src", src.img);
+                cv::waitKey(1);
             }
         }
     }
@@ -213,85 +214,85 @@ namespace armor_detector
         switch (param_idx)
         {
         case 0:
-            detector_->setDetectorParam(param.as_double(), 1);
+            detector_->setDetectorParam(std::move(param.as_double()), 1);
             break;
         case 1:
-            detector_->setDetectorParam(param.as_double(), 2);
+            detector_->setDetectorParam(std::move(param.as_double()), 2);
             break;
         case 2:
-            detector_->setDetectorParam(param.as_double(), 3);
+            detector_->setDetectorParam(std::move(param.as_double()), 3);
             break;
         case 3:
-            detector_->setDetectorParam(param.as_double(), 4);
+            detector_->setDetectorParam(std::move(param.as_double()), 4);
             break;
         case 4:
-            detector_->setDetectorParam(param.as_double(), 5);
+            detector_->setDetectorParam(std::move(param.as_double()), 5);
             break;
         case 5:
-            detector_->setDetectorParam(param.as_double(), 6);
+            detector_->setDetectorParam(std::move(param.as_double()), 6);
             break;
         case 6:
-            detector_->setDetectorParam(param.as_double(), 7);
+            detector_->setDetectorParam(std::move(param.as_double()), 7);
             break;
         case 7:
-            detector_->setDetectorParam(param.as_double(), 8);
+            detector_->setDetectorParam(std::move(param.as_double()), 8);
             break;
         case 8:
-            detector_->setDetectorParam(param.as_double(), 9);
+            detector_->setDetectorParam(std::move(param.as_double()), 9);
             break;
         case 9:
-            detector_->setDetectorParam(param.as_double(), 11);
+            detector_->setDetectorParam(std::move(param.as_double()), 11);
             break;
         case 10:
-            detector_->setDetectorParam(param.as_double(), 12);
+            detector_->setDetectorParam(std::move(param.as_double()), 12);
             break;
         case 11:
-            detector_->setDetectorParam(param.as_double(), 13);
+            detector_->setDetectorParam(std::move(param.as_double()), 13);
             break;
         case 12:
-            detector_->setDetectorParam(param.as_double(), 14);
+            detector_->setDetectorParam(std::move(param.as_double()), 14);
             break;
         case 13:
-            detector_->setDetectorParam(param.as_double(), 15);
+            detector_->setDetectorParam(std::move(param.as_double()), 15);
             break;
         case 14:
-            detector_->setDetectorParam(param.as_double(), 16);
+            detector_->setDetectorParam(std::move(param.as_double()), 16);
             break;
         case 15:
-            detector_->setDetectorParam(param.as_double(), 17);
+            detector_->setDetectorParam(std::move(param.as_double()), 17);
             break;
         case 16:
-            detector_->setDebugParam(param.as_bool(), 1);
+            detector_->setDebugParam(std::move(param.as_bool()), 1);
             break;
         case 17:
-            detector_->setDebugParam(param.as_bool(), 2);
+            detector_->setDebugParam(std::move(param.as_bool()), 2);
             break;
         case 18:
-            detector_->setDebugParam(param.as_bool(), 3);
+            detector_->setDebugParam(std::move(param.as_bool()), 3);
             break;
         case 19:
-            detector_->setDebugParam(param.as_bool(), 4);
+            detector_->setDebugParam(std::move(param.as_bool()), 4);
             break;
         case 20:
-            detector_->setDebugParam(param.as_bool(), 5);
+            detector_->setDebugParam(std::move(param.as_bool()), 5);
             break;
         case 21:
-            detector_->setDebugParam(param.as_bool(), 6);
+            detector_->setDebugParam(std::move(param.as_bool()), 6);
             break;
         case 22:
-            detector_->setDebugParam(param.as_bool(), 7);
+            detector_->setDebugParam(std::move(param.as_bool()), 7);
             break;
         case 23:
-            detector_->setDebugParam(param.as_bool(), 8);
+            detector_->setDebugParam(std::move(param.as_bool()), 8);
             break;
         case 24:
-            detector_->setDebugParam(param.as_bool(), 9);
+            detector_->setDebugParam(std::move(param.as_bool()), 9);
             break;
         case 25:
-            detector_->setDebugParam(param.as_bool(), 10);
+            detector_->setDebugParam(std::move(param.as_bool()), 10);
             break;
         case 26:
-            detector_->setDebugParam(param.as_bool(), 11);
+            detector_->setDebugParam(std::move(param.as_bool()), 11);
             break;
         default:
             break;

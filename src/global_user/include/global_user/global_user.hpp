@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2022-12-26 18:37:18
+ * @LastEditTime: 2022-12-26 23:40:03
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 
@@ -19,9 +19,10 @@
 
 #include <fstream>
 #include <yaml-cpp/yaml.h>
-#include <fmt/format.h>
-#include <fmt/color.h>
-#include <glog/logging.h>
+
+// #include <fmt/format.h>
+// #include <fmt/color.h>
+// #include <glog/logging.h>
 
 //opencv
 #include <opencv2/opencv.hpp>

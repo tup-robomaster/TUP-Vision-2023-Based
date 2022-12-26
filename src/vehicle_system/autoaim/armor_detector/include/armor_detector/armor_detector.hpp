@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2022-12-26 14:13:12
+ * @LastEditTime: 2022-12-26 22:02:26
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -164,7 +164,7 @@ namespace armor_detector
         Size2i input_size;
     
     public:
-        void setDetectorParam(double& param, int idx);
-        void setDebugParam(bool& param, int idx);
+        void setDetectorParam(const double& param, int idx);
+        void setDebugParam(const bool& param, int idx);
     }; 
 } //namespace detector

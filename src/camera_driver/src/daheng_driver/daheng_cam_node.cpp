@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 14:25:39
- * @LastEditTime: 2022-12-24 17:44:45
+ * @LastEditTime: 2022-12-26 23:15:40
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
  */
 #include "../../include/daheng_driver/daheng_cam_node.hpp"
@@ -355,14 +355,14 @@ namespace camera_driver
     }
 }
 
-int main(int argc, char** argv)
-{
-    rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<camera_driver::DahengCamNode>());
-    rclcpp::shutdown();
+// int main(int argc, char** argv)
+// {
+//     rclcpp::init(argc, argv);
+//     rclcpp::spin(std::make_shared<camera_driver::DahengCamNode>());
+//     rclcpp::shutdown();
     
-    return 0;
-}
+//     return 0;
+// }
 
 #include "rclcpp_components/register_node_macro.hpp"
 RCLCPP_COMPONENTS_REGISTER_NODE(camera_driver::DahengCamNode)

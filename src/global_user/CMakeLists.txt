@@ -69,7 +69,6 @@ target_link_libraries(${PROJECT_NAME}
   ${OpenCV_LIBRARIES}
   yaml-cpp.so
   fmt.so 
-  glog.so
 )
       
 # 添加头文件地址
@@ -104,7 +103,7 @@ install(
 )
 
 install(DIRECTORY
-  # launch
+  launch
   config 
   DESTINATION share/${PROJECT_NAME}
 )

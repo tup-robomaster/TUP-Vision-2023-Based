@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-17 00:27:33
- * @LastEditTime: 2022-12-26 18:42:51
+ * @LastEditTime: 2022-12-27 01:23:21
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor/armor_processor.hpp
  */
 #ifndef ARMOR_PRECESSOR_HPP_
@@ -46,8 +46,8 @@ namespace armor_processor
 
         //预测(接收armor_detector节点发布的目标信息进行预测)
         CoordSolver coordsolver_;
-        Eigen::Vector3d&& predictor(TargetMsg& target, double& sleep_time);
-        Eigen::Vector3d&& predictor(cv::Mat& src, TargetMsg& target, double& sleep_time);
+        std::unique_ptr<Eigen::Vector3d> predictor(TargetMsg& target, double& sleep_time);
+        std::unique_ptr<Eigen::Vector3d> predictor(cv::Mat& src, TargetMsg& target, double& sleep_time);
         
     private:
         // Eigen::Vector3d&& fittingPredictor(TargetInfo& target, double dt);
@@ -56,9 +56,10 @@ namespace armor_processor
         // std::unique_ptr<ArmorPredictor> armor_predictor_;
         // GeometryPoint aiming_point_;
         
-        void init(std::string coord_path, std::string coord_name);
+        PathParam path_param_;
         // Eigen::Matrix3d rmat_imu_;
     public:
+        void init(std::string coord_path, std::string coord_name);
 
         // bool is_initialized_;
         // bool is_ekf_initialized_;

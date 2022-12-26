@@ -93,8 +93,11 @@ set(dependencies
 include_directories(include)
 add_library(${PROJECT_NAME} SHARED
   src/usb_driver/usb_cam.cpp
+  src/usb_driver/usb_cam_node.cpp
   src/hik_driver/hik_camera.cpp
-  # src/daheng_driver/daheng_camera.cpp
+  src/hik_driver/hik_cam_node.cpp
+  src/daheng_driver/daheng_camera.cpp
+  src/daheng_driver/daheng_cam_node.cpp
 )
   
 # # DaHeng相机
@@ -160,16 +163,19 @@ set(node_plugins "")
 add_executable(usb_cam_driver_node
   src/usb_driver/usb_cam.cpp
   src/usb_driver/usb_cam_node.cpp
+  src/usb_driver/usb_cam_node_main.cpp
 )
 
 add_executable(hik_cam_driver_node
   src/hik_driver/hik_camera.cpp
   src/hik_driver/hik_cam_node.cpp
+  src/hik_driver/hik_cam_node_main.cpp
 )
 
 add_executable(daheng_cam_driver_node
   src/daheng_driver/daheng_camera.cpp
   src/daheng_driver/daheng_cam_node.cpp
+  src/daheng_driver/daheng_cam_node_main.cpp
 )
 
 # target_include_directories(hik_cam_driver_node PUBLIC hik_sdk/include)
@@ -207,7 +213,7 @@ target_link_libraries(daheng_cam_driver_node
 )
     
 rclcpp_components_register_nodes(${PROJECT_NAME} 
-  PLUGIN "camera_driver::usb_cam_node"
+  PLUGIN "camera_driver::UsbCamNode"
   EXECUTABLE usb_cam_driver_node 
 )
 set(node_plugins 
@@ -215,7 +221,7 @@ set(node_plugins
 )
   
 rclcpp_components_register_nodes(${PROJECT_NAME} 
-  PLUGIN "camera_driver::hik_cam_node"
+  PLUGIN "camera_driver::HikCamNode"
   EXECUTABLE hik_cam_driver_node
 )
 set(node_plugins 
@@ -223,7 +229,7 @@ set(node_plugins
 )
   
 rclcpp_components_register_nodes(${PROJECT_NAME}
-  PLUGIN "camera_driver::daheng_cam_node"
+  PLUGIN "camera_driver::DahengCamNode"
   EXECUTABLE daheng_cam_driver_node
 )
 set(node_plugins 

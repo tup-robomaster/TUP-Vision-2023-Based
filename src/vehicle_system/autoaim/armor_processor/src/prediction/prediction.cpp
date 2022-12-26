@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-12-26 18:46:19
+ * @LastEditTime: 2022-12-27 01:17:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -23,7 +23,7 @@ namespace armor_processor
         kfInit();
 
         // Load pf param.
-        loadParam(filter_param_path_);
+        // loadParam(filter_param_path_);
 
         filter_disabled_ = false;
         fitting_disabled_ = false;
@@ -77,7 +77,7 @@ namespace armor_processor
             kfInit();
 
             // Load pf param.
-            loadParam(filter_param_path_);
+            // loadParam(filter_param_path_);
 
             filter_disabled_ = debug_param_.disable_filter;
             fitting_disabled_ = false;
@@ -170,11 +170,11 @@ namespace armor_processor
         // {   //对位置进行粒子滤波,以降低测距噪声影响
         //     target.xyz[2] = predict_pos[1];
         // }
-        if(!fitting_disabled_)
-        {
+        // if(!fitting_disabled_)
+        // {
             if(!target.is_target_switched)
             {
-                history_info_.push_back(target);
+                history_info_.push_back(std::move(target));
             }
             else
             {
@@ -183,12 +183,13 @@ namespace armor_processor
                     history_origin_info_.push_back(cv::Point2d(history_info_.front().xyz[0], history_info_.front().xyz[2]));
                     history_info_.clear();
                 }
-                history_info_.push_back(target);
+                history_info_.push_back(std::move(target));
             }
-        }
-        // std::cout << std::endl;
-        // std::cout << "target_switched: " << target.is_target_switched << std::endl;
-        // std::cout << std::endl;
+        // }
+
+        std::cout << std::endl;
+        std::cout << "target_switched: " << target.is_target_switched << std::endl;
+        std::cout << std::endl;
         // // //若位置粒子滤波器未完成初始化或滤波结果与目前位置相距过远,则本次不对目标位置做滤波,直接向队列压入原值
         // if (!is_pos_filter_ready || (predict_pos - xyz).norm() > 0.1)
         // {
@@ -201,21 +202,24 @@ namespace armor_processor
         //     target.xyz[1] = predict_pos[1];
         //     history_info_.push_back(target);
         // }
-        
-        auto d_xyz = target.xyz - final_target_.xyz;
-        auto delta_t = timestamp - final_target_.timestamp;
-        auto last_dist = history_info_.back().dist;
-        auto delta_time_estimate = (last_dist / predict_param_.bullet_speed) * 1e9 + predict_param_.shoot_delay;
-        auto time_estimate = delta_time_estimate + history_info_.back().timestamp;
 
+        // auto d_xyz = target.xyz - final_target_.xyz;
+        // auto delta_t = timestamp - final_target_.timestamp;
+        auto last_dist = history_info_.back().dist;
+        auto delta_time_estimate = (last_dist / predict_param_.bullet_speed) * 1e9 + predict_param_.shoot_delay * 1e6;
+        auto time_estimate = delta_time_estimate + history_info_.back().timestamp;
         sleep_time = delta_time_estimate;
+
+        std::cout << 5 << std::endl;
         
         if (history_info_.size() < 4)
         {
             final_target_ = target;
-
+            // history_info_.push_back(std::move(target));
             if(!fitting_disabled_)
             {
+                std::cout << 6 << std::endl;
+
                 if(is_predicted)
                 {
                     if(history_info_.size() != 0)
@@ -233,17 +237,19 @@ namespace armor_processor
                         result[2] = target.xyz[2];
                         return result;
                     }
-                        
-                    // std::cout << "deque_size: " << history_info_.size() << std::endl;
-                    // std::cout << "time: " << tt << std::endl;
-                    // std::cout << std::endl;
-                    // std::cout << "x:" << target.xyz[0] << " x_pred:" << result[0] << std::endl;
-                    // std::cout << std::endl;
+                    
+                // std::cout << "deque_size: " << history_info_.size() << std::endl;
+                // std::cout << "time: " << tt << std::endl;
+                // std::cout << std::endl;
+                // std::cout << "x:" << target.xyz[0] << " x_pred:" << result[0] << std::endl;
+                // std::cout << std::endl;
                 }
             }
+            std::cout << 7 << std::endl;
 
             return target.xyz;
         }
+        std::cout << 4 << std::endl;
 
         if(history_origin_info_.size() > 2)
         {   // Reserve history fitting front element.

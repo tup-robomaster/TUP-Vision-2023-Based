@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2022-12-26 02:23:46
+ * @LastEditTime: 2022-12-26 21:56:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_tracker/armor_tracker.hpp
  */
 #ifndef ARMOR_TRACKER_HPP_
@@ -27,14 +27,18 @@ using namespace global_user;
 using namespace cv;
 using namespace std;
 
+using namespace global_user;
 namespace armor_detector
 {
     struct Armor : ObjectBase
     {
+        int area;
         Rect roi;
         Rect rect;
         Point2f apex2d[4];
         RotatedRect rrect;
+        cv::Point2d center2d;
+        TargetType type;
     };
 
     class ArmorTracker

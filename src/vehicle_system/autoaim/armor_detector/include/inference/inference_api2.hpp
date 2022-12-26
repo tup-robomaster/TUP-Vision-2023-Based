@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2022-12-26 02:31:22
+ * @LastEditTime: 2022-12-26 23:38:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/inference/inference_api2.hpp
  */
 #ifndef INFERENCE_API2_HPP_
@@ -26,8 +26,8 @@
 //eigen
 #include <Eigen/Core>
 
-#include <fftw3.h>
-#include <fmt/color.h>
+// #include <fftw3.h>
+// #include <fmt/color.h>
 
 #include "../../global_user/include/global_user/global_user.hpp"
 

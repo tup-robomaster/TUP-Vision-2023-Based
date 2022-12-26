@@ -2,20 +2,22 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:13
- * @LastEditTime: 2022-12-24 15:25:27
+ * @LastEditTime: 2022-12-27 00:36:45
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/coordsolver.hpp
  */
 
 #include <yaml-cpp/yaml.h>
-#include <fmt/color.h>
-#include <fmt/format.h>
-#include <glog/logging.h>
+
+// #include <fmt/color.h>
+// #include <fmt/format.h>
+// #include <glog/logging.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
 #include "global_user/global_user.hpp"
 
+using namespace global_user;
 namespace coordsolver
 {
     struct PnPInfo

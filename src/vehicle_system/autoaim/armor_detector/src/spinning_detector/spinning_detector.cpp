@@ -2,10 +2,10 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2022-12-01 19:10:26
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/spinning_detector.cpp
+ * @LastEditTime: 2022-12-26 23:42:40
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
-#include "../../include/armor_detector/spinning_detector.hpp"
+#include "../../include/spinning_detector/spinning_detector.hpp"
 
 namespace armor_detector
 {
@@ -64,7 +64,7 @@ namespace armor_detector
             // 若分数过低移且目标陀螺状态已知除此元素
             if (abs((*score).second) <= gyro_params_.anti_spin_judge_low_thres && spin_status != UNKNOWN)
             {
-                fmt::print(fmt::fg(fmt::color::red), "[SpinDetection] Removing {}.\n", (*score).first);
+                // fmt::print(fmt::fg(fmt::color::red), "[SpinDetection] Removing {}.\n", (*score).first);
                 spin_status_map.erase((*score).first);
                 score = spin_score_map.erase(score);
                 continue;
@@ -138,7 +138,7 @@ namespace armor_detector
             {   // 当存在一个该类型ArmorTracker
                 auto candidate = trackers_map.find(tracker_key);
                 double delta_t = timestamp - (*candidate).second.last_timestamp;
-                double delta_dist = ((*armor).center3d_world - (*candidate).second.last_armor.center3d_world).norm();
+                double delta_dist = ((*armor).armor3d_world - (*candidate).second.last_armor.armor3d_world).norm();
                 // auto iou = (*candidate).second.last_armor.roi & (*armor);
                 // auto velocity = (delta_dist / delta_t) * 1e3;
                 
@@ -167,7 +167,7 @@ namespace armor_detector
                 for (auto iter = candiadates.first; iter != candiadates.second; ++iter)
                 {   // 遍历所有同Key预测器，匹配速度最小且更新时间最近的ArmorTracker
                     double delta_t = timestamp - (*iter).second.last_timestamp;
-                    double delta_dist = ((*armor).center3d_world - (*iter).second.last_armor.center3d_world).norm();
+                    double delta_dist = ((*armor).armor3d_world - (*iter).second.last_armor.armor3d_world).norm();
                     double velocity = (delta_dist / delta_t) * 1e3;
                     
                     if ((*iter).second.last_armor.roi.contains((*armor).center2d) && delta_t > 0)
@@ -291,8 +291,8 @@ namespace armor_detector
                             if(cnts == 0)
                             {
                                 XCoord x_coord;
-                                x_coord.new_x_font = last_tracker->last_armor.center3d_world[0];
-                                x_coord.new_x_back = new_tracker->last_armor.center3d_world[0];
+                                x_coord.new_x_font = last_tracker->last_armor.armor3d_world[0];
+                                x_coord.new_x_back = new_tracker->last_armor.armor3d_world[0];
                                 x_coord.new_timestamp = new_armor_timestamp;
                                 x_coord.last_x_back = 0;
                                 x_coord.last_x_back = 0;
@@ -305,8 +305,8 @@ namespace armor_detector
                                 (*candidate).second.last_x_font = (*candidate).second.new_x_font;
                                 (*candidate).second.last_x_back = (*candidate).second.new_x_back;
                                 (*candidate).second.last_timestamp = (*candidate).second.new_timestamp;
-                                (*candidate).second.new_x_font = last_tracker->last_armor.center3d_world[0];
-                                (*candidate).second.new_x_back = new_tracker->last_armor.center3d_world[0];
+                                (*candidate).second.new_x_font = last_tracker->last_armor.armor3d_world[0];
+                                (*candidate).second.new_x_back = new_tracker->last_armor.armor3d_world[0];
                                 (*candidate).second.new_timestamp = new_armor_timestamp;
                             }
 
@@ -372,7 +372,7 @@ namespace armor_detector
     //     {
     //         //FIXME:该处需根据兵种修改
     //         //若视野中存在英雄且距离小于危险距离，直接选为目标
-    //         if (armor.id == 1 && armor.center3d_world.norm() <= gyro_params_.hero_danger_zone)
+    //         if (armor.id == 1 && armor.armor3d_world.norm() <= gyro_params_.hero_danger_zone)
     //         {
     //             return armor.id;
     //         }

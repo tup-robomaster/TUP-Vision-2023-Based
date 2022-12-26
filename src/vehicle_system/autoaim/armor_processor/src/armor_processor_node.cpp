@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-12-26 19:11:54
+ * @LastEditTime: 2022-12-27 01:33:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -16,11 +16,11 @@ namespace armor_processor
         RCLCPP_WARN(this->get_logger(), "Starting processor node...");
         
         processor_ = init_armor_processor();
-        // if(!processor_->is_initialized)
-        // {
-        //     processor_->coordsolver_.loadParam(processor_->coord_param_path_, processor_->coord_param_name_);
-        //     processor_->is_initialized = true;
-        // }
+        if(!processor_->is_init)
+        {
+            processor_->loadParam(path_param_.filter_path);
+            processor_->init(path_param_.coord_path, path_param_.coord_name);
+        }
         
         // QoS
         rclcpp::QoS qos(0);
@@ -272,10 +272,12 @@ namespace armor_processor
 
         double sleep_time = 0.0;
         TargetMsg target = std::move(target_info);
-        Eigen::Vector3d aiming_point_world = processor_->predictor(target, sleep_time);
+
+        auto aiming_point_world = std::move(processor_->predictor(target, sleep_time));
         Eigen::Quaternion quat_imu = std::move(Eigen::Quaternion{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
         Eigen::Matrix3d rmat_imu = quat_imu.toRotationMatrix();
-        Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
+        rmat_imu.setIdentity();
+        Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
         Eigen::Vector2d angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
 
         // if(target_info.target_switched)
@@ -300,14 +302,14 @@ namespace armor_processor
         // }
 
         // Gimbal info pub.
-        std::unique_ptr<GimbalMsg> gimbal_info;
-        gimbal_info->header.frame_id = "gimbal";
-        gimbal_info->header.stamp = this->get_clock()->now();
-        gimbal_info->pitch = angle[0];
-        gimbal_info->yaw = angle[1];
-        gimbal_info->distance = aiming_point_cam.norm();
-        gimbal_info->is_switched = target_info.target_switched;
-        gimbal_info->is_spinning = target_info.is_spinning;
+        GimbalMsg gimbal_info;
+        gimbal_info.header.frame_id = "gimbal";
+        gimbal_info.header.stamp = this->get_clock()->now();
+        gimbal_info.pitch = angle[0];
+        gimbal_info.yaw = angle[1];
+        gimbal_info.distance = aiming_point_cam.norm();
+        gimbal_info.is_switched = target_info.target_switched;
+        gimbal_info.is_spinning = target_info.is_spinning;
         gimbal_info_pub_->publish(std::move(gimbal_info));
 
         return;
@@ -392,9 +394,9 @@ namespace armor_processor
         this->declare_parameter<std::string>("coord_param_path", "src/global_user/config/camera.yaml");
         this->declare_parameter<std::string>("coord_param_name", "00J90630561");
 
-        path_param_.coord_path = this->get_parameter("filter_param_path").as_string();
-        path_param_.filter_path = this->get_parameter("coord_param_path").as_string();
         path_param_.coord_name = this->get_parameter("coord_param_name").as_string();
+        path_param_.coord_path = this->get_parameter("coord_param_path").as_string();
+        path_param_.filter_path = this->get_parameter("filter_param_path").as_string();
 
         return std::make_unique<Processor>(predict_param_, singer_model_param_, path_param_, debug_param_);
     }

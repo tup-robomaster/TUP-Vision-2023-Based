@@ -6,19 +6,19 @@
     max_armors_cnt: 8
     max_v: 8
     max_delta_t: 100
-    no_crop_thres: 1e-2
+    no_crop_thres: 0.01
     hero_danger_zone: 4
     color: true # red: true
                 # blue: false
-    no_crop_ratio: 2e-3
-    full_crop_ratio: 1e-4
+    no_crop_ratio: 0.002
+    full_crop_ratio: 0.0001
     armor_roi_expand_ratio_width: 1.1
     armor_roi_expand_ratio_height: 1.5
     armor_conf_high_thres: 0.82
 
   # Spinning params.
-    anti_spin_judge_high_thres: 2e4
-    anti_spin_judge_low_thres: 2e3
+    anti_spin_judge_high_thres: 20000.0
+    anti_spin_judge_low_thres: 2000.0
     anti_spin_max_r_multiple: 4.5
     max_dead_buffer: 2
     max_delta_dist: 0.5
@@ -41,15 +41,16 @@
     camera_param_path: "src/global_user/config/camera.yaml"
 
   # Network model path.
-    network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
+    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
+    # network_path: "src/vehicle_system/autoaim/armor_detector/model/1106-333.xml"
+    network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
 
   # Debug params.
     debug: true
     using_imu: false
     using_roi: true
     draw_predict: true
-    show_img: false
+    show_img: true
     show_fps: false
     print_letency: false
     print_target_info: false

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2022-12-26 18:41:19
+ * @LastEditTime: 2022-12-27 01:23:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -27,19 +27,19 @@ namespace armor_processor
     // }
 
     Processor::Processor(const PredictParam& predict_param, const SingerModel& singer_model_param, const PathParam& path_param, const DebugParam& debug_param)
-    : ArmorPredictor(predict_param, singer_model_param, path_param, debug_param)
+    : ArmorPredictor(predict_param, singer_model_param, path_param, debug_param), path_param_(path_param)
     {
         is_init = false;
         is_imm_init = false;
         is_ekf_init = false;
-        init(path_param.coord_path, path_param.coord_name);
+        // init(path_param.coord_path, path_param.coord_name);
     }
     
     Processor::Processor()
     : ArmorPredictor()
     {
-        PathParam path;
-        init(path.coord_path, path.coord_name);
+        // PathParam path;
+        // init(path.coord_path, path.coord_name);
     }
 
     // Processor::Processor(const PredictParam& predict_param, const SingerModel& singer_model_param,
@@ -78,7 +78,7 @@ namespace armor_processor
         }
     }
 
-    Eigen::Vector3d&& Processor::predictor(TargetMsg& target, double& sleep_time)
+    std::unique_ptr<Eigen::Vector3d> Processor::predictor(TargetMsg& target, double& sleep_time)
     {
         if(target.target_switched)
         {
@@ -88,10 +88,10 @@ namespace armor_processor
         }
 
         auto hit_point = predict(target, target.timestamp, sleep_time);
-        return std::move(hit_point);
+        return std::make_unique<Eigen::Vector3d>(hit_point);
     }
     
-    Eigen::Vector3d&& Processor::predictor(cv::Mat& src, TargetMsg& target, double& sleep_time)
+    std::unique_ptr<Eigen::Vector3d> Processor::predictor(cv::Mat& src, TargetMsg& target, double& sleep_time)
     {
         if(target.target_switched)
         {
@@ -101,7 +101,7 @@ namespace armor_processor
         }
 
         auto hit_point = predict(target, target.timestamp, sleep_time, &src);
-        return std::move(hit_point);
+        return std::make_unique<Eigen::Vector3d>(hit_point);
     }
 
     void Processor::setPredictParam(int& param, int idx)
