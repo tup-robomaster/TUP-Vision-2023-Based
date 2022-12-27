@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2022-12-25 17:34:26
+ * @LastEditTime: 2022-12-27 18:57:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector_node.hpp
  */
 #ifndef BUFF_DETECTOR_NODE_HPP_
@@ -23,7 +23,7 @@
 #include <cv_bridge/cv_bridge.h>
 
 //custom message
-#include "global_interface/include/global_interface/msg/buff.hpp"
+#include "global_interface/msg/buff.hpp"
 
 using namespace global_user;
 using namespace coordsolver;
@@ -59,7 +59,7 @@ namespace buff_detector
         // params callback.
         std::map<std::string, int> param_map_;
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
-        bool setParam(rclcpp::Parameter& param);
+        bool setParam(const rclcpp::Parameter& param);
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
 
     private:

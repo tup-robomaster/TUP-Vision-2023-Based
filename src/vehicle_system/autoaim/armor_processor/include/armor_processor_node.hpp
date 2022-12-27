@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-12-26 18:49:19
+ * @LastEditTime: 2022-12-27 17:58:42
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -56,9 +56,7 @@ namespace armor_processor
         // rclcpp::Subscription<SpinInfo>::SharedPtr spin_info_sub;
         // void spin_info_callback(const SpinMsg::SharedPtr msg) const;
         
-        // message_filters::Subscriber<TargetMsg> target_info_sub;
         rclcpp::Subscription<TargetMsg>::SharedPtr target_info_sub_;
-        message_filters::Subscriber<TargetMsg> target_point_sub_; 
         void target_info_callback(const TargetMsg& target_info);
 
         // bool draw_predict;
@@ -67,34 +65,37 @@ namespace armor_processor
         cv::Point2f apex2d[4];
         // coordsolver::coordsolver coordsolver_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
+        rclcpp::Publisher<TargetMsg>::SharedPtr predict_info_pub_;
     
     private:
         std::unique_ptr<Processor> processor_;
         std::unique_ptr<Processor> init_armor_processor();
 
     private:
-        //tf2 transformation
-        std::string target_frame_;
-        std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
-        std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
-        message_filters::Subscriber<geometry_msgs::msg::PointStamped> point_sub_;
-        std::shared_ptr<tf2_ros::MessageFilter<geometry_msgs::msg::PointStamped>> tf2_filter_;
+        // TF2 transformation.
+        // std::string target_frame_;
+        // std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
+        // std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
+        // message_filters::Subscriber<TargetMsg> target_info_sub_; 
+        // message_filters::Subscriber<geometry_msgs::msg::PointStamped> point_sub_;
+        // std::shared_ptr<tf2_ros::MessageFilter<geometry_msgs::msg::PointStamped>> tf2_filter_;
 
         // void msg_callback(const geometry_msgs::msg::PointStamped::SharedPtr point_ptr);
     
     protected:
-        // sub image.
-        std::shared_ptr<image_transport::Subscriber> img_sub_;
+        // Sub image.
+        // std::shared_ptr<image_transport::Subscriber> img_sub_;
         // Image subscriptions transport type.
-        std::string transport_;
-        int image_width;
-        int image_height;
+        // std::string transport_;
+        // int image_width;
+        // int image_height;
         
         // image callback.
         // void img_callback();
         // void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
     
     public:
+        bool debug_;
         PredictParam predict_param_;
         SingerModel singer_model_param_;
         DebugParam debug_param_;

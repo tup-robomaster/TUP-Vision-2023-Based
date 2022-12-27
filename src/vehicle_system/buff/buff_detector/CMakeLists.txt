@@ -23,6 +23,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
+find_package(rclpy REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(message_filters REQUIRED)
@@ -30,15 +31,16 @@ find_package(sensor_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(image_transport REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(OpenVINO REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
 find_package(yaml-cpp REQUIRED)
-find_package(fmt REQUIRED)
-find_package(global_interface REQUIRED)
-find_package(global_user REQUIRED)
+# find_package(fmt REQUIRED)
 find_package(filter REQUIRED)
+find_package(global_user REQUIRED)
+find_package(global_interface REQUIRED)
 
 include_directories(include 
   ${OpenCV_INCLUDE_DIRS}
@@ -69,9 +71,24 @@ set(dependencies
 )
 
 include_directories(include)
+add_library(${PROJECT_NAME} SHARED
+  src/fan_tracker/fan_tracker.cpp
+  src/inference/inference_api2.cpp
+  src/buff_detector/buff_detector.cpp
+  src/buff_detector_node.cpp
+)
+
+ament_target_dependencies(${PROJECT_NAME}
+  ${dependencies}
+)
+
+target_link_libraries(${PROJECT_NAME}
+  openvino::runtime
+)
+
 add_executable(${PROJECT_NAME}_node 
   src/fan_tracker/fan_tracker.cpp
-  src/inference/inference.cpp 
+  src/inference/inference_api2.cpp 
   src/buff_detector/buff_detector.cpp 
   src/buff_detector_node.cpp
 )
@@ -82,21 +99,28 @@ ament_target_dependencies(${PROJECT_NAME}_node
 
 target_link_libraries(${PROJECT_NAME}_node 
   # ${PROJECT_NAME}
-  ${OpenCV_LIBRARIES}
+  # ${OpenCV_LIBRARIES}
   # ${InferenceEngine_LIBRARIES}
   openvino::runtime 
-  ${Eigen3_LIBRARIES}
+  # ${Eigen3_LIBRARIES}
   
   yaml-cpp.so 
-  glog.so 
-  fmt.so
-  ceres.so
-  lapack.so 
+  # fmt.so
+  # ceres.so
+  # lapack.so 
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME} 
   PLUGIN "buff_detector::BuffDetectorNode"
   EXECUTABLE ${PROJECT_NAME}_node  
+)
+
+install(TARGETS 
+  ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib
+  INCLUDES DESTINATION include
 )
 
 install(TARGETS 

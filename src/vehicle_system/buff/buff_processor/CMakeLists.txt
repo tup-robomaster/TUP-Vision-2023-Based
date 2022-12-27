@@ -88,10 +88,9 @@ target_link_libraries(${PROJECT_NAME}_node
 )
 
 add_library(${PROJECT_NAME} SHARED
-  include/buff_processor/buff_processor.hpp
-  include/predictor/predictor.hpp
-  include/buff_processor_node.hpp
-  
+  # include/buff_processor/buff_processor.hpp
+  # include/predictor/predictor.hpp
+  # include/buff_processor_node.hpp
   src/predictor/predictor.cpp
   src/buff_processor/buff_processor.cpp
   src/buff_processor_node.cpp
@@ -104,6 +103,14 @@ ament_target_dependencies(${PROJECT_NAME}
 rclcpp_components_register_nodes(${PROJECT_NAME}
   PLUGIN "buff_processor::BuffProcessorNode"
   EXECUTABLE ${PROJECT_NAME}_node  
+)
+
+install(TARGETS 
+  ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib
+  INCLUDES DESTINATION include
 )
 
 install(TARGETS 

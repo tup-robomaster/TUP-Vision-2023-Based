@@ -2,16 +2,16 @@
   ros__parameters:
   # Detector params.
     max_lost_cnt: 4 
-    max_v: 4   
-    max_delta_t: 100 
+    max_v: 4.0  
+    max_delta_t: 100.0
     fan_length: 0.7
-    no_crop_thres: 2e-3
+    no_crop_thres: 0.002
 
   # Paths.
-    network_path: "src/vehicle_system/buff/model/buff.xml"
+    network_path: "src/vehicle_system/buff/buff_detector/model/buff.xml"
     camera_param_path: "src/global_user/config/camera.yaml"
     camera_name: "KE0200110075"
-    path_prefix: "src/vehicle_system/buff/dataset/"
+    path_prefix: "src/recorder/dataset/"
 
   # Debug.
     using_imu: false

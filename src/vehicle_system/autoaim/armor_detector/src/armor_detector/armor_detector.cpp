@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-12-26 23:43:25
+ * @LastEditTime: 2022-12-27 15:10:48
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -274,7 +274,7 @@ namespace armor_detector
                     if (!is_this_armor_available)
                     {
                         continue;
-                        cout<<"IGN"<<endl;
+                        cout << "IGN" << endl;
                     }
                 }
             }
@@ -346,6 +346,11 @@ namespace armor_detector
             //     waitKey(1);
             // }
 
+            if(debug_params_.show_all_armors)
+            {
+                showArmors(src);
+            }
+
             //更新陀螺分数
             spinning_detector_.updateSpinScore();
 
@@ -400,6 +405,11 @@ namespace armor_detector
             //     imshow("dst",src.img);
             //     waitKey(1);
             // }
+
+            if(debug_params_.show_all_armors)
+            {
+                showArmors(src);
+            }
 
             lost_cnt++;
             is_last_target_exists = false;
@@ -593,23 +603,7 @@ namespace armor_detector
 
         if(debug_params_.show_all_armors)
         {
-            for (auto armor : armors)
-            {
-                // putText(src.img, fmt::format("{:.2f}", armor.conf),armor.apex2d[3],FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
-                // if (armor.color == 0)
-                //     putText(src.img, fmt::format("B{}",armor.id),armor.apex2d[0],FONT_HERSHEY_SIMPLEX, 1, {255, 100, 0}, 2);
-                // if (armor.color == 1)
-                //     putText(src.img, fmt::format("R{}",armor.id),armor.apex2d[0],FONT_HERSHEY_SIMPLEX, 1, {0, 0, 255}, 2);
-                // if (armor.color == 2)
-                //     putText(src.img, fmt::format("N{}",armor.id),armor.apex2d[0],FONT_HERSHEY_SIMPLEX, 1, {255, 255, 255}, 2);
-                // if (armor.color == 3)
-                //     putText(src.img, fmt::format("P{}",armor.id),armor.apex2d[0],FONT_HERSHEY_SIMPLEX, 1, {255, 100, 255}, 2);
-                for(int i = 0; i < 4; i++)
-                    line(src.img, armor.apex2d[i % 4], armor.apex2d[(i + 1) % 4], {0,255,0}, 1);
-                rectangle(src.img, armor.roi, {255, 0, 255}, 1);
-                auto armor_center = coordsolver_.reproject(armor.armor3d_cam);
-                circle(src.img, armor_center, 4, {0, 0, 255}, 2);
-            }
+            showArmors(src);
         }
         
         auto angle = coordsolver_.getAngle(last_aiming_point, rmat_imu);
@@ -681,6 +675,49 @@ namespace armor_detector
         // }
 
         return true;
+    }
+
+    void Detector::showArmors(TaskData& src)
+    {
+        for (auto armor : armors)
+        {
+            char ch[10];
+            sprintf(ch, "%.3f", armor.conf);
+            std::string conf_str = ch;
+            putText(src.img, conf_str, armor.apex2d[3], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
+
+            char ch1[10];
+            std::string id_str = "";
+            if (armor.color == 0)
+            {
+                sprintf(ch1, "B%d", armor.id);
+                id_str = ch1;
+                putText(src.img, id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 0}, 2);
+            }
+            if (armor.color == 1)
+            {
+                sprintf(ch1, "R%d", armor.id);
+                id_str = ch1;
+                putText(src.img, id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 0, 255}, 2);
+            }
+            if (armor.color == 2)
+            {
+                sprintf(ch1, "N%d", armor.id);
+                id_str = ch1;
+                putText(src.img, id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 255, 255}, 2);
+            }
+            if (armor.color == 3)
+            {
+                sprintf(ch1, "P%d", armor.id);
+                id_str = ch1;
+                putText(src.img, id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 255}, 2);
+            }
+            for(int i = 0; i < 4; i++)
+                line(src.img, armor.apex2d[i % 4], armor.apex2d[(i + 1) % 4], {0,255,0}, 1);
+            rectangle(src.img, armor.roi, {255, 0, 255}, 1);
+            auto armor_center = coordsolver_.reproject(armor.armor3d_cam);
+            circle(src.img, armor_center, 4, {0, 0, 255}, 2);
+        }
     }
 
     Point2i Detector::cropImageByROI(Mat &img)

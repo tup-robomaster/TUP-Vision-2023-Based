@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 02:02:35
- * @LastEditTime: 2022-12-24 17:44:07
+ * @LastEditTime: 2022-12-27 17:32:29
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_cam_node.hpp
  */
 #ifndef DAHENG_CAM_NODE_HPP_
@@ -60,6 +60,8 @@ namespace camera_driver
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
 
+        std::shared_ptr<rclcpp::ParameterEventHandler> debug_param_sub_;
+        std::shared_ptr<rclcpp::ParameterCallbackHandle> debug_cb_handle_;
     protected:
         bool using_shared_memory_; //图像数据内存共享
         SharedMemoryParam shared_memory_param_;

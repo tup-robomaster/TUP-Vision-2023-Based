@@ -2,12 +2,12 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:54:32
- * @LastEditTime: 2022-12-11 10:57:09
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/src/fan_tracker/fan_tracker.cpp
+ * @LastEditTime: 2022-12-27 18:32:45
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/fan_tracker/fan_tracker.cpp
  */
 #include "../../include/fan_tracker/fan_tracker.hpp"
 
-namespace buff
+namespace buff_detector
 {
     /**
      * @brief 构造一个ArmorTracker对象
@@ -45,4 +45,4 @@ namespace buff
 
         return true;
     }
-} //namespace buff
+} //namespace buff_detector

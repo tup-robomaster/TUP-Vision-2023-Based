@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:53:56
- * @LastEditTime: 2022-12-26 02:25:55
+ * @LastEditTime: 2022-12-27 18:30:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/fan_tracker/fan_tracker.hpp
  */
 #ifndef FAN_TRACKER_HPP_
@@ -15,7 +15,7 @@
 #include <Eigen/Core>
 #include <opencv2/opencv.hpp>
 
-#include "../../../global_user/include/global_user/global_user.hpp"
+#include "../../global_user/include/global_user/global_user.hpp"
 
 using namespace global_user;
 using namespace cv;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-12-27 01:17:13
+ * @LastEditTime: 2022-12-27 14:19:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -187,9 +187,9 @@ namespace armor_processor
             }
         // }
 
-        std::cout << std::endl;
-        std::cout << "target_switched: " << target.is_target_switched << std::endl;
-        std::cout << std::endl;
+        // std::cout << std::endl;
+        // std::cout << "target_switched: " << target.is_target_switched << std::endl;
+        // std::cout << std::endl;
         // // //若位置粒子滤波器未完成初始化或滤波结果与目前位置相距过远,则本次不对目标位置做滤波,直接向队列压入原值
         // if (!is_pos_filter_ready || (predict_pos - xyz).norm() > 0.1)
         // {
@@ -210,7 +210,7 @@ namespace armor_processor
         auto time_estimate = delta_time_estimate + history_info_.back().timestamp;
         sleep_time = delta_time_estimate;
 
-        std::cout << 5 << std::endl;
+        // std::cout << 5 << std::endl;
         
         if (history_info_.size() < 4)
         {
@@ -218,8 +218,6 @@ namespace armor_processor
             // history_info_.push_back(std::move(target));
             if(!fitting_disabled_)
             {
-                std::cout << 6 << std::endl;
-
                 if(is_predicted)
                 {
                     if(history_info_.size() != 0)
@@ -245,11 +243,11 @@ namespace armor_processor
                 // std::cout << std::endl;
                 }
             }
-            std::cout << 7 << std::endl;
+            // std::cout << 7 << std::endl;
 
             return target.xyz;
         }
-        std::cout << 4 << std::endl;
+        // std::cout << 4 << std::endl;
 
         if(history_origin_info_.size() > 2)
         {   // Reserve history fitting front element.

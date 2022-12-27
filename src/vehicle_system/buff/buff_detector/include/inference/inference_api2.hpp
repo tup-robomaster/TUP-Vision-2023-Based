@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2022-12-26 02:34:08
+ * @LastEditTime: 2022-12-27 19:01:00
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/inference/inference_api2.hpp
  */
 #ifndef INFERENCE_API2_HPP_
@@ -20,8 +20,9 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/opencv.hpp>
 #include <Eigen/Core>
-#include <fftw3.h>
-#include <fmt/color.h>
+
+// #include <fftw3.h>
+// #include <fmt/color.h>
 
 #include "../../global_user/include/global_user/global_user.hpp"
 
@@ -30,7 +31,7 @@ namespace buff_detector
 {
     struct BuffObject : Object
     {
-        Point2f apex[5];
+        cv::Point2f apex[5];
     };
 
     class BuffDetector

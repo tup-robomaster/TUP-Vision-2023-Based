@@ -43,7 +43,8 @@
   # Network model path.
     # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
     # network_path: "src/vehicle_system/autoaim/armor_detector/model/1106-333.xml"
-    network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
+    # network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
+    network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-1208-001.xml"
 
   # Debug params.
     debug: true
@@ -61,16 +62,7 @@
     show_predict: false
     show_transformed_info: false
     auto_label: false
-
-  # Singer model(--->CS Model).
-    singer_alpha: 1.0 # 1/f
-    singer_a_max: 0.1
-    singer_p_max: 0.1
-    singer_p0: 0.8
-    singer_dt: 1.2
-    singer_sigma: 0.1
-    singer_p: 1.0
-    singer_r: 1.0
+    show_all_armors: true
 
 /armor_processor:
   ros__parameters:
@@ -102,11 +94,11 @@
     filter_param_path: "src/global_user/config/filter_param.yaml"
 
   # Singer model(--->CS Model).
-    singer_alpha: 5.0 # 1/f（机动频率倒数） 
-    singer_a_max: 0.5
+    singer_alpha: 1.0 # 1/f
+    singer_a_max: 0.1
     singer_p_max: 0.1
     singer_p0: 0.8
-    singer_dt: 5.0
+    singer_dt: 1.2
     singer_sigma: 0.1
     singer_p: 1.0
     singer_r: 1.0

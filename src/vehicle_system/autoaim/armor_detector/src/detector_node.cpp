@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-12-26 23:47:38
+ * @LastEditTime: 2022-12-27 22:23:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -26,7 +26,7 @@ namespace armor_detector
 
         //QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(10);
         qos.best_effort();
         qos.reliable();
         qos.durability();
@@ -363,6 +363,7 @@ namespace armor_detector
         this->declare_parameter("show_fps", false);
         this->declare_parameter("print_letency", false);
         this->declare_parameter("print_target_info", false);
+        this->declare_parameter("show_all_armors", false);
         
         //
         this->declare_parameter("anti_spin_judge_high_thres", 2e4);
@@ -389,7 +390,6 @@ namespace armor_detector
         this->get_parameter("armor_roi_expand_ratio_height", detector_params_.armor_roi_expand_ratio_height);
         this->get_parameter("armor_conf_high_thres", detector_params_.armor_conf_high_thres);
 
-
         debug_.detect_red = this->get_parameter("detect_red").as_bool();
         debug_.debug_without_com  = this->get_parameter("debug_without_com").as_bool();
         debug_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
@@ -399,6 +399,7 @@ namespace armor_detector
         debug_.show_fps = this->get_parameter("show_fps").as_bool();
         debug_.print_letency = this->get_parameter("print_letency").as_bool();
         debug_.print_target_info = this->get_parameter("print_target_info").as_bool();
+        debug_.show_all_armors = this->get_parameter("show_all_armors").as_bool();
 
         gyro_params_.anti_spin_judge_high_thres = this->get_parameter("anti_spin_judge_high_thres").as_double();
         gyro_params_.anti_spin_judge_low_thres = this->get_parameter("anti_spin_judge_low_thres").as_double();

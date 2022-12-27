@@ -87,9 +87,9 @@ def generate_launch_description():
         #         launch_file_path=buff_launch_file
         #     )
         # ),
-
+        
         ComposableNodeContainer(
-            name='usb_cam_autoaim_container',
+            name='usb_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -114,20 +114,19 @@ def generate_launch_description():
                         'use_intra_process_comms':True
                     }]
                 ),
-                # ComposableNode(
-                #     package='buff_detector',
-                #     plugin='buff_detector::DetectorNode',
-                #     name='buff_detector',
-                #     parameters=[buff_detector_params],
-                #     extra_arguments=[{
-                #         'use_intra_process_comms':True
-                #     }]
-                # )
+                ComposableNode(
+                    package='buff_detector',
+                    plugin='buff_detector::DetectorNode',
+                    name='buff_detector',
+                    parameters=[buff_detector_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                )
             ],
         ),
-
         ComposableNodeContainer(
-            name='daheng_cam_autoaim_container',
+            name='daheng_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -152,20 +151,19 @@ def generate_launch_description():
                         'use_intra_process_comms':True
                     }]
                 ),
-                # ComposableNode(
-                #     package='buff_detector',
-                #     plugin='buff_detector::DetectorNode',
-                #     name='buff_detector',
-                #     parameters=[buff_detector_params],
-                #     extra_arguments=[{
-                #         'use_intra_process_comms':True
-                #     }]
-                # )
+                ComposableNode(
+                    package='buff_detector',
+                    plugin='buff_detector::DetectorNode',
+                    name='buff_detector',
+                    parameters=[buff_detector_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                )
             ],
         ),
-
         ComposableNodeContainer(
-            name='hik_cam_autoaim_container',
+            name='hik_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -190,20 +188,19 @@ def generate_launch_description():
                         'use_intra_process_comms':True
                     }]
                 ),
-                # ComposableNode(
-                #     package='buff_detector',
-                #     plugin='buff_detector::DetectorNode',
-                #     name='buff_detector',
-                #     parameters=[buff_detector_params],
-                #     extra_arguments=[{
-                #         'use_intra_process_comms':True
-                #     }]
-                # )
+                ComposableNode(
+                    package='buff_detector',
+                    plugin='buff_detector::DetectorNode',
+                    name='buff_detector',
+                    parameters=[buff_detector_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                )
             ],
         ),
-
         ComposableNodeContainer(
-            name='mvs_cam_autoaim_container',
+            name='mvs_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -228,18 +225,17 @@ def generate_launch_description():
                         'use_intra_process_comms':True
                     }]
                 ),
-                # ComposableNode(
-                #     package='buff_detector',
-                #     plugin='buff_detector::DetectorNode',
-                #     name='buff_detector',
-                #     parameters=[buff_detector_params],
-                #     extra_arguments=[{
-                #         'use_intra_process_comms':True
-                #     }]
-                # )
+                ComposableNode(
+                    package='buff_detector',
+                    plugin='buff_detector::DetectorNode',
+                    name='buff_detector',
+                    parameters=[buff_detector_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                )
             ],
         ),
-
         Node(
             package='armor_processor',
             executable='armor_processor_node',
@@ -247,13 +243,11 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[armor_processor_params]
         ),
-
-        # Node(
-        #     package='buff_processor',
-        #     executable='buff_processor_node',
-        #     output='screen',
-        #     emulate_tty=True,
-        #     parameters=[buff_processor_params]
-        # )
-
+        Node(
+            package='buff_processor',
+            executable='buff_processor_node',
+            output='screen',
+            emulate_tty=True,
+            parameters=[buff_processor_params]
+        )
     ])

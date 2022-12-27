@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2022-12-25 17:15:48
+ * @LastEditTime: 2022-12-27 21:45:19
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
@@ -11,8 +11,8 @@
 #include "../fan_tracker/fan_tracker.hpp"
 #include "../inference/inference.hpp"
 
-#include "../../../global_user/include/global_user/global_user.hpp"
-#include "../../../global_user/include/coordsolver.hpp"
+#include "../../global_user/include/global_user/global_user.hpp"
+#include "../../global_user/include/coordsolver.hpp"
 
 #include <future>
 #include <vector>
@@ -55,15 +55,15 @@ namespace buff_detector
     struct BuffParam
     {
         int max_lost_cnt;           // 最大丢失目标帧数
-        int max_v;                  // 最大旋转速度(rad/s)
-        int max_delta_t;            // 使用同一预测器的最大时间间隔(ms)
+        double max_v;                  // 最大旋转速度(rad/s)
+        double max_delta_t;            // 使用同一预测器的最大时间间隔(ms)
         double fan_length;          // 大符臂长(R字中心至装甲板中心)
         double no_crop_thres;       // 禁用ROI裁剪的装甲板占图像面积最大面积比值
 
         BuffParam()
         {
             max_lost_cnt = 4; 
-            max_v = 4;   
+            max_v = 4.0;   
             max_delta_t = 100; 
             fan_length = 0.7;
             no_crop_thres = 2e-3;
@@ -119,8 +119,8 @@ namespace buff_detector
         BuffDetector buff_detector_;
         CoordSolver coordsolver_;
 
-        void setDetectorParam(double& param, int idx);
-        void setDebugParam(bool& param, int idx);
+        void setDetectorParam(const double& param, int idx);
+        void setDebugParam(const bool& param, int idx);
     private:
         bool is_last_target_exists_;
         int lost_cnt_;
@@ -130,6 +130,7 @@ namespace buff_detector
         Point2i last_roi_center_;
         Point2i roi_offset_;
         Size2d input_size_;
+        vector<Fan> fans_;
         std::vector<FanTracker> trackers_;
         Fan last_fan_;
         Eigen::Matrix3d rmat_imu_;
@@ -137,6 +138,7 @@ namespace buff_detector
         bool chooseTarget(std::vector<Fan> &fans, Fan &target);
         cv::Point2i cropImageByROI(cv::Mat &img); //roi裁剪
         void printTargetInfo(int idx);
+        void showFans(TaskData& src);
     };
 } // namespace buff_detector
 

@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2022-12-26 23:40:03
+ * @LastEditTime: 2022-12-27 18:59:39
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 
@@ -95,7 +95,7 @@ namespace global_user
         Eigen::Vector3d armor3d_cam;
         Eigen::Vector3d armor3d_world;
         Eigen::Vector3d euler;
-        Eigen::Vector3d rmat;
+        Eigen::Matrix3d rmat;
     };
     
     struct Object

@@ -2,18 +2,22 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2022-12-23 19:26:40
+LastEditTime: 2022-12-27 21:57:18
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.laumch.py
 '''
 import os
-
-from ament_index_python.packages import get_package_share_directory
+import yaml
 from launch import LaunchDescription
+from launch.conditions import IfCondition
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node
-from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import PythonExpression
+from launch_ros.descriptions import ComposableNode
+from launch.substitutions import ThisLaunchFileDir
 from launch.actions import IncludeLaunchDescription
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node, ComposableNodeContainer
+from ament_index_python.packages import get_package_share_directory
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
     # autoaim_param_file = os.path.join(get_package_share_directory('global_user'), 'config/autoaim.yaml')
@@ -21,50 +25,107 @@ def generate_launch_description():
     detector_node_launch_file = os.path.join(get_package_share_directory('armor_detector'), 'launch/armor_detector.launch.py')
     processor_node_launch_file = os.path.join(get_package_share_directory('armor_processor'), 'launch/armor_processor.launch.py')
     
+    camera_param_file = os.path.join(get_package_share_directory('global_user'), 'config/camera_ros.yaml')
+    autoaim_param_file = os.path.join(get_package_share_directory('global_user'), 'config/autoaim.yaml')
+    
+    camera_type = LaunchConfiguration('camera_type')
+    use_serial = LaunchConfiguration('using_imu')
+
+    declare_camera_type = DeclareLaunchArgument(
+        name='camera_type',
+        default_value='daheng',
+        description='hik daheng mvs usb'
+    )
+
+    declare_use_serial = DeclareLaunchArgument(
+        name='using_imu',
+        default_value='False',
+        description='debug without serial port.'
+    )
+
+    with open(camera_param_file, 'r') as f:
+        usb_cam_params = yaml.safe_load(f)['/usb_cam_driver']['ros__parameters']
+    with open(camera_param_file, 'r') as f:
+        hik_cam_params = yaml.safe_load(f)['/hik_cam_driver']['ros__parameters']
+    with open(camera_param_file, 'r') as f:
+        daheng_cam_params = yaml.safe_load(f)['/daheng_cam_driver']['ros__parameters']
+    with open(camera_param_file, 'r') as f:
+        mvs_cam_params = yaml.safe_load(f)['/mvs_cam_driver']['ros__parameters']
+
+    with open(autoaim_param_file, 'r') as f:
+        armor_detector_params = yaml.safe_load(f)['/armor_detector']['ros__parameters']
+    with open(autoaim_param_file, 'r') as f:
+        armor_processor_params = yaml.safe_load(f)['/armor_processor']['ros__parameters']
+    
     return LaunchDescription([
-        # DeclareLaunchArgument(
-        #     name='param_file',
-        #     default_value=autoaim_param_file
-        # ),
+        declare_camera_type,
+        declare_use_serial,
 
-        # DeclareLaunchArgument(
-        #     name='debug',
-        #     default_value='true',
-        # ),
-
-        # DeclareLaunchArgument(
-        #     name='detect_color',
-        #     default_value='1',
-        #     description='0 is blue and 1 is red.'
-        # ),
-
-        # DeclareLaunchArgument(
-        #     name='forbid_prediction',
-        #     default_value='false'
-        # ),
-
-        # DeclareLaunchArgument(
-        #     name='camera_type',
-        #     default_value='daheng',
-        #     description='daheng hik mvs usb'
-        # ),
-
+        Node(
+            package='serialport',
+            executable='serialport_node',
+            name='serialport',
+            output='screen',
+            emulate_tty=True,
+            parameters=[{
+                'using_imu':LaunchConfiguration('using_imu'),
+                'debug_without_com': 'false'
+            }],
+            condition=IfCondition(PythonExpression([LaunchConfiguration('using_imu'), "== 'True'"]))
+        ),
+        
         # IncludeLaunchDescription(
         #     PythonLaunchDescriptionSource(
         #         launch_file_path=camera_node_launch_file
         #     )
         # ),
 
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                launch_file_path=detector_node_launch_file
-            )
+        # IncludeLaunchDescription(
+        #     PythonLaunchDescriptionSource(
+        #         launch_file_path=detector_node_launch_file
+        #     )
+        # ),
+
+        # IncludeLaunchDescription(
+        #     PythonLaunchDescriptionSource(
+        #         launch_file_path=processor_node_launch_file
+        #     )
+        # ),
+
+        ComposableNodeContainer(
+            name='armor_detector_container',
+            namespace='',
+            output='screen',
+            package='rclcpp_components',
+            executable='component_container',
+            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'daheng'"])),
+            composable_node_descriptions=[
+                ComposableNode(
+                    package='camera_driver',
+                    plugin='camera_driver::DahengCamNode',
+                    name='daheng_driver',
+                    parameters=[daheng_cam_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                ),
+                ComposableNode(
+                    package='armor_detector',
+                    plugin='armor_detector::DetectorNode',
+                    name='armor_detector',
+                    parameters=[armor_detector_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                )
+            ],
         ),
 
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                launch_file_path=processor_node_launch_file
-            )
+        Node(
+            package='armor_processor',
+            executable='armor_processor_node',
+            output='screen',
+            emulate_tty=True,
+            parameters=[armor_processor_params]
         ),
-
     ])

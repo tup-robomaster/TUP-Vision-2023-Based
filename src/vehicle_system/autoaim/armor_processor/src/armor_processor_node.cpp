@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-12-27 01:33:45
+ * @LastEditTime: 2022-12-27 18:08:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -43,11 +43,11 @@ namespace armor_processor
         using_shared_memory_ = this->get_parameter("using_shared_memory").as_bool();
         
         // 相机类型
-        this->declare_parameter<int>("camera_type", global_user::DaHeng);
-        int camera_type = this->get_parameter("camera_type").as_int();
+        // this->declare_parameter<int>("camera_type", global_user::DaHeng);
+        // int camera_type = this->get_parameter("camera_type").as_int();
         
         // 图像的传输方式
-        transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
+        // transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
         
         // if(processor_->armor_predictor_.debug_param_.using_imu)
         // {
@@ -93,13 +93,15 @@ namespace armor_processor
         //         std::bind(&ArmorProcessorNode::target_info_callback, this, std::placeholders::_1));
         // }
         
-        bool debug = false;
         this->declare_parameter<bool>("debug", true);
-        this->get_parameter("debug", debug);
-        if(debug)
+        this->get_parameter("debug", debug_);
+        if(debug_)
         {
             RCLCPP_INFO(this->get_logger(), "debug...");
             
+            // Prediction info pub.
+            predict_info_pub_ = this->create_publisher<TargetMsg>("/predict_info", qos);
+
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, _1));
             
@@ -264,19 +266,26 @@ namespace armor_processor
     void ArmorProcessorNode::target_info_callback(const TargetMsg& target_info)
     {
         // Get target 2d cornor points.
-        for(int i = 0; i < 4; ++i)
-        {
-            apex2d[i].x = target_info.point2d[i].x;
-            apex2d[i].y = target_info.point2d[i].y;
-        }
+        // for(int i = 0; i < 4; ++i)
+        // {
+        //     apex2d[i].x = target_info.point2d[i].x;
+        //     apex2d[i].y = target_info.point2d[i].y;
+        // }
 
         double sleep_time = 0.0;
         TargetMsg target = std::move(target_info);
 
         auto aiming_point_world = std::move(processor_->predictor(target, sleep_time));
-        Eigen::Quaternion quat_imu = std::move(Eigen::Quaternion{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
-        Eigen::Matrix3d rmat_imu = quat_imu.toRotationMatrix();
-        rmat_imu.setIdentity();
+        Eigen::Matrix3d rmat_imu;
+        if(!debug_param_.using_imu)
+        {
+            rmat_imu.setIdentity();
+        }
+        else
+        {
+            Eigen::Quaternion quat_imu = std::move(Eigen::Quaternion{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
+            rmat_imu = quat_imu.toRotationMatrix();
+        }
         Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
         Eigen::Vector2d angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
 
@@ -304,13 +313,26 @@ namespace armor_processor
         // Gimbal info pub.
         GimbalMsg gimbal_info;
         gimbal_info.header.frame_id = "gimbal";
-        gimbal_info.header.stamp = this->get_clock()->now();
+        auto now = this->get_clock()->now();
+        gimbal_info.header.stamp = now;
         gimbal_info.pitch = angle[0];
         gimbal_info.yaw = angle[1];
         gimbal_info.distance = aiming_point_cam.norm();
         gimbal_info.is_switched = target_info.target_switched;
         gimbal_info.is_spinning = target_info.is_spinning;
         gimbal_info_pub_->publish(std::move(gimbal_info));
+
+        if(this->debug_)
+        {
+            TargetMsg predict_info;
+            predict_info.header.frame_id = "predict_info";
+            predict_info.header.stamp = now;
+            predict_info.aiming_point.x = aiming_point_cam[0];
+            predict_info.aiming_point.y = aiming_point_cam[1];
+            predict_info.aiming_point.z = aiming_point_cam[2];
+            predict_info.period = target_info.period;
+            predict_info_pub_->publish(std::move(predict_info));
+        }
 
         return;
     }

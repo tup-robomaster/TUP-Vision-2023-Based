@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2022-12-21 19:32:48
+ * @LastEditTime: 2022-12-27 23:44:29
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -25,7 +25,7 @@ namespace buff_detector
     static constexpr float MERGE_CONF_ERROR = 0.15;
     static constexpr float MERGE_MIN_IOU = 0.2;
 
-    static inline int argmax(const float *ptr, int len) 
+    static inline int argmax(const u_int8_t *ptr, int len) 
     {
         int max_arg = 0;
         for (int i = 1; i < len; i++) {
@@ -83,7 +83,7 @@ namespace buff_detector
             {
                 for (int g0 = 0; g0 < num_grid_w; g0++)
                 {
-                    grid_strides.push_back((GridAndStride){g0, g1, stride});
+                    grid_strides.push_back(std::move((GridAndStride){g0, g1, stride}));
                 }
             }
         }
@@ -96,9 +96,9 @@ namespace buff_detector
      * @param prob_threshold Confidence Threshold.
      * @param objects Objects proposed.
      */
-    static void generateYoloxProposals(std::vector<GridAndStride> grid_strides, const float* feat_ptr,
+    static void generateYoloxProposals(std::vector<GridAndStride> grid_strides, const u_int8_t* feat_ptr,
                                         Eigen::Matrix<float,3,3> &transform_matrix,float prob_threshold,
-                                        std::vector<ArmorObject>& objects)
+                                        std::vector<BuffObject>& objects)
     {
 
         const int num_anchors = grid_strides.size();
@@ -174,13 +174,13 @@ namespace buff_detector
      * @param b Object b.
      * @return Area of intersection.
      */
-    static inline float intersection_area(const ArmorObject& a, const ArmorObject& b)
+    static inline float intersection_area(const BuffObject& a, const BuffObject& b)
     {
         cv::Rect_<float> inter = a.rect & b.rect;
         return inter.area();
     }
 
-    static void qsort_descent_inplace(std::vector<ArmorObject>& faceobjects, int left, int right)
+    static void qsort_descent_inplace(std::vector<BuffObject>& faceobjects, int left, int right)
     {
         int i = left;
         int j = right;
@@ -218,7 +218,7 @@ namespace buff_detector
     }
 
 
-    static void qsort_descent_inplace(std::vector<ArmorObject>& objects)
+    static void qsort_descent_inplace(std::vector<BuffObject>& objects)
     {
         if (objects.empty())
             return;
@@ -227,7 +227,7 @@ namespace buff_detector
     }
 
 
-    static void nms_sorted_bboxes(std::vector<ArmorObject>& faceobjects, std::vector<int>& picked,
+    static void nms_sorted_bboxes(std::vector<BuffObject>& faceobjects, std::vector<int>& picked,
                                 float nms_threshold)
     {
         picked.clear();
@@ -243,13 +243,13 @@ namespace buff_detector
 
         for (int i = 0; i < n; i++)
         {
-            ArmorObject& a = faceobjects[i];
+            BuffObject& a = faceobjects[i];
             std::vector<cv::Point2f> apex_a(a.apex, a.apex + 5);
 
             int keep = 1;
             for (int j = 0; j < (int)picked.size(); j++)
             {
-                ArmorObject& b = faceobjects[picked[j]];
+                BuffObject& b = faceobjects[picked[j]];
                 std::vector<cv::Point2f> apex_b(b.apex, b.apex + 5);
                 std::vector<cv::Point2f> apex_inter;
 
@@ -289,10 +289,10 @@ namespace buff_detector
      * @param img_w Width of Image.
      * @param img_h Height of Image.
      */
-    static void decodeOutputs(const float* prob, std::vector<ArmorObject>& objects,
+    static void decodeOutputs(const u_int8_t* prob, std::vector<BuffObject>& objects,
                                 Eigen::Matrix<float,3,3> &transform_matrix, const int img_w, const int img_h)
     {
-            std::vector<ArmorObject> proposals;
+            std::vector<BuffObject> proposals;
             std::vector<int> strides = {8, 16, 32};
             std::vector<GridAndStride> grid_strides;
 
@@ -366,10 +366,10 @@ namespace buff_detector
 
         // Preprocessing.
         ov::preprocess::PrePostProcessor ppp(model);
-        ppp.input().tensor().set_element_type(ov::element::f32);
+        ppp.input().tensor().set_element_type(ov::element::u8);
 
         // set output precision.
-        ppp.output().tensor().set_element_type(ov::element::f32);
+        ppp.output().tensor().set_element_type(ov::element::u8);
         
         // 将预处理融入原始模型.
         ppp.build(); 
@@ -417,11 +417,11 @@ namespace buff_detector
         return true;
     }
 
-    bool BuffDetector::detect(cv::Mat &src, std::vector<ArmorObject>& objects)
+    bool BuffDetector::detect(cv::Mat &src, std::vector<BuffObject>& objects)
     {
         if (src.empty())
         {
-            fmt::print(fmt::fg(fmt::color::red), "[DETECT] ERROR: 传入了空的src\n");
+            // fmt::print(fmt::fg(fmt::color::red), "[DETECT] ERROR: 传入了空的src\n");
             return false;
         }
 
@@ -439,7 +439,7 @@ namespace buff_detector
         // 准备输入
         infer_request.set_input_tensor(input_tensor);
 
-        u_int8_t* tensor_data = input_tensor.data<u_int8_t *>();
+        u_int8_t* tensor_data = input_tensor.data<u_int8_t>();
         
         auto img_offset = INPUT_H * INPUT_W;
         // Copy img into tensor
@@ -463,7 +463,7 @@ namespace buff_detector
         
         // 处理推理结果
         ov::Tensor output_tensor = infer_request.get_output_tensor();
-        uint8_t* output = output_tensor.data<u_int8_t *>();
+        uint8_t* output = output_tensor.data<u_int8_t>();
 
         // std::cout << &output << std::endl;
 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2022-12-26 23:43:42
+ * @LastEditTime: 2022-12-27 23:57:16
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -354,9 +354,11 @@ namespace armor_detector
         // Preprocessing
         ov::preprocess::PrePostProcessor ppp(model);
         ppp.input().tensor().set_element_type(ov::element::f32);
+        // ppp.input().tensor().set_element_type(ov::element::u8);
 
         //set output precision
         ppp.output().tensor().set_element_type(ov::element::f32);
+        // ppp.output().tensor().set_element_type(ov::element::u8);
         
         //将预处理融入原始模型
         ppp.build(); 
@@ -430,12 +432,14 @@ namespace armor_detector
         infer_request.set_input_tensor(input_tensor);
 
         float* tensor_data = input_tensor.data<float_t>();
-        
+        // u_int8_t* tensor_data = input_tensor.data<u_int8_t>();
+
         auto img_offset = INPUT_H * INPUT_W;
         // Copy img into tensor
         for(int c = 0; c < 3; c++)
         {
             memcpy(tensor_data, pre_split[c].data, INPUT_H * INPUT_W * sizeof(float));
+            // memcpy(tensor_data, pre_split[c].data, INPUT_H * INPUT_W * sizeof(u_int8_t));
             tensor_data += img_offset;
         }
 
@@ -454,6 +458,7 @@ namespace armor_detector
         // 处理推理结果
         ov::Tensor output_tensor = infer_request.get_output_tensor();
         float* output = output_tensor.data<float_t>();
+        // u_int8_t* output = output_tensor.data<u_int8_t>();
 
         // std::cout << &output << std::endl;
 
@@ -466,55 +471,46 @@ namespace armor_detector
         for (auto object = objects.begin(); object != objects.end(); ++object)
         {
             //对候选框预测角点进行平均,降低误差
-            // if ((*object).pts.size() >= 8)
-            // {
-            //     auto N = (*object).pts.size();
-            //     cv::Point2f pts_final[4];
-
-            //     for (int i = 0; i < N; i++)
-            //     {
-            //         pts_final[i % 4]+=(*object).pts[i];
-            //     }
-
-            //     for (int i = 0; i < 4; i++)
-            //     {
-            //         pts_final[i].x = pts_final[i].x / (N / 4);
-            //         pts_final[i].y = pts_final[i].y / (N / 4);
-            //     }
-
-            //     (*object).apex[0] = pts_final[0];
-            //     (*object).apex[1] = pts_final[1];
-            //     (*object).apex[2] = pts_final[2];
-            //     (*object).apex[3] = pts_final[3];
-            // }
-
-            //
-            cv::Point2f pts_final[4];
-            for(int ii = 0; ii < 4; ii++)
+            if ((*object).pts.size() >= 8)
             {
-                pts_final[ii] = (*object).pts[ii];
+                auto N = (*object).pts.size();
+                cv::Point2f pts_final[4];
+
+                for (int i = 0; i < N; i++)
+                {
+                    pts_final[i % 4]+=(*object).pts[i];
+                }
+
+                for (int i = 0; i < 4; i++)
+                {
+                    pts_final[i].x = pts_final[i].x / (N / 4);
+                    pts_final[i].y = pts_final[i].y / (N / 4);
+                }
+
+                (*object).apex[0] = pts_final[0];
+                (*object).apex[1] = pts_final[1];
+                (*object).apex[2] = pts_final[2];
+                (*object).apex[3] = pts_final[3];
             }
-            (*object).apex[0] = pts_final[0];
-            (*object).apex[1] = pts_final[1];
-            (*object).apex[2] = pts_final[2];
-            (*object).apex[3] = pts_final[3];
+
+            // 
+            // cv::Point2f pts_final[4];
+            // for(int ii = 0; ii < 4; ii++)
+            // {
+            //     pts_final[ii] = (*object).pts[ii];
+            // }
+            // (*object).apex[0] = pts_final[0];
+            // (*object).apex[1] = pts_final[1];
+            // (*object).apex[2] = pts_final[2];
+            // (*object).apex[3] = pts_final[3];
             
             (*object).area = (int)(calcTetragonArea((*object).apex));
         }
-        // std::cout << 16 << std::endl;
 
-        // if (objects.size() != 0)
-        // {
-        //     // std::cout << "Objects found..." << std::endl;
-        //     return true;
-        // }
-        // else
-        // {
-        //     // std::cout << "No objects found..." << std::endl;
-        //     return false;
-        // } 
-
-        return true;
+        if (objects.size() != 0)
+            return true;
+        else
+            return false;
     }
 
 } //namespace armor_detector
