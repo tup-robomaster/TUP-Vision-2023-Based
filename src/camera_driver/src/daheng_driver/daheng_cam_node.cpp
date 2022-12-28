@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 14:25:39
- * @LastEditTime: 2022-12-27 17:31:13
+ * @LastEditTime: 2022-12-28 23:44:02
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
  */
 #include "../../include/daheng_driver/daheng_cam_node.hpp"
@@ -16,8 +16,15 @@ namespace camera_driver
     {
         RCLCPP_WARN(this->get_logger(), "Camera driver node...");
         
-        // camera params initialize 
-        daheng_cam = init_daheng_cam();
+        // Camera params initialize.
+        try
+        {
+            daheng_cam = init_daheng_cam();
+        }
+        catch(const std::exception& e)
+        {
+            RCLCPP_ERROR(this->get_logger(), "Error while initializing camera: %s", e.what());
+        }
 
         this->declare_parameter<bool>("save_video", false);
         save_video_ = this->get_parameter("save_video").as_bool();
@@ -38,7 +45,7 @@ namespace camera_driver
         // create img publisher
         this->image_pub = this->create_publisher<sensor_msgs::msg::Image>("daheng_img", qos);
         
-        this->declare_parameter("frame_id", "daheng_cam");
+        this->declare_parameter("frame_id", "daheng_camera_link");
         this->frame_id = this->get_parameter("frame_id").as_string();
         
         // this->declare_parameter("image_width", 1280);
@@ -104,7 +111,7 @@ namespace camera_driver
         if(frame.size().width != image_width || frame.size().height != image_height)
         {
             cv::resize(frame, frame, cv::Size(image_width, image_height));
-            RCLCPP_INFO(this->get_logger(), "resize frame...");
+            RCLCPP_WARN(this->get_logger(), "resize frame...");
         }
 
         ros_image.header.frame_id = this->frame_id;
@@ -136,14 +143,19 @@ namespace camera_driver
                 if(!frame.empty())
                     memcpy(shared_memory_param_.shared_memory_ptr, frame.data, DAHENG_IMAGE_HEIGHT * DAHENG_IMAGE_WIDTH * 3);
 
+                save_video_ = this->get_parameter("save_video").as_bool();
                 if(save_video_)
                 {   // Video recorder.
                     videoRecorder(video_record_param_, &frame);
                 }
 
-                // cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
-                // cv::imshow("daheng_cam_frame", frame);
-                // cv::waitKey(1);
+                bool show_img = this->get_parameter("show_img").as_bool();
+                if(show_img)
+                {
+                    cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
+                    cv::imshow("daheng_cam_frame", frame);
+                    cv::waitKey(1);
+                }
             }
         }
         else
@@ -159,15 +171,20 @@ namespace camera_driver
             // rclcpp::Time timestamp = now;
             sensor_msgs::msg::Image::UniquePtr msg = convert_frame_to_msg(frame);
             image_pub->publish(std::move(msg));
-
+                
+            save_video_ = this->get_parameter("save_video").as_bool();
             if(save_video_)
             {   // Video recorder.
                 videoRecorder(video_record_param_, &frame);
             }
             
-            // cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
-            // cv::imshow("daheng_cam_frame", frame);
-            // cv::waitKey(1);
+            bool show_img = this->get_parameter("show_img").as_bool();
+            if(show_img)
+            {
+                cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
+                cv::imshow("daheng_cam_frame", frame);
+                cv::waitKey(1);
+            }
         }
     }
 
@@ -199,6 +216,7 @@ namespace camera_driver
         default:
             break;
         }
+        return true;
     }
 
     rcl_interfaces::msg::SetParametersResult DahengCamNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
@@ -335,6 +353,7 @@ namespace camera_driver
         this->declare_parameter("balance_b", 1.56);
         this->declare_parameter("balance_g", 1.0); 
         this->declare_parameter("balance_r", 1.548);
+        this->declare_parameter<bool>("show_img", false);
 
         daheng_cam_param_.daheng_cam_id = this->get_parameter("daheng_cam_id").as_int();
         daheng_cam_param_.image_width = this->get_parameter("image_width").as_int();

@@ -2,8 +2,8 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2022-12-27 21:57:18
-FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.laumch.py
+LastEditTime: 2022-12-28 22:44:01
+FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
 import yaml
@@ -117,15 +117,25 @@ def generate_launch_description():
                     extra_arguments=[{
                         'use_intra_process_comms':True
                     }]
-                )
+                ),
+                ComposableNode(
+                    package='armor_processor',
+                    plugin='armor_processor::ArmorProcessorNode',
+                    name='armor_processor',
+                    namespace='',
+                    parameters=[armor_processor_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                ),  
             ],
         ),
 
-        Node(
-            package='armor_processor',
-            executable='armor_processor_node',
-            output='screen',
-            emulate_tty=True,
-            parameters=[armor_processor_params]
-        ),
+        # Node(
+        #     package='armor_processor',
+        #     executable='armor_processor_node',
+        #     output='screen',
+        #     emulate_tty=True,
+        #     parameters=[armor_processor_params]
+        # ),
     ])

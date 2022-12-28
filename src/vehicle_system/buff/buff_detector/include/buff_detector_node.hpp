@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2022-12-27 18:57:18
+ * @LastEditTime: 2022-12-28 18:16:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector_node.hpp
  */
 #ifndef BUFF_DETECTOR_NODE_HPP_
@@ -24,6 +24,7 @@
 
 //custom message
 #include "global_interface/msg/buff.hpp"
+#include "global_interface/msg/imu.hpp"
 
 using namespace global_user;
 using namespace coordsolver;
@@ -32,6 +33,7 @@ namespace buff_detector
     class BuffDetectorNode : public rclcpp::Node
     {
         typedef global_interface::msg::Buff BuffMsg;
+        typedef global_interface::msg::Imu ImuMsg;
 
     public:
         BuffDetectorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
@@ -47,9 +49,13 @@ namespace buff_detector
     
     private:
         std::string transport_;
-        std::shared_ptr<image_transport::Subscriber> img_sub_; //Subscribe images from camera node.
+        // Subscribe images from camera node.
+        std::shared_ptr<image_transport::Subscriber> img_sub_; 
         void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
-    
+
+        ImuMsg imu_msg_;
+        rclcpp::Subscription<ImuMsg>::SharedPtr imu_info_sub_;
+        void sensorMsgCallback(const ImuMsg& imu_msg);
     private:
         rclcpp::Time time_start_;
         // rclcpp::Clock steady_clock_{RCL_STEADY_TIME};

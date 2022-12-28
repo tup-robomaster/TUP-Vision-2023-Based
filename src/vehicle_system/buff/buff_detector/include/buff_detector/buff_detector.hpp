@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2022-12-27 21:45:19
+ * @LastEditTime: 2022-12-28 16:32:44
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
@@ -72,17 +72,17 @@ namespace buff_detector
 
     struct PathParam
     {
+        string camera_name;
         string network_path;
         string camera_param_path;
-        string camera_name;
         string path_prefix;
 
         PathParam()
         {
+            camera_name = "KE0200110075";
             network_path = "src/vehicle_system/buff/model/buff.xml";
             camera_param_path = "src/global_user/config/camera.yaml";
-            camera_name = "KE0200110075";
-            path_prefix = "src/vehicle_system/buff/dataset/";
+            path_prefix = "src/recorder/buff_dataset";
         }
     };
 

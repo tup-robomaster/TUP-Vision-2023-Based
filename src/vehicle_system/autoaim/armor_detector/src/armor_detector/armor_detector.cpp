@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-12-27 15:10:48
+ * @LastEditTime: 2022-12-28 19:38:01
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -994,5 +994,10 @@ namespace armor_detector
         default:
             break;
         }
+    }
+
+    bool Detector::getDebugParam(int idx)
+    {
+        return debug_params_.using_imu;
     }
 } //namespace Detector

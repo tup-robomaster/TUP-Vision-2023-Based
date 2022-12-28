@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-15 22:01:49
- * @LastEditTime: 2022-12-23 19:08:45
+ * @LastEditTime: 2022-12-28 21:50:53
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport/serialport.hpp
  */
 #ifndef SERIALPORT_HPP_
@@ -25,6 +25,9 @@
 //c++
 #include <iostream>
 #include <vector>
+
+//ros
+#include <rclcpp/rclcpp.hpp>
 
 #include "./crc_check.hpp"
 #include "../../../global_user/include/global_user/global_user.hpp"
@@ -89,7 +92,6 @@ namespace serialport
         int last_fd;  // 上一次串口号
         int speed;
         int baud;
-        int mode;
         int databits;
         int stopbits;
         int parity;
@@ -103,8 +105,6 @@ namespace serialport
     */
     class SerialPort
     {
-        typedef std::chrono::_V2::steady_clock::time_point TimePoint;
-
     public:
         SerialPort();
         SerialPort(const string ID, const int BUAD, bool debug_without_com);
@@ -126,7 +126,7 @@ namespace serialport
     private:
         CrcCheck crc_check_;
         string serial_id_;
-        TimePoint timestamp_;
+        rclcpp::Time timestamp_;
 
         unsigned char Tdata[30];                  // transfrom data
         float exchange_data(unsigned char *data); // 将4个uchar合并成一个float
@@ -136,8 +136,10 @@ namespace serialport
         bool getSpeed(unsigned char *data);
     
     public:
+        rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         bool debug_without_com_; //是否无串口调试
-        bool print_imu_data_;        
+        bool print_imu_data_; 
+        int mode;       
         float bullet_speed_;
         float quat[4]; //四元数
         float acc[3];  //加速度

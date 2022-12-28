@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-12-27 14:19:31
+ * @LastEditTime: 2022-12-28 23:36:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -108,17 +108,6 @@ namespace armor_processor
     {
         auto t1 = steady_clock_.now();
 
-        // Eigen::Vector3d xyz;
-        // int dist;
-        // double timestamp;
-        // double period;
-        // bool is_target_switched;
-        // bool is_spinning;
-        // bool is_sentry_mode;
-        // bool is_clockwise;
-        // SpinningStatus spinning_status;
-        OutpostStatus sentry_armor_status;
-        // SystemModel system_model;
         Eigen::Vector3d xyz = {target_msg.aiming_point.x, target_msg.aiming_point.y, target_msg.aiming_point.z};
         TargetInfo target = 
         {
@@ -353,7 +342,7 @@ namespace armor_processor
             if(target.system_model == CSMODEL)
             {   // 基于CS模型的卡尔曼滤波
                 std::cout << "cs pred..." << std::endl;
-                is_ekf_available = predict_ekf_run(CAMERA_Z_DIRECTION, target, result_ekf, target_vel, target_acc, delta_time_estimate);
+                is_ekf_available = predict_ekf_run(CAMERA_X_DIRECTION, target, result_ekf, target_vel, target_acc, delta_time_estimate);
 
                 if(is_ekf_available.xyz_status[0])
                     result[0] = result_ekf[0];
@@ -525,6 +514,9 @@ namespace armor_processor
         // if(timestamp % 10 == 0)
         // delta_time_estimate = 0;
         // result_pf = target.xyz;
+
+        std::cout << "target: x:" << target.xyz[0] << " y:" << target.xyz[1] << " z:" << target.xyz[2] << std::endl; 
+        std::cout << "predict: x:" << result[0] << " y:" << result[1] << " z:" << result[2] << std::endl;
 
         if(debug_param_.draw_predict && is_ekf_available.xyz_status[0])
         {
@@ -907,7 +899,7 @@ namespace armor_processor
                 y_sum += target_info.xyz[2];
                 
                 // std::cout << std::endl;
-                // std::cout << "t:" << (target_info.timestamp- st) / 1e3 << std::endl;
+                // std::cout << "t:" << (target_info.timestamp- st) / 1e9 << std::endl;
                 // std::cout << std::endl;
 
                 // problem.AddResidualBlock(
@@ -1531,19 +1523,36 @@ namespace armor_processor
         if(!is_ekf_init)
         {   
             if(predictDirection == CAMERA_X_DIRECTION)
-                kalman_filter_.x_ << target.xyz[0], target_vel[0], target_acc[0];
+            {
+                kalman_filter_.x_ << target.xyz[0], 0, 0;
+                is_available.xyz_status[0] = false;
+            }
             else if(predictDirection == CAMERA_Y_DIRECTION)
+            {
                 kalman_filter_.x_ << target.xyz[2], target_vel[2], target_acc[2];
+                is_available.xyz_status[2] = false;
+            }
             else if(predictDirection == CAMERA_Z_DIRECTION)
+            {
                 kalman_filter_.x_ << target.xyz[1], target_vel[1], target_acc[1]; 
+                is_available.xyz_status[1] = false;
+            }
             else if(predictDirection == GYRO_X_DIRECTION)
+            {
                 kalman_filter_.x_ << target.xyz[0], target_vel[0], target_acc[0];
+                is_available.xyz_status[0] = false;
+            }
             else if(predictDirection == GYRO_Y_DIRECTION)
+            {
                 kalman_filter_.x_ << target.xyz[1], target_vel[1], target_acc[1];
+                is_available.xyz_status[1] = false;
+            }
             else if(predictDirection == GYRO_Z_DIRECTION)
+            {
                 kalman_filter_.x_ << target.xyz[2], target_vel[2], target_acc[2];
+                is_available.xyz_status[2] = false;
+            }
             
-            is_available.xyz_status[0] = false;
             is_ekf_init = true;
         }
         else
@@ -1599,7 +1608,7 @@ namespace armor_processor
             State << kalman_filter_.x_[0], kalman_filter_.x_[1], kalman_filter_.x_[2];
             
             double alpha = singer_param_.singer_alpha;
-            double dt = 2 * singer_param_.singer_dt;
+            double dt = 5 * singer_param_.singer_dt;
 
             Eigen::MatrixXd F(3, 3);
             F << 1, dt, (alpha * dt - 1 + exp(-alpha * dt)) / pow(alpha, 2),

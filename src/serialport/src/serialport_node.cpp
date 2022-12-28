@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2022-12-23 18:29:29
+ * @LastEditTime: 2022-12-28 22:10:35
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -20,7 +20,7 @@ namespace serialport
         }
         catch(const std::exception& e)
         {
-            std::cerr << e.what() << '\n';
+            RCLCPP_ERROR(this->get_logger(), "Error while initializing serial port: %s", e.what());
         }
 
         // QoS
@@ -85,11 +85,21 @@ namespace serialport
         // Initialize the transform broadcaster.
         // tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
         
-        gimbal_motion_sub_ = this->create_subscription<GimbalMsg>(
-            "/gimbal_info", 
+        autoaim_info_sub_ = this->create_subscription<GimbalMsg>(
+            "/armor_processor/gimbal_info", 
             qos,
-            std::bind(&SerialPortNode::send_data, this, _1)
+            std::bind(&SerialPortNode::send_armor_data, this, _1)
         );
+
+        use_buff_mode_ = this->get_parameter("use_buff_mode").as_bool();
+        if(use_buff_mode_)
+        {
+            buff_info_sub_ = this->create_subscription<GimbalMsg>(
+                "/buff_processor/gimbal_info",
+                qos,
+                std::bind(&SerialPortNode::send_buff_data, this, _1)
+            );
+        }
 
         // if(serial_port_->debug_without_port())
         // {
@@ -108,7 +118,7 @@ namespace serialport
         {   // Use serial port.
             if(serial_port_->initSerialPort())
             {
-                imu_data_pub_ = this->create_publisher<ImuMsg>("/imu_info", qos);
+                imu_data_pub_ = this->create_publisher<ImuMsg>("/imu_msg", qos);
                 receive_thread_ = std::thread(&SerialPortNode::receive_data, this);
             }
         }
@@ -118,24 +128,6 @@ namespace serialport
     {
         // if(buffer) delete buffer;
         // buffer = NULL;
-    }
-
-    std::unique_ptr<SerialPort> SerialPortNode::init_serial_port()
-    {
-        params_map_ =
-        {
-            {"debug_without_com", 0},
-            {"baud", 1}
-        };
-
-        std::string id = "483/5740/200";
-        this->declare_parameter<int>("baud", 115200);
-        int baud = this->get_parameter("baud").as_int();
-
-        this->declare_parameter<bool>("debug_without_com", true);
-        bool debug_without_com = this->get_parameter("debug_without_com").as_bool();
-
-        return std::make_unique<SerialPort>(id, baud, debug_without_com);
     }
 
     void SerialPortNode::handle_imu_data(const std::shared_ptr<global_interface::msg::Imu>& msg)
@@ -287,7 +279,7 @@ namespace serialport
             
             // imu info pub.
             ImuMsg imu_info;
-            imu_info.header.frame_id = "imu";
+            imu_info.header.frame_id = "imu_link";
             imu_info.header.stamp = this->get_clock()->now();
             imu_info.bullet_speed = serial_port_->bullet_speed_;
             imu_info.quat.w = serial_port_->quat[0];
@@ -301,11 +293,11 @@ namespace serialport
             imu_info.twist.linear.y = serial_port_->acc[1];
             imu_info.twist.linear.z = serial_port_->acc[2];
             
-            imu_data_pub_->publish(imu_info);
+            imu_data_pub_->publish(std::move(imu_info));
         }
     }
 
-    void SerialPortNode::send_data(GimbalMsg::SharedPtr target_info) 
+    void SerialPortNode::send_armor_data(GimbalMsg::SharedPtr target_info) 
     {
         // GimbalMsg msg;
         // Eigen::Vector3d aiming_point = {target_info->aiming_point.x, target_info->aiming_point.y, target_info->aiming_point.z};
@@ -334,17 +326,34 @@ namespace serialport
             //     RCLCPP_ERROR(this->get_logger(), "serial data sends failed!");
             // }
         // }
-
+        
         if(!this->debug_without_port_)
         {
-            // RCLCPP_INFO(this->get_logger(), "Send data...");
-            VisionData transmition_data = {target_info->pitch, target_info->yaw, target_info->distance, target_info->is_switched, 1, target_info->is_spinning, 0};
-            serial_port_->transformData(transmition_data);
-            serial_port_->send();
+            if(serial_port_->mode == 1 || serial_port_->mode == 2)
+            {
+                // RCLCPP_INFO(this->get_logger(), "Send armor data...");
+                VisionData transmition_data = {target_info->pitch, target_info->yaw, target_info->distance, target_info->is_switched, 1, target_info->is_spinning, 0};
+                serial_port_->transformData(transmition_data);
+                serial_port_->send();
+            }
         }
         else
         {   // Debug without com.
 
+        }
+    }
+
+    void SerialPortNode::send_buff_data(GimbalMsg::SharedPtr target_info) 
+    {
+        if(!this->debug_without_port_)
+        {
+            if(serial_port_->mode == 3 || serial_port_->mode == 4)
+            {
+                // RCLCPP_INFO(this->get_logger(), "Send buff data...");
+                VisionData transmition_data = {target_info->pitch, target_info->yaw, target_info->distance, target_info->is_switched, 1, target_info->is_spinning, 0};
+                serial_port_->transformData(transmition_data);
+                serial_port_->send();
+            }
         }
     }
 
@@ -421,6 +430,7 @@ namespace serialport
         default:
             break;
         }
+        return true;
     }
     
     rcl_interfaces::msg::SetParametersResult SerialPortNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
@@ -433,6 +443,26 @@ namespace serialport
             result.successful = setParam(param);
         }
         return result;
+    }
+
+    std::unique_ptr<SerialPort> SerialPortNode::init_serial_port()
+    {
+        params_map_ =
+        {
+            {"debug_without_com", 0},
+            {"baud", 1}
+        };
+
+        this->declare_parameter<std::string>("port_id", "483/5740/200");
+        this->declare_parameter<int>("baud", 115200);
+        this->declare_parameter<bool>("debug_without_com", true);
+        this->declare_parameter<bool>("use_buff_mode", false);
+
+        id_ = this->get_parameter("port_id").as_string();
+        baud_ = this->get_parameter("baud").as_int();
+        debug_without_port_ = this->get_parameter("debug_without_com").as_bool();
+
+        return std::make_unique<SerialPort>(id_, baud_, debug_without_port_);
     }
 } //namespace serialport
 

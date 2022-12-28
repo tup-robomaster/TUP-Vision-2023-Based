@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 14:30:38
- * @LastEditTime: 2022-12-26 23:15:35
+ * @LastEditTime: 2022-12-28 17:31:45
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_cam_node.cpp
  */
 #include "../../include/hik_driver/hik_cam_node.hpp"
@@ -52,7 +52,7 @@ namespace camera_driver
         // this->declare_parameter("image_height", 1080);
         // this->declare_parameter("hik_cam_id", 0);
 
-        this->declare_parameter("frame_id", "hik_camera");
+        this->declare_parameter("frame_id", "hik_camera_link");
         this->frame_id = this->get_parameter("frame_id").as_string();
 
         // Acquisition system clock.
@@ -61,7 +61,7 @@ namespace camera_driver
         // Open hik camera.
         if(!hik_cam->open())
         {
-            RCLCPP_INFO(this->get_logger(), "Camera open failed!");
+            RCLCPP_ERROR(this->get_logger(), "Camera open failed!");
         }
         
         // Using shared memory.
@@ -76,7 +76,7 @@ namespace camera_driver
             }
             catch(const std::exception& e)
             {
-                std::cerr << e.what() << '\n';
+                RCLCPP_ERROR(this->get_logger(), "Error while initializing shared memory: %s", e.what());
             }
 
             //内存写入线程
@@ -115,7 +115,7 @@ namespace camera_driver
         if(frame.size().width != image_width || frame.size().height != image_height)
         {
             cv::resize(frame, frame, cv::Size(image_width, image_height));
-            RCLCPP_INFO(this->get_logger(), "resize frame...");
+            RCLCPP_WARN(this->get_logger(), "resize frame...");
         }
 
         ros_image.header.frame_id = this->frame_id;
@@ -142,13 +142,19 @@ namespace camera_driver
                 if(!frame.empty())
                     memcpy(shared_memory_param_.shared_memory_ptr, frame.data, HIK_IMAGE_HEIGHT * HIK_IMAGE_WIDTH * 3);
 
+                save_video_ = this->get_parameter("save_video").as_bool();
                 if(save_video_)
                 {   // Video recorder.
                     videoRecorder(video_record_param_, &frame);
                 }
-                // cv::namedWindow("daheng_cam_frame", cv::WINDOW_AUTOSIZE);
-                // cv::imshow("daheng_cam_frame", frame);
-                // cv::waitKey(1);
+
+                bool show_img = this->get_parameter("show_img").as_bool();
+                if(show_img)
+                {
+                    cv::namedWindow("hik_cam_frame", cv::WINDOW_AUTOSIZE);
+                    cv::imshow("hik_cam_frame", frame);
+                    cv::waitKey(1);
+                }
             }
         }
         else 
@@ -159,13 +165,19 @@ namespace camera_driver
             sensor_msgs::msg::Image::UniquePtr msg = convert_frame_to_msg(frame);
             image_pub->publish(std::move(msg));
 
+            save_video_ = this->get_parameter("save_video").as_bool();
             if(save_video_)
             {   // Video recorder.
                 videoRecorder(video_record_param_, &frame);
             }
-            // cv::namedWindow("hik_cam_frame", cv::WINDOW_AUTOSIZE);
-            // cv::imshow("hik_cam_frame", frame);
-            // cv::waitKey(1);
+
+            bool show_img = this->get_parameter("show_img").as_bool();
+            if(show_img)
+            {
+                cv::namedWindow("hik_cam_frame", cv::WINDOW_AUTOSIZE);
+                cv::imshow("hik_cam_frame", frame);
+                cv::waitKey(1);
+            }
         }
     }
     
@@ -192,6 +204,7 @@ namespace camera_driver
         default:
             break;
         }
+        return true;
     }
 
     rcl_interfaces::msg::SetParametersResult HikCamNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
@@ -325,6 +338,8 @@ namespace camera_driver
         this->declare_parameter("balance_b", 1690);
         this->declare_parameter("balance_g", 1024); 
         this->declare_parameter("balance_r", 2022);
+
+        this->declare_parameter<bool>("show_img", false);
 
         hik_cam_params_.hik_cam_id = this->get_parameter("hik_cam_id").as_int();
         hik_cam_params_.image_width = this->get_parameter("image_width").as_int();

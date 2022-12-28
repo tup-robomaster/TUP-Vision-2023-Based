@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2022-12-26 23:38:13
+ * @LastEditTime: 2022-12-28 16:23:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/inference/inference_api2.hpp
  */
 #ifndef INFERENCE_API2_HPP_
@@ -60,7 +60,7 @@ namespace armor_detector
         std::string input_name;
         std::string output_name;
         
-        Eigen::Matrix<float,3,3> transfrom_matrix;
+        Eigen::Matrix<float, 3, 3> transfrom_matrix;
     };
 
 } //namespace armor_detector

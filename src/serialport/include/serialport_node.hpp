@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2022-12-23 19:20:26
+ * @LastEditTime: 2022-12-28 22:07:36
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -31,6 +31,7 @@
 #include "global_interface/msg/imu.hpp"
 #include "global_interface/msg/gimbal.hpp"
 #include "global_interface/msg/target.hpp"
+#include "global_interface/msg/buff.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -57,16 +58,19 @@ namespace serialport
     public:
         void run();
         void receive_data();
-        void send_data(GimbalMsg::SharedPtr msg);
+        void send_armor_data(GimbalMsg::SharedPtr msg);
+        void send_buff_data(GimbalMsg::SharedPtr msg);
     
     private:
         // void* buffer_;
         // std::thread thread_watch_;
         // rclcpp::Node::SharedPtr node_;
-        bool debug_without_port_;
-        std::thread receive_thread_;
-        std::string device_name_;
         int baud_;
+        std::string id_;
+        bool use_buff_mode_;
+        bool debug_without_port_;
+        std::string device_name_;
+        std::thread receive_thread_;
         // int len_;
 
         // Eigen::Quaterniond quat_;
@@ -83,7 +87,8 @@ namespace serialport
 
     public:
         rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
-        rclcpp::Subscription<GimbalMsg>::SharedPtr gimbal_motion_sub_;
+        rclcpp::Subscription<GimbalMsg>::SharedPtr autoaim_info_sub_;
+        rclcpp::Subscription<GimbalMsg>::SharedPtr buff_info_sub_;
         rclcpp::Publisher<ImuMsg>::SharedPtr imu_data_pub_;
     
     private:

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-12-27 22:23:18
+ * @LastEditTime: 2022-12-28 19:43:07
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -24,6 +24,8 @@ namespace armor_detector
             std::cerr << e.what() << '\n';
         }
 
+        time_start_ = detector_->steady_clock_.now();
+
         //QoS    
         rclcpp::QoS qos(0);
         qos.keep_last(10);
@@ -36,7 +38,16 @@ namespace armor_detector
         // target info pub.
         armor_info_pub_ = this->create_publisher<TargetMsg>("/armor_info", qos);
 
-        time_start_ = detector_->steady_clock_.now();
+        if(debug_.using_imu)
+        {
+            imu_msg_.header.frame_id = "imu_link";
+            this->declare_parameter<double>("bullet_speed", 28.0);
+            imu_msg_.bullet_speed = this->get_parameter("bullet_speed").as_double();
+            imu_msg_.mode = this->declare_parameter<int>("autoaim_mode", 1);
+            // imu msg sub.
+            imu_info_sub_ = this->create_subscription<ImuMsg>("/imu_msg", qos,
+                std::bind(&DetectorNode::sensorMsgCallback, this, _1));
+        }
         
         // CameraType camera_type;
         this->declare_parameter<int>("camera_type", DaHeng);
@@ -58,7 +69,7 @@ namespace armor_detector
             }
             catch(const std::exception& e)
             {
-                std::cerr << e.what() << '\n';
+                RCLCPP_ERROR(this->get_logger(), "Error while initializing shared memory: %s", e.what());
             }
 
             // img process thread.
@@ -118,6 +129,19 @@ namespace armor_detector
         }
     }
 
+    void DetectorNode::sensorMsgCallback(const ImuMsg& imu_msg)
+    {
+        imu_msg_.header.stamp = this->get_clock()->now();
+
+        if(imu_msg.bullet_speed > 10)
+            imu_msg_.bullet_speed = imu_msg.bullet_speed;
+        if(imu_msg.mode == 1 || imu_msg.mode == 2)
+            imu_msg_.mode = imu_msg.mode;
+        imu_msg_.quat = imu_msg.quat;
+        imu_msg_.twist = imu_msg.twist;
+        return;
+    }
+
     void DetectorNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
     {
         // RCLCPP_INFO(this->get_logger(), "image callback...");
@@ -131,6 +155,25 @@ namespace armor_detector
 
         auto img_sub_time = detector_->steady_clock_.now();
         src.timestamp = (img_sub_time - time_start_).nanoseconds();
+
+        if(debug_.using_imu)
+        {
+            auto dt = (this->get_clock()->now() - imu_msg_.header.stamp).nanoseconds();
+            if(abs(dt / 1e9) > 0.1)
+            {
+                detector_->setDebugParam(false, 8);
+            }
+            else
+            {
+                src.bullet_speed = imu_msg_.bullet_speed;
+                src.mode = imu_msg_.mode;
+                src.quat.w() = imu_msg_.quat.w;
+                src.quat.x() = imu_msg_.quat.x;
+                src.quat.y() = imu_msg_.quat.y;
+                src.quat.z() = imu_msg_.quat.z; 
+                detector_->setDebugParam(true, 8);
+            }
+        }
         
         if(detector_->armor_detect(src))
         {   
@@ -138,15 +181,18 @@ namespace armor_detector
             TargetMsg target_info;
             if(detector_->gyro_detector(src, target_info))
             {
-                target_info.header.frame_id = "armor_detector";
+                target_info.header.frame_id = "gimbal_link";
                 target_info.header.stamp = this->get_clock()->now();
                 target_info.timestamp = src.timestamp;
+                if(debug_.using_imu && detector_->getDebugParam(8))
+                    target_info.quat_imu = imu_msg_.quat;
+                
                 // Publish target's information containing 3d point and timestamp.
                 armor_info_pub_->publish(std::move(target_info));
             }
-
         }
 
+        debug_.show_img = this->get_parameter("show_img").as_bool();
         if(debug_.show_img)
         {
             cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
@@ -169,6 +215,26 @@ namespace armor_detector
 
             auto img_sub_time = detector_->steady_clock_.now();
             src.timestamp = (img_sub_time - time_start_).nanoseconds();
+
+            if(debug_.using_imu)
+            {
+                auto dt = (this->get_clock()->now() - imu_msg_.header.stamp).nanoseconds();
+                if(abs(dt / 1e9) > 0.1)
+                {
+                    detector_->setDebugParam(false, 8);
+                }
+                else
+                {
+                    src.bullet_speed = imu_msg_.bullet_speed;
+                    src.mode = imu_msg_.mode;
+                    src.quat.w() = imu_msg_.quat.w;
+                    src.quat.x() = imu_msg_.quat.x;
+                    src.quat.y() = imu_msg_.quat.y;
+                    src.quat.z() = imu_msg_.quat.z; 
+                    detector_->setDebugParam(true, 8);
+                }
+            }
+            
             if(detector_->armor_detect(src))
             {   
                 // RCLCPP_INFO(this->get_logger(), "armors detector...");
@@ -178,15 +244,18 @@ namespace armor_detector
                 // Target spinning detector. 
                 if(detector_->gyro_detector(src, target_info))
                 {
-                    target_info.header.frame_id = "armor_detector";
+                    target_info.header.frame_id = "gimbal_link";
                     target_info.header.stamp = this->get_clock()->now();
                     target_info.timestamp = src.timestamp;
+                    if(debug_.using_imu && detector_->getDebugParam(8))
+                        target_info.quat_imu = imu_msg_.quat;
 
                     // Publish target's information containing 3d point and timestamp.
                     armor_info_pub_->publish(std::move(target_info));
                 }
-                
             }
+
+            debug_.show_img = this->get_parameter("show_img").as_bool();
             if(debug_.show_img)
             {
                 cv::namedWindow("src", cv::WINDOW_AUTOSIZE);

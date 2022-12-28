@@ -68,7 +68,7 @@ target_link_libraries(${PROJECT_NAME}
   # ${dependencies}
   ${OpenCV_LIBRARIES}
   yaml-cpp.so
-  fmt.so 
+  # fmt.so 
 )
       
 # 添加头文件地址

@@ -41,7 +41,6 @@ namespace camera_driver
         if(StartDevice(daheng_cam_param_.daheng_cam_id) == -1)
         {
             printf("Start device failed...\n");
-
             return false;
         }
         

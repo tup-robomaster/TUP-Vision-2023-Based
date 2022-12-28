@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2022-12-23 20:02:38
+ * @LastEditTime: 2022-12-28 17:03:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -67,27 +67,33 @@ namespace buff_processor
         {
             RCLCPP_INFO(this->get_logger(), "Target switched...");    
         }
+        
         TargetInfo target;
+        // rclcpp::Time now = this->get_clock()->now();
         if(buff_processor_->predictor(target_info, target))
         {
             GimbalMsg gimbal_msg;
-            gimbal_msg.header.frame_id = "gimbal";
-            gimbal_msg.header.stamp = this->get_clock()->now();
+            gimbal_msg.header.frame_id = "barrel_link";
+            gimbal_msg.header.stamp = target_info.header.stamp;
             gimbal_msg.pitch = target.angle[0];
             gimbal_msg.yaw = target.angle[1];
             gimbal_msg.distance = target.hit_point_cam.norm();
             gimbal_msg.is_switched = target.target_switched;
             
-            gimbal_info_pub_->publish(gimbal_msg);
+            gimbal_info_pub_->publish(std::move(gimbal_msg));
 
-            BuffMsg predict_info;
-            predict_info.header.frame_id = "buff_predictor";
-            predict_info.header.stamp = this->get_clock()->now();
-            predict_info.predict_point.x = target.hit_point_cam[0];
-            predict_info.predict_point.y = target.hit_point_cam[1];
-            predict_info.predict_point.z = target.hit_point_cam[2];
-
-            predict_info_pub_->publish(predict_info);
+            debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
+            if(debug_param_.show_predict)
+            {
+                BuffMsg predict_info;
+                predict_info.header.frame_id = "camera_link";
+                predict_info.header.stamp = target_info.header.stamp;
+                predict_info.predict_point.x = target.hit_point_cam[0];
+                predict_info.predict_point.y = target.hit_point_cam[1];
+                predict_info.predict_point.z = target.hit_point_cam[2];
+            
+                predict_info_pub_->publish(std::move(predict_info));
+            }
         }
     }
 

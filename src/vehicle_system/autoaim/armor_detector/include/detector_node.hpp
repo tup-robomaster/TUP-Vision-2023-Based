@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2022-12-26 13:56:20
+ * @LastEditTime: 2022-12-28 18:41:22
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -22,9 +22,10 @@
 
 //custom message
 #include "global_interface/msg/gimbal.hpp"
-#include "global_interface/msg/armor.hpp"
-#include "global_interface/msg/armors.hpp"
+// #include "global_interface/msg/armor.hpp"
+// #include "global_interface/msg/armors.hpp"
 #include "global_interface/msg/target.hpp"
+#include "global_interface/msg/imu.hpp"
 
 using namespace global_user;
 using namespace coordsolver;
@@ -34,28 +35,20 @@ namespace armor_detector
     {
         typedef global_interface::msg::Armors ArmorsMsg;
         typedef global_interface::msg::Target TargetMsg;
+        typedef global_interface::msg::Imu ImuMsg;
 
     public:
         DetectorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         ~DetectorNode();
         
     private:
-        // Subscribe img. 
-        std::shared_ptr<image_transport::Subscriber> img_sub_;
-        // rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr img_sub;
-
-        // Image subscriptions transport type.
-        std::string transport_;
-
         rclcpp::Time time_start_;
         int image_width_;
         int image_height_;
-        // std::shared_ptr<sensor_msgs::msg::CameraInfo> cam_info;
-        // rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr cam_info_sub;
 
-        //发布装甲信息
-        // ArmorsMsg armors_info_;
+        // pub target armor msg.
         rclcpp::Publisher<TargetMsg>::SharedPtr armor_info_pub_;
+        // ArmorsMsg armors_info_;
     
     private:    
         // Params callback.
@@ -64,10 +57,22 @@ namespace armor_detector
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
         
-    public:
+    private:
+        // Subscribe img. 
+        std::shared_ptr<image_transport::Subscriber> img_sub_;
+        // rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr img_sub;
+        // std::shared_ptr<sensor_msgs::msg::CameraInfo> cam_info;
+        // rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr cam_info_sub;
+
+        // Image subscriptions transport type.
+        std::string transport_;
         void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
         // std::vector<Armor> detect_armors(const sensor_msgs::msg::Image::SharedPtr& img);
-  
+
+        ImuMsg imu_msg_;
+        rclcpp::Subscription<ImuMsg>::SharedPtr imu_info_sub_;
+        void sensorMsgCallback(const ImuMsg& imu_msg);
+        
     public:
         DetectorParam detector_params_;
         DebugParam debug_;

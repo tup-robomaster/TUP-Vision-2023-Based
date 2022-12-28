@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2022-12-27 17:42:23
+ * @LastEditTime: 2022-12-28 17:28:31
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -144,7 +144,8 @@ namespace camera_driver
             RCLCPP_INFO(this->get_logger(), "Resize frame...");
         }
 
-        ros_image.header = header;
+        ros_image.header.frame_id = "usb_camera_link";
+        ros_image.header.stamp = this->get_clock()->now();
         ros_image.height = frame.rows;
         ros_image.width = frame.cols;
         ros_image.encoding = "bgr8";
@@ -242,8 +243,8 @@ namespace camera_driver
                 // camera_info_msg->header.frame_id = frame_id;
                 sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>();
 
-                msg->header.stamp = timestamp;
                 msg->header.frame_id = usb_cam_params_.frame_id;
+                msg->header.stamp = timestamp;
                 msg->encoding = "bgr8";
                 msg->width = frame.cols;
                 msg->height = frame.rows;
@@ -255,15 +256,22 @@ namespace camera_driver
                 frame_pub->publish(std::move(msg));
             }
 
+            save_video_ = this->get_parameter("save_video").as_bool();
             if(save_video_)
             {   // Video recorder.
                 videoRecorder(video_record_param_, &frame);
             }
 
-            usleep(20000);
-            // cv::namedWindow("raw_image", cv::WINDOW_AUTOSIZE);
-            // cv::imshow("raw_image", frame);
-            // cv::waitKey(2000);
+            bool show_img = this->get_parameter("show_img").as_bool();
+            if(show_img)
+            {
+                cv::namedWindow("raw_image", cv::WINDOW_AUTOSIZE);
+                cv::imshow("raw_image", frame);
+                cv::waitKey(2000);
+            }
+
+            if(using_video_)
+                usleep(20000);
         }
     }
 
@@ -284,6 +292,7 @@ namespace camera_driver
         default:
             break;
         }
+        return true;
     }
 
     rcl_interfaces::msg::SetParametersResult UsbCamNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
@@ -399,10 +408,12 @@ namespace camera_driver
         };
 
         this->declare_parameter("camera_id", 0);
-        this->declare_parameter("frame_id", "usb_image");
+        this->declare_parameter("frame_id", "usb_camera_link");
         this->declare_parameter("image_width", 480);
         this->declare_parameter("image_height", 480);
         this->declare_parameter("fps", 30);
+
+        this->declare_parameter<bool>("show_img", false);
 
         usb_cam_params_.camera_id = this->get_parameter("camera_id").as_int();
         usb_cam_params_.frame_id = this->get_parameter("frame_id").as_string();

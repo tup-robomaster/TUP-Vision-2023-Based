@@ -46,28 +46,14 @@ include_directories(
   
 set(node_plugins "")
   
-#   add_library(${PROJECT_NAME} SHARED
-#   # src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
-#   # include/${PROJECT_NAME}/${PROJECT_NAME}_node.hpp
-#   src/${PROJECT_NAME}/${PROJECT_NAME}_node.cpp
-#   # include/${PROJECT_NAME}/${PROJECT_NAME}.hpp
-#   # src/${PROJECT_NAME}/crc_check.cpp 
-#   # src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
-#   # include/${PROJECT_NAME}/${PROJECT_NAME}.hpp
-# )
+add_library(${PROJECT_NAME} SHARED
+  src/${PROJECT_NAME}/crc_check.cpp 
+  src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
+  src/${PROJECT_NAME}_node.cpp
+)
   
 # target_compile_definitions(${PROJECT_NAME}
 # PRIVATE "COMPOSITION_BUILDING_DLL")
-
-# ament_target_dependencies(${PROJECT_NAME}
-#   rclcpp
-#   rclcpp_components
-#   std_msgs
-#   sensor_msgs
-#   OpenCV
-#   global_interface
-#   global_user
-# )
 
 set(dependencies 
   rclcpp
@@ -91,6 +77,10 @@ set(dependencies
   robot_state_publisher 
 )
 
+ament_target_dependencies(${PROJECT_NAME}
+  ${dependencies}
+)
+
 include_directories(include)
 add_executable(${PROJECT_NAME}_node
   src/${PROJECT_NAME}/crc_check.cpp
@@ -102,14 +92,11 @@ ament_target_dependencies(${PROJECT_NAME}_node
   ${dependencies}
 )
 
-# target_link_libraries(serial_driver 
-#   # ${PROJECT_NAME}
-#   std_msgs
-#   rclcpp
-# )
-
 # register component nodes
-# rclcpp_components_register_nodes(${PROJECT_NAME} "serialport::serial_driver")
+rclcpp_components_register_nodes(${PROJECT_NAME} 
+  PLUGIN "serialport::serial_driver"
+  EXECUTABLE ${PROJECT_NAME}_node  
+)
 
 # set(node_plugins "${node_plugins}serialport::serial_driver;$<TARGET_FILE:serialport>\n")
 
@@ -119,13 +106,13 @@ ament_target_dependencies(${PROJECT_NAME}_node
 # )
 
 # Install libraries
-# install(TARGETS ${PROJECT_NAME}
-#     EXPORT ${PROJECT_NAME}
-#     LIBRARY DESTINATION lib
-#     ARCHIVE DESTINATION lib
-#     RUNTIME DESTINATION bin
-#     INCLUDES DESTINATION include
-# )
+install(TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
 
 install(TARGETS
   ${PROJECT_NAME}_node

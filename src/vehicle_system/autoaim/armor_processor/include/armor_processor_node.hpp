@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-12-27 17:58:42
+ * @LastEditTime: 2022-12-28 22:23:33
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -84,15 +84,16 @@ namespace armor_processor
     
     protected:
         // Sub image.
-        // std::shared_ptr<image_transport::Subscriber> img_sub_;
+        std::shared_ptr<image_transport::Subscriber> img_sub_;
+
         // Image subscriptions transport type.
-        // std::string transport_;
-        // int image_width;
-        // int image_height;
+        std::string transport_;
+        int image_width;
+        int image_height;
         
         // image callback.
-        // void img_callback();
-        // void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
+        void img_callback();
+        void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
     
     public:
         bool debug_;

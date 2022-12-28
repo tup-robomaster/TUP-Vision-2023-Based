@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2022-12-27 23:44:29
+ * @LastEditTime: 2022-12-28 16:29:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -358,6 +358,7 @@ namespace buff_detector
         // }
 
         std::cout << "Start initialize model..." << std::endl;
+        
         // Setting Configuration Values.
         core.set_property("CPU", ov::enable_profiling(true));
 

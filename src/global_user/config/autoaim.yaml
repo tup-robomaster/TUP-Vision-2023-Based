@@ -49,17 +49,17 @@
   # Debug params.
     debug: true
     using_imu: false
-    using_roi: true
-    draw_predict: true
-    show_img: true
+    using_roi: false
+    # draw_predict: true
+    show_img: false
     show_fps: false
     print_letency: false
     print_target_info: false
     detect_red: true
+    # disable_filter: false
+    # disable_fitting: true
+    # show_predict: false
     using_shared_memory: false
-    disable_filter: false
-    disable_fitting: true
-    show_predict: false
     show_transformed_info: false
     auto_label: false
     show_all_armors: true
@@ -76,7 +76,7 @@
     window_size: 3
 
   # Debug params.
-    using_shared_memory: true
+    using_shared_memory: false
     disable_filter: false
     disable_fitting: true
     draw_predict: false
@@ -85,9 +85,9 @@
     debug: true
 
   # Camera params.
-    camera_type: 0
+    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110075"
+    coord_param_name: "KE0200110075" 
     coord_param_path: "src/global_user/config/camera.yaml"
     
   # Filter params.

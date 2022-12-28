@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2022-12-27 21:24:15
+ * @LastEditTime: 2022-12-28 19:47:56
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -36,6 +36,16 @@ namespace buff_detector
 
         // buff info pub.
         buff_info_pub_ = this->create_publisher<BuffMsg>("buff_info", qos);
+
+        if(debug_param_.using_imu)
+        {
+            imu_msg_.header.frame_id = "imu_link";
+            imu_msg_.bullet_speed = this->declare_parameter<double>("bullet_speed", 28.0);
+            imu_msg_.mode = this->declare_parameter<int>("buff_mode", 3);
+            // imu msg sub.
+            imu_info_sub_ = this->create_subscription<ImuMsg>("/imu_msg", rclcpp::SensorDataQoS(),
+                std::bind(&BuffDetectorNode::sensorMsgCallback, this, _1));
+        }
 
         if(!detector_->is_initialized_)
         {
@@ -84,6 +94,19 @@ namespace buff_detector
         
     }
 
+    void BuffDetectorNode::sensorMsgCallback(const ImuMsg& imu_msg)
+    {
+        imu_msg_.header.stamp = this->get_clock()->now();
+
+        if(imu_msg.bullet_speed > 10)
+            imu_msg_.bullet_speed = imu_msg.bullet_speed;
+        if(imu_msg.mode == 3 || imu_msg.mode == 4)
+            imu_msg_.mode = imu_msg.mode;
+        imu_msg_.quat = imu_msg.quat;
+        imu_msg_.twist = imu_msg.twist;
+        return;
+    }
+    
     void BuffDetectorNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
     {   
         // RCLCPP_INFO(this->get_logger(), "Image callback...");
@@ -99,9 +122,28 @@ namespace buff_detector
 
         TargetInfo target_info;
         std::unique_ptr<BuffMsg> buff_msg;
+
+        if(debug_param_.using_imu)
+        {
+            auto dt = (this->get_clock()->now() - imu_msg_.header.stamp).nanoseconds();
+            if(abs(dt / 1e9) > 0.1)
+            {
+                detector_->setDebugParam(false, 7);
+            }
+            else
+            {
+                src.bullet_speed = imu_msg_.bullet_speed;
+                src.mode = imu_msg_.mode;
+                src.quat.w() = imu_msg_.quat.w;
+                src.quat.x() = imu_msg_.quat.x;
+                src.quat.y() = imu_msg_.quat.y;
+                src.quat.z() = imu_msg_.quat.z; 
+            }
+        }
+
         if(detector_->run(src, target_info))
         {
-            buff_msg->header.frame_id = "buff_detector";
+            buff_msg->header.frame_id = "gimbal_link";
             buff_msg->header.stamp = this->get_clock()->now();
             buff_msg->r_center.x = target_info.r_center[0];
             buff_msg->r_center.y = target_info.r_center[1];
@@ -113,9 +155,14 @@ namespace buff_detector
             buff_info_pub_->publish(std::move(buff_msg));
         }
 
-        cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
-        cv::imshow("dst", src.img);
-        cv::waitKey(1);
+        bool show_img;
+        this->get_parameter("show_img", show_img);
+        if(show_img)
+        {
+            cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
+            cv::imshow("dst", src.img);
+            cv::waitKey(1);
+        }
     }
 
     rcl_interfaces::msg::SetParametersResult BuffDetectorNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
@@ -217,6 +264,7 @@ namespace buff_detector
         this->declare_parameter<bool>("show_fps", true);
         this->declare_parameter<bool>("using_imu", false);
         this->declare_parameter<bool>("using_roi", false);
+        this->declare_parameter<bool>("show_img", false);
 
         this->get_parameter("max_v", this->buff_param_.max_v);
         this->get_parameter("fan_length", this->buff_param_.fan_length);

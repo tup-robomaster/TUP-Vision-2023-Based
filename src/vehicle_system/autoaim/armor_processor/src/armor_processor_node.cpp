@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-12-27 18:08:10
+ * @LastEditTime: 2022-12-28 23:50:46
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -32,7 +32,7 @@ namespace armor_processor
         qos.durability_volatile();
 
         // 发布云台转动信息（pitch、yaw角度）
-        gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/gimbal_info", qos);
+        gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_info", qos);
 
         // 订阅目标装甲板信息
         target_info_sub_ = this->create_subscription<TargetMsg>("/armor_info", qos,
@@ -43,11 +43,11 @@ namespace armor_processor
         using_shared_memory_ = this->get_parameter("using_shared_memory").as_bool();
         
         // 相机类型
-        // this->declare_parameter<int>("camera_type", global_user::DaHeng);
-        // int camera_type = this->get_parameter("camera_type").as_int();
+        this->declare_parameter<int>("camera_type", global_user::DaHeng);
+        int camera_type = this->get_parameter("camera_type").as_int();
         
         // 图像的传输方式
-        // transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
+        transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
         
         // if(processor_->armor_predictor_.debug_param_.using_imu)
         // {
@@ -100,145 +100,145 @@ namespace armor_processor
             RCLCPP_INFO(this->get_logger(), "debug...");
             
             // Prediction info pub.
-            predict_info_pub_ = this->create_publisher<TargetMsg>("/predict_info", qos);
+            predict_info_pub_ = this->create_publisher<TargetMsg>("/autoaim/predict_info", qos);
 
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, _1));
             
-        //     if(using_shared_memory_)
-        //     {
-        //         sleep(5);
-        //         // 共享内存配置
-        //         if(!getSharedMemory(shared_memory_param_, 5))
-        //             RCLCPP_ERROR(this->get_logger(), "Shared memory init failed...");
+            if(using_shared_memory_)
+            {
+                sleep(5);
+                // 共享内存配置
+                if(!getSharedMemory(shared_memory_param_, 5))
+                    RCLCPP_ERROR(this->get_logger(), "Shared memory init failed...");
 
-        //         // 图像读取线程
-        //         this->read_memory_thread_ = std::thread(&ArmorProcessorNode::img_callback, this);
-        //         // this->read_memory_thread_.join();
-        //     }
-        //     else
-        //     {
-        //         if(camera_type == DaHeng)
-        //         {
-        //             image_width = DAHENG_IMAGE_WIDTH;
-        //             image_height = DAHENG_IMAGE_HEIGHT;
+                // 图像读取线程
+                this->read_memory_thread_ = std::thread(&ArmorProcessorNode::img_callback, this);
+                // this->read_memory_thread_.join();
+            }
+            else
+            {
+                if(camera_type == DaHeng)
+                {
+                    image_width = DAHENG_IMAGE_WIDTH;
+                    image_height = DAHENG_IMAGE_HEIGHT;
                     
-        //             // daheng image sub.
-        //             img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
-        //                 std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
-        //         }
-        //         else if(camera_type == HikRobot)
-        //         {
-        //             image_width = HIK_IMAGE_WIDTH;
-        //             image_height = HIK_IMAGE_HEIGHT;
+                    // daheng image sub.
+                    img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+                        std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
+                }
+                else if(camera_type == HikRobot)
+                {
+                    image_width = HIK_IMAGE_WIDTH;
+                    image_height = HIK_IMAGE_HEIGHT;
 
-        //             // hik image sub.
-        //             img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
-        //                 std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
-        //         }
-        //         else if(camera_type == MVSCam)
-        //         {
-        //             image_width = MVS_IMAGE_WIDTH;
-        //             image_height = MVS_IMAGE_HEIGHT;
+                    // hik image sub.
+                    img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
+                        std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
+                }
+                else if(camera_type == MVSCam)
+                {
+                    image_width = MVS_IMAGE_WIDTH;
+                    image_height = MVS_IMAGE_HEIGHT;
 
-        //             // mvs image sub.
-        //             img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/mvs_img",
-        //                 std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
-        //         }
-        //         else if(camera_type == USBCam)
-        //         {
-        //             image_width = USB_IMAGE_WIDTH;
-        //             image_height = USB_IMAGE_HEIGHT;
+                    // mvs image sub.
+                    img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/mvs_img",
+                        std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
+                }
+                else if(camera_type == USBCam)
+                {
+                    image_width = USB_IMAGE_WIDTH;
+                    image_height = USB_IMAGE_HEIGHT;
 
-        //             // usb image sub.
-        //             img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/usb_img", 
-        //                 std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
-        //         }
-        //     }
+                    // usb image sub.
+                    img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/usb_img", 
+                        std::bind(&ArmorProcessorNode::image_callback, this, _1), transport_));
+                }
+            }
         }
     }
 
     ArmorProcessorNode::~ArmorProcessorNode()
     {
-        // if(using_shared_memory_)
-        // {
-        //     if(!destorySharedMemory(shared_memory_param_))
-        //         RCLCPP_ERROR(this->get_logger(), "Destory shared memory failed...");
-        // }
+        if(using_shared_memory_)
+        {
+            if(!destorySharedMemory(shared_memory_param_))
+                RCLCPP_ERROR(this->get_logger(), "Destory shared memory failed...");
+        }
     }
 
-    // void ArmorProcessorNode::img_callback()
-    // {
-    //     cv::Mat img = cv::Mat(this->image_height, this->image_width, CV_8UC3);
+    void ArmorProcessorNode::img_callback()
+    {
+        cv::Mat img = cv::Mat(this->image_height, this->image_width, CV_8UC3);
 
-    //     while(1)
-    //     {
-    //         // 读取共享内存图像数据
-    //         memcpy(img.data, shared_memory_param_.shared_memory_ptr, this->image_height * this->image_width * 3);
-    //         // img.copyTo(src.img);
-    //         if(this->debug_param_.show_predict)
-    //         {
-    //             if(!img.empty())
-    //             {
-    //                 // RCLCPP_INFO(this->get_logger(), "Show prediction...");
-    //                 if(predict_point_ == last_predict_point_)
-    //                 {}
-    //                 else
-    //                 {
-    //                     // last_predict_point_ = predict_point_;
-    //                     // cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
-    //                     // for(int i = 0; i < 4; i++)
-    //                     // {
-    //                     //     cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {255, 255, 0}, 4);
-    //                     // }
-    //                     std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
-    //                     cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
-    //                     cv::Rect rect = points_pic_rrect.boundingRect();
-    //                     cv::rectangle(img, rect, {255, 0, 255}, 5);
-    //                     cv::circle(img, point_2d, 8, {255, 255, 0}, -1);
-    //                 }
-    //                 cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
-    //                 cv::imshow("ekf_predict", img);
-    //                 cv::waitKey(1);
-    //             }
-    //         }
-    //     }
-    // }
+        while(1)
+        {
+            // 读取共享内存图像数据
+            memcpy(img.data, shared_memory_param_.shared_memory_ptr, this->image_height * this->image_width * 3);
+            // img.copyTo(src.img);
+            if(this->debug_param_.show_predict)
+            {
+                if(!img.empty())
+                {
+                    // RCLCPP_INFO(this->get_logger(), "Show prediction...");
+                    if(predict_point_ == last_predict_point_)
+                    {}
+                    else
+                    {
+                        last_predict_point_ = predict_point_;
+                        cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
+                        // for(int i = 0; i < 4; i++)
+                        // {
+                        //     cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {255, 255, 0}, 4);
+                        // }
+                        std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
+                        cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
+                        cv::Rect rect = points_pic_rrect.boundingRect();
+                        cv::rectangle(img, rect, {255, 0, 255}, 5);
+                        cv::circle(img, point_2d, 8, {255, 255, 0}, -1);
+                    }
+                    cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
+                    cv::imshow("ekf_predict", img);
+                    cv::waitKey(1);
+                }
+            }
+        }
+    }
 
-    // void ArmorProcessorNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
-    // {
-    //     if(!img_info)
-    //         return;
+    void ArmorProcessorNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
+    {
+        if(!img_info)
+            return;
 
-    //     auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
-    //     // img.copyTo(src.img);
-    //     if(this->debug_param_.show_predict)
-    //     {
-    //         if(!img.empty())
-    //         {
-    //             // RCLCPP_INFO(this->get_logger(), "Show prediction...");
-    //             if(predict_point_ == last_predict_point_)
-    //             {}
-    //             else
-    //             {
-    //                 last_predict_point_ = predict_point_;
-    //                 cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
-    //                 // for(int i = 0; i < 4; i++)
-    //                 // {
-    //                 //     cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {0, 255, 0}, 4);
-    //                 // }
-    //                 std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
-    //                 cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
-    //                 cv::Rect rect = points_pic_rrect.boundingRect();
-    //                 cv::rectangle(img, rect, {255, 0, 255}, 5);
-    //                 cv::circle(img, point_2d, 8, {255, 255, 0}, -1);
-    //             }
-    //             cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
-    //             cv::imshow("ekf_predict", img);
-    //             cv::waitKey(1);
-    //         }
-    //     }
-    // }
+        auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
+        // img.copyTo(src.img);
+        if(this->debug_param_.show_predict)
+        {
+            if(!img.empty())
+            {
+                // RCLCPP_INFO(this->get_logger(), "Show prediction...");
+                // if(predict_point_[0] == last_predict_point_[0])
+                // {}
+                // else
+                // {
+                    last_predict_point_ = predict_point_;
+                    cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
+                    for(int i = 0; i < 4; i++)
+                    {
+                        cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {0, 255, 255}, 5);
+                    }
+                    // std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
+                    // cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
+                    // cv::Rect rect = points_pic_rrect.boundingRect();
+                    // cv::rectangle(img, rect, {255, 0, 255}, 5);
+                    cv::circle(img, point_2d, 10, {255, 255, 0}, -1);
+                // }
+                cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
+                cv::imshow("ekf_predict", img);
+                cv::waitKey(1);
+            }
+        }
+    }
 
     // void ArmorProcessorNode::msg_callback(const geometry_msgs::msg::PointStamped::SharedPtr point_ptr)
     // {
@@ -265,16 +265,20 @@ namespace armor_processor
 
     void ArmorProcessorNode::target_info_callback(const TargetMsg& target_info)
     {
-        // Get target 2d cornor points.
-        // for(int i = 0; i < 4; ++i)
-        // {
-        //     apex2d[i].x = target_info.point2d[i].x;
-        //     apex2d[i].y = target_info.point2d[i].y;
-        // }
+        if(this->debug_param_.show_predict)
+        {
+            // Get target 2d cornor points.
+            for(int i = 0; i < 4; ++i)
+            {
+                apex2d[i].x = target_info.point2d[i].x;
+                apex2d[i].y = target_info.point2d[i].y;
+            }
+        }
 
         double sleep_time = 0.0;
         TargetMsg target = std::move(target_info);
-
+        
+        last_predict_point_ = predict_point_;
         auto aiming_point_world = std::move(processor_->predictor(target, sleep_time));
         Eigen::Matrix3d rmat_imu;
         if(!debug_param_.using_imu)
@@ -288,6 +292,7 @@ namespace armor_processor
         }
         Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
         Eigen::Vector2d angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
+        predict_point_ = aiming_point_cam;
 
         // if(target_info.target_switched)
         // {
@@ -312,9 +317,9 @@ namespace armor_processor
 
         // Gimbal info pub.
         GimbalMsg gimbal_info;
-        gimbal_info.header.frame_id = "gimbal";
-        auto now = this->get_clock()->now();
-        gimbal_info.header.stamp = now;
+        gimbal_info.header.frame_id = "barrel_link";
+        // auto now = this->get_clock()->now();
+        gimbal_info.header.stamp = target_info.header.stamp;
         gimbal_info.pitch = angle[0];
         gimbal_info.yaw = angle[1];
         gimbal_info.distance = aiming_point_cam.norm();
@@ -325,8 +330,8 @@ namespace armor_processor
         if(this->debug_)
         {
             TargetMsg predict_info;
-            predict_info.header.frame_id = "predict_info";
-            predict_info.header.stamp = now;
+            predict_info.header.frame_id = "camera_link";
+            predict_info.header.stamp = target_info.header.stamp;
             predict_info.aiming_point.x = aiming_point_cam[0];
             predict_info.aiming_point.y = aiming_point_cam[1];
             predict_info.aiming_point.z = aiming_point_cam[2];

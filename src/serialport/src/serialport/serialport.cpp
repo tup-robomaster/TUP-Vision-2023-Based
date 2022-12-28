@@ -123,11 +123,11 @@ namespace serialport
         // bytes = read(fd, rdata, 45);
         // bytes = read(fd, rdata, 49);
         bytes = read(serial_data_.fd, serial_data_.rdata, 50);
-        timestamp_ = std::chrono::steady_clock::now();
+        timestamp_ = this->steady_clock_.now();
 
         if (serial_data_.rdata[0] == 0xA5 && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3))
         {
-            serial_data_.mode = serial_data_.rdata[1]; // 模式位（自瞄or能量机关）
+            mode = serial_data_.rdata[1]; // 模式位（自瞄or能量机关）
             getQuat(&serial_data_.rdata[3]);
             getGyro(&serial_data_.rdata[19]);
             getAcc(&serial_data_.rdata[31]);
@@ -394,8 +394,10 @@ namespace serialport
         quat[2] = exchange_data(f3);
         quat[3] = exchange_data(f4);
         if(print_imu_data_)
-            fmt::print(fmt::fg(fmt::color::white), "quat: {} {} {} {} \n", quat[0], quat[1], quat[2], quat[3]);
-        
+        {
+            // fmt::print(fmt::fg(fmt::color::white), "quat: {} {} {} {} \n", quat[0], quat[1], quat[2], quat[3]);
+            printf("quat: %f %f %f %f\n", quat[0], quat[1], quat[2], quat[3]);
+        }
         return true;
     }
 
@@ -414,7 +416,10 @@ namespace serialport
         gyro[1] = exchange_data(f2);
         gyro[2] = exchange_data(f3);
         if(print_imu_data_)
-            fmt::print(fmt::fg(fmt::color::white), "gyro: {} {} {} \n", gyro[0], gyro[1], gyro[2]);
+        {
+            // fmt::print(fmt::fg(fmt::color::white), "gyro: {} {} {} \n", gyro[0], gyro[1], gyro[2]);
+            printf("gyro: %f %f %f\n", gyro[0], gyro[1], gyro[2]);
+        }
         
         return true;
     }
@@ -434,7 +439,10 @@ namespace serialport
         acc[1] = exchange_data(f2);
         acc[2] = exchange_data(f3);
         if(print_imu_data_)
-            fmt::print(fmt::fg(fmt::color::white), "acc: {} {} {} \n", acc[0], acc[1], acc[2]);
+        {
+            // fmt::print(fmt::fg(fmt::color::white), "acc: {} {} {} \n", acc[0], acc[1], acc[2]);
+            printf("acc: %f %f %f", acc[0], acc[1], acc[2]);
+        }
         
         return true;
     }
@@ -449,7 +457,10 @@ namespace serialport
         unsigned char* f1 = &data[0];
         bullet_speed_ = exchange_data(f1);
         if(print_imu_data_)
-            fmt::print(fmt::fg(fmt::color::white), "speed: {} \n", bullet_speed_);
+        {
+            // fmt::print(fmt::fg(fmt::color::white), "speed: {} \n", bullet_speed_);
+            printf("bullet_speed: %f", bullet_speed_);
+        }
 
         return true;
     }
