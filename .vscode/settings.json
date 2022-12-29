@@ -106,7 +106,8 @@
         "variant": "cpp",
         "buffer": "cpp",
         "netfwd": "cpp",
-        "dense": "cpp"
+        "dense": "cpp",
+        "specialfunctions": "cpp"
     },
     "python.autoComplete.extraPaths": [
         "/opt/ros/galactic/lib/python3.8/site-packages"

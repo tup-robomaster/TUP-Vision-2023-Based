@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-12-28 23:36:18
+ * @LastEditTime: 2022-12-30 02:47:26
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -108,7 +108,7 @@ namespace armor_processor
     {
         auto t1 = steady_clock_.now();
 
-        Eigen::Vector3d xyz = {target_msg.aiming_point.x, target_msg.aiming_point.y, target_msg.aiming_point.z};
+        Eigen::Vector3d xyz = {target_msg.aiming_point_world.x, target_msg.aiming_point_world.y, target_msg.aiming_point_world.z};
         TargetInfo target = 
         {
             std::move(xyz),
@@ -289,11 +289,12 @@ namespace armor_processor
         auto delta_x_last = (history_info_.at(history_info_.size() - 2).xyz[0] - history_info_.at(history_info_.size() - 3).xyz[0]);
         auto delta_y_last = (history_info_.at(history_info_.size() - 2).xyz[1] - history_info_.at(history_info_.size() - 3).xyz[1]);
         auto delta_t_last = (history_info_.at(history_info_.size() - 2).timestamp - history_info_.at(history_info_.size() - 3).timestamp) / 1e9;
+        std::cout << "delta_t:" << delta_t_last << "s" << std::endl;
         auto vx_last = delta_x_last / delta_t_last;
         auto vy_last = delta_y_last / delta_t_last;
 
-        auto delta_x_now = (target.xyz[0] + history_info_.at(history_info_.size() - 2).xyz[0]);
-        auto delta_y_now = (target.xyz[1] + history_info_.at(history_info_.size() - 2).xyz[1]);
+        auto delta_x_now = (target.xyz[0] - history_info_.at(history_info_.size() - 2).xyz[0]);
+        auto delta_y_now = (target.xyz[1] - history_info_.at(history_info_.size() - 2).xyz[1]);
 
         auto delta_t_now = (target.timestamp - history_info_.at(history_info_.size() - 2).timestamp) / 1e9;
         auto vx_now = delta_x_now / delta_t_now;
@@ -305,11 +306,17 @@ namespace armor_processor
         Eigen::VectorXd measure_vel(2), measure_acc(2);
         measure_vel << vx_now, vy_now;
         measure_acc << ax, ay;
+        std::cout << "dx:" << delta_x_now << " dy:" << delta_y_now << std::endl;
+
         // bool is_v_filter_ready = pf_v.update(measure_v);
         // Eigen::Vector2d predict_v_xy = pf_v.predict();
 
         Eigen::Vector2d target_vel = measure_vel;
         Eigen::Vector2d target_acc = measure_acc;
+
+        std::cout << "target_vel: x:" << target_vel[0] << " y:" << target_vel[1] << std::endl;
+        std::cout << "target_acc: x:" << target_acc[0] << " y:" << target_acc[1] << std::endl;
+
         // if(is_v_filter_ready)
         // {   //若速度粒子滤波器已完成初始化且预测值大小恰当，则对目标速度做滤波
         //     target_v[0] = predict_v_xy[0];
@@ -342,7 +349,7 @@ namespace armor_processor
             if(target.system_model == CSMODEL)
             {   // 基于CS模型的卡尔曼滤波
                 std::cout << "cs pred..." << std::endl;
-                is_ekf_available = predict_ekf_run(CAMERA_X_DIRECTION, target, result_ekf, target_vel, target_acc, delta_time_estimate);
+                is_ekf_available = predict_ekf_run(GYRO_Y_DIRECTION, target, result_ekf, target_vel, target_acc, delta_time_estimate);
 
                 if(is_ekf_available.xyz_status[0])
                     result[0] = result_ekf[0];
@@ -1529,12 +1536,12 @@ namespace armor_processor
             }
             else if(predictDirection == CAMERA_Y_DIRECTION)
             {
-                kalman_filter_.x_ << target.xyz[2], target_vel[2], target_acc[2];
+                kalman_filter_.x_ << target.xyz[2], 0, 0;
                 is_available.xyz_status[2] = false;
             }
             else if(predictDirection == CAMERA_Z_DIRECTION)
             {
-                kalman_filter_.x_ << target.xyz[1], target_vel[1], target_acc[1]; 
+                kalman_filter_.x_ << target.xyz[1], 0, 0; 
                 is_available.xyz_status[1] = false;
             }
             else if(predictDirection == GYRO_X_DIRECTION)
@@ -1655,14 +1662,14 @@ namespace armor_processor
                 result[0] = target.xyz[0];
                 result[1] = target.xyz[1];
                 result[2] = x_pred[0];
-                is_available.xyz_status[1] = true;
+                is_available.xyz_status[2] = true;
             }
             else if(predictDirection == CAMERA_Z_DIRECTION)
             {
                 result[0] = target.xyz[0];
                 result[1] = x_pred[0];
                 result[2] = target.xyz[2];
-                is_available.xyz_status[2] = true;
+                is_available.xyz_status[1] = true;
             }
             else if(predictDirection == GYRO_X_DIRECTION)
             {

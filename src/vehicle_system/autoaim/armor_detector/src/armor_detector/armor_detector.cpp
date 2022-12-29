@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-12-28 19:38:01
+ * @LastEditTime: 2022-12-29 23:32:11
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -11,23 +11,23 @@ using namespace std;
 namespace armor_detector
 {
     Detector::Detector(const std::string& camera_name_, const std::string& camera_param_path_, const std::string& network_path_,
-    const DetectorParam& _detector_params_, const DebugParam& _debug_params_, const GyroParam& _gyro_params_) 
-    : spinning_detector_(_detector_params_.color, _gyro_params_), detector_params_(_detector_params_), debug_params_(_debug_params_)
+    const DetectorParam& detector_params_, const DebugParam& _debug_params_, const GyroParam& _gyro_params_) 
+    : spinning_detector_(detector_params_.color, _gyro_params_), detector_params_(detector_params_), debug_params_(_debug_params_)
     {
         //参数设置
         this->camera_name = camera_name_;
         this->camera_param_path = camera_param_path_;
         this->network_path = network_path_;
-        // this->Detector_params_.dw = _Detector_params_.dw;
-        // this->Detector_params_.dh = _Detector_params_.dh;
-        // this->Detector_params_.rescale_ratio = _Detector_params_.rescale_ratio;
-        // this->Detector_params_.armor_type_wh_thres = _Detector_params_.armor_type_wh_thres;
-        // this->Detector_params_.max_lost_cnt = _Detector_params_.max_lost_cnt;
-        // this->Detector_params_.max_armors_cnt = _Detector_params_.max_armors_cnt;
-        // this->Detector_params_.max_v = _Detector_params_.max_v;
-        // this->Detector_params_.max_delta_t = _Detector_params_.max_delta_t;
-        // this->Detector_params_.no_crop_thres = _Detector_params_.no_crop_thres;
-        // this->Detector_params_.hero_danger_zone = _Detector_params_.hero_danger_zone;
+        // this->armor_detector_params_.dw = _armor_detector_params_.dw;
+        // this->armor_detector_params_.dh = _armor_detector_params_.dh;
+        // this->armor_detector_params_.rescale_ratio = _armor_detector_params_.rescale_ratio;
+        // this->armor_detector_params_.armor_type_wh_thres = _armor_detector_params_.armor_type_wh_thres;
+        // this->armor_detector_params_.max_lost_cnt = _armor_detector_params_.max_lost_cnt;
+        // this->armor_detector_params_.max_armors_cnt = _armor_detector_params_.max_armors_cnt;
+        // this->armor_detector_params_.max_v = _armor_detector_params_.max_v;
+        // this->armor_detector_params_.max_delta_t = _armor_detector_params_.max_delta_t;
+        // this->armor_detector_params_.no_crop_thres = _armor_detector_params_.no_crop_thres;
+        // this->armor_detector_params_.hero_danger_zone = _armor_detector_params_.hero_danger_zone;
                    
         //网络模型初始化
         
@@ -51,7 +51,7 @@ namespace armor_detector
         // this->debug_params_.detect_red = _debug_params_.detect_red;
        
         //gyro_detect_params
-        // spinning_detector_ = spinning_detector(_detector_params_.color, _gyro_params_);
+        // spinning_armor_detector_ = spinning_detector(_armor_detector_params_.color, _gyro_params_);
     }
 
     Detector::~Detector()
@@ -78,8 +78,8 @@ namespace armor_detector
 
         //debug
         this->debug_params_.debug_without_com = debug_params.debug_without_com;
-        this->debug_params_.using_imu =  debug_params.using_imu;
-        this->debug_params_.using_roi =  debug_params.using_roi;
+        this->debug_params_.using_imu = debug_params.using_imu;
+        this->debug_params_.using_roi = debug_params.using_roi;
         this->debug_params_.show_aim_cross = debug_params.show_aim_cross;
         this->debug_params_.show_img = debug_params.show_img;
         this->debug_params_.detect_red = debug_params.detect_red;
@@ -91,15 +91,13 @@ namespace armor_detector
     {
         if(!is_init)
         {
-            detector_.initModel(network_path);
+            armor_detector_.initModel(network_path);
             coordsolver_.loadParam(camera_param_path, camera_name);
-
             if(is_save_data)
             {
                 data_save.open("src/data/dis_info_1.txt", ios::out | ios::trunc);
                 data_save << fixed;
             }
-
             is_init = true;
         }
 
@@ -125,7 +123,7 @@ namespace armor_detector
         }
 
         // Eigen::Matrix3d rmat_imu;
-        if(!debug_params_.using_imu)
+        if(debug_params_.using_imu)
         {   //使用陀螺仪数据
             rmat_imu = src.quat.toRotationMatrix();
         }
@@ -153,7 +151,7 @@ namespace armor_detector
         objects.clear();
         armors.clear();
         
-        if(!detector_.detect(input, objects))
+        if(!armor_detector_.detect(input, objects))
         {   //若未检测到目标
             if(debug_params_.show_aim_cross)
             {
@@ -167,11 +165,15 @@ namespace armor_detector
             //     waitKey(1);
             // }
 
+            // std::cout << 5 << std::endl;
+
             lost_cnt++;
             is_last_target_exists = false;
             last_target_area = 0.0;
             return false;
         }
+
+        // std::cout << 4 << std::endl;
 
         time_infer = steady_clock_.now();
         
@@ -215,6 +217,7 @@ namespace armor_detector
             for(int i = 0; i < 4; i++)
             {
                 armor.apex2d[i] += Point2f((float)roi_offset.x,(float)roi_offset.y);
+                std::cout << "x:" << armor.apex2d[i].x << " y:" << armor.apex2d[i].y << std::endl;
             }
             Point2f apex_sum;
             for(auto apex : armor.apex2d)
@@ -235,7 +238,7 @@ namespace armor_detector
             //                         min(points_pic_rrect.size.height, points_pic_rrect.size.width);
             
             // //若大于长宽阈值或为哨兵、英雄装甲板
-            // if (apex_wh_ratio > this->detector_params_.armor_type_wh_thres || object.cls == 1 || object.cls == 0)
+            // if (apex_wh_ratio > this->armor_detector_params_.armor_type_wh_thres || object.cls == 1 || object.cls == 0)
             //     target_type = BIG;
             // for (auto pic : points_pic)
             //     cout<<pic<<endl;
@@ -292,7 +295,6 @@ namespace armor_detector
             //若大于长宽阈值或为哨兵、英雄装甲板
             if (object.cls == 1 || object.cls == 0)
                 target_type = BIG;
-
             //FIXME：若存在平衡步兵需要对此处步兵装甲板类型进行修改
             else if (object.cls == 2 || object.cls == 3 || object.cls == 4 || object.cls == 5 || object.cls == 6)
                 target_type = SMALL;
@@ -300,7 +302,8 @@ namespace armor_detector
                 target_type = BIG;
 
             //单目PnP
-            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_IPPE);
+            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_ITERATIVE);
+            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_IPPE);
             
             //防止装甲板类型出错导致解算问题，首先尝试切换装甲板类型，若仍无效则直接跳过该装甲板
             if (pnp_result.armor_cam.norm() > 10 ||
@@ -327,6 +330,11 @@ namespace armor_detector
             armor.euler = pnp_result.euler;
             armor.area = object.area;
             armors.push_back(armor);
+
+            // std::cout << std::endl;
+            // std::cout << "armor3d_world: x" << armor.armor3d_world[0] << " y:" << armor.armor3d_world[1] << " z:" << armor.armor3d_world[2] << std::endl;
+            // std::cout << "armor3d_cam: x" << armor.armor3d_cam[0] << " y:" << armor.armor3d_cam[1] << " z:" << armor.armor3d_world[2] << std::endl;
+            // std::cout << std::endl;
         }
         
         //若无合适装甲板
@@ -571,9 +579,12 @@ namespace armor_detector
         target_info.point2d[2].y = target.apex2d[2].y;
         target_info.point2d[3].x = target.apex2d[3].x;
         target_info.point2d[3].y = target.apex2d[3].y;
-        target_info.aiming_point.x = target.armor3d_cam[0];
-        target_info.aiming_point.y = target.armor3d_cam[1];
-        target_info.aiming_point.z = target.armor3d_cam[2];
+        target_info.aiming_point_world.x = target.armor3d_world[0];
+        target_info.aiming_point_world.y = target.armor3d_world[1];
+        target_info.aiming_point_world.z = target.armor3d_world[2];
+        target_info.aiming_point_cam.x = target.armor3d_cam[0];
+        target_info.aiming_point_cam.y = target.armor3d_cam[1];
+        target_info.aiming_point_cam.z = target.armor3d_cam[2];
 
         if (target.color == 2)
             dead_buffer_cnt++;
@@ -588,9 +599,7 @@ namespace armor_detector
         lost_cnt = 0;
         prev_timestamp = src.timestamp;
         last_target_area = target.area;
-        last_aiming_point[0] = target_info.aiming_point.x;
-        last_aiming_point[1] = target_info.aiming_point.y;
-        last_aiming_point[2] = target_info.aiming_point.z;
+        last_aiming_point = target.armor3d_cam;
         is_last_target_exists = true;
         last_armors.clear();
         last_armors = armors;
@@ -606,12 +615,12 @@ namespace armor_detector
             showArmors(src);
         }
         
-        auto angle = coordsolver_.getAngle(last_aiming_point, rmat_imu);
-        //若预测出错则直接世界坐标系下坐标作为击打点
-        if (isnan(angle[0]) || isnan(angle[1]))
-            angle = coordsolver_.getAngle(last_aiming_point, rmat_imu);
+        // auto angle = coordsolver_.getAngle(last_aiming_point, rmat_imu);
+        // 若预测出错则直接世界坐标系下坐标作为击打点
+        // if (isnan(angle[0]) || isnan(angle[1]))
+        //     angle = coordsolver_.getAngle(last_aiming_point, rmat_imu);
+        
         auto time_predict = steady_clock_.now();
-
         double dr_crop_ns = (time_crop - time_start).nanoseconds();
         double dr_infer_ns = (time_infer - time_crop).nanoseconds();
         // double dr_predict_ns = (time_predict - time_infer).nanoseconds();
@@ -664,8 +673,8 @@ namespace armor_detector
         }
 
         //若预测出错取消本次数据发送
-        if (isnan(angle[0]) || isnan(angle[1]))
-            return false;
+        // if (isnan(angle[0]) || isnan(angle[1]))
+        //     return false;
 
         // if(debug_params_.show_img)
         // {
@@ -725,26 +734,26 @@ namespace armor_detector
         // if (!is_last_target_exists)
         // {
         //     //当丢失目标帧数过多或lost_cnt为初值
-        //     if (lost_cnt > this->Detector_params_.max_lost_cnt || lost_cnt == 0)
+        //     if (lost_cnt > this->armor_detector_params_.max_lost_cnt || lost_cnt == 0)
         //     {
         //         return Point2i(0,0);
         //     }
         // }
 
         // //若目标大小大于阈值
-        // if ((last_target_area / img.size().area()) > this->Detector_params_.no_crop_thres)
+        // if ((last_target_area / img.size().area()) > this->armor_detector_params_.no_crop_thres)
         // {
         //     return Point2i(0,0);
         // }
         // //处理X越界
         
         // // 计算上一帧roi中心在原图像中的坐标
-        // Point2i last_armor_center = Point2i(last_roi_center.x - this->Detector_params_.dw, last_roi_center.y - this->Detector_params_.dh) * (1 / this->Detector_params_.rescale_ratio);
+        // Point2i last_armor_center = Point2i(last_roi_center.x - this->armor_detector_params_.dw, last_roi_center.y - this->armor_detector_params_.dh) * (1 / this->armor_detector_params_.rescale_ratio);
 
         // float armor_h = calcDistance(last_armor.apex2d[0], last_armor.apex2d[1]);
         // float armor_w = calcDistance(last_armor.apex2d[1], last_armor.apex2d[2]);
-        // int roi_width = MAX(armor_h, armor_w) * (1 / this->Detector_params_.rescale_ratio);
-        // int roi_height = MIN(armor_h, armor_w) * (1 / this->Detector_params_.rescale_ratio);
+        // int roi_width = MAX(armor_h, armor_w) * (1 / this->armor_detector_params_.rescale_ratio);
+        // int roi_height = MIN(armor_h, armor_w) * (1 / this->armor_detector_params_.rescale_ratio);
 
         // //根据丢失帧数逐渐扩大ROI大小
         // if(lost_cnt == 2)

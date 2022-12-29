@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-12-28 23:50:46
+ * @LastEditTime: 2022-12-29 20:18:29
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -217,11 +217,12 @@ namespace armor_processor
             if(!img.empty())
             {
                 // RCLCPP_INFO(this->get_logger(), "Show prediction...");
-                // if(predict_point_[0] == last_predict_point_[0])
-                // {}
-                // else
-                // {
-                    last_predict_point_ = predict_point_;
+                if(!flag_)
+                {}
+                else
+                {
+                    flag_ = false;
+                    // last_predict_point_ = predict_point_;
                     cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
                     for(int i = 0; i < 4; i++)
                     {
@@ -232,7 +233,7 @@ namespace armor_processor
                     // cv::Rect rect = points_pic_rrect.boundingRect();
                     // cv::rectangle(img, rect, {255, 0, 255}, 5);
                     cv::circle(img, point_2d, 10, {255, 255, 0}, -1);
-                // }
+                }
                 cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
                 cv::imshow("ekf_predict", img);
                 cv::waitKey(1);
@@ -265,6 +266,9 @@ namespace armor_processor
 
     void ArmorProcessorNode::target_info_callback(const TargetMsg& target_info)
     {
+        flag_ = true;
+        last_predict_point_ = predict_point_;
+
         if(this->debug_param_.show_predict)
         {
             // Get target 2d cornor points.
@@ -278,12 +282,12 @@ namespace armor_processor
         double sleep_time = 0.0;
         TargetMsg target = std::move(target_info);
         
-        last_predict_point_ = predict_point_;
         auto aiming_point_world = std::move(processor_->predictor(target, sleep_time));
+
         Eigen::Matrix3d rmat_imu;
         if(!debug_param_.using_imu)
         {
-            rmat_imu.setIdentity();
+            rmat_imu = Eigen::Matrix3d::Identity();
         }
         else
         {
@@ -291,8 +295,9 @@ namespace armor_processor
             rmat_imu = quat_imu.toRotationMatrix();
         }
         Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
+        // std::cout << "predict_cam: x:" << aiming_point_cam[0] << " y:" << aiming_point_cam[1] << " z:" << aiming_point_cam[2] << std::endl;
+        
         Eigen::Vector2d angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
-        predict_point_ = aiming_point_cam;
 
         // if(target_info.target_switched)
         // {
@@ -332,13 +337,40 @@ namespace armor_processor
             TargetMsg predict_info;
             predict_info.header.frame_id = "camera_link";
             predict_info.header.stamp = target_info.header.stamp;
-            predict_info.aiming_point.x = aiming_point_cam[0];
-            predict_info.aiming_point.y = aiming_point_cam[1];
-            predict_info.aiming_point.z = aiming_point_cam[2];
+            predict_info.aiming_point_cam.x = aiming_point_cam[0];
+            predict_info.aiming_point_cam.y = aiming_point_cam[1];
+            predict_info.aiming_point_cam.z = aiming_point_cam[2];
             predict_info.period = target_info.period;
             predict_info_pub_->publish(std::move(predict_info));
         }
 
+        predict_point_ = aiming_point_cam;
+        if(!(&target_info.image))
+            return;
+
+        std::shared_ptr<sensor_msgs::msg::Image> img_info = std::make_shared<sensor_msgs::msg::Image>(target_info.image);
+        auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
+        if(this->debug_param_.show_predict)
+        {
+            if(!img.empty())
+            {
+                // RCLCPP_INFO(this->get_logger(), "Show prediction...");
+                // last_predict_point_ = predict_point_;
+                cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
+                for(int i = 0; i < 4; i++)
+                {
+                    cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {255, 0, 255}, 5);
+                }
+                // std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
+                // cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
+                // cv::Rect rect = points_pic_rrect.boundingRect();
+                // cv::rectangle(img, rect, {255, 0, 255}, 5);
+                cv::circle(img, point_2d, 10, {255, 255, 0}, -1);
+                cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
+                cv::imshow("dst", img);
+                cv::waitKey(1);
+            }
+        }
         return;
     }
 

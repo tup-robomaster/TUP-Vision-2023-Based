@@ -1,5 +1,7 @@
 std_msgs/Header header
-geometry_msgs/Point aiming_point
+sensor_msgs/Image image
+geometry_msgs/Point aiming_point_cam
+geometry_msgs/Point aiming_point_world
 float64 timestamp
 float64 w
 float64 period

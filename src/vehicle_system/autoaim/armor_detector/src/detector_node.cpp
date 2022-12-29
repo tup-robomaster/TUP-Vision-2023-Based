@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-12-28 19:43:07
+ * @LastEditTime: 2022-12-30 02:27:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -24,11 +24,18 @@ namespace armor_detector
             std::cerr << e.what() << '\n';
         }
 
+        if(!detector_->is_init)
+        {
+            detector_->armor_detector_.initModel(network_path_);
+            detector_->coordsolver_.loadParam(camera_path_, camera_name_);
+            detector_->is_init = true;
+        }
+
         time_start_ = detector_->steady_clock_.now();
 
         //QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(10);
+        qos.keep_last(1);
         qos.best_effort();
         qos.reliable();
         qos.durability();
@@ -156,6 +163,8 @@ namespace armor_detector
         auto img_sub_time = detector_->steady_clock_.now();
         src.timestamp = (img_sub_time - time_start_).nanoseconds();
 
+        std::cout << "dt:" << (src.timestamp / 1e9) << "s" << std::endl;
+
         if(debug_.using_imu)
         {
             auto dt = (this->get_clock()->now() - imu_msg_.header.stamp).nanoseconds();
@@ -175,14 +184,22 @@ namespace armor_detector
             }
         }
         
+        // std::cout << 1 << std::endl;
         if(detector_->armor_detect(src))
         {   
-            // RCLCPP_INFO(this->get_logger(), "armors detector...");
+            // std::cout << 2 << std::endl;
+
+            RCLCPP_INFO(this->get_logger(), "armors detector...");
             TargetMsg target_info;
             if(detector_->gyro_detector(src, target_info))
             {
+                // std::cout << 3 << std::endl;
+
+                RCLCPP_INFO(this->get_logger(), "Spinning detector...");
+                
                 target_info.header.frame_id = "gimbal_link";
                 target_info.header.stamp = this->get_clock()->now();
+                target_info.image = std::move(*img_info);
                 target_info.timestamp = src.timestamp;
                 if(debug_.using_imu && detector_->getDebugParam(8))
                     target_info.quat_imu = imu_msg_.quat;
@@ -191,11 +208,11 @@ namespace armor_detector
                 armor_info_pub_->publish(std::move(target_info));
             }
         }
-
+        
         debug_.show_img = this->get_parameter("show_img").as_bool();
         if(debug_.show_img)
         {
-            cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
+            // cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
             cv::imshow("dst", src.img);
             cv::waitKey(1);
         }
@@ -418,7 +435,7 @@ namespace armor_detector
         this->declare_parameter<double>("armor_conf_high_thres", 0.82);
         
         //TODO:Set by your own path.
-        this->declare_parameter("camera_name", "00J90630561"); //相机型号
+        this->declare_parameter("camera_name", "KE0200110075"); //相机型号
         this->declare_parameter("camera_param_path", "src/global_user/config/camera.yaml");
         this->declare_parameter("network_path", "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml");
         
@@ -478,11 +495,11 @@ namespace armor_detector
         gyro_params_.max_delta_dist = this->get_parameter("max_delta_dist").as_double();
         gyro_params_.max_delta_t = this->get_parameter("max_delta_t").as_int();
 
-        std::string camera_name = this->get_parameter("camera_name").as_string();
-        std::string camera_param_path = this->get_parameter("camera_param_path").as_string();
-        std::string network_path = this->get_parameter("network_path").as_string();
+        camera_name_ = this->get_parameter("camera_name").as_string();
+        camera_path_ = this->get_parameter("camera_param_path").as_string();
+        network_path_ = this->get_parameter("network_path").as_string();
 
-        return std::make_unique<Detector>(camera_name, camera_param_path, network_path, detector_params_, debug_, gyro_params_);
+        return std::make_unique<Detector>(camera_name_, camera_path_, network_path_, detector_params_, debug_, gyro_params_);
     }
 
 } //namespace detector

@@ -55,14 +55,14 @@
     show_fps: false
     print_letency: false
     print_target_info: false
-    detect_red: true
+    detect_red: false
     # disable_filter: false
     # disable_fitting: true
     # show_predict: false
     using_shared_memory: false
     show_transformed_info: false
     auto_label: false
-    show_all_armors: true
+    show_all_armors: false
 
 /armor_processor:
   ros__parameters:
@@ -82,7 +82,7 @@
     draw_predict: false
     show_predict: true
     show_transformed_info: false
-    debug: true
+    debug: false
 
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)

@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2022-12-27 00:37:11
+ * @LastEditTime: 2022-12-30 01:15:36
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -143,8 +143,27 @@ namespace coordsolver
         Eigen::Vector3d tvec_eigen;
         Eigen::Vector3d coord_camera;
 
+        // std::cout << "type: " << type << std::endl;
         solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, method);
+        // for(auto point : points_world)
+        //     std::cout << "point_world: x " << point.x << " y " << point.y << std::endl;
 
+        // for(auto point : points_pic)
+        //     std::cout << "point_pic: x " << point.x << " y " << point.y << std::endl;
+
+        // for(int i = 0; i < 3; i++)
+        //     for(int j = 0; j < 3; j++)
+        //     std::cout << "Intrinsic: " << intrinsic.at<double>(i, j) << std::endl;
+
+        // std::cout << "dis_coeff: " << dis_coeff.at<double>(0, 0) << std::endl;
+
+        // std::cout << "rvec&tvec: " << std::endl; 
+        // for(int i = 0; i < 3; i++)
+        // {
+        //     std::cout << rvec.at<double>(0, i) << std::endl;
+        //     std::cout << tvec.at<double>(0, i) << std::endl;
+        // }
+            
         PnPInfo result;
         //Pc = R * Pw + T
         Rodrigues(rvec, rmat);
@@ -156,6 +175,12 @@ namespace coordsolver
             result.armor_cam = tvec_eigen;
             result.armor_world = camToWorld(result.armor_cam, rmat_imu);
             result.euler = rotationMatrixToEulerAngles(rmat_eigen);
+            
+            // std::cout << std::endl;
+            // std::cout << "armor3d_world: x" << result.armor_world[0] << " y:" << result.armor_world[1] << " z:" << result.armor_world[2] << std::endl;
+            // std::cout << "tvec_eigen: x" << tvec_eigen[0] << " y:" << tvec_eigen[1] << " z:" << tvec_eigen[2] << std::endl;
+            // std::cout << "armor3d_cam: x" << result.armor_cam[0] << " y:" << result.armor_cam[1] << " z:" << result.armor_cam[2] << std::endl;
+            // std::cout << std::endl;
         }
         else
         {
@@ -169,6 +194,8 @@ namespace coordsolver
             result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;
         }
+
+
         return result;
     }
 

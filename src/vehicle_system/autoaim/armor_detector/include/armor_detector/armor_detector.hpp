@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2022-12-28 19:35:04
+ * @LastEditTime: 2022-12-29 22:00:06
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -126,14 +126,14 @@ namespace armor_detector
         std::vector<Armor> armors;
         std::vector<Armor> last_armors;
 
+        bool is_init;
         ofstream data_save;
         bool is_save_data;
+        ArmorDetector armor_detector_;
+        CoordSolver coordsolver_;
     private:
-        bool is_init;
         Armor last_armor;
         std::vector<ArmorObject> objects;
-        CoordSolver coordsolver_;
-        ArmorDetector detector_;
         SpinningDetector spinning_detector_;
 
         std::vector<ArmorTracker> trackers;
