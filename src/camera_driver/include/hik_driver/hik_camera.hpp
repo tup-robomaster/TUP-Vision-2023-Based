@@ -2,9 +2,12 @@
  * @Description is a ros-based project!
  * @AuthorBiao
  * @Date-09-05 03:13:49
- * @LastEditTime: 2022-12-24 00:16:01
+ * @LastEditTime: 2022-12-31 00:00:49
  * @FilePath_2023/src/camera_driver/include/hik_driver/HikCamera.hpp
  */
+//ros
+#include <rclcpp/rclcpp.hpp>
+
 //c++
 #include <string>
 #include <vector>
@@ -85,7 +88,7 @@ namespace camera_driver
         bool set_gamma(bool set_status, double gamma_param);
         bool color_correct(bool value);
         bool set_contrast(bool set_status, int contrast_param);
-        bool update_timestamp(std::chrono::_V2::steady_clock::time_point time_start);
+        bool update_timestamp(rclcpp::Time time_start);
         int get_timestamp();
 
         bool set_trigger_mode(unsigned int acquisition_mode = 2,
@@ -106,10 +109,11 @@ namespace camera_driver
     private:
         // Camera params.
         HikCamParam hik_cam_params_;
-
         bool _is_open; 
-        int timestamp_offset = 0;
-        std::chrono::_V2::steady_clock::time_point time_start;
+        double timestamp_offset = 0;
+        rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
+        rclcpp::Time time_start_;
+        rclcpp::Logger logger_;
 
     protected:
         int nRet = MV_OK;

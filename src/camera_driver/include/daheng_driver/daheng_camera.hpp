@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 12:12:19
- * @LastEditTime: 2022-12-26 23:25:28
+ * @LastEditTime: 2022-12-30 22:42:27
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_camera.hpp
  */
 //daheng
@@ -19,6 +19,9 @@
 //geogle
 // #include <fmt/format.h>
 // #include <fmt/color.h>
+
+//ros
+#include <rclcpp/rclcpp.hpp>
 
 using namespace std;
 using namespace cv;
@@ -117,6 +120,7 @@ namespace camera_driver
     
     private:
         DahengCamParam daheng_cam_param_;
+        rclcpp::Logger logger_;
     };
 
 }

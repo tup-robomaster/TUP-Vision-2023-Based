@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 14:01:05
- * @LastEditTime: 2022-12-24 18:45:46
+ * @LastEditTime: 2022-12-30 23:56:49
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/global_user.cpp
  */
 #include "../include/global_user/global_user.hpp"
@@ -188,7 +188,7 @@ namespace global_user
         int last_slash_idx = 0;
         std::string path_tmp = path;
 
-        for(auto i = 0; i = path_tmp.find("/"), i != path_tmp.npos; path_tmp = path_tmp.substr(i + 1))
+        for(auto i = 0; i = path_tmp.find("/"), i != (int)(path_tmp.npos); path_tmp = path_tmp.substr(i + 1))
         {   
             last_slash_idx += i + 1;
         }
@@ -208,7 +208,7 @@ namespace global_user
             path.insert(0,"/");
 
         //使用逗号表达式控制循环
-        for(auto i = 0; i = path.find("/"), i != path.npos; path = path.substr(i + 1))
+        for(auto i = 0; i = path.find("/"), i != (int)(path.npos); path = path.substr(i + 1))
         {   
             if(i == 0)
                 continue;

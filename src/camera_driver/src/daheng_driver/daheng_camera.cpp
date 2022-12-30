@@ -6,6 +6,7 @@ namespace camera_driver
      * @brief 相机构建函数,完成库的初始化
      */
     DaHengCam::DaHengCam(DahengCamParam daheng_param)
+    : logger_(rclcpp::get_logger("daheng_driver"))
     {
         //初始化库
         status = GXInitLib();
@@ -15,8 +16,11 @@ namespace camera_driver
             // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 相机库初始化失败!\n");
         }
 
-        // camera initilizes
+        // Camera initializes.
         this->daheng_cam_param_ = daheng_param;
+
+        // logger initializes.
+        RCLCPP_INFO(logger_, "[CAMERA] Initializing...");
     }
 
     /**

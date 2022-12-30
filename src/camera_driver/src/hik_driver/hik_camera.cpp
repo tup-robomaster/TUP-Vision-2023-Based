@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:13:23
- * @LastEditTime: 2022-11-14 10:49:42
+ * @LastEditTime: 2022-12-31 00:02:04
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp
  */
 #include "../../include/hik_driver/hik_camera.hpp"
@@ -10,6 +10,7 @@
 namespace camera_driver 
 {
     HikCamera::HikCamera(const HikCamParam& cam_params)
+    : logger_(rclcpp::get_logger("hik_driver"))
     {
         g_nPayloadSize = 0;
 
@@ -22,7 +23,7 @@ namespace camera_driver
         nRet = MV_CC_FreeImageBuffer(handle, (&pFrame));
         if(nRet != MV_OK)
         {
-            // fmt::print(fmt::fg(fmt::color::red), "[Camera] free image buffer failed!\n");
+            RCLCPP_ERROR(logger_, "Free image buffer failed!");
         }
     } 
 
@@ -39,7 +40,7 @@ namespace camera_driver
         set_resolution(this->hik_cam_params_.image_width, this->hik_cam_params_.image_height);
         
         //更新时间戳，设置时间戳偏移量
-        update_timestamp(time_start);
+        update_timestamp(time_start_);
         
         // 开始采集帧
         set_stream_on();
@@ -76,29 +77,22 @@ namespace camera_driver
 
     void HikCamera::start_device(int serial_number)
     {   //打开设备
-
-        // printf("7\n");
-        
         MV_CC_DEVICE_INFO_LIST stDeviceList;
-
         memset(&stDeviceList, 0, sizeof(MV_CC_DEVICE_INFO_LIST));
 
-        // printf("5\n");
         try{
             //枚举设备
             nRet = MV_CC_EnumDevices(MV_GIGE_DEVICE | MV_USB_DEVICE, &stDeviceList);
             if (MV_OK != nRet)
             {
-                printf("MV_CC_EnumDevices fail! nRet [%x]\n", nRet);
+                RCLCPP_ERROR(logger_, "MV_CC_EnumDevices fail! nRet [%x]", nRet);
                 exit(-1);
             }
-            // nRetError(nRet, "EnumDevices failed! nRet [%x]\n", nRet);
         }
         catch(const std::exception &ex)
         {
-            std::cout << ex.what() << std::endl;
+            RCLCPP_ERROR(logger_, "Error while enum devices:%s", ex.what());
         }
-        // printf("a\n");
 
         if(stDeviceList.nDeviceNum > 0) //设备数量不为0
         {
@@ -117,21 +111,17 @@ namespace camera_driver
             //打开设备
             //选择设备并创建句柄
             nRet = MV_CC_CreateHandle(&handle, stDeviceList.pDeviceInfo[serial_number]);
-            // nRetError(nRet, "CreateHandle failed! nRet [%x]\n", nRet);
-            // printf("b\n");
+            if(nRet != MV_OK)
+                RCLCPP_ERROR(logger_, "CreateHandle failed! nRet [%x]", nRet);
 
-            
             //打开设备
             nRet = MV_CC_OpenDevice(handle);
-            // nRetError(nRet, "[Camera] open failed! nRet [%x]\n", nRet);
-            // printf("c\n");
-
+            if(nRet != MV_OK)
+                RCLCPP_ERROR(logger_, "Open device failed! nRet [%x]", nRet);
         }
         else
         {
-            // printf("4\n");
-            // fmt::print(fmt::fg(fmt::color::red), "[Camera] Find No Devices!\n");
-            return ;
+            RCLCPP_WARN(logger_, "Find No Devices!");
         }
 
         return ;
@@ -141,11 +131,13 @@ namespace camera_driver
     {   //开始采集
         //设置触发模式为off
         this->nRet = MV_CC_SetEnumValue(handle, "TriggerMode", 0);
-        // nRetError(nRet, "[Camera] SetEnumValue TriggerMode failed! nRet [%x]\n", nRet);
+        if(nRet != MV_OK)
+            RCLCPP_ERROR(logger_, "SetEnumValue TriggerMode failed! nRet [%x]", nRet);
 
         //设置采集模式为连续采集
         this->nRet = MV_CC_SetEnumValue(handle, "AcquisitionMode", 2);
-        // nRetError(nRet, "[Camera] SetEnumValue AcquisitionMode failed! nRet [%x]\n", nRet);
+        if(nRet != MV_OK)
+            RCLCPP_ERROR(logger_, "SetEnumValue AcquisitionMode failed! nRet [%x]", nRet);
 
         // //获取数据包大小
         // MVCC_INTVALUE stParam;
@@ -162,6 +154,7 @@ namespace camera_driver
         nRet = MV_CC_StartGrabbing(handle);
 
         return true;
+
         // nRetError(nRet, "[Camera] StartGrabbing failed! nRet [%x]\n", nRet);
 
         //创建相机图像采集线程
@@ -185,22 +178,27 @@ namespace camera_driver
 
         //设置像素格式
         nRet = MV_CC_SetPixelFormat(handle, PixelType_Gvsp_BGR8_Packed);
-        // nRetError(nRet, "[Camera] setPixelFormat failed! nRet [%x]\n", nRet);
+        if(nRet != MV_OK)
+        {
+            RCLCPP_ERROR(logger_, "setPixelFormat failed! nRet [%x]", nRet);
+        }
 
         nRet = MV_CC_SetIntValue(this->handle, "Width", width);
-        // nRetError(nRet, "[Camera] setResolution width failed! nRet [%x]\n", nRet);
+        if(nRet != MV_OK)
+            RCLCPP_ERROR(logger_, "setResolution width failed! nRet [%x]", nRet);
 
         nRet = MV_CC_SetIntValue(this->handle, "Height", height);
-        // nRetError(nRet, "[Camera] setResolution height failed! nRet [%x]\n", nRet);
-
+        if(nRet != MV_OK)
+            RCLCPP_ERROR(logger_, " setResolution height failed! nRet [%x]", nRet);
         return true;
     }
 
     bool HikCamera::set_exposure_time(float ExposureTime)
     {   //设置曝光时间
         nRet = MV_CC_SetFloatValue(this->handle, "ExposureTime", ExposureTime);
+        if(nRet != MV_OK)
+            RCLCPP_WARN(logger_, "Set exposure time failed! nRet [%x]", nRet);
         return true;
-        // nRetError(nRet, "[CAMERA] set exposure time failed! nRet [%x]\n", nRet);
     }
 
     bool HikCamera::set_gain(int value, int ExpGain)
@@ -208,57 +206,66 @@ namespace camera_driver
         if(value == 0)
         {
             nRet = MV_CC_SetEnumValue(handle, "GainMode", R_CHANNEL);
-            // nRetError(nRet, "[CAMERA] set exposure gain R_channel failed! nRet [%x]\n", nRet);
+            if(nRet != MV_OK)
+                RCLCPP_WARN(logger_, "set exposure gain R_channel failed! nRet [%x]", nRet);
         }
         else if(value == 1)
         {
             nRet = MV_CC_SetEnumValue(handle, "GainMode", G_CHANNEL);
-            // nRetError(nRet, "[CAMERA] set exposure gain G_channel failed! nRet [%x]\n", nRet);
+            if(nRet != MV_OK)
+                RCLCPP_WARN(logger_, "set exposure gain G_channel failed! nRet [%x]", nRet);
         }
         else if(value == 2)
         {
             nRet = MV_CC_SetEnumValue(handle, "GainMode", B_CHANNEL);
-            // nRetError(nRet, "[CAMERA] set exposure gain B_channel failed! nRet [%x]\n", nRet);
+            if(nRet != MV_OK)
+                RCLCPP_WARN(logger_, "set exposure gain B_channel failed! nRet [%x]", nRet);
         }
         else
         {
             nRet = MV_CC_SetFloatValue(handle, "Gain", ExpGain);
-            // nRetError(nRet, "[CAMERA] set exposure gain failed! nRet [%x]\n", nRet);
+            if(nRet != MV_OK)
+                RCLCPP_WARN(logger_, "set exposure gain failed! nRet [%x]\n", nRet);
         }
-
         nRet = MV_CC_SetFloatValue(handle, "Gain", ExpGain);
+        if(nRet != MV_OK)
+            RCLCPP_WARN(logger_, "set exposure gain failed! nRet [%x]\n", nRet);
         return true;
-        // nRetError(nRet, "[CAMERA] set exposure gain failed! nRet [%x]\n", nRet);
     }
 
     bool HikCamera::set_auto_balance()
     {   //自动白平衡（具有记忆功能）
         this->nRet = MV_CC_SetEnumValue(this->handle, "BalanceWhiteAuto", 1);
+        if(nRet != MV_OK)
+            RCLCPP_WARN(logger_, "Set auto balance failed! nRet [%x]", nRet);
         return true;
-        // nRetError(nRet, "[CAMERA] set auto balance failed! nRet [%x]\n", nRet);
     }
 
     bool HikCamera::set_balance(int value, unsigned int value_number)
     {   //手动白平衡（具有记忆功能））
         //关闭自动白平衡
         this->nRet = MV_CC_SetEnumValue(handle, "BalanceWhiteAuto", MV_BALANCEWHITE_AUTO_OFF);
-        // nRetError(nRet, "[CAMERA] close auto balance failed! nRet [%x]\n", nRet);
+        if(nRet != MV_OK)
+            RCLCPP_WARN(logger_, "Close auto balance failed! nRet [%x]", nRet);
 
         //设置RGB三通道白平衡值
         if(value == 0)
         {
             this->nRet = MV_CC_SetBalanceRatioRed(handle, value_number);
-            // nRetError(nRet, "[CAMERA] set R_Balance failed！ nRet [%x]\n", nRet);
+            if(nRet != MV_OK)
+                RCLCPP_WARN(logger_, "Set R_Balance failed！ nRet [%x]", nRet);
         }
         else if(value == 1)
         {
             this->nRet = MV_CC_SetBalanceRatioGreen(handle, value_number);
-            // nRetError(nRet, "[CAMERA] set G_Balance failed！ nRet [%x]\n", nRet);
+            if(nRet != MV_OK)
+                RCLCPP_WARN(logger_, "Set G_Balance failed！ nRet [%x]", nRet);
         }
         else if(value == 2)
         {
             this->nRet = MV_CC_SetBalanceRatioBlue(handle, value_number);
-            // nRetError(nRet, "[CAMERA] set B_Balance failed！ nRet [%x]\n", nRet);
+            if(nRet != MV_OK)
+                RCLCPP_WARN(logger_, "Set B_Balance failed！ nRet [%x]", nRet);
         }
         return true;
     }
@@ -268,16 +275,17 @@ namespace camera_driver
         if(set_status == true)
         {
             nRet = MV_CC_SetEnumValue(handle, "Gamma", dGammaParam);
-            // nRetError(nRet, "[CAMERA] set gamma failed！ nRet [%x]\n", nRet);
+            if(nRet != MV_OK)
+                RCLCPP_WARN(logger_, "Set B_Balance failed！ nRet [%x]", nRet);
             return false;
         }
         else
         {
             nRet = MV_CC_SetEnumValue(handle, "Gamma", dGammaParam);
-            // nRetError(nRet, "[CAMERA] close gamma failed！ nRet [%x]\n", nRet);
+            if(nRet != MV_OK)
+                RCLCPP_WARN(logger_, "Close gamma failed！ nRet [%x]", nRet);
             return false;
         }
-
         return true;
     }
 
@@ -286,13 +294,15 @@ namespace camera_driver
         if(value == true)
         {
             nRet = MV_CC_SetEnumValue(handle, "ColorCorrection", 1);
-            // nRetError(nRet, "[CAMERA] set color correction failed！ nRet [%x]\n", nRet);
+            if(nRet != MV_OK)
+                RCLCPP_WARN(logger_, "Set color correction failed！ nRet [%x]\n", nRet);
             return false;
         }
         else
         {
             nRet = MV_CC_SetEnumValue(handle, "ColorCorrection", 0);
-            // nRetError(nRet, "[CAMERA] close color correction failed！ nRet [%x]\n", nRet);
+            if(nRet != MV_OK)
+                RCLCPP_WARN(logger_, "Close color correction failed！ nRet [%x]\n", nRet);
             return false;
         }
         return true;
@@ -303,23 +313,25 @@ namespace camera_driver
         if(set_status == true)
         {
             nRet = MV_CC_SetEnumValue(handle, "Contrast", dContrastParam);
-            // nRetError(nRet, "[CAMERA] set contrast failed！ nRet [%x]\n", nRet);
+            if(nRet != MV_OK)
+                RCLCPP_WARN(logger_, "set contrast failed！ nRet [%x]\n", nRet);
             return false;
         }
         else
         {
             nRet = MV_CC_SetEnumValue(handle, "Contrast", dContrastParam);
-            // nRetError(nRet, "[CAMERA] close contrast failed！ nRet [%x]\n", nRet);
+            if(nRet != MV_OK)
+                RCLCPP_WARN(logger_, "Close contrast failed！ nRet [%x]\n", nRet);
             return false;
         }
         return true;
     }
 
-    bool HikCamera::update_timestamp(std::chrono::_V2::steady_clock::time_point time_start)
+    bool HikCamera::update_timestamp(rclcpp::Time time_start)
     {   //计算时间戳偏移
-        std::chrono::_V2::steady_clock::time_point time_end = std::chrono::_V2::steady_clock::now();
-        std::chrono::duration<double> time_span = time_end - time_start;
-        timestamp_offset = time_span.count() * 1000;
+        rclcpp::Time time_end = steady_clock_.now();
+        double time_span = (time_end - time_start).nanoseconds();
+        timestamp_offset = time_span / 1e9;
         return true;
     }
 
@@ -329,16 +341,12 @@ namespace camera_driver
 
         nRet = MV_CC_SetCommandValue(handle, "GevTimestampControlLatch");
         if(MV_OK != nRet)
-        {
-            printf("获取时间戳失败...\n");
-        }
+            RCLCPP_WARN(logger_, "获取时间戳失败...");
         
         MVCC_INTVALUE timestamp;
         nRet = MV_CC_GetIntValue(handle, "GevTimestampValue", &timestamp);
         if(MV_OK != nRet)
-        {
-            printf("获取时间戳值失败...\n");
-        }
+            RCLCPP_WARN(logger_, "获取时间戳失败...");
 
         return ((int)time_start.time_since_epoch().count() - timestamp_offset);
     }
@@ -349,7 +357,11 @@ namespace camera_driver
         MVCC_INTVALUE stParam;
         memset(&stParam, 0, sizeof(MVCC_INTVALUE));
         nRet = MV_CC_GetIntValue(handle, "PayloadSize", &stParam);
-        // nRetError(nRet, "[CAMERA] Get PayloadSize fail! nRet [%x]\n", nRet);
+        if(nRet != MV_OK)
+        {
+            RCLCPP_ERROR(logger_, "Get PayloadSize fail! nRet [%x]\n", nRet);
+            return false;
+        }
 
         MV_FRAME_OUT_INFO_EX stImageInfo;
         memset(&stImageInfo, 0, sizeof(MV_FRAME_OUT_INFO_EX));
@@ -362,9 +374,13 @@ namespace camera_driver
         
         //从缓存区读取图像
         nRet = MV_CC_GetOneFrameTimeout(handle, pData, nDataSize, &stImageInfo, 1000);
-        // nRetError(nRet, "[CAMERA] No image data! nRet [%x]\n", nRet);
+        if(nRet != MV_OK)
+        {
+            RCLCPP_ERROR(logger_, "No image data! nRet [%x]", nRet);
+            return false;
+        }
 
-        //fps
+        // fps
         // nRet = MV_CC_GetFrameRate(handle, &frame_rate);
         // printf("FPS:%f\n", frame_rate.fCurValue);
 
@@ -403,7 +419,7 @@ namespace camera_driver
         nRet = MV_CC_SetEnumValue(handle, "AcquisitionMode", acquisition_mode);
         if(MV_OK != nRet)
         {
-            printf("设置采集模式失败...\n");
+            RCLCPP_WARN(logger_, "设置采集模式失败...");
             return false;
         }
         
@@ -411,23 +427,23 @@ namespace camera_driver
         nRet = MV_CC_SetIntValue(handle, "AcquisitionBurstFrameCount", acquisition_burst_frame_count);
         if(MV_OK != nRet)
         {
-            printf("设置采集一次的出图数失败...\n");
+            RCLCPP_WARN(logger_, "设置采集一次的出图数失败...");
+            return false;
         }
 
         //设置触发模式
         nRet = MV_CC_SetEnumValue(handle, "TriggerMode", trigger_mode);
-        if(!nRet)
+        if(MV_OK != nRet)
         {
-            printf("设置触发模式失败...\n");
+            RCLCPP_WARN(logger_, "设置触发模式失败...");
             return false;
         }
         else
         {
-            printf("设置触发模式为: %d\n", trigger_mode);
+            RCLCPP_INFO(logger_, "设置触发模式为: %d", trigger_mode);
         }
 
         //设置交叠曝光
-
 
         //设置触发源
         // nRet = MV_CC_SetEnumValue(handle, "TriggerSource", trigger_source_line);
@@ -477,36 +493,40 @@ namespace camera_driver
         nRet = MV_CC_SetEnumValue(handle, "LineSelector", line_selector);
         if(MV_OK != nRet)
         {
-            printf("设置反馈信号输出线序失败...\n");
+            RCLCPP_WARN(logger_, "设置反馈信号输出线序失败...");
+            return false;
         }
         else
         {
-            printf("设置反馈信号输出线序为： %d\n", line_selector);
+            RCLCPP_INFO(logger_, "设置反馈信号输出线序为：%d", line_selector);
         }
 
         //设置反馈信号种类
         nRet = MV_CC_SetEnumValue(handle, "LineMode", line_mode);
         if(MV_OK != nRet)
         {
-            printf("设置反馈信号种类失败...\n");
+            RCLCPP_WARN(logger_, "设置反馈信号种类失败: [%x]", nRet);
+            return false;
         }
         else
         {
-            printf("设置反馈信号种类为： %d\n", line_mode);
+            RCLCPP_INFO(logger_, "设置反馈信号种类为： %d", line_mode);
         }
 
-        // 信号线连接状态
+        //信号线连接状态
         nRet = MV_CC_GetBoolValue(handle, "LineStatus", &line_status);
         if(!line_status)
         {
-            printf("反馈信号线通信失败...\n");
+            RCLCPP_ERROR(logger_, "反馈信号线通信失败: [%x]", nRet);
+            return false;
         }
         else
         {
-            printf("反馈信号线通信成功...\n");
+            RCLCPP_INFO(logger_, "反馈信号线通信成功...");
         }
-
         //反馈信号输出使能
+
+        return true;
     }
 } // namespace camera_driver
 
