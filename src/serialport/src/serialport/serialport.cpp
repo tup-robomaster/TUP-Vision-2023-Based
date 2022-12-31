@@ -3,7 +3,7 @@
 namespace serialport
 {
     SerialPort::SerialPort(const string ID, const int BAUD, bool debug_without_com)
-    : debug_without_com_(debug_without_com)
+    : debug_without_com_(debug_without_com), logger_(rclcpp::get_logger("serial_port"))
     {
         serial_data_.is_initialized = false;
         serial_data_.baud = BAUD;
@@ -16,12 +16,19 @@ namespace serialport
         // system(std::string("root@233").c_str());
 
         if(this->debug_without_com_) //无串口调试
+        {
+            RCLCPP_WARN(logger_, "Debug without com...");
             withoutSerialPort();
+        }
         else
+        {
+            RCLCPP_INFO(logger_, "Initializing serial port...");
             initSerialPort();
+        }
     }
 
     SerialPort::SerialPort()
+    : logger_(rclcpp::get_logger("serial_port"))
     {
 
     }
@@ -49,13 +56,13 @@ namespace serialport
                 {
                     Device dev;
                     availible_path.push_back(tty_dir_path);
-                    auto real_path = global_user::symbolicToReal(tty_dir_path);
+                    auto real_path = symbolicToReal(tty_dir_path);
                     string info_path;
                     //需注意ttyACM与ttyUSB的uevent文件实际深度不同
                     if (port_dir == "ttyACM")
-                        info_path = global_user::getParent(global_user::getParent(global_user::getParent(real_path)));
+                        info_path = getParent(getParent(getParent(real_path)));
                     else if (port_dir == "ttyUSB")
-                        info_path = global_user::getParent(global_user::getParent(global_user::getParent(global_user::getParent(real_path))));
+                        info_path = getParent(getParent(getParent(getParent(real_path))));
                     dev = getDeviceInfo(info_path);
                     dev.alias = port_dir + to_string(i);
                     dev.path = tty_dir_path;
@@ -74,7 +81,7 @@ namespace serialport
     {
         Device dev;
         auto uevent_path = path + "/uevent";
-        auto texts = global_user::readLines(uevent_path);
+        auto texts = readLines(uevent_path);
         for(auto text : texts)
         {
             int equal_idx = text.find("=");
@@ -107,11 +114,11 @@ namespace serialport
     /**
      *@brief   获取模式命令
     */
-    bool SerialPort::get_Mode()
+    bool SerialPort::get_Mode(int lens)
     {
         int bytes;
         char *name = ttyname(serial_data_.fd);
-        if (name == NULL) printf("tty is null\n");
+        if (name == NULL) RCLCPP_WARN(logger_, "tty is null...");
         int result = ioctl(serial_data_.fd, FIONREAD, &bytes);
         if (result == -1)
             return false;
@@ -119,10 +126,11 @@ namespace serialport
         if (bytes == 0)
             return false;
 
+        
         // TODO:根据实际情况调整
-        // bytes = read(fd, rdata, 45);
         // bytes = read(fd, rdata, 49);
-        bytes = read(serial_data_.fd, serial_data_.rdata, 50);
+        // bytes = read(fd, rdata, 45);
+        bytes = read(serial_data_.fd, serial_data_.rdata, (size_t)(lens));
         timestamp_ = this->steady_clock_.now();
 
         if (serial_data_.rdata[0] == 0xA5 && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3))
@@ -132,7 +140,7 @@ namespace serialport
             getGyro(&serial_data_.rdata[19]);
             getAcc(&serial_data_.rdata[31]);
             getSpeed(&serial_data_.rdata[43]); //接收下位机发送的弹速
-            crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, 50);
+            crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens));
         }
         return true;
     }
@@ -168,15 +176,16 @@ namespace serialport
             return false;
         }
 
-        std::cout << "Opening " << alias << "..." << std::endl;
+        RCLCPP_INFO(logger_, "Openning %s...", alias.c_str());
         set_Brate();
 
         if (set_Bit() == FALSE)
         {
-            printf("Set Parity Error\n");
+            RCLCPP_WARN(logger_, "Set Parity Error.");
             exit(0);
         }
-        printf("Open successed...\n");
+
+        RCLCPP_INFO(logger_, "Open successed...");
 
         serial_data_.last_fd = serial_data_.fd;
         serial_data_.is_initialized = false;
@@ -395,8 +404,7 @@ namespace serialport
         quat[3] = exchange_data(f4);
         if(print_imu_data_)
         {
-            // fmt::print(fmt::fg(fmt::color::white), "quat: {} {} {} {} \n", quat[0], quat[1], quat[2], quat[3]);
-            printf("quat: %f %f %f %f\n", quat[0], quat[1], quat[2], quat[3]);
+            RCLCPP_INFO(logger_, "quat: %f %f %f %f", quat[0], quat[1], quat[2], quat[3]);
         }
         return true;
     }
@@ -417,8 +425,7 @@ namespace serialport
         gyro[2] = exchange_data(f3);
         if(print_imu_data_)
         {
-            // fmt::print(fmt::fg(fmt::color::white), "gyro: {} {} {} \n", gyro[0], gyro[1], gyro[2]);
-            printf("gyro: %f %f %f\n", gyro[0], gyro[1], gyro[2]);
+            RCLCPP_INFO(logger_, "gyro: %f %f %f", gyro[0], gyro[1], gyro[2]);
         }
         
         return true;
@@ -440,8 +447,7 @@ namespace serialport
         acc[2] = exchange_data(f3);
         if(print_imu_data_)
         {
-            // fmt::print(fmt::fg(fmt::color::white), "acc: {} {} {} \n", acc[0], acc[1], acc[2]);
-            printf("acc: %f %f %f", acc[0], acc[1], acc[2]);
+            RCLCPP_INFO(logger_, "acc: %f %f %f", acc[0], acc[1], acc[2]);
         }
         
         return true;
@@ -458,10 +464,8 @@ namespace serialport
         bullet_speed_ = exchange_data(f1);
         if(print_imu_data_)
         {
-            // fmt::print(fmt::fg(fmt::color::white), "speed: {} \n", bullet_speed_);
-            printf("bullet_speed: %f", bullet_speed_);
+            RCLCPP_INFO(logger_, "bullet_speed: %f", bullet_speed_);
         }
-
         return true;
     }
 

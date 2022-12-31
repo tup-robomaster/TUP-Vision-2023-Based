@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 14:30:38
- * @LastEditTime: 2022-12-28 17:31:45
+ * @LastEditTime: 2022-12-31 12:10:08
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_cam_node.cpp
  */
 #include "../../include/hik_driver/hik_cam_node.hpp"
@@ -16,14 +16,14 @@ namespace camera_driver
     {
         RCLCPP_WARN(this->get_logger(), "Camera driver node...");
 
-        // camera params initialize 
+        // Camera params initialize. 
         try
         {
             hik_cam = init_hik_cam();
         }
         catch(const std::exception& e)
         {
-            std::cerr << e.what() << '\n';
+            RCLCPP_FATAL(this->get_logger(), "Fatal while initializing hik camera: %s", e.what());
         }
 
         this->declare_parameter<bool>("save_video", false);
@@ -32,6 +32,7 @@ namespace camera_driver
         {
             // Video save
             videoRecorder(video_record_param_);
+            RCLCPP_INFO(this->get_logger(), "Video saving...");
         }
         
         // create img publisher
@@ -94,6 +95,7 @@ namespace camera_driver
         {
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&HikCamNode::paramsCallback, this, _1));
+            RCLCPP_INFO(this->get_logger(), "Hik camera debug...");
         }
     }
 
@@ -115,7 +117,7 @@ namespace camera_driver
         if(frame.size().width != image_width || frame.size().height != image_height)
         {
             cv::resize(frame, frame, cv::Size(image_width, image_height));
-            RCLCPP_WARN(this->get_logger(), "resize frame...");
+            RCLCPP_WARN(this->get_logger(), "Resize frame: width %d height %d", image_width, image_height);
         }
 
         ros_image.header.frame_id = this->frame_id;

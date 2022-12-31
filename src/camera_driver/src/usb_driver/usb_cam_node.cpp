@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2022-12-28 17:28:31
+ * @LastEditTime: 2022-12-31 12:10:44
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -105,7 +105,7 @@ namespace camera_driver
         {
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&UsbCamNode::paramsCallback, this, _1));
-            
+            RCLCPP_INFO(this->get_logger(), "Usb camera debug...");
             //创建参数订阅者监测参数改变情况
             //既可以用于本节点也可以是其他节点
             // param_subscriber_ = std::make_shared<ParamSubscriber>(this);

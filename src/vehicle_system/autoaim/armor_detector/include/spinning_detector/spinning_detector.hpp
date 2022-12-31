@@ -2,17 +2,25 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-15 11:25:33
- * @LastEditTime: 2022-12-26 13:40:13
+ * @LastEditTime: 2022-12-31 13:20:05
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/spinning_detector/spinning_detector.hpp
  */
+#ifndef SPINNING_DETECTOR_HPP_
+#define SPINNING_DETECTOR_HPP_
+
 #include "../../global_user/include/global_user/global_user.hpp"
 #include "global_interface/msg/armors.hpp"
 #include "../armor_tracker/armor_tracker.hpp"
 
+//c++
 #include <future>
 #include <vector>
 
+//eigen
 #include <Eigen/Core>
+
+//ros
+#include <rclcpp/rclcpp.hpp>
 
 namespace armor_detector
 {
@@ -91,9 +99,11 @@ namespace armor_detector
         double new_x;
         // armor_detector::ArmorTracker* chooseTargetTracker(vector<armor_detector::ArmorTracker*> trackers, int timestamp, int prev_timestamp);
         // int chooseTargetID(vector<armor_detector::Armor> &armors, int timestamp, int prev_timestamp);
+
+        rclcpp::Logger logger_;
     };
 } //namespace detector
 
-
+#endif
 
 

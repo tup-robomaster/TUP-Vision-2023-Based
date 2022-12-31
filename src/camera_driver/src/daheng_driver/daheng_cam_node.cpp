@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 14:25:39
- * @LastEditTime: 2022-12-30 22:31:56
+ * @LastEditTime: 2022-12-31 12:09:36
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
  */
 #include "../../include/daheng_driver/daheng_cam_node.hpp"
@@ -24,7 +24,7 @@ namespace camera_driver
         }
         catch(const std::exception& e)
         {
-            RCLCPP_ERROR(this->get_logger(), "[CAMERA] Error while initializing camera: %s", e.what());
+            RCLCPP_ERROR(this->get_logger(), "Error while initializing camera: %s", e.what());
         }
 
         this->declare_parameter<bool>("save_video", false);
@@ -32,11 +32,11 @@ namespace camera_driver
         if(save_video_)
         {   // Video save.
             videoRecorder(video_record_param_);
-            RCLCPP_INFO(this->get_logger(), "[CAMERA] Saving video...");
+            RCLCPP_INFO(this->get_logger(), "Saving video...");
         }
         else
         {
-            RCLCPP_INFO(this->get_logger(), "[CAMERA] No save video...");
+            RCLCPP_INFO(this->get_logger(), "No save video...");
         }
 
         //QoS    
@@ -66,7 +66,7 @@ namespace camera_driver
 
         // Open daheng cam.
         if(!daheng_cam->open())
-            RCLCPP_ERROR(this->get_logger(), "[CAMERA] Open failed!");
+            RCLCPP_ERROR(this->get_logger(), "Open failed!");
 
         // Use shared memory.
         this->declare_parameter("using_shared_memory", false);
@@ -76,21 +76,21 @@ namespace camera_driver
             try
             {
                 if(!setSharedMemory(shared_memory_param_, 5, this->image_width, this->image_height))
-                    RCLCPP_ERROR(this->get_logger(), "[CAMERA] Shared memory init failed...");
+                    RCLCPP_ERROR(this->get_logger(), "Shared memory init failed...");
             }
             catch(const std::exception& e)
             {
-                RCLCPP_FATAL(this->get_logger(), "[CAMERA] Fatal while initializing shared memory...");
+                RCLCPP_FATAL(this->get_logger(), "Fatal while initializing shared memory...");
             }
 
             // 内存写入线程
             memory_write_thread_ = std::thread(&DahengCamNode::image_callback, this);        
-            RCLCPP_INFO(this->get_logger(), "[CAMERA] Using shared memory...");
+            RCLCPP_INFO(this->get_logger(), "Using shared memory...");
         }
         else
         {
             timer = this->create_wall_timer(1ms, std::bind(&DahengCamNode::image_callback, this));
-            RCLCPP_INFO(this->get_logger(), "[CAMERA] Using image callback func...");
+            RCLCPP_INFO(this->get_logger(), "Using image callback func...");
         }
 
         bool debug_;
@@ -99,7 +99,7 @@ namespace camera_driver
         if(debug_)
         {   //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&DahengCamNode::paramsCallback, this, _1));
-            RCLCPP_INFO(this->get_logger(), "[CAMERA] Debug...");
+            RCLCPP_INFO(this->get_logger(), "Daheng camera debug...");
         }
     }
 
@@ -108,7 +108,7 @@ namespace camera_driver
         if(using_shared_memory_)
         {
             if(!destorySharedMemory(shared_memory_param_))
-                RCLCPP_ERROR(this->get_logger(), "[CAMERA] Destory shared memory failed...");
+                RCLCPP_ERROR(this->get_logger(), "Destory shared memory failed...");
         }
         // if(memory_write_thread_.joinable)
         //     memory_write_thread_.join();
@@ -147,14 +147,14 @@ namespace camera_driver
             {
                 if(!daheng_cam->get_frame(frame))
                 {
-                    RCLCPP_ERROR(this->get_logger(), "[CAMERA] Get frame failed!");
+                    RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
                     return;
                 }
 
                 if(!frame.empty())
                     memcpy(shared_memory_param_.shared_memory_ptr, frame.data, DAHENG_IMAGE_HEIGHT * DAHENG_IMAGE_WIDTH * 3);
                 else
-                    RCLCPP_ERROR(this->get_logger(), "[CAMERA] Frame is empty...");
+                    RCLCPP_ERROR(this->get_logger(), "Frame is empty...");
 
                 save_video_ = this->get_parameter("save_video").as_bool();
                 if(save_video_)
@@ -175,7 +175,7 @@ namespace camera_driver
         {
             if(!daheng_cam->get_frame(frame))
             {
-                RCLCPP_ERROR(this->get_logger(), "[CAMERA] Get frame failed!");
+                RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
                 return;
             }
 
@@ -213,26 +213,26 @@ namespace camera_driver
         {
         case 0:
             daheng_cam->SetExposureTime(param.as_int());
-            RCLCPP_INFO(this->get_logger(), "[CAMERA] Set daheng camera exposure time: %ldus", param.as_int());
+            RCLCPP_INFO(this->get_logger(), "Set daheng camera exposure time: %ldus", param.as_int());
             break;
         case 1:
             daheng_cam->SetGAIN(3, param.as_int());
-            RCLCPP_INFO(this->get_logger(), "[CAMERA] Set daheng camera exposure gain: %ld", param.as_int());
+            RCLCPP_INFO(this->get_logger(), "Set daheng camera exposure gain: %ld", param.as_int());
             break;
         case 2:
             daheng_cam->Set_BALANCE(0, param.as_double());
-            RCLCPP_INFO(this->get_logger(), "[CAMERA] Set daheng camera balance B channel: %lf", param.as_double());
+            RCLCPP_INFO(this->get_logger(), "Set daheng camera balance B channel: %lf", param.as_double());
             break;
         case 3:
             daheng_cam->Set_BALANCE(1, param.as_double());
-            RCLCPP_INFO(this->get_logger(), "[CAMERA] Set daheng camera balance G channel: %lf", param.as_double());
+            RCLCPP_INFO(this->get_logger(), "Set daheng camera balance G channel: %lf", param.as_double());
             break;
         case 4:
             daheng_cam->Set_BALANCE(2, param.as_double());
-            RCLCPP_INFO(this->get_logger(), "[CAMERA] Set daheng camera balance R channel: %lf", param.as_double());
+            RCLCPP_INFO(this->get_logger(), "Set daheng camera balance R channel: %lf", param.as_double());
             break;
         default:
-            RCLCPP_WARN(this->get_logger(), "[CAMERA] No relative param to set...");
+            RCLCPP_WARN(this->get_logger(), "No relative param to set...");
             break;
         }
         return true;

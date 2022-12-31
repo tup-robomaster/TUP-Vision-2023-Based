@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2022-12-29 22:00:06
+ * @LastEditTime: 2022-12-31 14:09:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -116,8 +116,8 @@ namespace armor_detector
         bool gyro_detector(global_user::TaskData &src, global_interface::msg::Target& target_info);
 
         Point2i cropImageByROI(Mat &img);
-        ArmorTracker* chooseTargetTracker(vector<ArmorTracker*> trackers, int timestamp);
-        int chooseTargetID(vector<Armor> &armors, int timestamp);
+        ArmorTracker* chooseTargetTracker(vector<ArmorTracker*> trackers, double timestamp);
+        int chooseTargetID(vector<Armor> &armors, double timestamp);
 
         void debugParams(const DetectorParam& detector_params, const DebugParam& debug_params, const GyroParam& gyro_params);
     public:
@@ -141,6 +141,8 @@ namespace armor_detector
         std::map<string, int> new_armors_cnt_map;    //装甲板计数map，记录新增装甲板数
         
         Eigen::Matrix3d rmat_imu;
+
+        rclcpp::Logger logger_;
     private:
         int count;
         rclcpp::Time time_start;

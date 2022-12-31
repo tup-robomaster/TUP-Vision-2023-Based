@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-12-30 02:27:54
+ * @LastEditTime: 2022-12-31 14:19:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -21,11 +21,12 @@ namespace armor_detector
         }
         catch(const std::exception& e)
         {
-            std::cerr << e.what() << '\n';
+            RCLCPP_FATAL(this->get_logger(), "Fatal while initializing detector class: %s", e.what());
         }
 
         if(!detector_->is_init)
         {
+            RCLCPP_INFO(this->get_logger(), "Initializing network model...");
             detector_->armor_detector_.initModel(network_path_);
             detector_->coordsolver_.loadParam(camera_path_, camera_name_);
             detector_->is_init = true;
@@ -47,6 +48,7 @@ namespace armor_detector
 
         if(debug_.using_imu)
         {
+            RCLCPP_INFO(this->get_logger(), "Using imu...");
             imu_msg_.header.frame_id = "imu_link";
             this->declare_parameter<double>("bullet_speed", 28.0);
             imu_msg_.bullet_speed = this->get_parameter("bullet_speed").as_double();
@@ -68,6 +70,7 @@ namespace armor_detector
         using_shared_memory_ = this->get_parameter("using_shared_memory").as_bool();
         if(using_shared_memory_)
         {
+            RCLCPP_INFO(this->get_logger(), "Using shared memory...");
             sleep(5);
             try
             {
@@ -163,7 +166,7 @@ namespace armor_detector
         auto img_sub_time = detector_->steady_clock_.now();
         src.timestamp = (img_sub_time - time_start_).nanoseconds();
 
-        std::cout << "dt:" << (src.timestamp / 1e9) << "s" << std::endl;
+        // std::cout << "dt:" << (src.timestamp / 1e9) << "s" << std::endl;
 
         if(debug_.using_imu)
         {
@@ -184,17 +187,12 @@ namespace armor_detector
             }
         }
         
-        // std::cout << 1 << std::endl;
         if(detector_->armor_detect(src))
         {   
-            // std::cout << 2 << std::endl;
-
             RCLCPP_INFO(this->get_logger(), "armors detector...");
             TargetMsg target_info;
             if(detector_->gyro_detector(src, target_info))
             {
-                // std::cout << 3 << std::endl;
-
                 RCLCPP_INFO(this->get_logger(), "Spinning detector...");
                 
                 target_info.header.frame_id = "gimbal_link";
@@ -212,7 +210,7 @@ namespace armor_detector
         debug_.show_img = this->get_parameter("show_img").as_bool();
         if(debug_.show_img)
         {
-            // cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
+            cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
             cv::imshow("dst", src.img);
             cv::waitKey(1);
         }

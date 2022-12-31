@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2022-12-28 22:10:35
+ * @LastEditTime: 2022-12-31 12:56:58
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -225,7 +225,7 @@ namespace serialport
                 continue;
             }
             //数据读取不成功进行循环
-            while (!serial_port_->get_Mode())
+            while (!serial_port_->get_Mode(bytes_num_))
                 ;
             // auto time_cap = std::chrono::steady_clock::now();
 
@@ -331,6 +331,7 @@ namespace serialport
         {
             if(serial_port_->mode == 1 || serial_port_->mode == 2)
             {
+                RCLCPP_INFO(this->get_logger(), "Currently mode is %d", serial_port_->mode);
                 // RCLCPP_INFO(this->get_logger(), "Send armor data...");
                 VisionData transmition_data = {target_info->pitch, target_info->yaw, target_info->distance, target_info->is_switched, 1, target_info->is_spinning, 0};
                 serial_port_->transformData(transmition_data);
@@ -349,6 +350,7 @@ namespace serialport
         {
             if(serial_port_->mode == 3 || serial_port_->mode == 4)
             {
+                RCLCPP_INFO(this->get_logger(), "Currently mode is %d", serial_port_->mode);
                 // RCLCPP_INFO(this->get_logger(), "Send buff data...");
                 VisionData transmition_data = {target_info->pitch, target_info->yaw, target_info->distance, target_info->is_switched, 1, target_info->is_spinning, 0};
                 serial_port_->transformData(transmition_data);
@@ -357,7 +359,7 @@ namespace serialport
         }
     }
 
-    void SerialPortNode::send_tf2_transforms(const TargetMsg::SharedPtr msg) 
+    void SerialPortNode::send_tf2_transforms(const TransformMsg::SharedPtr msg) 
     {
         rclcpp::Time now = this->get_clock()->now();
 
@@ -382,36 +384,36 @@ namespace serialport
         tf_broadcaster_->sendTransform(world_tf);
     }
 
-    void SerialPortNode::send_tf2_transforms(const TargetMsg::SharedPtr msg,
+    void SerialPortNode::send_tf2_transforms(const TransformMsg::SharedPtr msg,
         const std::string& header_frame_id, const std::string& child_frame_id)
     {
         rclcpp::Time now = this->get_clock()->now();
         send_tf2_transforms(msg, header_frame_id, child_frame_id, now);
     }
 
-    void SerialPortNode::send_tf2_transforms(const TargetMsg::SharedPtr msg,
+    void SerialPortNode::send_tf2_transforms(const TransformMsg::SharedPtr msg,
         const std::string& header_frame_id,
         const std::string& child_frame_id,
         const rclcpp::Time& time) 
     {
-        rclcpp::Time now = this->get_clock()->now();
+        // rclcpp::Time now = this->get_clock()->now();
         // camera->base_link transform.
         geometry_msgs::msg::TransformStamped transform;
 
-        transform.transform.translation.x = msg->aiming_point.x;
-        transform.transform.translation.y = msg->aiming_point.y;
-        transform.transform.translation.z = msg->aiming_point.z;
+        transform.transform.translation.x = msg->transform.translation.x;
+        transform.transform.translation.y = msg->transform.translation.y;
+        transform.transform.translation.z = msg->transform.translation.z;
         
-        tf2::Quaternion q;
-        q.setRPY(0, 0, 0);
-        transform.transform.rotation.x = q.x();
-        transform.transform.rotation.y = q.y();
-        transform.transform.rotation.z = q.z();
-        transform.transform.rotation.w = q.w();
+        // tf2::Quaternion q;
+        // q.setRPY(0, 0, 0);
+        transform.transform.rotation.x = msg->transform.rotation.x;
+        transform.transform.rotation.y = msg->transform.rotation.y;
+        transform.transform.rotation.z = msg->transform.rotation.z;
+        transform.transform.rotation.w = msg->transform.rotation.w;
 
         transform.header.frame_id = header_frame_id;
         transform.child_frame_id = child_frame_id;
-        transform.header.stamp = now;
+        transform.header.stamp = msg->header.stamp;
 
         tf_broadcaster_->sendTransform(transform);
     }
@@ -426,6 +428,10 @@ namespace serialport
             break;
         case 1:
             this->baud_ = param.as_int();
+            break;
+        case 2:
+            this->bytes_num_ = param.as_int();
+            RCLCPP_WARN(this->get_logger(), "Now bytes_num = %d", this->bytes_num_);
             break;
         default:
             break;
@@ -450,17 +456,21 @@ namespace serialport
         params_map_ =
         {
             {"debug_without_com", 0},
-            {"baud", 1}
+            {"baud", 1},
+            {"bytes_num", 2}
         };
 
         this->declare_parameter<std::string>("port_id", "483/5740/200");
         this->declare_parameter<int>("baud", 115200);
         this->declare_parameter<bool>("debug_without_com", true);
         this->declare_parameter<bool>("use_buff_mode", false);
+        this->declare_parameter<int>("bytes_num", 50);
 
         id_ = this->get_parameter("port_id").as_string();
         baud_ = this->get_parameter("baud").as_int();
         debug_without_port_ = this->get_parameter("debug_without_com").as_bool();
+        bytes_num_ = this->get_parameter("bytes_num").as_int();
+        RCLCPP_INFO(this->get_logger(), "bytes_num: %d", bytes_num_);
 
         return std::make_unique<SerialPort>(id_, baud_, debug_without_port_);
     }

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-15 22:01:49
- * @LastEditTime: 2022-12-28 21:50:53
+ * @LastEditTime: 2022-12-31 12:49:47
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport/serialport.hpp
  */
 #ifndef SERIALPORT_HPP_
@@ -41,12 +41,12 @@ constexpr int MAX_ITER = 3; //默认串口最大编号
 // 模式
 #define CmdID0 0x00; //关闭视觉
 #define CmdID1 0x01; //自瞄
+#define CmdID2 0x02; //英雄吊射
 #define CmdID3 0x03; //小符
 #define CmdID4 0x04; //大符
 
 using namespace std;
 using namespace global_user;
-
 namespace serialport
 {
     //字节数为4的结构体
@@ -111,7 +111,7 @@ namespace serialport
         ~SerialPort();
     
         SerialData serial_data_;              
-        bool get_Mode();
+        bool get_Mode(int bytes);
         bool initSerialPort();
         void transformData(const VisionData &data); //主要方案
         void send();
@@ -135,6 +135,7 @@ namespace serialport
         bool getAcc(unsigned char *data);
         bool getSpeed(unsigned char *data);
     
+        rclcpp::Logger logger_;
     public:
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         bool debug_without_com_; //是否无串口调试

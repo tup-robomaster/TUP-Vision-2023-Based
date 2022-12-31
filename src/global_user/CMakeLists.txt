@@ -26,6 +26,7 @@ find_package(angles REQUIRED)
 find_package(robot_state_publisher REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED COMPONENTS EigenSparse)
+find_package(yaml-cpp REQUIRED)
 
 set(dependencies
   geometry_msgs
@@ -42,6 +43,7 @@ set(dependencies
   OpenCV
   Eigen3
   Ceres
+  yaml-cpp
 )
 
 include_directories(
@@ -59,17 +61,17 @@ add_library(${PROJECT_NAME} SHARED
 )
 
 # 用于代替传统的target_link_libraries
-# ament_target_dependencies(global_user
-#   PUBLIC
-#   ${dependencies}
-#   # yaml-cpp.so
-# )
-target_link_libraries(${PROJECT_NAME}
-  # ${dependencies}
-  ${OpenCV_LIBRARIES}
-  yaml-cpp.so
-  # fmt.so 
+ament_target_dependencies(${PROJECT_NAME}
+  PUBLIC
+  ${dependencies}
+  # yaml-cpp.so
 )
+
+# target_link_libraries(${PROJECT_NAME}
+  # ${OpenCV_LIBRARIES}
+  # yaml-cpp.so
+  # fmt.so 
+# )
       
 # 添加头文件地址
 target_include_directories(${PROJECT_NAME} PUBLIC

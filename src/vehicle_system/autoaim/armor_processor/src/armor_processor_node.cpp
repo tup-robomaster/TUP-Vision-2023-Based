@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-12-29 20:18:29
+ * @LastEditTime: 2022-12-31 15:04:58
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -13,11 +13,12 @@ namespace armor_processor
     ArmorProcessorNode::ArmorProcessorNode(const rclcpp::NodeOptions& options)
     : Node("armor_processor", options)
     {
-        RCLCPP_WARN(this->get_logger(), "Starting processor node...");
+        RCLCPP_INFO(this->get_logger(), "Starting processor node...");
         
         processor_ = init_armor_processor();
         if(!processor_->is_init)
         {
+            RCLCPP_INFO(this->get_logger(), "Loading param...");
             processor_->loadParam(path_param_.filter_path);
             processor_->init(path_param_.coord_path, path_param_.coord_name);
         }
@@ -107,6 +108,7 @@ namespace armor_processor
             
             if(using_shared_memory_)
             {
+                RCLCPP_INFO(this->get_logger(), "Using shared memory...");
                 sleep(5);
                 // 共享内存配置
                 if(!getSharedMemory(shared_memory_param_, 5))

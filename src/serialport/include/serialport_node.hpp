@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2022-12-28 22:07:36
+ * @LastEditTime: 2022-12-31 12:46:10
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -46,6 +46,7 @@ namespace serialport
         typedef global_interface::msg::Gimbal GimbalMsg;
         typedef global_interface::msg::Target TargetMsg;
         typedef global_interface::msg::Imu ImuMsg;
+        typedef geometry_msgs::msg::TransformStamped TransformMsg;
 
     public:
         SerialPortNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
@@ -67,6 +68,7 @@ namespace serialport
         // rclcpp::Node::SharedPtr node_;
         int baud_;
         std::string id_;
+        int bytes_num_;
         bool use_buff_mode_;
         bool debug_without_port_;
         std::string device_name_;
@@ -97,18 +99,18 @@ namespace serialport
 
     public:
         // tf2
-        rclcpp::Subscription<global_interface::msg::Imu>::SharedPtr imu_data_sub_;
+        rclcpp::Subscription<ImuMsg>::SharedPtr imu_data_sub_;
         std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
         std::string base_frame_;
         std::string imu_frame_;
         std::string camera_frame_;
 
         std::vector<double> static_transform_;
-        void handle_imu_data(const std::shared_ptr<global_interface::msg::Imu>& msg);
-        void send_tf2_transforms(const global_interface::msg::Target::SharedPtr msg);
-        void send_tf2_transforms(const global_interface::msg::Target::SharedPtr msg,
+        void handle_imu_data(const std::shared_ptr<ImuMsg>& msg);
+        void send_tf2_transforms(const TransformMsg::SharedPtr msg);
+        void send_tf2_transforms(const TransformMsg::SharedPtr msg,
             const std::string& header_frame_id, const std::string& child_frame_id);
-        void send_tf2_transforms(const TargetMsg::SharedPtr msg,
+        void send_tf2_transforms(const TransformMsg::SharedPtr msg,
             const std::string& header_frame_id,
             const std::string& child_frame_id,
             const rclcpp::Time& time);

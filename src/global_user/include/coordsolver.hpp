@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:13
- * @LastEditTime: 2022-12-27 00:36:45
+ * @LastEditTime: 2022-12-31 13:05:34
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/coordsolver.hpp
  */
 
@@ -11,10 +11,18 @@
 // #include <fmt/color.h>
 // #include <fmt/format.h>
 // #include <glog/logging.h>
+
+//ros
+#include <rclcpp/rclcpp.hpp>
+
+//eigen
 #include <Eigen/Core>
 #include <Eigen/Dense>
+
+//opencv
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
+
 #include "global_user/global_user.hpp"
 
 using namespace global_user;
@@ -74,5 +82,7 @@ namespace coordsolver
         // const double k = 0.000556;                //25°C,1atm,大弹丸
         // const double k = 0.000530;                //25°C,1atm,发光大弹丸
         const double g = 9.781;
+
+        rclcpp::Logger logger_;
     };
 } //coordsolver

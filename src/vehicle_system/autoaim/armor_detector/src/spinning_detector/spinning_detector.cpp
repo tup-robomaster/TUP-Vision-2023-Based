@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2022-12-26 23:42:40
+ * @LastEditTime: 2022-12-31 13:42:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -10,6 +10,7 @@
 namespace armor_detector
 {
     SpinningDetector::SpinningDetector()
+    : logger_(rclcpp::get_logger("spinning_detector"))
     {
         last_add_tracker_timestamp = 0;
         new_add_tracker_timestamp = 0;
@@ -24,6 +25,7 @@ namespace armor_detector
     }
 
     SpinningDetector::SpinningDetector(Color color, GyroParam _gyro_params_)
+    : logger_(rclcpp::get_logger("spinning_detector"))
     {
         last_add_tracker_timestamp = 0;
         new_add_tracker_timestamp = 0;
@@ -61,10 +63,12 @@ namespace armor_detector
             else
                 spin_status = spin_status_map[(*score).first];
             
+            RCLCPP_INFO(logger_, "Spin status: %d", (int)(spin_status));
             // 若分数过低移且目标陀螺状态已知除此元素
             if (abs((*score).second) <= gyro_params_.anti_spin_judge_low_thres && spin_status != UNKNOWN)
             {
                 // fmt::print(fmt::fg(fmt::color::red), "[SpinDetection] Removing {}.\n", (*score).first);
+                RCLCPP_INFO(logger_, "Removing %s", (*score).first.c_str());
                 spin_status_map.erase((*score).first);
                 score = spin_score_map.erase(score);
                 continue;
@@ -79,6 +83,7 @@ namespace armor_detector
                 (*score).second = 0.997 * (*score).second - 1 * abs((*score).second) / (*score).second;
             }
             
+            RCLCPP_INFO(logger_, "Score: %lf", (*score).second);
             // 当小于该值时移除该元素
             if (abs((*score).second) < 3 || isnan((*score).second))
             {
@@ -115,8 +120,11 @@ namespace armor_detector
             if ((*armor).color == 2)
             {   
                 if (dead_buffer_cnt >= gyro_params_.max_dead_buffer)
+                {
+                    RCLCPP_INFO(logger_, "dead buffer cnt: %d", dead_buffer_cnt);
                     continue;
-                
+                }
+
                 if (detect_color == RED)
                     tracker_key = "R" + to_string((*armor).id);
                 if (detect_color == BLUE)
@@ -168,7 +176,7 @@ namespace armor_detector
                 {   // 遍历所有同Key预测器，匹配速度最小且更新时间最近的ArmorTracker
                     double delta_t = timestamp - (*iter).second.last_timestamp;
                     double delta_dist = ((*armor).armor3d_world - (*iter).second.last_armor.armor3d_world).norm();
-                    double velocity = (delta_dist / delta_t) * 1e3;
+                    double velocity = (delta_dist / delta_t) * 1e9;
                     
                     if ((*iter).second.last_armor.roi.contains((*armor).center2d) && delta_t > 0)
                     {   // 若当前预测器中的装甲板的roi包含当前装甲板的中心
@@ -200,7 +208,7 @@ namespace armor_detector
             for (auto iter = trackers_map.begin(); iter != trackers_map.end();)
             {   //删除元素后迭代器会失效，需先行获取下一元素
                 auto next = iter;
-                if ((timestamp - (*iter).second.last_timestamp) > gyro_params_.max_delta_t)
+                if ((timestamp - (*iter).second.last_timestamp) / 1e6 > gyro_params_.max_delta_t)
                     next = trackers_map.erase(iter);
                 else
                     ++next;
@@ -210,7 +218,7 @@ namespace armor_detector
             for (auto iter = spinning_x_map.begin(); iter != spinning_x_map.end();)
             {   
                 auto next = iter;
-                if ((timestamp - (*iter).second.new_timestamp) > gyro_params_.max_delta_t * 4)
+                if ((timestamp - (*iter).second.new_timestamp) / 1e6 > gyro_params_.max_delta_t * 4)
                     next = spinning_x_map.erase(iter);
                 else
                     ++next;

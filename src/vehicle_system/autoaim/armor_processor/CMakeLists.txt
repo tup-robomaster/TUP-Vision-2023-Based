@@ -61,6 +61,7 @@ set(dependencies
   image_transport
   sensor_msgs
   cv_bridge
+  yaml-cpp
   # lapack 
 
   global_interface
@@ -89,7 +90,7 @@ ament_target_dependencies(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ceres.so
   glog.so 
-  # yaml-cpp.so
+  yaml-cpp.so
   # lapack.so 
 )
 

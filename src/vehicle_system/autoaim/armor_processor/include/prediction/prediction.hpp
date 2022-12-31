@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-12-26 18:17:39
+ * @LastEditTime: 2022-12-31 15:05:14
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -359,15 +359,15 @@ namespace armor_processor
         }
     };
     
-    typedef enum PredictDirection
-    {
-        CAMERA_X_DIRECTION,
-        CAMERA_Y_DIRECTION,
-        CAMERA_Z_DIRECTION,
-        GYRO_X_DIRECTION,
-        GYRO_Y_DIRECTION,
-        GYRO_Z_DIRECTION
-    } PredictDirection;
+    // typedef enum PredictDirection
+    // {
+    //     CAMERA_X_DIRECTION,
+    //     CAMERA_Y_DIRECTION,
+    //     CAMERA_Z_DIRECTION,
+    //     GYRO_X_DIRECTION,
+    //     GYRO_Y_DIRECTION,
+    //     GYRO_Z_DIRECTION
+    // } PredictDirection;
 
     class ArmorPredictor
     {
@@ -418,7 +418,7 @@ namespace armor_processor
         // cv::Mat pic_z;
         
     private:
-        double evalRMSE(double* params, PredictDirection predict_direction);
+        double evalRMSE(double* params);
         
         Eigen::Vector3d shiftWindowFilter(int start_idx);
 
@@ -433,6 +433,7 @@ namespace armor_processor
         PredictStatus couple_fitting_predict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, double timestamp);
     
     private:
+        rclcpp::Logger logger_;
         double history_vx_[4] = {0};
         double history_acc_[4] = {0};
         double predict_vx_[4] = {0};
@@ -456,7 +457,7 @@ namespace armor_processor
         void kfInit(); // 滤波参数初始化（矩阵维度、初始值）
     private:
         // CS Model
-        PredictStatus predict_ekf_run(PredictDirection predictDirection, TargetInfo target, Eigen::Vector3d& result,
+        PredictStatus predict_ekf_run(TargetInfo target, Eigen::Vector3d& result,
                                         Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, double timestamp);
         // void predict_based_singer(Eigen::Vector3d& result);
     public:
