@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2022-12-21 20:48:39
+ * @LastEditTime: 2022-12-31 18:56:48
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -10,6 +10,7 @@
 namespace buff_processor
 {
     BuffPredictor::BuffPredictor()
+    : logger_(rclcpp::get_logger("buff_predictor"))
     {
         is_params_confirmed = false;
         params[0] = 0;
@@ -35,7 +36,8 @@ namespace buff_processor
     */
     bool BuffPredictor::predict(double speed, double dist, double timestamp, double &result)
     {
-        auto t1 = std::chrono::steady_clock::now();
+        // auto t1 = std::chrono::steady_clock::now();
+
         TargetInfo target = {speed, dist, timestamp};
         if (mode != last_mode)
         {
@@ -84,27 +86,27 @@ namespace buff_processor
                 deque_len = predictor_param_.history_deque_len_phase;
         }
 
-        if (history_info.size() < deque_len)    
+        if ((int)(history_info.size()) < deque_len)    
         {
             history_info.push_back(target);
             last_target = target;
             return false;
         }
-        else if (history_info.size() == deque_len)
+        else if ((int)(history_info.size()) == deque_len)
         {
             history_info.pop_front();
             history_info.push_back(target);
         }
-        else if (history_info.size() > deque_len)
+        else if ((int)(history_info.size()) > deque_len)
         {
-            while(history_info.size() >= deque_len)
+            while((int)(history_info.size()) >= deque_len)
                 history_info.pop_front();
             history_info.push_back(target);
         }
 
         // 计算旋转方向
         double rotate_speed_sum = 0;
-        int rotate_sign;
+        int rotate_sign = 0;
         for (auto target_info : history_info)
             rotate_speed_sum += target_info.speed;
         auto mean_velocity = rotate_speed_sum / history_info.size();
@@ -135,7 +137,7 @@ namespace buff_processor
                     problem.AddResidualBlock (     // 向问题中添加误差项
                     // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致
                         new ceres::AutoDiffCostFunction<CURVE_FITTING_COST, 1, 4> ( 
-                            new CURVE_FITTING_COST (target_info.speed  * rotate_sign, (double)(target_info.timestamp) / 1e3)
+                            new CURVE_FITTING_COST (target_info.speed  * rotate_sign, (double)(target_info.timestamp) / 1e9)
                         ),
                         new ceres::CauchyLoss(0.5),
                         params_fitting                 // 待估计参数
@@ -181,7 +183,7 @@ namespace buff_processor
                         new ceres::AutoDiffCostFunction<CURVE_FITTING_COST_PHASE, 1, 1> 
                         ( 
                             new CURVE_FITTING_COST_PHASE ((target_info.speed - params[3]) * rotate_sign, 
-                            (float)(target_info.timestamp) / 1e3,
+                            (float)((target_info.timestamp) / 1e9),
                             params[0], 
                             params[1], 
                             params[3])
@@ -213,7 +215,7 @@ namespace buff_processor
         int delay = (mode == 1 ? predictor_param_.delay_big : predictor_param_.delay_small);
         float delta_time_estimate = ((double)dist / predictor_param_.bullet_speed) * 1e3 + delay;
         // cout<<"ETA:"<<delta_time_estimate<<endl;
-        float timespan = history_info.back().timestamp;
+        float timespan = history_info.back().timestamp / 1e6;
         // delta_time_estimate = 0;
         float time_estimate = delta_time_estimate + timespan;
         // cout<<delta_time_estimate<<endl;     

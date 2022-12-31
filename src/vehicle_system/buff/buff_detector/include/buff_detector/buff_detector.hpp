@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2022-12-28 16:32:44
+ * @LastEditTime: 2022-12-31 18:09:46
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
@@ -139,6 +139,8 @@ namespace buff_detector
         cv::Point2i cropImageByROI(cv::Mat &img); //roi裁剪
         void printTargetInfo(int idx);
         void showFans(TaskData& src);
+
+        rclcpp::Logger logger_;
     };
 } // namespace buff_detector
 

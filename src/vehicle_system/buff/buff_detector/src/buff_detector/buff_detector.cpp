@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2022-12-27 21:48:34
+ * @LastEditTime: 2022-12-31 18:28:40
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -10,6 +10,7 @@
 namespace buff_detector
 {
     Detector::Detector()
+    : logger_(rclcpp::get_logger("buff_detector"))
     {
         lost_cnt_ = 0;
         is_last_target_exists_ = false;
@@ -19,7 +20,8 @@ namespace buff_detector
     }
 
     Detector::Detector(const BuffParam& buff_param, const PathParam& path_param, const DebugParam& debug_param)
-    : buff_param_(buff_param), path_param_(path_param), debug_param_(debug_param)
+    : buff_param_(buff_param), path_param_(path_param), debug_param_(debug_param),
+    logger_(rclcpp::get_logger("buff_detector"))
     {
         lost_cnt_ = 0;
         is_last_target_exists_ = false;
@@ -58,23 +60,34 @@ namespace buff_detector
                     bullet_speed = src.bullet_speed;
                     coordsolver_.setBulletSpeed(bullet_speed);
                     last_bullet_speed_ = bullet_speed;
+                    RCLCPP_INFO(logger_, "bullet speed: %lfm/s", bullet_speed);
                 }
             }
         }
 
         if(debug_param_.using_imu)
+        {
             rmat_imu_ = src.quat.toRotationMatrix();
+            RCLCPP_INFO(logger, "Using imu...");
+        }
         else
+        {
             rmat_imu_= Eigen::Matrix3d::Identity();
+            RCLCPP_WARN(logger_, "No imu...");
+        }
         
         // TODO:修复ROI
         if(debug_param_.using_roi)
+        {
             roi_offset_ = cropImageByROI(input);
+            RCLCPP_INFO(logger_, "Using roi...");
+        }
 
         if(debug_param_.assist_label)
         {
             auto img_name = path_param_.path_prefix + to_string(src.timestamp) + ".jpg";
             imwrite(img_name, input);
+            RCLCPP_INFO(logger_, "Auto label...");
         }
 
         auto time_crop = steady_clock_.now();
@@ -84,6 +97,7 @@ namespace buff_detector
             lost_cnt_++;
             is_last_target_exists_ = false;
             last_target_area_ = 0;
+            RCLCPP_WARN(logger_, "No buff target is detected...");
             return false;
         }
 
@@ -167,7 +181,7 @@ namespace buff_detector
                     double delta_t = ((src.timestamp - (*iter).prev_timestamp) / 1e6);
                     Eigen::AngleAxisd angle_axisd;
                     double rotate_speed;
-                    double sign;
+                    int sign;
                     //----------------------------计算角度,求解转速----------------------------
                     // 若该扇叶完成初始化,且隔一帧时间较短
                     if ((*iter).is_initialized && delta_t < buff_param_.max_delta_t)
@@ -191,9 +205,13 @@ namespace buff_detector
                         auto rotate_axis_world = (*fan).rmat * angle_axisd.axis();
                         sign = ((*fan).centerR3d_world.dot(rotate_axis_world) > 0 ) ? 1 : -1;
                     }
+                    RCLCPP_INFO(logger_, "Rotate direction: %d", sign);
+
                     // 计算角速度(rad/s)
                     delta_t = ((src.timestamp - (*iter).last_timestamp) / 1e6);
                     rotate_speed = sign * (angle_axisd.angle()) / (delta_t / 1e3);
+                    RCLCPP_INFO(logger_, "Rotate speed: %lf", rotate_speed);
+
                     if (abs(rotate_speed) <= min_v && abs(rotate_speed) <= buff_param_.max_v && delta_t <= min_last_delta_t)
                     {
                         min_last_delta_t = delta_t;
@@ -236,6 +254,8 @@ namespace buff_detector
 
             lost_cnt_++;
             is_last_target_exists_ = false;
+
+            RCLCPP_WARN(logger_, "No active target...");
             return false;
         }
 
@@ -272,6 +292,9 @@ namespace buff_detector
         target_info.rotate_speed = mean_rotate_speed;
         target_info.r_center = mean_r_center;
 
+        RCLCPP_INFO(logger_, "Target mean_rotate_speed: %lf mean_r_center: {x:%lf y:%lf z:%lf}",
+            mean_rotate_speed, mean_r_center[0], mean_r_center[1], mean_r_center[2]);
+
         // 判断扇叶是否发生切换
         bool is_switched = false;
         double delta_t = (src.timestamp - last_timestamp_);
@@ -282,6 +305,7 @@ namespace buff_detector
         if(abs(rotate_spd) > buff_param_.max_v)
             is_switched = true;
         target_info.target_switched = is_switched;
+        RCLCPP_INFO(logger_, "Target is switched: %d", (int)(is_switched));
 
         lost_cnt_ = 0;
         last_roi_center_ = center2d_src;
@@ -304,7 +328,10 @@ namespace buff_detector
 
         if(debug_param_.show_fps)
         {
-            // putText(src.img, fmt::format("FPS: {}",int(1e9 / dr_full_ns)), {10, 25}, FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
+            char ch[10];
+            sprintf(ch, "%.2f", (1e9 / dr_full_ns));
+            std::string fps_str = ch;
+            putText(src.img, fps_str, {10, 25}, FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
         }
 
         if(debug_param_.prinf_latency)
@@ -312,19 +339,19 @@ namespace buff_detector
             //降低输出频率，避免影响帧率
             if ((int)(src.timestamp) % 10 == 0)
             {
-                // fmt::print(fmt::fg(fmt::color::gray), "-----------TIME------------\n");
-                // fmt::print(fmt::fg(fmt::color::blue_violet), "Crop: {} ms\n", (dr_crop_ns / 1e6));
-                // fmt::print(fmt::fg(fmt::color::golden_rod), "Infer: {} ms\n", (dr_infer_ns / 1e6));
-                // fmt::print(fmt::fg(fmt::color::orange_red), "Total: {} ms\n", (dr_full_ns / 1e6));
+                RCLCPP_INFO(logger_, "-----------TIME------------");
+                RCLCPP_INFO(logger_, "Crop: %lfms", (dr_crop_ns / 1e6));
+                RCLCPP_INFO(logger_, "Infer: %lfms", (dr_infer_ns / 1e6));
+                RCLCPP_INFO(logger_, "Total: %lfms", (dr_full_ns / 1e6));
             }
         }
         if(debug_param_.print_target_info)
         {
-            // fmt::print(fmt::fg(fmt::color::gray), "-----------INFO------------\n");
-            // fmt::print(fmt::fg(fmt::color::blue_violet), "Yaw: {} \n", angle[0]);
-            // fmt::print(fmt::fg(fmt::color::golden_rod), "Pitch: {} \n", angle[1]);
-            // fmt::print(fmt::fg(fmt::color::green_yellow), "Dist: {} m\n", (float)target.armor3d_cam.norm());
-            // fmt::print(fmt::fg(fmt::color::orange_red), "Is Switched: {} \n", is_switched);
+            RCLCPP_INFO(logger_, "-----------INFO------------");
+            RCLCPP_INFO(logger_, "Yaw: %lf", angle[0]);
+            RCLCPP_INFO(logger_, "Pitch: %lf", angle[1]);
+            RCLCPP_INFO(logger_, "Dist: %f m", (float)target.armor3d_cam.norm());
+            RCLCPP_INFO(logger_, "Is switched: %d", (int)(is_switched));
         }
 
         return true;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:45:06
- * @LastEditTime: 2022-12-23 20:03:19
+ * @LastEditTime: 2022-12-31 18:40:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/buff_processor/buff_processor.hpp
  */
 #ifndef BUFF_PROCESSOR_HPP_
@@ -46,6 +46,7 @@ namespace buff_processor
         PathParam path_param_;
         DebugParam debug_param_;
         PredictorParam predictor_param_;
+        rclcpp::Logger logger_;
 
     public:
         bool is_initialized;

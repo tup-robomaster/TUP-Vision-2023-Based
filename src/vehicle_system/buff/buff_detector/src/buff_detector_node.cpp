@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2022-12-28 19:47:56
+ * @LastEditTime: 2022-12-31 18:38:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -39,6 +39,7 @@ namespace buff_detector
 
         if(debug_param_.using_imu)
         {
+            RCLCPP_INFO(this->get_logger(), "Using imu...");
             imu_msg_.header.frame_id = "imu_link";
             imu_msg_.bullet_speed = this->declare_parameter<double>("bullet_speed", 28.0);
             imu_msg_.mode = this->declare_parameter<int>("buff_mode", 3);
@@ -49,6 +50,7 @@ namespace buff_detector
 
         if(!detector_->is_initialized_)
         {
+            RCLCPP_INFO(this->get_logger(), "Initializing detector class");
             detector_->buff_detector_.initModel(path_param_.network_path);
             detector_->coordsolver_.loadParam(path_param_.camera_param_path, path_param_.camera_name);
             detector_->is_initialized_ = true;
@@ -85,6 +87,7 @@ namespace buff_detector
         debug = this->get_parameter("debug").as_bool();
         if(debug)
         {
+            RCLCPP_INFO(this->get_logger(), "debug...");
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffDetectorNode::paramsCallback, this, _1));
         }
     }
@@ -104,6 +107,8 @@ namespace buff_detector
             imu_msg_.mode = imu_msg.mode;
         imu_msg_.quat = imu_msg.quat;
         imu_msg_.twist = imu_msg.twist;
+
+        RCLCPP_INFO(this->get_logger(), "bullet speed: %lfm/s mode: %d", imu_msg_.bullet_speed, imu_msg_.mode);
         return;
     }
     
@@ -125,10 +130,11 @@ namespace buff_detector
 
         if(debug_param_.using_imu)
         {
-            auto dt = (this->get_clock()->now() - imu_msg_.header.stamp).nanoseconds();
+            double dt = (this->get_clock()->now() - imu_msg_.header.stamp).nanoseconds();
             if(abs(dt / 1e9) > 0.1)
             {
                 detector_->setDebugParam(false, 7);
+                RCLCPP_WARN(this->get_logger(), "latency: %lf", dt);
             }
             else
             {
