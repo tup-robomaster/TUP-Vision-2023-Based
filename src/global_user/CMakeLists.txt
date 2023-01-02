@@ -51,18 +51,15 @@ include_directories(
   ${EIGEN3_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
-  
+
 # 添加源文件，生成库
 add_library(${PROJECT_NAME} SHARED
-  include/${PROJECT_NAME}/${PROJECT_NAME}.hpp
-  include/coordsolver.hpp
   src/${PROJECT_NAME}.cpp
   src/coordsolver.cpp
 )
 
 # 用于代替传统的target_link_libraries
 ament_target_dependencies(${PROJECT_NAME}
-  PUBLIC
   ${dependencies}
   # yaml-cpp.so
 )
@@ -74,18 +71,18 @@ ament_target_dependencies(${PROJECT_NAME}
 # )
       
 # 添加头文件地址
-target_include_directories(${PROJECT_NAME} PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-)
+# target_include_directories(${PROJECT_NAME} PUBLIC
+#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#   $<INSTALL_INTERFACE:include>
+# )
 
 # 为了使下游文件可以访问
-ament_export_include_directories(include)
-ament_export_libraries(${PROJECT_NAME})
-ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
-ament_export_dependencies(
-  ${dependencies}
-)
+# ament_export_include_directories(include)
+# ament_export_libraries(${PROJECT_NAME})
+# ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
+# ament_export_dependencies(
+#   ${dependencies}
+# )
 
 
 # 注册 导出头文件
@@ -109,21 +106,27 @@ install(DIRECTORY
   config 
   DESTINATION share/${PROJECT_NAME}
 )
+
 # specific order: dependents before dependencies
 #ament_export_targets(${PROJECT_NAME})
 #ament_export_dependencies(${dependencies})        
         
 if(BUILD_TESTING)
-find_package(ament_lint_auto REQUIRED)
-# the following line skips the linter which checks for copyrights
-# uncomment the line when a copyright and license is not present in all source files
-#set(ament_cmake_copyright_FOUND TRUE)
-# the following line skips cpplint (only works in a git repo)
-# uncomment the line when this package is not in a git repo
-#set(ament_cmake_cpplint_FOUND TRUE)
-ament_lint_auto_find_test_dependencies()
+  find_package(ament_lint_auto REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
+  # add_subdirectory(test)
+  # the following line skips the linter which checks for copyrights
+  # uncomment the line when a copyright and license is not present in all source files
+  #set(ament_cmake_copyright_FOUND TRUE)
+  # the following line skips cpplint (only works in a git repo)
+  # uncomment the line when this package is not in a git repo
+  #set(ament_cmake_cpplint_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
 endif()
-        
+      
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(${dependencies})
 ament_package()
         
 

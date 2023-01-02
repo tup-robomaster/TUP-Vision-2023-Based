@@ -6,19 +6,19 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 # Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-endif()
+# if(NOT CMAKE_CXX_STANDARD)
+#   set(CMAKE_CXX_STANDARD 14)
+#   set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# endif()
   
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17 -Os -pthread -g")
+# set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17 -Os -pthread -g")
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_C_VISIBILITY_PRESET default)
-set(CMAKE_CXX_VISIBILITY_PRESET default)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN OFF)
+# set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# set(CMAKE_C_VISIBILITY_PRESET default)
+# set(CMAKE_CXX_VISIBILITY_PRESET default)
+# set(CMAKE_VISIBILITY_INLINES_HIDDEN OFF)
 
 # set(CMAKE_PREFIX_PATH /opt/intel/openvino_2021/deployment_tools/inference_engine/share)
 
@@ -35,13 +35,20 @@ find_package(cv_bridge REQUIRED)
 find_package(OpenVINO REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED COMPONENTS EigenSparse)
-
-# custom package
-find_package(global_interface REQUIRED)
-find_package(global_user REQUIRED)
-
 find_package(yaml-cpp REQUIRED)
 # find_package(fmt REQUIRED)
+
+# custom package
+find_package(global_user REQUIRED)
+find_package(global_interface REQUIRED)
+
+include_directories(
+  include
+  ${OpenCV_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
+  # ${InferenceEngine_INCLUDE_DIRS}
+  ${OpenVINO_INCLUDE_DIRS}
+)
 
 set(dependencies 
   rclcpp
@@ -55,27 +62,14 @@ set(dependencies
   Ceres
   Eigen3
   cv_bridge
-  
-  global_interface
-  global_user
-  
   yaml-cpp 
   # fmt
+
+  global_interface
+  global_user
 )
   
-include_directories(include
-  ${OpenCV_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIRS}
-  # ${InferenceEngine_INCLUDE_DIRS}
-  ${OpenVINO_INCLUDE_DIRS}
-)
-  
-include_directories(include)
 add_library(${PROJECT_NAME} SHARED
-  # include/armor_detector/armor_tracker.h 
-  # include/armor_detector/inference.h 
-  # include/armor_detector/detector.hpp
-  # include/armor_detector/detector_node.hpp
   src/inference/inference_api2.cpp
   src/armor_tracker/armor_tracker.cpp 
   src/spinning_detector/spinning_detector.cpp 
@@ -89,6 +83,10 @@ ament_target_dependencies(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   openvino::runtime 
+)
+
+target_compile_definitions(${PROJECT_NAME}
+  PRIVATE "COMPOSITION_BUILDING_DLL"
 )
 
 # set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
@@ -141,7 +139,7 @@ install(TARGETS
   ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  RUNTIME DESTINATION lib
+  RUNTIME DESTINATION bin
   INCLUDES DESTINATION include
 )
   

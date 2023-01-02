@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2022-12-31 18:28:40
+ * @LastEditTime: 2023-01-02 23:34:22
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -68,7 +68,7 @@ namespace buff_detector
         if(debug_param_.using_imu)
         {
             rmat_imu_ = src.quat.toRotationMatrix();
-            RCLCPP_INFO(logger, "Using imu...");
+            RCLCPP_INFO(logger_, "Using imu...");
         }
         else
         {

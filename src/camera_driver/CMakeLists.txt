@@ -83,7 +83,7 @@ set(dependencies
   Eigen3
 
   glog
-  # fmt 
+  fmt 
   yaml-cpp
 
   global_user
@@ -125,6 +125,7 @@ target_link_libraries(${PROJECT_NAME}
   FormatConversion
   MediaProcess
   gxiapi
+  yaml-cpp.so
 )
 
 # create ament index resource which references the libraries in the binary dir
@@ -201,15 +202,18 @@ ament_target_dependencies(daheng_cam_driver_node
 
 target_link_libraries(usb_cam_driver_node
   ${PROJECT_NAME}
+  yaml-cpp.so
 )
   
 target_link_libraries(hik_cam_driver_node 
   ${PROJECT_NAME}
+  yaml-cpp.so
 )
   
 target_link_libraries(daheng_cam_driver_node
   gxiapi
-  fmt.so
+  # fmt.so
+  yaml-cpp.so
 )
     
 rclcpp_components_register_nodes(${PROJECT_NAME} 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2022-12-31 15:06:55
+ * @LastEditTime: 2023-01-02 23:33:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -1006,8 +1006,8 @@ namespace armor_processor
         // problem.SetParameterLowerBound(&params[4], 0, 0.1);
 
         // ceres::Solve(options, &problem, &summary);
-        auto x_future = std::async(std::launch::deferred, [&](){ceres::Solve(options, &problem, &summary);});
-        auto y_future = std::async(std::launch::deferred, [&](){ceres::Solve(options_y, &problem_y, &summary_y);});
+        auto x_future = std::async(std::launch::async, [&](){ceres::Solve(options, &problem, &summary);});
+        auto y_future = std::async(std::launch::async, [&](){ceres::Solve(options_y, &problem_y, &summary_y);});
 
         x_future.wait();
         y_future.wait();
@@ -1077,8 +1077,8 @@ namespace armor_processor
                 if(history_origin_info_.size() == 2)
                 {
                     // double last_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 2) - history_origin_info_.at(history_origin_info_.size() - 3);
-                    double cur_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 1).x - history_origin_info_.at(history_origin_info_.size() - 2).x;
-                    double cur_delta_y0 = history_origin_info_.at(history_origin_info_.size() - 1).y - history_origin_info_.at(history_origin_info_.size() - 2).y;
+                    double cur_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 1).y - history_origin_info_.at(history_origin_info_.size() - 2).y;
+                    double cur_delta_y0 = history_origin_info_.at(history_origin_info_.size() - 1).x - history_origin_info_.at(history_origin_info_.size() - 2).x;
                     // double delta_ave = (last_delta_x0 + cur_delta_x0) / 2.0;
                     
                     // std::cout << "cur_delta:" << cur_delta_x0 << std::endl;
@@ -1142,22 +1142,22 @@ namespace armor_processor
                         // {
                         
                         // std::cout << "Target_direction: " <<  target.is_clockwise << std::endl;
-                        double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).x;
-                        double y_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
+                        double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
+                        double y_origin = history_origin_info_.at(history_origin_info_.size() - 1).x;
                         if(target.is_clockwise)
                         {
                             if(x_pred > x_origin * 0.85)
-                                x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+                                x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
                             if(y_pred > y_origin * 0.85)
-                                y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[2];
+                                y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
 
                         }
                         else
                         {
                             if(x_pred < x_origin * 0.85)
-                                x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+                                x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
                             if(y_pred < y_origin * 0.85)
-                                y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[2];
+                                y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
                         }
 
                         // }
@@ -1190,28 +1190,28 @@ namespace armor_processor
                             
                         if(history_origin_info_.size() != 0)
                         {
-                            double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).x;
-                            double y_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
+                            double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
+                            double y_origin = history_origin_info_.at(history_origin_info_.size() - 1).x;
                             if(target.is_clockwise)
                             {
                                 if(x_pred > x_origin * 0.80)
-                                    x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+                                    x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
                                 if(y_pred > y_origin * 0.80)
-                                    y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[2];
+                                    y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
                             }
                             else
                             {
                                 if(x_pred < x_origin * 0.80)
-                                    x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+                                    x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
                                 if(y_pred < y_origin * 0.80)
-                                    y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[2];
+                                    y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
                             }
                         }
                     }
                     else
                     {
-                        x_pred = history_info_.at(history_info_.size() - 1).xyz[0];
-                        y_pred = history_info_.at(history_info_.size() - 1).xyz[2];
+                        x_pred = history_info_.at(history_info_.size() - 1).xyz[1];
+                        y_pred = history_info_.at(history_info_.size() - 1).xyz[0];
                     }
                 }
 
@@ -1273,8 +1273,8 @@ namespace armor_processor
         // std::cout << "x:" << x_pred << " y:" << target.xyz[1] << " z:" << target.xyz[2] << " y_pred:" << y_pred << std::endl;
         // std::cout << std::endl;
 
-        double x_front = history_info_.front().xyz[0];
-        double x_back = history_info_.back().xyz[0];
+        double x_front = history_info_.front().xyz[1];
+        double x_back = history_info_.back().xyz[1];
         last_end_x_ = x_back;
         // if(x_back < 0)
         // {
@@ -1612,24 +1612,24 @@ namespace armor_processor
         if(!is_imm_init)
         {
             Eigen::VectorXd x(6);
-            x << target.xyz[1], target.xyz[2], 0, 0, 0, 0;
+            x << target.xyz[0], target.xyz[1], target_v[0], target_v[1], 0, 0;
             imm_ = model_generator_.generateIMMModel(x, dt);   
             is_imm_init = true;
         }
         else
         {
             Eigen::VectorXd measurement(4);
-            measurement << target.xyz[1], target.xyz[2], 0, 0;
+            measurement << target.xyz[0], target.xyz[1], target_v[0], target_v[1];
             imm_->updateOnce(measurement, dt);
 
             Eigen::VectorXd State(6);
             State = imm_->x();
 
-            result[0] = target.xyz[0];
-            result[1] = State[0];
-            result[2] = State[1];
+            result[0] = State[0];
+            result[1] = State[1];
+            result[2] = target.xyz[2];
+            is_available.xyz_status[0] = true;
             is_available.xyz_status[1] = true;
-            is_available.xyz_status[2] = true;
         }
         return is_available;
     }

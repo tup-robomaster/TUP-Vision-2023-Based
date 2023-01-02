@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2022-12-31 14:12:27
+ * @LastEditTime: 2023-01-03 01:01:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -632,7 +632,7 @@ namespace armor_detector
         if(debug_params_.show_fps)
         {
             char ch[10];
-            sprintf(ch, "%.2f", (1e9 / dr_full));
+            sprintf(ch, "%.2f", (1e9 / dr_full_ns));
             std::string fps_str = ch;
             putText(src.img, fps_str, {10, 25}, FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
         }
@@ -643,9 +643,9 @@ namespace armor_detector
             if (count % 5 == 0)
             {
                 RCLCPP_INFO(logger_, "-----------TIME------------");
-                RCLCPP_INFO(logger_, "Crop: {} ms\n", (dr_crop_ns / 1e6));
-                RCLCPP_INFO(logger_, "Infer: {} ms\n", (dr_infer_ns / 1e6));
-                RCLCPP_INFO(logger_, "Total: {} ms\n", (dr_full_ns / 1e6));
+                RCLCPP_INFO(logger_, "Crop:  %lfms\n", (dr_crop_ns / 1e6));
+                RCLCPP_INFO(logger_, "Infer: %lfms\n", (dr_infer_ns / 1e6));
+                RCLCPP_INFO(logger_, "Total: %lfms\n", (dr_full_ns / 1e6));
             }
         }
         // cout<<target.armor3d_world<<endl;
@@ -660,7 +660,7 @@ namespace armor_detector
                 RCLCPP_INFO(logger_, "Pitch: %lf", angle[1]);
                 RCLCPP_INFO(logger_, "Dist: %fm", (float)target.armor3d_cam.norm());
                 RCLCPP_INFO(logger_, "Target: %s", target.key.c_str());
-                RCLCPP_INFO(logger_, "Target Type: %d", (int)(target.type == SMALL ? "SMALL" : "BIG"));
+                RCLCPP_INFO(logger_, "Target Type: %s", (char *)(target.type == SMALL ? "SMALL" : "BIG"));
                 RCLCPP_INFO(logger_, "Is Spinning: %d", (int)(is_target_spinning));
                 RCLCPP_INFO(logger_, "Is Switched: %d", (int)(is_target_switched));
 
@@ -871,7 +871,7 @@ namespace armor_detector
         int target_idx = 0;
 
         //若存在上次tracker则直接返回,若不存在则装甲板面积最大的Tracker
-        for (int i = 0; i < trackers.size(); i++)
+        for (int i = 0; i < (int)(trackers.size()); i++)
         {
             auto horizonal_dist_to_center = abs(trackers[i]->last_armor.center2d.x - 640);
             if (trackers[i]->last_timestamp == timestamp)
