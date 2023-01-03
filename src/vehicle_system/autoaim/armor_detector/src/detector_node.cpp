@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2022-12-31 14:19:10
+ * @LastEditTime: 2023-01-03 20:06:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -36,7 +36,7 @@ namespace armor_detector
 
         //QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(10);
         qos.best_effort();
         qos.reliable();
         qos.durability();

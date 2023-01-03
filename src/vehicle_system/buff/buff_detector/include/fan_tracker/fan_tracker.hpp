@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:53:56
- * @LastEditTime: 2022-12-27 18:30:57
+ * @LastEditTime: 2023-01-03 21:14:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/fan_tracker/fan_tracker.hpp
  */
 #ifndef FAN_TRACKER_HPP_
@@ -47,13 +47,13 @@ namespace buff_detector
         bool is_initialized;                    //是否完成初始化
         double rotate_speed;                    //角速度
         int max_history_len = 2;          //队列长度
-        int prev_timestamp;                     //上次装甲板时间戳
-        int last_timestamp;                     //本次装甲板时间戳
+        double prev_timestamp;                     //上次装甲板时间戳
+        double last_timestamp;                     //本次装甲板时间戳
 
         std::deque<Fan> history_info;//目标队列
 
-        FanTracker(Fan src,int src_timestamp);
-        bool update(Fan new_fan, int new_timestamp);
+        FanTracker(Fan src, double src_timestamp);
+        bool update(Fan new_fan, double new_timestamp);
     };
 
 } //namespace buff_detector

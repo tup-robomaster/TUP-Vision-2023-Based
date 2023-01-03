@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-01-03 01:01:03
+ * @LastEditTime: 2023-01-03 22:23:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -127,12 +127,12 @@ namespace armor_detector
         if(debug_params_.using_imu)
         {   //使用陀螺仪数据
             rmat_imu = src.quat.toRotationMatrix();
-            RCLCPP_INFO(logger_, "Using imu...");
+            RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 2000, "Using imu...");
         }
         else
         {
             rmat_imu = Eigen::Matrix3d::Identity();
-            RCLCPP_INFO(logger_, "No imu...");
+            RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 1000, "No imu...");
         }
 
         if(debug_params_.using_roi)
@@ -147,7 +147,7 @@ namespace armor_detector
             {
                 roi_offset = cropImageByROI(input);
             }
-            RCLCPP_INFO(logger_, "Using roi...");
+            RCLCPP_INFO_ONCE(logger_, "Using roi...");
         }
 
         time_crop = steady_clock_.now();
@@ -340,21 +340,16 @@ namespace armor_detector
         //若无合适装甲板
         if (armors.empty())
         {
-            RCLCPP_WARN(logger_, "No suitable targets...");
+            RCLCPP_WARN_THROTTLE(logger_, this->steady_clock_, 500, "No suitable targets...");
             if(debug_params_.show_aim_cross)
             {
                 line(src.img, Point2f(src.img.size().width / 2, 0), Point2f(src.img.size().width / 2, src.img.size().height), Scalar(0,255,0), 1);
                 line(src.img, Point2f(0, src.img.size().height / 2), Point2f(src.img.size().width, src.img.size().height / 2), Scalar(0,255,0), 1);
             }
-            // if(debug_params_.show_img)
-            // {
-            //     namedWindow("dst",0);
-            //     imshow("dst",src.img);
-            //     waitKey(1);
-            // }
 
             if(debug_params_.show_all_armors)
             {
+                RCLCPP_DEBUG_ONCE(logger_, "Show all armors...");
                 showArmors(src);
             }
 
@@ -398,7 +393,7 @@ namespace armor_detector
         else if (detector_params_.color == RED)
             target_key = "R" + to_string(target_id);
 
-        RCLCPP_INFO(logger_, "Target key: %s", target_key.c_str());
+        RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Target key: %s", target_key.c_str());
 
         ///-----------------------------detect whether exists matched tracker------------------------------------------
         if (trackers_map.count(target_key) == 0)
@@ -408,12 +403,6 @@ namespace armor_detector
                 line(src.img, Point2f(src.img.size().width / 2, 0), Point2f(src.img.size().width / 2, src.img.size().height), Scalar(0,255,0), 1);
                 line(src.img, Point2f(0, src.img.size().height / 2), Point2f(src.img.size().width, src.img.size().height / 2), Scalar(0,255,0), 1);
             }
-            // if(debug_params_.show_img)
-            // {
-            //     namedWindow("dst",0);
-            //     imshow("dst",src.img);
-            //     waitKey(1);
-            // }
 
             if(debug_params_.show_all_armors)
             {
@@ -621,7 +610,7 @@ namespace armor_detector
         
         auto angle = coordsolver_.getAngle(target.armor3d_cam, rmat_imu);
         // 若预测出错则直接世界坐标系下坐标作为击打点
-        if (isnan(angle[0]) || isnan(angle[1]))
+        if (isnan(angle[0]) || isnan(angle[1]) || abs(angle[0]) > 45 || abs(angle[1]) > 45)
             angle = coordsolver_.getAngle(target.armor3d_world, rmat_imu);
         
         auto time_predict = steady_clock_.now();
@@ -676,17 +665,6 @@ namespace armor_detector
             }
         }
 
-        //若预测出错取消本次数据发送
-        // if (isnan(angle[0]) || isnan(angle[1]))
-        //     return false;
-
-        // if(debug_params_.show_img)
-        // {
-        //     namedWindow("dst",0);
-        //     imshow("dst",src.img);
-        //     waitKey(1);
-        // }
-
         return true;
     }
 
@@ -700,30 +678,30 @@ namespace armor_detector
             putText(src.img, conf_str, armor.apex2d[3], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
 
             char ch1[10];
-            std::string id_str = "";
+            std::string id_str = to_string(armor.id);
             if (armor.color == 0)
             {
-                sprintf(ch1, "B%d", armor.id);
-                id_str = ch1;
-                putText(src.img, id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 0}, 2);
+                // sprintf(ch1, "B%d", armor.id);
+                // id_str = ch1;
+                putText(src.img, "B" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 0}, 2);
             }
             if (armor.color == 1)
             {
-                sprintf(ch1, "R%d", armor.id);
-                id_str = ch1;
-                putText(src.img, id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 0, 255}, 2);
+                // sprintf(ch1, "R%d", armor.id);
+                // id_str = ch1;
+                putText(src.img, "R" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 0, 255}, 2);
             }
             if (armor.color == 2)
             {
-                sprintf(ch1, "N%d", armor.id);
-                id_str = ch1;
-                putText(src.img, id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 255, 255}, 2);
+                // sprintf(ch1, "N%d", armor.id);
+                // id_str = ch1;
+                putText(src.img, "N" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 255, 255}, 2);
             }
             if (armor.color == 3)
             {
-                sprintf(ch1, "P%d", armor.id);
-                id_str = ch1;
-                putText(src.img, id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 255}, 2);
+                // sprintf(ch1, "P%d", armor.id);
+                // id_str = ch1;
+                putText(src.img, "P" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 255}, 2);
             }
             for(int i = 0; i < 4; i++)
                 line(src.img, armor.apex2d[i % 4], armor.apex2d[(i + 1) % 4], {0,255,0}, 1);

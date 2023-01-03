@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:54:32
- * @LastEditTime: 2022-12-27 18:32:45
+ * @LastEditTime: 2023-01-03 21:15:35
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/fan_tracker/fan_tracker.cpp
  */
 #include "../../include/fan_tracker/fan_tracker.hpp"
@@ -14,7 +14,7 @@ namespace buff_detector
      * 
      * @param src Armor对象
      */
-    FanTracker::FanTracker(Fan src, int src_timestamp)
+    FanTracker::FanTracker(Fan src, double src_timestamp)
     {
         last_fan = src;
         last_timestamp = src_timestamp;
@@ -23,7 +23,7 @@ namespace buff_detector
         history_info.push_back(src);
     }
 
-    bool FanTracker::update(Fan new_fan,int new_timestamp)
+    bool FanTracker::update(Fan new_fan, double new_timestamp)
     {
         is_last_fan_exists = true;
         if (history_info.size() < max_history_len)

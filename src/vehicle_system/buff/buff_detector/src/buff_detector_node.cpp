@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2022-12-31 18:38:41
+ * @LastEditTime: 2023-01-03 21:48:33
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -126,8 +126,7 @@ namespace buff_detector
         src.timestamp = (time_img_sub - time_start_).nanoseconds();
 
         TargetInfo target_info;
-        std::unique_ptr<BuffMsg> buff_msg;
-
+        BuffMsg buff_msg;
         if(debug_param_.using_imu)
         {
             double dt = (this->get_clock()->now() - imu_msg_.header.stamp).nanoseconds();
@@ -149,13 +148,13 @@ namespace buff_detector
 
         if(detector_->run(src, target_info))
         {
-            buff_msg->header.frame_id = "gimbal_link";
-            buff_msg->header.stamp = this->get_clock()->now();
-            buff_msg->r_center.x = target_info.r_center[0];
-            buff_msg->r_center.y = target_info.r_center[1];
-            buff_msg->r_center.z = target_info.r_center[2];
-            buff_msg->rotate_speed = target_info.rotate_speed;
-            buff_msg->target_switched = target_info.target_switched;
+            buff_msg.header.frame_id = "gimbal_link";
+            buff_msg.header.stamp = this->get_clock()->now();
+            buff_msg.r_center.x = target_info.r_center[0];
+            buff_msg.r_center.y = target_info.r_center[1];
+            buff_msg.r_center.z = target_info.r_center[2];
+            buff_msg.rotate_speed = target_info.rotate_speed;
+            buff_msg.target_switched = target_info.target_switched;
             
             // publish buff info.
             buff_info_pub_->publish(std::move(buff_msg));

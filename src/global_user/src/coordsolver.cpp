@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2022-12-31 13:09:54
+ * @LastEditTime: 2023-01-03 21:55:08
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -145,7 +145,7 @@ namespace coordsolver
         Eigen::Vector3d coord_camera;
 
         // std::cout << "type: " << type << std::endl;
-        RCLCPP_INFO(logger_, "Armor type: %d", (int)(type));
+        RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Armor type: %d", (int)(type));
         solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, method);
         // for(auto point : points_world)
         //     std::cout << "point_world: x " << point.x << " y " << point.y << std::endl;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2022-12-28 16:29:03
+ * @LastEditTime: 2023-01-03 20:42:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -25,7 +25,7 @@ namespace buff_detector
     static constexpr float MERGE_CONF_ERROR = 0.15;
     static constexpr float MERGE_MIN_IOU = 0.2;
 
-    static inline int argmax(const u_int8_t *ptr, int len) 
+    static inline int argmax(const float *ptr, int len) 
     {
         int max_arg = 0;
         for (int i = 1; i < len; i++) {
@@ -96,7 +96,7 @@ namespace buff_detector
      * @param prob_threshold Confidence Threshold.
      * @param objects Objects proposed.
      */
-    static void generateYoloxProposals(std::vector<GridAndStride> grid_strides, const u_int8_t* feat_ptr,
+    static void generateYoloxProposals(std::vector<GridAndStride> grid_strides, const float* feat_ptr,
                                         Eigen::Matrix<float,3,3> &transform_matrix,float prob_threshold,
                                         std::vector<BuffObject>& objects)
     {
@@ -232,7 +232,8 @@ namespace buff_detector
     {
         picked.clear();
         const int n = faceobjects.size();
-
+        // std::cout << "np:" << n << std::endl;
+        
         std::vector<float> areas(n);
         for (int i = 0; i < n; i++)
         {
@@ -268,8 +269,10 @@ namespace buff_detector
                     if (iou > MERGE_MIN_IOU && abs(a.prob - b.prob) < MERGE_CONF_ERROR 
                                             && a.cls == b.cls && a.color == b.color)
                     {
+                        // std::cout << "a.color: " << a.color << std::endl;
                         for (int i = 0; i < 5; i++)
                         {
+                            // std::cout << "find" << std::endl;
                             b.pts.push_back(a.apex[i]);
                         }
                     }
@@ -289,7 +292,7 @@ namespace buff_detector
      * @param img_w Width of Image.
      * @param img_h Height of Image.
      */
-    static void decodeOutputs(const u_int8_t* prob, std::vector<BuffObject>& objects,
+    static void decodeOutputs(const float* prob, std::vector<BuffObject>& objects,
                                 Eigen::Matrix<float,3,3> &transform_matrix, const int img_w, const int img_h)
     {
             std::vector<BuffObject> proposals;
@@ -367,10 +370,10 @@ namespace buff_detector
 
         // Preprocessing.
         ov::preprocess::PrePostProcessor ppp(model);
-        ppp.input().tensor().set_element_type(ov::element::u8);
+        ppp.input().tensor().set_element_type(ov::element::f32);
 
         // set output precision.
-        ppp.output().tensor().set_element_type(ov::element::u8);
+        ppp.output().tensor().set_element_type(ov::element::f32);
         
         // 将预处理融入原始模型.
         ppp.build(); 
@@ -427,7 +430,7 @@ namespace buff_detector
         }
 
         cv::Mat pr_img = scaledResize(src, transfrom_matrix);
-        dw = this->dw;
+        // dw = this->dw;
 
         cv::Mat pre;
         cv::Mat pre_split[3];
@@ -440,13 +443,13 @@ namespace buff_detector
         // 准备输入
         infer_request.set_input_tensor(input_tensor);
 
-        u_int8_t* tensor_data = input_tensor.data<u_int8_t>();
+        float* tensor_data = input_tensor.data<float_t>();
         
         auto img_offset = INPUT_H * INPUT_W;
         // Copy img into tensor
         for(int c = 0; c < 3; c++)
         {
-            memcpy(tensor_data, pre_split[c].data, INPUT_H * INPUT_W * sizeof(u_int8_t));
+            memcpy(tensor_data, pre_split[c].data, INPUT_H * INPUT_W * sizeof(float));
             tensor_data += img_offset;
         }
 
@@ -464,7 +467,7 @@ namespace buff_detector
         
         // 处理推理结果
         ov::Tensor output_tensor = infer_request.get_output_tensor();
-        uint8_t* output = output_tensor.data<u_int8_t>();
+        float* output = output_tensor.data<float_t>();
 
         // std::cout << &output << std::endl;
 
@@ -479,6 +482,10 @@ namespace buff_detector
             if ((*object).pts.size() >= 10)
             {
                 auto N = (*object).pts.size();
+                // std::cout << "obj_color:" << object->color << std::endl;
+                // std::cout << "color:" << object->color << std::endl;
+                // std::cout << "cls:" << object->cls << std::endl;
+                // std::cout << "conf:" << object->prob << std::endl;
                 cv::Point2f pts_final[5];
 
                 for (int i = 0; i < N; i++)

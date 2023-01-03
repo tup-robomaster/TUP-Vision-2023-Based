@@ -2,14 +2,14 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2022-12-31 18:09:46
+ * @LastEditTime: 2023-01-03 20:36:07
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
 #define BUFF_DETECTOR_HPP_
 
 #include "../fan_tracker/fan_tracker.hpp"
-#include "../inference/inference.hpp"
+#include "../inference/inference_api2.hpp"
 
 #include "../../global_user/include/global_user/global_user.hpp"
 #include "../../global_user/include/coordsolver.hpp"
@@ -131,6 +131,7 @@ namespace buff_detector
         Point2i roi_offset_;
         Size2d input_size_;
         vector<Fan> fans_;
+        // vector<BuffObject> objects_;
         std::vector<FanTracker> trackers_;
         Fan last_fan_;
         Eigen::Matrix3d rmat_imu_;

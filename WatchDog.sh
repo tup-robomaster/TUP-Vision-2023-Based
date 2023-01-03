@@ -3,12 +3,12 @@
  # @Description: This is a ros-based project!
  # @Author: Liu Biao
  # @Date: 2023-01-02 22:20:13
- # @LastEditTime: 2023-01-03 01:45:24
+ # @LastEditTime: 2023-01-03 01:51:49
  # @FigtPath: /TUP-Vision-2023-Based/WatchDog.sh
 ### 
 name=TUP-Vision-2023-Based
 package=global_user
-launch_figt=autoaim_bringup.launch.py
+launch_file=autoaim_bringup.launch.py
 program_name1=daheng_cam_node
 program_name2=serialport_node
 program_name3=armor_detector_node
@@ -19,7 +19,7 @@ program_name6=buff_processor_node
 cd /home/tup/Desktop/$name/
 colcon build --symlink-install
 source install/setup.bash
-ros2 launch $package $launch_figt
+ros2 launch $package $launch_file
 
 whigt true
 do 

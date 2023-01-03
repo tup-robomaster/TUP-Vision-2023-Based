@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-01-02 23:34:22
+ * @LastEditTime: 2023-01-03 22:25:20
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -68,30 +68,32 @@ namespace buff_detector
         if(debug_param_.using_imu)
         {
             rmat_imu_ = src.quat.toRotationMatrix();
-            RCLCPP_INFO(logger_, "Using imu...");
+            RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 5000, "Using imu...");
         }
         else
         {
             rmat_imu_= Eigen::Matrix3d::Identity();
-            RCLCPP_WARN(logger_, "No imu...");
+            RCLCPP_WARN_THROTTLE(logger_, this->steady_clock_, 1000, "No imu...");
         }
         
         // TODO:修复ROI
         if(debug_param_.using_roi)
         {
             roi_offset_ = cropImageByROI(input);
-            RCLCPP_INFO(logger_, "Using roi...");
+            RCLCPP_INFO_ONCE(logger_, "Using roi...");
         }
 
         if(debug_param_.assist_label)
         {
             auto img_name = path_param_.path_prefix + to_string(src.timestamp) + ".jpg";
             imwrite(img_name, input);
-            RCLCPP_INFO(logger_, "Auto label...");
+            RCLCPP_INFO_ONCE(logger_, "Auto label...");
         }
 
         auto time_crop = steady_clock_.now();
 
+        // objects.clear();
+        fans_.clear();
         if (!buff_detector_.detect(input, objects))
         {   //若未检测到目标
             lost_cnt_++;
@@ -100,19 +102,23 @@ namespace buff_detector
             RCLCPP_WARN(logger_, "No buff target is detected...");
             return false;
         }
+        // std::cout << 4 << std::endl;
 
         auto time_infer = steady_clock_.now();
 
         // 创建扇叶对象
         for (auto object : objects)
         {
+            // std::cout << 6 << std::endl;
+
             if(debug_param_.detect_red)
                 if (object.color != 1)
                     continue;
             if(!debug_param_.detect_red)
                 if (object.color != 0)
                     continue;
-            
+            // std::cout << 6 << std::endl;
+
             Fan fan;
             fan.id = object.cls;
             fan.color = object.color;
@@ -121,18 +127,23 @@ namespace buff_detector
                 fan.key = "B" + string(object.cls == 0 ? "Activated" : "Target");
             if (object.color == 1)
                 fan.key = "R" + string(object.cls == 0 ? "Activated" : "Target");
+            // std::cout << 6 << std::endl;
             memcpy(fan.apex2d, object.apex, 5 * sizeof(cv::Point2f));
             for(int i = 0; i < 5; i++)
             {
                 fan.apex2d[i] += Point2f((float)roi_offset_.x, (float)roi_offset_.y);
             }
-
+            // std::cout << 6 << std::endl;
             std::vector<Point2f> points_pic(fan.apex2d, fan.apex2d + 5);
             TargetType target_type = BUFF;
+
+            // std::cout << 5 << std::endl;
 
             // TODO:迭代法进行PnP解算
             auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
             // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
+
+            // std::cout << 2 << std::endl;
 
             fan.armor3d_cam = pnp_result.armor_cam;
             fan.armor3d_world = pnp_result.armor_world;
@@ -148,6 +159,7 @@ namespace buff_detector
         // 维护Tracker队列，删除过旧的Tracker
         if (trackers_.size() != 0)
         {
+            // std::cout << "size:" << trackers_.size() << std::endl;
             for (auto iter = trackers_.begin(); iter != trackers_.end();)
             {
                 //删除元素后迭代器会失效，需先行获取下一元素
@@ -205,12 +217,12 @@ namespace buff_detector
                         auto rotate_axis_world = (*fan).rmat * angle_axisd.axis();
                         sign = ((*fan).centerR3d_world.dot(rotate_axis_world) > 0 ) ? 1 : -1;
                     }
-                    RCLCPP_INFO(logger_, "Rotate direction: %d", sign);
+                    RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 200, "Rotate direction: %d", sign);
 
                     // 计算角速度(rad/s)
                     delta_t = ((src.timestamp - (*iter).last_timestamp) / 1e6);
                     rotate_speed = sign * (angle_axisd.angle()) / (delta_t / 1e3);
-                    RCLCPP_INFO(logger_, "Rotate speed: %lf", rotate_speed);
+                    RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 200, "Rotate speed: %lf", rotate_speed);
 
                     if (abs(rotate_speed) <= min_v && abs(rotate_speed) <= buff_param_.max_v && delta_t <= min_last_delta_t)
                     {
@@ -240,7 +252,8 @@ namespace buff_detector
         }
         for (auto new_tracker : trackers_tmp)
             trackers_.push_back(new_tracker);
-
+        
+        // std::cout << 3 << std::endl;
         // 检查待激活扇叶是否存在
         Fan target;
         bool is_target_exists = chooseTarget(fans_, target);
@@ -249,6 +262,7 @@ namespace buff_detector
         {
             if(debug_param_.show_all_fans)
             {
+                RCLCPP_DEBUG_ONCE(logger_, "Show all fans...");
                 showFans(src);
             }
 
@@ -268,6 +282,9 @@ namespace buff_detector
         // 计算平均转速与平均R字中心坐标
         for(auto tracker : trackers_)
         {
+            // std::cout << "is_last_fan_exists:" << tracker.is_last_fan_exists << std::endl;
+            // std::cout << "tracker.last_timestamp:" << tracker.last_timestamp << std::endl;
+            // std::cout << "src.timestamp:" << src.timestamp << std::endl;
             if (tracker.is_last_fan_exists && tracker.last_timestamp == src.timestamp)
             {
                 rotate_speed_sum += tracker.rotate_speed;
@@ -279,6 +296,10 @@ namespace buff_detector
         // 若不存在可用的扇叶则返回false
         if (avail_tracker_cnt == 0)
         {
+            if(debug_param_.show_all_fans)
+            {
+                showFans(src);
+            }
             lost_cnt_++;
             return false;
         }
@@ -292,7 +313,7 @@ namespace buff_detector
         target_info.rotate_speed = mean_rotate_speed;
         target_info.r_center = mean_r_center;
 
-        RCLCPP_INFO(logger_, "Target mean_rotate_speed: %lf mean_r_center: {x:%lf y:%lf z:%lf}",
+        RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 200, "Target mean_rotate_speed: %lf mean_r_center: {x:%lf y:%lf z:%lf}",
             mean_rotate_speed, mean_r_center[0], mean_r_center[1], mean_r_center[2]);
 
         // 判断扇叶是否发生切换
@@ -305,7 +326,7 @@ namespace buff_detector
         if(abs(rotate_spd) > buff_param_.max_v)
             is_switched = true;
         target_info.target_switched = is_switched;
-        RCLCPP_INFO(logger_, "Target is switched: %d", (int)(is_switched));
+        RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "Target is switched: %d", (int)(is_switched));
 
         lost_cnt_ = 0;
         last_roi_center_ = center2d_src;
@@ -313,7 +334,7 @@ namespace buff_detector
         last_fan_ = target;
         is_last_target_exists_ = true;
 
-        if (isnan(angle[0]) || isnan(angle[1]))
+        if (isnan(angle[0]) || isnan(angle[1]) || abs(angle[0]) > 45 || abs(angle[1]) > 45)
             return false;
         
         auto time_detect = steady_clock_.now();
@@ -323,12 +344,14 @@ namespace buff_detector
 
         if(debug_param_.show_all_fans)
         {
+            RCLCPP_DEBUG_ONCE(logger_, "Show all fans...");
             showFans(src);
         }
 
         if(debug_param_.show_fps)
         {
-            char ch[10];
+            RCLCPP_DEBUG_ONCE(logger_, "Show fps...");
+            char ch[20];
             sprintf(ch, "%.2f", (1e9 / dr_full_ns));
             std::string fps_str = ch;
             putText(src.img, fps_str, {10, 25}, FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
@@ -336,6 +359,7 @@ namespace buff_detector
 
         if(debug_param_.prinf_latency)
         {
+            RCLCPP_DEBUG_ONCE(logger_, "Print latency...");
             //降低输出频率，避免影响帧率
             if ((int)(src.timestamp) % 10 == 0)
             {
@@ -347,6 +371,7 @@ namespace buff_detector
         }
         if(debug_param_.print_target_info)
         {
+            RCLCPP_DEBUG_ONCE(logger_, "Print target_info...");
             RCLCPP_INFO(logger_, "-----------INFO------------");
             RCLCPP_INFO(logger_, "Yaw: %lf", angle[0]);
             RCLCPP_INFO(logger_, "Pitch: %lf", angle[1]);
@@ -361,25 +386,15 @@ namespace buff_detector
     {
         for (auto fan : fans_)
         {
-            char ch[10];
-            sprintf(ch, "%.3f", fan.conf);
+            char ch[20];
+            sprintf(ch, "%.2f", fan.conf);
             std::string conf_str = ch;
             putText(src.img, conf_str, fan.apex2d[4], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
 
-            char ch1[10];
-            std::string key_str = "";
             if (fan.color == 0)
-            {
-                sprintf(ch1, "%d", fan.key);
-                key_str = ch1;
-                putText(src.img, key_str, fan.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
-            }
+                putText(src.img, fan.key, fan.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
             if (fan.color == 1)
-            {
-                sprintf(ch1, "%d", fan.id);
-                key_str = ch1;
-                putText(src.img, key_str, fan.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
-            }
+                putText(src.img, fan.key, fan.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
             for(int i = 0; i < 5; i++)
                 line(src.img, fan.apex2d[i % 5], fan.apex2d[(i + 1) % 5], Scalar(0,255,0), 1);
             auto fan_armor_center = coordsolver_.reproject(fan.armor3d_cam);
