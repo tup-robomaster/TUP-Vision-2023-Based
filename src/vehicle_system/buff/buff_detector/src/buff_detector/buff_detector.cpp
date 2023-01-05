@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-01-03 22:25:20
+ * @LastEditTime: 2023-01-04 18:09:00
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -192,6 +192,7 @@ namespace buff_detector
                 {
                     double delta_t = ((src.timestamp - (*iter).prev_timestamp) / 1e6);
                     Eigen::AngleAxisd angle_axisd;
+                    Eigen::AngleAxisd abs_angle_axisd;
                     double rotate_speed;
                     int sign;
                     //----------------------------计算角度,求解转速----------------------------
@@ -201,19 +202,80 @@ namespace buff_detector
                         // delta_t = src.timestamp - (*iter).prev_timestamp;
                         // 目前扇叶到上一次扇叶的旋转矩阵
                         auto relative_rmat = (*iter).prev_fan.rmat.transpose() * (*fan).rmat;
+                        auto rrmat = (*fan).rmat.inverse() * (*iter).prev_fan.rmat;
+                        
+                        // std::cout << std::endl;
+                        // std::cout << "relative_rmat:";
+                        // for(int ii = 0; ii < 3; ii++)
+                        //     for(int jj = 0; jj < 3; jj++)
+                        //         std::cout << relative_rmat(ii, jj) << " ";
+                        // std::cout << std::endl;
+
+                        // std::cout << std::endl;
+                        // std::cout << "rrmat:";
+                        // for(int ii = 0; ii < 3; ii++)
+                        //     for(int jj = 0; jj < 3; jj++)
+                        //         std::cout << rrmat(ii, jj) << " ";
+                        // std::cout << std::endl;
+
                         angle_axisd = Eigen::AngleAxisd(relative_rmat);
+                        // auto axis_angle = Eigen::AngleAxisd(rrmat);
+
                         auto rotate_axis_world = (*iter).last_fan.rmat * angle_axisd.axis();
+
+                        // std::cout << std::endl;
+                        // std::cout << "axisd_world:";
+                        // for(int ii = 0; ii < 3; ii++)
+                        //         std::cout << rotate_axis_world[ii] << " ";
+                        // std::cout << std::endl;
+
+                        // std::cout << std::endl;
+                        // std::cout << "axis_rrmat:";
+                        // for(int ii = 0; ii < 3; ii++)
+                        //         std::cout << axis_angle.axis()[ii] << " ";
+
                         // auto rotate_axis_world = (*fan).rmat * angle_axisd.axis();
                         // auto rotate_axis_world = (*iter).last_fan.rmat  * angle_axisd.axis();
                         sign = ((*fan).centerR3d_world.dot(rotate_axis_world) > 0 ) ? 1 : -1;
+                        // std::cout << "dot_value:" << (*fan).centerR3d_world.dot(rotate_axis_world) << std::endl;
                     }
                     else
                     {
                         delta_t = src.timestamp - (*iter).last_timestamp;
                         // 目前扇叶到上一次扇叶的旋转矩阵
                         auto relative_rmat = (*iter).last_fan.rmat.transpose() * (*fan).rmat;
+                        auto rrmat = (*fan).rmat.inverse() * (*iter).last_fan.rmat;
+
+                        // std::cout << std::endl;
+                        // std::cout << "relative_rmat:";
+                        // for(int ii = 0; ii < 3; ii++)
+                        //     for(int jj = 0; jj < 3; jj++)
+                        //         std::cout << relative_rmat(ii, jj) << " ";
+                        // std::cout << std::endl;
+
+                        // std::cout << std::endl;
+                        // std::cout << "rrmat:";
+                        // for(int ii = 0; ii < 3; ii++)
+                        //     for(int jj = 0; jj < 3; jj++)
+                        //         std::cout << rrmat(ii, jj) << " ";
+                        // std::cout << std::endl;
+
                         // TODO:使用点乘判断旋转方向
                         angle_axisd = Eigen::AngleAxisd(relative_rmat);
+                        auto axis_angle = Eigen::AngleAxisd(rrmat);
+
+                        // std::cout << std::endl;
+                        // std::cout << "axisd_rela_rmat:";
+                        // for(int ii = 0; ii < 3; ii++)
+                        //         std::cout << angle_axisd.axis()[ii] << " ";
+                        // std::cout << std::endl;
+
+                        // std::cout << std::endl;
+                        // std::cout << "axis_rrmat:";
+                        // for(int ii = 0; ii < 3; ii++)
+                        //         std::cout << axis_angle.axis()[ii] << " ";
+                        // std::cout << std::endl;
+
                         auto rotate_axis_world = (*fan).rmat * angle_axisd.axis();
                         sign = ((*fan).centerR3d_world.dot(rotate_axis_world) > 0 ) ? 1 : -1;
                     }
@@ -222,7 +284,9 @@ namespace buff_detector
                     // 计算角速度(rad/s)
                     delta_t = ((src.timestamp - (*iter).last_timestamp) / 1e6);
                     rotate_speed = sign * (angle_axisd.angle()) / (delta_t / 1e3);
-                    RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 200, "Rotate speed: %lf", rotate_speed);
+                    RCLCPP_INFO(logger_, "Rotate speed: %lf", rotate_speed);
+
+                    std::cout << "angle:" << angle_axisd.angle() << std::endl;
 
                     if (abs(rotate_speed) <= min_v && abs(rotate_speed) <= buff_param_.max_v && delta_t <= min_last_delta_t)
                     {

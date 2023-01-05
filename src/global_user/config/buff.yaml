@@ -3,7 +3,7 @@
   # Detector params.
     max_lost_cnt: 4 
     max_v: 4.0  
-    max_delta_t: 1000.0
+    max_delta_t: 100.0
     fan_length: 0.7
     no_crop_thres: 0.002
 
