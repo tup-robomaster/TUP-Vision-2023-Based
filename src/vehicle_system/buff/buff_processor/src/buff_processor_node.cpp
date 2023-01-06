@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2022-12-28 17:03:57
+ * @LastEditTime: 2023-01-07 02:27:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -21,18 +21,21 @@ namespace buff_processor
         }
         catch(const std::exception& e)
         {
-            std::cerr << e.what() << '\n';
-        }
-
-        if(!buff_processor_->is_initialized)
-        {
-            buff_processor_->coordsolver_->loadParam(path_param_.camera_param_path, path_param_.camera_name);
-            buff_processor_->is_initialized = true;
+            RCLCPP_FATAL_ONCE(this->get_logger(), "Fatal while initializing buff processor node: %s", e.what());
         }
         
+        if(!buff_processor_->is_initialized)
+        {
+            RCLCPP_INFO_ONCE(this->get_logger(), "Init coord params...");
+            buff_processor_->coordsolver_.loadParam(path_param_.camera_param_path, path_param_.camera_name);
+            buff_processor_->is_initialized = true;
+        }
+
+        pred_point3d_ = {0, 0, 0};
+
         // QoS
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(5);
         qos.best_effort();
         qos.reliable();
         qos.durability();
@@ -49,12 +52,56 @@ namespace buff_processor
         target_info_sub_ = this->create_subscription<BuffMsg>("/buff_info", qos,
             std::bind(&BuffProcessorNode::target_info_callback, this, _1));
         
+        // 相机类型
+        this->declare_parameter<int>("camera_type", USBCam);
+        int camera_type = this->get_parameter("camera_type").as_int();
+        
+        // 图像的传输方式
+        transport_ = "raw";
+        
         bool debug = false;
         this->declare_parameter<bool>("debug", true);
         this->get_parameter("debug", debug);
         if(debug)
         {
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffProcessorNode::paramsCallback, this, _1));
+
+            if(camera_type == DaHeng)
+            {
+                image_width_ = DAHENG_IMAGE_WIDTH;
+                image_height_ = DAHENG_IMAGE_HEIGHT;
+                
+                // daheng image sub.
+                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
+                    std::bind(&BuffProcessorNode::image_callback, this, _1), transport_));
+            }
+            else if(camera_type == HikRobot)
+            {
+                image_width_ = HIK_IMAGE_WIDTH;
+                image_height_ = HIK_IMAGE_HEIGHT;
+
+                // hik image sub.
+                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
+                    std::bind(&BuffProcessorNode::image_callback, this, _1), transport_));
+            }
+            else if(camera_type == MVSCam)
+            {
+                image_width_ = MVS_IMAGE_WIDTH;
+                image_height_ = MVS_IMAGE_HEIGHT;
+
+                // mvs image sub.
+                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/mvs_img",
+                    std::bind(&BuffProcessorNode::image_callback, this, _1), transport_));
+            }
+            else if(camera_type == USBCam)
+            {
+                image_width_ = USB_IMAGE_WIDTH;
+                image_height_ = USB_IMAGE_HEIGHT;
+
+                // usb image sub.
+                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/usb_img", 
+                    std::bind(&BuffProcessorNode::image_callback, this, _1), transport_));
+            }
         }
     }
 
@@ -72,6 +119,7 @@ namespace buff_processor
         // rclcpp::Time now = this->get_clock()->now();
         if(buff_processor_->predictor(target_info, target))
         {
+            RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "predict...");
             GimbalMsg gimbal_msg;
             gimbal_msg.header.frame_id = "barrel_link";
             gimbal_msg.header.stamp = target_info.header.stamp;
@@ -94,6 +142,35 @@ namespace buff_processor
             
                 predict_info_pub_->publish(std::move(predict_info));
             }
+
+            mutex_.lock();
+            pred_point3d_ = target.hit_point_cam;
+            std::cout << "hit_point:" << target.hit_point_cam[0] << " " << target.hit_point_cam[1] << " " << target.hit_point_cam[2] << std::endl;
+            mutex_.unlock();
+        }
+    }
+
+    void BuffProcessorNode::image_callback(const ImageMsg::ConstSharedPtr &img_info)
+    {
+        if(!img_info)
+            return;
+        // std::cout << "11" << std::endl;
+        auto img = cv_bridge::toCvShare(std::move(img_info), "bgr8")->image;
+        // std::cout << "22" << std::endl;
+
+        if(!img.empty())
+        {
+            mutex_.lock();
+            Eigen::Vector3d point3d = pred_point3d_;
+            mutex_.unlock();
+           
+            cv::Point2f point_2d = buff_processor_->coordsolver_.reproject(point3d);
+            cv::circle(img, point_2d, 10, (255, 255, 0), -1);
+            // for(int i = 0; i < 5; i++)
+            //     cv::line(img, apex2d[i % 5], apex2d[(i + 1) % 5], {0, 255, 255}, 5);
+            cv::namedWindow("pred_img");
+            cv::imshow("pred_img", img);
+            cv::waitKey(1);
         }
     }
 
@@ -190,12 +267,15 @@ namespace buff_processor
         this->declare_parameter<double>("max_timespan", 20000.0);
         this->declare_parameter<double>("max_v", 3.0);
         this->declare_parameter<int>("window_size", 2);
+
         this->get_parameter("bullet_speed", predict_param_.bullet_speed);
         this->get_parameter("delay_big", predict_param_.delay_big);
         this->get_parameter("delay_small", predict_param_.delay_small);
         this->get_parameter("history_deque_len_cos", predict_param_.history_deque_len_cos);
         this->get_parameter("history_deque_len_phase", predict_param_.history_deque_len_phase);
         this->get_parameter("history_deque_len_uniform", predict_param_.history_deque_len_uniform);
+        std::cout << "history_deque_len_uniform: " << predict_param_.history_deque_len_uniform << std::endl;
+
         this->get_parameter("max_a", predict_param_.max_a);
         this->get_parameter("max_rmse", predict_param_.max_rmse);
         this->get_parameter("max_timespan", predict_param_.max_timespan);

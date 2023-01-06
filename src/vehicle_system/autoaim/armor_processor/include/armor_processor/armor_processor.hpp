@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-17 00:27:33
- * @LastEditTime: 2022-12-27 01:23:21
+ * @LastEditTime: 2023-01-06 21:50:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor/armor_processor.hpp
  */
 #ifndef ARMOR_PRECESSOR_HPP_
@@ -10,19 +10,8 @@
 
 #pragma once 
 
-// #include "../../global_user/include/coordsolver.hpp"
-#include "global_interface/msg/target.hpp"
-// #include "global_interface/msg/gimbal.hpp"
-// #include "global_interface/msg/armor.hpp"
-// #include "global_interface/msg/armors.hpp"
-
+#include "global_interface/msg/autoaim.hpp"
 #include "../prediction/prediction.hpp"
-
-// #include <Eigen/Core>
-// #include <ceres/ceres.h>
-// #include <glog/logging.h>
-// #include <fmt/format.h>
-// #include <yaml-cpp/yaml.h>
 
 using namespace global_user;
 using namespace coordsolver;
@@ -31,7 +20,7 @@ namespace armor_processor
     class Processor : public ArmorPredictor
     {
         // typedef geometry_msgs::msg::Point GeometryPoint;
-        typedef global_interface::msg::Target TargetMsg;
+        typedef global_interface::msg::Autoaim AutoaimMsg;
 
     public:
         // Processor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param, 
@@ -46,12 +35,12 @@ namespace armor_processor
 
         //预测(接收armor_detector节点发布的目标信息进行预测)
         CoordSolver coordsolver_;
-        std::unique_ptr<Eigen::Vector3d> predictor(TargetMsg& target, double& sleep_time);
-        std::unique_ptr<Eigen::Vector3d> predictor(cv::Mat& src, TargetMsg& target, double& sleep_time);
+        std::unique_ptr<Eigen::Vector3d> predictor(AutoaimMsg& Autoaim, double& sleep_time);
+        std::unique_ptr<Eigen::Vector3d> predictor(cv::Mat& src, AutoaimMsg& Autoaim, double& sleep_time);
         
     private:
-        // Eigen::Vector3d&& fittingPredictor(TargetInfo& target, double dt);
-        // Eigen::Vector3d&& filterPredictor(TargetInfo& target, double dt);
+        // Eigen::Vector3d&& fittingPredictor(AutoaimInfo& Autoaim, double dt);
+        // Eigen::Vector3d&& filterPredictor(AutoaimInfo& Autoaim, double dt);
         // Eigen::Vector3d aiming_point_;
         // std::unique_ptr<ArmorPredictor> armor_predictor_;
         // GeometryPoint aiming_point_;

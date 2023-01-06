@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-19 23:27:32
-LastEditTime: 2022-12-21 17:13:58
+LastEditTime: 2023-01-06 22:23:36
 FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/launch/buff_processor.launch.py
 '''
 import os
@@ -20,7 +20,8 @@ from ament_index_python.packages import get_package_share_directory
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
-    processor_param_file = os.path.join(get_package_share_directory("global_user"), "config/buff.yaml")
+    share_path = get_package_share_directory("global_user")
+    processor_param_file = os.path.join(share_path, "config/buff.yaml")
 
     return LaunchDescription([
         Node(
@@ -29,10 +30,6 @@ def generate_launch_description():
             name="buff_processor",
             output="screen",
             emulate_tty=True,
-            parameters=[LaunchConfiguration(processor_param_file),
-            {
-                "debug": "true",
-                "using_imu": "false"
-            }]
+            parameters=[(processor_param_file)]
         )
     ])

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2022-12-29 22:02:00
+ * @LastEditTime: 2023-01-06 21:35:05
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -22,9 +22,7 @@
 
 //custom message
 #include "global_interface/msg/gimbal.hpp"
-// #include "global_interface/msg/armor.hpp"
-// #include "global_interface/msg/armors.hpp"
-#include "global_interface/msg/target.hpp"
+#include "global_interface/msg/autoaim.hpp"
 #include "global_interface/msg/imu.hpp"
 
 using namespace global_user;
@@ -33,8 +31,7 @@ namespace armor_detector
 {
     class DetectorNode : public rclcpp::Node
     {
-        typedef global_interface::msg::Armors ArmorsMsg;
-        typedef global_interface::msg::Target TargetMsg;
+        typedef global_interface::msg::Autoaim AutoaimMsg;
         typedef global_interface::msg::Imu ImuMsg;
 
     public:
@@ -47,7 +44,7 @@ namespace armor_detector
         int image_height_;
 
         // pub target armor msg.
-        rclcpp::Publisher<TargetMsg>::SharedPtr armor_info_pub_;
+        rclcpp::Publisher<AutoaimMsg>::SharedPtr armor_info_pub_;
         // ArmorsMsg armors_info_;
     
     private:    

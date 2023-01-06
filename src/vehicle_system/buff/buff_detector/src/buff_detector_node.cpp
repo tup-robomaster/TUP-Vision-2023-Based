@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-01-03 21:48:33
+ * @LastEditTime: 2023-01-06 23:36:33
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -24,11 +24,19 @@ namespace buff_detector
             RCLCPP_ERROR(this->get_logger(), "Error while initializing detector class: %s", e.what());
         }
         
+        if(!detector_->is_initialized_)
+        {
+            RCLCPP_INFO(this->get_logger(), "Initializing detector class");
+            detector_->buff_detector_.initModel(path_param_.network_path);
+            detector_->coordsolver_.loadParam(path_param_.camera_param_path, path_param_.camera_name);
+            detector_->is_initialized_ = true;
+        }
+
         time_start_ = detector_->steady_clock_.now();
 
         // QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(5);
         qos.best_effort();
         qos.reliable();
         qos.durability();
@@ -46,14 +54,6 @@ namespace buff_detector
             // imu msg sub.
             imu_info_sub_ = this->create_subscription<ImuMsg>("/imu_msg", rclcpp::SensorDataQoS(),
                 std::bind(&BuffDetectorNode::sensorMsgCallback, this, _1));
-        }
-
-        if(!detector_->is_initialized_)
-        {
-            RCLCPP_INFO(this->get_logger(), "Initializing detector class");
-            detector_->buff_detector_.initModel(path_param_.network_path);
-            detector_->coordsolver_.loadParam(path_param_.camera_param_path, path_param_.camera_name);
-            detector_->is_initialized_ = true;
         }
 
         this->declare_parameter<int>("camera_type", DaHeng);

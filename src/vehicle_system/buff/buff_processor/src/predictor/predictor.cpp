@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2022-12-31 18:56:48
+ * @LastEditTime: 2023-01-07 02:23:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -13,13 +13,22 @@ namespace buff_processor
     : logger_(rclcpp::get_logger("buff_predictor"))
     {
         is_params_confirmed = false;
+        last_mode = mode = -1;
+        
         params[0] = 0;
         params[1] = 0; 
         params[2] = 0; 
         params[3] = 0;
 
-        YAML::Node config = YAML::LoadFile(predictor_param_.pf_path);
-        pf_param_loader.initParam(config, "buff");
+        try
+        {
+            YAML::Node config = YAML::LoadFile(predictor_param_.pf_path);
+            pf_param_loader.initParam(config, "buff");
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
     }
 
     BuffPredictor::~BuffPredictor()
@@ -36,7 +45,7 @@ namespace buff_processor
     */
     bool BuffPredictor::predict(double speed, double dist, double timestamp, double &result)
     {
-        // auto t1 = std::chrono::steady_clock::now();
+        std::cout << 1 << std::endl;
 
         TargetInfo target = {speed, dist, timestamp};
         if (mode != last_mode)
@@ -47,7 +56,7 @@ namespace buff_processor
             is_params_confirmed = false;
         }
 
-        if (history_info.size() == 0 || target.timestamp - history_info.front().timestamp >= predictor_param_.max_timespan)
+        if (history_info.size() == 0 || (target.timestamp - history_info.front().timestamp) / 1e6 >= predictor_param_.max_timespan)
         {   //当时间跨度过长视作目标已更新，需清空历史信息队列
             history_info.clear();
             history_info.push_back(target);
@@ -60,6 +69,8 @@ namespace buff_processor
             is_params_confirmed = false;
             return false;
         }
+
+        std::cout << 2 << std::endl;
 
         //输入数据前进行滤波
         auto is_ready = pf.is_ready;
@@ -77,6 +88,7 @@ namespace buff_processor
         if (mode == 0)
         {
             deque_len = predictor_param_.history_deque_len_uniform;
+            std::cout << "lens:" << deque_len << std::endl;
         }
         else if (mode == 1)
         {
@@ -85,9 +97,9 @@ namespace buff_processor
             else
                 deque_len = predictor_param_.history_deque_len_phase;
         }
-
         if ((int)(history_info.size()) < deque_len)    
         {
+            std::cout << "size:" << (int)(history_info.size()) << std::endl;
             history_info.push_back(target);
             last_target = target;
             return false;
@@ -103,6 +115,8 @@ namespace buff_processor
                 history_info.pop_front();
             history_info.push_back(target);
         }
+
+        std::cout << 3 << std::endl;
 
         // 计算旋转方向
         double rotate_speed_sum = 0;
@@ -132,8 +146,10 @@ namespace buff_processor
                 else
                     rotate_sign = -1;
 
+                std::cout << "target_speed:"; 
                 for (auto target_info : history_info)
                 {
+                    std::cout << target_info.speed << " ";
                     problem.AddResidualBlock (     // 向问题中添加误差项
                     // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致
                         new ceres::AutoDiffCostFunction<CURVE_FITTING_COST, 1, 4> ( 
@@ -143,6 +159,7 @@ namespace buff_processor
                         params_fitting                 // 待估计参数
                     );
                 }
+                std::cout << std::endl;
 
                 //设置上下限
                 //FIXME:参数需根据场上大符实际调整
@@ -219,7 +236,10 @@ namespace buff_processor
         // delta_time_estimate = 0;
         float time_estimate = delta_time_estimate + timespan;
         // cout<<delta_time_estimate<<endl;     
+        std::cout << 4 << std::endl;
+
         result = calcAimingAngleOffset(params, timespan / 1e3, time_estimate / 1e3, mode);
+        std::cout << 5 << std::endl;
         last_target = target;
         
         return true;

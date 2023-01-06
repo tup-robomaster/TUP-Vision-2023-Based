@@ -2,18 +2,9 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2022-12-31 14:09:55
+ * @LastEditTime: 2023-01-06 21:39:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
-#include "../../global_user/include/global_user/global_user.hpp"
-#include "../../global_user/include/coordsolver.hpp"
-#include "global_interface/msg/point2f.hpp"
-#include "global_interface/msg/target.hpp"
-
-#include "../inference/inference_api2.hpp"
-#include "../armor_tracker/armor_tracker.hpp"
-#include "../spinning_detector/spinning_detector.hpp"
-
 //C++
 #include <iostream>
 #include <algorithm>
@@ -22,6 +13,14 @@
 
 //ros
 #include <rclcpp/rclcpp.hpp>
+
+#include "../inference/inference_api2.hpp"
+#include "../armor_tracker/armor_tracker.hpp"
+#include "../spinning_detector/spinning_detector.hpp"
+#include "../../global_user/include/global_user/global_user.hpp"
+#include "../../global_user/include/coordsolver.hpp"
+#include "global_interface/msg/autoaim.hpp"
+
 using namespace global_user;
 using namespace coordsolver;
 namespace armor_detector
@@ -112,8 +111,8 @@ namespace armor_detector
 
     public:
         // void run();
-        bool armor_detect(global_user::TaskData &src);
-        bool gyro_detector(global_user::TaskData &src, global_interface::msg::Target& target_info);
+        bool armor_detect(TaskData &src);
+        bool gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info);
 
         Point2i cropImageByROI(Mat &img);
         ArmorTracker* chooseTargetTracker(vector<ArmorTracker*> trackers, double timestamp);

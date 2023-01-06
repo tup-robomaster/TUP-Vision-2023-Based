@@ -18,8 +18,8 @@
     using_imu: false
     using_roi: false
     detect_red: true
-    show_img: true
-    show_all_fans: true
+    show_img: false
+    show_all_fans: false
     show_fps: true
     print_target_info: false 
     prinf_latency: false
@@ -33,9 +33,9 @@
     max_rmse: 0.5
     max_v: 3.0
     max_a: 8.0
-    history_deque_len_cos: 250
-    history_deque_len_phase: 100
-    history_deque_len_uniform: 100
+    history_deque_len_cos: 25
+    history_deque_len_phase: 20
+    history_deque_len_uniform: 20
     delay_small: 175.0
     delay_big: 100.0
     window_size: 2

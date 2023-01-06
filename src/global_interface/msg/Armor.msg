@@ -1,9 +1,0 @@
-uint8 id
-uint8 color
-int32 area
-float32 conf
-string key
-geometry_msgs/Point center3d_cam
-geometry_msgs/Point center3d_world
-uint8 type
-uint8 dead_buffer_cnt

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-01-03 20:06:03
+ * @LastEditTime: 2023-01-06 21:36:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -44,7 +44,7 @@ namespace armor_detector
         qos.durability_volatile();
         
         // target info pub.
-        armor_info_pub_ = this->create_publisher<TargetMsg>("/armor_info", qos);
+        armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_info", qos);
 
         if(debug_.using_imu)
         {
@@ -190,7 +190,7 @@ namespace armor_detector
         if(detector_->armor_detect(src))
         {   
             RCLCPP_INFO(this->get_logger(), "armors detector...");
-            TargetMsg target_info;
+            AutoaimMsg target_info;
             if(detector_->gyro_detector(src, target_info))
             {
                 RCLCPP_INFO(this->get_logger(), "Spinning detector...");
@@ -253,7 +253,7 @@ namespace armor_detector
             if(detector_->armor_detect(src))
             {   
                 // RCLCPP_INFO(this->get_logger(), "armors detector...");
-                TargetMsg target_info;
+                AutoaimMsg target_info;
                 Eigen::Vector3d aiming_point;
 
                 // Target spinning detector. 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-01-02 23:33:59
+ * @LastEditTime: 2023-01-06 21:53:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -106,7 +106,7 @@ namespace armor_processor
         }
     }
 
-    Eigen::Vector3d ArmorPredictor::predict(TargetMsg& target_msg, double timestamp, double& sleep_time, cv::Mat* src)
+    Eigen::Vector3d ArmorPredictor::predict(AutoaimMsg& target_msg, double timestamp, double& sleep_time, cv::Mat* src)
     {
         auto t1 = steady_clock_.now();
 

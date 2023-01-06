@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-01-03 22:23:03
+ * @LastEditTime: 2023-01-06 21:40:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -369,7 +369,7 @@ namespace armor_detector
         return true;
     }
 
-    bool Detector::gyro_detector(TaskData &src, global_interface::msg::Target& target_info)
+    bool Detector::gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info)
     {
         /**
          * @brief 车辆小陀螺状态检测

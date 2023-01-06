@@ -2,17 +2,11 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-12-29 20:07:17
+ * @LastEditTime: 2023-01-06 21:42:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
 #define ARMOR_PROCESSOR_NODE_HPP_
-
-#include "./armor_processor/armor_processor.hpp"
-
-#include "../../global_user/include/global_user/global_user.hpp"
-#include "global_interface/msg/spin_info.hpp"
-#include "global_interface/msg/gimbal.hpp"
 
 //ros
 #include <rclcpp/rclcpp.hpp>
@@ -38,14 +32,18 @@
 #include <string>
 #include <vector>
 
+#include "./armor_processor/armor_processor.hpp"
+#include "../../global_user/include/global_user/global_user.hpp"
+#include "global_interface/msg/autoaim.hpp"
+#include "global_interface/msg/gimbal.hpp"
+
 using namespace global_user;
 using namespace coordsolver;
 namespace armor_processor
 {
     class ArmorProcessorNode : public rclcpp::Node 
     {
-        typedef global_interface::msg::Target TargetMsg;
-        typedef global_interface::msg::SpinInfo SpinMsg;
+        typedef global_interface::msg::Autoaim AutoaimMsg;
         typedef global_interface::msg::Gimbal GimbalMsg;
 
     public:
@@ -56,8 +54,8 @@ namespace armor_processor
         // rclcpp::Subscription<SpinInfo>::SharedPtr spin_info_sub;
         // void spin_info_callback(const SpinMsg::SharedPtr msg) const;
         
-        rclcpp::Subscription<TargetMsg>::SharedPtr target_info_sub_;
-        void target_info_callback(const TargetMsg& target_info);
+        rclcpp::Subscription<AutoaimMsg>::SharedPtr target_info_sub_;
+        void target_info_callback(const AutoaimMsg& target_info);
 
         // bool draw_predict;
         bool flag_;
@@ -66,7 +64,7 @@ namespace armor_processor
         cv::Point2f apex2d[4];
         // coordsolver::coordsolver coordsolver_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
-        rclcpp::Publisher<TargetMsg>::SharedPtr predict_info_pub_;
+        rclcpp::Publisher<AutoaimMsg>::SharedPtr predict_info_pub_;
     
     private:
         std::unique_ptr<Processor> processor_;

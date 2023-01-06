@@ -15,14 +15,12 @@ find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/Gimbal.msg"
-  "msg/Armor.msg"
-  "msg/Armors.msg"
-  "msg/Target.msg"
-  "msg/SpinInfo.msg"
-  "msg/Imu.msg"
   "msg/Point2f.msg"
+  "msg/Imu.msg"
   "msg/Buff.msg"
+  "msg/Autoaim.msg"
+  "msg/Gimbal.msg"
+  # "msg/SpinInfo.msg"
   # "srv/*.srv"
   # "action/*.action"
   DEPENDENCIES

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2022-12-29 19:21:39
+ * @LastEditTime: 2023-01-06 21:51:07
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -78,7 +78,7 @@ namespace armor_processor
         }
     }
 
-    std::unique_ptr<Eigen::Vector3d> Processor::predictor(TargetMsg& target, double& sleep_time)
+    std::unique_ptr<Eigen::Vector3d> Processor::predictor(AutoaimMsg& target, double& sleep_time)
     {
         if(target.target_switched)
         {
@@ -91,7 +91,7 @@ namespace armor_processor
         return std::make_unique<Eigen::Vector3d>(hit_point);
     }
     
-    std::unique_ptr<Eigen::Vector3d> Processor::predictor(cv::Mat& src, TargetMsg& target, double& sleep_time)
+    std::unique_ptr<Eigen::Vector3d> Processor::predictor(cv::Mat& src, AutoaimMsg& target, double& sleep_time)
     {
         if(target.target_switched)
         {

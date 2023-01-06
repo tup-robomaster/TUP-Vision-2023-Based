@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2022-12-31 15:05:14
+ * @LastEditTime: 2023-01-06 21:52:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -52,7 +52,7 @@
 // typedef SingerPositionMeasurement<double> SingerPosMeasure;
 // typedef SingerPositionMeasurementModel<double> SingerPosModel;
 
-#include "global_interface/msg/target.hpp"
+#include "global_interface/msg/autoaim.hpp"
 
 using namespace global_user;
 using namespace coordsolver;
@@ -371,7 +371,7 @@ namespace armor_processor
 
     class ArmorPredictor
     {
-        typedef global_interface::msg::Target TargetMsg;
+        typedef global_interface::msg::Autoaim AutoaimMsg;
         
     public:
         ArmorPredictor();
@@ -401,7 +401,7 @@ namespace armor_processor
         void reInitialize();
         bool setBulletSpeed(double speed);
         void loadParam(std::string filter_param_path);
-        Eigen::Vector3d predict(TargetMsg& target_msg, double timestamp, double& sleep_time, cv::Mat* src = nullptr);
+        Eigen::Vector3d predict(AutoaimMsg& target_msg, double timestamp, double& sleep_time, cv::Mat* src = nullptr);
     private:
         std::deque<cv::Point2d> history_pred_info_;
         std::deque<cv::Point2d> history_origin_info_;

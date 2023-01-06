@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2022-12-31 15:04:58
+ * @LastEditTime: 2023-01-06 21:42:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -36,7 +36,7 @@ namespace armor_processor
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_info", qos);
 
         // 订阅目标装甲板信息
-        target_info_sub_ = this->create_subscription<TargetMsg>("/armor_info", qos,
+        target_info_sub_ = this->create_subscription<AutoaimMsg>("/armor_info", qos,
             std::bind(&ArmorProcessorNode::target_info_callback, this, _1));
 
         // 是否使用共享内存
@@ -101,7 +101,7 @@ namespace armor_processor
             RCLCPP_INFO(this->get_logger(), "debug...");
             
             // Prediction info pub.
-            predict_info_pub_ = this->create_publisher<TargetMsg>("/autoaim/predict_info", qos);
+            predict_info_pub_ = this->create_publisher<AutoaimMsg>("/autoaim/predict_info", qos);
 
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, _1));
@@ -266,7 +266,7 @@ namespace armor_processor
     //     } 
     // }
 
-    void ArmorProcessorNode::target_info_callback(const TargetMsg& target_info)
+    void ArmorProcessorNode::target_info_callback(const AutoaimMsg& target_info)
     {
         flag_ = true;
         last_predict_point_ = predict_point_;
@@ -282,7 +282,7 @@ namespace armor_processor
         }
 
         double sleep_time = 0.0;
-        TargetMsg target = std::move(target_info);
+        AutoaimMsg target = std::move(target_info);
         
         auto aiming_point_world = std::move(processor_->predictor(target, sleep_time));
 
@@ -336,7 +336,7 @@ namespace armor_processor
 
         if(this->debug_)
         {
-            TargetMsg predict_info;
+            AutoaimMsg predict_info;
             predict_info.header.frame_id = "camera_link";
             predict_info.header.stamp = target_info.header.stamp;
             predict_info.aiming_point_cam.x = aiming_point_cam[0];
