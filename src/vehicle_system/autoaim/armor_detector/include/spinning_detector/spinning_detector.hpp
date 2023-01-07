@@ -2,14 +2,13 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-15 11:25:33
- * @LastEditTime: 2022-12-31 13:20:05
+ * @LastEditTime: 2023-01-07 18:06:12
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/spinning_detector/spinning_detector.hpp
  */
 #ifndef SPINNING_DETECTOR_HPP_
 #define SPINNING_DETECTOR_HPP_
 
 #include "../../global_user/include/global_user/global_user.hpp"
-#include "global_interface/msg/armors.hpp"
 #include "../armor_tracker/armor_tracker.hpp"
 
 //c++

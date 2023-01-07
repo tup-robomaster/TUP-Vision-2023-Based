@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2023-01-03 20:36:07
+ * @LastEditTime: 2023-01-07 18:01:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
@@ -92,11 +92,13 @@ namespace buff_detector
         double rotate_speed;
         double timestamp;
         bool target_switched;
+        Eigen::Matrix3d rmat;
         TargetInfo()
         {
             r_center = {0, 0, 0};
             rotate_speed = 0;
             target_switched = false;
+            rmat = Eigen::Matrix3d::Identity();
         }
     };
 

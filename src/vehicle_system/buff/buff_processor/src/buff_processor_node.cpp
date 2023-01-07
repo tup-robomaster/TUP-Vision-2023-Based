@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-01-07 02:27:15
+ * @LastEditTime: 2023-01-07 18:46:22
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -145,8 +145,8 @@ namespace buff_processor
 
             mutex_.lock();
             pred_point3d_ = target.hit_point_cam;
-            std::cout << "hit_point:" << target.hit_point_cam[0] << " " << target.hit_point_cam[1] << " " << target.hit_point_cam[2] << std::endl;
             mutex_.unlock();
+            RCLCPP_INFO(this->get_logger(), "hit point in cam: %lf %lf %lf", target.hit_point_cam[0], target.hit_point_cam[1], target.hit_point_cam[2]);
         }
     }
 

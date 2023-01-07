@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-01-07 02:23:31
+ * @LastEditTime: 2023-01-07 17:56:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -27,7 +27,7 @@ namespace buff_processor
         }
         catch(const std::exception& e)
         {
-            std::cerr << e.what() << '\n';
+            RCLCPP_ERROR(logger_, "Error while initializing pf param: %s", e.what());
         }
     }
 

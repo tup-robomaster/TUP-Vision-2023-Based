@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2022-12-31 12:46:10
+ * @LastEditTime: 2023-01-07 18:10:58
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -25,26 +25,23 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-#include "./serialport/serialport.hpp"
-
-#include "../../global_user/include/coordsolver.hpp"
-#include "global_interface/msg/imu.hpp"
-#include "global_interface/msg/gimbal.hpp"
-#include "global_interface/msg/target.hpp"
-#include "global_interface/msg/buff.hpp"
-
+//eigen
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+#include "global_interface/msg/imu.hpp"
+#include "global_interface/msg/gimbal.hpp"
+#include "./serialport/serialport.hpp"
+#include "../../global_user/include/coordsolver.hpp"
+
 using namespace global_user;
 using namespace coordsolver;
-
 namespace serialport
 {
     class SerialPortNode : public rclcpp::Node
     {
         typedef global_interface::msg::Gimbal GimbalMsg;
-        typedef global_interface::msg::Target TargetMsg;
+        // typedef global_interface::msg::Autoaim AutoaimMsg;
         typedef global_interface::msg::Imu ImuMsg;
         typedef geometry_msgs::msg::TransformStamped TransformMsg;
 
@@ -77,11 +74,11 @@ namespace serialport
 
         // Eigen::Quaterniond quat_;
         // Eigen::Matrix3d rmat_imu_;
-        // TargetMsg target_info_;
+        // AutoaimMsg Autoaim_info_;
         CoordSolver coordsolver_;
 
         //tf2
-        std::string target_frame_;
+        std::string Autoaim_frame_;
         std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
         std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
         message_filters::Subscriber<GimbalMsg> gimbal_info_sub_;

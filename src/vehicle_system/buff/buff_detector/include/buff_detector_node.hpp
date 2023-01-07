@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2022-12-28 18:16:39
+ * @LastEditTime: 2023-01-07 18:52:37
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector_node.hpp
  */
 #ifndef BUFF_DETECTOR_NODE_HPP_
@@ -21,6 +21,11 @@
 #include <image_transport/publisher.hpp>
 #include <image_transport/subscriber_filter.hpp>
 #include <cv_bridge/cv_bridge.h>
+
+//c++
+#include <atomic>
+#include <thread>
+#include <mutex>
 
 //custom message
 #include "global_interface/msg/buff.hpp"
@@ -53,6 +58,7 @@ namespace buff_detector
         std::shared_ptr<image_transport::Subscriber> img_sub_; 
         void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
 
+        Mutex mutex_;
         ImuMsg imu_msg_;
         rclcpp::Subscription<ImuMsg>::SharedPtr imu_info_sub_;
         void sensorMsgCallback(const ImuMsg& imu_msg);

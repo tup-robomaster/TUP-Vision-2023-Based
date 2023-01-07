@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-01-06 23:36:33
+ * @LastEditTime: 2023-01-07 19:21:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -99,14 +99,15 @@ namespace buff_detector
 
     void BuffDetectorNode::sensorMsgCallback(const ImuMsg& imu_msg)
     {
+        mutex_.lock();
         imu_msg_.header.stamp = this->get_clock()->now();
-
         if(imu_msg.bullet_speed > 10)
             imu_msg_.bullet_speed = imu_msg.bullet_speed;
         if(imu_msg.mode == 3 || imu_msg.mode == 4)
             imu_msg_.mode = imu_msg.mode;
         imu_msg_.quat = imu_msg.quat;
         imu_msg_.twist = imu_msg.twist;
+        mutex_.unlock();
 
         RCLCPP_INFO(this->get_logger(), "bullet speed: %lfm/s mode: %d", imu_msg_.bullet_speed, imu_msg_.mode);
         return;
@@ -127,12 +128,19 @@ namespace buff_detector
 
         TargetInfo target_info;
         BuffMsg buff_msg;
+
+        mutex_.lock();
         if(debug_param_.using_imu)
         {
             double dt = (this->get_clock()->now() - imu_msg_.header.stamp).nanoseconds();
             if(abs(dt / 1e9) > 0.1)
             {
                 detector_->setDebugParam(false, 7);
+                Eigen::Quaterniond q = Eigen::Quaterniond::Identity();
+                buff_msg.quat_imu.w = q.w();
+                buff_msg.quat_imu.x = q.x();
+                buff_msg.quat_imu.y = q.y();
+                buff_msg.quat_imu.z = q.z();
                 RCLCPP_WARN(this->get_logger(), "latency: %lf", dt);
             }
             else
@@ -142,8 +150,17 @@ namespace buff_detector
                 src.quat.w() = imu_msg_.quat.w;
                 src.quat.x() = imu_msg_.quat.x;
                 src.quat.y() = imu_msg_.quat.y;
-                src.quat.z() = imu_msg_.quat.z; 
+                src.quat.z() = imu_msg_.quat.z;
+                buff_msg.quat_imu = imu_msg_.quat;
             }
+        }
+        mutex_.unlock();
+        
+        if(!debug_param_.using_imu)
+        {
+            //debug
+            buff_msg.mode = this->get_parameter("debug_mode").as_int(); //小符
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000, "debug mode is: %d", (int)buff_msg.mode);
         }
 
         if(detector_->run(src, target_info))
@@ -155,6 +172,11 @@ namespace buff_detector
             buff_msg.r_center.z = target_info.r_center[2];
             buff_msg.rotate_speed = target_info.rotate_speed;
             buff_msg.target_switched = target_info.target_switched;
+            Eigen::Quaterniond quat(target_info.rmat);
+            buff_msg.quat_cam.w = quat.w();
+            buff_msg.quat_cam.x = quat.x();
+            buff_msg.quat_cam.y = quat.y();
+            buff_msg.quat_cam.z = quat.z();
             
             // publish buff info.
             buff_info_pub_->publish(std::move(buff_msg));
@@ -261,6 +283,7 @@ namespace buff_detector
         this->declare_parameter<std::string>("network_path", "src/vehicle_system/buff/model/buff.xml");
         this->declare_parameter<std::string>("path_prefix", "src/vehicle_system/buff/dataset/");
 
+        this->declare_parameter<int>("debug_mode", 3);
         this->declare_parameter<bool>("assist_label", false);
         this->declare_parameter<bool>("detect_red", true);
         this->declare_parameter<bool>("prinf_latency", false);
@@ -270,6 +293,7 @@ namespace buff_detector
         this->declare_parameter<bool>("using_imu", false);
         this->declare_parameter<bool>("using_roi", false);
         this->declare_parameter<bool>("show_img", false);
+        
 
         this->get_parameter("max_v", this->buff_param_.max_v);
         this->get_parameter("fan_length", this->buff_param_.fan_length);

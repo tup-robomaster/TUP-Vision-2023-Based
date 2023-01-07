@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-01-04 18:09:00
+ * @LastEditTime: 2023-01-07 19:28:49
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -376,7 +376,9 @@ namespace buff_detector
 
         target_info.rotate_speed = mean_rotate_speed;
         target_info.r_center = mean_r_center;
+        target_info.rmat = target.rmat;
 
+        RCLCPP_INFO(logger_, "r_center_cam: %lf %lf %lf", r_center_cam[0], r_center_cam[1], r_center_cam[2]);
         RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 200, "Target mean_rotate_speed: %lf mean_r_center: {x:%lf y:%lf z:%lf}",
             mean_rotate_speed, mean_r_center[0], mean_r_center[1], mean_r_center[2]);
 
