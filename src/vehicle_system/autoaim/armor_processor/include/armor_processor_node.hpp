@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-01-06 21:42:52
+ * @LastEditTime: 2023-01-08 12:47:46
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -27,10 +27,13 @@
 #include <cv_bridge/cv_bridge.h>
 
 //std
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
+// #include <map>
+// #include <memory>
+// #include <string>
+// #include <vector>
+#include <mutex>
+#include <atomic>
+#include <thread>
 
 #include "./armor_processor/armor_processor.hpp"
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -59,9 +62,10 @@ namespace armor_processor
 
         // bool draw_predict;
         bool flag_;
-        Eigen::Vector3d last_predict_point_;
+        // Eigen::Vector3d last_predict_point_;
         Eigen::Vector3d predict_point_;
         cv::Point2f apex2d[4];
+        mutex mutex_;
         // coordsolver::coordsolver coordsolver_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<AutoaimMsg>::SharedPtr predict_info_pub_;

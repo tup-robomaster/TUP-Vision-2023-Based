@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-01-06 21:52:04
+ * @LastEditTime: 2023-01-08 16:22:33
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -331,6 +331,7 @@ namespace armor_processor
         double singer_dt;
         double singer_p;
         double singer_r;
+        double delay_coeff;
 
         SingerModel()
         {
@@ -342,6 +343,7 @@ namespace armor_processor
             singer_dt = 5.0;
             singer_p = 1.0;
             singer_r = 1.0;
+            delay_coeff = 5.0;
         }
     };
 
@@ -388,13 +390,13 @@ namespace armor_processor
         std::deque<TargetInfo> history_info_;
         int history_deque_lens_; // 历史队列长度
 
-    public:
         // 滤波先验参数/模型先验参数/调试参数
         PredictParam predict_param_;
         SingerModel singer_param_;
         DebugParam debug_param_;
         // SingerModelParam singer_model_param_;
 
+    public:
         std::string filter_param_path_;
         YAML::Node config_;
         
@@ -468,7 +470,9 @@ namespace armor_processor
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
     
         // cs模型参数设置
-        void setSingerParam(double& param, int idx);
+        void set_predict_param(double param, int idx);
+        void set_singer_param(double param, int idx);
+        void set_debug_param(double param, int idx);
     private:
         //IMM Model
         std::shared_ptr<IMM> imm_;

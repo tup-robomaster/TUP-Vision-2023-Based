@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-01-06 21:42:36
+ * @LastEditTime: 2023-01-08 15:53:21
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -15,6 +15,7 @@ namespace armor_processor
     {
         RCLCPP_INFO(this->get_logger(), "Starting processor node...");
         
+        flag_ = false;
         processor_ = init_armor_processor();
         if(!processor_->is_init)
         {
@@ -22,10 +23,10 @@ namespace armor_processor
             processor_->loadParam(path_param_.filter_path);
             processor_->init(path_param_.coord_path, path_param_.coord_name);
         }
-        
+
         // QoS
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(5);
         qos.best_effort();
         qos.reliable();
         qos.durability();
@@ -182,23 +183,17 @@ namespace armor_processor
             {
                 if(!img.empty())
                 {
-                    // RCLCPP_INFO(this->get_logger(), "Show prediction...");
-                    if(predict_point_ == last_predict_point_)
-                    {}
-                    else
+                    mutex_.lock();
+                    if(flag_)
                     {
-                        last_predict_point_ = predict_point_;
-                        cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
-                        // for(int i = 0; i < 4; i++)
-                        // {
-                        //     cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {255, 255, 0}, 4);
-                        // }
-                        std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
-                        cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
-                        cv::Rect rect = points_pic_rrect.boundingRect();
-                        cv::rectangle(img, rect, {255, 0, 255}, 5);
-                        cv::circle(img, point_2d, 8, {255, 255, 0}, -1);
+                        for(int i = 0; i < 4; i++)
+                            cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {0, 255, 255}, 5);
+                        auto point_pred = predict_point_;
+                        cv::Point2f point_2d = processor_->coordsolver_.reproject(point_pred);
+                        cv::circle(img, point_2d, 10, {255, 255, 0}, -1);
+                        flag_ = false;
                     }
+                    mutex_.unlock();
                     cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
                     cv::imshow("ekf_predict", img);
                     cv::waitKey(1);
@@ -213,29 +208,26 @@ namespace armor_processor
             return;
 
         auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
-        // img.copyTo(src.img);
         if(this->debug_param_.show_predict)
         {
             if(!img.empty())
             {
-                // RCLCPP_INFO(this->get_logger(), "Show prediction...");
-                if(!flag_)
-                {}
-                else
+                mutex_.lock();
+                if(flag_)
                 {
-                    flag_ = false;
-                    // last_predict_point_ = predict_point_;
-                    cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
                     for(int i = 0; i < 4; i++)
-                    {
                         cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {0, 255, 255}, 5);
-                    }
-                    // std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
-                    // cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
-                    // cv::Rect rect = points_pic_rrect.boundingRect();
-                    // cv::rectangle(img, rect, {255, 0, 255}, 5);
+                    auto point_pred = predict_point_;
+                    cv::Point2f point_2d = processor_->coordsolver_.reproject(point_pred);
                     cv::circle(img, point_2d, 10, {255, 255, 0}, -1);
+                    flag_ = false;
                 }
+                mutex_.unlock();
+                // std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
+                // cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
+                // cv::Rect rect = points_pic_rrect.boundingRect();
+                // cv::rectangle(img, rect, {255, 0, 255}, 5);
+                
                 cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
                 cv::imshow("ekf_predict", img);
                 cv::waitKey(1);
@@ -268,18 +260,9 @@ namespace armor_processor
 
     void ArmorProcessorNode::target_info_callback(const AutoaimMsg& target_info)
     {
-        flag_ = true;
-        last_predict_point_ = predict_point_;
+        // flag_ = true;
+        // last_predict_point_ = predict_point_;
 
-        if(this->debug_param_.show_predict)
-        {
-            // Get target 2d cornor points.
-            for(int i = 0; i < 4; ++i)
-            {
-                apex2d[i].x = target_info.point2d[i].x;
-                apex2d[i].y = target_info.point2d[i].y;
-            }
-        }
 
         double sleep_time = 0.0;
         AutoaimMsg target = std::move(target_info);
@@ -339,6 +322,7 @@ namespace armor_processor
             AutoaimMsg predict_info;
             predict_info.header.frame_id = "camera_link";
             predict_info.header.stamp = target_info.header.stamp;
+            predict_info.header.stamp.nanosec += sleep_time;
             predict_info.aiming_point_cam.x = aiming_point_cam[0];
             predict_info.aiming_point_cam.y = aiming_point_cam[1];
             predict_info.aiming_point_cam.z = aiming_point_cam[2];
@@ -346,33 +330,46 @@ namespace armor_processor
             predict_info_pub_->publish(std::move(predict_info));
         }
 
-        predict_point_ = aiming_point_cam;
-        if(!(&target_info.image))
-            return;
-
-        std::shared_ptr<sensor_msgs::msg::Image> img_info = std::make_shared<sensor_msgs::msg::Image>(target_info.image);
-        auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
+        mutex_.lock();
         if(this->debug_param_.show_predict)
         {
-            if(!img.empty())
+            // Get target 2d cornor points.
+            for(int i = 0; i < 4; ++i)
             {
-                // RCLCPP_INFO(this->get_logger(), "Show prediction...");
-                // last_predict_point_ = predict_point_;
-                cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
-                for(int i = 0; i < 4; i++)
-                {
-                    cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {255, 0, 255}, 5);
-                }
-                // std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
-                // cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
-                // cv::Rect rect = points_pic_rrect.boundingRect();
-                // cv::rectangle(img, rect, {255, 0, 255}, 5);
-                cv::circle(img, point_2d, 10, {255, 255, 0}, -1);
-                cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
-                cv::imshow("dst", img);
-                cv::waitKey(1);
+                apex2d[i].x = target_info.point2d[i].x;
+                apex2d[i].y = target_info.point2d[i].y;
             }
         }
+        predict_point_ = aiming_point_cam;
+        flag_ = true;
+        mutex_.unlock();
+
+        // if(!(&target_info.image))
+        //     return;
+
+        // std::shared_ptr<sensor_msgs::msg::Image> img_info = std::make_shared<sensor_msgs::msg::Image>(target_info.image);
+        // auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
+        // if(this->debug_param_.show_predict)
+        // {
+        //     if(!img.empty())
+        //     {
+        //         // RCLCPP_INFO(this->get_logger(), "Show prediction...");
+        //         // last_predict_point_ = predict_point_;
+        //         cv::Point2f point_2d = processor_->coordsolver_.reproject(predict_point_);
+        //         for(int i = 0; i < 4; i++)
+        //         {
+        //             cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {255, 0, 255}, 5);
+        //         }
+        //         // std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
+        //         // cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
+        //         // cv::Rect rect = points_pic_rrect.boundingRect();
+        //         // cv::rectangle(img, rect, {255, 0, 255}, 5);
+        //         cv::circle(img, point_2d, 10, {255, 255, 0}, -1);
+        //         cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
+        //         cv::imshow("dst", img);
+        //         cv::waitKey(1);
+        //     }
+        // }
         return;
     }
 
@@ -403,7 +400,8 @@ namespace armor_processor
             {"draw_predict", 15},
             {"using_imu", 16},
             {"show_predict", 17},
-            {"show_transformed_info", 18}
+            {"show_transformed_info", 18},
+            {"delay_coeff", 19}
         };
 
         this->declare_parameter<double>("bullet_speed", 28.0);
@@ -429,6 +427,7 @@ namespace armor_processor
         this->declare_parameter<double>("singer_dt", 5.0);
         this->declare_parameter<double>("singer_p", 1.0);
         this->declare_parameter<double>("singer_r", 1.0);
+        this->declare_parameter<double>("delay_coeff", 5.0);
         singer_model_param_.singer_alpha = this->get_parameter("singer_alpha").as_double();
         singer_model_param_.singer_a_max = this->get_parameter("singer_a_max").as_double();
         singer_model_param_.singer_p_max = this->get_parameter("singer_p_max").as_double();
@@ -437,6 +436,7 @@ namespace armor_processor
         singer_model_param_.singer_dt = this->get_parameter("singer_dt").as_double();
         singer_model_param_.singer_p = this->get_parameter("singer_p").as_double();
         singer_model_param_.singer_r = this->get_parameter("singer_r").as_double();
+        singer_model_param_.delay_coeff = this->get_parameter("delay_coeff").as_double();
 
         this->declare_parameter("disable_filter", false);
         this->declare_parameter("disable_fitting", true);
@@ -560,6 +560,9 @@ namespace armor_processor
             this->debug_param_.show_transformed_info = param.as_bool();
             this->processor_->setDebugParam(this->debug_param_.show_transformed_info, 5);
             break;
+        case 19:
+            this->singer_model_param_.delay_coeff = param.as_double();
+            this->processor_->setSingerParam(this->singer_model_param_.delay_coeff, 9);
         default:
             break;
         }

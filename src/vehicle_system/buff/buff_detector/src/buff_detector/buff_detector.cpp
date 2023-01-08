@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-01-07 19:28:49
+ * @LastEditTime: 2023-01-08 10:49:49
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -402,6 +402,8 @@ namespace buff_detector
 
         if (isnan(angle[0]) || isnan(angle[1]) || abs(angle[0]) > 45 || abs(angle[1]) > 45)
             return false;
+        else
+            RCLCPP_INFO(logger_, "pitch: %lf yaw: %lf", angle[0], angle[1]);
         
         auto time_detect = steady_clock_.now();
         double dr_full_ns = (time_detect - time_start).nanoseconds();

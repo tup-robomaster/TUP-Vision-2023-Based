@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-01-06 21:36:18
+ * @LastEditTime: 2023-01-08 16:33:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -36,7 +36,7 @@ namespace armor_detector
 
         //QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(10);
+        qos.keep_last(1);
         qos.best_effort();
         qos.reliable();
         qos.durability();
@@ -148,7 +148,8 @@ namespace armor_detector
         if(imu_msg.mode == 1 || imu_msg.mode == 2)
             imu_msg_.mode = imu_msg.mode;
         imu_msg_.quat = imu_msg.quat;
-        imu_msg_.twist = imu_msg.twist;
+        imu_msg_.gyro = imu_msg.gyro;
+        imu_msg_.acc = imu_msg.acc;
         return;
     }
 
@@ -197,10 +198,11 @@ namespace armor_detector
                 
                 target_info.header.frame_id = "gimbal_link";
                 target_info.header.stamp = this->get_clock()->now();
-                target_info.image = std::move(*img_info);
+                // target_info.image = std::move(*img_info);
                 target_info.timestamp = src.timestamp;
                 if(debug_.using_imu && detector_->getDebugParam(8))
                     target_info.quat_imu = imu_msg_.quat;
+                RCLCPP_INFO(this->get_logger(), "target info: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
                 
                 // Publish target's information containing 3d point and timestamp.
                 armor_info_pub_->publish(std::move(target_info));

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-01-06 21:39:25
+ * @LastEditTime: 2023-01-08 12:22:17
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //C++
@@ -154,8 +154,8 @@ namespace armor_detector
         bool is_last_target_exists;
         bool is_target_switched;
         int lost_cnt;
-        int last_timestamp;
-        int prev_timestamp;
+        double last_timestamp;
+        double prev_timestamp;
         double last_target_area;
         double last_bullet_speed;
         Point2i last_roi_center;

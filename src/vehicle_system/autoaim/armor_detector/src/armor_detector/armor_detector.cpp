@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-01-06 21:40:10
+ * @LastEditTime: 2023-01-08 12:43:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -548,6 +548,10 @@ namespace armor_detector
             tracker->last_selected_timestamp = src.timestamp;
             tracker->selected_cnt++;
             target = tracker->last_armor;
+            // auto last_tar = tracker->prev_armor;
+            // RCLCPP_INFO(logger_, "xyz: %lf %lf %lf", target.armor3d_cam[0], target.armor3d_cam[1], target.armor3d_cam[2]);
+            // RCLCPP_INFO(logger_, "last_xyz: %lf %lf %lf", last_tar.armor3d_cam[0], last_tar.armor3d_cam[1], last_tar.armor3d_cam[2]);
+            
             //判断装甲板是否切换，若切换将变量置1
             auto delta_t = src.timestamp - prev_timestamp;
             auto delta_dist = (target.armor3d_world - last_armor.armor3d_world).norm();
@@ -578,6 +582,7 @@ namespace armor_detector
         target_info.aiming_point_cam.x = target.armor3d_cam[0];
         target_info.aiming_point_cam.y = target.armor3d_cam[1];
         target_info.aiming_point_cam.z = target.armor3d_cam[2];
+        // RCLCPP_INFO(logger_, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
 
         if (target.color == 2)
             dead_buffer_cnt++;
@@ -680,29 +685,13 @@ namespace armor_detector
             char ch1[10];
             std::string id_str = to_string(armor.id);
             if (armor.color == 0)
-            {
-                // sprintf(ch1, "B%d", armor.id);
-                // id_str = ch1;
                 putText(src.img, "B" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 0}, 2);
-            }
             if (armor.color == 1)
-            {
-                // sprintf(ch1, "R%d", armor.id);
-                // id_str = ch1;
                 putText(src.img, "R" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 0, 255}, 2);
-            }
             if (armor.color == 2)
-            {
-                // sprintf(ch1, "N%d", armor.id);
-                // id_str = ch1;
                 putText(src.img, "N" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 255, 255}, 2);
-            }
             if (armor.color == 3)
-            {
-                // sprintf(ch1, "P%d", armor.id);
-                // id_str = ch1;
                 putText(src.img, "P" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 255}, 2);
-            }
             for(int i = 0; i < 4; i++)
                 line(src.img, armor.apex2d[i % 4], armor.apex2d[(i + 1) % 4], {0,255,0}, 1);
             rectangle(src.img, armor.roi, {255, 0, 255}, 1);
@@ -852,6 +841,7 @@ namespace armor_detector
         for (int i = 0; i < (int)(trackers.size()); i++)
         {
             auto horizonal_dist_to_center = abs(trackers[i]->last_armor.center2d.x - 640);
+            // std::cout << "tracker_time:" << trackers[i]->last_timestamp/1e6 << "ms src.timestamp:" << timestamp/1e6 << "ms" << std::endl;
             if (trackers[i]->last_timestamp == timestamp)
             {
                 //若该Tracker为上次Tracker且本次仍在更新,则直接使用该装甲板
@@ -888,13 +878,18 @@ namespace armor_detector
         {
             //FIXME:该处需根据兵种修改
             //若视野中存在英雄且距离小于危险距离，直接选为目标
+            // std::cout << "dt:" << abs(timestamp - prev_timestamp) / 1e6 << std::endl;
+            // std::cout << "area_ratio:" << (abs(armor.area - last_armor.area) / (float)armor.area) << std::endl;
+            // std::cout << "armor id:" << armor.id << std::endl;
+            // std::cout << "cur_id:" << last_armor.id << std::endl;
             if (armor.id == 1 && armor.armor3d_world.norm() <= detector_params_.hero_danger_zone)
             {
                 return armor.id;
             }
             //若存在上次击打目标,时间较短,且该目标运动较小则将其选为候选目标,若遍历结束未发现危险距离内的英雄则将其ID选为目标ID.
-            else if (armor.id == last_armor.id && abs(armor.area - last_armor.area) / (float)armor.area < 0.3 && abs(timestamp - prev_timestamp) / 1e6 < 30)
+            else if (armor.id == last_armor.id && abs(armor.area - last_armor.area) / (float)armor.area < 0.3 && abs(timestamp - prev_timestamp) / 1e6 < 40)
             {
+                // RCLCPP_INFO(logger_, "same target...");
                 is_last_id_exists = true;
                 target_id = armor.id;
             }

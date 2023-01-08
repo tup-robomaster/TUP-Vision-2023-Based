@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-01-07 19:21:25
+ * @LastEditTime: 2023-01-08 16:37:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -106,7 +106,8 @@ namespace buff_detector
         if(imu_msg.mode == 3 || imu_msg.mode == 4)
             imu_msg_.mode = imu_msg.mode;
         imu_msg_.quat = imu_msg.quat;
-        imu_msg_.twist = imu_msg.twist;
+        imu_msg_.gyro = imu_msg.gyro;
+        imu_msg_.acc = imu_msg.acc;
         mutex_.unlock();
 
         RCLCPP_INFO(this->get_logger(), "bullet speed: %lfm/s mode: %d", imu_msg_.bullet_speed, imu_msg_.mode);

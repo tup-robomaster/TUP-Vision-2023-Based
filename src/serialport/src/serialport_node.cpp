@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2022-12-31 12:56:58
+ * @LastEditTime: 2023-01-08 16:38:59
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -130,18 +130,15 @@ namespace serialport
         // buffer = NULL;
     }
 
-    void SerialPortNode::handle_imu_data(const std::shared_ptr<global_interface::msg::Imu>& msg)
-    {
+    // void SerialPortNode::handle_imu_data(const std::shared_ptr<global_interface::msg::Imu>& msg)
+    // {
         
-    }
+    // }
 
-    void SerialPortNode::run()
-    {
-        while(true)
-        {
-            receive_data();
-        }
-    }
+    // void SerialPortNode::run()
+    // {
+    //     receive_data();
+    // }
 
     void SerialPortNode::receive_data()
     {
@@ -286,12 +283,12 @@ namespace serialport
             imu_info.quat.x = serial_port_->quat[1];
             imu_info.quat.y = serial_port_->quat[2];
             imu_info.quat.z = serial_port_->quat[3];
-            imu_info.twist.angular.x = serial_port_->gyro[0];
-            imu_info.twist.angular.y = serial_port_->gyro[1];
-            imu_info.twist.angular.z = serial_port_->gyro[2];
-            imu_info.twist.linear.x = serial_port_->acc[0];
-            imu_info.twist.linear.y = serial_port_->acc[1];
-            imu_info.twist.linear.z = serial_port_->acc[2];
+            imu_info.gyro.x = serial_port_->gyro[0];
+            imu_info.gyro.y = serial_port_->gyro[1];
+            imu_info.gyro.z = serial_port_->gyro[2];
+            imu_info.acc.x = serial_port_->acc[0];
+            imu_info.acc.y = serial_port_->acc[1];
+            imu_info.acc.z = serial_port_->acc[2];
             
             imu_data_pub_->publish(std::move(imu_info));
         }
@@ -340,7 +337,7 @@ namespace serialport
         }
         else
         {   // Debug without com.
-
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub autoaim msg...");
         }
     }
 
@@ -357,66 +354,70 @@ namespace serialport
                 serial_port_->send();
             }
         }
+        else
+        {
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
+        }
     }
 
-    void SerialPortNode::send_tf2_transforms(const TransformMsg::SharedPtr msg) 
-    {
-        rclcpp::Time now = this->get_clock()->now();
+    // void SerialPortNode::send_tf2_transforms(const TransformMsg::SharedPtr msg) 
+    // {
+    //     rclcpp::Time now = this->get_clock()->now();
 
-        // Send transformation.
-        send_tf2_transforms(msg, imu_frame_, camera_frame_, now);
+    //     // Send transformation.
+    //     send_tf2_transforms(msg, imu_frame_, camera_frame_, now);
 
-        // Send transformation.
-        send_tf2_transforms(msg, base_frame_, imu_frame_, now);
+    //     // Send transformation.
+    //     send_tf2_transforms(msg, base_frame_, imu_frame_, now);
 
-        geometry_msgs::msg::TransformStamped world_tf;
+    //     geometry_msgs::msg::TransformStamped world_tf;
 
-        world_tf.transform.translation.x = static_transform_[0];
-        world_tf.transform.translation.y = static_transform_[1];
-        world_tf.transform.translation.z = static_transform_[2];
+    //     world_tf.transform.translation.x = static_transform_[0];
+    //     world_tf.transform.translation.y = static_transform_[1];
+    //     world_tf.transform.translation.z = static_transform_[2];
 
-        world_tf.header.stamp = now;
-        world_tf.transform.rotation.x = 0;
-        world_tf.transform.rotation.y = 0;
-        world_tf.transform.rotation.z = 0;
-        world_tf.transform.rotation.w = 0;
+    //     world_tf.header.stamp = now;
+    //     world_tf.transform.rotation.x = 0;
+    //     world_tf.transform.rotation.y = 0;
+    //     world_tf.transform.rotation.z = 0;
+    //     world_tf.transform.rotation.w = 0;
 
-        tf_broadcaster_->sendTransform(world_tf);
-    }
+    //     tf_broadcaster_->sendTransform(world_tf);
+    // }
 
-    void SerialPortNode::send_tf2_transforms(const TransformMsg::SharedPtr msg,
-        const std::string& header_frame_id, const std::string& child_frame_id)
-    {
-        rclcpp::Time now = this->get_clock()->now();
-        send_tf2_transforms(msg, header_frame_id, child_frame_id, now);
-    }
+    // void SerialPortNode::send_tf2_transforms(const TransformMsg::SharedPtr msg,
+    //     const std::string& header_frame_id, const std::string& child_frame_id)
+    // {
+    //     rclcpp::Time now = this->get_clock()->now();
+    //     send_tf2_transforms(msg, header_frame_id, child_frame_id, now);
+    // }
 
-    void SerialPortNode::send_tf2_transforms(const TransformMsg::SharedPtr msg,
-        const std::string& header_frame_id,
-        const std::string& child_frame_id,
-        const rclcpp::Time& time) 
-    {
-        // rclcpp::Time now = this->get_clock()->now();
-        // camera->base_link transform.
-        geometry_msgs::msg::TransformStamped transform;
+    // void SerialPortNode::send_tf2_transforms(const TransformMsg::SharedPtr msg,
+    //     const std::string& header_frame_id,
+    //     const std::string& child_frame_id,
+    //     const rclcpp::Time& time) 
+    // {
+    //     // rclcpp::Time now = this->get_clock()->now();
+    //     // camera->base_link transform.
+    //     geometry_msgs::msg::TransformStamped transform;
 
-        transform.transform.translation.x = msg->transform.translation.x;
-        transform.transform.translation.y = msg->transform.translation.y;
-        transform.transform.translation.z = msg->transform.translation.z;
+    //     transform.transform.translation.x = msg->transform.translation.x;
+    //     transform.transform.translation.y = msg->transform.translation.y;
+    //     transform.transform.translation.z = msg->transform.translation.z;
         
-        // tf2::Quaternion q;
-        // q.setRPY(0, 0, 0);
-        transform.transform.rotation.x = msg->transform.rotation.x;
-        transform.transform.rotation.y = msg->transform.rotation.y;
-        transform.transform.rotation.z = msg->transform.rotation.z;
-        transform.transform.rotation.w = msg->transform.rotation.w;
+    //     // tf2::Quaternion q;
+    //     // q.setRPY(0, 0, 0);
+    //     transform.transform.rotation.x = msg->transform.rotation.x;
+    //     transform.transform.rotation.y = msg->transform.rotation.y;
+    //     transform.transform.rotation.z = msg->transform.rotation.z;
+    //     transform.transform.rotation.w = msg->transform.rotation.w;
 
-        transform.header.frame_id = header_frame_id;
-        transform.child_frame_id = child_frame_id;
-        transform.header.stamp = msg->header.stamp;
+    //     transform.header.frame_id = header_frame_id;
+    //     transform.child_frame_id = child_frame_id;
+    //     transform.header.stamp = msg->header.stamp;
 
-        tf_broadcaster_->sendTransform(transform);
-    }
+    //     tf_broadcaster_->sendTransform(transform);
+    // }
 
     bool SerialPortNode::setParam(rclcpp::Parameter param)
     {

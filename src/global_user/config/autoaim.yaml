@@ -82,7 +82,7 @@
     draw_predict: false
     show_predict: true
     show_transformed_info: false
-    debug: false
+    debug: true
 
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
@@ -94,11 +94,11 @@
     filter_param_path: "src/global_user/config/filter_param.yaml"
 
   # Singer model(--->CS Model).
-    singer_alpha: 1.0 # 1/f
+    singer_alpha: 0.8 # 1/f
     singer_a_max: 0.1
     singer_p_max: 0.1
     singer_p0: 0.8
-    singer_dt: 1.2
+    singer_dt: 1.0
     singer_sigma: 0.1
     singer_p: 1.0
     singer_r: 1.0

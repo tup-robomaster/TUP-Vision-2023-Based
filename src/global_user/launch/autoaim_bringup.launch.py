@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2022-12-30 20:25:26
+LastEditTime: 2023-01-08 15:41:17
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -39,7 +39,7 @@ def generate_launch_description():
 
     declare_use_serial = DeclareLaunchArgument(
         name='using_imu',
-        default_value='False',
+        default_value='True',
         description='debug without serial port.'
     )
 
@@ -68,10 +68,10 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             parameters=[{
-                'using_imu':LaunchConfiguration('using_imu'),
-                'debug_without_com': 'false'
+                'using_imu': False,
+                'debug_without_com': True
             }],
-            condition=IfCondition(PythonExpression([LaunchConfiguration('using_imu'), "== 'True'"]))
+            condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
         ),
         
         # IncludeLaunchDescription(

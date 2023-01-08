@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-01-06 21:53:03
+ * @LastEditTime: 2023-01-08 16:23:32
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -538,7 +538,7 @@ namespace armor_processor
         RCLCPP_INFO(logger_, "target: x:%lf y:%lf z:%lf", target.xyz[0], target.xyz[1], target.xyz[2]);
         RCLCPP_INFO(logger_, "predict: x:%lf y:%lf z:%lf", result[0], result[1], result[2]);
 
-        if(debug_param_.draw_predict && is_ekf_available.xyz_status[0])
+        if(debug_param_.draw_predict && is_ekf_available.xyz_status[1])
         {
             // Draw curve.
             float mean_vx = (predict_vx_[0] + predict_vx_[1] + predict_vx_[2] + predict_vx_[3]) / 4.0;
@@ -1507,7 +1507,7 @@ namespace armor_processor
 
         if(!is_ekf_init)
         {   
-            kalman_filter_.x_ << target.xyz[1], target_vel[1], target_acc[1];
+            kalman_filter_.x_ << target.xyz[1], 0, 0;
             is_available.xyz_status[1] = false;
             is_ekf_init = true;
         }
@@ -1561,7 +1561,7 @@ namespace armor_processor
             predict_acc_[0] = State[2];
 
             double alpha = singer_param_.singer_alpha;
-            double dt = 3 * singer_param_.singer_dt;
+            double dt = singer_param_.delay_coeff * singer_param_.singer_dt;
 
             Eigen::MatrixXd F(3, 3);
             F << 1, dt, (alpha * dt - 1 + exp(-alpha * dt)) / pow(alpha, 2),
@@ -1634,7 +1634,31 @@ namespace armor_processor
         return is_available;
     }
 
-    void ArmorPredictor::setSingerParam(double& param, int idx)
+    void ArmorPredictor::set_predict_param(double param, int idx)
+    {
+        switch (idx)
+        {
+        case 1:
+            predict_param_.max_delta_time = param;
+            break;
+        case 2:
+            predict_param_.min_fitting_lens = param;
+            break;
+        case 3:
+            predict_param_.max_v = param;
+            break;
+        case 4:
+            predict_param_.shoot_delay = param;
+            break;
+        case 5:
+            predict_param_.max_cost = param;
+            break;
+        default:
+            break;
+        }
+    }
+
+    void ArmorPredictor::set_singer_param(double param, int idx)
     {
         switch (idx)
         {
@@ -1662,8 +1686,38 @@ namespace armor_processor
         case 8:
             this->singer_param_.singer_r = param;
             break;
+        case 9:
+            this->singer_param_.delay_coeff = param;
+            break;
         default:
             break;
         }         
+    }
+
+    void ArmorPredictor::set_debug_param(double param, int idx)
+    {
+        switch (idx)
+        {
+        case 1:
+            debug_param_.disable_fitting = param;
+            break;
+        case 2:
+            debug_param_.disable_filter = param;
+            break;
+        case 3:
+            debug_param_.draw_predict = param;
+            break;
+        case 4:
+            debug_param_.show_predict = param;
+            break;
+        case 5:
+            debug_param_.show_transformed_info = param;
+            break;
+        case 6:
+            debug_param_.using_imu = param;
+            break;
+        default:
+            break;
+        }
     }
 } //namespace armor_processor

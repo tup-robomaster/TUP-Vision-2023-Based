@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-01-07 18:10:58
+ * @LastEditTime: 2023-01-08 16:38:12
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -54,7 +54,7 @@ namespace serialport
         // }
 
     public:
-        void run();
+        // void run();
         void receive_data();
         void send_armor_data(GimbalMsg::SharedPtr msg);
         void send_buff_data(GimbalMsg::SharedPtr msg);
@@ -96,21 +96,21 @@ namespace serialport
 
     public:
         // tf2
-        rclcpp::Subscription<ImuMsg>::SharedPtr imu_data_sub_;
-        std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-        std::string base_frame_;
-        std::string imu_frame_;
-        std::string camera_frame_;
+        // rclcpp::Subscription<ImuMsg>::SharedPtr imu_data_sub_;
+        // std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+        // std::string base_frame_;
+        // std::string imu_frame_;
+        // std::string camera_frame_;
 
-        std::vector<double> static_transform_;
-        void handle_imu_data(const std::shared_ptr<ImuMsg>& msg);
-        void send_tf2_transforms(const TransformMsg::SharedPtr msg);
-        void send_tf2_transforms(const TransformMsg::SharedPtr msg,
-            const std::string& header_frame_id, const std::string& child_frame_id);
-        void send_tf2_transforms(const TransformMsg::SharedPtr msg,
-            const std::string& header_frame_id,
-            const std::string& child_frame_id,
-            const rclcpp::Time& time);
+        // std::vector<double> static_transform_;
+        // void handle_imu_data(const std::shared_ptr<ImuMsg>& msg);
+        // void send_tf2_transforms(const TransformMsg::SharedPtr msg);
+        // void send_tf2_transforms(const TransformMsg::SharedPtr msg,
+        //     const std::string& header_frame_id, const std::string& child_frame_id);
+        // void send_tf2_transforms(const TransformMsg::SharedPtr msg,
+        //     const std::string& header_frame_id,
+        //     const std::string& child_frame_id,
+        //     const rclcpp::Time& time);
     
     private:
         std::map<std::string, int> params_map_;

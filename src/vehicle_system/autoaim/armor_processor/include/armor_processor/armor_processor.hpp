@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-17 00:27:33
- * @LastEditTime: 2023-01-06 21:50:03
+ * @LastEditTime: 2023-01-08 16:22:42
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor/armor_processor.hpp
  */
 #ifndef ARMOR_PRECESSOR_HPP_
@@ -44,9 +44,9 @@ namespace armor_processor
         // Eigen::Vector3d aiming_point_;
         // std::unique_ptr<ArmorPredictor> armor_predictor_;
         // GeometryPoint aiming_point_;
+        // Eigen::Matrix3d rmat_imu_;
         
         PathParam path_param_;
-        // Eigen::Matrix3d rmat_imu_;
     public:
         void init(std::string coord_path, std::string coord_name);
 

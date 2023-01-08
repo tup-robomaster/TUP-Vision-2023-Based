@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-01-07 01:55:28
+ * @LastEditTime: 2023-01-08 11:30:42
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -251,14 +251,14 @@ namespace coordsolver
     {
 
         Eigen::Matrix3d mat_intrinsic;
-        std::cout << "66" << std::endl;
+        // std::cout << "66" << std::endl;
         
         cv2eigen(intrinsic, mat_intrinsic);
-        std::cout << "44" << std::endl;
+        // std::cout << "44" << std::endl;
 
         //(u,v,1)^T = (1/Z) * K * (X,Y,Z)^T
         auto result = (1.f / xyz[2]) * mat_intrinsic * (xyz);//解算前进行单位转换
-        std::cout << "55" << std::endl;
+        // std::cout << "55" << std::endl;
         return cv::Point2f(result[0], result[1]);
     }
 

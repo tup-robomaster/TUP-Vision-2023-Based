@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-01-06 21:51:07
+ * @LastEditTime: 2023-01-08 16:25:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -106,85 +106,16 @@ namespace armor_processor
 
     void Processor::setPredictParam(int& param, int idx)
     {
-        switch (idx)
-        {
-        case 1:
-            predict_param_.max_delta_time = param;
-            break;
-        case 2:
-            predict_param_.min_fitting_lens = param;
-            break;
-        case 3:
-            predict_param_.max_v = param;
-            break;
-        case 4:
-            predict_param_.shoot_delay = param;
-            break;
-        case 5:
-            predict_param_.max_cost = param;
-            break;
-        default:
-            break;
-        }
+        set_predict_param(std::move(param), idx);
     }
 
     void Processor::setDebugParam(bool& param, int idx)
     {
-        switch (idx)
-        {
-        case 1:
-            debug_param_.disable_fitting = param;
-            break;
-        case 2:
-            debug_param_.disable_filter = param;
-            break;
-        case 3:
-            debug_param_.draw_predict = param;
-            break;
-        case 4:
-            debug_param_.show_predict = param;
-            break;
-        case 5:
-            debug_param_.show_transformed_info = param;
-            break;
-        case 6:
-            debug_param_.using_imu = param;
-            break;
-        default:
-            break;
-        }
+        set_debug_param(std::move(param), idx);
     }
 
     void Processor::setSingerParam(double& param, int idx)
     {
-        switch (idx)
-        {
-        case 1:
-            setSingerParam(param, 1);
-            break;
-        case 2:
-            setSingerParam(param, 2);
-            break;
-        case 3:
-            setSingerParam(param, 3);
-            break;
-        case 4:
-            setSingerParam(param, 4);
-            break;
-        case 5:
-            setSingerParam(param, 5);
-            break;
-        case 6:
-            setSingerParam(param, 6);
-            break;
-        case 7:
-            setSingerParam(param, 7);
-            break;
-        case 8:
-            setSingerParam(param, 8);
-            break;
-        default:
-            break;
-        }
+        set_singer_param(std::move(param), idx);
     }
 } // armor_processor

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-15 11:25:33
- * @LastEditTime: 2023-01-07 18:06:12
+ * @LastEditTime: 2023-01-08 12:40:14
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/spinning_detector/spinning_detector.hpp
  */
 #ifndef SPINNING_DETECTOR_HPP_
@@ -50,8 +50,8 @@ namespace armor_detector
 
     typedef struct TimeStamp 
     {
-        int last_timestamp;
-        int new_timestamp;
+        double last_timestamp;
+        double new_timestamp;
     } TimeStamp;
 
     typedef struct XCoord
@@ -84,13 +84,13 @@ namespace armor_detector
         ~SpinningDetector();
 
         bool updateSpinScore();
-        void createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map, std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int timestamp, int dead_buffer_cnt);
+        void createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map, std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, double timestamp, int dead_buffer_cnt);
         bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, std::map<std::string, int>& new_armors_cnt_map);
         
         // 记录小陀螺运动下前后两次新增tracker时的时间戳，用以计算小陀螺旋转周期
         std::multimap<std::string, TimeStamp> spinning_time_map;
-        int last_add_tracker_timestamp;
-        int new_add_tracker_timestamp;
+        double last_add_tracker_timestamp;
+        double new_add_tracker_timestamp;
         
         // 记录小陀螺运动下新增tracker时两个追踪器新增装甲板的x坐标
         std::multimap<std::string, XCoord> spinning_x_map;
