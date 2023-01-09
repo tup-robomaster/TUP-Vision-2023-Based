@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2023-01-07 18:01:41
+ * @LastEditTime: 2023-01-08 18:45:19
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
@@ -33,6 +33,7 @@ namespace buff_detector
         bool using_imu;
         bool using_roi;
         bool detect_red;
+        bool show_img;
         bool show_all_fans;
         bool show_fps;
         bool print_target_info;
@@ -44,6 +45,7 @@ namespace buff_detector
             using_imu = false;
             using_roi = false;
             detect_red = true;
+            show_img = true;
             show_all_fans = true;
             show_fps = true;
             print_target_info = false; 
@@ -137,6 +139,8 @@ namespace buff_detector
         std::vector<FanTracker> trackers_;
         Fan last_fan_;
         Eigen::Matrix3d rmat_imu_;
+        float last_angle_;
+        float cur_angle_;
 
         bool chooseTarget(std::vector<Fan> &fans, Fan &target);
         cv::Point2i cropImageByROI(cv::Mat &img); //roi裁剪

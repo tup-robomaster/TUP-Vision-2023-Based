@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-01-08 16:38:59
+ * @LastEditTime: 2023-01-09 22:18:59
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -276,19 +276,19 @@ namespace serialport
             
             // imu info pub.
             ImuMsg imu_info;
-            imu_info.header.frame_id = "imu_link";
-            imu_info.header.stamp = this->get_clock()->now();
+            imu_info.imu.header.frame_id = "imu_link";
+            imu_info.imu.header.stamp = this->get_clock()->now();
             imu_info.bullet_speed = serial_port_->bullet_speed_;
-            imu_info.quat.w = serial_port_->quat[0];
-            imu_info.quat.x = serial_port_->quat[1];
-            imu_info.quat.y = serial_port_->quat[2];
-            imu_info.quat.z = serial_port_->quat[3];
-            imu_info.gyro.x = serial_port_->gyro[0];
-            imu_info.gyro.y = serial_port_->gyro[1];
-            imu_info.gyro.z = serial_port_->gyro[2];
-            imu_info.acc.x = serial_port_->acc[0];
-            imu_info.acc.y = serial_port_->acc[1];
-            imu_info.acc.z = serial_port_->acc[2];
+            imu_info.imu.orientation.w = serial_port_->quat[0];
+            imu_info.imu.orientation.x = serial_port_->quat[1];
+            imu_info.imu.orientation.y = serial_port_->quat[2];
+            imu_info.imu.orientation.z = serial_port_->quat[3];
+            imu_info.imu.angular_velocity.x = serial_port_->gyro[0];
+            imu_info.imu.angular_velocity.y = serial_port_->gyro[1];
+            imu_info.imu.angular_velocity.z = serial_port_->gyro[2];
+            imu_info.imu.linear_acceleration.x = serial_port_->acc[0];
+            imu_info.imu.linear_acceleration.y = serial_port_->acc[1];
+            imu_info.imu.linear_acceleration.z = serial_port_->acc[2];
             
             imu_data_pub_->publish(std::move(imu_info));
         }

@@ -2,7 +2,7 @@
 # Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-27 01:40:28
-LastEditTime: 2023-01-06 23:54:57
+LastEditTime: 2023-01-08 17:05:50
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/buff_bringup.launch.py
 '''
 import os
@@ -110,16 +110,16 @@ def generate_launch_description():
                         'use_intra_process_comms':True
                     }]
                 ),
-                ComposableNode(
-                    package='buff_processor',
-                    plugin='buff_processor::BuffProcessorNode',
-                    name='buff_processor',
-                    namespace='',
-                    parameters=[buff_processor_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                )
+                # ComposableNode(
+                #     package='buff_processor',
+                #     plugin='buff_processor::BuffProcessorNode',
+                #     name='buff_processor',
+                #     namespace='',
+                #     parameters=[buff_processor_params],
+                #     extra_arguments=[{
+                #         'use_intra_process_comms':True
+                #     }]
+                # )
             ],
         ),
 

@@ -18,7 +18,7 @@
     using_imu: false
     using_roi: false
     detect_red: true
-    show_img: false
+    show_img: true
     show_all_fans: false
     show_fps: true
     print_target_info: false 

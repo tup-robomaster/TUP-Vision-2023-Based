@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-01-08 16:33:08
+ * @LastEditTime: 2023-01-09 22:26:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -49,7 +49,7 @@ namespace armor_detector
         if(debug_.using_imu)
         {
             RCLCPP_INFO(this->get_logger(), "Using imu...");
-            imu_msg_.header.frame_id = "imu_link";
+            imu_msg_.imu.header.frame_id = "imu_link";
             this->declare_parameter<double>("bullet_speed", 28.0);
             imu_msg_.bullet_speed = this->get_parameter("bullet_speed").as_double();
             imu_msg_.mode = this->declare_parameter<int>("autoaim_mode", 1);
@@ -141,15 +141,13 @@ namespace armor_detector
 
     void DetectorNode::sensorMsgCallback(const ImuMsg& imu_msg)
     {
-        imu_msg_.header.stamp = this->get_clock()->now();
+        imu_msg_.imu.header.stamp = this->get_clock()->now();
 
         if(imu_msg.bullet_speed > 10)
             imu_msg_.bullet_speed = imu_msg.bullet_speed;
         if(imu_msg.mode == 1 || imu_msg.mode == 2)
             imu_msg_.mode = imu_msg.mode;
-        imu_msg_.quat = imu_msg.quat;
-        imu_msg_.gyro = imu_msg.gyro;
-        imu_msg_.acc = imu_msg.acc;
+        imu_msg_.imu = imu_msg.imu;
         return;
     }
 
@@ -171,7 +169,7 @@ namespace armor_detector
 
         if(debug_.using_imu)
         {
-            auto dt = (this->get_clock()->now() - imu_msg_.header.stamp).nanoseconds();
+            auto dt = (this->get_clock()->now() - imu_msg_.imu.header.stamp).nanoseconds();
             if(abs(dt / 1e9) > 0.1)
             {
                 detector_->setDebugParam(false, 8);
@@ -180,10 +178,10 @@ namespace armor_detector
             {
                 src.bullet_speed = imu_msg_.bullet_speed;
                 src.mode = imu_msg_.mode;
-                src.quat.w() = imu_msg_.quat.w;
-                src.quat.x() = imu_msg_.quat.x;
-                src.quat.y() = imu_msg_.quat.y;
-                src.quat.z() = imu_msg_.quat.z; 
+                src.quat.w() = imu_msg_.imu.orientation.w;
+                src.quat.x() = imu_msg_.imu.orientation.x;
+                src.quat.y() = imu_msg_.imu.orientation.y;
+                src.quat.z() = imu_msg_.imu.orientation.z; 
                 detector_->setDebugParam(true, 8);
             }
         }
@@ -201,7 +199,7 @@ namespace armor_detector
                 // target_info.image = std::move(*img_info);
                 target_info.timestamp = src.timestamp;
                 if(debug_.using_imu && detector_->getDebugParam(8))
-                    target_info.quat_imu = imu_msg_.quat;
+                    target_info.quat_imu = imu_msg_.imu.orientation;
                 RCLCPP_INFO(this->get_logger(), "target info: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
                 
                 // Publish target's information containing 3d point and timestamp.
@@ -235,7 +233,7 @@ namespace armor_detector
 
             if(debug_.using_imu)
             {
-                auto dt = (this->get_clock()->now() - imu_msg_.header.stamp).nanoseconds();
+                auto dt = (this->get_clock()->now() - imu_msg_.imu.header.stamp).nanoseconds();
                 if(abs(dt / 1e9) > 0.1)
                 {
                     detector_->setDebugParam(false, 8);
@@ -244,10 +242,10 @@ namespace armor_detector
                 {
                     src.bullet_speed = imu_msg_.bullet_speed;
                     src.mode = imu_msg_.mode;
-                    src.quat.w() = imu_msg_.quat.w;
-                    src.quat.x() = imu_msg_.quat.x;
-                    src.quat.y() = imu_msg_.quat.y;
-                    src.quat.z() = imu_msg_.quat.z; 
+                    src.quat.w() = imu_msg_.imu.orientation.w;
+                    src.quat.x() = imu_msg_.imu.orientation.x;
+                    src.quat.y() = imu_msg_.imu.orientation.y;
+                    src.quat.z() = imu_msg_.imu.orientation.z; 
                     detector_->setDebugParam(true, 8);
                 }
             }
@@ -265,7 +263,7 @@ namespace armor_detector
                     target_info.header.stamp = this->get_clock()->now();
                     target_info.timestamp = src.timestamp;
                     if(debug_.using_imu && detector_->getDebugParam(8))
-                        target_info.quat_imu = imu_msg_.quat;
+                        target_info.quat_imu = imu_msg_.imu.orientation;
 
                     // Publish target's information containing 3d point and timestamp.
                     armor_info_pub_->publish(std::move(target_info));

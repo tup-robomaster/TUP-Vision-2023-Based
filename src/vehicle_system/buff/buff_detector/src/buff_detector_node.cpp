@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-01-08 16:37:15
+ * @LastEditTime: 2023-01-09 22:28:20
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -48,7 +48,7 @@ namespace buff_detector
         if(debug_param_.using_imu)
         {
             RCLCPP_INFO(this->get_logger(), "Using imu...");
-            imu_msg_.header.frame_id = "imu_link";
+            imu_msg_.imu.header.frame_id = "imu_link";
             imu_msg_.bullet_speed = this->declare_parameter<double>("bullet_speed", 28.0);
             imu_msg_.mode = this->declare_parameter<int>("buff_mode", 3);
             // imu msg sub.
@@ -100,14 +100,12 @@ namespace buff_detector
     void BuffDetectorNode::sensorMsgCallback(const ImuMsg& imu_msg)
     {
         mutex_.lock();
-        imu_msg_.header.stamp = this->get_clock()->now();
+        imu_msg_.imu.header.stamp = this->get_clock()->now();
         if(imu_msg.bullet_speed > 10)
             imu_msg_.bullet_speed = imu_msg.bullet_speed;
         if(imu_msg.mode == 3 || imu_msg.mode == 4)
             imu_msg_.mode = imu_msg.mode;
-        imu_msg_.quat = imu_msg.quat;
-        imu_msg_.gyro = imu_msg.gyro;
-        imu_msg_.acc = imu_msg.acc;
+        imu_msg_.imu = imu_msg.imu;
         mutex_.unlock();
 
         RCLCPP_INFO(this->get_logger(), "bullet speed: %lfm/s mode: %d", imu_msg_.bullet_speed, imu_msg_.mode);
@@ -133,7 +131,7 @@ namespace buff_detector
         mutex_.lock();
         if(debug_param_.using_imu)
         {
-            double dt = (this->get_clock()->now() - imu_msg_.header.stamp).nanoseconds();
+            double dt = (this->get_clock()->now() - imu_msg_.imu.header.stamp).nanoseconds();
             if(abs(dt / 1e9) > 0.1)
             {
                 detector_->setDebugParam(false, 7);
@@ -148,11 +146,11 @@ namespace buff_detector
             {
                 src.bullet_speed = imu_msg_.bullet_speed;
                 src.mode = imu_msg_.mode;
-                src.quat.w() = imu_msg_.quat.w;
-                src.quat.x() = imu_msg_.quat.x;
-                src.quat.y() = imu_msg_.quat.y;
-                src.quat.z() = imu_msg_.quat.z;
-                buff_msg.quat_imu = imu_msg_.quat;
+                src.quat.w() = imu_msg_.imu.orientation.w;
+                src.quat.x() = imu_msg_.imu.orientation.x;
+                src.quat.y() = imu_msg_.imu.orientation.y;
+                src.quat.z() = imu_msg_.imu.orientation.z;
+                buff_msg.quat_imu = imu_msg_.imu.orientation;
             }
         }
         mutex_.unlock();
@@ -294,7 +292,6 @@ namespace buff_detector
         this->declare_parameter<bool>("using_imu", false);
         this->declare_parameter<bool>("using_roi", false);
         this->declare_parameter<bool>("show_img", false);
-        
 
         this->get_parameter("max_v", this->buff_param_.max_v);
         this->get_parameter("fan_length", this->buff_param_.fan_length);
@@ -315,6 +312,7 @@ namespace buff_detector
         this->get_parameter("show_fps", this->debug_param_.show_fps);
         this->get_parameter("using_imu", this->debug_param_.using_imu);
         this->get_parameter("using_roi", this->debug_param_.using_roi);
+        this->get_parameter("show_img", this->debug_param_.show_img);
 
         return std::make_unique<Detector>(buff_param_, path_param_, debug_param_);
     }
