@@ -74,8 +74,10 @@ include_directories(include)
 add_library(${PROJECT_NAME} SHARED
   src/fan_tracker/fan_tracker.cpp
   src/inference/inference_api2.cpp
-  src/buff_detector/buff_detector.cpp
-  src/buff_detector_node.cpp
+  test/src/buff_detector/buff_detector.cpp
+  test/src/buff_detector_node.cpp
+  # src/buff_detector/buff_detector.cpp
+  # src/buff_detector_node.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME}
@@ -89,8 +91,10 @@ target_link_libraries(${PROJECT_NAME}
 add_executable(${PROJECT_NAME}_node 
   src/fan_tracker/fan_tracker.cpp
   src/inference/inference_api2.cpp 
-  src/buff_detector/buff_detector.cpp 
-  src/buff_detector_node.cpp
+  # src/buff_detector/buff_detector.cpp 
+  # src/buff_detector_node.cpp
+  test/src/buff_detector/buff_detector.cpp
+  test/src/buff_detector_node.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME}_node 

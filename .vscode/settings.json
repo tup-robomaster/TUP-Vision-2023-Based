@@ -112,7 +112,7 @@
     "python.autoComplete.extraPaths": [
         "/opt/ros/galactic/lib/python3.8/site-packages"
     ],
-    "cmake.sourceDirectory": "${workspaceFolder}/src/arm_controller",
+    "cmake.sourceDirectory": "${workspaceFolder}/build/global_interface/global_interface__py",
     "python.analysis.extraPaths": [
         "/opt/ros/galactic/lib/python3.8/site-packages"
     ],
