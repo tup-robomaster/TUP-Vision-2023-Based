@@ -1,9 +1,11 @@
 std_msgs/Header header
+uint8 mode
+float64 angle
+float64 angle_offset
+float64 rotate_speed 
+bool target_switched
 geometry_msgs/Point armor3d_world
 geometry_msgs/Point predict_point 
 geometry_msgs/Point r_center
 geometry_msgs/Quaternion quat_cam
 geometry_msgs/Quaternion quat_imu
-float64 rotate_speed 
-bool target_switched
-uint8 mode

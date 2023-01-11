@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-01-09 22:28:20
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
+ * @LastEditTime: 2023-01-11 22:57:45
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
 
@@ -169,7 +169,9 @@ namespace buff_detector
             buff_msg.r_center.x = target_info.r_center[0];
             buff_msg.r_center.y = target_info.r_center[1];
             buff_msg.r_center.z = target_info.r_center[2];
-            buff_msg.rotate_speed = target_info.rotate_speed;
+            buff_msg.angle = target_info.angle;
+            buff_msg.angle_offset = target_info.angle_offset;
+            // buff_msg.rotate_speed = target_info.rotate_speed;
             buff_msg.target_switched = target_info.target_switched;
             Eigen::Quaterniond quat(target_info.rmat);
             buff_msg.quat_cam.w = quat.w();

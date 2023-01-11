@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2023-01-10 21:29:45
+ * @LastEditTime: 2023-01-11 22:54:24
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
@@ -62,6 +62,7 @@ namespace buff_detector
         double max_delta_t;            // 使用同一预测器的最大时间间隔(ms)
         double fan_length;          // 大符臂长(R字中心至装甲板中心)
         double no_crop_thres;       // 禁用ROI裁剪的装甲板占图像面积最大面积比值
+        double max_angle;
 
         BuffParam()
         {
@@ -70,6 +71,7 @@ namespace buff_detector
             max_delta_t = 100; 
             fan_length = 0.7;
             no_crop_thres = 2e-3;
+            max_angle = 5.0;
         }
     };
 
@@ -91,10 +93,12 @@ namespace buff_detector
 
     struct TargetInfo
     {
-        Eigen::Vector3d r_center;
-        double rotate_speed;
         double timestamp;
+        double angle;
+        double angle_offset;
+        double rotate_speed;
         bool target_switched;
+        Eigen::Vector3d r_center;
         Eigen::Matrix3d rmat;
         TargetInfo()
         {
@@ -148,13 +152,16 @@ namespace buff_detector
         void printTargetInfo(int idx);
         void showFans(TaskData& src);
 
+        // double normalizeAngle(double angle, double dz);
+        // double last_angle;
     private:
-        deque<Eigen::Vector2d> yaw_pitch_vec_;
-        deque<Eigen::Vector2d> center_yaw_pitch_vec_;
-        deque<double> yaw_vec_;
-        deque<Eigen::Vector3d> armor3d_vec_;
-        deque<Eigen::Vector3d> centerR3d_vec_; 
-        deque<Eigen::Vector3d> rectify3d_vec_;
+        // deque<Eigen::Vector2d> yaw_pitch_vec_;
+        // deque<Eigen::Vector2d> center_yaw_pitch_vec_;
+        // deque<double> yaw_vec_;
+        // deque<Eigen::Vector3d> armor3d_vec_;
+        // deque<Eigen::Vector3d> centerR3d_vec_; 
+        // deque<Eigen::Vector3d> rectify3d_vec_;
+
         rclcpp::Logger logger_;
     };
 } // namespace buff_detector

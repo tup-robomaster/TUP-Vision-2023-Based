@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:53:56
- * @LastEditTime: 2023-01-03 21:14:59
+ * @LastEditTime: 2023-01-11 22:20:17
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/fan_tracker/fan_tracker.hpp
  */
 #ifndef FAN_TRACKER_HPP_
@@ -25,6 +25,9 @@ namespace buff_detector
 {
     struct Fan : ObjectBase
     {
+        double dx;
+        double dz;
+        double angle;
         Point2f apex2d[5];
         Eigen::Vector3d centerR3d_cam;
         Eigen::Vector3d centerR3d_world;
@@ -46,6 +49,7 @@ namespace buff_detector
         bool is_last_fan_exists;                //是否存在上一次扇叶
         bool is_initialized;                    //是否完成初始化
         double rotate_speed;                    //角速度
+        double delta_angle;
         int max_history_len = 2;          //队列长度
         double prev_timestamp;                     //上次装甲板时间戳
         double last_timestamp;                     //本次装甲板时间戳
