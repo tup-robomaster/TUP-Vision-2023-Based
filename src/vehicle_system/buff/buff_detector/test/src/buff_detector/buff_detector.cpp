@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-01-11 23:07:43
+ * @LastEditTime: 2023-01-12 23:35:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -230,11 +230,11 @@ namespace buff_detector
             double dx = (fan.armor3d_world[1] - fan.centerR3d_world[1]);
             double dy = (fan.armor3d_world[0] - fan.centerR3d_world[0]);
             double r_dis = sqrt(pow(dy, 2) + pow(dx, 2) + pow(dz, 2));
-            double sin_theta = asin(dz / r_dis) * (180 / CV_PI);
+            double sin_theta = asin(dz / r_dis);
             RCLCPP_INFO(logger_, "R_radius: %lf theta: %lf", r_dis, sin_theta);
             fan.dx = dx;
             fan.dz = dz;
-            fan.angle = sin_theta;
+            fan.angle = abs(sin_theta);
             // double cos_theta = acos(sqrt(pow(dx, 2) + pow(dy, 2)) / r_dis) * (180 / CV_PI);
             // double tan_theta = atan(dz / sqrt(pow(dy, 2) + pow(dx, 2))) * (180 / CV_PI);
             // double yaw_angle = (atan2((target.armor3d_world[0] - target.centerR3d_world[0]), (target.armor3d_world[1] - target.centerR3d_world[1]))) * (180 / CV_PI);
@@ -642,6 +642,7 @@ namespace buff_detector
         if(!is_switched)
         {
             double delta_angle = (target.angle - last_fan_.angle);
+            RCLCPP_INFO(logger_, "delta_angle: %lf", delta_angle);
             if(abs(delta_angle) > buff_param_.max_angle)
                 is_switched = true;
         }
@@ -652,6 +653,8 @@ namespace buff_detector
             target_info.angle_offset = target.angle - last_fan_.angle;
         else
             target_info.angle_offset = 0.0;
+        // RCLCPP_INFO(logger_, "Target's angle: %lf", target_info.angle);
+
         // double delta_t = (src.timestamp - last_timestamp_);
         // auto relative_rmat = last_fan_.rmat.transpose() * target.rmat;
         // auto angle_axisd = Eigen::AngleAxisd(relative_rmat);

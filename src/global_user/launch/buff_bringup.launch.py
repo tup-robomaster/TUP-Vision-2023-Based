@@ -2,7 +2,7 @@
 # Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-27 01:40:28
-LastEditTime: 2023-01-08 17:05:50
+LastEditTime: 2023-01-12 20:24:02
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/buff_bringup.launch.py
 '''
 import os
@@ -123,11 +123,11 @@ def generate_launch_description():
             ],
         ),
 
-        # Node(
-        #     package='buff_processor',
-        #     executable='buff_processor_node',
-        #     output='screen',
-        #     emulate_tty=True,
-        #     parameters=[buff_processor_params]
-        # )
+        Node(
+            package='buff_processor',
+            executable='buff_processor_node',
+            output='screen',
+            emulate_tty=True,
+            parameters=[buff_processor_params]
+        )
     ])

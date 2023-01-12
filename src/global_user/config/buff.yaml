@@ -20,7 +20,7 @@
     detect_red: true
     show_img: true
     show_all_fans: false
-    show_fps: true
+    show_fps: false
     print_target_info: false 
     prinf_latency: false
     assist_label: false
@@ -46,5 +46,6 @@
     camera_param_path: "src/global_user/config/camera.yaml"
 
   # Debug.
+    debug: false
     using_imu: false
     show_predict: true

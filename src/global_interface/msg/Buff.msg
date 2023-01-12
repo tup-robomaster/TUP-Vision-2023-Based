@@ -4,6 +4,7 @@ float64 angle
 float64 angle_offset
 float64 rotate_speed 
 bool target_switched
+float64 timestamp
 geometry_msgs/Point armor3d_world
 geometry_msgs/Point predict_point 
 geometry_msgs/Point r_center
