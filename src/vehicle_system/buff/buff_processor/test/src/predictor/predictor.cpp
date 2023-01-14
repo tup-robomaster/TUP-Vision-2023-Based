@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-01-12 23:44:39
+ * @LastEditTime: 2023-01-15 00:33:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -15,7 +15,7 @@ namespace buff_processor
         is_params_confirmed = false;
         last_mode = mode = -1;
         angle_offset_ = 0.0;
-        sign_cnt_ = 0;
+        sign_ = 0;
         is_switched_ = false;
         
         params[0] = 0;
@@ -38,22 +38,24 @@ namespace buff_processor
     {
     }
 
-    bool BuffPredictor::curveFitting(BuffMsg buff_msg)
+    bool BuffPredictor::curveFitting(BuffMsg& buff_msg)
     {
         TargetInfo target = 
         {
             buff_msg.target_switched, 
             buff_msg.angle,
             0.0,
+            buff_msg.delta_angle,
             buff_msg.angle_offset,
             buff_msg.timestamp
         };
 
         if(mode != last_mode)
         {   //模式切换重置预测
-            last_mode = mode;
+            int local_mode = mode;
+            last_mode = local_mode;
             angle_offset_ = 0.0;
-            sign_cnt_ = 0;
+            sign_ = 0;
             is_switched_ = false;
             history_info.clear();
             pf.initParam(pf_param_loader);
@@ -63,11 +65,11 @@ namespace buff_processor
         if (history_info.size() == 0 || (target.timestamp - history_info.front().timestamp) / 1e6 >= predictor_param_.max_timespan)
         {   //当时间跨度过长视作目标已更新，需清空历史信息队列
             history_info.clear();
-            sign_cnt_ = 0;
+            sign_ = 0;
             angle_offset_ = 0.0;
             is_switched_ = false;
             base_angle_ = target.abs_angle;
-            target.relative_angle = 0;
+            target.relative_angle = 0.0;
             history_info.push_back(target);
             params[0] = 0.01;
             params[1] = 0.01; 
@@ -82,104 +84,145 @@ namespace buff_processor
         //输入数据前进行滤波
         auto is_ready = pf.is_ready;
         Eigen::VectorXd measure(1);
-        measure << buff_msg.angle;
+        measure << buff_msg.delta_angle;
         pf.update(measure);
         
         if(is_ready)
         {
             auto predict = pf.predict();
-            target.abs_angle = predict[0];
+            target.delta_angle = predict[0];
         }
 
-        if(history_info.size() == 1)
+        if(history_info.size() < 50)
         {
-            double relative_angle = 0.0;
             if(target.angle_offset < 0.085)
             {
-                relative_angle = abs(target.abs_angle - base_angle_);
-                target.relative_angle = relative_angle;
+                target.relative_angle = history_info.back().relative_angle + abs(target.delta_angle);
                 history_info.push_back(target);
             }
             else
             {
-                target.angle_offset = 0.0;
-                history_info.pop_front();
-                base_angle_ = target.abs_angle;
-                target.relative_angle = 0.0;
-                history_info.push_back(target);
-            }
-            last_target = target;
-            return false;
-        }
-        else if(history_info.size() < 50)
-        {
-            double relative_angle = 0.0;
-            if(target.angle_offset < 0.085)
-            {
-                relative_angle = abs(target.abs_angle - base_angle_);
-                target.relative_angle = relative_angle;
-                history_info.push_back(target);
-            }
-            else
-            {
-                RCLCPP_INFO(logger_, "target_offset: %lf", target.angle_offset);
-                base_angle_ += target.angle_offset;
-                relative_angle = abs(target.abs_angle - base_angle_);
-                target.relative_angle = relative_angle;
-                // history_info.push_back(target);
+                //扇叶发生切换，此帧的旋转角度可由插值或已激活能量机关的旋转角度补充
             }
             last_target = target;
             return false;
         }
         else
         {
-            double relative_angle = 0.0;
             if(target.angle_offset < 0.085)
             {
-                RCLCPP_INFO(logger_, "abs_pre: %lf", base_angle_);
-                double offset_ang = base_angle_ - history_info[0].abs_angle;    
                 history_info.pop_front();
-                base_angle_ = history_info[0].abs_angle + offset_ang;
-                RCLCPP_INFO(logger_, "abs_back: %lf", base_angle_);
-
-                double ang = history_info[0].relative_angle;
+                double bAngle = history_info[0].delta_angle;
                 for(auto &target_info : history_info)
-                    target_info.relative_angle -= ang;
-                relative_angle = abs(target.abs_angle - base_angle_);
-                target.relative_angle = relative_angle;
+                    target_info.relative_angle -= abs(bAngle);
+                target.relative_angle = history_info.back().relative_angle + abs(target.delta_angle);
                 history_info.push_back(target);
             }
             else
             {
-                RCLCPP_INFO(logger_, "target_offset: %lf", target.angle_offset);
-                double offset_ang = base_angle_ - history_info[0].abs_angle;    
-                history_info.pop_front();
-                base_angle_ = history_info[0].abs_angle + offset_ang + target.angle_offset;
-                double ang = history_info[0].relative_angle;
-                for(auto &target_info : history_info)
-                    target_info.relative_angle -= ang;
-                relative_angle = abs(target.abs_angle - base_angle_);
-                target.relative_angle = relative_angle;
-                history_info.push_back(target);
+                //TODO: 
             }
         }
 
+        // if(history_info.size() == 1)
+        // {
+        //     double relative_angle = 0.0;
+        //     if(target.angle_offset < 0.085)
+        //     {
+        //         relative_angle = abs(target.abs_angle - base_angle_);
+        //         target.relative_angle = relative_angle;
+        //         history_info.push_back(target);
+        //     }
+        //     else
+        //     {
+        //         target.angle_offset = 0.0;
+        //         history_info.pop_front();
+        //         base_angle_ = target.abs_angle;
+        //         target.relative_angle = 0.0;
+        //         history_info.push_back(target);
+        //     }
+        //     last_target = target;
+        //     return false;
+        // }
+        // else if(history_info.size() < 50)
+        // {
+        //     double relative_angle = 0.0;
+        //     if(target.angle_offset < 0.085)
+        //     {
+        //         relative_angle = abs(target.abs_angle - base_angle_);
+        //         target.relative_angle = relative_angle;
+        //         history_info.push_back(target);
+        //     }
+        //     else
+        //     {
+        //         RCLCPP_INFO(logger_, "target_offset: %lf", target.angle_offset);
+        //         base_angle_ += target.angle_offset;
+        //         relative_angle = abs(target.abs_angle - base_angle_);
+        //         target.relative_angle = relative_angle;
+        //         // history_info.push_back(target);
+        //     }
+        //     last_target = target;
+        //     return false;
+        // }
+        // else
+        // {
+        //     double relative_angle = 0.0;
+        //     if(target.angle_offset < 0.085)
+        //     {
+        //         RCLCPP_INFO(logger_, "abs_pre: %lf", base_angle_);
+        //         double offset_ang = base_angle_ - history_info[0].abs_angle;    
+        //         history_info.pop_front();
+        //         base_angle_ = history_info[0].abs_angle + offset_ang;
+        //         RCLCPP_INFO(logger_, "abs_back: %lf", base_angle_);
+
+        //         double ang = history_info[0].relative_angle;
+        //         for(auto &target_info : history_info)
+        //             target_info.relative_angle -= ang;
+        //         relative_angle = abs(target.abs_angle - base_angle_);
+        //         target.relative_angle = relative_angle;
+        //         history_info.push_back(target);
+        //     }
+        //     else
+        //     {
+        //         RCLCPP_INFO(logger_, "target_offset: %lf", target.angle_offset);
+        //         double offset_ang = base_angle_ - history_info[0].abs_angle;    
+        //         history_info.pop_front();
+        //         base_angle_ = history_info[0].abs_angle + offset_ang + target.angle_offset;
+        //         double ang = history_info[0].relative_angle;
+        //         for(auto &target_info : history_info)
+        //             target_info.relative_angle -= ang;
+        //         relative_angle = abs(target.abs_angle - base_angle_);
+        //         target.relative_angle = relative_angle;
+        //         history_info.push_back(target);
+        //     }
+        // }
+
+        double rotate_speed_sum = 0.0;
+        double rotate_speed_ave = 0.0;
         double delta_angle_sum = 0.0;
-        double delta_angle_ave = 0.0;
-        double dAngle = 0.0;
-        RCLCPP_INFO(logger_, "base_angle: %lf", base_angle_);
+        // RCLCPP_INFO(logger_, "base_angle: %lf", base_angle_);
+        // double base_time = history_info[0].timestamp;
+        auto origin_target = history_info[0];
         for(auto target_info : history_info)
         {
-            delta_angle_sum += (target_info.relative_angle - dAngle);
-            dAngle = target_info.relative_angle;
-            RCLCPP_INFO(logger_, "abs_angle: %lf relative_angle: %lf", target_info.abs_angle, target_info.relative_angle);
+            delta_angle_sum += target_info.delta_angle;
+            double dAngle = (target_info.relative_angle - origin_target.relative_angle);
+            if((target_info.timestamp - origin_target.timestamp) != 0)
+                rotate_speed_sum += (dAngle / (target_info.timestamp - origin_target.timestamp) * 1e9);
+            origin_target = target_info;
+            // delta_angle_sum += (target_info.relative_angle - dAngle);
+            // dAngle = target_info.relative_angle;
+            // RCLCPP_INFO(logger_, "abs_angle: %lf relative_angle: %lf timestamp: %lf", target_info.abs_angle, target_info.relative_angle, (target_info.timestamp - base_time) / 1e9);
         }
-        delta_angle_ave = delta_angle_sum / (((int)history_info.size())-1);
+        rotate_speed_ave = rotate_speed_sum / (((int)history_info.size())-1);
+        sign_ = delta_angle_sum / abs(delta_angle_sum);
 
         //曲线拟合
         if(mode == 0)
         {   //小符，计算平均角度差
-            angle_offset_ = delta_angle_ave;  //TODO:小能量机关转速10RPM
+            params[3] = rotate_speed_ave;  //TODO:小能量机关转速10RPM
+            is_params_confirmed = true;
+            RCLCPP_INFO(logger_, "Average rotate speed: %lf", rotate_speed_ave);
         }
         else if(mode == 1)
         {
@@ -215,21 +258,59 @@ namespace buff_processor
             ceres::Solve(options, &problem, &summary);
             
             //计算拟合后曲线的RMSE指标
+            mutex_.lock();
             memcpy(params, params_fitting, sizeof(params));
+            is_params_confirmed = true;
+            for (auto param : params)
+                cout << param << " ";
+            std::cout << std::endl;
+            mutex_.unlock();
         }   
         else
         {
+            mutex_.lock();
+            is_params_confirmed = false;
+            mutex_.unlock();
+            
             return false;
         }
-
         return true;
     }
 
-    bool BuffPredictor::predict(BuffMsg buff_msg, double &result)
+    bool BuffPredictor::predict(BuffMsg buff_msg, double dist, double &result)
     {
-        curveFitting(buff_msg);
-        result = 0.0;
-        return false;
+        double delay = (mode == 1 ? predictor_param_.delay_big : predictor_param_.delay_small);
+        float delta_time_estimate = ((double)dist / predictor_param_.bullet_speed) * 1e3 + delay;
+        
+        if(is_params_confirmed)
+        {
+            if(mode == 0)
+            {
+                mutex_.lock();
+                result = sign_ * (params[3] * delta_time_estimate / 1e3);
+                mutex_.unlock();
+            }
+            else if(mode == 1)
+            {
+                mutex_.lock();
+                float timespan = history_info.back().timestamp / 1e6;
+                float time_estimate = delta_time_estimate + timespan;
+                double pre_angle = calPreAngle(params, (time_estimate / 1e3));
+                result = sign_ * (pre_angle - history_info.back().relative_angle);
+                mutex_.unlock();
+                if(result < 0.0)
+                    return false;
+            }
+        }
+        else
+            return false;
+        return true;
+    }
+
+    double BuffPredictor::calPreAngle(double* params, double timestamp)
+    {
+        double pre_angle = -(params[0] / params[1]) * ceres::cos(params[1] * timestamp + params[2]) + params[3] * timestamp + (params[0] / params[1]) * ceres::cos(params[2]);
+        return std::move(pre_angle);
     }
 
     // /**

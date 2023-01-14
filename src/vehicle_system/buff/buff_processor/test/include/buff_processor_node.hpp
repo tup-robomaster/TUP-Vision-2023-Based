@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:10:59
- * @LastEditTime: 2023-01-12 20:55:49
+ * @LastEditTime: 2023-01-15 00:14:05
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/buff_processor_node.hpp
  */
 #ifndef BUFF_PROCESSOR_NODE_HPP_
@@ -46,9 +46,14 @@ namespace buff_processor
     
     private:
         // message_filters::Subscriber<BuffMsg> target_info_sub;
-        rclcpp::Subscription<BuffMsg>::SharedPtr target_info_sub_;
         // message_filters::Subscriber<BuffMsg> target_point_sub_; 
-        void target_info_callback(const BuffMsg& target_info);
+        // void target_info_callback(const BuffMsg& target_info);
+
+        rclcpp::Subscription<BuffMsg>::SharedPtr target_fitting_sub_;
+        void targetFittingCallback(const BuffMsg& target_info);
+
+        rclcpp::Subscription<BuffMsg>::SharedPtr target_predictor_sub_;
+        void targetPredictorCallback(const BuffMsg& target_info);
 
         // 云台偏转角度（pitch、yaw）
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
@@ -68,6 +73,7 @@ namespace buff_processor
         void image_callback(const ImageMsg::ConstSharedPtr &img_info);
         Eigen::Vector3d pred_point3d_;
         Mutex mutex_;
+        cv::Point2f apex2d[5];
         
     public:
         PredictorParam predict_param_;

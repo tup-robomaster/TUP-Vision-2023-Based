@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-01-11 22:57:45
+ * @LastEditTime: 2023-01-15 00:12:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -169,7 +169,9 @@ namespace buff_detector
             buff_msg.r_center.x = target_info.r_center[0];
             buff_msg.r_center.y = target_info.r_center[1];
             buff_msg.r_center.z = target_info.r_center[2];
+            buff_msg.timestamp = src.timestamp;
             buff_msg.angle = target_info.angle;
+            buff_msg.delta_angle = target_info.delta_angle;
             buff_msg.angle_offset = target_info.angle_offset;
             // buff_msg.rotate_speed = target_info.rotate_speed;
             buff_msg.target_switched = target_info.target_switched;
@@ -178,6 +180,20 @@ namespace buff_detector
             buff_msg.quat_cam.x = quat.x();
             buff_msg.quat_cam.y = quat.y();
             buff_msg.quat_cam.z = quat.z();
+            buff_msg.armor3d_world.x = target_info.armor3d_world[0];
+            buff_msg.armor3d_world.y = target_info.armor3d_world[1];
+            buff_msg.armor3d_world.z = target_info.armor3d_world[2];
+            
+            buff_msg.points2d[0].x = target_info.points2d[0].x;
+            buff_msg.points2d[0].y = target_info.points2d[0].y;
+            buff_msg.points2d[1].x = target_info.points2d[1].x;
+            buff_msg.points2d[1].y = target_info.points2d[1].y;
+            buff_msg.points2d[2].x = target_info.points2d[2].x;
+            buff_msg.points2d[2].y = target_info.points2d[2].y;
+            buff_msg.points2d[3].x = target_info.points2d[3].x;
+            buff_msg.points2d[3].y = target_info.points2d[3].y;
+            buff_msg.points2d[4].x = target_info.points2d[4].x;
+            buff_msg.points2d[4].y = target_info.points2d[4].y;
             
             // publish buff info.
             buff_info_pub_->publish(std::move(buff_msg));

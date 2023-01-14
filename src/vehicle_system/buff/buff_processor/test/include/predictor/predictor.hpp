@@ -2,19 +2,23 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2023-01-12 18:53:21
+ * @LastEditTime: 2023-01-15 00:24:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
 #define PREDICTOR_HPP_
 
 # pragma once
+
 //c++
 #include <iostream>
 #include <ctime>
 #include <future>
 #include <random>
 #include <vector>
+#include <mutex>
+#include <atomic>
+#include <thread>
 
 //opencv
 #include <opencv2/opencv.hpp>
@@ -166,6 +170,7 @@ namespace buff_processor
             bool is_switched;
             double abs_angle;
             double relative_angle;
+            double delta_angle;
             double angle_offset;
             double timestamp;
         };
@@ -176,31 +181,33 @@ namespace buff_processor
         };
 
     public:
-        int mode;                            //预测器模式，0为小符，1为大符
-        int last_mode;
-        bool is_params_confirmed;
+        atomic<int> mode;                            //预测器模式，0为小符，1为大符
+        atomic<int> last_mode;
+        atomic<bool> is_params_confirmed;
         ParticleFilter pf;
         TargetInfo last_target;              //最后目标
         ParticleFilter pf_param_loader;
         PredictorParam predictor_param_;
         std::deque<TargetInfo> history_info; //目标队列
         double base_angle_;
-        int sign_cnt_;
+        atomic<int> sign_;
         double angle_offset_;
         bool is_switched_;
 
     private:
         double params[4] = {0.01, 0.01, 0.01, 0.01};
         rclcpp::Logger logger_;
+        Mutex mutex_;
 
     public:
         BuffPredictor();
         ~BuffPredictor();
         
+        rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         // bool predict(double speed, double dist, double timestamp, double &result);
-        bool curveFitting(BuffMsg buff_msg);
-        bool predict(BuffMsg buff_msg, double &result);
-
+        bool curveFitting(BuffMsg& buff_msg);
+        bool predict(BuffMsg buff_msg, double dist, double &result);
+        double calPreAngle(double* params, double timestamp);
         // double calcAimingAngleOffset(double params[4], double t0, double t1, int mode);
         // double shiftWindowFilter(int start_idx);
         bool setBulletSpeed(double speed);

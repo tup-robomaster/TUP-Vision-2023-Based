@@ -18,7 +18,7 @@
     using_imu: false
     using_roi: false
     detect_red: true
-    show_img: true
+    show_img: false
     show_all_fans: false
     show_fps: false
     print_target_info: false 
@@ -46,6 +46,6 @@
     camera_param_path: "src/global_user/config/camera.yaml"
 
   # Debug.
-    debug: false
+    debug: true
     using_imu: false
     show_predict: true

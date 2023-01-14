@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-01-12 23:35:39
+ * @LastEditTime: 2023-01-15 00:55:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -231,7 +231,7 @@ namespace buff_detector
             double dy = (fan.armor3d_world[0] - fan.centerR3d_world[0]);
             double r_dis = sqrt(pow(dy, 2) + pow(dx, 2) + pow(dz, 2));
             double sin_theta = asin(dz / r_dis);
-            RCLCPP_INFO(logger_, "R_radius: %lf theta: %lf", r_dis, sin_theta);
+            // RCLCPP_INFO(logger_, "R_radius: %lf theta: %lf", r_dis, sin_theta);
             fan.dx = dx;
             fan.dz = dz;
             fan.angle = abs(sin_theta);
@@ -632,23 +632,45 @@ namespace buff_detector
         // target_info.r_center = mean_r_center;
         // target_info.rmat = target.rmat;
 
-        // RCLCPP_INFO(logger_, "r_center_cam: %lf %lf %lf", r_center_cam[0], r_center_cam[1], r_center_cam[2]);
+        RCLCPP_INFO(logger_, "armor3d_cam: %lf %lf %lf", target.armor3d_cam[0], target.armor3d_cam[1], target.armor3d_cam[2]);
         // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 200, "Target mean_rotate_speed: %lf mean_r_center: {x:%lf y:%lf z:%lf}",
         //     mean_rotate_speed, mean_r_center[0], mean_r_center[1], mean_r_center[2]);
 
         // // 判断扇叶是否发生切换
         bool is_switched = false;
         is_switched = ((target.dz / last_fan_.dz) > 0 && target.dx / last_fan_.dx > 0) ? 0 : 1;
+        double delta_angle = 0.0;
+        if((target.dx > 0 && target.dz > 0) || (target.dx < 0 && target.dz < 0))
+            delta_angle = -(abs(target.angle - last_fan_.angle));
+        else if((target.dx < 0 && target.dz > 0) || (target.dx > 0 && target.dz < 0))
+            delta_angle = abs(target.angle - last_fan_.angle);
+        else
+            delta_angle = target.angle - last_fan_.angle;
+
+        RCLCPP_INFO(logger_, "delta_angle: %lf", delta_angle);
         if(!is_switched)
         {
-            double delta_angle = (target.angle - last_fan_.angle);
-            RCLCPP_INFO(logger_, "delta_angle: %lf", delta_angle);
             if(abs(delta_angle) > buff_param_.max_angle)
                 is_switched = true;
         }
-        target_info.r_center = mean_r_center;
+        target_info.points2d[0].x = target.apex2d[0].x;
+        target_info.points2d[0].y = target.apex2d[0].y;
+        target_info.points2d[1].x = target.apex2d[1].x;
+        target_info.points2d[1].y = target.apex2d[1].y;
+        target_info.points2d[2].x = target.apex2d[2].x;
+        target_info.points2d[2].y = target.apex2d[2].y;
+        target_info.points2d[3].x = target.apex2d[3].x;
+        target_info.points2d[3].y = target.apex2d[3].y;
+        target_info.points2d[4].x = target.apex2d[4].x;
+        target_info.points2d[4].y = target.apex2d[4].y;
+
+        target_info.rmat = target.rmat;
         target_info.angle = target.angle;
+        target_info.r_center = mean_r_center;
+        target_info.delta_angle = delta_angle;
         target_info.target_switched = is_switched;
+        target_info.armor3d_world = target.armor3d_world;
+        
         if(is_switched)
             target_info.angle_offset = target.angle - last_fan_.angle;
         else

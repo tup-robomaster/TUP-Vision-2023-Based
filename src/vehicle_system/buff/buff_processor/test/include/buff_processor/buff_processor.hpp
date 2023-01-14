@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:45:06
- * @LastEditTime: 2023-01-07 00:24:17
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/buff_processor/buff_processor.hpp
+ * @LastEditTime: 2023-01-14 23:03:27
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/buff_processor/buff_processor.hpp
  */
 #ifndef BUFF_PROCESSOR_HPP_
 #define BUFF_PROCESSOR_HPP_
@@ -12,6 +12,11 @@
 #include "../../../../global_user/include/coordsolver.hpp"
 #include "../../../../global_user/include/global_user/global_user.hpp"
 #include "global_interface/msg/buff.hpp"
+
+//c++
+#include <mutex>
+#include <thread>
+#include <atomic>
 
 using namespace global_user;
 using namespace coordsolver;
@@ -49,11 +54,14 @@ namespace buff_processor
         rclcpp::Logger logger_;
 
     public:
-        bool is_initialized;
+        // Mutex mutex_;
+        bool is_initialized_;
         Eigen::Matrix3d rmat_imu_;
         CoordSolver coordsolver_;
         BuffPredictor buff_predictor_;
         
+        bool fittingThread(BuffMsg buff_msg);
+        bool predictorThread(BuffMsg buff_msg, TargetInfo& target_info);
         bool predictor(BuffMsg buff_msg, TargetInfo& target_info);
 
         void setPredictorParam(double param, int idx);
