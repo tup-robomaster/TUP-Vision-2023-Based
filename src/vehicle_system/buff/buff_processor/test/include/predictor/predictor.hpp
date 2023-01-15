@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2023-01-15 00:24:18
+ * @LastEditTime: 2023-01-15 22:12:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
@@ -64,7 +64,7 @@ namespace buff_processor
             pf_path = "src/global_user/config/filter_param.yaml";
             bullet_speed = 28.0;
             max_timespan = 20000;       
-            max_rmse = 0.5;
+            max_rmse = 0.05;
             max_v = 3.0;
             max_a = 8.0;
             history_deque_len_cos = 250;
@@ -124,24 +124,24 @@ namespace buff_processor
         //     const double _x, _t;    // x,t数据
         // };
 
-        // struct CURVE_FITTING_COST_PHASE
-        // {
-        //     CURVE_FITTING_COST_PHASE (double x, double t, double a, double omega, double dc)
-        //     : _x(x), _t(t), _a(a), _omega(omega), _dc(dc){}
+        struct CURVE_FITTING_COST_PHASE
+        {
+            CURVE_FITTING_COST_PHASE (double x, double t, double a, double omega, double dc)
+            : _x(x), _t(t), _a(a), _omega(omega), _dc(dc){}
 
-        //     // 残差的计算
-        //     template <typename T>
-        //     bool operator()
-        //     (
-        //         const T* phase, // 模型参数，有1维
-        //         T* residual     // 残差
-        //     ) const 
-        //     {
-        //         residual[0] = T (_x) - T (_a) * ceres::sin(T(_omega) * T (_t) + phase[0]) - T(_dc); // f(x) = a * sin(ω * t + θ)
-        //         return true;
-        //     }
-        //     const double _x, _t, _a, _omega, _dc;    // x,t数据
-        // };
+            // 残差的计算
+            template <typename T>
+            bool operator()
+            (
+                const T* phase, // 模型参数，有1维
+                T* residual     // 残差
+            ) const 
+            {
+                residual[0] = -(T (_a) / T(_omega)) * ceres::cos(T(_omega) * T(_t) + phase[0]) + T(_dc) * T(_t) + (T (_a) / T(_omega)) * ceres::cos(phase[0]) - T (_x);
+                return true;
+            }
+            const double _x, _t, _a, _omega, _dc;    // x,t数据
+        };
 
         struct CurveFittingCost
         {
@@ -211,7 +211,7 @@ namespace buff_processor
         // double calcAimingAngleOffset(double params[4], double t0, double t1, int mode);
         // double shiftWindowFilter(int start_idx);
         bool setBulletSpeed(double speed);
-        // double evalRMSE(double params[4]);
+        double evalRMSE(double params[4]);
         // double evalMAPE(double params[4]);
     };
 

@@ -48,7 +48,8 @@
     using_video: true
     # video_path: "src/camera_driver/recorder/video/still_gyro.avi"
     # video_path: "src/camera_driver/recorder/video/gyro1.avi"
-    video_path: "src/camera_driver/recorder/video/buff.webm"
+    # video_path: "src/camera_driver/recorder/video/buff.webm"
+    video_path: "src/camera_driver/recorder/video/raw_long_buff.mp4"
     save_video: false
 
 /mvs_cam_driver:

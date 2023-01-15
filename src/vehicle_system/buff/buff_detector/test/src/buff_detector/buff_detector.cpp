@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-01-15 00:55:03
+ * @LastEditTime: 2023-01-15 23:27:46
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -367,14 +367,22 @@ namespace buff_detector
 
                         // 当前扇叶与上一帧扇叶的角度差值
                         delta_angle = (*fan).angle - (*iter).prev_fan.angle;
-                        if((*fan).dz > 0 && (*fan).dx > 0)
-                            sign = delta_angle > 0 ? -1 : 1;
-                        else if((*fan).dz > 0 && (*fan).dx < 0)
-                            sign = delta_angle > 0 ? 1 : -1;
-                        else if((*fan).dz < 0 && (*fan).dx < 0)
-                            sign = delta_angle > 0 ? 1 : -1;
-                        else if((*fan).dz < 0 && (*fan).dx > 0)
-                            sign = delta_angle > 0 ? -1 : 1;
+                        if(((*fan).dx > 0 && (*fan).dz > 0) || ((*fan).dx < 0 && (*fan).dz < 0))
+                        {
+                            if(delta_angle < 0)
+                                delta_angle = abs(delta_angle);
+                            else if(delta_angle > 0)
+                                delta_angle = -abs(delta_angle);
+                        }
+
+                        // if((*fan).dz > 0 && (*fan).dx > 0)
+                        //     sign = delta_angle > 0 ? -1 : 1;
+                        // else if((*fan).dz > 0 && (*fan).dx < 0)
+                        //     sign = delta_angle > 0 ? 1 : -1;
+                        // else if((*fan).dz < 0 && (*fan).dx < 0)
+                        //     sign = delta_angle > 0 ? 1 : -1;
+                        // else if((*fan).dz < 0 && (*fan).dx > 0)
+                        //     sign = delta_angle > 0 ? -1 : 1;
 
                         // 目前扇叶到上一次扇叶的旋转矩阵
                         // auto relative_rmat = (*iter).prev_fan.rmat.transpose() * (*fan).rmat;
@@ -424,14 +432,22 @@ namespace buff_detector
 
                         // 目前扇叶到上一次扇叶的旋转矩阵
                         delta_angle = (*fan).angle - (*iter).last_fan.angle;
-                        if((*fan).dz > 0 && (*fan).dx > 0)
-                            sign = delta_angle > 0 ? -1 : 1;
-                        else if((*fan).dz > 0 && (*fan).dx < 0)
-                            sign = delta_angle > 0 ? 1 : -1;
-                        else if((*fan).dz < 0 && (*fan).dx < 0)
-                            sign = delta_angle > 0 ? 1 : -1;
-                        else if((*fan).dz < 0 && (*fan).dx > 0)
-                            sign = delta_angle > 0 ? -1 : 1;
+                        if(((*fan).dx > 0 && (*fan).dz > 0) || ((*fan).dx < 0 && (*fan).dz < 0))
+                        {
+                            if(delta_angle < 0)
+                                delta_angle = abs(delta_angle);
+                            else if(delta_angle > 0)
+                                delta_angle = -abs(delta_angle);
+                        }
+
+                        // if((*fan).dz > 0 && (*fan).dx > 0)
+                        //     sign = delta_angle > 0 ? -1 : 1;
+                        // else if((*fan).dz > 0 && (*fan).dx < 0)
+                        //     sign = delta_angle > 0 ? 1 : -1;
+                        // else if((*fan).dz < 0 && (*fan).dx < 0)
+                        //     sign = delta_angle > 0 ? 1 : -1;
+                        // else if((*fan).dz < 0 && (*fan).dx > 0)
+                        //     sign = delta_angle > 0 ? -1 : 1;
 
                         // auto relative_rmat = (*iter).last_fan.rmat.transpose() * (*fan).rmat;
                         // auto rrmat = (*fan).rmat.inverse() * (*iter).last_fan.rmat;
@@ -492,10 +508,10 @@ namespace buff_detector
                     //     break;
                     // }
 
-                    if(abs(delta_angle) <= min_angle && abs(delta_angle) < buff_param_.max_angle && delta_t <= min_last_delta_t)
+                    if(abs(delta_angle) <= abs(min_angle) && abs(delta_angle) < buff_param_.max_angle && delta_t <= min_last_delta_t)
                     {
                         min_last_delta_t = delta_t;
-                        min_angle = abs(delta_angle);
+                        min_angle = delta_angle;
                         best_candidate = iter;
                         is_best_candidate_exist = true;
                     }
@@ -505,6 +521,7 @@ namespace buff_detector
                     (*best_candidate).update((*fan), src.timestamp);
                     // (*best_candidate).rotate_speed = min_v;
                     (*best_candidate).delta_angle = min_angle;
+                    delta_angle_vec_.push_back(min_angle);
                 }
                 else
                 {
@@ -639,15 +656,27 @@ namespace buff_detector
         // // 判断扇叶是否发生切换
         bool is_switched = false;
         is_switched = ((target.dz / last_fan_.dz) > 0 && target.dx / last_fan_.dx > 0) ? 0 : 1;
-        double delta_angle = 0.0;
+        double delta_angle = (target.angle - last_fan_.angle);
         if((target.dx > 0 && target.dz > 0) || (target.dx < 0 && target.dz < 0))
-            delta_angle = -(abs(target.angle - last_fan_.angle));
-        else if((target.dx < 0 && target.dz > 0) || (target.dx > 0 && target.dz < 0))
-            delta_angle = abs(target.angle - last_fan_.angle);
-        else
-            delta_angle = target.angle - last_fan_.angle;
-
+        {
+            if(delta_angle < 0)
+                delta_angle = abs(delta_angle);
+            else if(delta_angle > 0)
+                delta_angle = -abs(delta_angle);
+        }
+        // RCLCPP_INFO(logger_, "dx: %lf dz:%lf", target.dx, target.dz);
+        // std::cout << std::endl;
+        if(delta_angle_vec_.size() > 1)
+        {
+            double angle_sum = 0.0;
+            for(auto& angle : delta_angle_vec_)
+                angle_sum += angle;
+            // angle_sum += delta_angle;
+            delta_angle = angle_sum / (int)(delta_angle_vec_.size());
+        }
+        delta_angle_vec_.clear();
         RCLCPP_INFO(logger_, "delta_angle: %lf", delta_angle);
+
         if(!is_switched)
         {
             if(abs(delta_angle) > buff_param_.max_angle)

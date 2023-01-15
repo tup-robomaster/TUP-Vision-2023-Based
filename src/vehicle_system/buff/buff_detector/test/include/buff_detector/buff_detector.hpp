@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2023-01-15 00:09:46
+ * @LastEditTime: 2023-01-15 17:19:24
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
@@ -166,6 +166,7 @@ namespace buff_detector
         // deque<Eigen::Vector3d> centerR3d_vec_; 
         // deque<Eigen::Vector3d> rectify3d_vec_;
 
+        vector<double> delta_angle_vec_;
         rclcpp::Logger logger_;
     };
 } // namespace buff_detector
