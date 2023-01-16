@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-01-15 23:27:46
+ * @LastEditTime: 2023-01-16 17:15:40
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -682,6 +682,26 @@ namespace buff_detector
             if(abs(delta_angle) > buff_param_.max_angle)
                 is_switched = true;
         }
+        
+        if(is_switched)
+        {
+            target_info.angle_offset = target.angle - last_fan_.angle;
+            double delta_angle_sum = 0.0;
+            if(delta_angle_vec_.size() > 1)
+            {
+                for(auto angle : delta_angle_vec_)
+                   delta_angle_sum += angle;
+                delta_angle_sum -= delta_angle;
+                delta_angle = delta_angle_sum / (int)(delta_angle_vec_.size() - 1);
+            }
+            else
+            {
+                delta_angle = ((last_last_delta_angle_ + last_delta_angle_) / 2.0);
+            }
+        }
+        else
+            target_info.angle_offset = 0.0;
+
         target_info.points2d[0].x = target.apex2d[0].x;
         target_info.points2d[0].y = target.apex2d[0].y;
         target_info.points2d[1].x = target.apex2d[1].x;
@@ -700,10 +720,7 @@ namespace buff_detector
         target_info.target_switched = is_switched;
         target_info.armor3d_world = target.armor3d_world;
         
-        if(is_switched)
-            target_info.angle_offset = target.angle - last_fan_.angle;
-        else
-            target_info.angle_offset = 0.0;
+        
         // RCLCPP_INFO(logger_, "Target's angle: %lf", target_info.angle);
 
         // double delta_t = (src.timestamp - last_timestamp_);
@@ -719,6 +736,8 @@ namespace buff_detector
         last_roi_center_ = center2d_src;
         last_timestamp_ = src.timestamp;
         last_fan_ = target;
+        last_last_delta_angle_ = last_delta_angle_;
+        last_delta_angle_ = delta_angle;
         is_last_target_exists_ = true;
 
         if (isnan(angle[0]) || isnan(angle[1]) || abs(angle[0]) > 45 || abs(angle[1]) > 45)

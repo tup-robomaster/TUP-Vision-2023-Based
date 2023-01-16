@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-01-15 18:34:57
+ * @LastEditTime: 2023-01-16 23:54:24
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -49,8 +49,8 @@ namespace buff_processor
         predict_info_pub_ = this->create_publisher<BuffMsg>("/buff_predict_info", qos);
 
         // 订阅待打击目标信息
-        target_fitting_sub_ = this->create_subscription<BuffMsg>("/buff_info", qos,
-            std::bind(&BuffProcessorNode::targetFittingCallback, this, _1));
+        // target_fitting_sub_ = this->create_subscription<BuffMsg>("/buff_info", qos,
+        //     std::bind(&BuffProcessorNode::targetFittingCallback, this, _1));
         target_predictor_sub_ = this->create_subscription<BuffMsg>("/buff_info", qos,
             std::bind(&BuffProcessorNode::targetPredictorCallback, this, _1));
 
@@ -223,13 +223,27 @@ namespace buff_processor
         if(!img.empty())
         {
             mutex_.lock();
+            cv::Point2f r_center;
+            cv::Point2f vertex_sum;
+            cv::Point2f armor_center;
             for(int i = 0; i < 5; i++)
-                cv::line(img, apex2d[i % 5], apex2d[(i + 1) % 5], {255, 255, 0}, 4);
+            {
+                if(i != 2)
+                    vertex_sum += apex2d[i];
+                else
+                    r_center = apex2d[i];
+                // cv::line(img, apex2d[i % 5], apex2d[(i + 1) % 5], {0, 0, 255}, 3);
+            }
+            armor_center = (vertex_sum / 4.0);
+
             Eigen::Vector3d point3d = pred_point3d_;
             mutex_.unlock();
            
             cv::Point2f point_2d = buff_processor_->coordsolver_.reproject(point3d);
-            cv::circle(img, point_2d, 6, {0, 125, 255}, -1);
+            cv::line(img, r_center, armor_center, {125,125, 0}, 4);
+            cv::line(img, armor_center, point_2d, {125, 125, 0}, 4);
+            cv::line(img, r_center, point_2d, {125, 125, 0}, 4);
+            cv::circle(img, point_2d, 4, {0, 0, 255}, -1);
             // for(int i = 0; i < 5; i++)
             //     cv::line(img, apex2d[i % 5], apex2d[(i + 1) % 5], {0, 255, 255}, 5);
             cv::namedWindow("pred_img");

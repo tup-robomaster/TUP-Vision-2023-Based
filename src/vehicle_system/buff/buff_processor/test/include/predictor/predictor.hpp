@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2023-01-15 22:12:57
+ * @LastEditTime: 2023-01-16 23:00:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
@@ -64,7 +64,7 @@ namespace buff_processor
             pf_path = "src/global_user/config/filter_param.yaml";
             bullet_speed = 28.0;
             max_timespan = 20000;       
-            max_rmse = 0.05;
+            max_rmse = 0.01;
             max_v = 3.0;
             max_a = 8.0;
             history_deque_len_cos = 250;
@@ -189,6 +189,9 @@ namespace buff_processor
         ParticleFilter pf_param_loader;
         PredictorParam predictor_param_;
         std::deque<TargetInfo> history_info; //目标队列
+        bool is_direction_confirmed;
+        vector<double> delta_angle_vec_;
+
         double base_angle_;
         atomic<int> sign_;
         double angle_offset_;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-01-16 00:00:04
+ * @LastEditTime: 2023-01-16 23:12:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -95,61 +95,79 @@ namespace buff_processor
         target.delta_angle = (target.delta_angle / buff_msg.delta_angle > 0) ? target.delta_angle : buff_msg.delta_angle;
         
         mutex_.lock();
-        if(history_info.size() < 25)
+        int fitting_lens = 25;
+
+        if(!is_direction_confirmed)
         {
-            if(target.angle_offset < 0.085)
-            {
+            if(delta_angle_vec_.size() < 100)
+                delta_angle_vec_.push_back(target.delta_angle);
+        }
+
+        if(history_info.size() < fitting_lens)
+        {
+            // if(abs(target.angle_offset) < 0.085 && !target.is_switched)
+            // {
                 target.relative_angle = history_info.back().relative_angle + abs(target.delta_angle);
                 history_info.push_back(target);
-            }
-            else
-            {
-                //扇叶发生切换，此帧的旋转角度可由插值或已激活能量机关的旋转角度补充
-            }
+            // }
+            // else
+            // {
+            //     //扇叶发生切换，此帧的旋转角度可由插值或已激活能量机关的旋转角度补充
+            //     target.relative_angle = history_info.back().relative_angle + abs(target.delta_angle);
+            //     history_info.push_back(target);
+            // }
             last_target = target;
             return false;
         }
-        else if(history_info.size() % 100 == 0)
+        // else if(history_info.size() % 100 == 0)
+        // {
+        //     if(abs(target.angle_offset)< 0.085 && !target.is_switched)
+        //     {
+        //         // history_info.pop_front();
+        //         // double bAngle = history_info[0].relative_angle;
+        //         // for(auto &target_info : history_info)
+        //         //     target_info.relative_angle -= bAngle;
+        //         target.relative_angle = history_info.back().relative_angle + abs(target.delta_angle);
+        //         history_info.push_back(target);
+        //     }
+        //     else
+        //     {
+        //         //TODO: 
+        //         target.relative_angle = history_info.back().relative_angle + abs(target.delta_angle);
+        //         history_info.push_back(target);
+        //     }
+        //     if(history_info.size() == 200)
+        //     {
+        //         // deque<TargetInfo> local_deque(history_info.end() - 20, history_info.end());
+        //         history_info.clear();
+        //         is_params_confirmed = false;
+        //         // history_info = local_deque;
+        //         // double bAngle = history_info[0].relative_angle;
+        //         // for(auto &target_info : history_info)
+        //         //     target_info.relative_angle -= bAngle;
+        //         // target.relative_angle = history_info.back().relative_angle + abs(target.delta_angle);
+        //         return false;
+        //     }
+        // }
+        else
         {
-            if(target.angle_offset < 0.085)
-            {
+            // if(abs(target.angle_offset)< 0.085 && !target.is_switched)
+            // {
                 history_info.pop_front();
                 double bAngle = history_info[0].relative_angle;
                 for(auto &target_info : history_info)
                     target_info.relative_angle -= bAngle;
                 target.relative_angle = history_info.back().relative_angle + abs(target.delta_angle);
                 history_info.push_back(target);
-            }
-            else
-            {
-                //TODO: 
-            }
-            if(history_info.size() == 200)
-            {
-                // deque<TargetInfo> local_deque(history_info.end() - 20, history_info.end());
-                history_info.clear();
-                is_params_confirmed = false;
-                // history_info = local_deque;
-                // double bAngle = history_info[0].relative_angle;
-                // for(auto &target_info : history_info)
-                //     target_info.relative_angle -= bAngle;
-                // target.relative_angle = history_info.back().relative_angle + abs(target.delta_angle);
-                // return false;
-            }
-        }
-        else
-        {
-            if(target.angle_offset < 0.085)
-            {
-                target.relative_angle = history_info.back().relative_angle + abs(target.delta_angle);
-                history_info.push_back(target);
-            }
-            else
-            {
-                //扇叶发生切换，此帧的旋转角度可由插值或已激活能量机关的旋转角度补充
-            }
-            last_target = target;
-            return false;
+            // }
+            // else
+            // {
+            //     //扇叶发生切换，此帧的旋转角度可由插值或已激活能量机关的旋转角度补充
+            //     target.relative_angle = history_info.back().relative_angle + abs(target.delta_angle);
+            //     history_info.push_back(target);
+            // }
+            // last_target = target;
+            // return false;
         }
         mutex_.unlock();
 
@@ -228,7 +246,7 @@ namespace buff_processor
 
         double rotate_speed_sum = 0.0;
         double rotate_speed_ave = 0.0;
-        int dir_cnt = 0;
+        // int dir_cnt = 0;
         // double delta_angle_sum = 0.0;
         // RCLCPP_INFO(logger_, "base_angle: %lf", base_angle_);
         // double base_time = history_info[0].timestamp;
@@ -237,10 +255,10 @@ namespace buff_processor
         {
             // delta_angle_sum += target_info.delta_angle;
             // RCLCPP_INFO(logger_, "delta_angle: %lf", target_info.delta_angle);
-            if(target_info.delta_angle > 0)
-                dir_cnt += 1;
-            else if(target_info.delta_angle < 0)
-                dir_cnt -= 1;
+            // if(target_info.delta_angle > 0)
+            //     dir_cnt += 1;
+            // else if(target_info.delta_angle < 0)
+            //     dir_cnt -= 1;
                 
             double dAngle = (target_info.relative_angle - origin_target.relative_angle);
             if((target_info.timestamp - origin_target.timestamp) != 0)
@@ -251,11 +269,36 @@ namespace buff_processor
             // RCLCPP_INFO(logger_, "abs_angle: %lf relative_angle: %lf timestamp: %lf", target_info.abs_angle, target_info.relative_angle, (target_info.timestamp - base_time) / 1e9);
         }
         rotate_speed_ave = rotate_speed_sum / (((int)history_info.size())-1);
-        sign_ = (dir_cnt > 0) ? 1 : -1;
+        // sign_ = (dir_cnt > 0) ? 1 : -1;
         // sign_ = (delta_angle_sum > 0 ? 1 : -1);
         // RCLCPP_INFO(logger_, "delta_angle_sum: %lf", delta_angle_sum);
         // if(delta_angle_sum < 0)
         //     sleep(10);
+
+        int dir_cnt = 0;
+        if(!is_direction_confirmed && delta_angle_vec_.size() < 100)
+        {
+            for(auto delta_angle : delta_angle_vec_)
+            {
+                if(delta_angle > 0)
+                    dir_cnt += 1;
+                else if(delta_angle < 0)
+                    dir_cnt -= 1;
+            }
+            sign_ = (dir_cnt > 0) ? 1 : -1;
+        }
+        else
+        {
+            for(auto delta_angle : delta_angle_vec_)
+            {
+                if(delta_angle > 0)
+                    dir_cnt += 1;
+                else if(delta_angle < 0)
+                    dir_cnt -= 1;
+            }
+            sign_ = (dir_cnt > 0) ? 1 : -1;
+            is_direction_confirmed = true;
+        }
 
         int lmode = mode;
         RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "mode: %d", lmode);
@@ -268,8 +311,8 @@ namespace buff_processor
         }
         else if(mode == 1)
         {
-            // if(!is_params_confirmed)
-            // {
+            if((!is_params_confirmed) || (history_info.size() % 100 == 0))
+            {
                 ceres::Problem problem;
                 ceres::Solver::Options options;
                 ceres::Solver::Summary summary;       // 优化信息
@@ -290,20 +333,20 @@ namespace buff_processor
                         (
                             new CurveFittingCost(target_info.relative_angle, (target_info.timestamp - origin_timestamp) / 1e9)
                         ),
-                        new ceres::CauchyLoss(0.5),
+                        new ceres::CauchyLoss(0.1),
                         params_fitting
                     );
                 }
 
                 //设置上下限
-                problem.SetParameterLowerBound(params_fitting, 0, 0.1); //a(0.780~1.045)
-                problem.SetParameterUpperBound(params_fitting, 0, 1.5); 
-                problem.SetParameterLowerBound(params_fitting, 1, 0.5); //w(1.884~2.000)
-                problem.SetParameterUpperBound(params_fitting, 1, 2.4);
+                problem.SetParameterLowerBound(params_fitting, 0, 0.250); //a(0.780~1.045)
+                problem.SetParameterUpperBound(params_fitting, 0, 1.890); 
+                problem.SetParameterLowerBound(params_fitting, 1, 1.290); //w(1.884~2.000)
+                problem.SetParameterUpperBound(params_fitting, 1, 2.600);
                 problem.SetParameterLowerBound(params_fitting, 2, -CV_PI); //θ
                 problem.SetParameterUpperBound(params_fitting, 2, CV_PI);
-                problem.SetParameterLowerBound(params_fitting, 3, 0.1); //b=2.090-a
-                problem.SetParameterUpperBound(params_fitting, 3, 1.5);
+                problem.SetParameterLowerBound(params_fitting, 3, 0.45); //b=2.090-a
+                problem.SetParameterUpperBound(params_fitting, 3, 1.80);
 
                 //参数求解
                 ceres::Solve(options, &problem, &summary);
@@ -316,17 +359,17 @@ namespace buff_processor
                 else
                 {
                     mutex_.lock();
-                    if(is_params_confirmed)
-                    {
-                        auto old_rmse = evalRMSE(params);
-                        auto new_rmse = evalRMSE(params_fitting);
-                        if (new_rmse < old_rmse)
-                        {   
-                            memcpy(params, params_fitting, sizeof(params));
-                            return true;
-                            // std::cout << "phase:" << phase << std::endl;
-                        }
-                    }
+                    // if(is_params_confirmed)
+                    // {
+                    //     auto old_rmse = evalRMSE(params);
+                    //     auto new_rmse = evalRMSE(params_fitting);
+                    //     if (new_rmse < old_rmse)
+                    //     {   
+                    //         memcpy(params, params_fitting, sizeof(params));
+                    //         return true;
+                    //         // std::cout << "phase:" << phase << std::endl;
+                    //     }
+                    // }
 
                     memcpy(params, params_fitting, sizeof(params));
                     is_params_confirmed = true;
@@ -335,52 +378,52 @@ namespace buff_processor
                     std::cout << std::endl;
                     mutex_.unlock();
                 }
-        //     }   
-        //     else
-        //     {
-        //         ceres::Problem problem;
-        //         ceres::Solver::Options options;
-        //         ceres::Solver::Summary summary; // 优化信息
-        //         options.max_num_iterations = 30;
-        //         options.linear_solver_type = ceres::DENSE_QR;
-        //         options.minimizer_progress_to_stdout =false;
+            }   
+            else
+            {
+                ceres::Problem problem;
+                ceres::Solver::Options options;
+                ceres::Solver::Summary summary; // 优化信息
+                options.max_num_iterations = 30;
+                options.linear_solver_type = ceres::DENSE_QR;
+                options.minimizer_progress_to_stdout =false;
 
-        //         double phase;
-        //         double origin_timestamp = history_info.front().timestamp;
-        //         for (auto target_info : history_info)
-        //         {
-        //             problem.AddResidualBlock( // 向问题中添加误差项
-        //             // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致
-        //                 new ceres::AutoDiffCostFunction<CURVE_FITTING_COST_PHASE, 1, 1> 
-        //                 ( 
-        //                     new CURVE_FITTING_COST_PHASE(target_info.relative_angle, 
-        //                     (target_info.timestamp - origin_timestamp) / 1e9,
-        //                     params[0], 
-        //                     params[1], 
-        //                     params[3])
-        //                 ),
-        //                 new ceres::CauchyLoss(1e1),
-        //                 &phase // 待估计参数
-        //             );
-        //         }
+                double phase;
+                double origin_timestamp = history_info.front().timestamp;
+                for (auto target_info : history_info)
+                {
+                    problem.AddResidualBlock( // 向问题中添加误差项
+                    // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致
+                        new ceres::AutoDiffCostFunction<CURVE_FITTING_COST_PHASE, 1, 1> 
+                        ( 
+                            new CURVE_FITTING_COST_PHASE(target_info.relative_angle, 
+                            (target_info.timestamp - origin_timestamp) / 1e9,
+                            params[0], 
+                            params[1], 
+                            params[3])
+                        ),
+                        new ceres::CauchyLoss(0.5),
+                        &phase // 待估计参数
+                    );
+                }
 
-        //         //设置上下限
-        //         problem.SetParameterUpperBound(&phase, 0, CV_PI);
-        //         problem.SetParameterLowerBound(&phase, 0, -CV_PI);
+                //设置上下限
+                problem.SetParameterUpperBound(&phase, 0, CV_PI);
+                problem.SetParameterLowerBound(&phase, 0, -CV_PI);
 
-        //         ceres::Solve(options, &problem, &summary);
+                ceres::Solve(options, &problem, &summary);
 
-        //         mutex_.lock();
-        //         double params_new[4] = {params[0], params[1], phase, params[3]};
-        //         auto old_rmse = evalRMSE(params);
-        //         auto new_rmse = evalRMSE(params_new);
-        //         if (new_rmse < old_rmse)
-        //         {   
-        //             params[2] = phase;
-        //             std::cout << "phase:" << phase << std::endl;
-        //         }
-        //         mutex_.unlock();
-        //     }
+                mutex_.lock();
+                double params_new[4] = {params[0], params[1], phase, params[3]};
+                auto old_rmse = evalRMSE(params);
+                auto new_rmse = evalRMSE(params_new);
+                if (new_rmse < old_rmse)
+                {   
+                    params[2] = phase;
+                    std::cout << "phase:" << phase << std::endl;
+                }
+                mutex_.unlock();
+            }
         }
         else
         {
@@ -395,6 +438,7 @@ namespace buff_processor
 
     bool BuffPredictor::predict(BuffMsg buff_msg, double dist, double &result)
     {
+        curveFitting(buff_msg);
         double delay = (mode == 1 ? predictor_param_.delay_big : predictor_param_.delay_small);
         // double delta_time_estimate = ((double)dist / predictor_param_.bullet_speed) * 1e3 + delay;
         double delta_time_estimate = 200;
@@ -411,13 +455,28 @@ namespace buff_processor
             }
             else if(mode == 1)
             {
-                double cur_angle = history_info.back().relative_angle + abs(buff_msg.delta_angle);
                 mutex_.lock();
+                // double cur_angle = history_info.back().relative_angle + abs(buff_msg.delta_angle);
+                // TargetInfo target = 
+                // {
+                //     buff_msg.target_switched,
+                //     buff_msg.angle,
+                //     cur_angle,
+                //     buff_msg.delta_angle,
+                //     buff_msg.angle_offset,
+                //     buff_msg.timestamp
+                // };
+                // history_info.push_back(target);
+
                 double timespan = (buff_msg.timestamp - history_info.front().timestamp) / 1e6;
                 double time_estimate = delta_time_estimate + timespan;
                 double pre_dt = (time_estimate / 1e3);
                 double pre_angle = calPreAngle(params, pre_dt);
-                result = sign_ * (pre_angle - cur_angle);
+                if(sign_ == 1)
+                    result = abs(pre_angle - history_info.back().relative_angle);
+                else if(sign_ == -1)
+                    result = -abs(pre_angle - history_info.back().relative_angle);
+
                 int direction = sign_;
                 // RCLCPP_INFO(logger_, "sign: %d cur_time: %lf pre_time: %lf cur_angle: %lf pre_angle: %lf", direction, (timespan / 1e3), pre_dt, history_info.back().relative_angle, pre_angle);
                 mutex_.unlock();
@@ -451,7 +510,7 @@ namespace buff_processor
         {
             auto t = (float)(target_info.timestamp - origin_timestamp) / 1e9;
             auto pred = -(params[0] / params[1]) * ceres::cos(params[1] * t + params[2]) + params[3] * t + (params[0] / params[1]) * ceres::cos(params[2]);
-            // RCLCPP_INFO(logger_, "t: %lf pred: %lf origin: %lf", t, pred, target_info.relative_angle);
+            RCLCPP_INFO(logger_, "t: %lf pred: %lf origin: %lf", t, pred, target_info.relative_angle);
             auto measure = target_info.relative_angle;
             rmse_sum += pow((pred - measure), 2);
         }

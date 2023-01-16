@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2023-01-15 17:19:24
+ * @LastEditTime: 2023-01-16 17:14:23
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
@@ -147,6 +147,8 @@ namespace buff_detector
         // vector<BuffObject> objects_;
         std::vector<FanTracker> trackers_;
         Fan last_fan_;
+        double last_last_delta_angle_;
+        double last_delta_angle_;
         Eigen::Matrix3d rmat_imu_;
         float last_angle_;
         float cur_angle_;
