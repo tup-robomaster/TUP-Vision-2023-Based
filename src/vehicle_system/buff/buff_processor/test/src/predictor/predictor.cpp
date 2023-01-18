@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-01-16 23:12:15
+ * @LastEditTime: 2023-01-19 00:10:48
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -17,6 +17,7 @@ namespace buff_processor
         angle_offset_ = 0.0;
         sign_ = 0;
         is_switched_ = false;
+        error_cnt_ = 0;
         
         params[0] = 0;
         params[1] = 0; 
@@ -68,9 +69,11 @@ namespace buff_processor
             sign_ = 0;
             angle_offset_ = 0.0;
             is_switched_ = false;
+            error_cnt_ = 0;
             base_angle_ = target.abs_angle;
             target.relative_angle = 0.0;
             history_info.push_back(target);
+            origin_timestamp_ = history_info.front().timestamp;
             params[0] = 0.01;
             params[1] = 0.01; 
             params[2] = 0.01; 
@@ -95,7 +98,7 @@ namespace buff_processor
         target.delta_angle = (target.delta_angle / buff_msg.delta_angle > 0) ? target.delta_angle : buff_msg.delta_angle;
         
         mutex_.lock();
-        int fitting_lens = 25;
+        int fitting_lens = 35;
 
         if(!is_direction_confirmed)
         {
@@ -243,6 +246,8 @@ namespace buff_processor
         //         history_info.push_back(target);
         //     }
         // }
+        double pe = phase_;
+        last_phase_ = pe;
 
         double rotate_speed_sum = 0.0;
         double rotate_speed_ave = 0.0;
@@ -311,7 +316,7 @@ namespace buff_processor
         }
         else if(mode == 1)
         {
-            if((!is_params_confirmed) || (history_info.size() % 100 == 0))
+            if(!is_params_confirmed)
             {
                 ceres::Problem problem;
                 ceres::Solver::Options options;
@@ -320,10 +325,13 @@ namespace buff_processor
                 options.linear_solver_type = ceres::DENSE_QR;
                 options.minimizer_progress_to_stdout = false;
 
-                double params_fitting[4] = {0.1, 0.1, 0.1, rotate_speed_ave};
+                double params_fitting[4] = {params[0], params[1], params[2], params[3]};
 
+                // double origin_timestamp = origin_timestamp_;
                 double origin_timestamp = history_info.front().timestamp;
-                for(auto target_info : history_info)
+                // int ii = 0;
+                // for(auto target_info : history_info)
+                for(int ii = 0; ii < history_info.size(); ii += 1)
                 {
                     // RCLCPP_INFO(logger_, "relative_angle: %lf timestamp: %lf", target_info.relative_angle, ((target_info.timestamp - origin_timestamp) / 1e9));
 
@@ -331,33 +339,37 @@ namespace buff_processor
                     (
                         new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 4>
                         (
-                            new CurveFittingCost(target_info.relative_angle, (target_info.timestamp - origin_timestamp) / 1e9)
+                            // new CurveFittingCost(target_info.relative_angle, (target_info.timestamp - origin_timestamp) / 1e9)
+                            new CurveFittingCost(history_info[ii].relative_angle, (history_info[ii].timestamp - origin_timestamp) / 1e9)
                         ),
-                        new ceres::CauchyLoss(0.1),
+                        new ceres::CauchyLoss(0.5),
                         params_fitting
                     );
                 }
 
                 //设置上下限
-                problem.SetParameterLowerBound(params_fitting, 0, 0.250); //a(0.780~1.045)
-                problem.SetParameterUpperBound(params_fitting, 0, 1.890); 
-                problem.SetParameterLowerBound(params_fitting, 1, 1.290); //w(1.884~2.000)
-                problem.SetParameterUpperBound(params_fitting, 1, 2.600);
-                problem.SetParameterLowerBound(params_fitting, 2, -CV_PI); //θ
-                problem.SetParameterUpperBound(params_fitting, 2, CV_PI);
-                problem.SetParameterLowerBound(params_fitting, 3, 0.45); //b=2.090-a
-                problem.SetParameterUpperBound(params_fitting, 3, 1.80);
+                // problem.SetParameterLowerBound(params_fitting, 0, 0.250 * (180 / CV_PI)); //a(0.780~1.045)
+                // problem.SetParameterUpperBound(params_fitting, 0, 1.890 * (180 / CV_PI)); 
+                // problem.SetParameterLowerBound(params_fitting, 1, 1.290); //w(1.884~2.000)
+                // problem.SetParameterUpperBound(params_fitting, 1, 2.600);
+                // problem.SetParameterLowerBound(params_fitting, 2, -2 * CV_PI); //θ
+                // problem.SetParameterUpperBound(params_fitting, 2, 2 * CV_PI);
+                // problem.SetParameterLowerBound(params_fitting, 3, 0.45 * (180 / CV_PI)); //b=2.090-a
+                // problem.SetParameterUpperBound(params_fitting, 3, 1.80 * (180 / CV_PI));
 
                 //参数求解
                 ceres::Solve(options, &problem, &summary);
                 
                 //计算拟合后曲线的RMSE指标
+                // auto last_rmse = evalRMSE(params);
                 auto rmse = evalRMSE(params_fitting);
                 RCLCPP_INFO(logger_, "RMSE: %lf", rmse);
-                if (rmse > predictor_param_.max_rmse)
-                    return false;
-                else
+                if (rmse < 3.5)
                 {
+
+                //     return false;
+                // else
+                // {
                     mutex_.lock();
                     // if(is_params_confirmed)
                     // {
@@ -372,23 +384,25 @@ namespace buff_processor
                     // }
 
                     memcpy(params, params_fitting, sizeof(params));
+                    phase_ = params_fitting[2];
                     is_params_confirmed = true;
                     for (auto param : params)
                         cout << param << " ";
                     std::cout << std::endl;
                     mutex_.unlock();
                 }
+                // }
             }   
             else
             {
                 ceres::Problem problem;
                 ceres::Solver::Options options;
                 ceres::Solver::Summary summary; // 优化信息
-                options.max_num_iterations = 30;
+                // options.max_num_iterations = 30;
                 options.linear_solver_type = ceres::DENSE_QR;
                 options.minimizer_progress_to_stdout =false;
 
-                double phase;
+                double phase = params[2];
                 double origin_timestamp = history_info.front().timestamp;
                 for (auto target_info : history_info)
                 {
@@ -396,20 +410,19 @@ namespace buff_processor
                     // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致
                         new ceres::AutoDiffCostFunction<CURVE_FITTING_COST_PHASE, 1, 1> 
                         ( 
-                            new CURVE_FITTING_COST_PHASE(target_info.relative_angle, 
-                            (target_info.timestamp - origin_timestamp) / 1e9,
+                            new CURVE_FITTING_COST_PHASE(target_info.relative_angle, (target_info.timestamp - origin_timestamp) / 1e9,
                             params[0], 
                             params[1], 
                             params[3])
                         ),
-                        new ceres::CauchyLoss(0.5),
+                        new ceres::CauchyLoss(0.05),
                         &phase // 待估计参数
                     );
                 }
 
                 //设置上下限
-                problem.SetParameterUpperBound(&phase, 0, CV_PI);
-                problem.SetParameterLowerBound(&phase, 0, -CV_PI);
+                // problem.SetParameterUpperBound(&phase, 0, 2 * CV_PI);
+                // problem.SetParameterLowerBound(&phase, 0, -(2 * CV_PI));
 
                 ceres::Solve(options, &problem, &summary);
 
@@ -417,10 +430,11 @@ namespace buff_processor
                 double params_new[4] = {params[0], params[1], phase, params[3]};
                 auto old_rmse = evalRMSE(params);
                 auto new_rmse = evalRMSE(params_new);
-                if (new_rmse < old_rmse)
+                if (new_rmse < old_rmse && new_rmse < 3.5)
                 {   
                     params[2] = phase;
-                    std::cout << "phase:" << phase << std::endl;
+                    phase_ = phase;
+                    std::cout << "phase:" << phase << " new_rmse:" << new_rmse << std::endl;
                 }
                 mutex_.unlock();
             }
@@ -440,15 +454,18 @@ namespace buff_processor
     {
         curveFitting(buff_msg);
         double delay = (mode == 1 ? predictor_param_.delay_big : predictor_param_.delay_small);
-        // double delta_time_estimate = ((double)dist / predictor_param_.bullet_speed) * 1e3 + delay;
-        double delta_time_estimate = 200;
+        double delta_time_estimate = ((double)dist / predictor_param_.bullet_speed) * 1e3 + delay;
+        // double delta_time_estimate = 200;
         
         if(is_params_confirmed)
         {
             if(mode == 0)
             {
                 mutex_.lock();
-                result = sign_ * (params[3] * delta_time_estimate / 1e3);
+                if(sign_ == 1)
+                    result = abs(params[3] * delta_time_estimate / 1e3);
+                else if(sign_ == -1)
+                    result = -abs(params[3] * delta_time_estimate / 1e3);
                 int direction = sign_;
                 RCLCPP_INFO(logger_, "rotate_direction: %d", direction);
                 mutex_.unlock();
@@ -468,17 +485,68 @@ namespace buff_processor
                 // };
                 // history_info.push_back(target);
 
+                // double timespan = (buff_msg.timestamp - origin_timestamp_) / 1e6;
                 double timespan = (buff_msg.timestamp - history_info.front().timestamp) / 1e6;
+                double cur_pre_angle = calPreAngle(params, timespan / 1e3);
+                if(abs(history_info.back().relative_angle - cur_pre_angle) * (CV_PI / 180) > 0.06)
+                    error_cnt_++;
+                if(error_cnt_ > 3)
+                {
+                    is_params_confirmed = false;
+                    error_cnt_ = 0;
+                    return false;
+                }
+                // RCLCPP_INFO(logger_, "cur_angle: %lf cur_pre_angle: %lf", history_info.back().relative_angle * (180 / CV_PI), cur_pre_angle * (180 / CV_PI));
+                RCLCPP_INFO(logger_, "cur_angle: %lf cur_pre_angle: %lf", history_info.back().relative_angle * (CV_PI / 180), cur_pre_angle * (CV_PI / 180));
+
                 double time_estimate = delta_time_estimate + timespan;
                 double pre_dt = (time_estimate / 1e3);
                 double pre_angle = calPreAngle(params, pre_dt);
+                // if(last_phase_ != phase_)
+                // {
+                //     predict_info_.clear();
+                // }
+
+                // TargetInfo target;
+                // if(predict_info_.size() > 1)
+                //     target.relative_angle = predict_info_.back().relative_angle + abs(buff_msg.delta_angle);
+                // else
+                //     target.relative_angle = history_info.back().relative_angle + abs(buff_msg.delta_angle);
+                // predict_info_.push_back(target);
+
                 if(sign_ == 1)
-                    result = abs(pre_angle - history_info.back().relative_angle);
+                    // result = abs(pre_angle - history_info.back().relative_angle);
+                    result = abs(pre_angle - history_info.back().relative_angle) * (CV_PI / 180);
                 else if(sign_ == -1)
-                    result = -abs(pre_angle - history_info.back().relative_angle);
+                    // result = -abs(pre_angle - history_info.back().relative_angle);
+                    result = -abs(pre_angle - history_info.back().relative_angle) * (CV_PI / 180);
+                
+                // if(last_angle_offset_ != 0)
+                // {
+                //     double angle_shift = 0.0;
+                //     double time_shift = 0.0;
+                //     if(predict_info_.size() > 1)
+                //     {
+                //         angle_shift = predict_info_.back().relative_angle -predict_info_[predict_info_.size() - 2].relative_angle;
+                //         time_shift = (predict_info_.back().timestamp - predict_info_[predict_info_.size() - 2].timestamp) / 1e6;
+                //     }
+                //     else
+                //     {
+                //         angle_shift = history_info.back().relative_angle - history_info[history_info.size() - 2].relative_angle;
+                //         time_shift = (history_info.back().timestamp - history_info[history_info.size() - 2].timestamp) / 1e6;
+                //     }
+
+                //     if(abs(result - last_angle_offset_) < (2.2 * (delta_time_estimate / time_shift) * angle_shift))
+                //         last_angle_offset_ = result;
+                //     else
+                //         result = last_angle_offset_;
+                // }
+                // else
+                //      last_angle_offset_ = result;
 
                 int direction = sign_;
-                // RCLCPP_INFO(logger_, "sign: %d cur_time: %lf pre_time: %lf cur_angle: %lf pre_angle: %lf", direction, (timespan / 1e3), pre_dt, history_info.back().relative_angle, pre_angle);
+                // RCLCPP_INFO(logger_, "sign: %d cur_time: %lf pre_time: %lf cur_angle: %lf pre_angle: %lf", direction, (timespan / 1e3), pre_dt, history_info.back().relative_angle * (180 / CV_PI), pre_angle * (180 / CV_PI));
+                RCLCPP_INFO(logger_, "sign: %d cur_time: %lf pre_time: %lf cur_angle: %lf pre_angle: %lf", direction, (timespan / 1e3), pre_dt, history_info.back().relative_angle * (CV_PI / 180), pre_angle * (CV_PI / 180));
                 mutex_.unlock();
                 // if(result < 0.0)
                 //     return false;
@@ -506,11 +574,13 @@ namespace buff_processor
         double rmse_sum = 0;
         double rmse = 0;
         double origin_timestamp = history_info.front().timestamp;
+        // double origin_timestamp = origin_timestamp_;
         for (auto target_info : history_info)
         {
             auto t = (float)(target_info.timestamp - origin_timestamp) / 1e9;
             auto pred = -(params[0] / params[1]) * ceres::cos(params[1] * t + params[2]) + params[3] * t + (params[0] / params[1]) * ceres::cos(params[2]);
-            RCLCPP_INFO(logger_, "t: %lf pred: %lf origin: %lf", t, pred, target_info.relative_angle);
+            // RCLCPP_INFO(logger_, "t: %lf pred: %lf origin: %lf", t, pred * (180 / CV_PI), target_info.relative_angle * (180 / CV_PI));
+            RCLCPP_INFO(logger_, "t: %lf pred: %lf origin: %lf", t, pred * (CV_PI / 180), target_info.relative_angle * (CV_PI / 180));
             auto measure = target_info.relative_angle;
             rmse_sum += pow((pred - measure), 2);
         }

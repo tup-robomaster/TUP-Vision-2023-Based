@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2023-01-16 23:00:09
+ * @LastEditTime: 2023-01-19 00:11:22
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
@@ -63,8 +63,8 @@ namespace buff_processor
         {
             pf_path = "src/global_user/config/filter_param.yaml";
             bullet_speed = 28.0;
-            max_timespan = 20000;       
-            max_rmse = 0.01;
+            max_timespan = 50000;       
+            max_rmse = 2.0;
             max_v = 3.0;
             max_a = 8.0;
             history_deque_len_cos = 250;
@@ -196,9 +196,17 @@ namespace buff_processor
         atomic<int> sign_;
         double angle_offset_;
         bool is_switched_;
+        double last_angle_offset_;
+        std::deque<TargetInfo> predict_info_;
+        atomic<double> last_phase_;
+        atomic<double> phase_;
+        double origin_timestamp_;
+        int error_cnt_;
 
     private:
-        double params[4] = {0.01, 0.01, 0.01, 0.01};
+        double params[4] = {0.9125, 1.942, 0.0, 1.1325};
+        // double params[4] = {-297.959, -0.000124531, 706.449, 131.67};
+
         rclcpp::Logger logger_;
         Mutex mutex_;
 

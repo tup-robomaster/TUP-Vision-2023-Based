@@ -50,7 +50,9 @@
     # video_path: "src/camera_driver/recorder/video/gyro1.avi"
     # video_path: "src/camera_driver/recorder/video/buff.webm"
     video_path: "src/camera_driver/recorder/video/raw_long_buff.mp4"
+    # video_path: "src/camera_driver/recorder/video/big_buff1.mp4"
     # video_path: "src/camera_driver/recorder/video/2022-06-23_19_38_49.avi"
+    # video_path: "src/camera_driver/recorder/video/result.mp4"
     save_video: false
 
 /mvs_cam_driver:

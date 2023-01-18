@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-01-16 17:15:40
+ * @LastEditTime: 2023-01-18 23:31:17
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -230,7 +230,8 @@ namespace buff_detector
             double dx = (fan.armor3d_world[1] - fan.centerR3d_world[1]);
             double dy = (fan.armor3d_world[0] - fan.centerR3d_world[0]);
             double r_dis = sqrt(pow(dy, 2) + pow(dx, 2) + pow(dz, 2));
-            double sin_theta = asin(dz / r_dis);
+            double sin_theta = asin(dz / r_dis) * (180 / CV_PI);
+            // double sin_theta = asin(dz / r_dis);
             // RCLCPP_INFO(logger_, "R_radius: %lf theta: %lf", r_dis, sin_theta);
             fan.dx = dx;
             fan.dz = dz;
