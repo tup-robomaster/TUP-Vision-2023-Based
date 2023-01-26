@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:47:32
- * @LastEditTime: 2023-01-15 18:47:10
+ * @LastEditTime: 2023-01-26 23:18:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor/buff_processor.cpp
  */
 #include "../../include/buff_processor/buff_processor.hpp"
@@ -79,8 +79,31 @@ namespace buff_processor
             Eigen::Vector3d armor_center = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
             if(!buff_predictor_.predict(buff_msg, armor_center.norm(), theta_offset))
             {
+                Eigen::Vector3d armor3d_world = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
+                if(debug_param_.using_imu)
+                {
+                    Eigen::Quaterniond imu_quat = {buff_msg.quat_imu.w, buff_msg.quat_imu.x, buff_msg.quat_imu.y, buff_msg.quat_imu.z};
+                    rmat_imu_ = imu_quat.toRotationMatrix();
+                }
+                else
+                    rmat_imu_ = Eigen::Matrix3d::Identity();
+                
+                // 转换到相机系
+                Eigen::Vector3d hit_point_cam = coordsolver_.worldToCam(armor3d_world, rmat_imu_);
+
+                // 计算云台偏转角度（pitch、yaw）
+                Eigen::Vector2d angle = coordsolver_.getAngle(hit_point_cam, rmat_imu_);
+                RCLCPP_INFO(logger_, "Yaw: %lf Pitch: %lf", angle[0], angle[1]);
+
+                target_info.angle = angle;
+                target_info.armor3d_world = armor3d_world;
+                target_info.hit_point_world = armor3d_world;
+                target_info.hit_point_cam = hit_point_cam;
+                target_info.armor3d_cam = hit_point_cam;
+                target_info.target_switched = buff_msg.target_switched;
+
                 RCLCPP_WARN(logger_, "Predictor failed...");
-                return false;
+                return true;
             }
             else
             {

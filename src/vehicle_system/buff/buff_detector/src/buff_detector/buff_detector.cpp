@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-01-10 14:11:09
+ * @LastEditTime: 2023-01-26 15:21:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -162,7 +162,6 @@ namespace buff_detector
                 sprintf(ch, "%.2f", r_rect.angle);
                 std::string angle_str = ch;
                 putText(src.img, "Angle:" + angle_str, (vertex_sum / 4.0), FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
-                
                 
                 // cur_angle_ = r_rect.angle;
                 // if(last_angle_ != 0)
@@ -438,42 +437,43 @@ namespace buff_detector
             return false;
         }
 
-        // mean_rotate_speed = rotate_speed_sum / avail_tracker_cnt;
-        // mean_r_center = r_center_sum / avail_tracker_cnt;
-        // auto r_center_cam = coordsolver_.worldToCam(target.centerR3d_world, rmat_imu_);
-        // auto center2d_src = coordsolver_.reproject(r_center_cam);
-        // auto angle = coordsolver_.getAngle(target.armor3d_cam, rmat_imu_);
+        mean_rotate_speed = rotate_speed_sum / avail_tracker_cnt;
+        mean_r_center = r_center_sum / avail_tracker_cnt;
+        auto r_center_cam = coordsolver_.worldToCam(target.centerR3d_world, rmat_imu_);
+        auto center2d_src = coordsolver_.reproject(r_center_cam);
+        auto angle = coordsolver_.getAngle(target.armor3d_cam, rmat_imu_);
 
-        // target_info.rotate_speed = mean_rotate_speed;
-        // target_info.r_center = mean_r_center;
-        // target_info.rmat = target.rmat;
+        target_info.rotate_speed = mean_rotate_speed;
+        target_info.r_center = mean_r_center;
+        target_info.rmat = target.rmat;
+        target_info.armor3d_world = target.armor3d_world;
 
-        // RCLCPP_INFO(logger_, "r_center_cam: %lf %lf %lf", r_center_cam[0], r_center_cam[1], r_center_cam[2]);
-        // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 200, "Target mean_rotate_speed: %lf mean_r_center: {x:%lf y:%lf z:%lf}",
-        //     mean_rotate_speed, mean_r_center[0], mean_r_center[1], mean_r_center[2]);
+        RCLCPP_INFO(logger_, "r_center_cam: %lf %lf %lf", r_center_cam[0], r_center_cam[1], r_center_cam[2]);
+        RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 200, "Target mean_rotate_speed: %lf mean_r_center: {x:%lf y:%lf z:%lf}",
+            mean_rotate_speed, mean_r_center[0], mean_r_center[1], mean_r_center[2]);
 
-        // // 判断扇叶是否发生切换
-        // bool is_switched = false;
-        // double delta_t = (src.timestamp - last_timestamp_);
-        // auto relative_rmat = last_fan_.rmat.transpose() * target.rmat;
-        // auto angle_axisd = Eigen::AngleAxisd(relative_rmat);
+        // 判断扇叶是否发生切换
+        bool is_switched = false;
+        double delta_t = (src.timestamp - last_timestamp_);
+        auto relative_rmat = last_fan_.rmat.transpose() * target.rmat;
+        auto angle_axisd = Eigen::AngleAxisd(relative_rmat);
 
-        // double rotate_spd = (angle_axisd.angle() / delta_t * 1e9);
-        // if(abs(rotate_spd) > buff_param_.max_v)
-        //     is_switched = true;
-        // target_info.target_switched = is_switched;
-        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "Target is switched: %d", (int)(is_switched));
+        double rotate_spd = (angle_axisd.angle() / delta_t * 1e9);
+        if(abs(rotate_spd) > buff_param_.max_v)
+            is_switched = true;
+        target_info.target_switched = is_switched;
+        RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "Target is switched: %d", (int)(is_switched));
 
-        // lost_cnt_ = 0;
-        // last_roi_center_ = center2d_src;
-        // last_timestamp_ = src.timestamp;
-        // last_fan_ = target;
-        // is_last_target_exists_ = true;
+        lost_cnt_ = 0;
+        last_roi_center_ = center2d_src;
+        last_timestamp_ = src.timestamp;
+        last_fan_ = target;
+        is_last_target_exists_ = true;
 
-        // if (isnan(angle[0]) || isnan(angle[1]) || abs(angle[0]) > 45 || abs(angle[1]) > 45)
-        //     return false;
-        // else
-        //     RCLCPP_INFO(logger_, "pitch: %lf yaw: %lf", angle[0], angle[1]);
+        if (isnan(angle[0]) || isnan(angle[1]) || abs(angle[0]) > 45 || abs(angle[1]) > 45)
+            return false;
+        else
+            RCLCPP_INFO(logger_, "pitch: %lf yaw: %lf", angle[0], angle[1]);
         
         // auto time_detect = steady_clock_.now();
         // double dr_full_ns = (time_detect - time_start).nanoseconds();

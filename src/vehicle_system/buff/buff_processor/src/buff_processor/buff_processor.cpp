@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:47:32
- * @LastEditTime: 2023-01-07 19:26:41
+ * @LastEditTime: 2023-01-26 16:00:58
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor/buff_processor.cpp
  */
 #include "../../include/buff_processor/buff_processor.hpp"
@@ -35,6 +35,7 @@ namespace buff_processor
         //     coordsolver_.loadParam(path_param_.camera_param_path, path_param_.camera_name);
         //     is_initialized = true;
         // }
+        buff_msg.mode = 4;
         buff_predictor_.mode = buff_msg.mode;
         buff_predictor_.last_mode = buff_predictor_.mode;
 
@@ -47,12 +48,13 @@ namespace buff_processor
             if(buff_predictor_.mode == 4)
                 buff_predictor_.mode = 1;
             if(buff_predictor_.last_mode == 3)
-                buff_predictor_.mode = 0;
+                buff_predictor_.last_mode = 0;
             else if(buff_predictor_.last_mode == 4)
-                buff_predictor_.mode = 1;
+                buff_predictor_.last_mode = 1;
 
             Eigen::Vector3d r_center = {buff_msg.r_center.x, buff_msg.r_center.y, buff_msg.r_center.z};
-            if(!buff_predictor_.predict(buff_msg.rotate_speed, r_center.norm(), buff_msg.header.stamp.nanosec, theta_offset))
+            Eigen::Vector3d armor_center = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
+            if(!buff_predictor_.predict(buff_msg.rotate_speed, armor_center.norm(), buff_msg.header.stamp.nanosec, theta_offset))
                 return false;
             else
             {

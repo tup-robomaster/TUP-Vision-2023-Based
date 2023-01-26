@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-01-09 22:28:20
+ * @LastEditTime: 2023-01-26 15:26:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -169,6 +169,7 @@ namespace buff_detector
             buff_msg.r_center.x = target_info.r_center[0];
             buff_msg.r_center.y = target_info.r_center[1];
             buff_msg.r_center.z = target_info.r_center[2];
+            buff_msg.timestamp = src.timestamp;
             buff_msg.rotate_speed = target_info.rotate_speed;
             buff_msg.target_switched = target_info.target_switched;
             Eigen::Quaterniond quat(target_info.rmat);
@@ -176,6 +177,9 @@ namespace buff_detector
             buff_msg.quat_cam.x = quat.x();
             buff_msg.quat_cam.y = quat.y();
             buff_msg.quat_cam.z = quat.z();
+            buff_msg.armor3d_world.x = target_info.armor3d_world[0];
+            buff_msg.armor3d_world.y = target_info.armor3d_world[1];
+            buff_msg.armor3d_world.z = target_info.armor3d_world[2];
             
             // publish buff info.
             buff_info_pub_->publish(std::move(buff_msg));

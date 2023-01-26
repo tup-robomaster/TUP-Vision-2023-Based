@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-01-07 18:46:22
+ * @LastEditTime: 2023-01-26 16:07:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -65,7 +65,8 @@ namespace buff_processor
         if(debug)
         {
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffProcessorNode::paramsCallback, this, _1));
-
+            
+            sleep(5);
             if(camera_type == DaHeng)
             {
                 image_width_ = DAHENG_IMAGE_WIDTH;
@@ -165,7 +166,7 @@ namespace buff_processor
             mutex_.unlock();
            
             cv::Point2f point_2d = buff_processor_->coordsolver_.reproject(point3d);
-            cv::circle(img, point_2d, 10, (255, 255, 0), -1);
+            cv::circle(img, point_2d, 5, (0, 255, 255), -1);
             // for(int i = 0; i < 5; i++)
             //     cv::line(img, apex2d[i % 5], apex2d[(i + 1) % 5], {0, 255, 255}, 5);
             cv::namedWindow("pred_img");

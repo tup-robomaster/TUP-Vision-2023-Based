@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-01-18 23:31:17
+ * @LastEditTime: 2023-01-26 22:30:58
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -230,8 +230,8 @@ namespace buff_detector
             double dx = (fan.armor3d_world[1] - fan.centerR3d_world[1]);
             double dy = (fan.armor3d_world[0] - fan.centerR3d_world[0]);
             double r_dis = sqrt(pow(dy, 2) + pow(dx, 2) + pow(dz, 2));
-            double sin_theta = asin(dz / r_dis) * (180 / CV_PI);
-            // double sin_theta = asin(dz / r_dis);
+            // double sin_theta = asin(dz / r_dis) * (180 / CV_PI);
+            double sin_theta = asin(dz / r_dis);
             // RCLCPP_INFO(logger_, "R_radius: %lf theta: %lf", r_dis, sin_theta);
             fan.dx = dx;
             fan.dz = dz;
@@ -665,7 +665,7 @@ namespace buff_detector
             else if(delta_angle > 0)
                 delta_angle = -abs(delta_angle);
         }
-        // RCLCPP_INFO(logger_, "dx: %lf dz:%lf", target.dx, target.dz);
+        RCLCPP_INFO(logger_, "target.angle: %lf last_fan.angle:%lf", target.angle, last_fan_.angle);
         // std::cout << std::endl;
         if(delta_angle_vec_.size() > 1)
         {
@@ -697,7 +697,8 @@ namespace buff_detector
             }
             else
             {
-                delta_angle = ((last_last_delta_angle_ + last_delta_angle_) / 2.0);
+                // delta_angle = ((last_last_delta_angle_ + last_delta_angle_) / 2.0);
+                delta_angle = (src.timestamp - last_timestamp_) / (last_timestamp_ - last_last_timestamp_) * last_delta_angle_;
             }
         }
         else
@@ -721,7 +722,6 @@ namespace buff_detector
         target_info.target_switched = is_switched;
         target_info.armor3d_world = target.armor3d_world;
         
-        
         // RCLCPP_INFO(logger_, "Target's angle: %lf", target_info.angle);
 
         // double delta_t = (src.timestamp - last_timestamp_);
@@ -735,6 +735,7 @@ namespace buff_detector
 
         lost_cnt_ = 0;
         last_roi_center_ = center2d_src;
+        last_last_timestamp_ = last_timestamp_;
         last_timestamp_ = src.timestamp;
         last_fan_ = target;
         last_last_delta_angle_ = last_delta_angle_;

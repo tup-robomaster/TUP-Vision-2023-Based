@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2023-01-16 17:14:23
+ * @LastEditTime: 2023-01-26 22:29:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
@@ -137,6 +137,7 @@ namespace buff_detector
     private:
         bool is_last_target_exists_;
         int lost_cnt_;
+        double last_last_timestamp_;
         double last_timestamp_;
         double last_target_area_;
         double last_bullet_speed_;

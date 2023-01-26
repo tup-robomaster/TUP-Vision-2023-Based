@@ -75,7 +75,7 @@ add_library(${PROJECT_NAME} SHARED
   # src/buff_processor/buff_processor.cpp
   test/src/predictor/predictor.cpp
   test/src/buff_processor/buff_processor.cpp
-  test/src/buff_processor_node.cpp
+  # test/src/buff_processor_node.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME} 
