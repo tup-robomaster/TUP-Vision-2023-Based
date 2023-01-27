@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-01-08 12:22:17
+ * @LastEditTime: 2023-01-27 21:55:26
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //C++
@@ -37,6 +37,7 @@ namespace armor_detector
         bool show_fps;
         bool print_letency;
         bool print_target_info;
+        bool save_data;
 
         DebugParam()
         {
@@ -50,6 +51,7 @@ namespace armor_detector
             show_fps = true;
             print_letency = false;
             print_target_info = true; 
+            save_data = false;
         }
     };
 
@@ -93,20 +95,26 @@ namespace armor_detector
             armor_conf_high_thres = 0.82;
         }
     };
+
+    struct PathParam
+    {
+        std::string camera_name;
+        std::string camera_param_path;
+        std::string network_path;
+        std::string save_path;
+    };
+    
     
     class Detector
     {
     public:
-        Detector(const std::string& camera_name, const std::string& camera_param_path, const std::string& network_path,
-            const DetectorParam& detector_params_, const DebugParam& debug_params_, const GyroParam& gyro_params_);
+        Detector(const PathParam& path_params, const DetectorParam& detector_params_, const DebugParam& debug_params_, const GyroParam& gyro_params_);
         ~Detector();
 
     private:
         //debug
         DebugParam debug_params_;
-        std::string camera_name;
-        std::string camera_param_path;
-        std::string network_path;
+        PathParam path_params_;
         DetectorParam detector_params_;
 
     public:

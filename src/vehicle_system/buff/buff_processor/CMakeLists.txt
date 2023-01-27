@@ -5,7 +5,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD 17)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
@@ -75,7 +75,7 @@ add_library(${PROJECT_NAME} SHARED
   # src/buff_processor/buff_processor.cpp
   test/src/predictor/predictor.cpp
   test/src/buff_processor/buff_processor.cpp
-  # test/src/buff_processor_node.cpp
+  test/src/buff_processor_node.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME} 

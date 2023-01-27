@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2023-01-06 21:35:05
+ * @LastEditTime: 2023-01-27 21:49:46
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -74,9 +74,7 @@ namespace armor_detector
         DetectorParam detector_params_;
         DebugParam debug_;
         GyroParam gyro_params_;
-        std::string camera_name_;
-        std::string camera_path_;
-        std::string network_path_;
+        PathParam path_params_;
 
         // rclcpp::Node handle;
         // image_transport::ImageTransport it;

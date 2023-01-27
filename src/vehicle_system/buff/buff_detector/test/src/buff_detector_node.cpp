@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-01-15 18:35:06
+ * @LastEditTime: 2023-01-27 17:23:21
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -43,7 +43,7 @@ namespace buff_detector
         qos.durability_volatile();
 
         // buff info pub.
-        buff_info_pub_ = this->create_publisher<BuffMsg>("buff_info", qos);
+        buff_info_pub_ = this->create_publisher<BuffMsg>("buff_detector", qos);
 
         if(debug_param_.using_imu)
         {
@@ -183,6 +183,10 @@ namespace buff_detector
             buff_msg.armor3d_world.x = target_info.armor3d_world[0];
             buff_msg.armor3d_world.y = target_info.armor3d_world[1];
             buff_msg.armor3d_world.z = target_info.armor3d_world[2];
+
+            buff_msg.armor3d_cam.x = target_info.armor3d_cam[0];
+            buff_msg.armor3d_cam.y = target_info.armor3d_cam[1];
+            buff_msg.armor3d_cam.z = target_info.armor3d_cam[2];
             
             buff_msg.points2d[0].x = target_info.points2d[0].x;
             buff_msg.points2d[0].y = target_info.points2d[0].y;

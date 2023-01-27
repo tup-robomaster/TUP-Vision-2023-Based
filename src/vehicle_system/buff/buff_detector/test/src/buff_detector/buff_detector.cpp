@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-01-26 22:30:58
+ * @LastEditTime: 2023-01-28 02:44:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -225,6 +225,35 @@ namespace buff_detector
             //     yaw_pitch_vec_.pop_front();
             //     yaw_pitch_vec_.push_back(yaw_pitch);
             // }
+
+            cv::Point2f r_aver;
+            cv::Point2f r_sum;
+            cv::Point2f tar_center;
+            cv::Point2f tar_sum;
+            // for(auto center : center_vec)
+            //     r_sum += center;
+            // r_aver = (r_sum / (float)(center_vec.size()));
+
+            // last_angle_ = cur_angle_;
+            // std::vector<cv::Point2f> tar_pic;
+            // for(int ii = 0; ii < 5; ii++)
+            // {
+            //     // tar_pic.push_back(fan.apex2d[ii]);
+            //     if(ii != 2)
+            //         tar_sum += fan.apex2d[ii];
+            //     else
+            //         r_aver = fan.apex2d[ii];
+            // }
+            // tar_center = (tar_sum / 4.0);
+            
+            // double dx = (tar_center.x - r_aver.x);
+            // double dy = -(tar_center.y - r_aver.y);
+            // double r_dis = sqrt(pow(dy, 2) + pow(dx, 2));
+            // double sin_theta = asin(dy / r_dis);
+            // fan.dx = dx;
+            // fan.dz = dy;
+            // fan.angle = abs(sin_theta);
+            // cur_angle_ = atan2((tar_center.y - r_aver.y), (tar_center.x - r_aver.x)) * (180 / CV_PI);
 
             double dz = (fan.armor3d_world[2] - fan.centerR3d_world[2]);
             double dx = (fan.armor3d_world[1] - fan.centerR3d_world[1]);
@@ -721,6 +750,7 @@ namespace buff_detector
         target_info.delta_angle = delta_angle;
         target_info.target_switched = is_switched;
         target_info.armor3d_world = target.armor3d_world;
+        target_info.armor3d_cam = target.armor3d_cam;
         
         // RCLCPP_INFO(logger_, "Target's angle: %lf", target_info.angle);
 

@@ -46,12 +46,12 @@ namespace buff_processor
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/buff_processor/gimbal_info", qos);
 
         // 发布预测点信息
-        predict_info_pub_ = this->create_publisher<BuffMsg>("/buff_predict_info", qos);
+        predict_info_pub_ = this->create_publisher<BuffMsg>("/buff_predictor", qos);
 
         // 订阅待打击目标信息
-        // target_fitting_sub_ = this->create_subscription<BuffMsg>("/buff_info", qos,
+        // target_fitting_sub_ = this->create_subscription<BuffMsg>("/buff_detector", qos,
         //     std::bind(&BuffProcessorNode::targetFittingCallback, this, _1));
-        target_predictor_sub_ = this->create_subscription<BuffMsg>("/buff_info", qos,
+        target_predictor_sub_ = this->create_subscription<BuffMsg>("/buff_detector", qos,
             std::bind(&BuffProcessorNode::targetPredictorCallback, this, _1));
 
         // 相机类型
@@ -145,6 +145,7 @@ namespace buff_processor
                 BuffMsg predict_msg;
                 predict_msg.header.frame_id = "camera_link";
                 predict_msg.header.stamp = target_info.header.stamp;
+                predict_msg.header.stamp.nanosec += (300 * 1e6);
                 predict_msg.predict_point.x = predict_info.hit_point_cam[0];
                 predict_msg.predict_point.y = predict_info.hit_point_cam[1];
                 predict_msg.predict_point.z = predict_info.hit_point_cam[2];

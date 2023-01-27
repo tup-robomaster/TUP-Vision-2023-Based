@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-01-08 12:43:25
+ * @LastEditTime: 2023-01-27 21:48:51
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -10,15 +10,14 @@
 using namespace std;
 namespace armor_detector
 {
-    Detector::Detector(const std::string& camera_name_, const std::string& camera_param_path_, const std::string& network_path_,
-    const DetectorParam& detector_params_, const DebugParam& _debug_params_, const GyroParam& _gyro_params_) 
-    : spinning_detector_(detector_params_.color, _gyro_params_), detector_params_(detector_params_), debug_params_(_debug_params_),
-    logger_(rclcpp::get_logger("armor_detector"))
+    Detector::Detector(const PathParam& path_param, const DetectorParam& detector_params, const DebugParam& debug_params, const GyroParam& gyro_params) 
+    : spinning_detector_(detector_params_.color, gyro_params), detector_params_(detector_params), 
+    path_params_(path_param), debug_params_(debug_params), logger_(rclcpp::get_logger("armor_detector"))
     {
         //参数设置
-        this->camera_name = camera_name_;
-        this->camera_param_path = camera_param_path_;
-        this->network_path = network_path_;
+        // this->camera_name = camera_name_;
+        // this->camera_param_path = camera_param_path_;
+        // this->network_path = network_path_;
         // this->armor_detector_params_.dw = _armor_detector_params_.dw;
         // this->armor_detector_params_.dh = _armor_detector_params_.dh;
         // this->armor_detector_params_.rescale_ratio = _armor_detector_params_.rescale_ratio;
@@ -41,7 +40,7 @@ namespace armor_detector
         input_size = {720, 720};
         is_init = false;
 
-        is_save_data = false; //save distance error data
+        is_save_data = debug_params_.save_data; //save distance error data
 
         //debug
         // this->debug_params_.debug_without_com = _debug_params_.debug_without_com;
@@ -92,21 +91,24 @@ namespace armor_detector
     {
         if(!is_init)
         {
-            armor_detector_.initModel(network_path);
-            coordsolver_.loadParam(camera_param_path, camera_name);
+            armor_detector_.initModel(path_params_.network_path);
+            coordsolver_.loadParam(path_params_.camera_param_path, path_params_.camera_name);
             if(is_save_data)
             {
-                data_save.open("src/data/dis_info_1.txt", ios::out | ios::trunc);
+                // data_save.open("src/data/infer1.txt", ios::out | ios::trunc);
+                // data_save.open("src/data/infer2.txt", ios::out | ios::trunc);
+                // data_save.open("src/data/old_infer1.txt", ios::out | ios::trunc);
+                data_save.open(path_params_.save_path, ios::out | ios::trunc);
+                // data_save.open("src/data/old_infer2.txt", ios::out | ios::trunc);
                 data_save << fixed;
             }
             is_init = true;
         }
-
+        
         time_start = steady_clock_.now();
 
         auto input = src.img;
         timestamp = src.timestamp;
-        
         if(!debug_params_.debug_without_com)
         {   //有串口
             //设置弹速,若弹速大于10m/s值,且弹速变化大于0.5m/s则更新
@@ -637,9 +639,14 @@ namespace armor_detector
             if (count % 5 == 0)
             {
                 RCLCPP_INFO(logger_, "-----------TIME------------");
-                RCLCPP_INFO(logger_, "Crop:  %lfms\n", (dr_crop_ns / 1e6));
-                RCLCPP_INFO(logger_, "Infer: %lfms\n", (dr_infer_ns / 1e6));
-                RCLCPP_INFO(logger_, "Total: %lfms\n", (dr_full_ns / 1e6));
+                RCLCPP_INFO(logger_, "Crop:  %lfms", (dr_crop_ns / 1e6));
+                RCLCPP_INFO(logger_, "Infer: %lfms", (dr_infer_ns / 1e6));
+                RCLCPP_INFO(logger_, "Total: %lfms", (dr_full_ns / 1e6));
+            }
+
+            if(is_save_data)
+            {
+                data_save << setprecision(3) << (float)(dr_infer_ns / 1e6) << endl;
             }
         }
         // cout<<target.armor3d_world<<endl;
@@ -658,10 +665,10 @@ namespace armor_detector
                 RCLCPP_INFO(logger_, "Is Spinning: %d", (int)(is_target_spinning));
                 RCLCPP_INFO(logger_, "Is Switched: %d", (int)(is_target_switched));
 
-                if(is_save_data)
-                {
-                    data_save << setprecision(3) << (float)target.armor3d_cam.norm() << endl;
-                }
+                // if(is_save_data)
+                // {
+                //     data_save << setprecision(3) << (float)target.armor3d_cam.norm() << endl;
+                // }
                 count = 0;
             }
             else

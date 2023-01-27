@@ -41,19 +41,22 @@
     camera_param_path: "src/global_user/config/camera.yaml"
 
   # Network model path.
+    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0127-001.xml"
     # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
     # network_path: "src/vehicle_system/autoaim/armor_detector/model/1106-333.xml"
     # network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
     network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-1208-001.xml"
+    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0127-001.xml"
+    save_path: "src/data/infer2_5.txt"
 
   # Debug params.
     debug: true
     using_imu: false
     using_roi: false
     # draw_predict: true
-    show_img: false
-    show_fps: false
-    print_letency: false
+    show_img: true
+    show_fps: true
+    print_letency: true
     print_target_info: false
     detect_red: false
     # disable_filter: false
@@ -62,7 +65,8 @@
     using_shared_memory: false
     show_transformed_info: false
     auto_label: false
-    show_all_armors: false
+    show_all_armors: true
+    save_data: true
 
 /armor_processor:
   ros__parameters:

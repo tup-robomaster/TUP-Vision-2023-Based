@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2023-01-27 00:30:52
+ * @LastEditTime: 2023-01-28 03:40:29
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
@@ -124,26 +124,48 @@ namespace buff_processor
         //     const double _x, _t;    // x,t数据
         // };
 
+        // struct CURVE_FITTING_COST_PHASE
+        // {
+        //     CURVE_FITTING_COST_PHASE (double x, double t, double a, double dc)
+        //     : _x(x), _t(t), _a(a), _dc(dc){}
+
+        //     // 残差的计算
+        //     template <typename T>
+        //     bool operator()
+        //     (
+        //         const T* phase, // 模型参数，有1维
+        //         const T* omega,
+        //         // const T* const_term,
+        //         T* residual     // 残差
+        //     ) const 
+        //     {
+        //         residual[0] = -(T (_a) / omega[0]) * ceres::cos(omega[0] * (T(_t) + phase[0] / omega[0])) + T(_dc) * T(_t) + (T (_a) / omega[0]) * ceres::cos(phase[0]) - T (_x);
+        //         // residual[0] = -(T (_a) / T(_omega)) * ceres::cos(T(_omega) * T(_t) + phase[0]) + T(_dc) * T(_t) + const_term[0] - T (_x);
+        //         return true;
+        //     }
+        //     const double _x, _t, _a, _dc;    // x,t数据
+        // };
+
         struct CURVE_FITTING_COST_PHASE
         {
-            CURVE_FITTING_COST_PHASE (double x, double t, double a, double dc)
-            : _x(x), _t(t), _a(a), _dc(dc){}
+            CURVE_FITTING_COST_PHASE (double x, double t, double a, double omega, double dc)
+            : _x(x), _t(t), _a(a), _omega(omega), _dc(dc){}
 
             // 残差的计算
             template <typename T>
             bool operator()
             (
                 const T* phase, // 模型参数，有1维
-                const T* omega,
                 // const T* const_term,
                 T* residual     // 残差
             ) const 
             {
-                residual[0] = -(T (_a) / omega[0]) * ceres::cos(omega[0] * (T(_t) + phase[0] / omega[0])) + T(_dc) * T(_t) + (T (_a) / omega[0]) * ceres::cos(phase[0]) - T (_x);
+                // residual[0] = -(T (_a) / omega[0]) * ceres::cos(omega[0] * (T(_t) + phase[0] / omega[0])) + T(_dc) * T(_t) + (T (_a) / omega[0]) * ceres::cos(phase[0]) - T (_x);
                 // residual[0] = -(T (_a) / T(_omega)) * ceres::cos(T(_omega) * T(_t) + phase[0]) + T(_dc) * T(_t) + const_term[0] - T (_x);
+                residual[0] = -(T (_a) / T(_omega)) * ceres::cos(T(_omega) * T(_t) + phase[0]) + T(_dc) * T(_t) + (T (_a) / T(_omega)) * ceres::cos(phase[0]) - T (_x);
                 return true;
             }
-            const double _x, _t, _a, _dc;    // x,t数据
+            const double _x, _t, _a, _omega, _dc;    // x,t数据
         };
 
         struct CurveFittingCost
@@ -160,8 +182,9 @@ namespace buff_processor
             ) const
             {
                 //f(t)=-(a/w)cos(wt+theta)+bt+(a/w)cos(theta)
-                residual[0] = -(params[0] / params[1]) * ceres::cos(params[1] * (T(_t) + params[2] / params[1])) + params[3] * T(_t) + (params[0] / params[1]) * ceres::cos(params[2]) - T(_angle);
-                // residual[0] = -(params[0] / params[1]) * ceres::cos(params[1] * T(_t) +/\ params[2]) + params[3] * T(_t) + params[4] - T(_angle);
+                // residual[0] = -(params[0] / params[1]) * ceres::cos(params[1] * (T(_t) + params[2])) + params[3] * T(_t) + (params[0] / params[1]) * ceres::cos(params[1] * params[2]) - T(_angle);
+                // residual[0] = -(params[0] / params[1]) * ceres::cos(params[1] * (T(_t) + params[2] / params[1])) + params[3] * T(_t) + (params[0] / params[1]) * ceres::cos(params[2]) - T(_angle);
+                residual[0] = -(params[0] / params[1]) * ceres::cos(params[1] * T(_t) + params[2]) + params[3] * T(_t) + (params[0] / params[1]) * ceres::cos(params[2]) - T(_angle);
                 return true;
             }
         };
@@ -207,8 +230,16 @@ namespace buff_processor
         double origin_timestamp_;
         int error_cnt_;
         double last_result_;
-        int rmse_error_cnt_;
+        double last_last_result_;
+        double last_last_last_result_;
 
+        double cur_pred_angle_;
+        double last_pred_angle_;
+
+        int rmse_error_cnt_;
+        double ave_speed_;
+        bool is_last_result_exist_;
+        int lost_cnt_;
     private:
         // double params[4] = {0.1, 1.0, 0.0, 1.0};
         // double params[4] = {0.9125, 1.942, 0.0, 1.1325};

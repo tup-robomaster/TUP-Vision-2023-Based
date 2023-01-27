@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2023-01-26 22:29:18
+ * @LastEditTime: 2023-01-27 17:22:12
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
@@ -100,6 +100,7 @@ namespace buff_detector
         double delta_angle;
         bool target_switched;
         Eigen::Vector3d r_center;
+        Eigen::Vector3d armor3d_cam;
         Eigen::Vector3d armor3d_world;
         Eigen::Matrix3d rmat;
         cv::Point2f points2d[5];
