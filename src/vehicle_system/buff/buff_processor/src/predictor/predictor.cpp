@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-01-26 17:42:58
+ * @LastEditTime: 2023-01-29 22:56:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -130,6 +130,8 @@ namespace buff_processor
         for (auto target_info : history_info)
             rotate_speed_sum += target_info.speed;
         auto mean_velocity = rotate_speed_sum / history_info.size();
+        // cout << "mode:" << mode << endl;
+        // cout << endl;
 
         if (mode == 0)
         {   //TODO:小符模式不需要额外计算,也可增加判断，小符模式给定恒定转速进行击打
@@ -155,7 +157,7 @@ namespace buff_processor
                 // std::cout << "target_speed:"; 
                 for (auto target_info : history_info)
                 {
-                    std::cout << target_info.speed << " ";
+                    // std::cout << target_info.speed << " ";
                     problem.AddResidualBlock (     // 向问题中添加误差项
                     // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致
                         new ceres::AutoDiffCostFunction<CURVE_FITTING_COST, 1, 4> ( 
@@ -169,20 +171,23 @@ namespace buff_processor
 
                 //设置上下限
                 //FIXME:参数需根据场上大符实际调整
-                // problem.SetParameterLowerBound(params_fitting, 0, 0.7);
-                // problem.SetParameterUpperBound(params_fitting, 0, 1.2);
-                // problem.SetParameterLowerBound(params_fitting, 1, 1.6);
-                // problem.SetParameterUpperBound(params_fitting, 1, 2.2);
-                // problem.SetParameterLowerBound(params_fitting, 2, -CV_PI);
-                // problem.SetParameterUpperBound(params_fitting, 2, CV_PI);
-                // problem.SetParameterLowerBound(params_fitting, 3, 0.5);
-                // problem.SetParameterUpperBound(params_fitting, 3, 2.5);
+                problem.SetParameterLowerBound(params_fitting, 0, 0.7);
+                problem.SetParameterUpperBound(params_fitting, 0, 1.2);
+                problem.SetParameterLowerBound(params_fitting, 1, 1.6);
+                problem.SetParameterUpperBound(params_fitting, 1, 2.2);
+                problem.SetParameterLowerBound(params_fitting, 2, -CV_PI);
+                problem.SetParameterUpperBound(params_fitting, 2, CV_PI);
+                problem.SetParameterLowerBound(params_fitting, 3, 0.5);
+                problem.SetParameterUpperBound(params_fitting, 3, 2.5);
 
                 ceres::Solve(options, &problem, &summary);
                 double params_tmp[4] = {params_fitting[0] * rotate_sign, params_fitting[1], params_fitting[2], params_fitting[3] * rotate_sign};
                 auto rmse = evalRMSE(params_tmp);
                 if (rmse > predictor_param_.max_rmse)
+                {
+                    RCLCPP_INFO(logger_, "rmse: %lf", rmse);
                     return false;
+                }
                 else
                 {
                     params[0] = params_fitting[0] * rotate_sign;
@@ -237,7 +242,7 @@ namespace buff_processor
 
         int delay = (mode == 1 ? predictor_param_.delay_big : predictor_param_.delay_small);
         float delta_time_estimate = ((double)dist / predictor_param_.bullet_speed) * 1e3 + delay;
-        delta_time_estimate = 300;
+        delta_time_estimate = 500;
         // cout<<"ETA:"<<delta_time_estimate<<endl;
         float timespan = history_info.back().timestamp / 1e6;
         // delta_time_estimate = 0;
@@ -343,7 +348,7 @@ namespace buff_processor
             auto pred = params[0] * sin (params[1] * t + params[2]) + params[3];
             auto measure = target_info.speed;
             rmse_sum += pow((pred - measure), 2);
-            cout << "pre:" << pred << " measure:" << measure << endl;
+            // cout << "pre:" << pred << " measure:" << measure << endl;
         }
         rmse = sqrt(rmse_sum / history_info.size());
         return rmse;

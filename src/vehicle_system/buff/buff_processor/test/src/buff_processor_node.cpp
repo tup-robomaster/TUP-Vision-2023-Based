@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-01-18 00:20:49
+ * @LastEditTime: 2023-01-29 19:05:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -145,10 +145,13 @@ namespace buff_processor
                 BuffMsg predict_msg;
                 predict_msg.header.frame_id = "camera_link";
                 predict_msg.header.stamp = target_info.header.stamp;
-                predict_msg.header.stamp.nanosec += (300 * 1e6);
-                predict_msg.predict_point.x = predict_info.hit_point_cam[0];
-                predict_msg.predict_point.y = predict_info.hit_point_cam[1];
-                predict_msg.predict_point.z = predict_info.hit_point_cam[2];
+                predict_msg.header.stamp.nanosec += (60 * 1e6);
+                // predict_msg.predict_point.x = predict_info.hit_point_cam[0];
+                // predict_msg.predict_point.y = predict_info.hit_point_cam[1];
+                // predict_msg.predict_point.z = predict_info.hit_point_cam[2];
+                predict_msg.predict_point.x = predict_info.hit_point_world[0];
+                predict_msg.predict_point.y = predict_info.hit_point_world[1];
+                predict_msg.predict_point.z = predict_info.hit_point_world[2];
             
                 predict_info_pub_->publish(std::move(predict_msg));
             }

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-01-26 15:21:52
+ * @LastEditTime: 2023-01-29 22:28:32
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -192,7 +192,7 @@ namespace buff_detector
             fan.centerR3d_world = pnp_result.R_world;
             fan.euler = pnp_result.euler;
             fan.rmat = pnp_result.rmat;
-            RCLCPP_INFO(logger_, "r_center: %lf %lf %lf", fan.centerR3d_cam[0], fan.centerR3d_cam[1], fan.centerR3d_cam[2]);
+            // RCLCPP_INFO(logger_, "r_center: %lf %lf %lf", fan.centerR3d_cam[0], fan.centerR3d_cam[1], fan.centerR3d_cam[2]);
 
             fans_.push_back(fan);
         }
@@ -447,6 +447,7 @@ namespace buff_detector
         target_info.r_center = mean_r_center;
         target_info.rmat = target.rmat;
         target_info.armor3d_world = target.armor3d_world;
+        target_info.armor3d_cam = target.armor3d_cam;
 
         RCLCPP_INFO(logger_, "r_center_cam: %lf %lf %lf", r_center_cam[0], r_center_cam[1], r_center_cam[2]);
         RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 200, "Target mean_rotate_speed: %lf mean_r_center: {x:%lf y:%lf z:%lf}",
@@ -462,7 +463,7 @@ namespace buff_detector
         if(abs(rotate_spd) > buff_param_.max_v)
             is_switched = true;
         target_info.target_switched = is_switched;
-        RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "Target is switched: %d", (int)(is_switched));
+        RCLCPP_INFO(logger_, "Target is switched:%d rotate_spd: %lf", (int)(is_switched), rotate_spd);
 
         lost_cnt_ = 0;
         last_roi_center_ = center2d_src;

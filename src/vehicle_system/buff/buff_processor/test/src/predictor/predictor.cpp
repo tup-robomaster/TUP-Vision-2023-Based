@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-01-28 04:38:23
+ * @LastEditTime: 2023-01-29 20:27:01
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -105,7 +105,7 @@ namespace buff_processor
         target.delta_angle = (target.delta_angle / buff_msg.delta_angle > 0) ? target.delta_angle : buff_msg.delta_angle;
         
         // mutex_.lock();
-        int fitting_lens = 100;
+        int fitting_lens = 60;
 
         if(!is_direction_confirmed)
         {
@@ -264,32 +264,32 @@ namespace buff_processor
         // double delta_angle_sum = 0.0;
         // RCLCPP_INFO(logger_, "base_angle: %lf", base_angle_);
         // double base_time = history_info[0].timestamp;
-        // auto origin_target = history_info[0];
-        // for(auto target_info : history_info)
-        // {
-        //     // delta_angle_sum += target_info.delta_angle;
-        //     // RCLCPP_INFO(logger_, "delta_angle: %lf", target_info.delta_angle);
-        //     // if(target_info.delta_angle > 0)
-        //     //     dir_cnt += 1;
-        //     // else if(target_info.delta_angle < 0)
-        //     //     dir_cnt -= 1;
-                
-        //     double dAngle = (target_info.relative_angle - origin_target.relative_angle);
-        //     if((target_info.timestamp - origin_target.timestamp) != 0)
-        //         rotate_speed_sum += (dAngle / (target_info.timestamp - origin_target.timestamp) * 1e9);
-        //     origin_target = target_info;
-        //     // delta_angle_sum += (target_info.relative_angle - dAngle);
-        //     // dAngle = target_info.relative_angle;
-        //     // RCLCPP_INFO(logger_, "abs_angle: %lf relative_angle: %lf timestamp: %lf", target_info.abs_angle, target_info.relative_angle, (target_info.timestamp - base_time) / 1e9);
-        // }
-        for(int ii = (history_info.size() - 1); ii > ((history_info.size() - 1) / 2); ii--)
+        auto origin_target = history_info[0];
+        for(auto target_info : history_info)
         {
-            auto pre_fan = history_info[ii-1];
-            auto cur_fan = history_info[ii];
-            double ave_speed = (cur_fan.relative_angle - pre_fan.relative_angle) / ((cur_fan.timestamp - pre_fan.timestamp) / 1e9);
-            rotate_speed_sum += ave_speed;
+            // delta_angle_sum += target_info.delta_angle;
+            // RCLCPP_INFO(logger_, "delta_angle: %lf", target_info.delta_angle);
+            // if(target_info.delta_angle > 0)
+            //     dir_cnt += 1;
+            // else if(target_info.delta_angle < 0)
+            //     dir_cnt -= 1;
+                
+            double dAngle = (target_info.relative_angle - origin_target.relative_angle);
+            if((target_info.timestamp - origin_target.timestamp) != 0)
+                rotate_speed_sum += (dAngle / (target_info.timestamp - origin_target.timestamp) * 1e9);
+            origin_target = target_info;
+            // delta_angle_sum += (target_info.relative_angle - dAngle);
+            // dAngle = target_info.relative_angle;
+            // RCLCPP_INFO(logger_, "abs_angle: %lf relative_angle: %lf timestamp: %lf", target_info.abs_angle, target_info.relative_angle, (target_info.timestamp - base_time) / 1e9);
         }
-        rotate_speed_ave = rotate_speed_sum / ((history_info.size() - 1) - ((history_info.size() - 1) / 2));
+        // for(int ii = (history_info.size() - 1); ii > ((history_info.size() - 1) / 2); ii--)
+        // {
+        //     auto pre_fan = history_info[ii-1];
+        //     auto cur_fan = history_info[ii];
+        //     double ave_speed = (cur_fan.relative_angle - pre_fan.relative_angle) / ((cur_fan.timestamp - pre_fan.timestamp) / 1e9);
+        //     rotate_speed_sum += ave_speed;
+        // }
+        rotate_speed_ave = rotate_speed_sum / ((history_info.size() - 1));
         ave_speed_ = rotate_speed_ave;
         // sign_ = (dir_cnt > 0) ? 1 : -1;
         // sign_ = (delta_angle_sum > 0 ? 1 : -1);
@@ -323,7 +323,6 @@ namespace buff_processor
             is_direction_confirmed = true;
         }
         // std::cout << 7 << std::endl;
-
 
         // int lmode = mode;
         // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "mode: %d", lmode);
@@ -375,14 +374,14 @@ namespace buff_processor
                 }
 
                 //设置上下限
-                problem.SetParameterLowerBound(params_fitting, 0, 0.1); //a(0.780~1.045)
-                problem.SetParameterUpperBound(params_fitting, 0, 2.5); 
-                problem.SetParameterLowerBound(params_fitting, 1, 0.1); //w(1.884~2.000)
-                problem.SetParameterUpperBound(params_fitting, 1, 3.0);
-                // problem.SetParameterLowerBound(params_fitting, 2, -2 * CV_PI); //θ
-                // problem.SetParameterUpperBound(params_fitting, 2, 2 * CV_PI);
-                problem.SetParameterLowerBound(params_fitting, 3, 0.1); //b=2.090-a
-                problem.SetParameterUpperBound(params_fitting, 3, 3.0);
+                problem.SetParameterLowerBound(params_fitting, 0, 0.5); //a(0.780~1.045)
+                problem.SetParameterUpperBound(params_fitting, 0, 1.5); 
+                problem.SetParameterLowerBound(params_fitting, 1, 1.2); //w(1.884~2.000)
+                problem.SetParameterUpperBound(params_fitting, 1, 2.4);
+                problem.SetParameterLowerBound(params_fitting, 2, -2 * CV_PI); //θ
+                problem.SetParameterUpperBound(params_fitting, 2, 2 * CV_PI);
+                problem.SetParameterLowerBound(params_fitting, 3, 0.5); //b=2.090-a
+                problem.SetParameterUpperBound(params_fitting, 3, 1.6);
                 // problem.SetParameterLowerBound(params_fitting, 4, 0.01); //b=2.090-a
                 // problem.SetParameterUpperBound(params_fitting, 4, 200);
 
@@ -711,8 +710,8 @@ namespace buff_processor
             auto measure = target_info.relative_angle * (180 / CV_PI);
             
             error = abs(pred - measure);
-            // if(error > 10.0)
-            //     printf("t: %lf pred: %lf origin: %lf error: %lf\n", t, pred - oriAngle, measure - oriAngle, error);
+            if(error > 5.0)
+                printf("t: %lf pred: %lf origin: %lf error: %lf\n", t, pred - oriAngle, measure - oriAngle, error);
                 // RCLCPP_INFO(logger_, "t: %lf pred: %lf origin: %lf error: %lf", t, pred - oriAngle, measure - oriAngle, error);
             
             // if(error > 15.5)

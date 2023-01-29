@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-01-26 16:07:38
+ * @LastEditTime: 2023-01-29 22:47:12
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -46,10 +46,10 @@ namespace buff_processor
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/buff_processor/gimbal_info", qos);
 
         // 发布预测点信息
-        predict_info_pub_ = this->create_publisher<BuffMsg>("/buff_predict_info", qos);
+        predict_info_pub_ = this->create_publisher<BuffMsg>("/buff_predict", qos);
 
         // 订阅待打击目标信息
-        target_info_sub_ = this->create_subscription<BuffMsg>("/buff_info", qos,
+        target_info_sub_ = this->create_subscription<BuffMsg>("/buff_detector", qos,
             std::bind(&BuffProcessorNode::target_info_callback, this, _1));
         
         // 相机类型
@@ -137,9 +137,13 @@ namespace buff_processor
                 BuffMsg predict_info;
                 predict_info.header.frame_id = "camera_link";
                 predict_info.header.stamp = target_info.header.stamp;
-                predict_info.predict_point.x = target.hit_point_cam[0];
-                predict_info.predict_point.y = target.hit_point_cam[1];
-                predict_info.predict_point.z = target.hit_point_cam[2];
+                predict_info.header.stamp.nanosec += (30 * 1e6);
+                // predict_info.predict_point.x = target.hit_point_cam[0];
+                // predict_info.predict_point.y = target.hit_point_cam[1];
+                // predict_info.predict_point.z = target.hit_point_cam[2];
+                predict_info.predict_point.x = target.hit_point_world[0];
+                predict_info.predict_point.y = target.hit_point_world[1];
+                predict_info.predict_point.z = target.hit_point_world[2];
             
                 predict_info_pub_->publish(std::move(predict_info));
             }
