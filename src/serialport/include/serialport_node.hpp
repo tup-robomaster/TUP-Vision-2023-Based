@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-01-08 16:38:12
+ * @LastEditTime: 2023-02-01 00:10:34
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -86,6 +86,17 @@ namespace serialport
 
     public:
         rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
+
+        /**
+         * @brief 哨兵和其他车辆的msg不同，此处订阅者和发布者视兵种而定
+         * 
+         */
+        bool is_sentry_mode_;
+        // 哨兵
+        // rclcpp::Subscription<SentryMsg>::SharedPtr sentry_info_sub_;
+        // rclcpp::Publisher<SentryImuMsg>::SharedPtr sentry_imu_data_pub_;
+
+        // 其他兵种
         rclcpp::Subscription<GimbalMsg>::SharedPtr autoaim_info_sub_;
         rclcpp::Subscription<GimbalMsg>::SharedPtr buff_info_sub_;
         rclcpp::Publisher<ImuMsg>::SharedPtr imu_data_pub_;

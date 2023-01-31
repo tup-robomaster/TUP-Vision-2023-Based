@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-15 22:01:49
- * @LastEditTime: 2022-12-31 12:49:47
+ * @LastEditTime: 2023-01-31 23:57:45
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport/serialport.hpp
  */
 #ifndef SERIALPORT_HPP_
@@ -107,7 +107,7 @@ namespace serialport
     {
     public:
         SerialPort();
-        SerialPort(const string ID, const int BUAD, bool debug_without_com);
+        SerialPort(const string ID, const int BUAD, bool debug_without_com, bool is_sentry_mode);
         ~SerialPort();
     
         SerialData serial_data_;              
@@ -124,6 +124,7 @@ namespace serialport
         int set_Bit();
         void closePort();
     private:
+        bool is_sentry_mode_;
         CrcCheck crc_check_;
         string serial_id_;
         rclcpp::Time timestamp_;

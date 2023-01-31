@@ -2,8 +2,8 @@
 
 namespace serialport
 {
-    SerialPort::SerialPort(const string ID, const int BAUD, bool debug_without_com)
-    : debug_without_com_(debug_without_com), logger_(rclcpp::get_logger("serial_port"))
+    SerialPort::SerialPort(const string ID, const int BAUD, bool debug_without_com, bool is_sentry_mode)
+    : debug_without_com_(debug_without_com), is_sentry_mode_(is_sentry_mode), logger_(rclcpp::get_logger("serial_port"))
     {
         serial_data_.is_initialized = false;
         serial_data_.baud = BAUD;

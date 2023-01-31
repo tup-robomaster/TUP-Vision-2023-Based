@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-01-09 22:18:59
+ * @LastEditTime: 2023-02-01 00:00:50
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -85,42 +85,48 @@ namespace serialport
         // Initialize the transform broadcaster.
         // tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
         
-        autoaim_info_sub_ = this->create_subscription<GimbalMsg>(
-            "/armor_processor/gimbal_info", 
-            qos,
-            std::bind(&SerialPortNode::send_armor_data, this, _1)
-        );
-
-        use_buff_mode_ = this->get_parameter("use_buff_mode").as_bool();
-        if(use_buff_mode_)
+        if(!is_sentry_mode_)
         {
-            buff_info_sub_ = this->create_subscription<GimbalMsg>(
-                "/buff_processor/gimbal_info",
+            autoaim_info_sub_ = this->create_subscription<GimbalMsg>(
+                "/armor_processor/gimbal_info", 
                 qos,
-                std::bind(&SerialPortNode::send_buff_data, this, _1)
+                std::bind(&SerialPortNode::send_armor_data, this, _1)
             );
-        }
 
-        // if(serial_port_->debug_without_port())
-        // {
-        //     serial_port_->open(device_name_, baud_);
-        //     if(!serial_port_->is_open)
-        //     {
-        //         RCLCPP_INFO(this->get_logger(), "Serial open failed!");
-        //     }
-        //     else
-        //     {
-        //         receive_thread_ = std::thread(&SerialPortNode::receive_data, this);
-        //     }
-        // }
-
-        if(!debug_without_port_)
-        {   // Use serial port.
-            if(serial_port_->initSerialPort())
+            use_buff_mode_ = this->get_parameter("use_buff_mode").as_bool();
+            if(use_buff_mode_)
             {
-                imu_data_pub_ = this->create_publisher<ImuMsg>("/imu_msg", qos);
-                receive_thread_ = std::thread(&SerialPortNode::receive_data, this);
+                buff_info_sub_ = this->create_subscription<GimbalMsg>(
+                    "/buff_processor/gimbal_info",
+                    qos,
+                    std::bind(&SerialPortNode::send_buff_data, this, _1)
+                );
             }
+            // if(serial_port_->debug_without_port())
+            // {
+            //     serial_port_->open(device_name_, baud_);
+            //     if(!serial_port_->is_open)
+            //     {
+            //         RCLCPP_INFO(this->get_logger(), "Serial open failed!");
+            //     }
+            //     else
+            //     {
+            //         receive_thread_ = std::thread(&SerialPortNode::receive_data, this);
+            //     }
+            // }
+
+            if(!debug_without_port_)
+            {   // Use serial port.
+                if(serial_port_->initSerialPort())
+                {
+                    imu_data_pub_ = this->create_publisher<ImuMsg>("/imu_msg", qos);
+                    receive_thread_ = std::thread(&SerialPortNode::receive_data, this);
+                }
+            }
+        }
+        else
+        {
+            
         }
     }
 
@@ -466,14 +472,16 @@ namespace serialport
         this->declare_parameter<bool>("debug_without_com", true);
         this->declare_parameter<bool>("use_buff_mode", false);
         this->declare_parameter<int>("bytes_num", 50);
+        this->declare_parameter<bool>("is_sentry_mode", false);
 
+        is_sentry_mode_ = this->get_parameter("is_sentry_mode").as_bool();
         id_ = this->get_parameter("port_id").as_string();
         baud_ = this->get_parameter("baud").as_int();
         debug_without_port_ = this->get_parameter("debug_without_com").as_bool();
         bytes_num_ = this->get_parameter("bytes_num").as_int();
         RCLCPP_INFO(this->get_logger(), "bytes_num: %d", bytes_num_);
 
-        return std::make_unique<SerialPort>(id_, baud_, debug_without_port_);
+        return std::make_unique<SerialPort>(id_, baud_, debug_without_port_, is_sentry_mode_);
     }
 } //namespace serialport
 
