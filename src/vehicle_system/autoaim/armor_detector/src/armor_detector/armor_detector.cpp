@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-01-27 21:48:51
+ * @LastEditTime: 2023-02-01 17:52:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -95,10 +95,10 @@ namespace armor_detector
             coordsolver_.loadParam(path_params_.camera_param_path, path_params_.camera_name);
             if(is_save_data)
             {
+                data_save.open(path_params_.save_path, ios::out | ios::trunc);
                 // data_save.open("src/data/infer1.txt", ios::out | ios::trunc);
                 // data_save.open("src/data/infer2.txt", ios::out | ios::trunc);
                 // data_save.open("src/data/old_infer1.txt", ios::out | ios::trunc);
-                data_save.open(path_params_.save_path, ios::out | ios::trunc);
                 // data_save.open("src/data/old_infer2.txt", ios::out | ios::trunc);
                 data_save << fixed;
             }
@@ -186,7 +186,7 @@ namespace armor_detector
         });
 
         //若对象较多保留前按面积排序后的前max_armors个
-        if (objects.size() > this->detector_params_.max_armors_cnt)
+        if ((int)(objects.size()) > this->detector_params_.max_armors_cnt)
             objects.resize(this->detector_params_.max_armors_cnt);
         
         //生成装甲板对象
@@ -424,10 +424,11 @@ namespace armor_detector
         Armor target;
         std::vector<ArmorTracker*> final_trackers;
         std::vector<Armor> final_armors;
+        
         //TODO:反陀螺防抖(增加陀螺模式与常规模式)
         //若目标处于陀螺状态，预先瞄准目标中心，待预测值与该点距离较近时开始击打
         SpinHeading spin_status;
-        if (spinning_detector_.spin_status_map.count(target_key) == 0)
+        if (spinning_detector_.spinning_map_.spin_status_map.count(target_key) == 0)
         {   //若未确定打击车辆的陀螺状态
             spin_status = UNKNOWN;
             is_target_spinning = false;
@@ -435,7 +436,7 @@ namespace armor_detector
         }
         else
         {   //若确定打击车辆的陀螺状态
-            spin_status = spinning_detector_.spin_status_map[target_key];
+            spin_status = spinning_detector_.spinning_map_.spin_status_map[target_key];
             if (spin_status != UNKNOWN)
             {
                 is_target_spinning = true;
@@ -466,12 +467,13 @@ namespace armor_detector
                 }
             }
             
-            auto cnt = spinning_detector_.spinning_x_map.count(target_key);
+            auto cnt = spinning_detector_.spinning_map_.spinning_x_map.count(target_key);
             if(cnt == 1)
             {
-                auto candidate = spinning_detector_.spinning_x_map.find(target_key);
+                auto candidate = spinning_detector_.spinning_map_.spinning_x_map.find(target_key);
 
                 auto t = ((*candidate).second.new_timestamp - (*candidate).second.last_timestamp) / 1e9;
+                //TODO:此处角速度计算误差较大，可尝试通过PnP解算的位姿计算角速度
                 auto w = (2 * M_PI) / (4 * t);
                 target_info.w = w;
                 RCLCPP_INFO(logger_, "Target spinning period: %lf", w);

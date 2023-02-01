@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-01-08 16:22:33
+ * @LastEditTime: 2023-02-02 00:02:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -108,6 +108,15 @@ namespace armor_processor
             xyz_status[1] = false;
             xyz_status[2] = false;
         }
+    };
+
+    struct FilterModelParam
+    {
+        vector<double> imm_model_trans_prob_params;
+        vector<double> imm_model_prob_params;
+        vector<double> process_noise_params;
+        vector<double> measure_noise_params;
+        // vector<double> singer_model_params;
     };
 
     struct CurveFittingCost
@@ -267,6 +276,8 @@ namespace armor_processor
         int min_fitting_lens;   //最短队列长度
         int shoot_delay;        //射击延迟
         int window_size;        //滑窗大小
+        KFParam kf_param;       //卡尔曼滤波参数
+        FilterModelParam filter_model_param; //滤波模型参数
 
         PredictParam()
         {
@@ -321,31 +332,31 @@ namespace armor_processor
         }
     };
 
-    struct SingerModel
-    {
-        double singer_alpha;
-        double singer_p_max;
-        double singer_p0;
-        double singer_a_max;
-        double singer_sigma;
-        double singer_dt;
-        double singer_p;
-        double singer_r;
-        double delay_coeff;
+    // struct SingerModel
+    // {
+    //     double singer_alpha;
+    //     double singer_p_max;
+    //     double singer_p0;
+    //     double singer_a_max;
+    //     double singer_sigma;
+    //     double singer_dt;
+    //     double singer_p;
+    //     double singer_r;
+    //     double delay_coeff;
 
-        SingerModel()
-        {
-            singer_alpha = 5.0;
-            singer_a_max = 1.0;
-            singer_p_max = 0.2;
-            singer_p0 = 0.2;
-            singer_sigma = 0.1;
-            singer_dt = 5.0;
-            singer_p = 1.0;
-            singer_r = 1.0;
-            delay_coeff = 5.0;
-        }
-    };
+    //     SingerModel()
+    //     {
+    //         singer_alpha = 5.0;
+    //         singer_a_max = 1.0;
+    //         singer_p_max = 0.2;
+    //         singer_p0 = 0.2;
+    //         singer_sigma = 0.1;
+    //         singer_dt = 5.0;
+    //         singer_p = 1.0;
+    //         singer_r = 1.0;
+    //         delay_coeff = 5.0;
+    //     }
+    // };
 
     struct PathParam
     {
@@ -380,7 +391,7 @@ namespace armor_processor
         ~ArmorPredictor();
         // ArmorPredictor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param,
                         // const std::string filter_param_path);
-        ArmorPredictor(const PredictParam& predict_param, const SingerModel& singer_model_param, 
+        ArmorPredictor(const PredictParam& predict_param, const vector<double>& singer_param, 
                         const PathParam& path_param, const DebugParam& debug_param);
     
     private:
@@ -392,7 +403,8 @@ namespace armor_processor
 
         // 滤波先验参数/模型先验参数/调试参数
         PredictParam predict_param_;
-        SingerModel singer_param_;
+        // SingerModel singer_param_;
+        vector<double> singer_param_;
         DebugParam debug_param_;
         // SingerModelParam singer_model_param_;
 
@@ -470,8 +482,13 @@ namespace armor_processor
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
     
         // cs模型参数设置
+        // void set_singer_param(double param, int idx);
+        void set_singer_param(vector<double> singer_param);
+        // imm模型参数设置
+        // void set_imm_param(double param, int idx);
+        void set_imm_param(IMMParam imm_param);
+
         void set_predict_param(double param, int idx);
-        void set_singer_param(double param, int idx);
         void set_debug_param(double param, int idx);
     private:
         //IMM Model

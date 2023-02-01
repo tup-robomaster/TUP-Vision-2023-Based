@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-01-08 15:53:21
+ * @LastEditTime: 2023-02-02 00:06:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -388,20 +388,20 @@ namespace armor_processor
             {"min_fitting_lens", 3},
             {"max_v", 4},
             {"shoot_delay", 5},
-            {"singer_alpha", 6},
-            {"singer_a_max", 7},
-            {"singer_p_max", 8},
-            {"singer_p0", 9},
-            {"singer_sigma", 10},
-            {"singer_dt", 11},
-            {"singer_p", 12},
-            {"singer_r", 13},
+            // {"singer_alpha", 6},
+            // {"singer_a_max", 7},
+            // {"singer_p_max", 8},
+            // {"singer_p0", 9},
+            // {"singer_sigma", 10},
+            // {"singer_dt", 11},
+            // {"singer_p", 12},
+            // {"singer_r", 13},
             {"disable_fitting", 14},
             {"draw_predict", 15},
             {"using_imu", 16},
             {"show_predict", 17},
             {"show_transformed_info", 18},
-            {"delay_coeff", 19}
+            // {"delay_coeff", 19},
         };
 
         this->declare_parameter<double>("bullet_speed", 28.0);
@@ -419,24 +419,24 @@ namespace armor_processor
         predict_param_.shoot_delay = this->get_parameter("shoot_delay").as_int();
         predict_param_.window_size = this->get_parameter("window_size").as_int();
 
-        this->declare_parameter<double>("singer_alpha", 5.0);
-        this->declare_parameter<double>("singer_a_max", 10.0);
-        this->declare_parameter<double>("singer_p_max", 0.5);
-        this->declare_parameter<double>("singer_p0", 0.1);
-        this->declare_parameter<double>("singer_sigma", 0.1);
-        this->declare_parameter<double>("singer_dt", 5.0);
-        this->declare_parameter<double>("singer_p", 1.0);
-        this->declare_parameter<double>("singer_r", 1.0);
-        this->declare_parameter<double>("delay_coeff", 5.0);
-        singer_model_param_.singer_alpha = this->get_parameter("singer_alpha").as_double();
-        singer_model_param_.singer_a_max = this->get_parameter("singer_a_max").as_double();
-        singer_model_param_.singer_p_max = this->get_parameter("singer_p_max").as_double();
-        singer_model_param_.singer_p0 = this->get_parameter("singer_p0").as_double();
-        singer_model_param_.singer_sigma = this->get_parameter("singer_sigma").as_double();
-        singer_model_param_.singer_dt = this->get_parameter("singer_dt").as_double();
-        singer_model_param_.singer_p = this->get_parameter("singer_p").as_double();
-        singer_model_param_.singer_r = this->get_parameter("singer_r").as_double();
-        singer_model_param_.delay_coeff = this->get_parameter("delay_coeff").as_double();
+        // this->declare_parameter<double>("singer_alpha", 5.0);
+        // this->declare_parameter<double>("singer_a_max", 10.0);
+        // this->declare_parameter<double>("singer_p_max", 0.5);
+        // this->declare_parameter<double>("singer_p0", 0.1);
+        // this->declare_parameter<double>("singer_sigma", 0.1);
+        // this->declare_parameter<double>("singer_dt", 5.0);
+        // this->declare_parameter<double>("singer_p", 1.0);
+        // this->declare_parameter<double>("singer_r", 1.0);
+        // this->declare_parameter<double>("delay_coeff", 5.0);
+        // singer_model_param_.singer_alpha = this->get_parameter("singer_alpha").as_double();
+        // singer_model_param_.singer_a_max = this->get_parameter("singer_a_max").as_double();
+        // singer_model_param_.singer_p_max = this->get_parameter("singer_p_max").as_double();
+        // singer_model_param_.singer_p0 = this->get_parameter("singer_p0").as_double();
+        // singer_model_param_.singer_sigma = this->get_parameter("singer_sigma").as_double();
+        // singer_model_param_.singer_dt = this->get_parameter("singer_dt").as_double();
+        // singer_model_param_.singer_p = this->get_parameter("singer_p").as_double();
+        // singer_model_param_.singer_r = this->get_parameter("singer_r").as_double();
+        // singer_model_param_.delay_coeff = this->get_parameter("delay_coeff").as_double();
 
         this->declare_parameter("disable_filter", false);
         this->declare_parameter("disable_fitting", true);
@@ -459,7 +459,32 @@ namespace armor_processor
         path_param_.coord_path = this->get_parameter("coord_param_path").as_string();
         path_param_.filter_path = this->get_parameter("filter_param_path").as_string();
 
-        return std::make_unique<Processor>(predict_param_, singer_model_param_, path_param_, debug_param_);
+        vector<double> imm_model_trans_prob_params = {0.6, 0.3, 0.05, 0.05, 0.5, 0.4, 0.05, 0.05, 0.1, 0.1, 0.75, 0.05, 0.1, 0.1, 0.05, 0.75};
+        this->declare_parameter("trans_prob_matrix", imm_model_trans_prob_params);
+        imm_model_trans_prob_params = this->get_parameter("trans_prob_matrix").as_double_array();
+
+        vector<double> imm_model_prob_params = {0.4, 0.3, 0.15, 0.15};
+        this->declare_parameter("model_prob_vector", imm_model_prob_params);
+        imm_model_prob_params = this->get_parameter("model_prob_vector").as_double_array();
+
+        vector<double> process_noise_params = {0.4, 0.4, 0.3, 0.3, 0.2, 0.2};
+        this->declare_parameter("process_noise", process_noise_params);
+        process_noise_params = this->get_parameter("process_noise").as_double_array();
+
+        vector<double> measure_noise_params = {60.0, 60.0, 30.0, 30.0};
+        this->declare_parameter("measure_noise", measure_noise_params);
+        measure_noise_params = this->get_parameter("measure_noise").as_double_array();
+
+        vector<double> singer_model_params = {0.8, 0.1, 0.1, 0.8, 1.0, 0.1, 1.0, 1.0, 5.0};
+        this->declare_parameter("singer_model", singer_model_params);
+        singer_model_params = this->get_parameter("singer_model").as_double_array();
+
+        predict_param_.filter_model_param.imm_model_trans_prob_params = imm_model_trans_prob_params;
+        predict_param_.filter_model_param.imm_model_prob_params = imm_model_prob_params;
+        predict_param_.filter_model_param.process_noise_params = process_noise_params;
+        predict_param_.filter_model_param.measure_noise_params = measure_noise_params;
+
+        return std::make_unique<Processor>(predict_param_, singer_model_params, path_param_, debug_param_);
     }
 
     rcl_interfaces::msg::SetParametersResult ArmorProcessorNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
@@ -471,6 +496,14 @@ namespace armor_processor
         {
             result.successful = setParam(param);
         }
+        predict_param_.filter_model_param.imm_model_trans_prob_params = this->get_parameter("trans_prob_matrix").as_double_array();
+        predict_param_.filter_model_param.imm_model_prob_params = this->get_parameter("model_prob_vector").as_double_array();
+        predict_param_.filter_model_param.process_noise_params = this->get_parameter("process_noise").as_double_array();
+        predict_param_.filter_model_param.measure_noise_params = this->get_parameter("measure_noise").as_double_array();
+        vector<double> singer_model_params = this->get_parameter("singer_model").as_double_array();
+
+        processor_->set_imm_param(IMMParam{predict_param_.filter_model_param.imm_model_trans_prob_params, predict_param_.filter_model_param.imm_model_prob_params});
+        processor_->set_singer_param(singer_model_params);
         return result;
     }
 
@@ -508,38 +541,38 @@ namespace armor_processor
             this->predict_param_.shoot_delay = param.as_int();
             this->processor_->setPredictParam(this->predict_param_.shoot_delay, 5);
             break;
-        case 6:
-            this->singer_model_param_.singer_alpha = param.as_double();
-            this->processor_->setSingerParam(this->singer_model_param_.singer_alpha, 1);
-            break;
-        case 7:
-            this->singer_model_param_.singer_a_max = param.as_double();
-            this->processor_->setSingerParam(this->singer_model_param_.singer_a_max, 2);
-            break;
-        case 8:
-            this->singer_model_param_.singer_p_max = param.as_double();
-            this->processor_->setSingerParam(this->singer_model_param_.singer_p_max, 3);
-            break;
-        case 9:
-            this->singer_model_param_.singer_p0 = param.as_double();
-            this->processor_->setSingerParam(this->singer_model_param_.singer_p0, 4);
-            break;
-        case 10:
-            this->singer_model_param_.singer_sigma = param.as_double();
-            this->processor_->setSingerParam(this->singer_model_param_.singer_sigma, 5);
-            break;
-        case 11:
-            this->singer_model_param_.singer_dt = param.as_double();
-            this->processor_->setSingerParam(this->singer_model_param_.singer_dt, 6);
-            break;
-        case 12:
-            this->singer_model_param_.singer_p = param.as_double();
-            this->processor_->setSingerParam(this->singer_model_param_.singer_p, 7);
-            break;
-        case 13:
-            this->singer_model_param_.singer_r = param.as_double();
-            this->processor_->setSingerParam(this->singer_model_param_.singer_r, 8);
-            break;
+        // case 6:
+        //     this->singer_model_param_.singer_alpha = param.as_double();
+        //     this->processor_->setSingerParam(this->singer_model_param_.singer_alpha, 1);
+        //     break;
+        // case 7:
+        //     this->singer_model_param_.singer_a_max = param.as_double();
+        //     this->processor_->setSingerParam(this->singer_model_param_.singer_a_max, 2);
+        //     break;
+        // case 8:
+        //     this->singer_model_param_.singer_p_max = param.as_double();
+        //     this->processor_->setSingerParam(this->singer_model_param_.singer_p_max, 3);
+        //     break;
+        // case 9:
+        //     this->singer_model_param_.singer_p0 = param.as_double();
+        //     this->processor_->setSingerParam(this->singer_model_param_.singer_p0, 4);
+        //     break;
+        // case 10:
+        //     this->singer_model_param_.singer_sigma = param.as_double();
+        //     this->processor_->setSingerParam(this->singer_model_param_.singer_sigma, 5);
+        //     break;
+        // case 11:
+        //     this->singer_model_param_.singer_dt = param.as_double();
+        //     this->processor_->setSingerParam(this->singer_model_param_.singer_dt, 6);
+        //     break;
+        // case 12:
+        //     this->singer_model_param_.singer_p = param.as_double();
+        //     this->processor_->setSingerParam(this->singer_model_param_.singer_p, 7);
+        //     break;
+        // case 13:
+        //     this->singer_model_param_.singer_r = param.as_double();
+        //     this->processor_->setSingerParam(this->singer_model_param_.singer_r, 8);
+        //     break;
         case 14:
             this->debug_param_.disable_fitting = param.as_bool();
             this->processor_->setDebugParam(this->debug_param_.disable_fitting, 1);
@@ -560,9 +593,9 @@ namespace armor_processor
             this->debug_param_.show_transformed_info = param.as_bool();
             this->processor_->setDebugParam(this->debug_param_.show_transformed_info, 5);
             break;
-        case 19:
-            this->singer_model_param_.delay_coeff = param.as_double();
-            this->processor_->setSingerParam(this->singer_model_param_.delay_coeff, 9);
+        // case 19:
+        //     this->singer_model_param_.delay_coeff = param.as_double();
+        //     this->processor_->setSingerParam(this->singer_model_param_.delay_coeff, 9);
         default:
             break;
         }

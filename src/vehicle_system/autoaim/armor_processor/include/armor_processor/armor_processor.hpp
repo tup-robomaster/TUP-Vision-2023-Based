@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-17 00:27:33
- * @LastEditTime: 2023-01-08 16:22:42
+ * @LastEditTime: 2023-02-02 00:05:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor/armor_processor.hpp
  */
 #ifndef ARMOR_PRECESSOR_HPP_
@@ -27,7 +27,7 @@ namespace armor_processor
         //     const std::string& filter_param_path, const std::string& coord_param_path, 
         //     const std::string& coord_param_name);
         Processor();
-        Processor(const PredictParam& predict_param, const SingerModel& singer_model_param, const PathParam& path_param, const DebugParam& debug_param);
+        Processor(const PredictParam& predict_param, const vector<double>& singer_model_param, const PathParam& path_param, const DebugParam& debug_param);
         ~Processor();
         // Processor(const PredictParam& predict_param, const SingerModel& singer_model_param, const DebugParam& debug_param, 
         //     const std::string& filter_param_path, const std::string& coord_param_path, 
@@ -59,7 +59,10 @@ namespace armor_processor
         // Debug dynamically.
         void setPredictParam(int& param, int idx);
         void setDebugParam(bool& param, int idx);
-        void setSingerParam(double& param, int idx);
+        // void setSingerParam(double& param, int idx);
+        void setSingerParam(vector<double>& singer_param);
+        // void setImmParam(double& param, int idx);
+        void setImmParam(IMMParam& imm_param);
     };
 } //namespace armor_processor
 

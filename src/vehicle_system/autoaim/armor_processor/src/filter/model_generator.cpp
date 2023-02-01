@@ -2,14 +2,25 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 17:45:26
- * @LastEditTime: 2023-01-12 15:30:29
+ * @LastEditTime: 2023-02-01 23:10:56
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/model_generator.cpp
  */
 #include "../../include/filter/model_generator.hpp"
 
 namespace armor_processor
 {
+    vector<double> trans_prob_params = {0.6, 0.3, 0.05, 0.05,
+                                        0.5, 0.4, 0.05, 0.05,
+                                        0.1, 0.1, 0.75, 0.05,
+                                        0.1, 0.1, 0.05, 0.75};
+    vector<double> model_prob_params = {0.4, 0.3, 0.15, 0.15};
+    IMMParam ModelGenerator::imm_param_ = IMMParam{trans_prob_params, model_prob_params};
+
     ModelGenerator::ModelGenerator(){}
+    // ModelGenerator::ModelGenerator(IMMParam imm_param)
+    // {
+    //     imm_param_ = imm_param;
+    // }
     ModelGenerator::~ModelGenerator(){}
 
     std::shared_ptr<IMM> ModelGenerator::generateIMMModel(const Eigen::VectorXd& x, const double& dt)
@@ -27,12 +38,22 @@ namespace armor_processor
 
         Eigen::MatrixXd trans_prob = Eigen::MatrixXd::Zero(4, 4);
         //TODO:debug...
-        trans_prob << 0.6, 0.3, 0.05, 0.05,
-                      0.5, 0.4, 0.05, 0.05,
-                      0.1, 0.1, 0.75, 0.05,
-                      0.1, 0.1, 0.05, 0.75;
+        double tP[] = {imm_param_.imm_model_trans_prob_params[0], imm_param_.imm_model_trans_prob_params[1], imm_param_.imm_model_trans_prob_params[2], imm_param_.imm_model_trans_prob_params[3],
+            imm_param_.imm_model_trans_prob_params[4], imm_param_.imm_model_trans_prob_params[5], imm_param_.imm_model_trans_prob_params[6], imm_param_.imm_model_trans_prob_params[7],
+            imm_param_.imm_model_trans_prob_params[8], imm_param_.imm_model_trans_prob_params[9], imm_param_.imm_model_trans_prob_params[10], imm_param_.imm_model_trans_prob_params[11],
+            imm_param_.imm_model_trans_prob_params[12], imm_param_.imm_model_trans_prob_params[13], imm_param_.imm_model_trans_prob_params[14], imm_param_.imm_model_trans_prob_params[15]};
+        double tP0 = (1.0 - (tP[0] + tP[1] + tP[2]));
+        double tP1 = (1.0 - (tP[4] + tP[5] + tP[6]));
+        double tP2 = (1.0 - (tP[8] + tP[9] + tP[10]));
+        double tP3 = (1.0 - (tP[12] + tP[13] + tP[14]));
+        trans_prob << tP[0], tP[1], tP[2], tP0,
+                      tP[4], tP[5], tP[6], tP1,
+                      tP[8], tP[9], tP[10],tP2, 
+                      tP[12],tP[13],tP[14],tP3;
         Eigen::VectorXd model_prob = Eigen::VectorXd::Zero(4);
-        model_prob << 0.4, 0.3, 0.15, 0.15;
+        double mP[] = {imm_param_.imm_model_prob_params[0], imm_param_.imm_model_prob_params[1], imm_param_.imm_model_prob_params[2], imm_param_.imm_model_prob_params[3]};
+        double mP0 = (1.0 - (mP[0] + mP[1] + mP[2]));
+        model_prob << mP[0], mP[1], mP[2], mP0;
 
         imm_ptr->init(x, model_prob, trans_prob);
 

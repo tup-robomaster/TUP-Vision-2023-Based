@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-01-08 12:47:46
+ * @LastEditTime: 2023-02-01 19:03:40
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -101,7 +101,7 @@ namespace armor_processor
     public:
         bool debug_;
         PredictParam predict_param_;
-        SingerModel singer_model_param_;
+        vector<double> singer_param_;
         DebugParam debug_param_;
         PathParam path_param_;
 

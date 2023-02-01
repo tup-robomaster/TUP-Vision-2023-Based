@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-01-08 16:23:32
+ * @LastEditTime: 2023-02-02 00:04:20
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -58,9 +58,9 @@ namespace armor_processor
     //     is_ekf_init = false;
     // }
 
-    ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, const SingerModel& singer_model_param, 
+    ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, const vector<double>& singer_param, 
                         const PathParam& path_param, const DebugParam& debug_param)
-    : predict_param_(predict_param), singer_param_(singer_model_param), filter_param_path_(path_param.filter_path), debug_param_(debug_param),
+    : predict_param_(predict_param), singer_param_(singer_param), filter_param_path_(path_param.filter_path), debug_param_(debug_param),
     logger_(rclcpp::get_logger("armor_prediction"))
     {
             // int cnt = 0;
@@ -1454,8 +1454,8 @@ namespace armor_processor
 
     void ArmorPredictor::kfInit()
     {
-        double alpha = singer_param_.singer_alpha;
-        double dt = singer_param_.singer_dt;
+        double alpha = singer_param_[0];
+        double dt = singer_param_[4];
 
         kalman_filter_.F_ << 1, dt, (alpha * dt - 1 + exp(-alpha * dt)) / alpha / alpha,  
                             0, 1, (1 - exp(-alpha * dt)) / alpha,
@@ -1467,7 +1467,7 @@ namespace armor_processor
                             dt - (1 - exp(-alpha * dt) / alpha),
                             1 - exp(-alpha * dt);
         
-        double p = singer_param_.singer_p;
+        double p = singer_param_[6];
         kalman_filter_.P_ << p, 0, 0,
                              0, p, 0,
                              0, 0, p;
@@ -1479,12 +1479,12 @@ namespace armor_processor
         double q23 = 1 / (2 * pow(alpha, 2)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt));
         double q33 = 1 / (2 * alpha) * (1 - exp(-2 * alpha * dt));
 
-        double sigma = singer_param_.singer_sigma;
+        double sigma = singer_param_[5];
         kalman_filter_.Q_ << 2 * pow(sigma, 2) * alpha * q11, 2 * pow(sigma, 2) * alpha * q12, 2 * pow(sigma, 2) * alpha* q13,
                             2 * pow(sigma, 2) * alpha* q12, 2 * pow(sigma, 2) * alpha* q22, 2 * pow(sigma, 2) * alpha* q23,
 		                    2 * pow(sigma, 2) * alpha* q13, 2 * pow(sigma, 2) * alpha* q23, 2 * pow(sigma, 2) * alpha* q33;
         
-        double meaCov = singer_param_.singer_r;
+        double meaCov = singer_param_[7];
         kalman_filter_.R_ << meaCov;
     }
 
@@ -1560,8 +1560,8 @@ namespace armor_processor
             predict_acc_[1] = predict_acc_[0];
             predict_acc_[0] = State[2];
 
-            double alpha = singer_param_.singer_alpha;
-            double dt = singer_param_.delay_coeff * singer_param_.singer_dt;
+            double alpha = singer_param_[0];
+            double dt = singer_param_[8] * singer_param_[4];
 
             Eigen::MatrixXd F(3, 3);
             F << 1, dt, (alpha * dt - 1 + exp(-alpha * dt)) / pow(alpha, 2),
@@ -1608,7 +1608,7 @@ namespace armor_processor
     PredictStatus ArmorPredictor::predict_based_imm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d& target_v, double& ax, double timestamp)
     {
         PredictStatus is_available;
-        double dt = singer_param_.singer_dt;   
+        double dt = singer_param_[4];   
         if(!is_imm_init)
         {
             Eigen::VectorXd x(6);
@@ -1658,41 +1658,46 @@ namespace armor_processor
         }
     }
 
-    void ArmorPredictor::set_singer_param(double param, int idx)
+    void ArmorPredictor::set_singer_param(vector<double> singer_param)
     {
-        switch (idx)
-        {
-        case 1:
-            this->singer_param_.singer_alpha = param;
-            break;
-        case 2:
-            this->singer_param_.singer_a_max = param;
-            break;
-        case 3:
-            this->singer_param_.singer_p_max = param;
-            break;
-        case 4:
-            this->singer_param_.singer_p0 = param;
-            break;
-        case 5:
-            this->singer_param_.singer_sigma = param;
-            break;
-        case 6:
-            this->singer_param_.singer_dt = param;
-            break;
-        case 7:
-            this->singer_param_.singer_p = param;
-            break;
-        case 8:
-            this->singer_param_.singer_r = param;
-            break;
-        case 9:
-            this->singer_param_.delay_coeff = param;
-            break;
-        default:
-            break;
-        }         
+        this->singer_param_ = singer_param;
     }
+
+    // void ArmorPredictor::set_singer_param(double param, int idx)
+    // {
+    //     switch (idx)
+    //     {
+    //     case 1:
+    //         this->singer_param_[0] = param;
+    //         break;
+    //     case 2:
+    //         this->singer_param_[1] = param;
+    //         break;
+    //     case 3:
+    //         this->singer_param_[2] = param;
+    //         break;
+    //     case 4:
+    //         this->singer_param_[3] = param;
+    //         break;
+    //     case 5:
+    //         this->singer_param_[4] = param;
+    //         break;
+    //     case 6:
+    //         this->singer_param_[5] = param;
+    //         break;
+    //     case 7:
+    //         this->singer_param_[6] = param;
+    //         break;
+    //     case 8:
+    //         this->singer_param_[7] = param;
+    //         break;
+    //     case 9:
+    //         this->singer_param_[8] = param;
+    //         break;
+    //     default:
+    //         break;
+    //     }         
+    // }
 
     void ArmorPredictor::set_debug_param(double param, int idx)
     {
@@ -1720,4 +1725,63 @@ namespace armor_processor
             break;
         }
     }
+
+    void ArmorPredictor::set_imm_param(IMMParam imm_param)
+    {
+        model_generator_.imm_param_ = imm_param;
+    }
+
+    // void ArmorPredictor::set_imm_param(double param, int idx)
+    // {
+    //     switch (idx)
+    //     {
+    //     case 0:
+    //         model_generator_.imm_param_.imm_model_trans_prob_params[0] = param;
+    //         break;
+    //     case 1:
+    //         model_generator_.imm_param_.imm_model_trans_prob_params[1] = param;
+    //         break;
+    //     case 2:
+    //         model_generator_.imm_param_.imm_model_trans_prob_params[2] = param;
+    //         break;
+    //     case 3:
+    //         model_generator_.imm_param_.imm_model_trans_prob_params[4] = param;
+    //         break;
+    //     case 4:
+    //         model_generator_.imm_param_.imm_model_trans_prob_params[5] = param;
+    //         break;
+    //     case 5:
+    //         model_generator_.imm_param_.imm_model_trans_prob_params[6] = param;
+    //         break;
+    //     case 6:
+    //         model_generator_.imm_param_.imm_model_trans_prob_params[8] = param;
+    //         break;
+    //     case 7:
+    //         model_generator_.imm_param_.imm_model_trans_prob_params[9] = param;
+    //         break;
+    //     case 8:
+    //         model_generator_.imm_param_.imm_model_trans_prob_params[10] = param;
+    //         break;
+    //     case 9:
+    //         model_generator_.imm_param_.imm_model_trans_prob_params[12] = param;
+    //         break;
+    //     case 10:
+    //         model_generator_.imm_param_.imm_model_trans_prob_params[13] = param;
+    //         break;
+    //     case 11:
+    //         model_generator_.imm_param_.imm_model_trans_prob_params[14] = param;
+    //         break;
+    //     case 12:
+    //         model_generator_.imm_param_.imm_model_prob_params[0] = param;
+    //         break;
+    //     case 13:
+    //         model_generator_.imm_param_.imm_model_prob_params[1] = param;
+    //         break;
+    //     case 14:
+    //         model_generator_.imm_param_.imm_model_prob_params[2] = param;
+    //         break;
+    //     default:
+    //         break;
+    //     }
+    // }
 } //namespace armor_processor

@@ -47,26 +47,28 @@
     # network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
     network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-1208-001.xml"
     # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0127-001.xml"
+  
+  # Data saving.
+    save_data: false
     save_path: "src/data/infer2_5.txt"
-
+  
   # Debug params.
     debug: true
     using_imu: false
     using_roi: false
     # draw_predict: true
-    show_img: true
-    show_fps: true
-    print_letency: true
+    show_img: false
+    show_fps: false
+    print_letency: false
     print_target_info: false
-    detect_red: false
+    detect_red: true
     # disable_filter: false
     # disable_fitting: true
     # show_predict: false
     using_shared_memory: false
     show_transformed_info: false
     auto_label: false
-    show_all_armors: true
-    save_data: true
+    show_all_armors: false
 
 /armor_processor:
   ros__parameters:
@@ -98,14 +100,19 @@
     filter_param_path: "src/global_user/config/filter_param.yaml"
 
   # Singer model(--->CS Model).
-    singer_alpha: 0.8 # 1/f
-    singer_a_max: 0.1
-    singer_p_max: 0.1
-    singer_p0: 0.8
-    singer_dt: 1.0
-    singer_sigma: 0.1
-    singer_p: 1.0
-    singer_r: 1.0
+    singer_model: [0.8, 0.1, 0.1, 0.8, 1.0, 0.1, 1.0, 1.0, 5.0] # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 dt:采样时间间隔 sigma:机动加速度标准差 p:过程协方差系数 r:观测协方差系数 coeff:预测提前量系数)
+  
+  # IMM model.
+    #状态转移概率
+    trans_prob_matrix: [0.6, 0.3, 0.05, 0.05,
+                        0.5, 0.4, 0.05, 0.05,
+                        0.1, 0.1, 0.75, 0.05,
+                        0.1, 0.1, 0.05, 0.75]
+    #模型概率
+    model_prob_vector: [0.4, 0.3, 0.15, 0.15]
+    process_noise: [0.4, 0.4, 0.3, 0.3, 0.2, 0.2]
+    measure_noise: [60.0, 60.0, 30.0, 30.0]
+
   
 
     

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 12:36:22
- * @LastEditTime: 2022-12-22 19:06:20
+ * @LastEditTime: 2023-02-01 21:58:14
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/motion_model.cpp
  */
 #include "../../include/filter/motion_model.hpp"
@@ -11,8 +11,10 @@ namespace armor_processor
 {
     CV::CV()
     {
-        r1_ = 60, r2_ = 60, r3_ = 30, r4_ = 30;
-        q1_ = 0.4, q2_ = 0.4, q3_ = 0.3, q4_ = 0.3, q5_ = 0.2, q5_ = 0.2;
+        // r1_ = 60, r2_ = 60, r3_ = 30, r4_ = 30;
+        // q1_ = 0.4, q2_ = 0.4, q3_ = 0.3, q4_ = 0.3, q5_ = 0.2, q6_ = 0.2;
+        kf_param_.measure_noise_params = {60, 60, 30, 30};
+        kf_param_.process_noise_params = {0.4, 0.4, 0.3, 0.3, 0.2, 0.2};
     }
     CV::~CV() {}
     
@@ -27,10 +29,11 @@ namespace armor_processor
 
         this->P_.setIdentity();
         this->R_.resize(4, 4);
-        this->R_ << r1_, 0,   0,   0,
-                    0,   r2_, 0,   0,
-                    0,   0,   r3_, 0,
-                    0,   0,   0,   r4_;
+        double r[] = {kf_param_.measure_noise_params[0], kf_param_.measure_noise_params[1], kf_param_.measure_noise_params[2], kf_param_.measure_noise_params[3]};
+        this->R_ << r[0], 0,   0,   0,
+                    0,   r[1], 0,   0,
+                    0,   0,   r[2], 0,
+                    0,   0,   0,   r[3];
                     
         this->x_ = x;  //x(x, y, theta, v)
         this->F_.resize(6, 6);
@@ -69,12 +72,14 @@ namespace armor_processor
         
         // this->Q_ = G * E * G.transpose();
         this->Q_.setIdentity(6, 6);
-        this->Q_ << q1_, 0,   0,   0,   0,   0,
-                    0,   q2_, 0,   0,   0,   0,
-                    0,   0,   q3_, 0,   0,   0,
-                    0,   0,   0,   q4_, 0,   0,
-                    0,   0,   0,   0,   q5_, 0,
-                    0,   0,   0,   0,   0,   q6_;
+        double q[] = {kf_param_.process_noise_params[0], kf_param_.process_noise_params[1], kf_param_.process_noise_params[2],
+            kf_param_.process_noise_params[3], kf_param_.process_noise_params[4], kf_param_.process_noise_params[5]};
+        this->Q_ << q[0], 0,   0,   0,   0,   0,
+                    0,   q[1], 0,   0,   0,   0,
+                    0,   0,   q[2], 0,   0,   0,
+                    0,   0,   0,   q[3], 0,   0,
+                    0,   0,   0,   0,   q[4], 0,
+                    0,   0,   0,   0,   0,   q[5];
     }
 
     void CV::updateMeasurement()
@@ -82,8 +87,10 @@ namespace armor_processor
 
     CA::CA()
     {
-        r1_ = 60, r2_ = 60, r3_ = 30, r4_ = 30;
-        q1_ = 0.4, q2_ = 0.4, q3_ = 0.3, q4_ = 0.3, q5_ = 0.2, q5_ = 0.2;
+        // r1_ = 60, r2_ = 60, r3_ = 30, r4_ = 30;
+        // q1_ = 0.4, q2_ = 0.4, q3_ = 0.3, q4_ = 0.3, q5_ = 0.2, q5_ = 0.2;
+        kf_param_.measure_noise_params = {60, 60, 30, 30};
+        kf_param_.process_noise_params = {0.4, 0.4, 0.3, 0.3, 0.2, 0.2};
     }
     CA::~CA(){}
 
@@ -98,10 +105,11 @@ namespace armor_processor
 
         this->P_.setIdentity();
         this->R_.resize(4, 4);
-        this->R_ << r1_, 0,   0,   0,
-                    0,   r2_, 0,   0,
-                    0,   0,   r3_, 0,
-                    0,   0,   0,   r4_;
+        double r[] = {kf_param_.measure_noise_params[0], kf_param_.measure_noise_params[1], kf_param_.measure_noise_params[2], kf_param_.measure_noise_params[3]};
+        this->R_ << r[0], 0,   0,   0,
+                    0,   r[1], 0,   0,
+                    0,   0,   r[2], 0,
+                    0,   0,   0,   r[3];
 
         this->F_.resize(6, 6);
         this->H_.resize(4, 6);
@@ -136,12 +144,14 @@ namespace armor_processor
         //        0, 400;
         // this->Q_ = G * E * G.transpose();    
         this->Q_.setIdentity(6, 6);
-        this->Q_ << q1_, 0,   0,   0,   0,   0,
-                    0,   q2_, 0,   0,   0,   0,
-                    0,   0,   q3_, 0,   0,   0,
-                    0,   0,   0,   q4_, 0,   0,
-                    0,   0,   0,   0,   q5_, 0,
-                    0,   0,   0,   0,   0,   q6_;
+        double q[] = {kf_param_.process_noise_params[0], kf_param_.process_noise_params[1], kf_param_.process_noise_params[2],
+            kf_param_.process_noise_params[3], kf_param_.process_noise_params[4], kf_param_.process_noise_params[5]};
+        this->Q_ << q[0], 0,   0,   0,   0,   0,
+                    0,   q[1], 0,   0,   0,   0,
+                    0,   0,   q[2], 0,   0,   0,
+                    0,   0,   0,   q[3], 0,   0,
+                    0,   0,   0,   0,   q[4], 0,
+                    0,   0,   0,   0,   0,   q[5];
     }   
 
     void CA::updateMeasurement()
@@ -149,8 +159,10 @@ namespace armor_processor
 
     CT::CT(const double& w):w_(w) 
     {
-        r1_ = 60, r2_ = 60, r3_ = 30, r4_ = 30;
-        q1_ = 0.4, q2_ = 0.4, q3_ = 0.3, q4_ = 0.3, q5_ = 0.2, q5_ = 0.2;
+        // r1_ = 60, r2_ = 60, r3_ = 30, r4_ = 30;
+        // q1_ = 0.4, q2_ = 0.4, q3_ = 0.3, q4_ = 0.3, q5_ = 0.2, q5_ = 0.2;
+        kf_param_.measure_noise_params = {60, 60, 30, 30};
+        kf_param_.process_noise_params = {0.4, 0.4, 0.3, 0.3, 0.2, 0.2};
     }
     CT::~CT() {}
 
@@ -161,10 +173,11 @@ namespace armor_processor
 
         this->P_.setIdentity(6, 6);
         this->R_.resize(4, 4);
-        this->R_ << r1_, 0,   0,   0,
-                    0,   r2_, 0,   0,
-                    0,   0,   r3_, 0,
-                    0,   0,   0,   r4_;
+        double r[] = {kf_param_.measure_noise_params[0], kf_param_.measure_noise_params[1], kf_param_.measure_noise_params[2], kf_param_.measure_noise_params[3]};
+        this->R_ << r[0], 0,   0,   0,
+                    0,   r[1], 0,   0,
+                    0,   0,   r[2], 0,
+                    0,   0,   0,   r[3];
 
         this->F_.resize(6, 6);
         this->H_.resize(4, 6);
@@ -201,12 +214,14 @@ namespace armor_processor
 
             // this->Q_ = G * E * G.transpose();
             this->Q_.setIdentity(6, 6);
-            this->Q_ << q1_, 0,   0,   0,   0,   0,
-                    0,   q2_, 0,   0,   0,   0,
-                    0,   0,   q3_, 0,   0,   0,
-                    0,   0,   0,   q4_, 0,   0,
-                    0,   0,   0,   0,   q5_, 0,
-                    0,   0,   0,   0,   0,   q6_;
+            double q[] = {kf_param_.process_noise_params[0], kf_param_.process_noise_params[1], kf_param_.process_noise_params[2],
+            kf_param_.process_noise_params[3], kf_param_.process_noise_params[4], kf_param_.process_noise_params[5]};
+            this->Q_ << q[0], 0,   0,   0,   0,   0,
+                        0,   q[1], 0,   0,   0,   0,
+                        0,   0,   q[2], 0,   0,   0,
+                        0,   0,   0,   q[3], 0,   0,
+                        0,   0,   0,   0,   q[4], 0,
+                        0,   0,   0,   0,   0,   q[5];
         }           
     }
 

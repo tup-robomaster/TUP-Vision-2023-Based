@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-01-08 16:25:08
+ * @LastEditTime: 2023-02-02 00:05:53
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -26,7 +26,7 @@ namespace armor_processor
     //     rmat_imu = Eigen::Matrix3d::Identity();
     // }
 
-    Processor::Processor(const PredictParam& predict_param, const SingerModel& singer_model_param, const PathParam& path_param, const DebugParam& debug_param)
+    Processor::Processor(const PredictParam& predict_param, const vector<double>& singer_model_param, const PathParam& path_param, const DebugParam& debug_param)
     : ArmorPredictor(predict_param, singer_model_param, path_param, debug_param), path_param_(path_param)
     {
         is_init = false;
@@ -114,8 +114,21 @@ namespace armor_processor
         set_debug_param(std::move(param), idx);
     }
 
-    void Processor::setSingerParam(double& param, int idx)
+    void Processor::setSingerParam(vector<double>& singer_param)
     {
-        set_singer_param(std::move(param), idx);
+        set_singer_param(std::move(singer_param));
     }
+    // void Processor::setSingerParam(double& param, int idx)
+    // {
+    //     set_singer_param(std::move(param), idx);
+    // }
+
+    void Processor::setImmParam(IMMParam& imm_param)
+    {
+        set_imm_param(std::move(imm_param));
+    }
+    // void Processor::setImmParam(double& param, int idx)
+    // {
+    //     set_imm_param(std::move(param), idx);
+    // }
 } // armor_processor
