@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-02-02 00:02:59
+ * @LastEditTime: 2023-02-02 22:08:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -91,10 +91,11 @@ namespace armor_processor
         double period;
         bool is_target_switched;
         bool is_spinning;
+        bool spinning_switched;
         bool is_sentry_mode;
         bool is_clockwise;
         SpinningStatus spinning_status;
-        OutpostStatus sentry_armor_status;
+        OutpostStatus outpost_status;
         SystemModel system_model;
     } TargetInfo;
 

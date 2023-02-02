@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-02-01 18:01:59
+LastEditTime: 2023-02-02 22:44:47
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -33,13 +33,13 @@ def generate_launch_description():
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='daheng',
+        default_value='usb',
         description='hik daheng mvs usb'
     )
 
     declare_use_serial = DeclareLaunchArgument(
         name='using_imu',
-        default_value='True',
+        default_value='False',
         description='debug without serial port.'
     )
 
@@ -98,13 +98,22 @@ def generate_launch_description():
             output='screen',
             package='rclcpp_components',
             executable='component_container',
-            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'daheng'"])),
+            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'usb'"])),
             composable_node_descriptions=[
+                # ComposableNode(
+                #     package='camera_driver',
+                #     plugin='camera_driver::DahengCamNode',
+                #     name='daheng_driver',
+                #     parameters=[daheng_cam_params],
+                #     extra_arguments=[{
+                #         'use_intra_process_comms':True
+                #     }]
+                # ),
                 ComposableNode(
                     package='camera_driver',
-                    plugin='camera_driver::DahengCamNode',
-                    name='daheng_driver',
-                    parameters=[daheng_cam_params],
+                    plugin='camera_driver::UsbCamNode',
+                    name='usb_driver',
+                    parameters=[usb_cam_params],
                     extra_arguments=[{
                         'use_intra_process_comms':True
                     }]

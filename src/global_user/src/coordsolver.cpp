@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-01-08 11:30:42
+ * @LastEditTime: 2023-02-02 14:04:57
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -176,7 +176,10 @@ namespace coordsolver
         {
             result.armor_cam = tvec_eigen;
             result.armor_world = camToWorld(result.armor_cam, rmat_imu);
-            result.euler = rotationMatrixToEulerAngles(rmat_eigen);
+            
+            Eigen::Matrix3d rmat_eigen_world = rmat_imu * (transform_ic.block(0, 0, 3, 3) * rmat_eigen);
+            result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
+            result.rmat = rmat_eigen_world;
             
             // std::cout << std::endl;
             // std::cout << "armor3d_world: x" << result.armor_world[0] << " y:" << result.armor_world[1] << " z:" << result.armor_world[2] << std::endl;
@@ -196,7 +199,6 @@ namespace coordsolver
             result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;
         }
-
 
         return result;
     }

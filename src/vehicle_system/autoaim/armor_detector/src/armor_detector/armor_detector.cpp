@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-02-01 17:52:18
+ * @LastEditTime: 2023-02-02 23:35:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -39,6 +39,8 @@ namespace armor_detector
         last_bullet_speed = 0;
         input_size = {720, 720};
         is_init = false;
+        last_period_ = 0;
+        last_last_status_ = last_status_ = cur_status_ = NONE;
 
         is_save_data = debug_params_.save_data; //save distance error data
 
@@ -330,6 +332,7 @@ namespace armor_detector
             armor.armor3d_world = pnp_result.armor_world;
             armor.armor3d_cam = pnp_result.armor_cam;
             armor.euler = pnp_result.euler;
+            armor.rmat = pnp_result.rmat;
             armor.area = object.area;
             armors.push_back(armor);
 
@@ -381,7 +384,7 @@ namespace armor_detector
         spinning_detector_.createArmorTracker(trackers_map, armors, new_armors_cnt_map, timestamp, dead_buffer_cnt);
 
         //Detect armors status
-        spinning_detector_.isSpinning(trackers_map, new_armors_cnt_map);
+        spinning_detector_.isSpinning(trackers_map, new_armors_cnt_map, timestamp);
 
         //Update spinning score
         spinning_detector_.updateSpinScore();
@@ -450,63 +453,253 @@ namespace armor_detector
         }
 
         ///----------------------------------反陀螺击打---------------------------------------
+        target_info.is_spinning = false;
+        target_info.is_still_spinning = false;
         if (spin_status != UNKNOWN)
         {
             //------------------------------尝试确定旋转中心-----------------------------------
             auto available_candidates_cnt = 0;
+            double w2 = 0.0;
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
                 if ((*iter).second.last_timestamp == src.timestamp)
                 {
                     final_armors.push_back((*iter).second.last_armor);
                     final_trackers.push_back(&(*iter).second);
+                    if((*iter).second.is_initialized)
+                    {
+                        auto dt = (((*iter).second.last_timestamp) - ((*iter).second.prev_timestamp)) / 1e9;
+                        auto rrmat = ((*iter).second.prev_armor.rmat.transpose()) * ((*iter).second.last_armor.rmat);
+                        auto angle_axisd = Eigen::AngleAxisd(rrmat);
+                        auto angle = angle_axisd.angle();
+                        w2 = (angle / dt);
+                        new_period_deq_.push_back(w2);
+                        RCLCPP_WARN(logger_, "period2:%lfs", ((2 * CV_PI) / w2 / 4.0));
+                    }
                 }
                 else
                 {
                     continue;
                 }
             }
-            
+
             auto cnt = spinning_detector_.spinning_map_.spinning_x_map.count(target_key);
             if(cnt == 1)
             {
                 auto candidate = spinning_detector_.spinning_map_.spinning_x_map.find(target_key);
 
                 auto t = ((*candidate).second.new_timestamp - (*candidate).second.last_timestamp) / 1e9;
+                auto relative_rmat = ((*candidate).second.new_rmat.transpose()) * ((*candidate).second.last_rmat);
+                auto angle_axisd = Eigen::AngleAxisd(relative_rmat);
+                auto angle = angle_axisd.angle();
+                auto w1 = (angle / t);
+
                 //TODO:此处角速度计算误差较大，可尝试通过PnP解算的位姿计算角速度
                 auto w = (2 * M_PI) / (4 * t);
-                target_info.w = w;
-                RCLCPP_INFO(logger_, "Target spinning period: %lf", w);
+                // target_info.w = w;
                 
-                if(((*candidate).second.new_x_back - (*candidate).second.last_x_back) > 0.15 && ((*candidate).second.new_x_font - (*candidate).second.last_x_font) > 0.15)
+                cur_period_ = t;
+                if(last_period_ == 0)
                 {
+                    last_period_ = cur_period_;
+                }
+
+                if(history_period_.size() < 3)
+                {
+                    history_period_.push_back(cur_period_);
+                }
+                // std::cout << std::endl;
+                // std::cout << "period:" << cur_period_ << std::endl;
+                double per_sum = 0;
+
+                last_ave_period_ = cur_ave_period_;
+                if(history_period_.size() >= 3)
+                {
+                    for(auto &per : history_period_)
+                    {
+                        per_sum += per;
+                    }
+                    
+                    cur_ave_period_ = (per_sum / history_period_.size());
+                    
+                    // std::cout << std::endl;
+                    // std::cout << " T:" << cur_ave_period_ << std::endl;
+                    // std::cout << std::endl;
+
+                    if(abs(cur_ave_period_ - cur_period_) < 0.05)
+                    {
+                        last_period_ = cur_period_;
+                        if(history_period_.size() < 9)
+                        {
+                            history_period_.push_back(cur_period_);
+                        }
+                        else
+                        {
+                            history_period_.pop_front();
+                        }
+                    }
+                }
+
+                if(last_ave_period_ == cur_ave_period_) 
+                    target_info.period = last_ave_period_;
+                else if(last_ave_period_ != cur_ave_period_ != 0)
+                    target_info.period = cur_ave_period_;
+
+                // std::cout << "period: " << target_info.period << std::endl;
+                
+                target_info.w = w;
+                RCLCPP_INFO(logger_, "Target spinning angular_spd:%lfrad/s Angle:%lfrad w1:%lfrad/s period1:%lfs period2:%lfs", w, angle, w1, t, ((2 * CV_PI / w1) / 4.0));
+                
+                if(new_period_deq_.size() > 1)
+                {
+                    int idx = 0;
+                    double per_sum = 0.0;
+                    for(auto per : new_period_deq_)
+                    {
+                        if(!isnan(per) && per < 0.6)
+                        {
+                            per_sum += per;
+                            idx++;
+                        }
+                        // else
+                        // {
+                        //     RCLCPP_ERROR(logger_, "Rotation period error value:%lfs", per);
+                        // }
+                    }
+                    if(idx != 0)
+                    {
+                        double ave_per = (per_sum / idx);
+                        target_info.period = ave_per;
+                        RCLCPP_WARN(logger_, "ave_per:%lfs", ave_per);
+                    }
+                }
+
+                double delta_x_back = abs((*candidate).second.new_x_back - (*candidate).second.last_x_back);
+                double delta_x_font = abs((*candidate).second.new_x_font - (*candidate).second.last_x_font);
+                int delta_x_back_2d = abs((*candidate).second.new_x_back_2d - (*candidate).second.last_x_back_2d);
+                int delta_x_font_2d = abs((*candidate).second.new_x_font_2d - (*candidate).second.last_x_font_2d);
+                double ave_x_3d = (delta_x_back + delta_x_font) / 2;
+                double ave_x_2d = (delta_x_back_2d + delta_x_font_2d) / 2;
+
+                // std::cout << std::endl;
+                // std::cout << "delta_x_back: " << delta_x_back << std::endl;
+                // std::cout << "delta_x_font: " << delta_x_font << std::endl;
+                // std::cout << "x_ave: " << (delta_x_back + delta_x_font) / 2 << std::endl;
+                // std::cout << std::endl;
+                
+                // std::cout << "delta_x_back_2d: " << delta_x_back_2d << std::endl; 
+                // std::cout << "delta_x_font_2d: " << delta_x_font_2d << std::endl;
+                // std::cout << "x_2d_ave: " << (delta_x_back_2d + delta_x_font_2d) / 2 << std::endl;
+                // std::cout << std::endl;
+                
+                if((ave_x_2d > spinning_detector_.gyro_params_.delta_x_2d_higher_thresh || ave_x_3d > spinning_detector_.gyro_params_.delta_x_3d_higher_thresh) 
+                || (ave_x_2d > spinning_detector_.gyro_params_.delta_x_2d_high_thresh && ave_x_3d > spinning_detector_.gyro_params_.delta_x_3d_high_thresh))
+                // if(ave_x_2d > 51)
+                {
+                    // target_ptr->is_spinning = true;
+                    // target_ptr->spinning_status = MOVEMENT_SPINNING;
+                    
                     target_info.is_spinning = true;
                     target_info.is_still_spinning = false;
                 }
-                else if((*candidate).second.new_x_back - (*candidate).second.last_x_back < 0.09 && ((*candidate).second.new_x_font - (*candidate).second.last_x_font) < 0.09)
+                else if((ave_x_2d < spinning_detector_.gyro_params_.delta_x_2d_lower_thresh) 
+                || (ave_x_2d < spinning_detector_.gyro_params_.delta_x_2d_low_thresh && ave_x_3d < spinning_detector_.gyro_params_.delta_x_3d_low_thresh))
+                // else if(ave_x_2d < 48)
                 {
+                    // target_ptr->is_spinning = true;
+                    // target_ptr->spinning_status = STILL_SPINNING;
+
+                    target_info.is_spinning = true;
                     target_info.is_still_spinning = true;
-                    target_info.is_spinning = false;
                 }
+                else
+                {
+                    target_info.is_spinning = true;
+                    target_info.is_still_spinning = false;
+                    // target_ptr->is_spinning = true;
+                }
+
+                // if(((*candidate).second.new_x_back - (*candidate).second.last_x_back) > 0.15 && ((*candidate).second.new_x_font - (*candidate).second.last_x_font) > 0.15)
+                // {
+                //     target_info.is_spinning = true;
+                //     target_info.is_still_spinning = false;
+                // }
+                // else if((*candidate).second.new_x_back - (*candidate).second.last_x_back < 0.09 && ((*candidate).second.new_x_font - (*candidate).second.last_x_font) < 0.09)
+                // {
+                //     target_info.is_still_spinning = true;
+                //     target_info.is_spinning = false;
+                // }
             }
             
             //若存在一块装甲板
             if (final_armors.size() == 1)
             {
+                target_info.spinning_switched = false;
+                if(spin_status == CLOCKWISE)
+                {
+                    target_info.clockwise = CLOCKWISE;
+                    // target_ptr->is_clockwise = CLOCKWISE;
+                }
+                else
+                {
+                    target_info.clockwise = false;
+                    // target_ptr->is_clockwise = false;
+                }
+                
+                // if(save_image_)
+                // {
+                //     if(!cur_frame_.empty())
+                //     {
+                //         cur_frame_.copyTo(last_frame_);
+                //         src.img.copyTo(cur_frame_);
+                //     }
+                //     else
+                //     {
+                //         src.img.copyTo(cur_frame_);
+                //     }
+                // }
+
+                last_last_status_ = last_status_;
+                last_status_ = cur_status_;
+                cur_status_ = SINGER;
+
                 target = final_armors.at(0);
             }
             //若存在两块装甲板
             else if (final_armors.size() == 2)
-            {   // 选择旋转方向上落后的装甲板进行击打
+            {   
+                // if(save_image_)
+                // {
+                //     if(!cur_frame_.empty())
+                //     {
+                //         cur_frame_.copyTo(last_frame_);
+                //         src.img.copyTo(cur_frame_);
+                //     }
+                //     else
+                //     {
+                //         src.img.copyTo(cur_frame_);
+                //     }
+                // }
+
+                last_last_status_ = last_status_;
+                last_status_ = cur_status_;
+                cur_status_ = DOUBLE;
+                
+                // 选择旋转方向上落后的装甲板进行击打
                 // 对最终装甲板进行排序，选取与旋转方向相同的装甲板进行更新
                 sort(final_armors.begin(),final_armors.end(),[](Armor& prev, Armor& next)
                                     {return prev.armor3d_cam[0] < next.armor3d_cam[0];});
                 // 若顺时针旋转选取右侧装甲板更新
                 if (spin_status == CLOCKWISE)
+                {       
+                    target_info.clockwise = CLOCKWISE;
                     target = final_armors.at(1);
-                // 若逆时针旋转选取左侧装甲板更新
+                }
                 else if (spin_status == COUNTER_CLOCKWISE)
+                {   // 若逆时针旋转选取左侧装甲板更新
+                    target_info.clockwise = false;
                     target = final_armors.at(0);
+                }   
             }
 
             //判断装甲板是否切换，若切换将变量置1
@@ -516,13 +709,13 @@ namespace armor_detector
             if ((target.id != last_armor.id || !last_armor.roi.contains((target.center2d))) &&
                 !is_last_target_exists)
             {
-                is_target_switched = true;
-                target_info.target_switched = true;
+                // is_target_switched = true;
+                target_info.spinning_switched = true;
             }
             else
             {
-                is_target_switched = false;
-                target_info.target_switched = false;
+                // is_target_switched = false;
+                target_info.spinning_switched = false;
             }
 
             // target_info.point2d[0].x = target.apex2d[0].x;
@@ -539,8 +732,14 @@ namespace armor_detector
         }
         else
         {
-            target_info.is_spinning = false;
-            target_info.is_still_spinning = false;
+            cur_ave_period_ = 0;
+            last_period_ = 0;
+            last_last_status_ = last_status_ = cur_status_ = NONE;
+            history_period_.clear();
+            new_period_deq_.clear();
+
+            // target_info.is_spinning = false;
+            // target_info.is_still_spinning = false;
 
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
@@ -572,6 +771,15 @@ namespace armor_detector
                 target_info.target_switched = false;
             }
         }
+
+        target_info.spinning_switched = false;
+        if(last_status_ == SINGER && cur_status_ == DOUBLE)
+        {
+            // std::cout << 1 << std::endl;
+            target_info.spinning_switched = true;
+            // std::cout << target_info.target_switched << std::endl;
+        }
+
         target_info.point2d[0].x = target.apex2d[0].x;
         target_info.point2d[0].y = target.apex2d[0].y;
         target_info.point2d[1].x = target.apex2d[1].x;

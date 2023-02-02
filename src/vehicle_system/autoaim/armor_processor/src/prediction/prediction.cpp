@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-02-02 00:04:20
+ * @LastEditTime: 2023-02-02 23:30:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -87,14 +87,6 @@ namespace armor_processor
             is_ekf_init = false;
     }
 
-    void ArmorPredictor::reInitialize()
-    {
-        if(history_origin_info_.size() != 0)
-            history_origin_info_.clear();
-            // history_delta_x_pred_.clear();
-        is_predicted = false;
-    }
-
     void ArmorPredictor::loadParam(std::string filter_param_path)
     {
         if(!is_init)
@@ -106,10 +98,19 @@ namespace armor_processor
         }
     }
 
+    void ArmorPredictor::reInitialize()
+    {
+        // if(history_origin_info_.size() != 0)
+        //     history_origin_info_.clear();
+        //     // history_delta_x_pred_.clear();
+        // is_predicted = false;
+    }
+
     Eigen::Vector3d ArmorPredictor::predict(AutoaimMsg& target_msg, double timestamp, double& sleep_time, cv::Mat* src)
     {
         auto t1 = steady_clock_.now();
 
+        // cout << 1 << endl;
         Eigen::Vector3d xyz = {target_msg.aiming_point_world.x, target_msg.aiming_point_world.y, target_msg.aiming_point_world.z};
         TargetInfo target = 
         {
@@ -119,6 +120,7 @@ namespace armor_processor
             target_msg.period,
             target_msg.target_switched,
             target_msg.is_spinning,
+            target_msg.spinning_switched,
             false,
             target_msg.clockwise,
             (SpinningStatus)(target_msg.is_still_spinning),
@@ -130,11 +132,13 @@ namespace armor_processor
         {
             fitting_disabled_ = false;
             filter_disabled_ = true;
+            std::cout << "Spinning..." << std::endl;
         }
         else
         {
             fitting_disabled_ = true;
             filter_disabled_ = false;
+            std::cout << "Maneuvering..." << std::endl;
         }
 
         // -----------------对位置进行粒子滤波,以降低测距噪声影响-------------------------------------
@@ -161,22 +165,41 @@ namespace armor_processor
         // {   //对位置进行粒子滤波,以降低测距噪声影响
         //     target.xyz[2] = predict_pos[1];
         // }
-        // if(!fitting_disabled_)
-        // {
+        if(!fitting_disabled_)
+        {
             if(!target.is_target_switched)
             {
+                history_origin_info_.push_back(cv::Point2d(history_info_.front().xyz[1], history_info_.front().xyz[0]));
                 history_info_.push_back(std::move(target));
+                if(history_origin_info_.size() > 2)
+                {   // Reserve history fitting front element.
+                    history_origin_info_.pop_front();    
+                }
             }
             else
             {
-                if(history_info_.size() != 0)
-                {
-                    history_origin_info_.push_back(cv::Point2d(history_info_.front().xyz[1], history_info_.front().xyz[0]));
-                    history_info_.clear();
-                }
+                is_predicted = false;
+                history_origin_info_.clear();
+                history_origin_info_.push_back(cv::Point2d(history_info_.front().xyz[1], history_info_.front().xyz[0]));
+                history_info_.clear();
                 history_info_.push_back(std::move(target));
             }
-        // }
+
+            if(target.spinning_switched)
+            {
+                history_info_.clear();
+                history_info_.push_back(std::move(target));
+                RCLCPP_INFO(logger_, "Target spinning switched...");
+            }
+        }
+        else if(!filter_disabled_)
+        {
+            if(history_info_.size() > 10)
+                history_info_.pop_front();
+            history_info_.push_back(std::move(target));
+        }
+        
+        // cout << 2 << endl;
 
         // std::cout << std::endl;
         // std::cout << "target_switched: " << target.is_target_switched << std::endl;
@@ -219,8 +242,8 @@ namespace armor_processor
                         double delta_y = last_pred_x - target.xyz[0]; 
                         // double tt = time_estimate / 1e3;
                         // result[0] = fitting_params_[0] * (delta_time_estimate * history_info_.size() / 1e3) + history_info_.front().xyz[0]; // x(t)=kt+x0
-                        result[0] = fitting_params_[0] * (tt / 1e9) + fitting_params_[1] - delta_y; // x(t)=kt+d
-                        result[1] = target.xyz[1];
+                        result[0] = target.xyz[0]; // x(t)=kt+d
+                        result[1] = fitting_params_[0] * (tt / 1e9) + fitting_params_[1] - delta_y;
                         result[2] = target.xyz[2];
                         return result;
                     }
@@ -236,12 +259,7 @@ namespace armor_processor
 
             return target.xyz;
         }
-        // std::cout << 4 << std::endl;
-
-        if(history_origin_info_.size() > 2)
-        {   // Reserve history fitting front element.
-            history_origin_info_.pop_front();    
-        }
+        // std::cout << 3 << std::endl;
 
         //-----------------进行滑窗滤波,备选方案,暂未使用-------------------------------------
         //如速度过大,可认为为噪声干扰,进行滑窗滤波滤除
@@ -284,49 +302,56 @@ namespace armor_processor
         //     }
         // }
         // std::cout << "size: " << history_info_.size() << std::endl;
-        // 计算目标速度、加速度 
-        // 取目标t-2、t-1、t时刻的坐标信息
-        auto delta_x_last = (history_info_.at(history_info_.size() - 2).xyz[0] - history_info_.at(history_info_.size() - 3).xyz[0]);
-        auto delta_y_last = (history_info_.at(history_info_.size() - 2).xyz[1] - history_info_.at(history_info_.size() - 3).xyz[1]);
-        auto delta_t_last = (history_info_.at(history_info_.size() - 2).timestamp - history_info_.at(history_info_.size() - 3).timestamp) / 1e9;
-        // std::cout << "delta_t:" << delta_t_last << "s" << std::endl;
 
-        auto vx_last = delta_x_last / delta_t_last;
-        auto vy_last = delta_y_last / delta_t_last;
-
-        auto delta_x_now = (target.xyz[0] - history_info_.at(history_info_.size() - 2).xyz[0]);
-        auto delta_y_now = (target.xyz[1] - history_info_.at(history_info_.size() - 2).xyz[1]);
-
-        auto delta_t_now = (target.timestamp - history_info_.at(history_info_.size() - 2).timestamp) / 1e9;
-        auto vx_now = delta_x_now / delta_t_now;
-        auto vy_now = delta_y_now / delta_t_now;
-
-        auto ax = (vx_now - vx_last) / ((delta_t_now + delta_t_last) / 2);
-        auto ay = (vy_now - vy_last) / ((delta_t_now + delta_t_last) / 2);
-        
         Eigen::VectorXd measure_vel(2), measure_acc(2);
-        measure_vel << vx_now, vy_now;
-        measure_acc << ax, ay;
-        // std::cout << "dx:" << delta_x_now << " dy:" << delta_y_now << std::endl;
+        Eigen::Vector2d target_vel, target_acc;
+        double ax = 0.0, ay = 0.0;
+        if(!target.is_spinning)
+        {
+            // 计算目标速度、加速度 
+            // 取目标t-2、t-1、t时刻的坐标信息
+            auto delta_x_last = (history_info_.at(history_info_.size() - 2).xyz[0] - history_info_.at(history_info_.size() - 3).xyz[0]);
+            auto delta_y_last = (history_info_.at(history_info_.size() - 2).xyz[1] - history_info_.at(history_info_.size() - 3).xyz[1]);
+            auto delta_t_last = (history_info_.at(history_info_.size() - 2).timestamp - history_info_.at(history_info_.size() - 3).timestamp) / 1e9;
+            // std::cout << "delta_t:" << delta_t_last << "s" << std::endl;
 
-        // bool is_v_filter_ready = pf_v.update(measure_v);
-        // Eigen::Vector2d predict_v_xy = pf_v.predict();
+            auto vx_last = delta_x_last / delta_t_last;
+            auto vy_last = delta_y_last / delta_t_last;
 
-        Eigen::Vector2d target_vel = measure_vel;
-        Eigen::Vector2d target_acc = measure_acc;
+            auto delta_x_now = (target.xyz[0] - history_info_.at(history_info_.size() - 2).xyz[0]);
+            auto delta_y_now = (target.xyz[1] - history_info_.at(history_info_.size() - 2).xyz[1]);
 
-        history_vx_[3] = history_vx_[2];
-        history_vx_[2] = history_vx_[1];
-        history_vx_[1] = history_vx_[0];
-        history_vx_[0] = target_vel[1];
+            auto delta_t_now = (target.timestamp - history_info_.at(history_info_.size() - 2).timestamp) / 1e9;
+            auto vx_now = delta_x_now / delta_t_now;
+            auto vy_now = delta_y_now / delta_t_now;
 
-        history_acc_[3] = history_acc_[2];
-        history_acc_[2] = history_acc_[1];
-        history_acc_[1] = history_acc_[0];
-        history_acc_[0] = target_acc[1];
+            ax = (vx_now - vx_last) / ((delta_t_now + delta_t_last) / 2);
+            ay = (vy_now - vy_last) / ((delta_t_now + delta_t_last) / 2);
+            
+            measure_vel << vx_now, vy_now;
+            measure_acc << ax, ay;
+            // std::cout << "dx:" << delta_x_now << " dy:" << delta_y_now << std::endl;
 
-        RCLCPP_INFO(logger_, "target_vel: x:%lf y:%lf", target_vel[0], target_vel[1]);
-        RCLCPP_INFO(logger_, "target_acc: x:%lf y:%lf", target_acc[0], target_acc[1]);
+            // bool is_v_filter_ready = pf_v.update(measure_v);
+            // Eigen::Vector2d predict_v_xy = pf_v.predict();
+
+            target_vel = measure_vel;
+            target_acc = measure_acc;
+
+            history_vx_[3] = history_vx_[2];
+            history_vx_[2] = history_vx_[1];
+            history_vx_[1] = history_vx_[0];
+            history_vx_[0] = target_vel[1];
+
+            history_acc_[3] = history_acc_[2];
+            history_acc_[2] = history_acc_[1];
+            history_acc_[1] = history_acc_[0];
+            history_acc_[0] = target_acc[1];
+
+            RCLCPP_INFO(logger_, "target_vel: x:%lf y:%lf", target_vel[0], target_vel[1]);
+            RCLCPP_INFO(logger_, "target_acc: x:%lf y:%lf", target_acc[0], target_acc[1]);
+        }
+        // std::cout << 4 << std::endl;
 
         // if(is_v_filter_ready)
         // {   //若速度粒子滤波器已完成初始化且预测值大小恰当，则对目标速度做滤波
@@ -352,7 +377,7 @@ namespace armor_processor
 
         // std::cout << "fitting_status: " << fitting_disabled_ << std::endl;
         // std::cout << "filter_status: " << filter_disabled_ << std::endl;
-        if(!filter_disabled_ && fitting_disabled_)
+        if(!filter_disabled_)
         {   //禁用曲线拟合
             //需注意粒子滤波使用相对时间（自上一次检测时所经过ms数），拟合使用自首帧所经过时间
             // auto is_pf_available = predict_pf_run(target, result_pf, delta_time_estimate);
@@ -422,14 +447,14 @@ namespace armor_processor
             //     result[2] = target.xyz[2];
         }
 
-        if(filter_disabled_ && !fitting_disabled_)
+        if(!fitting_disabled_)
         {   //禁用滤波
             // 击打前哨站模式
-            if(target.is_sentry_mode && target.sentry_armor_status == NORMAL)
+            if(target.is_sentry_mode && target.outpost_status == NORMAL)
             {
                 is_fitting_available = spinningPredict(false, target, result_fitting, time_estimate);  
             }
-            else if(target.is_sentry_mode && target.sentry_armor_status == CONTROLLED)
+            else if(target.is_sentry_mode && target.outpost_status == CONTROLLED)
             {
                 is_fitting_available = spinningPredict(true, target, result_fitting, time_estimate);  
             }
@@ -461,6 +486,8 @@ namespace armor_processor
             else
                 result[2] = target.xyz[2];
         }
+        std::cout << 5 << std::endl;
+
 
         // if(!fitting_disabled_ && !filter_disabled_)
         // {   //卡尔曼滤波和曲线拟合异步运行，对二者预测结果进行融合
@@ -798,7 +825,7 @@ namespace armor_processor
         options.linear_solver_type = ceres::DENSE_QR;
         options.minimizer_progress_to_stdout = false;
         
-        double x0 = history_info_.front().xyz[0];
+        double x0 = history_info_.front().xyz[1];
         int st = history_info_.begin()->timestamp;
         last_start_timestamp_ = st;
 
@@ -811,7 +838,7 @@ namespace armor_processor
         options.minimizer_progress_to_stdout =false;
 
         //TODO: camera frame's y coord matches to gyro frame's z.
-        double y0 = history_info_.front().xyz[2];
+        double y0 = history_info_.front().xyz[0];
 
         double x_sum = 0;
         double y_sum = 0;
@@ -1034,6 +1061,7 @@ namespace armor_processor
         else
             is_predicted = false;
         
+        RCLCPP_INFO(logger_, "x_rmse:%lf k:%lf b:%lf", x_rmse, params[0], params[1]);
         // std::cout << "is_predicted: " << is_predicted << std::endl;
         // is_available.xyz_status[1] = (summary.final_cost <= predict_param_.max_cost);
         // std::cout << "xyz_status[0]:" << is_available.xyz_status[0] << std::endl;
@@ -1307,7 +1335,7 @@ namespace armor_processor
         // }
         
         // result = {x_pred, target.xyz[1], target.xyz[2]};
-        result = {y_shift_pred, x_pred, target.xyz[2]}; //camera frame
+        result = {target.xyz[0], x_pred, target.xyz[2]}; //camera frame
         // result = {target.xyz[0], target.xyz[1], y_pred}; //camera frame
         
         // std::cout << "x:" << target.xyz[0] << " x_pred:" << x_pred << std::endl;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-15 11:25:33
- * @LastEditTime: 2023-02-01 17:44:39
+ * @LastEditTime: 2023-02-02 16:15:06
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/spinning_detector/spinning_detector.hpp
  */
 #ifndef SPINNING_DETECTOR_HPP_
@@ -46,6 +46,28 @@ namespace armor_detector
         double anti_spin_judge_high_thres; //大于该阈值认为该车已开启陀螺
         double anti_spin_judge_low_thres;  //小于该阈值认为该车已关闭陀螺
         double anti_spin_max_r_multiple;
+
+        double delta_x_3d_high_thresh;
+        double delta_x_3d_higher_thresh;
+        double delta_x_3d_low_thresh;
+        double delta_x_3d_lower_thresh;
+
+        double delta_x_2d_high_thresh;
+        double delta_x_2d_higher_thresh;
+        double delta_x_2d_low_thresh;
+        double delta_x_2d_lower_thresh;
+        GyroParam()
+        {
+            delta_x_3d_high_thresh = 0.37;
+            delta_x_3d_higher_thresh = 0.44;
+            delta_x_3d_low_thresh = 0.23;
+            delta_x_3d_lower_thresh = 0.15;
+
+            delta_x_2d_high_thresh = 65;
+            delta_x_2d_higher_thresh = 85;
+            delta_x_2d_low_thresh = 35;
+            delta_x_2d_lower_thresh = 24;
+        }
     };
 
     struct TimeInfo
@@ -62,6 +84,12 @@ namespace armor_detector
         double new_x_font;
         double new_x_back;    
         double new_timestamp;
+        int last_x_font_2d;
+        int last_x_back_2d;
+        int new_x_font_2d;
+        int new_x_back_2d;   
+        Eigen::Matrix3d last_rmat;
+        Eigen::Matrix3d new_rmat;
     };
 
     struct DetectorInfo
@@ -83,7 +111,6 @@ namespace armor_detector
     class SpinningDetector
     {
     private:
-        GyroParam gyro_params_;
         Color detect_color;
         Armor last_armor;
 
@@ -97,7 +124,7 @@ namespace armor_detector
 
         bool updateSpinScore();
         void createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map, std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, double timestamp, int dead_buffer_cnt);
-        bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, std::map<std::string, int>& new_armors_cnt_map);
+        bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, std::map<std::string, int>& new_armors_cnt_map, double timestamp);
         
         // 记录小陀螺运动下前后两次新增tracker时的时间戳，用以计算小陀螺旋转周期
         
@@ -106,6 +133,7 @@ namespace armor_detector
         // int chooseTargetID(vector<armor_detector::Armor> &armors, int timestamp, int prev_timestamp);
         SpinningMap spinning_map_;
         DetectorInfo detector_info_;
+        GyroParam gyro_params_;
         
         rclcpp::Logger logger_;
     };

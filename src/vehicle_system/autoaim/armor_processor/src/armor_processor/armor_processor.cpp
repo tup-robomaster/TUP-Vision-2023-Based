@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-02-02 00:05:53
+ * @LastEditTime: 2023-02-02 22:43:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -84,7 +84,7 @@ namespace armor_processor
         {
             is_ekf_init = false;
             is_imm_init = false;
-            reInitialize();
+            // reInitialize();
         }
 
         auto hit_point = predict(target, target.timestamp, sleep_time);
@@ -97,7 +97,7 @@ namespace armor_processor
         {
             is_ekf_init = false;
             is_imm_init = false;
-            reInitialize();
+            // reInitialize();
         }
 
         auto hit_point = predict(target, target.timestamp, sleep_time, &src);

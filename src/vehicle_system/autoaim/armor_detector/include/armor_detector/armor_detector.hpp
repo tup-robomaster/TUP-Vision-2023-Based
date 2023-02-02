@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-02-01 16:31:55
+ * @LastEditTime: 2023-02-02 20:46:43
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //C++
@@ -104,9 +104,13 @@ namespace armor_detector
         std::string save_path;
     };
 
-    
-    
-    
+    enum SwitchStatus
+    {
+        NONE,
+        SINGER,
+        DOUBLE
+    };
+
     class Detector
     {
     public:
@@ -175,6 +179,19 @@ namespace armor_detector
         Size2i input_size;
 
         void showArmors(TaskData& src);
+        
+    private:
+        SwitchStatus last_last_status_;
+        SwitchStatus last_status_;
+        SwitchStatus cur_status_;
+        
+        double cur_period_;
+        double last_period_;
+        deque<double> history_period_;
+        deque<double> new_period_deq_;
+        double last_ave_period_;
+        double cur_ave_period_;
+
     public:
         void setDetectorParam(const double& param, int idx);
         void setDebugParam(const bool& param, int idx);
