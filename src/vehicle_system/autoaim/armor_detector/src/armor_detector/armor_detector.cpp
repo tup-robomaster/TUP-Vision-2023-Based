@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-02-02 23:35:50
+ * @LastEditTime: 2023-02-04 00:14:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -43,7 +43,8 @@ namespace armor_detector
         last_last_status_ = last_status_ = cur_status_ = NONE;
 
         is_save_data = debug_params_.save_data; //save distance error data
-
+        save_dataset_ = debug_params_.save_dataset;
+        
         //debug
         // this->debug_params_.debug_without_com = _debug_params_.debug_without_com;
         // this->debug_params_.using_imu =  _debug_params_.using_imu;
@@ -368,6 +369,15 @@ namespace armor_detector
         }
         else
         {
+            if(save_dataset_)
+            {
+                bool is_init = false;
+                for(auto armor : armors)
+                {
+                    vector<cv::Point2f> cornor_points(armor.apex2d, armor.apex2d + 4);
+                    autoLabel(is_init, src.img, file_, path_prefix_, src.timestamp, armor.id, armor.color, cornor_points, roi_offset, input_size);
+                }
+            }
             last_armors = armors;
         }
 
@@ -390,13 +400,27 @@ namespace armor_detector
         spinning_detector_.updateSpinScore();
 
         //Choose target vehicle
+        //此处首先根据哨兵发来的ID指令进行目标车辆追踪
         auto target_id = chooseTargetID(armors, timestamp);
 
         string target_key;
+        string vehicle_key;
+        int idx = target_id_;
+        target_id_ = 0; //置零，确保哨兵发送的目标ID信息是在更新
         if (detector_params_.color == BLUE)
+        {
+            vehicle_key = "B" + to_string(idx);
             target_key = "B" + to_string(target_id);
+        }
         else if (detector_params_.color == RED)
+        {
+            vehicle_key = "R" + to_string(idx);
             target_key = "R" + to_string(target_id);
+        }
+        if(!trackers_map.count(vehicle_key) == 0)
+        {   // 如果当前tracker队列中存在哨兵发送的目标id，则直接将其选为目标车辆
+            target_key = vehicle_key;
+        }
 
         RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Target key: %s", target_key.c_str());
 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-02-02 22:08:50
+ * @LastEditTime: 2023-02-03 21:56:17
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -400,6 +400,7 @@ namespace armor_processor
         ParticleFilter pf_v;    // 速度粒子滤波
 
         std::deque<TargetInfo> history_info_;
+        std::deque<TargetInfo> history_pred_;
         int history_deque_lens_; // 历史队列长度
 
         // 滤波先验参数/模型先验参数/调试参数
@@ -434,6 +435,7 @@ namespace armor_processor
         
     private:
         double evalRMSE(double* params);
+        double calcError();
         
         Eigen::Vector3d shiftWindowFilter(int start_idx);
 

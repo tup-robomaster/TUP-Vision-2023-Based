@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-02-02 00:06:52
+ * @LastEditTime: 2023-02-04 00:35:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -35,6 +35,7 @@ namespace armor_processor
 
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_info", qos);
+        tracking_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/tracking_info", qos);
 
         // 订阅目标装甲板信息
         target_info_sub_ = this->create_subscription<AutoaimMsg>("/armor_info", qos,
@@ -262,12 +263,13 @@ namespace armor_processor
     {
         // flag_ = true;
         // last_predict_point_ = predict_point_;
-
+        // RCLCPP_INFO(this->get_logger(), "Target info callback...");
 
         double sleep_time = 0.0;
         AutoaimMsg target = std::move(target_info);
         
         auto aiming_point_world = std::move(processor_->predictor(target, sleep_time));
+        // RCLCPP_INFO(this->get_logger(), "Predict...");
 
         Eigen::Matrix3d rmat_imu;
         if(!debug_param_.using_imu)
@@ -283,6 +285,8 @@ namespace armor_processor
         // std::cout << "predict_cam: x:" << aiming_point_cam[0] << " y:" << aiming_point_cam[1] << " z:" << aiming_point_cam[2] << std::endl;
         
         Eigen::Vector2d angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
+        Eigen::Vector3d tracking_point_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
+        Eigen::Vector2d tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
 
         // if(target_info.target_switched)
         // {
@@ -317,8 +321,19 @@ namespace armor_processor
         gimbal_info.is_spinning = target_info.is_spinning;
         gimbal_info_pub_->publish(std::move(gimbal_info));
 
+
         if(this->debug_)
         {
+            GimbalMsg tracking_info;
+            tracking_info.header.frame_id = "barrel_link1";
+            tracking_info.header.stamp = target_info.header.stamp;
+            tracking_info.pitch = tracking_angle[0];
+            tracking_info.yaw = tracking_angle[1];
+            tracking_info.distance = tracking_point_cam.norm();
+            tracking_info.is_switched = target_info.target_switched;
+            tracking_info.is_spinning = target_info.is_spinning;
+            gimbal_info_pub_->publish(std::move(tracking_info));
+
             AutoaimMsg predict_info;
             predict_info.header.frame_id = "camera_link";
             predict_info.header.stamp = target_info.header.stamp;

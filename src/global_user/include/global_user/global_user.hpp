@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2022-12-27 18:59:39
+ * @LastEditTime: 2023-02-04 00:14:25
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 
@@ -49,6 +49,7 @@
 #define MVS_IMAGE_WIDTH 1280
 #define MVS_IMAGE_HEIGHT 1024
 
+using namespace std;
 namespace global_user
 {   
     /**
@@ -178,6 +179,7 @@ namespace global_user
     bool setSharedMemory(SharedMemoryParam& shared_memory_param, int id, int image_width = 1280, int image_height = 1024);
     bool getSharedMemory(SharedMemoryParam& shared_memory_param, int id);
     bool destorySharedMemory(SharedMemoryParam& shared_memory_param);
+    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_name, double &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size);
 } // namespace global_user
 
 #endif

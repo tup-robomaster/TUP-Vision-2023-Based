@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-02-02 20:46:43
+ * @LastEditTime: 2023-02-03 23:56:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //C++
@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <vector>
 #include <string>
+#include <atomic>
 
 //ros
 #include <rclcpp/rclcpp.hpp>
@@ -38,6 +39,7 @@ namespace armor_detector
         bool print_letency;
         bool print_target_info;
         bool save_data;
+        bool save_dataset;
 
         DebugParam()
         {
@@ -52,6 +54,7 @@ namespace armor_detector
             print_letency = false;
             print_target_info = true; 
             save_data = false;
+            save_dataset = false;
         }
     };
 
@@ -144,6 +147,8 @@ namespace armor_detector
         bool is_save_data;
         ArmorDetector armor_detector_;
         CoordSolver coordsolver_;
+
+        atomic<int> target_id_ = 0; 
     private:
         Armor last_armor;
         std::vector<ArmorObject> objects;
@@ -156,6 +161,9 @@ namespace armor_detector
         Eigen::Matrix3d rmat_imu;
 
         rclcpp::Logger logger_;
+        ofstream file_;
+        bool save_dataset_;
+        std::string path_prefix_ = "src/camera_driver/recorder/autoaim_dataset/";
     private:
         int count;
         rclcpp::Time time_start;

@@ -51,6 +51,7 @@
   # Data saving.
     save_data: false
     save_path: "src/data/infer2_5.txt"
+    save_dataset: false
   
   # Debug params.
     debug: true

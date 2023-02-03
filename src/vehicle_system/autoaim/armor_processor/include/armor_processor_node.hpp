@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-02-01 19:03:40
+ * @LastEditTime: 2023-02-04 00:28:49
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -68,6 +68,7 @@ namespace armor_processor
         mutex mutex_;
         // coordsolver::coordsolver coordsolver_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
+        rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
         rclcpp::Publisher<AutoaimMsg>::SharedPtr predict_info_pub_;
     
     private:
