@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-02-04 00:14:41
+ * @LastEditTime: 2023-02-05 00:32:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -90,7 +90,15 @@ namespace armor_detector
         this->debug_params_.print_target_info = debug_params.print_target_info;
     }
     
-    bool Detector::armor_detect(TaskData &src)
+    /**
+     * @brief 车辆装甲板检测
+     * 
+     * @param src 图像数据结构体
+     * @param is_target_lost 目标是否丢失
+     * @return true 
+     * @return false 
+     */
+    bool Detector::armor_detect(TaskData &src, bool& is_target_lost)
     {
         if(!is_init)
         {
@@ -174,6 +182,7 @@ namespace armor_detector
             //     waitKey(1);
             // }
 
+            is_target_lost = true;
             lost_cnt++;
             is_last_target_exists = false;
             last_target_area = 0.0;
@@ -362,6 +371,7 @@ namespace armor_detector
             //更新陀螺分数
             spinning_detector_.updateSpinScore();
 
+            is_target_lost = true;
             lost_cnt++;
             is_last_target_exists = false;
             last_target_area = 0;
@@ -380,15 +390,20 @@ namespace armor_detector
             }
             last_armors = armors;
         }
-
+        is_target_lost = false;
         return true;
     }
 
+    /**
+     * @brief 车辆小陀螺状态检测
+     * 
+     * @param src 图像数据结构体
+     * @param target_info 目标装甲板message
+     * @return true 
+     * @return false 
+     */
     bool Detector::gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info)
     {
-        /**
-         * @brief 车辆小陀螺状态检测
-        */
 
         //Create ArmorTracker for new armors 
         spinning_detector_.createArmorTracker(trackers_map, armors, new_armors_cnt_map, timestamp, dead_buffer_cnt);
@@ -419,6 +434,7 @@ namespace armor_detector
         }
         if(!trackers_map.count(vehicle_key) == 0)
         {   // 如果当前tracker队列中存在哨兵发送的目标id，则直接将其选为目标车辆
+            RCLCPP_INFO(logger_, "Detect sentry sending id...");
             target_key = vehicle_key;
         }
 
@@ -438,6 +454,7 @@ namespace armor_detector
                 showArmors(src);
             }
 
+            target_info.is_target_lost = true;
             lost_cnt++;
             is_last_target_exists = false;
             RCLCPP_WARN(logger_, "No available tracker exists!");
@@ -837,7 +854,8 @@ namespace armor_detector
         is_last_target_exists = true;
         last_armors.clear();
         last_armors = armors;
-
+        target_info.is_target_lost = false;
+                        
         if(debug_params_.show_aim_cross)
         {
             line(src.img, Point2f(src.img.size().width / 2, 0), Point2f(src.img.size().width / 2, src.img.size().height), {0,255,0}, 1);
@@ -914,6 +932,11 @@ namespace armor_detector
         return true;
     }
 
+    /**
+     * @brief 显示检测到的装甲板信息
+     * 
+     * @param src 图像数据结构体
+     */
     void Detector::showArmors(TaskData& src)
     {
         for (auto armor : armors)
@@ -941,6 +964,12 @@ namespace armor_detector
         }
     }
 
+    /**
+     * @brief 图像ROI裁剪
+     * 
+     * @param img 原图像
+     * @return Point2i 裁剪的偏移量
+     */
     Point2i Detector::cropImageByROI(Mat &img)
     {
         // if (!is_last_target_exists)
@@ -1070,6 +1099,13 @@ namespace armor_detector
         return offset;
     }
     
+    /**
+     * @brief 选择目标车辆装甲板对应的追踪器Tracker
+     * 
+     * @param trackers 追踪器队列
+     * @param timestamp 当前帧对应的时间戳
+     * @return ArmorTracker* 返回目标车辆装甲板对应的追踪器
+     */
     ArmorTracker* Detector::chooseTargetTracker(vector<ArmorTracker*> trackers, double timestamp)
     {
         //TODO:优化打击逻辑
@@ -1106,6 +1142,13 @@ namespace armor_detector
         return trackers[target_idx];
     }   
 
+    /**
+     * @brief 选择目标车辆
+     * 
+     * @param armors 当前帧检测到的所有装甲板对象
+     * @param timestamp 当前帧对应的时间戳
+     * @return int 返回选择的车辆ID
+     */
     int Detector::chooseTargetID(vector<Armor> &armors, double timestamp)
     {
         //TODO:自瞄逻辑修改
@@ -1142,6 +1185,12 @@ namespace armor_detector
             return (*armors.begin()).id;
     }
 
+    /**
+     * @brief 修改检测类参数值
+     * 
+     * @param param 参数值
+     * @param idx 对应的参数顺序
+     */
     void Detector::setDetectorParam(const double& param, int idx)
     {
         switch (idx)
@@ -1187,6 +1236,12 @@ namespace armor_detector
         }
     }
 
+    /**
+     * @brief 修改调试类参数
+     * 
+     * @param param 参数值
+     * @param idx 对应的参数顺序
+     */
     void Detector::setDebugParam(const bool& param, int idx)
     {
         switch (idx)
@@ -1223,6 +1278,13 @@ namespace armor_detector
         }
     }
 
+    /**
+     * @brief 获取调试参数值
+     * 
+     * @param idx 对应的参数顺序
+     * @return true 
+     * @return false 
+     */
     bool Detector::getDebugParam(int idx)
     {
         return debug_params_.using_imu;

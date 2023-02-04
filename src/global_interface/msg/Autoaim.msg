@@ -6,6 +6,7 @@ float64 timestamp
 float64 w
 float64 period
 geometry_msgs/Quaternion quat_imu
+bool is_target_lost
 bool target_switched
 bool spinning_switched
 bool is_spinning

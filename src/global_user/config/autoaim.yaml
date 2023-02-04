@@ -37,7 +37,7 @@
   # Camera config params.
     # camera_name: "00J90630561" 
     camera_name: "KE0200110075" 
-    camera_type: 3
+    camera_type: 0
     camera_param_path: "src/global_user/config/camera.yaml"
 
   # Network model path.
@@ -45,8 +45,8 @@
     # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
     # network_path: "src/vehicle_system/autoaim/armor_detector/model/1106-333.xml"
     # network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
-    network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-1208-001.xml"
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0127-001.xml"
+    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-1208-001.xml"
+    network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0127-001.xml"
   
   # Data saving.
     save_data: false
@@ -92,7 +92,7 @@
     debug: true
 
   # Camera params.
-    camera_type: 3 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
     coord_param_name: "KE0200110075" 
     coord_param_path: "src/global_user/config/camera.yaml"
@@ -101,7 +101,9 @@
     filter_param_path: "src/global_user/config/filter_param.yaml"
 
   # Singer model(--->CS Model).
-    singer_model: [0.8, 0.1, 0.1, 0.8, 1.0, 0.1, 1.0, 1.0, 5.0] # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 dt:采样时间间隔 sigma:机动加速度标准差 p:过程协方差系数 r:观测协方差系数 coeff:预测提前量系数)
+    # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 dt:采样时间间隔 
+    #  sigma:机动加速度标准差 p:过程协方差系数 r:观测协方差系数 coeff:预测提前量系数)
+    singer_model: [0.8, 0.1, 0.1, 0.8, 0.5, 0.1, 1.0, 1.0, 5.0] 
   
   # IMM model.
     #状态转移概率

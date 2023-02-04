@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-02-03 23:56:45
+ * @LastEditTime: 2023-02-04 23:27:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //C++
@@ -128,7 +128,7 @@ namespace armor_detector
 
     public:
         // void run();
-        bool armor_detect(TaskData &src);
+        bool armor_detect(TaskData &src, bool& is_target_lost);
         bool gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info);
 
         Point2i cropImageByROI(Mat &img);

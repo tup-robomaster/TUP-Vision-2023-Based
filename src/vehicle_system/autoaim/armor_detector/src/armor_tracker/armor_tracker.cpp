@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2022-12-26 21:50:31
+ * @LastEditTime: 2023-02-05 00:35:56
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_tracker/armor_tracker.cpp
  */
 #include "../../include/armor_tracker/armor_tracker.hpp"
@@ -13,6 +13,13 @@ namespace armor_detector
     {
         
     }
+
+    /**
+     * @brief Construct a new Armor Tracker:: Armor Tracker object
+     * 
+     * @param src 装甲板对象
+     * @param src_timestamp 本帧对应的时间戳
+     */
     ArmorTracker::ArmorTracker(Armor src, double src_timestamp)
     {
         last_armor = src;
@@ -24,6 +31,14 @@ namespace armor_detector
         calcTargetScore();
     }
 
+    /**
+     * @brief 更新追踪器
+     * 
+     * @param new_armor 本帧检测得到的装甲板信息
+     * @param new_timestamp 本帧对应的时间戳
+     * @return true 
+     * @return false 
+     */
     bool ArmorTracker::update(Armor new_armor, double new_timestamp)
     {
         if (history_info_.size() <= max_history_len)
@@ -46,6 +61,12 @@ namespace armor_detector
         return true;
     }
 
+    /**
+     * @brief 计算目标装甲板分数
+     * 用于进行目标切换的判定依据
+     * @return true 
+     * @return false 
+     */
     bool ArmorTracker::calcTargetScore()
     {
         vector<Point2f> points;

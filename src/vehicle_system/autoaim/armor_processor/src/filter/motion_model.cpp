@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 12:36:22
- * @LastEditTime: 2023-02-01 21:58:14
+ * @LastEditTime: 2023-02-05 01:00:12
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/motion_model.cpp
  */
 #include "../../include/filter/motion_model.hpp"
@@ -18,6 +18,12 @@ namespace armor_processor
     }
     CV::~CV() {}
     
+    /**
+     * @brief 初始化CV模型对应的卡尔曼滤波
+     * 
+     * @param x 状态向量
+     * @param dt 时间量
+     */
     void CV::init(const Eigen::VectorXd& x, const double& dt)
     {   
         // 状态向量与模型维度不匹配
@@ -45,6 +51,10 @@ namespace armor_processor
         this->z_.resize(4);
     }
 
+    /**
+     * @brief 更新预测信息
+     * 
+     */
     void CV::updatePrediction()
     {
         // double vx = this->x_(2);
@@ -82,6 +92,10 @@ namespace armor_processor
                     0,   0,   0,   0,   0,   q[5];
     }
 
+    /**
+     * @brief 更新测量信息
+     * 
+     */
     void CV::updateMeasurement()
     {}
 

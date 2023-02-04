@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-02-03 22:12:30
+ * @LastEditTime: 2023-02-05 01:11:28
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -87,6 +87,11 @@ namespace armor_processor
             is_ekf_init = false;
     }
 
+    /**
+     * @brief 加载滤波参数
+     * 
+     * @param filter_param_path 滤波参数文件路径
+     */
     void ArmorPredictor::loadParam(std::string filter_param_path)
     {
         if(!is_init)
@@ -106,6 +111,15 @@ namespace armor_processor
         // is_predicted = false;
     }
 
+    /**
+     * @brief 对目标位置进行预测
+     * 
+     * @param target_msg 目标message
+     * @param timestamp 本帧对应的时间戳
+     * @param sleep_time 休眠时间，对应于预测延迟量 
+     * @param src 图像数据
+     * @return Eigen::Vector3d 
+     */
     Eigen::Vector3d ArmorPredictor::predict(AutoaimMsg& target_msg, double timestamp, double& sleep_time, cv::Mat* src)
     {
         auto t1 = steady_clock_.now();
@@ -630,12 +644,25 @@ namespace armor_processor
         return error;
     }
 
+    /**
+     * @brief 设置弹速
+     * 
+     * @param speed 
+     * @return true 
+     * @return false 
+     */
     bool ArmorPredictor::setBulletSpeed(double speed)
     {
         predict_param_.bullet_speed = speed;
         return true;
     }
 
+    /**
+     * @brief 滑窗滤波
+     * 
+     * @param start_idx 滑窗起始位点
+     * @return Eigen::Vector3d 
+     */
     Eigen::Vector3d ArmorPredictor::shiftWindowFilter(int start_idx)
     {
         //计算最大迭代次数
@@ -660,6 +687,14 @@ namespace armor_processor
         return total_sum / max_iter;
     }
 
+    /**
+     * @brief 粒子滤波预测函数
+     * 
+     * @param target 目标信息
+     * @param result 预测信息
+     * @param time_estimated 延迟时间量
+     * @return PredictStatus 各个轴预测成功与否
+     */
     PredictStatus ArmorPredictor::predict_pf_run(TargetInfo target, Vector3d& result, double time_estimated)
     {
         PredictStatus is_available;
@@ -707,6 +742,13 @@ namespace armor_processor
         return is_available;
     }
 
+    /**
+     * @brief 坐标轴解耦拟合预测函数
+     * 
+     * @param result 
+     * @param time_estimated 
+     * @return PredictStatus 
+     */
     PredictStatus ArmorPredictor::uncouple_fitting_predict(Eigen::Vector3d& result, double time_estimated)
     {
         //0.1的位置使用0初始化会导致拟合结果出错
@@ -819,6 +861,15 @@ namespace armor_processor
         return is_available;
     }
 
+    /**
+     * @brief 坐标轴耦合拟合预测函数
+     * 
+     * @param is_still_spinning 
+     * @param target 
+     * @param result 
+     * @param time_estimated 
+     * @return PredictStatus 
+     */
     PredictStatus ArmorPredictor::couple_fitting_predict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, double time_estimated)
     {   
         /**
@@ -1384,6 +1435,15 @@ namespace armor_processor
         return rmse;
     }
 
+    /**
+     * @brief 前哨站旋转预测函数
+     * 
+     * @param is_controlled 我方是否处于控制区，此时前哨站转速减半
+     * @param target 目标信息
+     * @param result 预测结果
+     * @param time_estimated 时间延迟量
+     * @return PredictStatus 
+     */
     PredictStatus ArmorPredictor::spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, double time_estimated)
     {  
         /**
@@ -1497,6 +1557,10 @@ namespace armor_processor
         return is_available;
     }
 
+    /**
+     * @brief 基于CS模型的卡尔曼滤波初始化
+     * 
+     */
     void ArmorPredictor::kfInit()
     {
         double alpha = singer_param_[0];
@@ -1533,6 +1597,16 @@ namespace armor_processor
         kalman_filter_.R_ << meaCov;
     }
 
+    /**
+     * @brief 基于cs模型的滤波函数
+     * 
+     * @param target 
+     * @param result 
+     * @param target_vel 
+     * @param target_acc 
+     * @param timestamp 
+     * @return PredictStatus 
+     */
     PredictStatus ArmorPredictor::predict_ekf_run(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, double timestamp)
     {
         PredictStatus is_available;
@@ -1655,6 +1729,16 @@ namespace armor_processor
         return is_available;
     }
 
+    /**
+     * @brief 基于IMM模型的滤波预测函数
+     * 
+     * @param target 目标信息
+     * @param result 预测结果
+     * @param target_v 目标速度
+     * @param ax 目标加速度
+     * @param timestamp 时间提前量
+     * @return PredictStatus 
+     */
     PredictStatus ArmorPredictor::predict_based_imm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d& target_v, double& ax, double timestamp)
     {
         PredictStatus is_available;

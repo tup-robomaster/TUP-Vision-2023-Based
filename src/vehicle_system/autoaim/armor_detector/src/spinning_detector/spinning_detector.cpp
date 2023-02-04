@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-02-02 16:50:43
+ * @LastEditTime: 2023-02-05 00:41:17
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -44,6 +44,12 @@ namespace armor_detector
         
     }
 
+    /**
+     * @brief 更新目标的旋转分数
+     * 用于判断目标是否处于小陀螺状态
+     * @return true 
+     * @return false 
+     */
     bool SpinningDetector::updateSpinScore()
     {
         /**
@@ -104,12 +110,17 @@ namespace armor_detector
         return true;
     }
 
+    /**
+     * @brief 生成/分配ArmorTracker
+     * 
+     * @param trackers_map 追踪器multimap
+     * @param armors 本帧检测到的装甲板对象
+     * @param new_armors_cnt_map 不同车辆新增装甲板的数量map
+     * @param timestamp 本帧对应的时间戳
+     * @param dead_buffer_cnt 目标装甲板灯条灭掉的帧数
+     */
     void SpinningDetector::createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map, std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, double timestamp, int dead_buffer_cnt)
     {
-        /**
-         * @brief 生成/分配ArmorTracker
-         * 
-        */
         new_armors_cnt_map.clear();
 
         //为装甲板分配或新建最佳ArmorTracker(注:将不会为灰色装甲板创建预测器，只会分配给现有的预测器)
@@ -227,6 +238,15 @@ namespace armor_detector
         }
     }
 
+    /**
+     * @brief 判断目标是否处于小陀螺状态
+     * 
+     * @param trackers_map 车辆追踪器multimap
+     * @param new_armors_cnt_map 不同车辆新增装甲板的数量map
+     * @param timestamp 本帧对应的时间戳
+     * @return true 
+     * @return false 
+     */
     bool SpinningDetector::isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, std::map<std::string, int>& new_armors_cnt_map, double timestamp)
     {
         /**

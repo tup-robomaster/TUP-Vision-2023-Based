@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-02-04 00:35:15
+ * @LastEditTime: 2023-02-05 01:14:40
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -171,6 +171,10 @@ namespace armor_processor
         }
     }
 
+    /**
+     * @brief 以共享内存的方式传输图像，方便可视化
+     * 
+     */
     void ArmorProcessorNode::img_callback()
     {
         cv::Mat img = cv::Mat(this->image_height, this->image_width, CV_8UC3);
@@ -203,6 +207,11 @@ namespace armor_processor
         }
     }
 
+    /**
+     * @brief 图像回调函数
+     * 
+     * @param img_info 图像数据信息
+     */
     void ArmorProcessorNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
     {
         if(!img_info)
@@ -259,6 +268,11 @@ namespace armor_processor
     //     } 
     // }
 
+    /**
+     * @brief 目标回调函数
+     * 
+     * @param target_info 装甲板信息
+     */
     void ArmorProcessorNode::target_info_callback(const AutoaimMsg& target_info)
     {
         // flag_ = true;
@@ -267,47 +281,58 @@ namespace armor_processor
 
         double sleep_time = 0.0;
         AutoaimMsg target = std::move(target_info);
-        
-        auto aiming_point_world = std::move(processor_->predictor(target, sleep_time));
-        // RCLCPP_INFO(this->get_logger(), "Predict...");
-
-        Eigen::Matrix3d rmat_imu;
-        if(!debug_param_.using_imu)
+        Eigen::Vector2d angle = {0.0, 0.0};
+        Eigen::Vector3d aiming_point_cam = {0.0, 0.0, 0.0};
+        Eigen::Vector3d tracking_point_cam = {0.0, 0.0, 0.0};
+        Eigen::Vector2d tracking_angle = {0.0, 0.0};
+        if(target.is_target_lost)
         {
-            rmat_imu = Eigen::Matrix3d::Identity();
+            processor_->is_ekf_init = false;
+            processor_->is_imm_init = false;
         }
         else
         {
-            Eigen::Quaternion quat_imu = std::move(Eigen::Quaternion{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
-            rmat_imu = quat_imu.toRotationMatrix();
-        }
-        Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
-        // std::cout << "predict_cam: x:" << aiming_point_cam[0] << " y:" << aiming_point_cam[1] << " z:" << aiming_point_cam[2] << std::endl;
-        
-        Eigen::Vector2d angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
-        Eigen::Vector3d tracking_point_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
-        Eigen::Vector2d tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
+            auto aiming_point_world = std::move(processor_->predictor(target, sleep_time));
+            // RCLCPP_INFO(this->get_logger(), "Predict...");
 
-        // if(target_info.target_switched)
-        // {
-        //     aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
-        //     // angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
-        //     processor_->is_ekf_initialized_ = false;
-        // }
-        // else
-        // {
-        //     aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
-        //     last_predict_point_ = predict_point_;
-        //     Eigen::Vector3d aiming_point_world = processor_->armor_predictor_.predict(aiming_point, target_info.timestamp);
-        //     Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, processor_->rmat_imu);
-        //     predict_point_ = aiming_point_cam;
-        //     angle = processor_->coordsolver_.getAngle(aiming_point_cam, processor_->rmat_imu);
-        //     // 若预测出错直接陀螺仪坐标系下坐标作为打击点
-        //     if(isnan(angle[0]) || isnan(angle[1]))
-        //     {
-        //         angle = processor_->coordsolver_.getAngle(aiming_point_world, processor_->rmat_imu);
-        //     }
-        // }
+            Eigen::Matrix3d rmat_imu;
+            if(!debug_param_.using_imu)
+            {
+                rmat_imu = Eigen::Matrix3d::Identity();
+            }
+            else
+            {
+                Eigen::Quaternion quat_imu = std::move(Eigen::Quaternion{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
+                rmat_imu = quat_imu.toRotationMatrix();
+            }
+            aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
+            // std::cout << "predict_cam: x:" << aiming_point_cam[0] << " y:" << aiming_point_cam[1] << " z:" << aiming_point_cam[2] << std::endl;
+            
+            angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
+            tracking_point_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
+            tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
+
+            // if(target_info.target_switched)
+            // {
+            //     aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
+            //     // angle = processor_->coordsolver_.getAngle(aiming_point, processor_->rmat_imu);
+            //     processor_->is_ekf_initialized_ = false;
+            // }
+            // else
+            // {
+            //     aiming_point = {target_info.aiming_point.x, target_info.aiming_point.y, target_info.aiming_point.z};
+            //     last_predict_point_ = predict_point_;
+            //     Eigen::Vector3d aiming_point_world = processor_->armor_predictor_.predict(aiming_point, target_info.timestamp);
+            //     Eigen::Vector3d aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, processor_->rmat_imu);
+            //     predict_point_ = aiming_point_cam;
+            //     angle = processor_->coordsolver_.getAngle(aiming_point_cam, processor_->rmat_imu);
+            //     // 若预测出错直接陀螺仪坐标系下坐标作为打击点
+            //     if(isnan(angle[0]) || isnan(angle[1]))
+            //     {
+            //         angle = processor_->coordsolver_.getAngle(aiming_point_world, processor_->rmat_imu);
+            //     }
+            // }
+        }
 
         // Gimbal info pub.
         GimbalMsg gimbal_info;
@@ -321,43 +346,48 @@ namespace armor_processor
         gimbal_info.is_spinning = target_info.is_spinning;
         gimbal_info_pub_->publish(std::move(gimbal_info));
 
-
         if(this->debug_)
         {
-            GimbalMsg tracking_info;
-            tracking_info.header.frame_id = "barrel_link1";
-            tracking_info.header.stamp = target_info.header.stamp;
-            tracking_info.pitch = tracking_angle[0];
-            tracking_info.yaw = tracking_angle[1];
-            tracking_info.distance = tracking_point_cam.norm();
-            tracking_info.is_switched = target_info.target_switched;
-            tracking_info.is_spinning = target_info.is_spinning;
-            gimbal_info_pub_->publish(std::move(tracking_info));
-
-            AutoaimMsg predict_info;
-            predict_info.header.frame_id = "camera_link";
-            predict_info.header.stamp = target_info.header.stamp;
-            predict_info.header.stamp.nanosec += sleep_time;
-            predict_info.aiming_point_cam.x = aiming_point_cam[0];
-            predict_info.aiming_point_cam.y = aiming_point_cam[1];
-            predict_info.aiming_point_cam.z = aiming_point_cam[2];
-            predict_info.period = target_info.period;
-            predict_info_pub_->publish(std::move(predict_info));
-        }
-
-        mutex_.lock();
-        if(this->debug_param_.show_predict)
-        {
-            // Get target 2d cornor points.
-            for(int i = 0; i < 4; ++i)
+            if(!target.is_target_lost)
             {
-                apex2d[i].x = target_info.point2d[i].x;
-                apex2d[i].y = target_info.point2d[i].y;
+                GimbalMsg tracking_info;
+                tracking_info.header.frame_id = "barrel_link1";
+                tracking_info.header.stamp = target_info.header.stamp;
+                tracking_info.pitch = tracking_angle[0];
+                tracking_info.yaw = tracking_angle[1];
+                tracking_info.distance = tracking_point_cam.norm();
+                tracking_info.is_switched = target_info.target_switched;
+                tracking_info.is_spinning = target_info.is_spinning;
+                gimbal_info_pub_->publish(std::move(tracking_info));
+
+                AutoaimMsg predict_info;
+                predict_info.header.frame_id = "camera_link";
+                predict_info.header.stamp = target_info.header.stamp;
+                predict_info.header.stamp.nanosec += sleep_time;
+                predict_info.aiming_point_cam.x = aiming_point_cam[0];
+                predict_info.aiming_point_cam.y = aiming_point_cam[1];
+                predict_info.aiming_point_cam.z = aiming_point_cam[2];
+                predict_info.period = target_info.period;
+                predict_info_pub_->publish(std::move(predict_info));
             }
         }
-        predict_point_ = aiming_point_cam;
-        flag_ = true;
-        mutex_.unlock();
+
+        if(!target.is_target_lost)
+        {
+            mutex_.lock();
+            if(this->debug_param_.show_predict)
+            {
+                // Get target 2d cornor points.
+                for(int i = 0; i < 4; ++i)
+                {
+                    apex2d[i].x = target_info.point2d[i].x;
+                    apex2d[i].y = target_info.point2d[i].y;
+                }
+            }
+            predict_point_ = aiming_point_cam;
+            flag_ = true;
+            mutex_.unlock();
+        }
 
         // if(!(&target_info.image))
         //     return;
@@ -393,6 +423,11 @@ namespace armor_processor
     //     return;
     // }
 
+    /**
+     * @brief 初始化processor类
+     * 
+     * @return std::unique_ptr<Processor> 
+     */
     std::unique_ptr<Processor> ArmorProcessorNode::init_armor_processor()
     {
         params_map_ = 
@@ -502,6 +537,12 @@ namespace armor_processor
         return std::make_unique<Processor>(predict_param_, singer_model_params, path_param_, debug_param_);
     }
 
+    /**
+     * @brief 参数回调
+     * 
+     * @param params 参数服务器变动的参数值
+     * @return rcl_interfaces::msg::SetParametersResult 
+     */
     rcl_interfaces::msg::SetParametersResult ArmorProcessorNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
     { 
         rcl_interfaces::msg::SetParametersResult result;

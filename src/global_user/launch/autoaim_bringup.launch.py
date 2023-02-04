@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-02-04 00:37:45
+LastEditTime: 2023-02-04 18:48:08
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -100,24 +100,24 @@ def generate_launch_description():
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'usb'"])),
             composable_node_descriptions=[
-                # ComposableNode(
-                #     package='camera_driver',
-                #     plugin='camera_driver::DahengCamNode',
-                #     name='daheng_driver',
-                #     parameters=[daheng_cam_params],
-                #     extra_arguments=[{
-                #         'use_intra_process_comms':True
-                #     }]
-                # ),
                 ComposableNode(
                     package='camera_driver',
-                    plugin='camera_driver::UsbCamNode',
-                    name='usb_driver',
-                    parameters=[usb_cam_params],
+                    plugin='camera_driver::DahengCamNode',
+                    name='daheng_driver',
+                    parameters=[daheng_cam_params],
                     extra_arguments=[{
                         'use_intra_process_comms':True
                     }]
                 ),
+                # ComposableNode(
+                #     package='camera_driver',
+                #     plugin='camera_driver::UsbCamNode',
+                #     name='usb_driver',
+                #     parameters=[usb_cam_params],
+                #     extra_arguments=[{
+                #         'use_intra_process_comms':True
+                #     }]
+                # ),
                 ComposableNode(
                     package='armor_detector',
                     plugin='armor_detector::DetectorNode',

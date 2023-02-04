@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 17:45:26
- * @LastEditTime: 2023-02-01 23:10:56
+ * @LastEditTime: 2023-02-05 00:57:44
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/model_generator.cpp
  */
 #include "../../include/filter/model_generator.hpp"
@@ -23,6 +23,13 @@ namespace armor_processor
     // }
     ModelGenerator::~ModelGenerator(){}
 
+    /**
+     * @brief 生成IMM模型
+     * 
+     * @param x 状态向量
+     * @param dt 时间量
+     * @return std::shared_ptr<IMM> 
+     */
     std::shared_ptr<IMM> ModelGenerator::generateIMMModel(const Eigen::VectorXd& x, const double& dt)
     {
         std::shared_ptr<IMM> imm_ptr = std::shared_ptr<IMM>(new IMM());
@@ -60,6 +67,13 @@ namespace armor_processor
         return imm_ptr;
     }
     
+    /**
+     * @brief 生成CV（匀速运动）模型
+     * 
+     * @param x 状态向量
+     * @param dt 时间量
+     * @return std::shared_ptr<CV> 
+     */
     std::shared_ptr<CV> ModelGenerator::generateCVModel(const Eigen::VectorXd& x, const double& dt)
     {
         std::shared_ptr<CV> cv_ptr = std::shared_ptr<CV>(new CV());
@@ -67,6 +81,13 @@ namespace armor_processor
         return cv_ptr;
     }
 
+    /**
+     * @brief 同上
+     * 
+     * @param x 
+     * @param dt 
+     * @return std::shared_ptr<CA> 
+     */
     std::shared_ptr<CA> ModelGenerator::generateCAModel(const Eigen::VectorXd& x, const double& dt)
     {
         std::shared_ptr<CA> ca_ptr = std::shared_ptr<CA>(new CA());
@@ -74,6 +95,14 @@ namespace armor_processor
         return ca_ptr;
     }
 
+    /**
+     * @brief 同上
+     * 
+     * @param x 
+     * @param w 
+     * @param dt 
+     * @return std::shared_ptr<CT> 
+     */
     std::shared_ptr<CT> ModelGenerator::generateCTModel(const Eigen::VectorXd& x, const double& w, const double& dt)
     {
         std::shared_ptr<CT> ct_ptr = std::shared_ptr<CT>(new CT(w));

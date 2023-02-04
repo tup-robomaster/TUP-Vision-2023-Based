@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-02-03 23:47:50
+ * @LastEditTime: 2023-02-05 00:45:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -139,6 +139,11 @@ namespace armor_detector
         }
     }
 
+    /**
+     * @brief 传感器消息回调（目前是陀螺仪数据）
+     * 
+     * @param imu_msg 
+     */
     void DetectorNode::sensorMsgCallback(const ImuMsg& imu_msg)
     {
         imu_msg_.imu.header.stamp = this->get_clock()->now();
@@ -151,6 +156,11 @@ namespace armor_detector
         return;
     }
 
+    /**
+     * @brief 图像数据回调
+     * 
+     * @param img_info 图像传感器数据
+     */
     void DetectorNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
     {
         // RCLCPP_INFO(this->get_logger(), "image callback...");
@@ -186,10 +196,14 @@ namespace armor_detector
             }
         }
         
-        if(detector_->armor_detect(src))
+        AutoaimMsg target_info;
+        bool is_target_lost = false;
+        if(detector_->armor_detect(src, is_target_lost))
         {   
             RCLCPP_INFO(this->get_logger(), "armors detector...");
-            AutoaimMsg target_info;
+            target_info.is_target_lost = is_target_lost;
+
+            // Target spinning detector. 
             if(detector_->gyro_detector(src, target_info))
             {
                 RCLCPP_INFO(this->get_logger(), "Spinning detector...");
@@ -201,11 +215,10 @@ namespace armor_detector
                 if(debug_.using_imu && detector_->getDebugParam(8))
                     target_info.quat_imu = imu_msg_.imu.orientation;
                 RCLCPP_INFO(this->get_logger(), "target info: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
-                
-                // Publish target's information containing 3d point and timestamp.
-                armor_info_pub_->publish(std::move(target_info));
             }
         }
+        // Publish target's information containing 3d point and timestamp.
+        armor_info_pub_->publish(std::move(target_info));
         
         debug_.show_img = this->get_parameter("show_img").as_bool();
         if(debug_.show_img)
@@ -216,6 +229,10 @@ namespace armor_detector
         }
     }
 
+    /**
+     * @brief 使用共享内存的方式进行图像传输，并进行后续处理
+     * 
+     */
     void DetectorNode::run()
     {
         TaskData src;
@@ -250,11 +267,13 @@ namespace armor_detector
                 }
             }
             
-            if(detector_->armor_detect(src))
+            AutoaimMsg target_info;
+            bool is_target_lost;
+            if(detector_->armor_detect(src, is_target_lost))
             {   
                 // RCLCPP_INFO(this->get_logger(), "armors detector...");
-                AutoaimMsg target_info;
                 Eigen::Vector3d aiming_point;
+                target_info.is_target_lost = is_target_lost;
 
                 // Target spinning detector. 
                 if(detector_->gyro_detector(src, target_info))
@@ -264,11 +283,10 @@ namespace armor_detector
                     target_info.timestamp = src.timestamp;
                     if(debug_.using_imu && detector_->getDebugParam(8))
                         target_info.quat_imu = imu_msg_.imu.orientation;
-
-                    // Publish target's information containing 3d point and timestamp.
-                    armor_info_pub_->publish(std::move(target_info));
                 }
             }
+            // Publish target's information containing 3d point and timestamp.
+            armor_info_pub_->publish(std::move(target_info));
 
             debug_.show_img = this->get_parameter("show_img").as_bool();
             if(debug_.show_img)
@@ -280,6 +298,12 @@ namespace armor_detector
         }
     }
 
+    /**
+     * @brief 参数回调函数
+     * 
+     * @param params 参数服务器参数（发生改变的参数）
+     * @return rcl_interfaces::msg::SetParametersResult 
+     */
     rcl_interfaces::msg::SetParametersResult DetectorNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
     { 
         rcl_interfaces::msg::SetParametersResult result;
@@ -292,6 +316,13 @@ namespace armor_detector
         return result;
     }
     
+    /**
+     * @brief 设置参数
+     * 
+     * @param param 参数服务器发生改变的参数
+     * @return true 
+     * @return false 
+     */
     bool DetectorNode::setParam(rclcpp::Parameter param)
     {
         auto param_idx = params_map_[param.get_name()];
@@ -384,6 +415,11 @@ namespace armor_detector
         return true;
     }
 
+    /**
+     * @brief 初始化detector类
+     * 
+     * @return std::unique_ptr<Detector> 
+     */
     std::unique_ptr<Detector> DetectorNode::init_detector()
     {
         params_map_ = 
