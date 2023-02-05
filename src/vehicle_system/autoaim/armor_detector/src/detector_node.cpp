@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-02-05 00:45:38
+ * @LastEditTime: 2023-02-05 19:29:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -197,11 +197,10 @@ namespace armor_detector
         }
         
         AutoaimMsg target_info;
-        bool is_target_lost = false;
+        bool is_target_lost = true;
         if(detector_->armor_detect(src, is_target_lost))
         {   
             RCLCPP_INFO(this->get_logger(), "armors detector...");
-            target_info.is_target_lost = is_target_lost;
 
             // Target spinning detector. 
             if(detector_->gyro_detector(src, target_info))
@@ -217,6 +216,8 @@ namespace armor_detector
                 RCLCPP_INFO(this->get_logger(), "target info: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
             }
         }
+        target_info.is_target_lost = is_target_lost;
+        
         // Publish target's information containing 3d point and timestamp.
         armor_info_pub_->publish(std::move(target_info));
         

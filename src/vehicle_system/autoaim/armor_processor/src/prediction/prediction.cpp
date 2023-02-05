@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-02-05 01:11:28
+ * @LastEditTime: 2023-02-05 19:44:53
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -576,7 +576,7 @@ namespace armor_processor
         // result = result_pf;
         auto t2 = steady_clock_.now();
         double dr_ns = (t2 - t1).nanoseconds();
-        std::cout << "predict_time:" << dr_ns / 1e9 << "s" << std::endl;
+        std::cout << "predict_time:" << dr_ns / 1e6 << "ms" << std::endl;
         // if(timestamp % 10 == 0)
         // delta_time_estimate = 0;
         // result_pf = target.xyz;
@@ -1681,7 +1681,8 @@ namespace armor_processor
 
             double alpha = singer_param_[0];
             double dt = singer_param_[8] * singer_param_[4];
-
+            dt = timestamp / 1e9;
+            
             Eigen::MatrixXd F(3, 3);
             F << 1, dt, (alpha * dt - 1 + exp(-alpha * dt)) / pow(alpha, 2),
                 0, 1, (1 - exp(-alpha * dt)) / alpha,
@@ -1721,7 +1722,7 @@ namespace armor_processor
 
             TargetInfo pred_info;
             pred_info.xyz = result;
-            pred_info.timestamp = target.timestamp;
+            pred_info.timestamp = target.timestamp + timestamp;
             history_pred_.push_back(pred_info);
 
             is_available.xyz_status[1] = true;
