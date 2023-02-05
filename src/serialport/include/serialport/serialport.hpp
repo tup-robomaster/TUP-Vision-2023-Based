@@ -110,7 +110,7 @@ namespace serialport
         SerialPort(const string ID, const int BUAD, bool debug_without_com, bool is_sentry_mode);
         ~SerialPort();
     
-        SerialData serial_data_;              
+        SerialData serial_data_;
         bool get_Mode(int bytes);
         bool initSerialPort();
         void transformData(const VisionData &data); //主要方案
@@ -130,12 +130,6 @@ namespace serialport
         rclcpp::Time timestamp_;
 
         unsigned char Tdata[30];                  // transfrom data
-        float exchange_data(unsigned char *data); // 将4个uchar合并成一个float
-        bool getQuat(unsigned char *data);
-        bool getGyro(unsigned char *data);
-        bool getAcc(unsigned char *data);
-        bool getSpeed(unsigned char *data);
-    
         rclcpp::Logger logger_;
     public:
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};

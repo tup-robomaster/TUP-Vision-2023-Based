@@ -125,7 +125,6 @@ namespace serialport
 
         if (bytes == 0)
             return false;
-
         
         // TODO:根据实际情况调整
         // bytes = read(fd, rdata, 49);
@@ -133,16 +132,12 @@ namespace serialport
         bytes = read(serial_data_.fd, serial_data_.rdata, (size_t)(lens));
         timestamp_ = this->steady_clock_.now();
 
-        if (serial_data_.rdata[0] == 0xA5 && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3))
-        {
-            mode = serial_data_.rdata[1]; // 模式位（自瞄or能量机关）
-            getQuat(&serial_data_.rdata[3]);
-            getGyro(&serial_data_.rdata[19]);
-            getAcc(&serial_data_.rdata[31]);
-            getSpeed(&serial_data_.rdata[43]); //接收下位机发送的弹速
-            crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens));
-        }
-        return true;
+        if (serial_data_.rdata[0] == 0xA5 &&
+            crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3) &&
+            crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
+            return true;
+        else
+            return false;
     }
 
     /**
@@ -188,7 +183,7 @@ namespace serialport
         RCLCPP_INFO(logger_, "Open successed...");
 
         serial_data_.last_fd = serial_data_.fd;
-        serial_data_.is_initialized = false;
+        serial_data_.is_initialized = true;
         return true;
     }
 
@@ -371,102 +366,6 @@ namespace serialport
         Tdata[19] = 0x00;
 
         crc_check_.Append_CRC16_Check_Sum(Tdata, 22);
-    }
-
-    /////////////////////////////////////////////
-    /**
-     * @brief 将4个uchar转换为float
-     * @param data data首地址指针
-     * @return
-     */
-    float SerialPort::exchange_data(unsigned char *data)
-    {
-        float float_data;
-        float_data = *((float*)data);
-        return float_data;
-    };
-
-    /**
-     * @brief 解算四元数数据
-     * @param data 四元数首地址指针
-     * @return
-     */
-    bool SerialPort::getQuat(unsigned char *data)
-    {
-        unsigned char* f1 = &data[0];
-        unsigned char* f2 = &data[4];
-        unsigned char* f3 = &data[8];
-        unsigned char* f4 = &data[12];
-
-        quat[0] = exchange_data(f1);
-        quat[1] = exchange_data(f2);
-        quat[2] = exchange_data(f3);
-        quat[3] = exchange_data(f4);
-        if(print_imu_data_)
-        {
-            RCLCPP_INFO(logger_, "quat: %f %f %f %f", quat[0], quat[1], quat[2], quat[3]);
-        }
-        return true;
-    }
-
-    /**
-     * @brief 解算角速度数据
-     * @param data 角速度首地址指针
-     * @return
-     */
-    bool SerialPort::getGyro(unsigned char *data)
-    {    
-        unsigned char* f1 = &data[0];
-        unsigned char* f2 = &data[4];
-        unsigned char* f3 = &data[8];
-
-        gyro[0] = exchange_data(f1);
-        gyro[1] = exchange_data(f2);
-        gyro[2] = exchange_data(f3);
-        if(print_imu_data_)
-        {
-            RCLCPP_INFO(logger_, "gyro: %f %f %f", gyro[0], gyro[1], gyro[2]);
-        }
-        
-        return true;
-    }
-
-    /**
-     * @brief 解算加速度数据
-     * @param data 加速度首地址指针
-     * @return
-     */
-    bool SerialPort::getAcc(unsigned char *data)
-    {
-        unsigned char* f1 = &data[0];
-        unsigned char* f2 = &data[4];
-        unsigned char* f3 = &data[8];
-
-        acc[0] = exchange_data(f1);
-        acc[1] = exchange_data(f2);
-        acc[2] = exchange_data(f3);
-        if(print_imu_data_)
-        {
-            RCLCPP_INFO(logger_, "acc: %f %f %f", acc[0], acc[1], acc[2]);
-        }
-        
-        return true;
-    }
-
-    /**
-     * @brief 解算速度数据
-     * @param data 速度首地址指针
-     * @return
-     */
-    bool SerialPort::getSpeed(unsigned char *data)
-    {
-        unsigned char* f1 = &data[0];
-        bullet_speed_ = exchange_data(f1);
-        if(print_imu_data_)
-        {
-            RCLCPP_INFO(logger_, "bullet_speed: %f", bullet_speed_);
-        }
-        return true;
     }
 
     //////////////////////////////////////////////

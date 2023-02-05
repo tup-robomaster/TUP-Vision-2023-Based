@@ -58,6 +58,8 @@ namespace serialport
         void receive_data();
         void send_armor_data(GimbalMsg::SharedPtr msg);
         void send_buff_data(GimbalMsg::SharedPtr msg);
+        float ucharRaw2Float(unsigned char *data); // 将4个uchar合并成一个float
+        bool ucharRaw2FloatVector(unsigned char *data, int bytes, std::vector<float> &vec);
     
     private:
         // void* buffer_;
@@ -71,7 +73,6 @@ namespace serialport
         std::string device_name_;
         std::thread receive_thread_;
         // int len_;
-
         // Eigen::Quaterniond quat_;
         // Eigen::Matrix3d rmat_imu_;
         // AutoaimMsg Autoaim_info_;
