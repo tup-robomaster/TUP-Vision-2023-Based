@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2023-01-07 18:52:37
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector_node.hpp
+ * @LastEditTime: 2023-02-06 01:12:44
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/include/buff_detector_node.hpp
  */
 #ifndef BUFF_DETECTOR_NODE_HPP_
 #define BUFF_DETECTOR_NODE_HPP_
@@ -29,7 +29,7 @@
 
 //custom message
 #include "global_interface/msg/buff.hpp"
-#include "global_interface/msg/imu.hpp"
+#include "global_interface/msg/serial.hpp"
 
 using namespace global_user;
 using namespace coordsolver;
@@ -38,7 +38,7 @@ namespace buff_detector
     class BuffDetectorNode : public rclcpp::Node
     {
         typedef global_interface::msg::Buff BuffMsg;
-        typedef global_interface::msg::Imu ImuMsg;
+        typedef global_interface::msg::Serial SerialMsg;
 
     public:
         BuffDetectorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
@@ -59,9 +59,9 @@ namespace buff_detector
         void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
 
         Mutex mutex_;
-        ImuMsg imu_msg_;
-        rclcpp::Subscription<ImuMsg>::SharedPtr imu_info_sub_;
-        void sensorMsgCallback(const ImuMsg& imu_msg);
+        SerialMsg serial_msg_;
+        rclcpp::Subscription<SerialMsg>::SharedPtr imu_info_sub_;
+        void sensorMsgCallback(const SerialMsg& serial_msg);
     private:
         rclcpp::Time time_start_;
         // rclcpp::Clock steady_clock_{RCL_STEADY_TIME};

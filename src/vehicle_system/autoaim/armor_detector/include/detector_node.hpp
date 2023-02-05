@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2023-01-27 21:49:46
+ * @LastEditTime: 2023-02-06 01:04:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -23,7 +23,7 @@
 //custom message
 #include "global_interface/msg/gimbal.hpp"
 #include "global_interface/msg/autoaim.hpp"
-#include "global_interface/msg/imu.hpp"
+#include "global_interface/msg/serial.hpp"
 
 using namespace global_user;
 using namespace coordsolver;
@@ -32,7 +32,7 @@ namespace armor_detector
     class DetectorNode : public rclcpp::Node
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
-        typedef global_interface::msg::Imu ImuMsg;
+        typedef global_interface::msg::Serial SerialMsg;
 
     public:
         DetectorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
@@ -66,9 +66,9 @@ namespace armor_detector
         void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
         // std::vector<Armor> detect_armors(const sensor_msgs::msg::Image::SharedPtr& img);
 
-        ImuMsg imu_msg_;
-        rclcpp::Subscription<ImuMsg>::SharedPtr imu_info_sub_;
-        void sensorMsgCallback(const ImuMsg& imu_msg);
+        SerialMsg serial_msg_;
+        rclcpp::Subscription<SerialMsg>::SharedPtr serial_msg_sub_;
+        void sensorMsgCallback(const SerialMsg& serial_msg);
         
     public:
         DetectorParam detector_params_;

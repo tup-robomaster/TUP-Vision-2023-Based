@@ -2,14 +2,12 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-02-01 00:00:50
+ * @LastEditTime: 2023-02-06 01:17:46
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
 
-
-#define SENTRY_RECV_NORMAL 0x05
-
+// #define SENTRY_RECV_NORMAL 0x05
 using namespace std::placeholders;
 namespace serialport
 {
@@ -56,7 +54,7 @@ namespace serialport
             {   // Use serial port.
                 if(serial_port_->initSerialPort())
                 {
-                    imu_data_pub_ = this->create_publisher<ImuMsg>("/imu_msg", qos);
+                    imu_data_pub_ = this->create_publisher<SerialMsg>("/imu_msg", qos);
                     receive_thread_ = std::thread(&SerialPortNode::receive_data, this);
                 }
             }
@@ -73,35 +71,51 @@ namespace serialport
         // buffer = NULL;
     }
 
-    /**
-     * @brief 将4个uchar转换为float
-     * @param data data首地址指针
-     * @return
-     */
-    float SerialPortNode::ucharRaw2Float(unsigned char *data)
-    {
-        float float_data;
-        float_data = *((float*)data);
-        return float_data;
-    };
+    // /**
+    //  * @brief 将4个uchar转换为float
+    //  * @param data data首地址指针
+    //  * @return
+    //  */
+    // float SerialPortNode::ucharRaw2Float(unsigned char *data)
+    // {
+    //     float float_data;
+    //     float_data = *((float*)data);
+    //     return float_data;
+    // };
 
-    /**
-     * @brief uchar原始数据转换为float vector
-     * @param data 首地址指针
-     * @param bytes 字节数
-     * @param vec float vector地址
-     */
-    bool SerialPortNode::ucharRaw2FloatVector(unsigned char *data, int bytes, std::vector<float> &vec)
-    {
-        std::vector<unsigned char*> pts;
-        assert(bytes % 4 == 0);
-        for (int i = 0; i < bytes; i+=4)
-        {
-            vec.push_back(ucharRaw2Float(&data[i]));
-        }
-        return true;
-    }
+    // uchar* SerialPortNode::float2UcharRaw(float float_data)
+    // {
+    //     uchar* raw_data = nullptr;
+    //     raw_data = (uchar*)(&float_data); 
+    //     return std::move(raw_data);
+    // }   
 
+    // /**
+    //  * @brief uchar原始数据转换为float vector
+    //  * @param data 首地址指针
+    //  * @param bytes 字节数
+    //  * @param vec float vector地址
+    //  */
+    // bool SerialPortNode::ucharRaw2FloatVector(unsigned char *data, int bytes, std::vector<float> &vec)
+    // {
+    //     std::vector<unsigned char*> pts;
+    //     assert(bytes % 4 == 0);
+    //     for (int i = 0; i < bytes; i+=4)
+    //     {
+    //         vec.push_back(ucharRaw2Float(&data[i]));
+    //     }
+    //     return true;
+    // }
+
+    // bool SerialPortNode::float2UcharRawArray(float float_data[], int num, uchar* raw_data)
+    // {
+    //     for(int ii = 0; ii < num; ++ii)
+    //     {
+    //         raw_data[ii * 4] = float_data[ii];
+    //     }
+    //     return true;
+    // }
+    
     void SerialPortNode::receive_data()
     {
         while(1)
@@ -136,29 +150,28 @@ namespace serialport
                 // getGyro(&serial_data_.rdata[19]);
                 // getAcc(&serial_data_.rdata[31]);
                 // getSpeed(&serial_data_.rdata[43]); //接收下位机发送的弹速
-                ucharRaw2FloatVector(&serial_port_->serial_data_.rdata[3],16, quat);
-                ucharRaw2FloatVector(&serial_port_->serial_data_.rdata[19],12, gyro);
-                ucharRaw2FloatVector(&serial_port_->serial_data_.rdata[31],12, acc);
-                bullet_speed = ucharRaw2Float(&serial_port_->serial_data_.rdata[43]);
-                theta = ucharRaw2Float(&serial_port_->serial_data_.rdata[47]);
+                serial_port_->ucharRaw2FloatVector(&serial_port_->serial_data_.rdata[3], 16, quat);
+                serial_port_->ucharRaw2FloatVector(&serial_port_->serial_data_.rdata[19], 12, gyro);
+                serial_port_->ucharRaw2FloatVector(&serial_port_->serial_data_.rdata[31], 12, acc);
+                bullet_speed = serial_port_->ucharRaw2Float(&serial_port_->serial_data_.rdata[43]);
+                theta = serial_port_->ucharRaw2Float(&serial_port_->serial_data_.rdata[47]);
                 
-                ImuMsg imu_info;
-                imu_info.imu.header.frame_id = "imu_link";
-                imu_info.imu.header.stamp = this->get_clock()->now();
-                imu_info.bullet_speed = serial_port_->bullet_speed_;
-                imu_info.imu.orientation.w = quat[0];
-                imu_info.imu.orientation.x = quat[1];
-                imu_info.imu.orientation.y = quat[2];
-                imu_info.imu.orientation.z = quat[3];
-                imu_info.imu.angular_velocity.x = gyro[0];
-                imu_info.imu.angular_velocity.y = gyro[1];
-                imu_info.imu.angular_velocity.z = gyro[2];
-                imu_info.imu.linear_acceleration.x = acc[0];
-                imu_info.imu.linear_acceleration.y = acc[1];
-                imu_info.imu.linear_acceleration.z = acc[2];
-                imu_data_pub_->publish(std::move(imu_info));
+                SerialMsg serial_msg;
+                serial_msg.imu.header.frame_id = "imu_link";
+                serial_msg.imu.header.stamp = this->get_clock()->now();
+                serial_msg.bullet_speed = serial_port_->bullet_speed_;
+                serial_msg.imu.orientation.w = quat[0];
+                serial_msg.imu.orientation.x = quat[1];
+                serial_msg.imu.orientation.y = quat[2];
+                serial_msg.imu.orientation.z = quat[3];
+                serial_msg.imu.angular_velocity.x = gyro[0];
+                serial_msg.imu.angular_velocity.y = gyro[1];
+                serial_msg.imu.angular_velocity.z = gyro[2];
+                serial_msg.imu.linear_acceleration.x = acc[0];
+                serial_msg.imu.linear_acceleration.y = acc[1];
+                serial_msg.imu.linear_acceleration.z = acc[2];
+                imu_data_pub_->publish(std::move(serial_msg));
             }
-            
         }
     }
 

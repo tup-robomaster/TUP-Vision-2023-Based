@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-02-05 19:29:08
+ * @LastEditTime: 2023-02-06 01:05:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -49,15 +49,15 @@ namespace armor_detector
         if(debug_.using_imu)
         {
             RCLCPP_INFO(this->get_logger(), "Using imu...");
-            imu_msg_.imu.header.frame_id = "imu_link";
+            serial_msg_.imu.header.frame_id = "imu_link";
             this->declare_parameter<double>("bullet_speed", 28.0);
-            imu_msg_.bullet_speed = this->get_parameter("bullet_speed").as_double();
-            imu_msg_.mode = this->declare_parameter<int>("autoaim_mode", 1);
+            serial_msg_.bullet_speed = this->get_parameter("bullet_speed").as_double();
+            serial_msg_.mode = this->declare_parameter<int>("autoaim_mode", 1);
             // imu msg sub.
-            imu_info_sub_ = this->create_subscription<ImuMsg>("/imu_msg", qos,
+            serial_msg_sub_ = this->create_subscription<SerialMsg>("/serial_msg", qos,
                 std::bind(&DetectorNode::sensorMsgCallback, this, _1));
         }
-        
+         
         // CameraType camera_type;
         this->declare_parameter<int>("camera_type", DaHeng);
         int camera_type = this->get_parameter("camera_type").as_int();
@@ -142,17 +142,17 @@ namespace armor_detector
     /**
      * @brief 传感器消息回调（目前是陀螺仪数据）
      * 
-     * @param imu_msg 
+     * @param serial_msg 
      */
-    void DetectorNode::sensorMsgCallback(const ImuMsg& imu_msg)
+    void DetectorNode::sensorMsgCallback(const SerialMsg& serial_msg)
     {
-        imu_msg_.imu.header.stamp = this->get_clock()->now();
+        serial_msg_.imu.header.stamp = this->get_clock()->now();
 
-        if(imu_msg.bullet_speed > 10)
-            imu_msg_.bullet_speed = imu_msg.bullet_speed;
-        if(imu_msg.mode == 1 || imu_msg.mode == 2)
-            imu_msg_.mode = imu_msg.mode;
-        imu_msg_.imu = imu_msg.imu;
+        if(serial_msg.bullet_speed > 10)
+            serial_msg_.bullet_speed = serial_msg.bullet_speed;
+        if(serial_msg.mode == 1 || serial_msg.mode == 2)
+            serial_msg_.mode = serial_msg.mode;
+        serial_msg_.imu = serial_msg.imu;
         return;
     }
 
@@ -179,19 +179,19 @@ namespace armor_detector
 
         if(debug_.using_imu)
         {
-            auto dt = (this->get_clock()->now() - imu_msg_.imu.header.stamp).nanoseconds();
+            auto dt = (this->get_clock()->now() - serial_msg_.imu.header.stamp).nanoseconds();
             if(abs(dt / 1e9) > 0.1)
             {
                 detector_->setDebugParam(false, 8);
             }
             else
             {
-                src.bullet_speed = imu_msg_.bullet_speed;
-                src.mode = imu_msg_.mode;
-                src.quat.w() = imu_msg_.imu.orientation.w;
-                src.quat.x() = imu_msg_.imu.orientation.x;
-                src.quat.y() = imu_msg_.imu.orientation.y;
-                src.quat.z() = imu_msg_.imu.orientation.z; 
+                src.bullet_speed = serial_msg_.bullet_speed;
+                src.mode = serial_msg_.mode;
+                src.quat.w() = serial_msg_.imu.orientation.w;
+                src.quat.x() = serial_msg_.imu.orientation.x;
+                src.quat.y() = serial_msg_.imu.orientation.y;
+                src.quat.z() = serial_msg_.imu.orientation.z; 
                 detector_->setDebugParam(true, 8);
             }
         }
@@ -212,7 +212,7 @@ namespace armor_detector
                 // target_info.image = std::move(*img_info);
                 target_info.timestamp = src.timestamp;
                 if(debug_.using_imu && detector_->getDebugParam(8))
-                    target_info.quat_imu = imu_msg_.imu.orientation;
+                    target_info.quat_imu = serial_msg_.imu.orientation;
                 RCLCPP_INFO(this->get_logger(), "target info: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
             }
         }
@@ -251,19 +251,19 @@ namespace armor_detector
 
             if(debug_.using_imu)
             {
-                auto dt = (this->get_clock()->now() - imu_msg_.imu.header.stamp).nanoseconds();
+                auto dt = (this->get_clock()->now() - serial_msg_.imu.header.stamp).nanoseconds();
                 if(abs(dt / 1e9) > 0.1)
                 {
                     detector_->setDebugParam(false, 8);
                 }
                 else
                 {
-                    src.bullet_speed = imu_msg_.bullet_speed;
-                    src.mode = imu_msg_.mode;
-                    src.quat.w() = imu_msg_.imu.orientation.w;
-                    src.quat.x() = imu_msg_.imu.orientation.x;
-                    src.quat.y() = imu_msg_.imu.orientation.y;
-                    src.quat.z() = imu_msg_.imu.orientation.z; 
+                    src.bullet_speed = serial_msg_.bullet_speed;
+                    src.mode = serial_msg_.mode;
+                    src.quat.w() = serial_msg_.imu.orientation.w;
+                    src.quat.x() = serial_msg_.imu.orientation.x;
+                    src.quat.y() = serial_msg_.imu.orientation.y;
+                    src.quat.z() = serial_msg_.imu.orientation.z; 
                     detector_->setDebugParam(true, 8);
                 }
             }
@@ -283,7 +283,7 @@ namespace armor_detector
                     target_info.header.stamp = this->get_clock()->now();
                     target_info.timestamp = src.timestamp;
                     if(debug_.using_imu && detector_->getDebugParam(8))
-                        target_info.quat_imu = imu_msg_.imu.orientation;
+                        target_info.quat_imu = serial_msg_.imu.orientation;
                 }
             }
             // Publish target's information containing 3d point and timestamp.

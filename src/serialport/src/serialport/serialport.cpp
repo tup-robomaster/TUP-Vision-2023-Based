@@ -381,4 +381,64 @@ namespace serialport
         close(serial_data_.fd);
     }
 
+    /**
+     * @brief 将4个uchar转换为float
+     * @param data data首地址指针
+     * @return
+     */
+    float SerialPort::ucharRaw2Float(unsigned char *data)
+    {
+        float float_data;
+        float_data = *((float*)data);
+        return float_data;
+    };
+
+    /**
+     * @brief float转uchar
+     * 
+     * @param float_data float型数据
+     * @return uchar* 返回uchar指针
+     */
+    uchar* SerialPort::float2UcharRaw(float float_data)
+    {
+        uchar* raw_data = nullptr;
+        raw_data = (uchar*)(&float_data); 
+        return std::move(raw_data);
+    }   
+
+    /**
+     * @brief uchar原始数据转换为float vector
+     * @param data 首地址指针
+     * @param bytes 字节数
+     * @param vec float vector地址
+     */
+    bool SerialPort::ucharRaw2FloatVector(unsigned char *data, int bytes, std::vector<float> &vec)
+    {
+        std::vector<unsigned char*> pts;
+        assert(bytes % 4 == 0);
+        for (int i = 0; i < bytes; i+=4)
+        {
+            vec.push_back(ucharRaw2Float(&data[i]));
+        }
+        return true;
+    }
+    
+    /**
+     * @brief float转uchar数组
+     * 
+     * @param float_data float型数据
+     * @param num float型数组长度
+     * @param raw_data uchar指针
+     * @return true 
+     * @return false 
+     */
+    bool SerialPort::float2UcharRawArray(float float_data[], int num, uchar* raw_data)
+    {
+        for(int ii = 0; ii < num; ++ii)
+        {
+            raw_data[ii * 4] = float_data[ii];
+        }
+        return true;
+    }
+
 } // namespace serialport

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-02-05 19:44:53
+ * @LastEditTime: 2023-02-05 23:34:19
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -210,6 +210,7 @@ namespace armor_processor
         {
             if(target.is_target_switched)
             {
+                error_cnt_ = 0;
                 history_info_.clear();
                 history_pred_.clear();
             }
@@ -571,12 +572,24 @@ namespace armor_processor
         if(!filter_disabled_)
         {
             double error = calcError();
+            if(error > 0.10)
+            {
+                ++error_cnt_;
+            }
+            if(error_cnt_ > 5 || error > 0.20)
+            {
+                RCLCPP_WARN(logger_, "Prediction failed!");
+                error_cnt_ = 0;
+                is_ekf_init = false;
+                is_imm_init = false;
+                result = target.xyz;
+            }
         }
         
         // result = result_pf;
         auto t2 = steady_clock_.now();
         double dr_ns = (t2 - t1).nanoseconds();
-        std::cout << "predict_time:" << dr_ns / 1e6 << "ms" << std::endl;
+        RCLCPP_INFO(logger_, "Predict time:%lfms", (dr_ns / 1e6));
         // if(timestamp % 10 == 0)
         // delta_time_estimate = 0;
         // result_pf = target.xyz;
@@ -640,8 +653,52 @@ namespace armor_processor
      */
     double ArmorPredictor::calcError()
     {
+        int cnt = 0;
+        bool flag = false;
+        Vector3d pred_error_sum = {0.0, 0.0, 0.0};
+        Vector3d pred_error_ave = {0.0, 0.0, 0.0};
+        for(auto pre_info : history_pred_)
+        {
+            for(int ii = 0; ii < history_info_.size(); ii++)
+            {
+                if(ii != (history_info_.size() - 1))
+                {
+                    if(pre_info.timestamp >= history_info_[ii].timestamp && pre_info.timestamp < history_info_[ii + 1].timestamp)
+                    {
+                        // RCLCPP_INFO(logger_, "pred_timestamp:%lfs meas_timestamp:%lfs", pre_info.timestamp / 1e9, history_info_[ii].timestamp / 1e9);
+                        double dt = (history_info_[ii + 1].timestamp - history_info_[ii].timestamp) / 1e9;
+                        double ddt = (pre_info.timestamp - history_info_[ii].timestamp) / 1e9;
+                        auto weight = ddt / dt;
+                        auto meas_pred = history_info_[ii].xyz * (1 - weight) + history_info_[ii].xyz * weight;
+                        pred_error_sum[0] += abs(meas_pred[0] - pre_info.xyz[0]);
+                        pred_error_sum[1] += abs(meas_pred[1] - pre_info.xyz[1]);
+                        pred_error_sum[2] += abs(meas_pred[2] - pre_info.xyz[2]);
+                        ++cnt;
+                        flag = true;
+                        break;
+                    }
+                }
+                else if(pre_info.timestamp < history_info_[ii].timestamp)
+                {
+                    // RCLCPP_INFO(logger_, "pred_timestamp:%lfs meas_timestamp:%lfs", pre_info.timestamp / 1e9, history_info_[ii].timestamp / 1e9);
+                    pred_error_sum[0] += abs(history_info_[ii].xyz[0] - pre_info.xyz[0]);
+                    pred_error_sum[1] += abs(history_info_[ii].xyz[1] - pre_info.xyz[1]);
+                    pred_error_sum[2] += abs(history_info_[ii].xyz[2] - pre_info.xyz[2]);
+                    ++cnt;
+                    flag = true;
+                    break;
+                }
+            }
+        }
+        pred_error_ave = (pred_error_sum / cnt);
+
         double error = 0.0;
-        return error;
+        if(flag)
+        {
+            error = abs(pred_error_ave[1]);
+            RCLCPP_INFO(logger_, "Prediction error:%lf", error);
+        }
+        return std::move(error);
     }
 
     /**
@@ -1241,19 +1298,22 @@ namespace armor_processor
                         // std::cout << "Target_direction: " <<  target.is_clockwise << std::endl;
                         double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
                         double y_origin = history_origin_info_.at(history_origin_info_.size() - 1).x;
+                        
+                        //若误差过大，则根据历史位点的中值进行枪管角度调整
+                        //判断误差的方法是判断预测点是否还在目标小陀螺的范围内，超出边界点的坐标即认为预测失败
                         if(target.is_clockwise)
                         {
-                            if(x_pred > x_origin * 0.85)
+                            if(x_pred > x_origin * 0.95) 
                                 x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
-                            if(y_pred > y_origin * 0.85)
+                            if(y_pred > y_origin * 0.95)
                                 y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
 
                         }
                         else
                         {
-                            if(x_pred < x_origin * 0.85)
+                            if(x_pred < x_origin * 0.95)
                                 x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
-                            if(y_pred < y_origin * 0.85)
+                            if(y_pred < y_origin * 0.95)
                                 y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
                         }
 
@@ -1291,16 +1351,16 @@ namespace armor_processor
                             double y_origin = history_origin_info_.at(history_origin_info_.size() - 1).x;
                             if(target.is_clockwise)
                             {
-                                if(x_pred > x_origin * 0.80)
+                                if(x_pred > x_origin * 1.05)
                                     x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
-                                if(y_pred > y_origin * 0.80)
+                                if(y_pred > y_origin * 1.05)
                                     y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
                             }
                             else
                             {
-                                if(x_pred < x_origin * 0.80)
+                                if(x_pred < x_origin * 1.05)
                                     x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
-                                if(y_pred < y_origin * 0.80)
+                                if(y_pred < y_origin * 1.05)
                                     y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
                             }
                         }

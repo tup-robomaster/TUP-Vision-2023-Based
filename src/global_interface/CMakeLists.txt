@@ -16,10 +16,14 @@ find_package(sensor_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Point2f.msg"
-  "msg/Imu.msg"
+  "msg/Serial.msg"
   "msg/Buff.msg"
   "msg/Autoaim.msg"
   "msg/Gimbal.msg"
+  "msg/Infantry.msg"
+  "msg/Engineer.msg"
+  "msg/Sentry.msg"
+  "msg/Hero.msg"
   # "msg/SpinInfo.msg"
   # "srv/*.srv"
   # "action/*.action"

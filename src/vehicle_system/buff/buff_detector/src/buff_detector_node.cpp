@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-01-29 22:31:29
+ * @LastEditTime: 2023-02-06 01:08:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -48,11 +48,11 @@ namespace buff_detector
         if(debug_param_.using_imu)
         {
             RCLCPP_INFO(this->get_logger(), "Using imu...");
-            imu_msg_.imu.header.frame_id = "imu_link";
-            imu_msg_.bullet_speed = this->declare_parameter<double>("bullet_speed", 28.0);
-            imu_msg_.mode = this->declare_parameter<int>("buff_mode", 3);
+            serial_msg_.imu.header.frame_id = "imu_link";
+            serial_msg_.bullet_speed = this->declare_parameter<double>("bullet_speed", 28.0);
+            serial_msg_.mode = this->declare_parameter<int>("buff_mode", 3);
             // imu msg sub.
-            imu_info_sub_ = this->create_subscription<ImuMsg>("/imu_msg", rclcpp::SensorDataQoS(),
+            serial_msg_sub_ = this->create_subscription<SerialMsg>("/serial_msg", rclcpp::SensorDataQoS(),
                 std::bind(&BuffDetectorNode::sensorMsgCallback, this, _1));
         }
 
@@ -97,18 +97,18 @@ namespace buff_detector
         
     }
 
-    void BuffDetectorNode::sensorMsgCallback(const ImuMsg& imu_msg)
+    void BuffDetectorNode::sensorMsgCallback(const SerialMsg& serial_msg)
     {
         mutex_.lock();
-        imu_msg_.imu.header.stamp = this->get_clock()->now();
-        if(imu_msg.bullet_speed > 10)
-            imu_msg_.bullet_speed = imu_msg.bullet_speed;
-        if(imu_msg.mode == 3 || imu_msg.mode == 4)
-            imu_msg_.mode = imu_msg.mode;
-        imu_msg_.imu = imu_msg.imu;
+        serial_msg_.imu.header.stamp = this->get_clock()->now();
+        if(serial_msg.bullet_speed > 10)
+            serial_msg_.bullet_speed = serial_msg.bullet_speed;
+        if(serial_msg.mode == 3 || serial_msg.mode == 4)
+            serial_msg_.mode = serial_msg.mode;
+        serial_msg_.imu = serial_msg.imu;
         mutex_.unlock();
 
-        RCLCPP_INFO(this->get_logger(), "bullet speed: %lfm/s mode: %d", imu_msg_.bullet_speed, imu_msg_.mode);
+        RCLCPP_INFO(this->get_logger(), "bullet speed: %lfm/s mode: %d", serial_msg_.bullet_speed, serial_msg_.mode);
         return;
     }
     
@@ -131,7 +131,7 @@ namespace buff_detector
         mutex_.lock();
         if(debug_param_.using_imu)
         {
-            double dt = (this->get_clock()->now() - imu_msg_.imu.header.stamp).nanoseconds();
+            double dt = (this->get_clock()->now() - serial_msg_.imu.header.stamp).nanoseconds();
             if(abs(dt / 1e9) > 0.1)
             {
                 detector_->setDebugParam(false, 7);
@@ -144,13 +144,13 @@ namespace buff_detector
             }
             else
             {
-                src.bullet_speed = imu_msg_.bullet_speed;
-                src.mode = imu_msg_.mode;
-                src.quat.w() = imu_msg_.imu.orientation.w;
-                src.quat.x() = imu_msg_.imu.orientation.x;
-                src.quat.y() = imu_msg_.imu.orientation.y;
-                src.quat.z() = imu_msg_.imu.orientation.z;
-                buff_msg.quat_imu = imu_msg_.imu.orientation;
+                src.bullet_speed = serial_msg_.bullet_speed;
+                src.mode = serial_msg_.mode;
+                src.quat.w() = serial_msg_.imu.orientation.w;
+                src.quat.x() = serial_msg_.imu.orientation.x;
+                src.quat.y() = serial_msg_.imu.orientation.y;
+                src.quat.z() = serial_msg_.imu.orientation.z;
+                buff_msg.quat_imu = serial_msg_.imu.orientation;
             }
         }
         mutex_.unlock();

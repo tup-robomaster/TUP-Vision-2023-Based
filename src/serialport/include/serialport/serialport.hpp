@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-15 22:01:49
- * @LastEditTime: 2023-01-31 23:57:45
+ * @LastEditTime: 2023-02-06 01:18:17
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport/serialport.hpp
  */
 #ifndef SERIALPORT_HPP_
@@ -44,6 +44,8 @@ constexpr int MAX_ITER = 3; //默认串口最大编号
 #define CmdID2 0x02; //英雄吊射
 #define CmdID3 0x03; //小符
 #define CmdID4 0x04; //大符
+
+#define SENTRY_RECV_NORMAL 0x05
 
 using namespace std;
 using namespace global_user;
@@ -140,6 +142,11 @@ namespace serialport
         float quat[4]; //四元数
         float acc[3];  //加速度
         float gyro[3]; //角速度
+    
+        float ucharRaw2Float(unsigned char *data); // 将4个uchar合并成一个float
+        bool ucharRaw2FloatVector(unsigned char *data, int bytes, std::vector<float> &vec);
+        unsigned char* float2UcharRaw(float float_data);
+        bool float2UcharRawArray(float float_data[], int num, uchar* raw_data);
     };
 } // namespace serialport
 

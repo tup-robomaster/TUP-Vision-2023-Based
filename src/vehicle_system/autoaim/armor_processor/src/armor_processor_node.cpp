@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-02-05 01:14:40
+ * @LastEditTime: 2023-02-05 22:57:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -287,6 +287,7 @@ namespace armor_processor
         Eigen::Vector2d tracking_angle = {0.0, 0.0};
         if(target.is_target_lost)
         {
+            processor_->error_cnt_ = 0;
             processor_->is_ekf_init = false;
             processor_->is_imm_init = false;
         }

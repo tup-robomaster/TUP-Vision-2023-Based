@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-02-03 21:56:17
+ * @LastEditTime: 2023-02-05 22:56:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -435,6 +435,7 @@ namespace armor_processor
         
     private:
         double evalRMSE(double* params);
+        
         double calcError();
         
         Eigen::Vector3d shiftWindowFilter(int start_idx);
@@ -482,6 +483,7 @@ namespace armor_processor
         bool is_ekf_init;
         bool is_imm_init;
         bool fitting_disabled_;
+        int error_cnt_ = 0;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
     
         // cs模型参数设置

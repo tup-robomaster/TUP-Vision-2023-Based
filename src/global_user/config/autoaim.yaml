@@ -37,7 +37,7 @@
   # Camera config params.
     # camera_name: "00J90630561" 
     camera_name: "KE0200110075" 
-    camera_type: 0
+    camera_type: 3
     camera_param_path: "src/global_user/config/camera.yaml"
 
   # Network model path.
@@ -92,7 +92,7 @@
     debug: true
 
   # Camera params.
-    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type: 3 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
     coord_param_name: "KE0200110075" 
     coord_param_path: "src/global_user/config/camera.yaml"
