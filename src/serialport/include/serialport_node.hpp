@@ -16,6 +16,7 @@
 #include <rclcpp/subscription.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/float64.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <message_filters/subscriber.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <tf2/LinearMath/Quaternion.h>
@@ -88,8 +89,6 @@ namespace serialport
         std::shared_ptr<tf2_ros::MessageFilter<GimbalMsg>> tf2_filter_;
 
     public:
-        rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
-
         /**
          * @brief 哨兵和其他车辆的msg不同，此处订阅者和发布者视兵种而定
          * 
@@ -98,12 +97,12 @@ namespace serialport
         // 哨兵
         // rclcpp::Subscription<SentryMsg>::SharedPtr sentry_info_sub_;
         // rclcpp::Publisher<SentrySerialMsg>::SharedPtr sentry_imu_data_pub_;
+        rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
 
         // 其他兵种
         rclcpp::Subscription<GimbalMsg>::SharedPtr autoaim_info_sub_;
         rclcpp::Subscription<GimbalMsg>::SharedPtr buff_info_sub_;
         rclcpp::Publisher<SerialMsg>::SharedPtr imu_data_pub_;
-    
     private:
         std::unique_ptr<SerialPort> serial_port_;
         std::unique_ptr<SerialPort> init_serial_port();

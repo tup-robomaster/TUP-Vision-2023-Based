@@ -55,6 +55,7 @@ namespace serialport
                 if(serial_port_->initSerialPort())
                 {
                     imu_data_pub_ = this->create_publisher<SerialMsg>("/imu_msg", qos);
+                    joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
                     receive_thread_ = std::thread(&SerialPortNode::receive_data, this);
                 }
             }
@@ -130,7 +131,8 @@ namespace serialport
             //数据读取不成功进行循环
             while (!serial_port_->get_Mode(bytes_num_))
             {
-                RCLCPP_WARN(this->get_logger(),"CHECKSUM FAILED OR NO DATA RECVIED!!!");
+                // RCLCPP_WARN(this->get_logger(),"CHECKSUM FAILED OR NO DATA RECVIED!!!");
+                usleep(2000);
             }
             
             // imu info pub.
@@ -154,8 +156,8 @@ namespace serialport
                 serial_port_->ucharRaw2FloatVector(&serial_port_->serial_data_.rdata[19], 12, gyro);
                 serial_port_->ucharRaw2FloatVector(&serial_port_->serial_data_.rdata[31], 12, acc);
                 bullet_speed = serial_port_->ucharRaw2Float(&serial_port_->serial_data_.rdata[43]);
-                theta = serial_port_->ucharRaw2Float(&serial_port_->serial_data_.rdata[47]);
-                
+                theta = serial_port_->ucharRaw2Float(&serial_port_->serial_data_.rdata[47]);    
+
                 SerialMsg serial_msg;
                 serial_msg.imu.header.frame_id = "imu_link";
                 serial_msg.imu.header.stamp = this->get_clock()->now();
@@ -171,6 +173,14 @@ namespace serialport
                 serial_msg.imu.linear_acceleration.y = acc[1];
                 serial_msg.imu.linear_acceleration.z = acc[2];
                 imu_data_pub_->publish(std::move(serial_msg));
+
+                sensor_msgs::msg::JointState joint_state;
+                joint_state.header.stamp = this->get_clock()->now();
+                joint_state.name.push_back("gimbal_yaw_joint");
+                joint_state.name.push_back("gimbal_pitch_joint");
+                joint_state.position.push_back(theta);
+                joint_state.position.push_back(0);
+                joint_state_pub_->publish(joint_state);
             }
         }
     }
