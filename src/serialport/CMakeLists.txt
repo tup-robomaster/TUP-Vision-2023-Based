@@ -50,6 +50,7 @@ set(node_plugins "")
 add_library(${PROJECT_NAME} SHARED
   src/${PROJECT_NAME}/crc_check.cpp 
   src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
+  src/data_processor/data_transform.cpp
   src/${PROJECT_NAME}_node.cpp
 )
   
@@ -90,6 +91,7 @@ include_directories(include)
 add_executable(${PROJECT_NAME}_node
   src/${PROJECT_NAME}/crc_check.cpp
   src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
+  src/data_processor/data_transform.cpp
   src/${PROJECT_NAME}_node.cpp
 )
 
