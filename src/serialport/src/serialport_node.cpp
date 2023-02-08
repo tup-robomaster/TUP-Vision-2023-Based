@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-02-07 15:58:15
+ * @LastEditTime: 2023-02-08 15:45:49
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -47,8 +47,14 @@ namespace serialport
             std::bind(&SerialPortNode::buffMsgSub, this, _1)
         );
         
+        auto publish_message = [this]() -> void
+        {
+            RCLCPP_INFO(this->get_logger(), "Callback function...");        
+        };
+        
         //创建发送数据定时器
-        timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
+        // timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
+        timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::sendData, this));
 
         if(!debug_without_port_)
         {   // Use serial port.
@@ -139,22 +145,23 @@ namespace serialport
      */
     void SerialPortNode::sendData()
     {
+        VisionData vision_data = {0.0, (float)0.0, (float)0.0, (float)0.0, 0, 1, 0, 0};
         if(flag_)
         {
-            //数据处理
-            data_transform_->transformData(mode_, vision_data_, serial_port_->Tdata);
-            //数据发送
-            serial_port_->sendData();
+            auto now = (serial_port_->steady_clock_.now().nanoseconds() / 1e6);
+            mutex_.lock();
+            if(abs(now - vision_data_.timestamp) < 30) //(ms)，若时间差过大，则忽略此帧数据
+            {
+                vision_data = vision_data_;
+            }
+            mutex_.unlock();
             flag_ = false;
         }
-        else
-        {
-            VisionData vision_data = {(float)0.0, (float)0.0, (float)0.0, 0, 1, 0, 0};
-            //数据处理
-            data_transform_->transformData(mode_, vision_data, serial_port_->Tdata);
-            //数据发送
-            serial_port_->sendData();
-        }
+        //根据不同mode进行对应的数据转换
+        data_transform_->transformData(mode_, vision_data, serial_port_->Tdata);
+        //数据发送
+        serial_port_->sendData();
+
         return;
     }
 
@@ -164,8 +171,10 @@ namespace serialport
         {
             if(mode_ == AUTOAIM)
             {
+                mutex_.lock();
                 vision_data_ = 
                 {
+                    (serial_port_->steady_clock_.now().nanoseconds() / 1e6),
                     (float)target_info->pitch, 
                     (float)target_info->yaw, 
                     (float)target_info->distance, 
@@ -174,6 +183,7 @@ namespace serialport
                     target_info->is_spinning, 
                     0
                 };
+                mutex_.unlock();
                 flag_ = true;
             }
         }
@@ -189,8 +199,10 @@ namespace serialport
         {
             if(mode_ == SMALL_BUFF || mode_ == BIG_BUFF)
             {
+                mutex_.lock();
                 vision_data_ = 
                 {
+                    (serial_port_->steady_clock_.now().nanoseconds() / 1e6),
                     (float)target_info->pitch, 
                     (float)target_info->yaw, 
                     (float)target_info->distance, 
@@ -199,6 +211,7 @@ namespace serialport
                     target_info->is_spinning, 
                     0
                 };
+                mutex_.unlock();
                 flag_ = true;
             }
         }

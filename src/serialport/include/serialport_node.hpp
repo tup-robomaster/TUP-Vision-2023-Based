@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-02-07 15:58:26
+ * @LastEditTime: 2023-02-08 15:35:35
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -52,12 +52,13 @@ namespace serialport
         std::thread receive_thread_;
         CoordSolver coordsolver_;
         
+        mutex mutex_;
         bool debug_without_port_;
         atomic<int> mode_;
         atomic<bool> flag_;
         VisionData vision_data_;
         rclcpp::TimerBase::SharedPtr timer_;
-
+        
     public:
         /**
          * @brief 哨兵和其他车辆的msg不同，此处订阅者和发布者视兵种而定

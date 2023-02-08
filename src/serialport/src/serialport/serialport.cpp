@@ -108,7 +108,7 @@ namespace serialport
 
         RCLCPP_INFO(logger_, "Openning %s...", alias.c_str());
         setBrate();
-        if(setBit())
+        if(!setBit())
         {
             RCLCPP_WARN(logger_, "Set Parity Error.");
             exit(0);

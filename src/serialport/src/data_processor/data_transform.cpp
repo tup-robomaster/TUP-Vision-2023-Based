@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 02:02:10
- * @LastEditTime: 2023-02-07 15:26:56
+ * @LastEditTime: 2023-02-08 15:37:38
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/data_processor/data_transform.cpp
  */
 #include "../../include/data_processor/data_transform.hpp"
@@ -22,7 +22,7 @@ namespace serialport
     *@param data 类型 VisionData(union)  包含pitch,yaw,distance
     *@param flag 类型 char   用于判断是否瞄准目标，0代表没有，1代表已经瞄准
     */
-    void DataTransform::transformData(int mode, const VisionData &data, uchar* trans_data)
+    void DataTransform::transformData(int mode, const VisionData &vision_data, uchar* trans_data)
     {
         if(mode == AUTOAIM || mode == SMALL_BUFF || mode == BIG_BUFF)
         {
@@ -30,14 +30,14 @@ namespace serialport
             trans_data[1] = mode;
             crc_check_.Append_CRC8_Check_Sum(trans_data, 3);
 
-            float float_data[] = {data.pitch_angle, data.yaw_angle, data.distance};
+            float float_data[] = {vision_data.pitch_angle, vision_data.yaw_angle, vision_data.distance};
             float2UcharRawArray(float_data, 3, &trans_data[3]);
 
-            trans_data[15] = data.isSwitched;
-            trans_data[16] = data.isFindTarget;
-            trans_data[17] = data.isSpinning;
-            trans_data[18] = data.ismiddle;
-
+            trans_data[15] = vision_data.isSwitched;
+            trans_data[16] = vision_data.isFindTarget;
+            trans_data[17] = vision_data.isSpinning;
+            trans_data[18] = vision_data.ismiddle;
+            
             trans_data[19] = 0x00;
             crc_check_.Append_CRC16_Check_Sum(trans_data, 22);
         }

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 01:45:19
- * @LastEditTime: 2023-02-07 15:39:52
+ * @LastEditTime: 2023-02-08 15:38:32
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/data_processor/data_transform.hpp
  */
 #ifndef DATA_TRANSFORM_HPP_
@@ -53,6 +53,7 @@ namespace serialport
     //TODO:待改
     typedef struct VisionData
     {
+        double timestamp;
         float pitch_angle; //俯仰角
         float yaw_angle;   //偏航角
         float distance;  //目标距离
