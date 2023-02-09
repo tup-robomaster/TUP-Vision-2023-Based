@@ -1,5 +1,4 @@
 std_msgs/Header header
-# sensor_msgs/Image image
 geometry_msgs/Point aiming_point_cam
 geometry_msgs/Point aiming_point_world
 float64 timestamp

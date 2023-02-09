@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-02-04 23:27:09
+ * @LastEditTime: 2023-02-09 21:22:44
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //C++
@@ -60,21 +60,21 @@ namespace armor_detector
 
     struct DetectorParam
     {
-        int dw, dh;             //letterbox对原图像resize的padding区域的宽度和高度
-        float rescale_ratio;    //缩放比例 
+        // int dw, dh;             //letterbox对原图像resize的padding区域的宽度和高度
+        // float rescale_ratio;    //缩放比例 
+        // int max_delta_t;   //使用同一预测器的最大时间间隔(ms)
 
         int armor_type_wh_thres; //大小装甲板长宽比阈值
         int max_lost_cnt;        //最大丢失目标帧数
         int max_armors_cnt;    //视野中最多装甲板数
         int max_v;         //两次预测间最大速度(m/s)
-        int max_delta_t;   //使用同一预测器的最大时间间隔(ms)
 
         double no_crop_thres; //禁用ROI裁剪的装甲板占图像面积最大面积比值
         int hero_danger_zone; //英雄危险距离阈值，检测到有小于该距离的英雄直接开始攻击
         double no_crop_ratio;
         double full_crop_ratio;
 
-        double max_delta_dist;
+        // double max_delta_dist;
         double armor_roi_expand_ratio_width;
         double armor_roi_expand_ratio_height;
         double armor_conf_high_thres;
@@ -87,7 +87,6 @@ namespace armor_detector
             max_lost_cnt = 5;
             max_armors_cnt = 8;
             max_v = 0;
-            max_delta_t = 100;
             no_crop_thres = 2e-3;
             no_crop_ratio = 2e-3;
             full_crop_ratio = 1e-4;
@@ -120,13 +119,6 @@ namespace armor_detector
         Detector(const PathParam& path_params, const DetectorParam& detector_params_, const DebugParam& debug_params_, const GyroParam& gyro_params_);
         ~Detector();
 
-    private:
-        //debug
-        DebugParam debug_params_;
-        PathParam path_params_;
-        DetectorParam detector_params_;
-
-    public:
         // void run();
         bool armor_detect(TaskData &src, bool& is_target_lost);
         bool gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info);
@@ -134,25 +126,24 @@ namespace armor_detector
         Point2i cropImageByROI(Mat &img);
         ArmorTracker* chooseTargetTracker(vector<ArmorTracker*> trackers, double timestamp);
         int chooseTargetID(vector<Armor> &armors, double timestamp);
-
-        void debugParams(const DetectorParam& detector_params, const DebugParam& debug_params, const GyroParam& gyro_params);
+   
     public:
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
 
         std::vector<Armor> armors;
         std::vector<Armor> last_armors;
 
-        bool is_init;
-        ofstream data_save;
-        bool is_save_data;
+        bool is_init_;
+        ofstream data_save_;
+        bool is_save_data_;
         ArmorDetector armor_detector_;
         CoordSolver coordsolver_;
-
         atomic<int> target_id_ = 0; 
+
+        SpinningDetector spinning_detector_;
     private:
         Armor last_armor;
         std::vector<ArmorObject> objects;
-        SpinningDetector spinning_detector_;
 
         std::vector<ArmorTracker> trackers;
         std::multimap<std::string, ArmorTracker> trackers_map;
@@ -164,6 +155,7 @@ namespace armor_detector
         ofstream file_;
         bool save_dataset_;
         std::string path_prefix_ = "src/camera_driver/recorder/autoaim_dataset/";
+
     private:
         int count;
         rclcpp::Time time_start;
@@ -201,8 +193,9 @@ namespace armor_detector
         double cur_ave_period_;
 
     public:
-        void setDetectorParam(const double& param, int idx);
-        void setDebugParam(const bool& param, int idx);
-        bool getDebugParam(int idx);
+        //Debug param.
+        DebugParam debug_params_;
+        PathParam path_params_;
+        DetectorParam detector_params_;
     }; 
 } //namespace detector

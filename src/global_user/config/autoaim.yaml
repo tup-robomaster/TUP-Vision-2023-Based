@@ -25,14 +25,16 @@
     min_fitting_lens: 10
     shoot_delay: 50
     max_cost: 500
-    delta_x_3d_high_thresh: 0.37
-    delta_x_3d_higher_thresh: 0.44
-    delta_x_3d_low_thresh: 0.23
-    delta_x_3d_lower_thresh: 0.15
-    delta_x_2d_high_thresh: 65.0
-    delta_x_2d_higher_thresh: 85.0
-    delta_x_2d_low_thresh: 35.0
-    delta_x_2d_lower_thresh: 24.0
+    switch_max_dt: 10000.0
+    
+    delta_x_3d_high_thresh: 0.18
+    delta_x_3d_higher_thresh: 0.25
+    delta_x_3d_low_thresh: 0.10
+    delta_x_3d_lower_thresh: 0.05
+    delta_y_3d_high_thresh: 0.18
+    delta_y_3d_higher_thresh: 0.25
+    delta_y_3d_low_thresh: 0.10
+    delta_y_3d_lower_thresh: 0.05
 
   # Camera config params.
     # camera_name: "00J90630561" 
@@ -107,12 +109,12 @@
   
   # IMM model.
     #状态转移概率
-    trans_prob_matrix: [0.6, 0.3, 0.05, 0.05,
+    trans_prob_matrix: [0.6, 0.3, 0.05, 0.05, #row prob sum = 1
                         0.5, 0.4, 0.05, 0.05,
                         0.1, 0.1, 0.75, 0.05,
                         0.1, 0.1, 0.05, 0.75]
     #模型概率
-    model_prob_vector: [0.4, 0.3, 0.15, 0.15]
+    model_prob_vector: [0.4, 0.3, 0.15, 0.15] #prob sum = 1
     process_noise: [0.4, 0.4, 0.3, 0.3, 0.2, 0.2]
     measure_noise: [60.0, 60.0, 30.0, 30.0]
 

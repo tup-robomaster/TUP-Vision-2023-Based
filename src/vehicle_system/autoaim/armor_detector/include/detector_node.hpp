@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2023-02-06 01:04:27
+ * @LastEditTime: 2023-02-09 16:16:26
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -38,53 +38,45 @@ namespace armor_detector
         DetectorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         ~DetectorNode();
         
+        void detect(TaskData& src);
     private:
         rclcpp::Time time_start_;
-        int image_width_;
-        int image_height_;
+        ImageInfo image_info_;
+        ImageSize image_size_;
 
-        // pub target armor msg.
+        // Pub target armor msg.
         rclcpp::Publisher<AutoaimMsg>::SharedPtr armor_info_pub_;
-        // ArmorsMsg armors_info_;
-    
     private:    
         // Params callback.
-        std::map<std::string, int> params_map_;
-        bool setParam(rclcpp::Parameter param);
+        bool updateParam();
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
         
     private:
         // Subscribe img. 
         std::shared_ptr<image_transport::Subscriber> img_sub_;
-        // rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr img_sub;
-        // std::shared_ptr<sensor_msgs::msg::CameraInfo> cam_info;
-        // rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr cam_info_sub;
+        void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
 
-        // Image subscriptions transport type.
-        std::string transport_;
-        void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
-        // std::vector<Armor> detect_armors(const sensor_msgs::msg::Image::SharedPtr& img);
-
+        // Subscribe serial msg.
+        Mutex msg_mutex_;
         SerialMsg serial_msg_;
         rclcpp::Subscription<SerialMsg>::SharedPtr serial_msg_sub_;
         void sensorMsgCallback(const SerialMsg& serial_msg);
         
     public:
+        Mutex param_mutex_;
         DetectorParam detector_params_;
-        DebugParam debug_;
         GyroParam gyro_params_;
         PathParam path_params_;
+        DebugParam debug_;
 
-        // rclcpp::Node handle;
-        // image_transport::ImageTransport it;
         std::unique_ptr<Detector> detector_;
-        std::unique_ptr<Detector> init_detector();
+        std::unique_ptr<Detector> initDetector();
 
     protected:
         bool using_shared_memory_;
         SharedMemoryParam shared_memory_param_;
         std::thread read_memory_thread_; //共享内存读线程
-        void run();
+        void threadCallback();
     };
 } //namespace detector

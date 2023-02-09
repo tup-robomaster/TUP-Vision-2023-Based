@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:45:06
- * @LastEditTime: 2023-01-14 23:03:27
+ * @LastEditTime: 2023-02-09 17:25:37
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/buff_processor/buff_processor.hpp
  */
 #ifndef BUFF_PROCESSOR_HPP_
@@ -47,10 +47,11 @@ namespace buff_processor
         Processor(const PredictorParam& predict_param, const PathParam& path_param, const DebugParam& debug_param);
         ~Processor();
 
-    private:
         PathParam path_param_;
         DebugParam debug_param_;
         PredictorParam predictor_param_;
+    
+    private:
         rclcpp::Logger logger_;
 
     public:
@@ -63,9 +64,6 @@ namespace buff_processor
         bool fittingThread(BuffMsg buff_msg);
         bool predictorThread(BuffMsg buff_msg, TargetInfo& target_info);
         bool predictor(BuffMsg buff_msg, TargetInfo& target_info);
-
-        void setPredictorParam(double param, int idx);
-        void setDebugParam(double param, int idx);
     };
 } //namespace buff_processor
 

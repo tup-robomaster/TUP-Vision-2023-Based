@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-15 11:25:33
- * @LastEditTime: 2023-02-02 16:15:06
+ * @LastEditTime: 2023-02-09 21:58:42
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/spinning_detector/spinning_detector.hpp
  */
 #ifndef SPINNING_DETECTOR_HPP_
@@ -26,7 +26,7 @@ namespace armor_detector
     enum SpinHeading
     {
         UNKNOWN, 
-        CLOCKWISE, //
+        CLOCKWISE, 
         COUNTER_CLOCKWISE
     };
 
@@ -40,7 +40,8 @@ namespace armor_detector
     {
         int max_dead_buffer;  //允许因击打暂时熄灭的装甲板的出现次数  
         double max_delta_dist;   //连续目标距离变化范围
-        double max_delta_t;      //
+        double max_delta_t;      //tracker未更新的时间上限，过久则删除
+        double switch_max_dt;    //目标陀螺状态未更新的时间上限，过久则删除
         double hero_danger_zone; //英雄危险距离
 
         double anti_spin_judge_high_thres; //大于该阈值认为该车已开启陀螺
@@ -52,21 +53,23 @@ namespace armor_detector
         double delta_x_3d_low_thresh;
         double delta_x_3d_lower_thresh;
 
-        double delta_x_2d_high_thresh;
-        double delta_x_2d_higher_thresh;
-        double delta_x_2d_low_thresh;
-        double delta_x_2d_lower_thresh;
+        double delta_y_3d_high_thresh;
+        double delta_y_3d_higher_thresh;
+        double delta_y_3d_low_thresh;
+        double delta_y_3d_lower_thresh;
         GyroParam()
         {
-            delta_x_3d_high_thresh = 0.37;
-            delta_x_3d_higher_thresh = 0.44;
-            delta_x_3d_low_thresh = 0.23;
-            delta_x_3d_lower_thresh = 0.15;
+            max_delta_t = 100;
+            switch_max_dt = 10000.0;
+            delta_x_3d_high_thresh = 0.18;
+            delta_x_3d_higher_thresh = 0.25;
+            delta_x_3d_low_thresh = 0.10;
+            delta_x_3d_lower_thresh = 0.05;
 
-            delta_x_2d_high_thresh = 65;
-            delta_x_2d_higher_thresh = 85;
-            delta_x_2d_low_thresh = 35;
-            delta_x_2d_lower_thresh = 24;
+            delta_y_3d_high_thresh = 0.18;
+            delta_y_3d_higher_thresh = 0.25;
+            delta_y_3d_low_thresh = 0.10;
+            delta_y_3d_lower_thresh = 0.05;
         }
     };
 
@@ -76,18 +79,22 @@ namespace armor_detector
         double new_timestamp;
     };
 
+    /**
+     * @brief 装甲板切换时的信息（同时存在两个装甲板，一个新增，一个先前存在）
+     * 
+     */
     struct GyroInfo
     {
         double last_x_font;
         double last_x_back;
-        double last_timestamp;
         double new_x_font;
         double new_x_back;    
+        double last_timestamp;
         double new_timestamp;
-        int last_x_font_2d;
-        int last_x_back_2d;
-        int new_x_font_2d;
-        int new_x_back_2d;   
+        double last_y_font;
+        double last_y_back;
+        double new_y_font;
+        double new_y_back;    
         Eigen::Matrix3d last_rmat;
         Eigen::Matrix3d new_rmat;
     };
@@ -96,6 +103,8 @@ namespace armor_detector
     {
         double last_x;
         double new_x;
+        double last_y;
+        double new_y;
         double last_add_tracker_timestamp;
         double new_add_tracker_timestamp;
     };
@@ -113,10 +122,9 @@ namespace armor_detector
     private:
         Color detect_color;
         Armor last_armor;
+        rclcpp::Logger logger_;
+        DetectorInfo detector_info_;
 
-        // std::vector<armor_detector::Armor> armors;
-        // std::multimap<std::string, ArmorTracker> trackers_map;
-        // std::map<std::string, int> new_armors_cnt_map;
     public:
         SpinningDetector();
         SpinningDetector(Color color, GyroParam gyro_params);
@@ -126,16 +134,8 @@ namespace armor_detector
         void createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map, std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, double timestamp, int dead_buffer_cnt);
         bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, std::map<std::string, int>& new_armors_cnt_map, double timestamp);
         
-        // 记录小陀螺运动下前后两次新增tracker时的时间戳，用以计算小陀螺旋转周期
-        
-        // 记录小陀螺运动下新增tracker时两个追踪器新增装甲板的x坐标
-        // armor_detector::ArmorTracker* chooseTargetTracker(vector<armor_detector::ArmorTracker*> trackers, int timestamp, int prev_timestamp);
-        // int chooseTargetID(vector<armor_detector::Armor> &armors, int timestamp, int prev_timestamp);
-        SpinningMap spinning_map_;
-        DetectorInfo detector_info_;
         GyroParam gyro_params_;
-        
-        rclcpp::Logger logger_;
+        SpinningMap spinning_map_;
     };
 } //namespace detector
 

@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-02-05 22:44:16
+LastEditTime: 2023-02-10 01:34:12
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -73,24 +73,6 @@ def generate_launch_description():
             }],
             condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
         ),
-        
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource(
-        #         launch_file_path=camera_node_launch_file
-        #     )
-        # ),
-
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource(
-        #         launch_file_path=detector_node_launch_file
-        #     )
-        # ),
-
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource(
-        #         launch_file_path=processor_node_launch_file
-        #     )
-        # ),
 
         ComposableNodeContainer(
             name='armor_detector_container',
@@ -100,15 +82,6 @@ def generate_launch_description():
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'usb'"])),
             composable_node_descriptions=[
-                # ComposableNode(
-                #     package='camera_driver',
-                #     plugin='camera_driver::DahengCamNode',
-                #     name='daheng_driver',
-                #     parameters=[daheng_cam_params],
-                #     extra_arguments=[{
-                #         'use_intra_process_comms':True
-                #     }]
-                # ),
                 ComposableNode(
                     package='camera_driver',
                     plugin='camera_driver::UsbCamNode',
@@ -127,24 +100,111 @@ def generate_launch_description():
                         'use_intra_process_comms':True
                     }]
                 ),
-                ComposableNode(
-                    package='armor_processor',
-                    plugin='armor_processor::ArmorProcessorNode',
-                    name='armor_processor',
-                    namespace='',
-                    parameters=[armor_processor_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),  
+                # ComposableNode(
+                #     package='armor_processor',
+                #     plugin='armor_processor::ArmorProcessorNode',
+                #     name='armor_processor',
+                #     namespace='',
+                #     parameters=[armor_processor_params],
+                #     extra_arguments=[{
+                #         'use_intra_process_comms':True
+                #     }]
+                # ),  
             ],
         ),
 
-        # Node(
-        #     package='armor_processor',
-        #     executable='armor_processor_node',
-        #     output='screen',
-        #     emulate_tty=True,
-        #     parameters=[armor_processor_params]
-        # ),
+        ComposableNodeContainer(
+            name='armor_detector_container',
+            namespace='',
+            output='screen',
+            package='rclcpp_components',
+            executable='component_container',
+            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'daheng'"])),
+            composable_node_descriptions=[
+                ComposableNode(
+                    package='camera_driver',
+                    plugin='camera_driver::DahengCamNode',
+                    name='daheng_driver',
+                    parameters=[daheng_cam_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                ),
+                ComposableNode(
+                    package='armor_detector',
+                    plugin='armor_detector::DetectorNode',
+                    name='armor_detector',
+                    parameters=[armor_detector_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                )
+            ],
+        ),
+
+        ComposableNodeContainer(
+            name='armor_detector_container',
+            namespace='',
+            output='screen',
+            package='rclcpp_components',
+            executable='component_container',
+            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'hik'"])),
+            composable_node_descriptions=[
+                ComposableNode(
+                    package='camera_driver',
+                    plugin='camera_driver::HikCamNode',
+                    name='hik_driver',
+                    parameters=[hik_cam_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                ),
+                ComposableNode(
+                    package='armor_detector',
+                    plugin='armor_detector::DetectorNode',
+                    name='armor_detector',
+                    parameters=[armor_detector_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                )
+            ],
+        ),
+
+        ComposableNodeContainer(
+            name='armor_detector_container',
+            namespace='',
+            output='screen',
+            package='rclcpp_components',
+            executable='component_container',
+            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'mvs'"])),
+            composable_node_descriptions=[
+                ComposableNode(
+                    package='camera_driver',
+                    plugin='camera_driver::MvsCamNode',
+                    name='mvs_driver',
+                    parameters=[mvs_cam_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                ),
+                ComposableNode(
+                    package='armor_detector',
+                    plugin='armor_detector::DetectorNode',
+                    name='armor_detector',
+                    parameters=[armor_detector_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                )
+            ],
+        ),
+
+        Node(
+            package='armor_processor',
+            executable='armor_processor_node',
+            output='screen',
+            emulate_tty=True,
+            parameters=[armor_processor_params]
+        ),
     ])

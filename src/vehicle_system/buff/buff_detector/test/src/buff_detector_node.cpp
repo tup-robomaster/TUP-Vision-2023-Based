@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-02-06 01:13:44
+ * @LastEditTime: 2023-02-09 16:42:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -17,7 +17,7 @@ namespace buff_detector
 
         try
         {
-            detector_ = init_detector();
+            detector_ = initDetector();
         }
         catch(const std::exception& e)
         {
@@ -58,29 +58,13 @@ namespace buff_detector
 
         this->declare_parameter<int>("camera_type", DaHeng);
         int camera_type = this->get_parameter("camera_type").as_int();
+        std::string transport_type = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
 
-        transport_ = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
-
-        if(camera_type == DaHeng)
-        {
-            img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/daheng_img",
-                std::bind(&BuffDetectorNode::image_callback, this, _1), transport_));
-        }
-        else if(camera_type == HikRobot)
-        {
-            img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/hik_img",
-                std::bind(&BuffDetectorNode::image_callback, this, _1), transport_));
-        }
-        else if(camera_type == USBCam)
-        {
-            img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/usb_img",
-                std::bind(&BuffDetectorNode::image_callback, this, _1), transport_));
-        }
-        else if(camera_type == MVSCam)
-        {
-            img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/mvs_img",
-                std::bind(&BuffDetectorNode::image_callback, this, _1), transport_));
-        }
+        image_size_ = image_info_.image_size_map[camera_type];
+        // image sub.
+        std::string image_topic = image_info_.camera_topic_map[camera_type];
+        img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, image_topic,
+            std::bind(&BuffDetectorNode::imageCallback, this, _1), transport_type));
 
         bool debug = false;
         this->declare_parameter<bool>("debug", true);
@@ -99,20 +83,20 @@ namespace buff_detector
 
     void BuffDetectorNode::sensorMsgCallback(const SerialMsg& serial_msg)
     {
-        mutex_.lock();
+        serial_mutex_.lock();
         serial_msg_.imu.header.stamp = this->get_clock()->now();
         if(serial_msg.bullet_speed > 10)
             serial_msg_.bullet_speed = serial_msg.bullet_speed;
         if(serial_msg.mode == 3 || serial_msg.mode == 4)
             serial_msg_.mode = serial_msg.mode;
         serial_msg_.imu = serial_msg.imu;
-        mutex_.unlock();
+        serial_mutex_.unlock();
 
         RCLCPP_INFO(this->get_logger(), "bullet speed: %lfm/s mode: %d", serial_msg_.bullet_speed, serial_msg_.mode);
         return;
     }
     
-    void BuffDetectorNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
+    void BuffDetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
     {   
         // RCLCPP_INFO(this->get_logger(), "Image callback...");
 
@@ -127,14 +111,13 @@ namespace buff_detector
 
         TargetInfo target_info;
         BuffMsg buff_msg;
-
-        mutex_.lock();
+        serial_mutex_.lock();
         if(debug_param_.using_imu)
         {
             double dt = (this->get_clock()->now() - serial_msg_.imu.header.stamp).nanoseconds();
-            if(abs(dt / 1e9) > 0.1)
+            if(abs(dt / 1e6) > 200)
             {
-                detector_->setDebugParam(false, 7);
+                detector_->debug_param_.using_imu = false;
                 Eigen::Quaterniond q = Eigen::Quaterniond::Identity();
                 buff_msg.quat_imu.w = q.w();
                 buff_msg.quat_imu.x = q.x();
@@ -151,9 +134,10 @@ namespace buff_detector
                 src.quat.y() = serial_msg_.imu.orientation.y;
                 src.quat.z() = serial_msg_.imu.orientation.z;
                 buff_msg.quat_imu = serial_msg_.imu.orientation;
+                detector_->debug_param_.using_imu = true;
             }
         }
-        mutex_.unlock();
+        serial_mutex_.unlock();
         
         if(!debug_param_.using_imu)
         {
@@ -162,8 +146,10 @@ namespace buff_detector
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000, "debug mode is: %d", (int)buff_msg.mode);
         }
 
+        param_mutex_.lock();
         if(detector_->run(src, target_info))
         {
+            param_mutex_.unlock();
             buff_msg.header.frame_id = "gimbal_link";
             buff_msg.header.stamp = this->get_clock()->now();
             buff_msg.r_center.x = target_info.r_center[0];
@@ -173,7 +159,6 @@ namespace buff_detector
             buff_msg.angle = target_info.angle;
             buff_msg.delta_angle = target_info.delta_angle;
             buff_msg.angle_offset = target_info.angle_offset;
-            // buff_msg.rotate_speed = target_info.rotate_speed;
             buff_msg.target_switched = target_info.target_switched;
             Eigen::Quaterniond quat(target_info.rmat);
             buff_msg.quat_cam.w = quat.w();
@@ -199,9 +184,11 @@ namespace buff_detector
             buff_msg.points2d[4].x = target_info.points2d[4].x;
             buff_msg.points2d[4].y = target_info.points2d[4].y;
             
-            // publish buff info.
+            //Publish buff msg.
             buff_info_pub_->publish(std::move(buff_msg));
         }
+        else
+            param_mutex_.unlock();
 
         bool show_img;
         this->get_parameter("show_img", show_img);
@@ -218,81 +205,18 @@ namespace buff_detector
         rcl_interfaces::msg::SetParametersResult result;
         result.successful = false;
         result.reason = "debug";
-        for(const auto& param : params)
-        {
-            result.successful = setParam(std::move(param));
-        }
+        result.successful = updateParam();
+        param_mutex_.lock();
+        detector_->buff_param_ = this->buff_param_;
+        detector_->debug_param_ = this->debug_param_;
+        param_mutex_.unlock();
+        
         return result;
     }
 
-    bool BuffDetectorNode::setParam(const rclcpp::Parameter& param)
-    {
-        auto param_idx = param_map_[param.get_name()];
-        switch (param_idx)
-        {
-        case 0:
-            detector_->setDetectorParam(std::move(param.as_double()), 1);
-            break;
-        case 1:
-            detector_->setDetectorParam(std::move(param.as_double()), 2);
-            break;
-        case 2:
-            detector_->setDetectorParam(std::move(param.as_double()), 3);
-            break;
-        case 3:
-            detector_->setDetectorParam(std::move(param.as_double()), 4);
-            break;
-        case 4:
-            detector_->setDetectorParam(std::move(param.as_double()), 5);
-            break;
-        case 5:
-            detector_->setDebugParam(std::move(param.as_bool()), 1);
-            break;
-        case 6:
-            detector_->setDebugParam(std::move(param.as_bool()), 2);
-            break;
-        case 7:
-            detector_->setDebugParam(std::move(param.as_bool()), 3);
-            break;
-        case 8:
-            detector_->setDebugParam(std::move(param.as_bool()), 4);
-            break;
-        case 9:
-            detector_->setDebugParam(std::move(param.as_bool()), 5);
-            break;
-        case 10:
-            detector_->setDebugParam(std::move(param.as_bool()), 6);
-            break;
-        case 11:
-            detector_->setDebugParam(std::move(param.as_bool()), 7);
-            break;
-        case 12:
-            detector_->setDebugParam(std::move(param.as_bool()), 8);
-            break;
-        default:
-            break;
-        }
-        return true;
-    }
 
-    std::unique_ptr<Detector> BuffDetectorNode::init_detector()
+    std::unique_ptr<Detector> BuffDetectorNode::initDetector()
     {
-        param_map_ = 
-        {
-            {"fan_length", 0},
-            {"max_delta_t", 1},
-            {"max_lost_cnt", 2},
-            {"max_v", 3},
-            {"no_crop_thres", 4},
-            {"assist_label", 5},
-            {"detect_red", 6},
-            {"print_target_info", 7},
-            {"show_all_fans", 8},
-            {"show_fps", 9},
-            {"using_imu", 10},
-            {"using_roi", 11}
-        };
-
         this->declare_parameter<double>("fan_length", 0.7);
         this->declare_parameter<double>("max_delta_t", 100.0);
         this->declare_parameter<int>("max_lost_cnt", 4);
@@ -303,6 +227,10 @@ namespace buff_detector
         this->declare_parameter<std::string>("camera_param_path", "src/global_user/config/camera.yaml");
         this->declare_parameter<std::string>("network_path", "src/vehicle_system/buff/model/buff.xml");
         this->declare_parameter<std::string>("path_prefix", "src/vehicle_system/buff/dataset/");
+        this->get_parameter("camera_name", this->path_param_.camera_name);
+        this->get_parameter("camera_param_path", this->path_param_.camera_param_path);
+        this->get_parameter("network_path", this->path_param_.network_path);
+        this->get_parameter("path_prefix", this->path_param_.path_prefix);
 
         this->declare_parameter<int>("debug_mode", 3);
         this->declare_parameter<bool>("assist_label", false);
@@ -315,17 +243,29 @@ namespace buff_detector
         this->declare_parameter<bool>("using_roi", false);
         this->declare_parameter<bool>("show_img", false);
 
+        bool success = updateParam();
+        if(success)
+            RCLCPP_INFO(this->get_logger(), "Update param!");
+       
+        return std::make_unique<Detector>(buff_param_, path_param_, debug_param_);
+    }
+
+    /**
+     * @brief 更新参数
+     * 
+     * @return true 
+     * @return false 
+     */
+    bool BuffDetectorNode::updateParam()
+    {
+        //Buff param.
         this->get_parameter("max_v", this->buff_param_.max_v);
         this->get_parameter("fan_length", this->buff_param_.fan_length);
         this->get_parameter("max_delta_t", this->buff_param_.max_delta_t);
         this->get_parameter("max_lost_cnt", this->buff_param_.max_lost_cnt);
         this->get_parameter("no_crop_thres", this->buff_param_.no_crop_thres);
 
-        this->get_parameter("camera_name", this->path_param_.camera_name);
-        this->get_parameter("camera_param_path", this->path_param_.camera_param_path);
-        this->get_parameter("network_path", this->path_param_.network_path);
-        this->get_parameter("path_prefix", this->path_param_.path_prefix);
-
+        //Debug param.
         this->get_parameter("assist_label", this->debug_param_.assist_label);
         this->get_parameter("detect_red", this->debug_param_.detect_red);
         this->get_parameter("prinf_latency", this->debug_param_.prinf_latency);
@@ -336,9 +276,8 @@ namespace buff_detector
         this->get_parameter("using_roi", this->debug_param_.using_roi);
         this->get_parameter("show_img", this->debug_param_.show_img);
 
-        return std::make_unique<Detector>(buff_param_, path_param_, debug_param_);
+        return true;
     }
-
 } // namespace buff_detector
 
 int main(int argc, char** argv)

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2023-01-31 21:01:53
+ * @LastEditTime: 2023-02-10 00:00:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
@@ -103,49 +103,7 @@ namespace buff_processor
     class BuffPredictor
     {
         typedef global_interface::msg::Buff BuffMsg;
-
     private:
-        // struct CURVE_FITTING_COST
-        // {
-        //     CURVE_FITTING_COST (double x, double t)
-        //     : _x (x), _t (t) {}
-            
-        //     // 残差的计算
-        //     template <typename T>
-        //     bool operator() 
-        //     (
-        //         const T* params, // 模型参数，有3维
-        //         T* residual      // 残差
-        //     ) const             
-        //     {
-        //         residual[0] = T (_x) - params[0] * ceres::sin(params[1] * T(_t) + params[2]) - params[3]; // f(t) = a * sin(ω * t + θ) + b
-        //         return true;
-        //     }
-        //     const double _x, _t;    // x,t数据
-        // };
-
-        // struct CURVE_FITTING_COST_PHASE
-        // {
-        //     CURVE_FITTING_COST_PHASE (double x, double t, double a, double dc)
-        //     : _x(x), _t(t), _a(a), _dc(dc){}
-
-        //     // 残差的计算
-        //     template <typename T>
-        //     bool operator()
-        //     (
-        //         const T* phase, // 模型参数，有1维
-        //         const T* omega,
-        //         // const T* const_term,
-        //         T* residual     // 残差
-        //     ) const 
-        //     {
-        //         residual[0] = -(T (_a) / omega[0]) * ceres::cos(omega[0] * (T(_t) + phase[0] / omega[0])) + T(_dc) * T(_t) + (T (_a) / omega[0]) * ceres::cos(phase[0]) - T (_x);
-        //         // residual[0] = -(T (_a) / T(_omega)) * ceres::cos(T(_omega) * T(_t) + phase[0]) + T(_dc) * T(_t) + const_term[0] - T (_x);
-        //         return true;
-        //     }
-        //     const double _x, _t, _a, _dc;    // x,t数据
-        // };
-
         struct CURVE_FITTING_COST_PHASE
         {
             CURVE_FITTING_COST_PHASE (double x, double t, double a, double omega, double dc)
@@ -192,7 +150,6 @@ namespace buff_processor
         //目标信息
         struct TargetInfo
         {
-            // double speed;
             // double dist;
             bool is_switched;
             double abs_angle;
@@ -241,9 +198,6 @@ namespace buff_processor
         bool is_last_result_exist_;
         int lost_cnt_;
     private:
-        // double params[4] = {0.1, 1.0, 0.0, 1.0};
-        // double params[4] = {0.9125, 1.942, 0.0, 1.1325};
-        // double params[4] = {-297.959, -0.000124531, 706.449, 131.67};
         double params[4] = {0.1, 0.1, 0.1, 0.1};
 
         rclcpp::Logger logger_;

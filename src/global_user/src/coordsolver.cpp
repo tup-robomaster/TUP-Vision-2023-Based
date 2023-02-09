@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-02-02 14:04:57
+ * @LastEditTime: 2023-02-09 18:07:33
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -144,27 +144,8 @@ namespace coordsolver
         Eigen::Vector3d tvec_eigen;
         Eigen::Vector3d coord_camera;
 
-        // std::cout << "type: " << type << std::endl;
         RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Armor type: %d", (int)(type));
         solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, method);
-        // for(auto point : points_world)
-        //     std::cout << "point_world: x " << point.x << " y " << point.y << std::endl;
-
-        // for(auto point : points_pic)
-        //     std::cout << "point_pic: x " << point.x << " y " << point.y << std::endl;
-
-        // for(int i = 0; i < 3; i++)
-        //     for(int j = 0; j < 3; j++)
-        //     std::cout << "Intrinsic: " << intrinsic.at<double>(i, j) << std::endl;
-
-        // std::cout << "dis_coeff: " << dis_coeff.at<double>(0, 0) << std::endl;
-
-        // std::cout << "rvec&tvec: " << std::endl; 
-        // for(int i = 0; i < 3; i++)
-        // {
-        //     std::cout << rvec.at<double>(0, i) << std::endl;
-        //     std::cout << tvec.at<double>(0, i) << std::endl;
-        // }
             
         PnPInfo result;
         //Pc = R * Pw + T
@@ -180,12 +161,9 @@ namespace coordsolver
             Eigen::Matrix3d rmat_eigen_world = rmat_imu * (transform_ic.block(0, 0, 3, 3) * rmat_eigen);
             result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;
-            
-            // std::cout << std::endl;
-            // std::cout << "armor3d_world: x" << result.armor_world[0] << " y:" << result.armor_world[1] << " z:" << result.armor_world[2] << std::endl;
-            // std::cout << "tvec_eigen: x" << tvec_eigen[0] << " y:" << tvec_eigen[1] << " z:" << tvec_eigen[2] << std::endl;
-            // std::cout << "armor3d_cam: x" << result.armor_cam[0] << " y:" << result.armor_cam[1] << " z:" << result.armor_cam[2] << std::endl;
-            // std::cout << std::endl;
+            auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
+            double angle = angle_axisd.angle();
+            RCLCPP_INFO(logger_, "rotate angle:%lf", angle * (180 / CV_PI));
         }
         else
         {
@@ -199,7 +177,6 @@ namespace coordsolver
             result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;
         }
-
         return result;
     }
 
@@ -212,34 +189,18 @@ namespace coordsolver
      */
     Eigen::Vector2d CoordSolver::getAngle(Eigen::Vector3d &xyz_cam, Eigen::Matrix3d &rmat)
     {
-        // cout<<xyz_cam<<endl;
-        // cout<<endl;
-        // std::cout << "xyz:" << xyz_cam[0] << " " << xyz_cam[1] << " " << xyz_cam[2] << std::endl;
         auto xyz_offseted = staticCoordOffset(xyz_cam);
-        // std::cout << "xyz_offseted :" << xyz_offseted[0] << " " << xyz_offseted[1] << " " << xyz_offseted[2] << std::endl;
-        
+
         rmat = Eigen::Matrix3d::Identity();
-
         auto xyz_world = camToWorld(xyz_offseted, rmat);
-        // std::cout << "xyz_world:" << xyz_world[0] << " " << xyz_world[1] << " " << xyz_world[2] << std::endl;
-
         auto angle_cam = calcYawPitch(xyz_cam);
-        // std::cout << "angle_cam: " << "pitch:" << angle_cam[0] << " yaw:" << angle_cam[1] << std::endl;
-
         // auto dist = xyz_offseted.norm();
         // auto pitch_offset = 6.457e04 * pow(dist,-2.199);
+        
         auto pitch_offset = dynamicCalcPitchOffset(xyz_world);
-        // std::cout << "pitch_offset: " << pitch_offset << std::endl;
-
-        //TODO: Add Log
-        // cout<<pitch_offset<<endl;
         angle_cam[1] = angle_cam[1] + pitch_offset;
         auto angle_offseted = staticAngleOffset(angle_cam);
 
-        // std::cout << "angle_offseted: " << "pitch:" << angle_offseted[0] << " yaw:" << angle_offseted[1] << std::endl;
-
-        // std::cout << " " << std::endl;
-        
         return angle_offseted;
     }
 
@@ -253,14 +214,9 @@ namespace coordsolver
     {
 
         Eigen::Matrix3d mat_intrinsic;
-        // std::cout << "66" << std::endl;
-        
         cv2eigen(intrinsic, mat_intrinsic);
-        // std::cout << "44" << std::endl;
-
         //(u,v,1)^T = (1/Z) * K * (X,Y,Z)^T
         auto result = (1.f / xyz[2]) * mat_intrinsic * (xyz);//解算前进行单位转换
-        // std::cout << "55" << std::endl;
         return cv::Point2f(result[0], result[1]);
     }
 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-02-05 00:32:15
+ * @LastEditTime: 2023-02-09 22:51:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -14,82 +14,29 @@ namespace armor_detector
     : spinning_detector_(detector_params_.color, gyro_params), detector_params_(detector_params), 
     path_params_(path_param), debug_params_(debug_params), logger_(rclcpp::get_logger("armor_detector"))
     {
-        //参数设置
-        // this->camera_name = camera_name_;
-        // this->camera_param_path = camera_param_path_;
-        // this->network_path = network_path_;
-        // this->armor_detector_params_.dw = _armor_detector_params_.dw;
-        // this->armor_detector_params_.dh = _armor_detector_params_.dh;
-        // this->armor_detector_params_.rescale_ratio = _armor_detector_params_.rescale_ratio;
-        // this->armor_detector_params_.armor_type_wh_thres = _armor_detector_params_.armor_type_wh_thres;
-        // this->armor_detector_params_.max_lost_cnt = _armor_detector_params_.max_lost_cnt;
-        // this->armor_detector_params_.max_armors_cnt = _armor_detector_params_.max_armors_cnt;
-        // this->armor_detector_params_.max_v = _armor_detector_params_.max_v;
-        // this->armor_detector_params_.max_delta_t = _armor_detector_params_.max_delta_t;
-        // this->armor_detector_params_.no_crop_thres = _armor_detector_params_.no_crop_thres;
-        // this->armor_detector_params_.hero_danger_zone = _armor_detector_params_.hero_danger_zone;
-                   
-        //网络模型初始化
-        
-        //默认值
+        //初始化
         lost_cnt = 0;
         is_last_target_exists = false;
         is_target_switched = false;
         last_target_area = 0;
         last_bullet_speed = 0;
         input_size = {720, 720};
-        is_init = false;
+        is_init_ = false;
         last_period_ = 0;
         last_last_status_ = last_status_ = cur_status_ = NONE;
 
-        is_save_data = debug_params_.save_data; //save distance error data
+        is_save_data_ = debug_params_.save_data; //save distance error data
         save_dataset_ = debug_params_.save_dataset;
-        
-        //debug
-        // this->debug_params_.debug_without_com = _debug_params_.debug_without_com;
-        // this->debug_params_.using_imu =  _debug_params_.using_imu;
-        // this->debug_params_.using_roi =  _debug_params_.using_roi;
-        // this->debug_params_.show_aim_cross = _debug_params_.show_aim_cross;
-        // this->debug_params_.show_img = _debug_params_.show_img;
-        // this->debug_params_.detect_red = _debug_params_.detect_red;
-       
-        //gyro_detect_params
-        // spinning_armor_detector_ = spinning_detector(_armor_detector_params_.color, _gyro_params_);
     }
 
     Detector::~Detector()
     {
-        if(is_save_data)
+        if(is_save_data_)
         {
-            data_save.close();
+            data_save_.close();
         }
     }
 
-    void Detector::debugParams(const DetectorParam& detector_params, const DebugParam& debug_params, const GyroParam& gyro_params) 
-    {
-        //Detector params
-        this->detector_params_.dw = detector_params.dw;
-        this->detector_params_.dh = detector_params.dh;
-        this->detector_params_.rescale_ratio = detector_params.rescale_ratio;
-        this->detector_params_.armor_type_wh_thres = detector_params.armor_type_wh_thres;
-        this->detector_params_.max_lost_cnt = detector_params.max_lost_cnt;
-        this->detector_params_.max_armors_cnt = detector_params.max_armors_cnt;
-        this->detector_params_.max_v = detector_params.max_v;
-        this->detector_params_.max_delta_t = detector_params.max_delta_t;
-        this->detector_params_.no_crop_thres = detector_params.no_crop_thres;
-        this->detector_params_.hero_danger_zone = detector_params.hero_danger_zone;
-
-        //debug
-        this->debug_params_.debug_without_com = debug_params.debug_without_com;
-        this->debug_params_.using_imu = debug_params.using_imu;
-        this->debug_params_.using_roi = debug_params.using_roi;
-        this->debug_params_.show_aim_cross = debug_params.show_aim_cross;
-        this->debug_params_.show_img = debug_params.show_img;
-        this->debug_params_.detect_red = debug_params.detect_red;
-        this->debug_params_.print_letency = debug_params.print_letency;
-        this->debug_params_.print_target_info = debug_params.print_target_info;
-    }
-    
     /**
      * @brief 车辆装甲板检测
      * 
@@ -100,21 +47,17 @@ namespace armor_detector
      */
     bool Detector::armor_detect(TaskData &src, bool& is_target_lost)
     {
-        if(!is_init)
-        {
-            armor_detector_.initModel(path_params_.network_path);
-            coordsolver_.loadParam(path_params_.camera_param_path, path_params_.camera_name);
-            if(is_save_data)
-            {
-                data_save.open(path_params_.save_path, ios::out | ios::trunc);
-                // data_save.open("src/data/infer1.txt", ios::out | ios::trunc);
-                // data_save.open("src/data/infer2.txt", ios::out | ios::trunc);
-                // data_save.open("src/data/old_infer1.txt", ios::out | ios::trunc);
-                // data_save.open("src/data/old_infer2.txt", ios::out | ios::trunc);
-                data_save << fixed;
-            }
-            is_init = true;
-        }
+        // if(!is_init_)
+        // {
+        //     armor_detector_.initModel(path_params_.network_path);
+        //     coordsolver_.loadParam(path_params_.camera_param_path, path_params_.camera_name);
+        //     if(is_save_data_)
+        //     {
+        //         data_save_.open(path_params_.save_path, ios::out | ios::trunc);
+        //         data_save_ << fixed;
+        //     }
+        //     is_init_ = true;
+        // }
         
         time_start = steady_clock_.now();
 
@@ -175,12 +118,6 @@ namespace armor_detector
                 line(src.img, Point2f(src.img.size().width / 2, 0), Point2f(src.img.size().width / 2, src.img.size().height), {0,255,0}, 1);
                 line(src.img, Point2f(0, src.img.size().height / 2), Point2f(src.img.size().width, src.img.size().height / 2), {0,255,0}, 1);
             }
-            // if(debug_params_.show_img)
-            // {
-            //     namedWindow("dst",0);
-            //     imshow("dst",src.img);
-            //     waitKey(1);
-            // }
 
             is_target_lost = true;
             lost_cnt++;
@@ -229,34 +166,11 @@ namespace armor_detector
                 armor.key = "P" + to_string(object.cls);
             memcpy(armor.apex2d, object.apex, 4 * sizeof(cv::Point2f));
             for(int i = 0; i < 4; i++)
-            {
                 armor.apex2d[i] += Point2f((float)roi_offset.x,(float)roi_offset.y);
-                // std::cout << "x:" << armor.apex2d[i].x << " y:" << armor.apex2d[i].y << std::endl;
-            }
             Point2f apex_sum;
             for(auto apex : armor.apex2d)
                 apex_sum +=apex;
             armor.center2d = apex_sum / 4.f;
-
-            // auto pnp_result = coordsolver.pnp(armor.apex2d, rmat_imu, SOLVEPNP_ITERATIVE);
-
-            // std::vector<Point2f> points_pic(armor.apex2d, armor.apex2d + 4);
-            
-            // std::vector<Point2f> tmp;
-            // for (auto rrect.)
-            // TargetType target_type = SMALL;
-
-            // //计算长宽比,确定装甲板类型
-            // RotatedRect points_pic_rrect = minAreaRect(points_pic);
-            // auto apex_wh_ratio = max(points_pic_rrect.size.height, points_pic_rrect.size.width) /
-            //                         min(points_pic_rrect.size.height, points_pic_rrect.size.width);
-            
-            // //若大于长宽阈值或为哨兵、英雄装甲板
-            // if (apex_wh_ratio > this->armor_detector_params_.armor_type_wh_thres || object.cls == 1 || object.cls == 0)
-            //     target_type = BIG;
-            // for (auto pic : points_pic)
-            //     cout<<pic<<endl;
-            // cout<<target_type<<endl;
 
             //生成装甲板旋转矩形和ROI
             std::vector<Point2f> points_pic(armor.apex2d, armor.apex2d + 4);
@@ -345,11 +259,6 @@ namespace armor_detector
             armor.rmat = pnp_result.rmat;
             armor.area = object.area;
             armors.push_back(armor);
-
-            // std::cout << std::endl;
-            // std::cout << "armor3d_world: x" << armor.armor3d_world[0] << " y:" << armor.armor3d_world[1] << " z:" << armor.armor3d_world[2] << std::endl;
-            // std::cout << "armor3d_cam: x" << armor.armor3d_cam[0] << " y:" << armor.armor3d_cam[1] << " z:" << armor.armor3d_world[2] << std::endl;
-            // std::cout << std::endl;
         }
         
         //若无合适装甲板
@@ -469,8 +378,7 @@ namespace armor_detector
         std::vector<ArmorTracker*> final_trackers;
         std::vector<Armor> final_armors;
         
-        //TODO:反陀螺防抖(增加陀螺模式与常规模式)
-        //若目标处于陀螺状态，预先瞄准目标中心，待预测值与该点距离较近时开始击打
+        // 确定目标运动状态（陀螺模式与机动模式）
         SpinHeading spin_status;
         if (spinning_detector_.spinning_map_.spin_status_map.count(target_key) == 0)
         {   //若未确定打击车辆的陀螺状态
@@ -498,9 +406,10 @@ namespace armor_detector
         target_info.is_still_spinning = false;
         if (spin_status != UNKNOWN)
         {
-            //------------------------------尝试确定旋转中心-----------------------------------
+            //------------------------------估计目标旋转周期-----------------------------------
             auto available_candidates_cnt = 0;
-            double w2 = 0.0;
+            double w = 0.0;
+            double period = 0.0;
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
                 if ((*iter).second.last_timestamp == src.timestamp)
@@ -513,9 +422,10 @@ namespace armor_detector
                         auto rrmat = ((*iter).second.prev_armor.rmat.transpose()) * ((*iter).second.last_armor.rmat);
                         auto angle_axisd = Eigen::AngleAxisd(rrmat);
                         auto angle = angle_axisd.angle();
-                        w2 = (angle / dt);
-                        new_period_deq_.push_back(w2);
-                        RCLCPP_WARN(logger_, "period2:%lfs", ((2 * CV_PI) / w2 / 4.0));
+                        w = (angle / dt);
+                        period = ((2 * CV_PI) / w / 4.0);
+                        new_period_deq_.push_back(period);
+                        RCLCPP_WARN(logger_, "period:%lfs", period);
                     }
                 }
                 else
@@ -528,68 +438,64 @@ namespace armor_detector
             if(cnt == 1)
             {
                 auto candidate = spinning_detector_.spinning_map_.spinning_x_map.find(target_key);
-
-                auto t = ((*candidate).second.new_timestamp - (*candidate).second.last_timestamp) / 1e9;
-                auto relative_rmat = ((*candidate).second.new_rmat.transpose()) * ((*candidate).second.last_rmat);
-                auto angle_axisd = Eigen::AngleAxisd(relative_rmat);
-                auto angle = angle_axisd.angle();
-                auto w1 = (angle / t);
-
+                // auto t = ((*candidate).second.new_timestamp - (*candidate).second.last_timestamp) / 1e9;
+                // auto relative_rmat = ((*candidate).second.new_rmat.transpose()) * ((*candidate).second.last_rmat);
+                // auto angle_axisd = Eigen::AngleAxisd(relative_rmat);
+                // auto angle = angle_axisd.angle();
+                
+                // w = (angle / t);
+                // period = ((2 * CV_PI) / w / 4.0);
                 //TODO:此处角速度计算误差较大，可尝试通过PnP解算的位姿计算角速度
-                auto w = (2 * M_PI) / (4 * t);
+                // auto w = (2 * M_PI) / (4 * t);
+                // cur_period_ = t;
+                // if(last_period_ == 0)
+                // {
+                //     last_period_ = cur_period_;
+                // }
+
+                // if(history_period_.size() < 3)
+                // {
+                //     history_period_.push_back(cur_period_);
+                // }
+                // // std::cout << std::endl;
+                // // std::cout << "period:" << cur_period_ << std::endl;
+                // double per_sum = 0;
+
+                // last_ave_period_ = cur_ave_period_;
+                // if(history_period_.size() >= 3)
+                // {
+                //     for(auto &per : history_period_)
+                //     {
+                //         per_sum += per;
+                //     }
+                    
+                //     cur_ave_period_ = (per_sum / history_period_.size());
+                    
+                //     // std::cout << std::endl;
+                //     // std::cout << " T:" << cur_ave_period_ << std::endl;
+                //     // std::cout << std::endl;
+
+                //     if(abs(cur_ave_period_ - cur_period_) < 0.05)
+                //     {
+                //         last_period_ = cur_period_;
+                //         if(history_period_.size() < 9)
+                //         {
+                //             history_period_.push_back(cur_period_);
+                //         }
+                //         else
+                //         {
+                //             history_period_.pop_front();
+                //         }
+                //     }
+                // }
+
+                // if(last_ave_period_ == cur_ave_period_) 
+                //     target_info.period = last_ave_period_;
+                // else if(last_ave_period_ != cur_ave_period_ != 0)
+                //     target_info.period = cur_ave_period_;
+
                 // target_info.w = w;
-                
-                cur_period_ = t;
-                if(last_period_ == 0)
-                {
-                    last_period_ = cur_period_;
-                }
-
-                if(history_period_.size() < 3)
-                {
-                    history_period_.push_back(cur_period_);
-                }
-                // std::cout << std::endl;
-                // std::cout << "period:" << cur_period_ << std::endl;
-                double per_sum = 0;
-
-                last_ave_period_ = cur_ave_period_;
-                if(history_period_.size() >= 3)
-                {
-                    for(auto &per : history_period_)
-                    {
-                        per_sum += per;
-                    }
-                    
-                    cur_ave_period_ = (per_sum / history_period_.size());
-                    
-                    // std::cout << std::endl;
-                    // std::cout << " T:" << cur_ave_period_ << std::endl;
-                    // std::cout << std::endl;
-
-                    if(abs(cur_ave_period_ - cur_period_) < 0.05)
-                    {
-                        last_period_ = cur_period_;
-                        if(history_period_.size() < 9)
-                        {
-                            history_period_.push_back(cur_period_);
-                        }
-                        else
-                        {
-                            history_period_.pop_front();
-                        }
-                    }
-                }
-
-                if(last_ave_period_ == cur_ave_period_) 
-                    target_info.period = last_ave_period_;
-                else if(last_ave_period_ != cur_ave_period_ != 0)
-                    target_info.period = cur_ave_period_;
-
-                // std::cout << "period: " << target_info.period << std::endl;
-                
-                target_info.w = w;
-                RCLCPP_INFO(logger_, "Target spinning angular_spd:%lfrad/s Angle:%lfrad w1:%lfrad/s period1:%lfs period2:%lfs", w, angle, w1, t, ((2 * CV_PI / w1) / 4.0));
+                // RCLCPP_INFO(logger_, "Target spinning angular_spd:%lfrad/s Angle:%lfrad\n w1:%lfrad/s period1:%lfs period2:%lfs", w, angle, w1, t, ((2 * CV_PI / w1) / 4.0));
                 
                 if(new_period_deq_.size() > 1)
                 {
@@ -613,63 +519,47 @@ namespace armor_detector
                         target_info.period = ave_per;
                         RCLCPP_WARN(logger_, "ave_per:%lfs", ave_per);
                     }
+                    else
+                        target_info.period = period;
                 }
 
                 double delta_x_back = abs((*candidate).second.new_x_back - (*candidate).second.last_x_back);
                 double delta_x_font = abs((*candidate).second.new_x_font - (*candidate).second.last_x_font);
-                int delta_x_back_2d = abs((*candidate).second.new_x_back_2d - (*candidate).second.last_x_back_2d);
-                int delta_x_font_2d = abs((*candidate).second.new_x_font_2d - (*candidate).second.last_x_font_2d);
+                double delta_y_back = abs((*candidate).second.new_y_back - (*candidate).second.last_y_back);
+                double delta_y_font = abs((*candidate).second.new_y_font - (*candidate).second.last_y_font);
                 double ave_x_3d = (delta_x_back + delta_x_font) / 2;
-                double ave_x_2d = (delta_x_back_2d + delta_x_font_2d) / 2;
+                double ave_y_3d = (delta_y_back + delta_y_font) / 2;
+                // ave_y_3d = delta_y_back > delta_y_font ? delta_y_back : delta_y_font;
 
                 // std::cout << std::endl;
                 // std::cout << "delta_x_back: " << delta_x_back << std::endl;
                 // std::cout << "delta_x_font: " << delta_x_font << std::endl;
-                // std::cout << "x_ave: " << (delta_x_back + delta_x_font) / 2 << std::endl;
+                // std::cout << "x_ave: " << ave_x_3d << std::endl;
+                // std::cout << std::endl;
+
+                // std::cout << std::endl;
+                // // std::cout << "delta_y_back: " << delta_y_back << std::endl;
+                // // std::cout << "delta_y_font: " << delta_y_font << std::endl;
+                // std::cout << "y_ave: " << ave_y_3d << std::endl;
                 // std::cout << std::endl;
                 
-                // std::cout << "delta_x_back_2d: " << delta_x_back_2d << std::endl; 
-                // std::cout << "delta_x_font_2d: " << delta_x_font_2d << std::endl;
-                // std::cout << "x_2d_ave: " << (delta_x_back_2d + delta_x_font_2d) / 2 << std::endl;
-                // std::cout << std::endl;
-                
-                if((ave_x_2d > spinning_detector_.gyro_params_.delta_x_2d_higher_thresh || ave_x_3d > spinning_detector_.gyro_params_.delta_x_3d_higher_thresh) 
-                || (ave_x_2d > spinning_detector_.gyro_params_.delta_x_2d_high_thresh && ave_x_3d > spinning_detector_.gyro_params_.delta_x_3d_high_thresh))
-                // if(ave_x_2d > 51)
+                if(ave_x_3d > spinning_detector_.gyro_params_.delta_x_3d_high_thresh)
                 {
-                    // target_ptr->is_spinning = true;
-                    // target_ptr->spinning_status = MOVEMENT_SPINNING;
-                    
                     target_info.is_spinning = true;
                     target_info.is_still_spinning = false;
-                }
-                else if((ave_x_2d < spinning_detector_.gyro_params_.delta_x_2d_lower_thresh) 
-                || (ave_x_2d < spinning_detector_.gyro_params_.delta_x_2d_low_thresh && ave_x_3d < spinning_detector_.gyro_params_.delta_x_3d_low_thresh))
-                // else if(ave_x_2d < 48)
+                    std::cout << "Movement spinning..." << std::endl;
+                } 
+                else if(ave_x_3d < spinning_detector_.gyro_params_.delta_x_3d_low_thresh)
                 {
-                    // target_ptr->is_spinning = true;
-                    // target_ptr->spinning_status = STILL_SPINNING;
-
                     target_info.is_spinning = true;
                     target_info.is_still_spinning = true;
+                    std::cout << "Still spinning..." << std::endl;
                 }
                 else
                 {
                     target_info.is_spinning = true;
                     target_info.is_still_spinning = false;
-                    // target_ptr->is_spinning = true;
                 }
-
-                // if(((*candidate).second.new_x_back - (*candidate).second.last_x_back) > 0.15 && ((*candidate).second.new_x_font - (*candidate).second.last_x_font) > 0.15)
-                // {
-                //     target_info.is_spinning = true;
-                //     target_info.is_still_spinning = false;
-                // }
-                // else if((*candidate).second.new_x_back - (*candidate).second.last_x_back < 0.09 && ((*candidate).second.new_x_font - (*candidate).second.last_x_font) < 0.09)
-                // {
-                //     target_info.is_still_spinning = true;
-                //     target_info.is_spinning = false;
-                // }
             }
             
             //若存在一块装甲板
@@ -677,29 +567,10 @@ namespace armor_detector
             {
                 target_info.spinning_switched = false;
                 if(spin_status == CLOCKWISE)
-                {
                     target_info.clockwise = CLOCKWISE;
-                    // target_ptr->is_clockwise = CLOCKWISE;
-                }
                 else
-                {
                     target_info.clockwise = false;
-                    // target_ptr->is_clockwise = false;
-                }
                 
-                // if(save_image_)
-                // {
-                //     if(!cur_frame_.empty())
-                //     {
-                //         cur_frame_.copyTo(last_frame_);
-                //         src.img.copyTo(cur_frame_);
-                //     }
-                //     else
-                //     {
-                //         src.img.copyTo(cur_frame_);
-                //     }
-                // }
-
                 last_last_status_ = last_status_;
                 last_status_ = cur_status_;
                 cur_status_ = SINGER;
@@ -709,19 +580,6 @@ namespace armor_detector
             //若存在两块装甲板
             else if (final_armors.size() == 2)
             {   
-                // if(save_image_)
-                // {
-                //     if(!cur_frame_.empty())
-                //     {
-                //         cur_frame_.copyTo(last_frame_);
-                //         src.img.copyTo(cur_frame_);
-                //     }
-                //     else
-                //     {
-                //         src.img.copyTo(cur_frame_);
-                //     }
-                // }
-
                 last_last_status_ = last_status_;
                 last_status_ = cur_status_;
                 cur_status_ = DOUBLE;
@@ -749,27 +607,9 @@ namespace armor_detector
             auto velocity = (delta_dist / delta_t) * 1e9;
             if ((target.id != last_armor.id || !last_armor.roi.contains((target.center2d))) &&
                 !is_last_target_exists)
-            {
-                // is_target_switched = true;
                 target_info.spinning_switched = true;
-            }
             else
-            {
-                // is_target_switched = false;
                 target_info.spinning_switched = false;
-            }
-
-            // target_info.point2d[0].x = target.apex2d[0].x;
-            // target_info.point2d[0].y = target.apex2d[0].y;
-            // target_info.point2d[1].x = target.apex2d[1].x;
-            // target_info.point2d[1].y = target.apex2d[1].y;
-            // target_info.point2d[2].x = target.apex2d[2].x;
-            // target_info.point2d[2].y = target.apex2d[2].y;
-            // target_info.point2d[3].x = target.apex2d[3].x;
-            // target_info.point2d[3].y = target.apex2d[3].y;
-            // target_info.aiming_point.x = target.armor3d_cam[0];
-            // target_info.aiming_point.y = target.armor3d_cam[1];
-            // target_info.aiming_point.z = target.armor3d_cam[2];
         }
         else
         {
@@ -778,9 +618,6 @@ namespace armor_detector
             last_last_status_ = last_status_ = cur_status_ = NONE;
             history_period_.clear();
             new_period_deq_.clear();
-
-            // target_info.is_spinning = false;
-            // target_info.is_still_spinning = false;
 
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
@@ -792,15 +629,11 @@ namespace armor_detector
             tracker->last_selected_timestamp = src.timestamp;
             tracker->selected_cnt++;
             target = tracker->last_armor;
-            // auto last_tar = tracker->prev_armor;
-            // RCLCPP_INFO(logger_, "xyz: %lf %lf %lf", target.armor3d_cam[0], target.armor3d_cam[1], target.armor3d_cam[2]);
-            // RCLCPP_INFO(logger_, "last_xyz: %lf %lf %lf", last_tar.armor3d_cam[0], last_tar.armor3d_cam[1], last_tar.armor3d_cam[2]);
             
             //判断装甲板是否切换，若切换将变量置1
             auto delta_t = src.timestamp - prev_timestamp;
             auto delta_dist = (target.armor3d_world - last_armor.armor3d_world).norm();
             auto velocity = (delta_dist / delta_t) * 1e9;
-            // cout<<(delta_dist >= max_delta_dist)<<" "<<!last_armor.roi.contains(target.center2d)<<endl;
             if ((target.id != last_armor.id || !last_armor.roi.contains((target.center2d))) && !is_last_target_exists)
             {
                 is_target_switched = true;
@@ -815,11 +648,7 @@ namespace armor_detector
 
         target_info.spinning_switched = false;
         if(last_status_ == SINGER && cur_status_ == DOUBLE)
-        {
-            // std::cout << 1 << std::endl;
             target_info.spinning_switched = true;
-            // std::cout << target_info.target_switched << std::endl;
-        }
 
         target_info.point2d[0].x = target.apex2d[0].x;
         target_info.point2d[0].y = target.apex2d[0].y;
@@ -896,13 +725,11 @@ namespace armor_detector
                 RCLCPP_INFO(logger_, "Total: %lfms", (dr_full_ns / 1e6));
             }
 
-            if(is_save_data)
+            if(is_save_data_)
             {
-                data_save << setprecision(3) << (float)(dr_infer_ns / 1e6) << endl;
+                data_save_ << setprecision(3) << (float)(dr_infer_ns / 1e6) << endl;
             }
         }
-        // cout<<target.armor3d_world<<endl;
-        // cout<<endl;
     
         if(debug_params_.print_target_info)
         {
@@ -916,17 +743,10 @@ namespace armor_detector
                 RCLCPP_INFO(logger_, "Target Type: %s", (char *)(target.type == SMALL ? "SMALL" : "BIG"));
                 RCLCPP_INFO(logger_, "Is Spinning: %d", (int)(is_target_spinning));
                 RCLCPP_INFO(logger_, "Is Switched: %d", (int)(is_target_switched));
-
-                // if(is_save_data)
-                // {
-                //     data_save << setprecision(3) << (float)target.armor3d_cam.norm() << endl;
-                // }
                 count = 0;
             }
             else
-            {
                 count++;
-            }
         }
 
         return true;
@@ -946,7 +766,6 @@ namespace armor_detector
             std::string conf_str = ch;
             putText(src.img, conf_str, armor.apex2d[3], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
 
-            char ch1[10];
             std::string id_str = to_string(armor.id);
             if (armor.color == 0)
                 putText(src.img, "B" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 0}, 2);
@@ -1162,10 +981,6 @@ namespace armor_detector
         {
             //FIXME:该处需根据兵种修改
             //若视野中存在英雄且距离小于危险距离，直接选为目标
-            // std::cout << "dt:" << abs(timestamp - prev_timestamp) / 1e6 << std::endl;
-            // std::cout << "area_ratio:" << (abs(armor.area - last_armor.area) / (float)armor.area) << std::endl;
-            // std::cout << "armor id:" << armor.id << std::endl;
-            // std::cout << "cur_id:" << last_armor.id << std::endl;
             if (armor.id == 1 && armor.armor3d_world.norm() <= detector_params_.hero_danger_zone)
             {
                 return armor.id;
@@ -1173,7 +988,7 @@ namespace armor_detector
             //若存在上次击打目标,时间较短,且该目标运动较小则将其选为候选目标,若遍历结束未发现危险距离内的英雄则将其ID选为目标ID.
             else if (armor.id == last_armor.id && abs(armor.area - last_armor.area) / (float)armor.area < 0.3 && abs(timestamp - prev_timestamp) / 1e6 < 40)
             {
-                // RCLCPP_INFO(logger_, "same target...");
+                // RCLCPP_INFO(logger_, "Same target...");
                 is_last_id_exists = true;
                 target_id = armor.id;
             }
@@ -1183,110 +998,5 @@ namespace armor_detector
             return target_id;
         else
             return (*armors.begin()).id;
-    }
-
-    /**
-     * @brief 修改检测类参数值
-     * 
-     * @param param 参数值
-     * @param idx 对应的参数顺序
-     */
-    void Detector::setDetectorParam(const double& param, int idx)
-    {
-        switch (idx)
-        {
-        case 1:
-            detector_params_.armor_conf_high_thres = param;
-            break;
-        case 2:
-            detector_params_.armor_roi_expand_ratio_height = param;
-            break;
-        case 3:
-            detector_params_.armor_roi_expand_ratio_width = param;
-            break;
-        case 4:
-            detector_params_.armor_type_wh_thres = param;
-            break;
-        case 5:
-            detector_params_.color = (Color)(param);
-            break;
-        case 6:
-            detector_params_.dh = param;
-            break;
-        case 7:
-            detector_params_.dw = param;
-            break;
-        case 8:
-            detector_params_.full_crop_ratio = param;
-            break;
-        case 9:
-            detector_params_.hero_danger_zone = param;
-            break;
-        case 10:
-            detector_params_.max_armors_cnt = param;
-            break;
-        case 11:
-            detector_params_.max_delta_dist = param;
-            break;
-        case 12:
-            detector_params_.max_delta_t = param;
-            break;
-        default:
-            break;
-        }
-    }
-
-    /**
-     * @brief 修改调试类参数
-     * 
-     * @param param 参数值
-     * @param idx 对应的参数顺序
-     */
-    void Detector::setDebugParam(const bool& param, int idx)
-    {
-        switch (idx)
-        {
-        case 1:
-            debug_params_.debug_without_com = param;
-            break;
-        case 2:
-            debug_params_.detect_red = param;
-            break;
-        case 3:
-            debug_params_.print_letency = param;
-            break;
-        case 4:
-            debug_params_.print_target_info = param;
-            break;
-        case 5:
-            debug_params_.show_aim_cross = param;
-            break;
-        case 6:
-            debug_params_.show_fps = param;
-            break;
-        case 7:
-            debug_params_.show_img = param;
-            break;
-        case 8:
-            debug_params_.using_imu = param;
-            break;
-        case 9:
-            debug_params_.using_roi = param;
-            break;
-        default:
-            break;
-        }
-    }
-
-    /**
-     * @brief 获取调试参数值
-     * 
-     * @param idx 对应的参数顺序
-     * @return true 
-     * @return false 
-     */
-    bool Detector::getDebugParam(int idx)
-    {
-        return debug_params_.using_imu;
     }
 } //namespace Detector

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-02-05 22:56:34
+ * @LastEditTime: 2023-02-10 00:33:30
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -73,12 +73,6 @@ namespace armor_processor
 
     typedef enum SystemModel
     {
-        CVMODEL,
-        CAMODEL,
-        CTMODEL,
-        CTRVMODEL,
-        CTRAMODEL,
-        SINGERMODEL,
         CSMODEL,
         IMMMODEL
     } SystemModel;
@@ -120,6 +114,67 @@ namespace armor_processor
         // vector<double> singer_model_params;
     };
 
+    struct PredictParam
+    {
+        double bullet_speed;    //弹速
+        int max_delta_time;     //最大时间跨度，大于该值则重置预测器
+        int max_cost;           //回归函数最大cost
+        int max_v;              //
+        int min_fitting_lens;   //最短队列长度
+        int shoot_delay;        //射击延迟
+        int window_size;        //滑窗大小
+        KFParam kf_param;       //卡尔曼滤波参数
+        FilterModelParam filter_model_param; //滤波模型参数
+
+        PredictParam()
+        {
+            bullet_speed = 28;    
+            max_delta_time = 1000;     
+            max_cost = 509;           
+            max_v = 8;              
+            min_fitting_lens = 10;   
+            shoot_delay = 100;       
+            window_size = 3;        
+        }
+    };
+
+    struct DebugParam
+    {
+        bool disable_filter;
+        bool disable_fitting;
+        bool draw_predict;
+
+        bool using_imu;
+        bool show_predict;
+
+        bool show_transformed_info;
+
+        DebugParam()
+        {
+            disable_filter = false;
+            disable_fitting = false;
+            draw_predict = true;
+
+            using_imu = false;
+            show_predict = false;
+            show_transformed_info = true;
+        }
+    };
+
+    struct PathParam
+    {
+        std::string coord_path; 
+        std::string coord_name;
+        std::string filter_path;
+
+        PathParam()
+        {
+            coord_path = "src/global_user/config/camera.yaml";
+            coord_name = "KE0200110075";
+            filter_path = "src/global_user/config/filter_param.yaml";
+        }
+    };
+    
     struct CurveFittingCost
     {
         const bool _axis;
@@ -226,163 +281,6 @@ namespace armor_processor
         }
     };
 
-    // struct XAxisFitting
-    // {
-    //     double _x, _y, _t;
-    //     XAxisFitting(double x, double y, double t) : _x(x), _y(y), _t(t) {}
-
-    //     template <class T>
-    //     bool operator()
-    //     (
-    //         const T* const w,
-    //         const T* const theta,
-    //         const T* const V,
-    //         const T* const x0,
-    //         const T* const y0,
-    //         T* residual
-    //     ) const
-    //     {
-    //         residual[0] = x0[0] + 0.25 * ceres::cos(w[0] * T(_t)) + V[0] * T(_t) * ceres::cos(theta[0]) - _x;
-    //         return 0;
-    //     }
-    // };
-
-    // struct YAxisFitting
-    // {
-    //     double _x, _y, _t;
-    //     YAxisFitting(double x, double y, double t) : _x(x), _y(y), _t(t) {}
-
-    //     template <class T>
-    //     bool operator()
-    //     (
-    //         const T* const w,
-    //         const T* const theta,
-    //         const T* const V,
-    //         const T* const x0,
-    //         const T* const y0,
-    //         T* residual
-    //     ) const
-    //     {
-    //         residual[0] = y0[0] + 0.25 * ceres::sin(w[0] * T(_t)) + V[0] * T(_t) * ceres::sin(theta[0]) - _y;
-    //         return 0;
-    //     }
-    // };
-
-    struct PredictParam
-    {
-        double bullet_speed;    //弹速
-        int max_delta_time;     //最大时间跨度，大于该值则重置预测器
-        int max_cost;           //回归函数最大cost
-        int max_v;              //
-        int min_fitting_lens;   //最短队列长度
-        int shoot_delay;        //射击延迟
-        int window_size;        //滑窗大小
-        KFParam kf_param;       //卡尔曼滤波参数
-        FilterModelParam filter_model_param; //滤波模型参数
-
-        PredictParam()
-        {
-            bullet_speed = 28;    
-            max_delta_time = 1000;     
-            max_cost = 509;           
-            max_v = 8;              
-            min_fitting_lens = 10;   
-            shoot_delay = 100;       
-            window_size = 3;        
-        }
-    };
-
-    // struct SingerModelParam
-    // {
-    //     double alpha;
-    //     double a_max;
-    //     double p_max;
-    //     double p0;
-    //     double sigma;
-
-    //     SingerModelParam()
-    //     {
-    //         alpha = 0.1;
-    //         a_max = 5;
-    //         p_max = 0.1;
-    //         p0 = 0.1;
-    //         sigma = sqrt((pow(a_max, 2) * (1 + 4 * p_max - p0)) / 3);
-    //     }
-    // };
-
-    struct DebugParam
-    {
-        bool disable_filter;
-        bool disable_fitting;
-        bool draw_predict;
-
-        bool using_imu;
-        bool show_predict;
-
-        bool show_transformed_info;
-
-        DebugParam()
-        {
-            disable_filter = false;
-            disable_fitting = false;
-            draw_predict = true;
-
-            using_imu = false;
-            show_predict = false;
-            show_transformed_info = true;
-        }
-    };
-
-    // struct SingerModel
-    // {
-    //     double singer_alpha;
-    //     double singer_p_max;
-    //     double singer_p0;
-    //     double singer_a_max;
-    //     double singer_sigma;
-    //     double singer_dt;
-    //     double singer_p;
-    //     double singer_r;
-    //     double delay_coeff;
-
-    //     SingerModel()
-    //     {
-    //         singer_alpha = 5.0;
-    //         singer_a_max = 1.0;
-    //         singer_p_max = 0.2;
-    //         singer_p0 = 0.2;
-    //         singer_sigma = 0.1;
-    //         singer_dt = 5.0;
-    //         singer_p = 1.0;
-    //         singer_r = 1.0;
-    //         delay_coeff = 5.0;
-    //     }
-    // };
-
-    struct PathParam
-    {
-        std::string coord_path; 
-        std::string coord_name;
-        std::string filter_path;
-
-        PathParam()
-        {
-            coord_path = "src/global_user/config/camera.yaml";
-            coord_name = "KE0200110075";
-            filter_path = "src/global_user/config/filter_param.yaml";
-        }
-    };
-    
-    // typedef enum PredictDirection
-    // {
-    //     CAMERA_X_DIRECTION,
-    //     CAMERA_Y_DIRECTION,
-    //     CAMERA_Z_DIRECTION,
-    //     GYRO_X_DIRECTION,
-    //     GYRO_Y_DIRECTION,
-    //     GYRO_Z_DIRECTION
-    // } PredictDirection;
-
     class ArmorPredictor
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
@@ -390,34 +288,28 @@ namespace armor_processor
     public:
         ArmorPredictor();
         ~ArmorPredictor();
-        // ArmorPredictor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param,
-                        // const std::string filter_param_path);
         ArmorPredictor(const PredictParam& predict_param, const vector<double>& singer_param, 
-                        const PathParam& path_param, const DebugParam& debug_param);
+            const PathParam& path_param, const DebugParam& debug_param);
     
     private:
-        ParticleFilter pf_pos;  // 目前坐标粒子滤波
-        ParticleFilter pf_v;    // 速度粒子滤波
+        ParticleFilter pf_pos;  //目前坐标粒子滤波
+        ParticleFilter pf_v;    //速度粒子滤波
 
-        std::deque<TargetInfo> history_info_;
-        std::deque<TargetInfo> history_pred_;
-        int history_deque_lens_; // 历史队列长度
-
-        // 滤波先验参数/模型先验参数/调试参数
-        PredictParam predict_param_;
-        // SingerModel singer_param_;
-        vector<double> singer_param_;
-        DebugParam debug_param_;
-        // SingerModelParam singer_model_param_;
+        std::deque<TargetInfo> history_info_; //历史测量信息
+        std::deque<TargetInfo> history_pred_; //历史预测信息
+        int history_deque_lens_; //历史队列长度
 
     public:
-        std::string filter_param_path_;
         YAML::Node config_;
+        PredictParam predict_param_;  //滤波先验参数/模型先验参数/调试参数
+        vector<double> singer_param_; //cs模型参数 
+        DebugParam debug_param_;
+        std::string filter_param_path_;
         
-        void reInitialize();
         bool setBulletSpeed(double speed);
         void loadParam(std::string filter_param_path);
         Eigen::Vector3d predict(AutoaimMsg& target_msg, double timestamp, double& sleep_time, cv::Mat* src = nullptr);
+    
     private:
         std::deque<cv::Point2d> history_pred_info_;
         std::deque<cv::Point2d> history_origin_info_;
@@ -428,27 +320,17 @@ namespace armor_processor
         TargetInfo final_target_;  //最终击打目标信息
         TargetInfo last_pf_target_; //最后一次粒子滤波后的位置结果
 
-        // int cnt;
-        // cv::Mat pic_x;
-        // cv::Mat pic_y;
-        // cv::Mat pic_z;
-        
     private:
         double evalRMSE(double* params);
-        
         double calcError();
-        
         Eigen::Vector3d shiftWindowFilter(int start_idx);
-
-        PredictStatus predict_pf_run(TargetInfo target, Vector3d& result, double timestamp);
-        PredictStatus uncouple_fitting_predict(Eigen::Vector3d& result, double timestamp);
+        PredictStatus predictBasePF(TargetInfo target, Vector3d& result, double timestamp);
+        PredictStatus uncoupleFittingPredict(Eigen::Vector3d& result, double timestamp);
+        PredictStatus coupleFittingPredict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, double timestamp);
 
         //移动轨迹拟合预测（小陀螺+横移->旋轮线，若目标处于原地小陀螺状态，则剔除掉模型中的横移项）
-        // double fitting_params_[8] = {M_PI, 0, 0, 0, 0, 0.25, 0.25, 0};
-        double fitting_params_[8] = {0.1, 0, 0, 0, 0, 0, 0, 0};
-        double fitting_y_params_[8] = {0.1, 0, 0, 0, 0, 0, 0, 0};
-
-        PredictStatus couple_fitting_predict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, double timestamp);
+        double fitting_params_[5] = {0.1, 0.1, 0.1, 0.1, 0.1};
+        double fitting_y_params_[5] = {0.1, 0.1, 0.1, 0.1, 0.1};
     
     private:
         rclcpp::Logger logger_;
@@ -456,52 +338,30 @@ namespace armor_processor
         double history_acc_[4] = {0};
         double predict_vx_[4] = {0};
         double predict_acc_[4] = {0};
-        // filter::ExtendKalmanFilter<SingerState> ekf; // EKF
-        // SingerControl u; // 控制量
-        // Singer singer; // Singer模型
-        // SingerPosModel pos_model; // 观测模型
-        // Eigen::Vector3d x_; //状态向量
-        // Eigen::Matrix3d P_; //状态协方差矩阵
-        // Eigen::MatrixXd F_; //状态转移矩阵
-        // Eigen::MatrixXd H_; //测量矩阵
-        // Eigen::MatrixXd R_; //测量协方差矩阵
-        // Eigen::MatrixXd Q_; //过程协方差矩阵
-        // Eigen::MatrixXd J_; //雅可比矩阵
 
     private:
         // 卡尔曼滤波
-        bool filter_disabled_; // 是否禁用滤波
         KalmanFilter kalman_filter_;
         void kfInit(); // 滤波参数初始化（矩阵维度、初始值）
-    private:
-        // CS Model
-        PredictStatus predict_ekf_run(TargetInfo target, Eigen::Vector3d& result,
-                                        Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, double timestamp);
-        // void predict_based_singer(Eigen::Vector3d& result);
+
     public:
         bool is_init;
         bool is_ekf_init;
         bool is_imm_init;
-        bool fitting_disabled_;
+        bool fitting_disabled_; // 是否禁用曲线拟合
+        bool filter_disabled_;  // 是否禁用滤波
         int error_cnt_ = 0;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
     
-        // cs模型参数设置
-        // void set_singer_param(double param, int idx);
-        void set_singer_param(vector<double> singer_param);
-        // imm模型参数设置
-        // void set_imm_param(double param, int idx);
-        void set_imm_param(IMMParam imm_param);
-
-        void set_predict_param(double param, int idx);
-        void set_debug_param(double param, int idx);
     private:
-        //IMM Model
+        // IMM Model.
         std::shared_ptr<IMM> imm_;
         ModelGenerator model_generator_;
-        PredictStatus predict_based_imm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d& target_v, double& ax, double timestamp);
-    
-    private:
+        PredictStatus predictBasedImm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d& target_v, double& ax, double timestamp);
+        // CS Model.
+        PredictStatus predictBasedSinger(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, double timestamp);
+
+        // 前哨站旋转装甲板曲线拟合预测函数    
         PredictStatus spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, double timestamp);
     };
 

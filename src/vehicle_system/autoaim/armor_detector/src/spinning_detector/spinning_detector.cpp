@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-02-05 00:41:17
+ * @LastEditTime: 2023-02-09 22:12:44
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -226,10 +226,14 @@ namespace armor_detector
                 iter = next;
             }       
 
+        }
+
+        if (spinning_map_.spinning_x_map.size() != 0)
+        {
             for (auto iter = spinning_map_.spinning_x_map.begin(); iter != spinning_map_.spinning_x_map.end();)
             {   
                 auto next = iter;
-                if ((timestamp - (*iter).second.new_timestamp) / 1e9 > 30)
+                if ((timestamp - (*iter).second.new_timestamp) / 1e6 > gyro_params_.switch_max_dt)
                     next = spinning_map_.spinning_x_map.erase(iter);
                 else
                     ++next;
@@ -254,15 +258,12 @@ namespace armor_detector
         */
         for (auto cnt : new_armors_cnt_map)
         {   //只在该类别新增装甲板数量为1时计算陀螺分数
-            // std::cout << 1 << std::endl;
             if (cnt.second == 1)
             {
                 int same_armors_cnt = trackers_map.count(cnt.first);
                 if (same_armors_cnt == 2)
                 {   // 若相同key键的tracker存在两个，一个为新增，一个先前存在，且两个tracker本次都有更新，则视为一次陀螺动作（其实就是对应目标车辆小陀螺时两个装甲板同时出现在视野的情况）
                     // 遍历所有同Key预测器，确定左右侧的Tracker
-                    // std::cout << 2 << std::endl;
-
                     ArmorTracker *new_tracker = nullptr;
                     ArmorTracker *last_tracker = nullptr;
                     double last_armor_center;
@@ -273,43 +274,30 @@ namespace armor_detector
 
                     //求出重复key键的元素数目，并返回两个map类型迭代器，分别指向该key的起始位置和结束位置的下一个元素位置
                     auto candiadates = trackers_map.equal_range(cnt.first);
-                    
                     for (auto iter = candiadates.first; iter != candiadates.second; ++iter)
                     {
-                        // std::cout << 3 << " last_time:" << (*iter).second.last_timestamp / 1e9 << " cur_time:" << timestamp / 1e9 << std::endl;
-
                         //若未完成初始化则视为新增tracker
                         if (!(*iter).second.is_initialized && (*iter).second.last_timestamp == timestamp)
                         {
-                            // std::cout << 6 << std::endl;
-
                             new_tracker = &(*iter).second;
                         }
                         else if ((*iter).second.last_timestamp > best_prev_timestamp && (*iter).second.is_initialized)
                         {
-                            // std::cout << 7 << std::endl;
-
                             best_prev_timestamp = (*iter).second.last_timestamp;
                             last_tracker = &(*iter).second;
                         }
                     }
                     if (new_tracker != nullptr && last_tracker != nullptr)
                     {
-                        // std::cout << 4 << std::endl;
-
                         new_armor_center = new_tracker->last_armor.center2d.x;
                         new_armor_timestamp = new_tracker->last_timestamp;
                         last_armor_center = last_tracker->last_armor.center2d.x;
                         last_armor_timestamp = last_tracker->last_timestamp;
                         auto spin_movement = new_armor_center - last_armor_center;
-                        auto spin_x_dis = last_tracker->last_armor.armor3d_world[0] - new_tracker->last_armor.armor3d_world[0];
+                        auto spin_x_dis = last_tracker->last_armor.armor3d_world[1] - new_tracker->last_armor.armor3d_world[1];
 
-                        // LOG(INFO)<<"[SpinDetection] Candidate Spin Movement Detected : "<<cnt.first<<" : "<<spin_movement;
-                        //TODO:to be fixed!!!
-                        if (abs(spin_movement) > 10 && abs(spin_x_dis) > 0.15 && new_armor_timestamp == timestamp && last_armor_timestamp == timestamp)
+                        if (abs(spin_x_dis) > 0.15 && new_armor_timestamp == timestamp && last_armor_timestamp == timestamp)
                         {
-                            // std::cout << 5 << std::endl;
-
                             detector_info_.last_add_tracker_timestamp = detector_info_.new_add_tracker_timestamp;
                             detector_info_.new_add_tracker_timestamp = new_armor_timestamp;
                             
@@ -335,15 +323,15 @@ namespace armor_detector
                                 GyroInfo gyro_info;
                                 gyro_info.last_rmat = last_tracker->last_armor.rmat;
                                 gyro_info.new_rmat = new_tracker->last_armor.rmat;
-                                gyro_info.new_x_font = last_tracker->last_armor.armor3d_world[0];
-                                gyro_info.new_x_back = new_tracker->last_armor.armor3d_world[0];
-                                gyro_info.new_x_font_2d = last_tracker->last_armor.center2d.x;
-                                gyro_info.new_x_back_2d = new_tracker->last_armor.center2d.x; 
+                                gyro_info.new_x_font = last_tracker->last_armor.armor3d_world[1];
+                                gyro_info.new_x_back = new_tracker->last_armor.armor3d_world[1];
+                                gyro_info.new_y_font = last_tracker->last_armor.armor3d_world[0];
+                                gyro_info.new_y_back = new_tracker->last_armor.armor3d_world[0]; 
                                 gyro_info.new_timestamp = new_armor_timestamp;
                                 gyro_info.last_x_back = 0;
                                 gyro_info.last_x_back = 0;
-                                gyro_info.last_x_back_2d = 0;
-                                gyro_info.last_x_font_2d = 0;
+                                gyro_info.last_y_back = 0;
+                                gyro_info.last_y_font = 0;
                                 gyro_info.last_timestamp = 0;
                                 spinning_map_.spinning_x_map.insert(make_pair(new_tracker->key, gyro_info));
                             }
@@ -352,20 +340,21 @@ namespace armor_detector
                                 auto candidate = spinning_map_.spinning_x_map.find(new_tracker->key);
                                 (*candidate).second.last_x_font = (*candidate).second.new_x_font;
                                 (*candidate).second.last_x_back = (*candidate).second.new_x_back;
-                                (*candidate).second.last_x_font_2d = (*candidate).second.new_x_font_2d;
-                                (*candidate).second.last_x_back_2d = (*candidate).second.new_x_back_2d;
+                                (*candidate).second.last_y_font = (*candidate).second.new_y_font;
+                                (*candidate).second.last_y_back = (*candidate).second.new_y_back;
                                 (*candidate).second.last_timestamp = (*candidate).second.new_timestamp;
 
-                                (*candidate).second.new_x_font = last_tracker->last_armor.armor3d_world[0];
-                                (*candidate).second.new_x_back = new_tracker->last_armor.armor3d_world[0];
-                                (*candidate).second.new_x_font_2d = last_tracker->last_armor.center2d.x;
-                                (*candidate).second.new_x_back_2d = new_tracker->last_armor.center2d.x;
+                                (*candidate).second.new_x_font = last_tracker->last_armor.armor3d_world[1];
+                                (*candidate).second.new_x_back = new_tracker->last_armor.armor3d_world[1];
+                                (*candidate).second.new_y_font = last_tracker->last_armor.armor3d_world[0];
+                                (*candidate).second.new_y_back = new_tracker->last_armor.armor3d_world[0];
                                 (*candidate).second.new_timestamp = new_armor_timestamp;
 
                                 (*candidate).second.last_rmat = last_tracker->last_armor.rmat;
                                 (*candidate).second.new_rmat = new_tracker->last_armor.rmat;
 
-                                RCLCPP_INFO(logger_, "now_dt:%lf last_time:%lf", (new_armor_timestamp / 1e9), ((*candidate).second.last_timestamp / 1e9));
+                                RCLCPP_INFO(logger_, "last_y_font:%lf last_y_back:%lf new_y_font:%lf new_y_back:%lf", (*candidate).second.last_y_font, (*candidate).second.last_y_back, (*candidate).second.new_y_font, (*candidate).second.new_y_back);
+                                // RCLCPP_INFO(logger_, "now_dt:%lf last_time:%lf", (new_armor_timestamp / 1e9), ((*candidate).second.last_timestamp / 1e9));
                             }
 
                             if (spinning_map_.spin_score_map.count(cnt.first) == 0)
@@ -387,65 +376,4 @@ namespace armor_detector
         }
         return true;
     }
-
-    // detector::ArmorTracker* SpinningDetector::chooseTargetTracker(vector<detector::ArmorTracker*> trackers, int timestamp, int prev_timestamp)
-    // {
-    //     //TODO:优化打击逻辑
-    //     //TODO:本逻辑为哨兵逻辑
-    //     float max_score = 0;
-    //     int target_idx = 0;
-    //     int last_target_idx = -1;
-    //     // cout<<trackers.size()<<endl;
-    //     for (int i = 0; i < trackers.size(); i++)
-    //     {
-    //         //计算tracker的切换打击分数,由装甲板旋转角度,距离,面积大小决定
-    //         if (trackers[i]->last_timestamp == prev_timestamp)
-    //         {
-    //             if (trackers[i]->last_selected_timestamp == prev_timestamp && abs(prev_timestamp - timestamp) < 100)
-    //                 last_target_idx = i;
-    //             if (trackers[i]->hit_score > max_score)
-    //             {
-    //                 max_score = trackers[i]->hit_score;
-    //                 target_idx = i;
-    //             }
-    //         }
-    //     }
-
-    //     //若存在上次存在目标且分数与相差不大，选择该装甲板
-    //     if (last_target_idx != -1 && abs(trackers[last_target_idx]->hit_score - max_score) / max_score < 0.1)
-    //         target_idx = last_target_idx;
-    //     return trackers[target_idx];
-    // }
-
-    // int spinning_detector::chooseTargetID(vector<detector::Armor> &armors, int timestamp, int prev_timestamp)
-    // {
-    //     //TODO:自瞄逻辑修改
-    //     bool is_last_id_exists = false;
-    //     int target_id;
-    //     //该选择逻辑主要存在两层约束:
-    //     //英雄约束与上次目标约束
-    //     //若检测到危险距离内的英雄直接退出循环
-    //     //若检测到存在上次击打目标,时间较短,且该目标运动较小,则将其选为候选目标,若遍历结束未发现危险距离内的英雄则将其ID选为目标ID.
-    //     for (auto armor : armors)
-    //     {
-    //         //FIXME:该处需根据兵种修改
-    //         //若视野中存在英雄且距离小于危险距离，直接选为目标
-    //         if (armor.id == 1 && armor.armor3d_world.norm() <= gyro_params_.hero_danger_zone)
-    //         {
-    //             return armor.id;
-    //         }
-    //         //若存在上次击打目标,时间较短,且该目标运动较小则将其选为候选目标,若遍历结束未发现危险距离内的英雄则将其ID选为目标ID.
-    //         else if (armor.id == last_armor.id && abs(armor.area - last_armor.area) / (float)armor.area < 0.3  && abs(timestamp - prev_timestamp) < 30)
-    //         {
-    //             is_last_id_exists = true;
-    //             target_id = armor.id;
-    //         }
-    //     }
-    //     //若不存在则返回面积最大的装甲板序号，即队列首元素序号
-    //     if (is_last_id_exists)
-    //         return target_id;
-    //     else
-    //         return (*armors.begin()).id;
-    // }
-
 } //namespace detector

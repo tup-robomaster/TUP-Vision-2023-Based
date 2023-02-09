@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:10:59
- * @LastEditTime: 2023-01-15 00:14:05
+ * @LastEditTime: 2023-02-09 17:16:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/buff_processor_node.hpp
  */
 #ifndef BUFF_PROCESSOR_NODE_HPP_
@@ -45,10 +45,6 @@ namespace buff_processor
         ~BuffProcessorNode();
     
     private:
-        // message_filters::Subscriber<BuffMsg> target_info_sub;
-        // message_filters::Subscriber<BuffMsg> target_point_sub_; 
-        // void target_info_callback(const BuffMsg& target_info);
-
         rclcpp::Subscription<BuffMsg>::SharedPtr target_fitting_sub_;
         void targetFittingCallback(const BuffMsg& target_info);
 
@@ -63,19 +59,20 @@ namespace buff_processor
     
     private:
         std::unique_ptr<Processor> buff_processor_;
-        std::unique_ptr<Processor> init_buff_processor();
+        std::unique_ptr<Processor> initBuffProcessor();
     
     private:
-        int image_width_;
-        int image_height_;
-        std::string transport_;
-        std::shared_ptr<image_transport::Subscriber> img_sub_;
-        void image_callback(const ImageMsg::ConstSharedPtr &img_info);
-        Eigen::Vector3d pred_point3d_;
-        Mutex mutex_;
+        Mutex image_mutex_;
+        ImageInfo image_info_;
+        ImageSize image_size_;
         cv::Point2f apex2d[5];
+        Eigen::Vector3d pred_point3d_;
+        std::shared_ptr<image_transport::Subscriber> img_sub_;
+        
+        void imageCallback(const ImageMsg::ConstSharedPtr &img_info);
         
     public:
+        Mutex param_mutex_;
         PredictorParam predict_param_;
         PathParam path_param_;
         DebugParam debug_param_;
@@ -83,8 +80,7 @@ namespace buff_processor
     
     private:
         // params callback.
-        std::map<std::string, int> param_map_;
-        bool setParam(rclcpp::Parameter param);
+        bool updateParam();
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
     };

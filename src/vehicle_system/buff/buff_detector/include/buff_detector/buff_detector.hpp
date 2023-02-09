@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2023-01-29 22:01:09
+ * @LastEditTime: 2023-02-09 16:48:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
@@ -114,19 +114,16 @@ namespace buff_detector
         ~Detector();
     
         bool run(TaskData& src, TargetInfo& target_info); //能量机关检测主函数
-    private:
+    
+    public:
         BuffParam buff_param_;
         PathParam path_param_;
         DebugParam debug_param_;
-    
-    public:
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         bool is_initialized_;
         BuffDetector buff_detector_;
         CoordSolver coordsolver_;
 
-        void setDetectorParam(const double& param, int idx);
-        void setDebugParam(const bool& param, int idx);
     private:
         bool is_last_target_exists_;
         int lost_cnt_;
@@ -146,7 +143,6 @@ namespace buff_detector
 
         bool chooseTarget(std::vector<Fan> &fans, Fan &target);
         cv::Point2i cropImageByROI(cv::Mat &img); //roi裁剪
-        void printTargetInfo(int idx);
         void showFans(TaskData& src);
 
         rclcpp::Logger logger_;

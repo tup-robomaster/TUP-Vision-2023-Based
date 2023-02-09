@@ -2,10 +2,9 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-02-04 00:14:25
+ * @LastEditTime: 2023-02-09 00:25:47
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
-
 #ifndef GLOBAL_USER_HPP_
 #define GLOBAL_USER_HPP_
 
@@ -16,13 +15,8 @@
 #include <iterator>
 #include <unistd.h>
 #include <future>
-
 #include <fstream>
 #include <yaml-cpp/yaml.h>
-
-// #include <fmt/format.h>
-// #include <fmt/color.h>
-// #include <glog/logging.h>
 
 //opencv
 #include <opencv2/opencv.hpp>
@@ -37,16 +31,16 @@
 #include <sys/shm.h>
 
 // daheng
-#define DAHENG_IMAGE_WIDTH 1280
+#define DAHENG_IMAGE_WIDTH 1280 
 #define DAHENG_IMAGE_HEIGHT 1024
 // hik
-#define HIK_IMAGE_WIDTH 1440
+#define HIK_IMAGE_WIDTH 1440     
 #define HIK_IMAGE_HEIGHT 1080
 // usb
-#define USB_IMAGE_WIDTH 640
+#define USB_IMAGE_WIDTH 640     
 #define USB_IMAGE_HEIGHT 480
 // mvs
-#define MVS_IMAGE_WIDTH 1280
+#define MVS_IMAGE_WIDTH 1280     
 #define MVS_IMAGE_HEIGHT 1024
 
 using namespace std;
@@ -56,12 +50,52 @@ namespace global_user
      * @brief Global variables and funcs.
      * 
      */
+
+    struct ImageSize
+    {
+        int width;
+        int height;
+
+        ImageSize()
+        {
+            this->width = DAHENG_IMAGE_WIDTH;
+            this->height = DAHENG_IMAGE_HEIGHT;
+        }
+    };
+
+    class ImageInfo
+    {
+    public:
+        std::map<int, std::string> camera_topic_map;
+        std::map<int, ImageSize> image_size_map;
+
+        ImageInfo()
+        {
+            camera_topic_map = 
+            {
+                {0, "/daheng_img"},
+                {1, "/hik_img"},
+                {2, "/mvs_img"},
+                {3, "/usb_img"}
+            };
+
+            image_size_map[0].width = DAHENG_IMAGE_WIDTH;
+            image_size_map[0].height = DAHENG_IMAGE_HEIGHT;
+            image_size_map[1].width = HIK_IMAGE_WIDTH;
+            image_size_map[1].height = HIK_IMAGE_HEIGHT;
+            image_size_map[2].width = MVS_IMAGE_WIDTH;
+            image_size_map[2].height = MVS_IMAGE_HEIGHT;
+            image_size_map[3].width = USB_IMAGE_WIDTH;
+            image_size_map[3].height = USB_IMAGE_HEIGHT;
+        }
+    };
+
     enum CameraType
     {
-      DaHeng,
-      HikRobot,
-      MVSCam,
-      USBCam,
+        DaHeng,
+        HikRobot,
+        MVSCam,
+        USBCam,
     };
 
     enum TargetType 

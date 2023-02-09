@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-01-29 22:28:32
+ * @LastEditTime: 2023-02-09 16:49:33
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -541,18 +541,6 @@ namespace buff_detector
         }
     }
 
-    void Detector::printTargetInfo(int idx)
-    {
-        switch (idx)
-        {
-        case 0:
-            /* code */
-            break;
-        default:
-            break;
-        }
-    }
-
     bool Detector::chooseTarget(std::vector<Fan> &fans_, Fan &target)
     {
         float max_area = 0;
@@ -607,62 +595,4 @@ namespace buff_detector
 
         return offset;
     }
-
-    void Detector::setDetectorParam(const double& param, int idx)
-    {
-        switch (idx)
-        {
-        case 1:
-            buff_param_.fan_length = param;
-            break;
-        case 2:
-            buff_param_.max_delta_t = param;
-            break;
-        case 3:
-            buff_param_.max_lost_cnt = param;
-            break;
-        case 4:
-            buff_param_.max_v = param;
-            break;
-        case 5:
-            buff_param_.no_crop_thres = param;
-            break;
-        default:
-            break;
-        }
-    }
-
-    void Detector::setDebugParam(const bool& param, int idx)
-    {
-        switch (idx)
-        {
-        case 1:
-            debug_param_.assist_label = param;
-            break;
-        case 2:
-            debug_param_.detect_red = param;
-            break;
-        case 3:
-            debug_param_.prinf_latency = param;
-            break;
-        case 4:
-            debug_param_.print_target_info = param;
-            break;
-        case 5:
-            debug_param_.show_all_fans = param;
-            break;
-        case 6:
-            debug_param_.show_fps = param;
-            break;
-        case 7:
-            debug_param_.using_imu = param;
-            break;
-        case 8:
-            debug_param_.using_roi = param;
-            break;
-        default:
-            break;
-        }
-    }
-
 } // namespace buff_detector

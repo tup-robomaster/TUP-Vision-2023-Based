@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-01-29 22:56:13
+ * @LastEditTime: 2023-02-10 00:01:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -45,12 +45,8 @@ namespace buff_processor
     */
     bool BuffPredictor::predict(double speed, double dist, double timestamp, double &result)
     {
-        // std::cout << 1 << std::endl;
-
         TargetInfo target = {speed, dist, timestamp};
        
-        // std::cout << mode << " " << last_mode << std::endl;
-
         if (mode != last_mode)
         {
             last_mode = mode;
@@ -58,8 +54,6 @@ namespace buff_processor
             pf.initParam(pf_param_loader);
             is_params_confirmed = false;
         }
-        // std::cout << history_info.size() << std::endl;
-
         if((history_info.size() < 1) || (((target.timestamp - history_info.front().timestamp) / 1e6) >= predictor_param_.max_timespan))
         {   //当时间跨度过长视作目标已更新，需清空历史信息队列
             history_info.clear();
@@ -72,11 +66,8 @@ namespace buff_processor
             last_target = target;
             is_params_confirmed = false;
             
-            // std::cout << history_info.size() << " " << (target.timestamp - history_info.front().timestamp) / 1e6 << " " << predictor_param_.max_timespan << std::endl;
             return false;
         }
-
-        // std::cout << 2 << std::endl;
 
         //输入数据前进行滤波
         auto is_ready = pf.is_ready;
@@ -92,10 +83,7 @@ namespace buff_processor
 
         int deque_len = 0;
         if (mode == 0)
-        {
             deque_len = predictor_param_.history_deque_len_uniform;
-            std::cout << "lens:" << deque_len << std::endl;
-        }
         else if (mode == 1)
         {
             if (!is_params_confirmed)
@@ -105,7 +93,6 @@ namespace buff_processor
         }
         if ((int)(history_info.size()) < deque_len)    
         {
-            std::cout << "size:" << (int)(history_info.size()) << std::endl;
             history_info.push_back(target);
             last_target = target;
             return false;
@@ -121,8 +108,6 @@ namespace buff_processor
                 history_info.pop_front();
             history_info.push_back(target);
         }
-
-        // std::cout << 3 << std::endl;
 
         // 计算旋转方向
         double rotate_speed_sum = 0;
@@ -243,15 +228,10 @@ namespace buff_processor
         int delay = (mode == 1 ? predictor_param_.delay_big : predictor_param_.delay_small);
         float delta_time_estimate = ((double)dist / predictor_param_.bullet_speed) * 1e3 + delay;
         delta_time_estimate = 500;
-        // cout<<"ETA:"<<delta_time_estimate<<endl;
         float timespan = history_info.back().timestamp / 1e6;
-        // delta_time_estimate = 0;
         float time_estimate = delta_time_estimate + timespan;
-        // cout<<delta_time_estimate<<endl;     
-        // std::cout << 4 << std::endl;
 
         result = calcAimingAngleOffset(params, timespan / 1e3, time_estimate / 1e3, mode);
-        // std::cout << 5 << std::endl;
         last_target = target;
         
         return true;

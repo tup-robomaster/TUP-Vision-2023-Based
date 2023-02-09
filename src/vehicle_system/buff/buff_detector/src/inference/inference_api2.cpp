@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-01-18 22:47:09
+ * @LastEditTime: 2023-02-08 22:15:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -481,7 +481,7 @@ namespace buff_detector
             //对候选框预测角点进行平均,降低误差
             if ((*object).pts.size() >= 10)
             {
-                auto N = (*object).pts.size();
+                int N = (*object).pts.size();
                 // std::cout << "obj_color:" << object->color << std::endl;
                 // std::cout << "color:" << object->color << std::endl;
                 // std::cout << "cls:" << object->cls << std::endl;

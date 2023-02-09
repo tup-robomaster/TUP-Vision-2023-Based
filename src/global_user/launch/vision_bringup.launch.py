@@ -22,7 +22,7 @@ def generate_launch_description():
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='daheng',
+        default_value='usb',
         description='hik daheng mvs usb'
     )
 
@@ -58,17 +58,6 @@ def generate_launch_description():
         declare_camera_type,
         declare_use_serial,
 
-        # Node(
-        #     package='camera_driver',
-        #     executable='daheng_cam_node',
-        #     name='daheng_cam_node',
-        #     output='screen',
-        #     emulate_tty=True,
-        #     parameters=[{
-        #         'camera_type':LaunchConfiguration('camera_type'),
-        #     }]
-        # ),
-
         Node(
             package='serialport',
             executable='serialport_node',
@@ -82,12 +71,6 @@ def generate_launch_description():
             condition=IfCondition(PythonExpression([LaunchConfiguration('using_imu'), "== 'True'"]))
         ),
 
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource(
-        #         launch_file_path=buff_launch_file
-        #     )
-        # ),
-        
         ComposableNodeContainer(
             name='usb_detector_container',
             namespace='',

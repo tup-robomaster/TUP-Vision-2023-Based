@@ -2,7 +2,7 @@
 # Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-27 01:40:28
-LastEditTime: 2023-01-12 20:24:02
+LastEditTime: 2023-02-10 01:35:46
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/buff_bringup.launch.py
 '''
 import os
@@ -72,18 +72,6 @@ def generate_launch_description():
             condition=IfCondition(PythonExpression([LaunchConfiguration('using_imu'), "== 'True'"]))
         ),
 
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource(
-        #         launch_file_path=detect_node_launch_file
-        #     )
-        # ),
-
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource(
-        #         launch_file_path=processor_node_launch_file
-        #     )
-        # )
-
         ComposableNodeContainer(
             name='buff_container',
             namespace='',
@@ -120,6 +108,93 @@ def generate_launch_description():
                 #         'use_intra_process_comms':True
                 #     }]
                 # )
+            ],
+        ),
+
+        ComposableNodeContainer(
+            name='armor_detector_container',
+            namespace='',
+            output='screen',
+            package='rclcpp_components',
+            executable='component_container',
+            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'daheng'"])),
+            composable_node_descriptions=[
+                ComposableNode(
+                    package='camera_driver',
+                    plugin='camera_driver::DahengCamNode',
+                    name='daheng_driver',
+                    parameters=[daheng_cam_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                ),
+                ComposableNode(
+                    package='buff_detector',
+                    plugin='buff_detector::BuffDetectorNode',
+                    name='buff_detector',
+                    parameters=[buff_detector_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                )
+            ],
+        ),
+
+        ComposableNodeContainer(
+            name='armor_detector_container',
+            namespace='',
+            output='screen',
+            package='rclcpp_components',
+            executable='component_container',
+            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'hik'"])),
+            composable_node_descriptions=[
+                ComposableNode(
+                    package='camera_driver',
+                    plugin='camera_driver::HikCamNode',
+                    name='hik_driver',
+                    parameters=[hik_cam_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                ),
+                ComposableNode(
+                    package='buff_detector',
+                    plugin='buff_detector::BuffDetectorNode',
+                    name='buff_detector',
+                    parameters=[buff_detector_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                ),
+            ],
+        ),
+
+        ComposableNodeContainer(
+            name='armor_detector_container',
+            namespace='',
+            output='screen',
+            package='rclcpp_components',
+            executable='component_container',
+            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'mvs'"])),
+            composable_node_descriptions=[
+                ComposableNode(
+                    package='camera_driver',
+                    plugin='camera_driver::MvsCamNode',
+                    name='mvs_driver',
+                    parameters=[mvs_cam_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                ),
+                ComposableNode(
+                    package='buff_detector',
+                    plugin='buff_detector::BuffDetectorNode',
+                    name='buff_detector',
+                    parameters=[buff_detector_params],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                ),
             ],
         ),
 

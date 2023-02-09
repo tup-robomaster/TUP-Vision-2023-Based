@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:47:32
- * @LastEditTime: 2023-01-26 23:18:54
+ * @LastEditTime: 2023-02-09 23:59:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor/buff_processor.cpp
  */
 #include "../../include/buff_processor/buff_processor.hpp"
@@ -211,65 +211,6 @@ namespace buff_processor
     //             return true;
     //         }
     //     }
-
     //     return false;
     // }
-
-    void Processor::setPredictorParam(double param, int idx)
-    {
-        switch (idx)
-        {
-        case 1:
-            predictor_param_.bullet_speed = param;
-            break;
-        case 2:
-            predictor_param_.delay_big = param;
-            break;
-        case 3:
-            predictor_param_.delay_small = param;
-            break;
-        case 4:
-            predictor_param_.history_deque_len_cos = param;
-            break;
-        case 5:
-            predictor_param_.history_deque_len_phase = param;
-            break;
-        case 6:
-            predictor_param_.history_deque_len_uniform = param;
-            break;
-        case 7:
-            predictor_param_.max_a = param;
-            break;
-        case 8:
-            predictor_param_.max_rmse = param;
-            break;
-        case 9:
-            predictor_param_.max_timespan = param;
-            break;
-        case 10:
-            predictor_param_.max_v = param;
-            break;
-        case 11:
-            predictor_param_.window_size = param;
-            break;
-        default:
-            break;
-        }
-    }
-
-    void Processor::setDebugParam(double param, int idx)
-    {
-        switch (idx)
-        {
-        case 1:
-            debug_param_.show_predict = param;
-            break;
-        case 2:
-            debug_param_.using_imu = param;
-            break;
-        default:
-            break;
-        }
-    }
-
 } //namespace buff_processor
