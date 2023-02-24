@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 16:30:16
- * @LastEditTime: 2022-11-29 19:36:11
+ * @LastEditTime: 2023-02-23 21:12:48
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/imm.cpp
  */
 #include "../../include/filter/imm.hpp"
@@ -15,12 +15,25 @@ namespace armor_processor
     IMM::IMM(const IMM& imm)
     {}
 
+    /**
+     * @brief 添加运动模型
+     * 
+     * @param model 
+     */
     void IMM::addModel(const std::shared_ptr<KalmanFilter>& model)
     {
         this->models_.push_back(model);
         ++this->model_num_;
     }
 
+    /**
+     * @brief 初始化IMM模型
+     * 
+     * @param x 状态向量
+     * @param P 状态协方差矩阵
+     * @param model_prob 模型概率矩阵
+     * @param transfer_prob 状态转移概率矩阵
+     */
     void IMM::init(
         const Eigen::VectorXd& x,
         const Eigen::MatrixXd& P,
@@ -45,6 +58,13 @@ namespace armor_processor
         this->transfer_prob_ = transfer_prob;
     }
 
+    /**
+     * @brief 同上
+     * 
+     * @param x 
+     * @param model_prob 
+     * @param transfer_prob 
+     */
     void IMM::init(
         const Eigen::VectorXd& x,
         const Eigen::MatrixXd& model_prob,
@@ -67,6 +87,10 @@ namespace armor_processor
         this->transfer_prob_ = transfer_prob;
     }
 
+    /**
+     * @brief 状态交互
+     * 
+     */
     void IMM::stateInteraction()
     {
         //计算交互后各模型概率
@@ -104,7 +128,7 @@ namespace armor_processor
             Eigen::MatrixXd P = Eigen::MatrixXd::Zero(this->model_num_, this->model_num_);
             for(int j = 0; j < this->model_num_; j++)
             {
-                Eigen::MatrixXd s = X.col(i) - X.col(j);
+                Eigen::VectorXd s = this->X_.col(i) - this->X_.col(j);
                 P += U(i, j) * (this->models_[i]->P() + s * s.transpose());
             }
             this->models_[i]->setStateCoveriance(P);
@@ -117,6 +141,12 @@ namespace armor_processor
 
     }
 
+    /**
+     * @brief 状态更新
+     * 各模型分别进行滤波，可以考虑异步进行加快速度
+     * @param z 观测向量
+     * @param dt 时间量
+     */
     void IMM::updateState(const Eigen::VectorXd& z, const double& dt)
     {
         for(size_t i = 0; i < this->model_num_; i++)
@@ -127,6 +157,10 @@ namespace armor_processor
         }
     }
 
+    /**
+     * @brief 更新模型概率
+     * 
+     */
     void IMM::updateModelProb()
     {
         //模型概率更新
@@ -142,19 +176,19 @@ namespace armor_processor
         }
     }
 
+    /**
+     * @brief 各模型状态估计融合
+     * 
+     */
     void IMM::estimateFusion()
     {
-        // this->x_ = this->X_ * this->model_prob_;
+        this->x_ = this->X_ * this->model_prob_;
 
-        this->x_.setZero();
         for(size_t i = 0; i < this->model_num_; i++)
         {
-            this->models_[i]->setCoeff(5.0);
-            this->x_ += this->models_[i]->F_ * this->models_[i]->x() * this->model_prob_[i];
-
             //TODO:
-            // Eigen::MatrixXd v = this->X_.col(i) - this->x_;
-            // this->P_ += this->model_prob_[i] * (this->models_[i]->P() + v * v.transpose());
+            Eigen::MatrixXd v = this->X_.col(i) - this->x_;
+            this->P_ += this->model_prob_[i] * (this->models_[i]->P() + v * v.transpose());
         } 
     }
 
