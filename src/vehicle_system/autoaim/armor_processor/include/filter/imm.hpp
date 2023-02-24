@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 16:29:25
- * @LastEditTime: 2022-11-26 19:51:13
+ * @LastEditTime: 2023-02-01 22:52:56
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/imm.hpp
  */
 #ifndef IMM_HPP_
@@ -12,6 +12,12 @@
 
 namespace armor_processor
 {
+    struct IMMParam
+    {
+        vector<double> imm_model_trans_prob_params;
+        vector<double> imm_model_prob_params;
+    };
+
     class IMM 
     {
         Eigen::MatrixXd transfer_prob_;  //马尔可夫状态转移矩阵

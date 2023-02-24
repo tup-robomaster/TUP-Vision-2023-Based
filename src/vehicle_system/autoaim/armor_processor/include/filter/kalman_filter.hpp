@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:00:19
- * @LastEditTime: 2022-11-30 11:15:47
+ * @LastEditTime: 2023-02-01 22:14:23
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/kalman_filter.hpp
  */
 #ifndef KALMAN_FILTER_HPP_
@@ -13,12 +13,20 @@
 #include <ceres/ceres.h>
 #include <cassert>
 
+using namespace std;
 namespace armor_processor
 {
+    struct KFParam
+    {
+        vector<double> process_noise_params;
+        vector<double> measure_noise_params;
+    };
+
     class KalmanFilter
     {
         public:
             KalmanFilter();
+            KalmanFilter(KFParam kf_param);
             ~KalmanFilter();
             virtual KalmanFilter* Clone()
             {
@@ -65,7 +73,6 @@ namespace armor_processor
             void Predict(const double& dt);
             virtual void updatePrediction() {}
             virtual void updateMeasurement() {}
-            virtual void setCoeff(const double&) {}
 
             /**
              * @brief 更新状态向量
@@ -145,6 +152,59 @@ namespace armor_processor
         public:
             double likelihood_; //似然值
             double dt; //时间量
+        
+        public:
+            // double r1_, r2_, r3_, r4_;
+            // double q1_, q2_, q3_, q4_, q5_, q6_;
+            KFParam kf_param_;
+
+            void setRCoeff(double& r, int idx)
+            {
+                switch (idx)
+                {
+                case 1:
+                    kf_param_.measure_noise_params[0] = r;
+                    break;
+                case 2:
+                    kf_param_.measure_noise_params[1] = r;
+                    break;
+                case 3:
+                    kf_param_.measure_noise_params[2] = r;
+                    break;
+                case 4:
+                    kf_param_.measure_noise_params[3] = r;
+                    break;
+                default:
+                    break;
+                }
+            }
+
+            void setQCoeff(double& q, int idx)
+            {
+                switch (idx)
+                {
+                case 1:
+                    kf_param_.process_noise_params[0] = q;
+                    break;
+                case 2:
+                    kf_param_.process_noise_params[1] = q;
+                    break;
+                case 3:
+                    kf_param_.process_noise_params[2] = q;
+                    break;
+                case 4:
+                    kf_param_.process_noise_params[3] = q;
+                    break;
+                case 5:
+                    kf_param_.process_noise_params[4] = q;
+                    break;
+                case 6:
+                    kf_param_.process_noise_params[5] = q;
+                    break;
+                default:
+                    break;
+                }
+            }
     };
 } // armor_processor
 

@@ -2,27 +2,15 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2022-11-30 16:23:33
+ * @LastEditTime: 2023-02-09 16:12:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
-#ifndef ARMOR_PROCESSOR_NODE_HPP
-#define ARMOR_PROCESSOR_NODE_HPP
-
-#include "./armor_processor/armor_processor.hpp"
-#include "global_interface/msg/spin_info.hpp"
-#include "global_interface/msg/gimbal.hpp"
+#ifndef ARMOR_PROCESSOR_NODE_HPP_
+#define ARMOR_PROCESSOR_NODE_HPP_
 
 //ros
 #include <rclcpp/rclcpp.hpp>
 #include <message_filters/subscriber.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/create_timer_ros.h>
-#include <tf2_ros/message_filter.h>
-#include <tf2_ros/transform_broadcaster.h>
-#include <tf2_ros/transform_listener.h>
-
-//
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -33,120 +21,77 @@
 #include <cv_bridge/cv_bridge.h>
 
 //std
-#include <memory>
-#include <string>
-#include <vector>
+#include <mutex>
+#include <atomic>
+#include <thread>
 
-//linux
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
+#include "./armor_processor/armor_processor.hpp"
+#include "../../global_user/include/global_user/global_user.hpp"
+#include "global_interface/msg/autoaim.hpp"
+#include "global_interface/msg/gimbal.hpp"
 
-#define PARAM_NUM 19
-#define DAHENG_IMAGE_WIDTH 1280
-#define DAHENG_IMAGE_HEIGHT 1024
-
-typedef std::chrono::duration<int> SecondsType;
-typedef global_interface::msg::Target TargetMsg;
-typedef global_interface::msg::Gimbal GimbalMsg;
-typedef global_interface::msg::SpinInfo SpinningMsg;
-
+using namespace global_user;
+using namespace coordsolver;
 namespace armor_processor
 {
     class ArmorProcessorNode : public rclcpp::Node 
     {
+        typedef global_interface::msg::Autoaim AutoaimMsg;
+        typedef global_interface::msg::Gimbal GimbalMsg;
+
     public:
         explicit ArmorProcessorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         ~ArmorProcessorNode();
 
     private:
-        // rclcpp::Subscription<SpinningMsg>::SharedPtr spin_info_sub;
-        // void spin_info_callback(const SpinningMsg::SharedPtr msg) const;
-        
-        // message_filters::Subscriber<TargetMsg> target_info_sub;
-        // std::vector<>;
-        rclcpp::Subscription<TargetMsg>::SharedPtr target_info_sub_;
-        message_filters::Subscriber<TargetMsg> target_point_sub_; 
-        void target_info_callback(const TargetMsg& target_info);
+        rclcpp::Subscription<AutoaimMsg>::SharedPtr target_info_sub_;
+        void targetMsgCallback(const AutoaimMsg& target_info);
 
-        // bool draw_predict;
-        Eigen::Vector3d last_predict_point_;
-        Eigen::Vector3d predict_point_;
+        mutex debug_mutex_;
+        atomic<bool> flag_;
         cv::Point2f apex2d[4];
-        // coordsolver::coordsolver coordsolver_;
-
-        //
-        rclcpp::Publisher<TargetMsg>::SharedPtr predict_info_pub;
+        Eigen::Vector3d predict_point_;
+        
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
+        rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
+        rclcpp::Publisher<AutoaimMsg>::SharedPtr predict_info_pub_;
     
     private:
         std::unique_ptr<Processor> processor_;
-        std::unique_ptr<Processor> init_armor_processor();
+        std::unique_ptr<Processor> initArmorProcessor();
 
-    private:
-        //tf2 transformation
-        std::string target_frame_;
-        std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
-        std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
-        message_filters::Subscriber<geometry_msgs::msg::PointStamped> point_sub_;
-        std::shared_ptr<tf2_ros::MessageFilter<geometry_msgs::msg::PointStamped>> tf2_filter_;
-
-        void msg_callback(const geometry_msgs::msg::PointStamped::SharedPtr point_ptr);
-    
     protected:
-        cv::Mat img;
-        // 订阅图像  
-        std::shared_ptr<image_transport::Subscriber> img_sub_;
-        // Image subscriptions transport type
-        std::string transport_;
+        ImageSize image_size_;
+        ImageInfo image_info_;
+
+        // Image callback.
+        void imageProcessor(cv::Mat& img);
+        void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
         
-        //
-        void img_callback();
-        void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
+        // Sub image.
+        std::shared_ptr<image_transport::Subscriber> img_sub_;
     
     public:
+        mutex param_mutex_;
+        bool debug_;
         PredictParam predict_param_;
-        // SingerModelParam singer_model_param_;
-        SingerModel singer_model_param_;
+        vector<double> singer_param_;
         DebugParam debug_param_;
-        std::string filter_param_path_;
-        std::string coord_param_path_;
-        std::string coord_param_name_;
+        PathParam path_param_;
 
     private:
-        /**
-         * @brief 动态调参
-         * @param 参数服务器参数
-         * @return 是否修改参数成功
-         */
-        std::string* param_names_;
-        bool setParam(rclcpp::Parameter param);
+        bool updateParam();
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
-
+        
         // std::shared_ptr<ParamSubcriber> cb_;
         // std::shared_ptr<ParamCbHandle> param_cb_;
-    
     protected:
-        /**
-         * @brief 共享图像数据内存
-         * 
-         */
-        //
-        bool using_shared_memory;
-        
-        //生成key键
-        key_t key_;
-
-        //获取共享内存id
-        int shared_memory_id_;
-
-        //映射共享内存，得到虚拟地址
-        void* shared_memory_ptr_ = nullptr;
-
-        //共享内存读线程
-        std::thread read_memory_thread_;
-
+        // 共享图像数据内存
+        bool using_shared_memory_;
+        SharedMemoryParam shared_memory_param_;
+        std::thread read_memory_thread_; //共享内存读线程
+        void imgCallbackThread();
     };
 } //armor_processor
 

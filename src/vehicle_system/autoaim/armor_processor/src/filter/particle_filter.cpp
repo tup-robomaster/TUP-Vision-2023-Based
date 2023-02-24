@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:17:34
- * @LastEditTime: 2022-10-24 14:14:03
+ * @LastEditTime: 2022-12-27 00:33:40
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/particle_filter.cpp
  */
 #include "../../include/filter/particle_filter.hpp"
@@ -70,8 +70,8 @@ namespace armor_processor
     {
     }
 
-    bool ParticleFilter::initParam(YAML::Node &config,const string param_name)
-    {
+    bool ParticleFilter::initParam(YAML::Node &config, const string param_name)
+    { 
         /**
          * @brief 从文件中初始化滤波器参数
          * 
@@ -80,7 +80,6 @@ namespace armor_processor
          * @return true 
          * @return false 
          */
-
         //初始化向量长度与粒子数
         vector_len = config[param_name]["vector_len"].as<int>();
         num_particle = config[param_name]["num_particle"].as<int>();

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2022-11-29 19:25:47
+ * @LastEditTime: 2023-02-05 00:55:28
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/kalman_filter.cpp
  */
 #include "../../include/filter/kalman_filter.hpp"
@@ -13,6 +13,11 @@ using Eigen::MatrixXd;
 namespace armor_processor
 {
     KalmanFilter::KalmanFilter(){}
+
+    KalmanFilter::KalmanFilter(KFParam kf_param)
+    {
+        kf_param_ = kf_param;
+    }
 
     KalmanFilter::~KalmanFilter(){}
 
@@ -97,12 +102,18 @@ namespace armor_processor
         P_ = (I - K * H_) * P_;
     }
 
+    /**
+     * @brief 卡尔曼滤波更新步骤
+     * 此处应用于IMM模型，需要计算模型似然值
+     * @param z 
+     * @param mp 
+     */
     void KalmanFilter::Update(const Eigen::VectorXd& z, int mp)
     {
         updateMeasurement();
 
         // 测量值与预测值之间的残差
-        Eigen::VectorXd v = z - this->H_ * this->x_;
+        Eigen::VectorXd v = z - this->x_;
         
         // 残差的协方差矩阵
         Eigen::MatrixXd S = this->H_ * this->P_ * this->H_.transpose() + this->R_;
@@ -118,7 +129,7 @@ namespace armor_processor
         //更新
         this->x_ = this->x_ + K * v;
         Eigen::MatrixXd I;
-        I.setIdentity(6, 6);
+        I.setIdentity();
         Eigen::MatrixXd C = (I - K * this->H_);
         this->P_ = C * this->P_ * C.transpose() + K * this->R_ * K.transpose();
     }

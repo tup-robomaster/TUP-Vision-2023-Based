@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-10-25 23:10:41
-LastEditTime: 2022-11-19 17:47:39
+LastEditTime: 2022-12-23 19:28:42
 FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/launch/armor_processor.launch.py
 '''
 import os
@@ -29,14 +29,14 @@ def generate_launch_description():
         #     output = "screen"
         # ),
 
-        Node
-        (
-            name = "daheng_cam_driver",
-            package = "camera_driver",
-            executable = "daheng_cam_driver_node",
-            parameters = [cam_config],
-            output = "screen"
-        ),
+        # Node
+        # (
+        #     name = "daheng_cam_driver",
+        #     package = "camera_driver",
+        #     executable = "daheng_cam_driver_node",
+        #     parameters = [cam_config],
+        #     output = "screen"
+        # ),
 
         # Node
         # (
@@ -47,21 +47,22 @@ def generate_launch_description():
         #     output = "screen"
         # ),
 
-        Node
-        (
-            name = "armor_detector",
-            package = "armor_detector",
-            executable = "armor_detector_node",
-            parameters = [autoaim_config],
-            output = "screen" 
-        ),
+        # Node
+        # (
+        #     name = "armor_detector",
+        #     package = "armor_detector",
+        #     executable = "armor_detector_node",
+        #     parameters = [autoaim_config],
+        #     output = "screen" 
+        # ),
 
         Node
         (
             name = "armor_processor",
             package = "armor_processor",
             executable = "armor_processor_node",
+            output="screen",
+            emulate_tty=True,  
             parameters = [autoaim_config],
-            output = "screen"  
         )
     ])

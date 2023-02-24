@@ -2,25 +2,13 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 14:01:05
- * @LastEditTime: 2022-10-14 16:03:34
- * @FilePath: /tup_2023/src/global_user/src/global_user.cpp
+ * @LastEditTime: 2023-02-04 00:14:13
+ * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/global_user.cpp
  */
 #include "../include/global_user/global_user.hpp"
 
 namespace global_user
 {
-    global_user::global_user()
-    {
-        config_path[0] = config_file_autoaim;
-        config_path[1] = config_file_buff;
-    }
-
-    global_user::~global_user()
-    {
-        
-    }
-
-
     float calcTriangleArea(cv::Point2f pts[3])
     {
         /**
@@ -200,7 +188,7 @@ namespace global_user
         int last_slash_idx = 0;
         std::string path_tmp = path;
 
-        for(auto i = 0; i = path_tmp.find("/"), i != path_tmp.npos; path_tmp = path_tmp.substr(i + 1))
+        for(auto i = 0; i = path_tmp.find("/"), i != (int)(path_tmp.npos); path_tmp = path_tmp.substr(i + 1))
         {   
             last_slash_idx += i + 1;
         }
@@ -220,7 +208,7 @@ namespace global_user
             path.insert(0,"/");
 
         //使用逗号表达式控制循环
-        for(auto i = 0; i = path.find("/"), i != path.npos; path = path.substr(i + 1))
+        for(auto i = 0; i = path.find("/"), i != (int)(path.npos); path = path.substr(i + 1))
         {   
             if(i == 0)
                 continue;
@@ -237,5 +225,136 @@ namespace global_user
     {
         return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
     }
+
+    void videoRecorder(VideoRecordParam& video_param, cv::Mat* src)
+    {
+        if(video_param.is_initialized)
+        {
+            video_param.frame_cnt = 0;
+            char now[64];
+            std::time_t tt;
+            struct tm *ttime;
+
+            tt = time(nullptr);
+            ttime = localtime(&tt);
+            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", ttime);  // 以时间为名字
+            std::string now_string(now);
+            std::string path(std::string(video_param.save_path + now_string).append(".avi"));
+            video_param.video_recorder = cv::VideoWriter(path, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30.0, cv::Size(video_param.image_width, video_param.image_height));    // Avi format
+            video_param.is_first_loop = true;
+            video_param.is_initialized = true;
+        }
+        else
+        {
+            video_param.frame_cnt++;
+            if(video_param.frame_cnt % 3 == 0)
+            {
+                video_param.frame_cnt = 0;
+                //异步读写加速,避免阻塞生产者
+                if (video_param.is_first_loop)
+                    video_param.is_first_loop = false;
+                else
+                    video_param.writer.wait();
+                video_param.writer = std::async(std::launch::async, [&](){video_param.video_recorder.write(*src);});
+            }
+        }
+    }
     
+    /**
+     * @brief 创建图像数据共享内存空间
+     * 
+    */
+    bool setSharedMemory(SharedMemoryParam& shared_memory_param, int id, int image_width, int image_height)
+    {
+        // 生成key
+        shared_memory_param.key = ftok("./", id);
+        
+        // 返回内存id
+        shared_memory_param.shared_memory_id = shmget(shared_memory_param.key, image_width * image_height * 3, IPC_CREAT | 0666 | IPC_EXCL);
+        if(shared_memory_param.shared_memory_id == -1)
+            return false;
+
+        // 映射到内存地址
+        shared_memory_param.shared_memory_ptr = shmat(shared_memory_param.shared_memory_id, 0, 0);
+        if(shared_memory_param.shared_memory_ptr == (void*)-1)
+            return false;
+        
+        return true;
+    }
+
+    bool destorySharedMemory(SharedMemoryParam& shared_memory_param)
+    {
+        //解除共享内存映射
+        if(shared_memory_param.shared_memory_ptr)
+        {
+            if(shmdt(shared_memory_param.shared_memory_ptr) == -1)
+            {
+                // printf("Dissolution remapping failed...");
+                return false;
+            }
+        }
+        //销毁共享内存
+        if(shmctl(shared_memory_param.shared_memory_id, IPC_RMID, NULL) == -1)
+        {
+            // printf("Destroy shared memory failed...");     
+            return false;   
+        }
+
+        return true;
+    }
+
+    bool getSharedMemory(SharedMemoryParam& shared_memory_param, int id)
+    {
+        shared_memory_param.key = ftok("./", id);
+        // 获取共享内存id
+        shared_memory_param.shared_memory_id = shmget(shared_memory_param.key, 0, 0);
+        if(shared_memory_param.shared_memory_id == -1)
+        {
+            // RCLCPP_ERROR(this->get_logger(), "Get shared memory id failed...");
+            return false;
+        }
+
+        // 映射共享内存，得到虚拟地址
+        shared_memory_param.shared_memory_ptr = shmat(shared_memory_param.shared_memory_id, 0, 0);
+        if(shared_memory_param.shared_memory_ptr == (void*)-1)
+        {
+            // RCLCPP_ERROR(this->get_logger(), "Remapping shared memory failed...");
+            return false;
+        }
+        return true;
+    }
+
+    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_prefix, double &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size)
+    {
+        if(!is_init)
+        {
+            std::string img_name = path_prefix + to_string(timestamp) + ".jpg";
+            cv::imwrite(img_name, img);
+            is_init = true;
+        }
+        std::string label_name = path_prefix + to_string(timestamp) + ".txt";
+        std::string content;
+
+        int cls = 0;
+        if(id == 7)
+            cls = 9 * color - 1;
+        if(id != 7)
+            cls = id + color * 9;
+        
+        content.append(to_string(cls) + " ");
+        for(auto apex : apex2d)
+        {
+            content.append(to_string((apex.x - roi_offset.x) / input_size.width));
+            content.append(" ");
+            content.append(to_string((apex.y - roi_offset.y) / input_size.height));
+            content.append(" ");
+        }
+        content.pop_back();
+        content.append("\n");
+        file.open(label_name, std::ofstream::app);
+        file << content;
+        file.close();
+        usleep(5000);
+    }
+
 } //global_user
