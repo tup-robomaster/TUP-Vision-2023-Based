@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-02-09 16:50:13
+ * @LastEditTime: 2023-02-24 20:18:35
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -43,7 +43,7 @@ namespace buff_detector
         qos.durability_volatile();
 
         // buff info pub.
-        buff_info_pub_ = this->create_publisher<BuffMsg>("buff_detector", qos);
+        buff_info_pub_ = this->create_publisher<BuffMsg>("/buff_detector/buff_msg", qos);
 
         if(debug_param_.using_imu)
         {

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 01:45:19
- * @LastEditTime: 2023-02-23 18:39:12
+ * @LastEditTime: 2023-02-24 19:48:16
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/data_processor/data_transform.hpp
  */
 #ifndef DATA_TRANSFORM_HPP_
@@ -17,6 +17,9 @@
 
 //opencv
 #include <opencv2/opencv.hpp>
+
+//ros
+#include <rclcpp/rclcpp.hpp>
 
 #include "../serialport/crc_check.hpp"
 
@@ -77,7 +80,8 @@ namespace serialport
         void getBulletSpeed(uchar* raw_data, float& bullet_speed);
         void getThetaAngle(uchar* raw_data, float& theta);
 
-        int mode_;       
+        int mode_;     
+        rclcpp::Logger logger_;  
     private:
         CrcCheck crc_check_;
         float ucharRaw2Float(uchar *data); // 将4个uchar合并成一个float

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-15 22:01:49
- * @LastEditTime: 2023-02-07 15:59:41
+ * @LastEditTime: 2023-02-24 17:39:25
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport/serialport.hpp
  */
 #ifndef SERIALPORT_HPP_
@@ -34,7 +34,7 @@
 
 #define ECHOFLAGS (ECHO | ECHOE | ECHOK | ECHONL) //C_lflag
 const std::vector<std::string> DEFAULT_PORT = {"ttyUSB", "ttyACM"}; //默认串口名
-constexpr int MAX_ITER = 3; //默认串口最大编号
+constexpr int MAX_ITER = 4; //默认串口最大编号
 
 using namespace std;
 using namespace global_user;
@@ -101,7 +101,7 @@ namespace serialport
 
     public:
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
-        bool debug_without_com_; //是否无串口调试
+        bool using_port_; //是否无串口调试
     };
 } // namespace serialport
 

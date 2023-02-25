@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-09-27 18:06:56
-LastEditTime: 2022-12-23 19:22:26
+LastEditTime: 2023-02-24 16:48:06
 FilePath: /TUP-Vision-2023-Based/src/serialport/launch/serial_driver.launch.py
 '''
 import os
@@ -20,7 +20,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
-    param_file = os.path.join(get_package_share_directory('global_user', 'config/camera_ros.yaml'))
+    param_file = os.path.join(get_package_share_directory('global_user'), 'config/camera_ros.yaml')
 
     ld = LaunchDescription()
     ld.add_action(
@@ -33,7 +33,7 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[param_file,
                 {
-                    "debug_without_com": 'false',
+                    "using_port": True,
                     "baud": 115200 
                 }
             ]

@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-02-23 21:42:29
+LastEditTime: 2023-02-25 08:55:54
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -39,7 +39,7 @@ def generate_launch_description():
 
     declare_use_serial = DeclareLaunchArgument(
         name='using_imu',
-        default_value='False',
+        default_value='True',
         description='debug without serial port.'
     )
 
@@ -68,13 +68,12 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             parameters=[{
-                'using_imu': False,
-                'debug_without_com': True,
+                'using_port': True,
                 'tracking_target': True
             }],
             condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
         ),
-
+        
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
@@ -139,7 +138,17 @@ def generate_launch_description():
                     extra_arguments=[{
                         'use_intra_process_comms':True
                     }]
-                )
+                ),
+                # ComposableNode(
+                #     package='armor_processor',
+                #     plugin='armor_processor::ArmorProcessorNode',
+                #     name='armor_processor',
+                #     namespace='armor_processor',
+                #     parameters=[armor_processor_params],
+                #     extra_arguments=[{
+                #         'use_intra_process_comms':True
+                #     }]
+                # ),  
             ],
         ),
 
@@ -204,6 +213,7 @@ def generate_launch_description():
         Node(
             package='armor_processor',
             executable='armor_processor_node',
+            namespace='armor_processor',
             output='screen',
             emulate_tty=True,
             parameters=[armor_processor_params]

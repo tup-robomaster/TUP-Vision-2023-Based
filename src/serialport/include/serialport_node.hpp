@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-02-23 21:38:58
+ * @LastEditTime: 2023-02-24 16:42:32
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -53,7 +53,7 @@ namespace serialport
         CoordSolver coordsolver_;
         
         mutex mutex_;
-        bool debug_without_port_;
+        bool using_port_;
         bool tracking_target_;
         atomic<int> mode_;
         atomic<bool> flag_;

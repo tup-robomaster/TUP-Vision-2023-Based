@@ -80,7 +80,7 @@ add_library(${PROJECT_NAME} SHARED
   src/filter/model_generator.cpp 
   src/prediction/prediction.cpp 
   src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
-  src/${PROJECT_NAME}_node.cpp  
+  # src/${PROJECT_NAME}_node.cpp  
 )
 
 ament_target_dependencies(${PROJECT_NAME}
@@ -116,13 +116,14 @@ target_link_libraries(${PROJECT_NAME}_node
   # ${dependencies}
 )
 
-rclcpp_components_register_nodes(${PROJECT_NAME}
+rclcpp_components_register_nodes(${PROJECT_NAME} 
   PLUGIN "armor_processor::ArmorProcessorNode"
   EXECUTABLE ${PROJECT_NAME}_node 
 )
 
 install(
   TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}
   ARCHIVE DESTINATION lib 
   LIBRARY DESTINATION lib 
   RUNTIME DESTINATION lib 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-02-23 16:54:44
+ * @LastEditTime: 2023-02-24 20:14:23
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -49,7 +49,7 @@ namespace armor_detector
         qos.durability_volatile();
         
         // target info pub.
-        armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_info", qos);
+        armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_detector/armor_msg", qos);
 
         if(debug_.using_imu)
         {

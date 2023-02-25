@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-02-23 21:10:27
+ * @LastEditTime: 2023-02-25 09:31:46
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -84,6 +84,7 @@ namespace armor_detector
         {   //使用陀螺仪数据
             rmat_imu = src.quat.toRotationMatrix();
             RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 2000, "Using imu...");
+            // RCLCPP_INFO(logger_, "quat:[%f %f %f %f]", src.quat.x(), src.quat.y(), src.quat.z(), src.quat.w());
         }
         else
         {

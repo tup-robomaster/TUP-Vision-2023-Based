@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-02-23 19:16:58
+ * @LastEditTime: 2023-02-24 20:18:51
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -43,13 +43,13 @@ namespace buff_processor
         qos.durability_volatile();
 
         // 发布云台转动信息（pitch、yaw角度）
-        gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/buff_processor/gimbal_info", qos);
+        gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/buff_processor/gimbal_msg", qos);
 
         // 发布预测点信息
-        predict_info_pub_ = this->create_publisher<BuffMsg>("/buff_predict", qos);
+        predict_info_pub_ = this->create_publisher<BuffMsg>("/buff_processor/predict_msg", qos);
 
         // 订阅待打击目标信息
-        target_info_sub_ = this->create_subscription<BuffMsg>("/buff_detector", qos,
+        target_info_sub_ = this->create_subscription<BuffMsg>("/buff_detector/buff_msg", qos,
             std::bind(&BuffProcessorNode::targetMsgCallback, this, _1));
         
         // 相机类型

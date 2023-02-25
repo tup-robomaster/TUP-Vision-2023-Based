@@ -12,14 +12,14 @@ namespace serialport
     *@param  portchar 类型  char* 串口路径
     */
 
-    SerialPort::SerialPort(const string ID, const int BAUD, bool debug_without_com)
-    : debug_without_com_(debug_without_com), logger_(rclcpp::get_logger("serial_port"))
+    SerialPort::SerialPort(const string ID, const int BAUD, bool using_port)
+    : using_port_(using_port), logger_(rclcpp::get_logger("serial_port"))
     {
         serial_data_.is_initialized = false;
         serial_data_.baud = BAUD;
         serial_id_ = ID;
 
-        if(this->debug_without_com_) //无串口调试
+        if(!this->using_port_) //无串口调试
         {
             RCLCPP_WARN(logger_, "Debug without com...");
             withoutSerialPort();
@@ -54,18 +54,28 @@ namespace serialport
         if (result == -1)
             return false;
         if (bytes == 0)
+        {
             return false;
+        }
+        // cout << "bytes_num:" << bytes << endl;
         
         bytes = read(serial_data_.fd, serial_data_.rdata, (size_t)(lens));
-        RCLCPP_INFO(logger_, "Read byte num:%d", bytes);
         timestamp_ = this->steady_clock_.now();
 
-        if (serial_data_.rdata[0] == 0xA5 &&
-            crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3) &&
-            crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
+        if(serial_data_.rdata[0] == 0xA5 
+            && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3)
+            && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
+        {
             return true;
-        else
-            return false;
+        }
+        if(serial_data_.rdata[0] == 0xB5
+            && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3)
+            && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
+        {
+            return true;
+        }
+        
+        return false;
     }
 
     /**
@@ -158,6 +168,7 @@ namespace serialport
                     dev.alias = port_dir + to_string(i);
                     dev.path = tty_dir_path;
                     devices.push_back(dev);
+                    // cout << dev.id << endl;
                 }
             } 
         }
@@ -195,6 +206,7 @@ namespace serialport
     {
         for (auto dev : devices)
         {
+            // cout << dev.id << endl;
             if (dev.id == serial_id_)
                 return dev;
         }

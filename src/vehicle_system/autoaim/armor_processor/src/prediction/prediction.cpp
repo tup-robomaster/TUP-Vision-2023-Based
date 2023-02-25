@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-02-10 00:37:42
+ * @LastEditTime: 2023-02-24 21:39:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -298,7 +298,7 @@ namespace armor_processor
         {   //目标机动预测
             if(target.system_model == CSMODEL)
             {   // 基于CS模型的卡尔曼滤波
-                RCLCPP_INFO(logger_, "CS model is predicting...");
+                // RCLCPP_INFO(logger_, "CS model is predicting...");
                 is_ekf_available = predictBasedSinger(target, result_ekf, target_vel, target_acc, delta_time_estimate);
 
                 if(is_ekf_available.xyz_status[0])
@@ -441,9 +441,9 @@ namespace armor_processor
         
         auto t2 = steady_clock_.now();
         double dr_ns = (t2 - t1).nanoseconds();
-        RCLCPP_INFO(logger_, "Predict time:%lfms", (dr_ns / 1e6));
-        RCLCPP_INFO(logger_, "target: x:%lf y:%lf z:%lf", target.xyz[0], target.xyz[1], target.xyz[2]);
-        RCLCPP_INFO(logger_, "predict: x:%lf y:%lf z:%lf", result[0], result[1], result[2]);
+        // RCLCPP_INFO(logger_, "Predict time:%lfms", (dr_ns / 1e6));
+        // RCLCPP_INFO(logger_, "target: x:%lf y:%lf z:%lf", target.xyz[0], target.xyz[1], target.xyz[2]);
+        // RCLCPP_INFO(logger_, "predict: x:%lf y:%lf z:%lf", result[0], result[1], result[2]);
 
         if(debug_param_.draw_predict && is_ekf_available.xyz_status[1])
         {
