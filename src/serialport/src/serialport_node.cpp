@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-02-25 12:28:17
+ * @LastEditTime: 2023-02-25 16:31:43
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -61,7 +61,7 @@ namespace serialport
         
         //创建发送数据定时器
         // timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
-        // timer_ = rclcpp::create_timer(this, this->get_clock(), 10ms, std::bind(&SerialPortNode::sendData, this));
+        timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
 
         if(using_port_)
         {   // Use serial port.
@@ -79,6 +79,18 @@ namespace serialport
         if(receive_thread_.joinable())
             receive_thread_.join();
     }
+
+    void SerialPortNode::serialWatcher()
+    {
+        if(access(serial_port_->serial_data_.device.path.c_str(), F_OK) == -1 || !serial_port_->serial_data_.is_initialized)
+        {
+            serial_port_->serial_data_.is_initialized = true;
+            if(!serial_port_->openPort())
+            {
+                RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Port open failed!!!");
+            }
+        }
+    }
     
     void SerialPortNode::receiveData()
     {
@@ -95,14 +107,14 @@ namespace serialport
             // 数据读取不成功进行循环
             while (!serial_port_->receiveData())
             {
-                // RCLCPP_WARN(this->get_logger(), "CHECKSUM FAILED OR NO DATA RECVIED!!!");
+                RCLCPP_WARN(this->get_logger(), "CHECKSUM FAILED OR NO DATA RECVIED!!!");
                 usleep(5000);
             }
             
             uchar mode = serial_port_->serial_data_.rdata[1];
             mode_ = mode;
             // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
-            // RCLCPP_INFO(this->get_logger(), "mode:%d", mode);
+            RCLCPP_INFO(this->get_logger(), "mode:%d", mode);
             
             if(mode == 1)
             {

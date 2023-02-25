@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-02-25 12:03:49
+ * @LastEditTime: 2023-02-25 16:09:55
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -44,6 +44,7 @@ namespace serialport
         void sendData();
         void armorMsgSub(GimbalMsg::SharedPtr msg);
         void buffMsgSub(GimbalMsg::SharedPtr msg);
+        void serialWatcher();
     
     private:
         int baud_;
