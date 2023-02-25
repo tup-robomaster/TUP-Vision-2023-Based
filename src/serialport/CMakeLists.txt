@@ -38,6 +38,8 @@ find_package(global_interface REQUIRED)
 find_package(global_user REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(Ceres REQUIRED COMPONENTS EigenSparse)
 
 include_directories(
   include
@@ -78,6 +80,8 @@ set(dependencies
   angles 
   robot_state_publisher 
   yaml-cpp
+  Eigen3
+  Ceres
 )
 
 ament_target_dependencies(${PROJECT_NAME}

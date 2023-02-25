@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 01:45:19
- * @LastEditTime: 2023-02-24 19:48:16
+ * @LastEditTime: 2023-02-25 12:15:49
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/data_processor/data_transform.hpp
  */
 #ifndef DATA_TRANSFORM_HPP_
@@ -20,6 +20,10 @@
 
 //ros
 #include <rclcpp/rclcpp.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+
+//eigen
+#include <Eigen/Core>
 
 #include "../serialport/crc_check.hpp"
 
@@ -65,6 +69,8 @@ namespace serialport
         int isFindTarget; //当识别的图片范围内有目标且电控发来的信号不为0x00（关闭视觉）置为1，否则置0
         int isSpinning;   //目标是否处于陀螺状态
         int ismiddle;     //设置1表示目标进入了可以开火的范围，设置0则表示目标尚未进入可开火的范围，默认置0
+        Eigen::Vector3f linear_velocity;
+        Eigen::Vector3f angular_velocity;
     } VisionData;
     
     class DataTransform

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 02:02:10
- * @LastEditTime: 2023-02-24 20:05:13
+ * @LastEditTime: 2023-02-25 12:11:38
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/data_processor/data_transform.cpp
  */
 #include "../../include/data_processor/data_transform.hpp"
@@ -27,26 +27,33 @@ namespace serialport
      */
     void DataTransform::transformData(int mode, const VisionData &vision_data, uchar* trans_data)
     {
-        if(mode == AUTOAIM || mode == SMALL_BUFF || mode == BIG_BUFF)
+        trans_data[0] = 0xA5;
+        trans_data[1] = mode;
+        crc_check_.Append_CRC8_Check_Sum(trans_data, 3);
+        if(mode == AUTOAIM || mode == HERO_SLING || mode == SMALL_BUFF || mode == BIG_BUFF)
         {
-            trans_data[0] = 0xA5;
-            trans_data[1] = mode;
-            crc_check_.Append_CRC8_Check_Sum(trans_data, 3);
-
             float float_data[] = {vision_data.pitch_angle, vision_data.yaw_angle, vision_data.distance};
             float2UcharRawArray(float_data, 3, &trans_data[3]);
-
             trans_data[15] = vision_data.isSwitched;
             trans_data[16] = vision_data.isFindTarget;
             trans_data[17] = vision_data.isSpinning;
             trans_data[18] = vision_data.ismiddle;
-            
             trans_data[19] = 0x00;
-            crc_check_.Append_CRC16_Check_Sum(trans_data, 22);
+            crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
         }
         else if(mode == SENTRY_RECV_NORMAL)
         {
-            
+            float float_data[] = {vision_data.pitch_angle, vision_data.yaw_angle, vision_data.distance};
+            float2UcharRawArray(float_data, 3, &trans_data[3]);
+            trans_data[15] = vision_data.isSwitched;
+            trans_data[16] = vision_data.isFindTarget;
+            trans_data[17] = vision_data.isSpinning;
+            trans_data[18] = vision_data.ismiddle;
+            float twist[] = {vision_data.linear_velocity[0], vision_data.linear_velocity[1], vision_data.linear_velocity[2],
+                vision_data.angular_velocity[0], vision_data.angular_velocity[1], vision_data.angular_velocity[2]};
+            float2UcharRawArray(twist, 6, &trans_data[19]);
+            trans_data[43] = 0x00;
+            crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
         }
     }
     

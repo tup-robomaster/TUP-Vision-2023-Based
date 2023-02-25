@@ -85,6 +85,7 @@ namespace serialport
     void SerialPort::sendData(int bytes_num)
     {
         auto write_stauts = write(serial_data_.fd, Tdata, bytes_num);
+        cout << "Sending msg!!!" << endl;
         return;
     }
 

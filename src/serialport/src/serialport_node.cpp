@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-02-25 09:26:14
+ * @LastEditTime: 2023-02-25 12:28:17
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -61,7 +61,7 @@ namespace serialport
         
         //创建发送数据定时器
         // timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
-        timer_ = rclcpp::create_timer(this, this->get_clock(), 10ms, std::bind(&SerialPortNode::sendData, this));
+        // timer_ = rclcpp::create_timer(this, this->get_clock(), 10ms, std::bind(&SerialPortNode::sendData, this));
 
         if(using_port_)
         {   // Use serial port.
@@ -158,24 +158,24 @@ namespace serialport
      */
     void SerialPortNode::sendData()
     {
-        VisionData vision_data = {0.0, (float)0.0, (float)0.0, (float)0.0, 0, 1, 0, 0};
-        if(flag_)
-        {
-            auto now = (serial_port_->steady_clock_.now().nanoseconds() / 1e6);
-            mutex_.lock();
-            if(abs(now - vision_data_.timestamp) < 50) //(ms)，若时间差过大，则忽略此帧数据
-            {
-                vision_data = vision_data_;
-            }
-            mutex_.unlock();
-            flag_ = false;
-        }
-        // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10, "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
-        // RCLCPP_WARN(this->get_logger(), "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
-        //根据不同mode进行对应的数据转换
-        data_transform_->transformData(mode_, vision_data, serial_port_->Tdata);
-        //数据发送
-        serial_port_->sendData();
+        // VisionData vision_data = {0.0, (float)0.0, (float)0.0, (float)0.0, 0, 1, 0, 0};
+        // if(flag_)
+        // {
+        //     auto now = (serial_port_->steady_clock_.now().nanoseconds() / 1e6);
+        //     mutex_.lock();
+        //     if(abs(now - vision_data_.timestamp) < 50) //(ms)，若时间差过大，则忽略此帧数据
+        //     {
+        //         vision_data = vision_data_;
+        //     }
+        //     mutex_.unlock();
+        //     flag_ = false;
+        // }
+        // // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10, "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
+        // // RCLCPP_WARN(this->get_logger(), "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
+        // //根据不同mode进行对应的数据转换
+        // data_transform_->transformData(mode_, vision_data, serial_port_->Tdata);
+        // //数据发送
+        // serial_port_->sendData();
 
         return;
     }
@@ -185,12 +185,13 @@ namespace serialport
         int mode = mode_;
         // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
         if(this->using_port_)
-        {
+        {   
+            VisionData vision_data;
             if(mode == AUTOAIM || mode == HERO_SLING)
             {
                 RCLCPP_WARN(this->get_logger(), "Sub autoaim msg!!!");
                 mutex_.lock();
-                vision_data_ = 
+                vision_data = 
                 {
                     (serial_port_->steady_clock_.now().nanoseconds() / 1e6),
                     (float)target_info->pitch, 
@@ -199,8 +200,15 @@ namespace serialport
                     target_info->is_switched, 
                     1, 
                     target_info->is_spinning, 
-                    0
+                    0,
+                    {0, 0, 0},
+                    {0, 0, 0}
                 };
+                
+                //根据不同mode进行对应的数据转换
+                data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
+                //数据发送
+                serial_port_->sendData();
                 mutex_.unlock();
                 flag_ = true;
             }
@@ -217,10 +225,11 @@ namespace serialport
         RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
         if(this->using_port_)
         {
+            VisionData vision_data;
             if(mode == SMALL_BUFF || mode == BIG_BUFF)
             {
                 mutex_.lock();
-                vision_data_ = 
+                vision_data = 
                 {
                     (serial_port_->steady_clock_.now().nanoseconds() / 1e6),
                     (float)target_info->pitch, 
@@ -229,8 +238,15 @@ namespace serialport
                     target_info->is_switched, 
                     1, 
                     target_info->is_spinning, 
-                    0
+                    0,
+                    {0, 0, 0},
+                    {0, 0, 0}
                 };
+
+                //根据不同mode进行对应的数据转换
+                data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
+                //数据发送
+                serial_port_->sendData();
                 mutex_.unlock();
                 flag_ = true;
             }

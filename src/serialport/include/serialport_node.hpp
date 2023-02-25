@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-02-24 16:42:32
+ * @LastEditTime: 2023-02-25 12:03:49
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -57,7 +57,7 @@ namespace serialport
         bool tracking_target_;
         atomic<int> mode_;
         atomic<bool> flag_;
-        VisionData vision_data_;
+        // VisionData vision_data_;
         rclcpp::TimerBase::SharedPtr timer_;
         
     public:
