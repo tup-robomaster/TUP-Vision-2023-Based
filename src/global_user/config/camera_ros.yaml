@@ -1,6 +1,6 @@
 /hik_cam_driver:
   ros__parameters:
-    hik_cam_id: 0
+    cam_id: 0
     frame_id: hik_cam
     image_width: 1440
     image_height: 1080
@@ -18,7 +18,7 @@
 
 /daheng_cam_driver:
   ros__parameters:
-    daheng_cam_id: 1
+    cam_id: 1
     frame_id: daheng_cam
     image_width: 1280
     image_height: 1024
@@ -38,7 +38,7 @@
     
 /usb_cam_driver:
   ros__parameters:
-    camera_id: 0
+    cam_id: 0
     frame_id: usb_cam
     image_width: 480
     image_height: 480
@@ -54,7 +54,7 @@
 
 /mvs_cam_driver:
   ros__parameters:
-    mvs_cam_id: 0
+    cam_id: 0
     frame_id: mvs_cam
   
 /serialport:

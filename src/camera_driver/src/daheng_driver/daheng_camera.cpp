@@ -2,10 +2,26 @@
 
 namespace camera_driver
 {
+    DaHengCam::DaHengCam()
+    : logger_(rclcpp::get_logger("daheng_driver"))
+    {
+        //初始化库
+        status = GXInitLib();
+
+        //检测初始化是否成功
+        if (status != GX_STATUS_SUCCESS)
+        {
+            RCLCPP_ERROR(logger_, "相机库初始化失败!");
+        }
+
+        // logger initializes.
+        RCLCPP_INFO(logger_, "[CAMERA] Initializing...");
+    }
+
     /**
      * @brief 相机构建函数,完成库的初始化
      */
-    DaHengCam::DaHengCam(DahengCamParam daheng_param)
+    DaHengCam::DaHengCam(CameraParam daheng_param)
     : logger_(rclcpp::get_logger("daheng_driver"))
     {
         //初始化库
@@ -45,7 +61,7 @@ namespace camera_driver
         /**
          * @brief 外部调用接口
         */
-        if(StartDevice(daheng_cam_param_.daheng_cam_id) == -1)
+        if(StartDevice(daheng_cam_param_.cam_id) == -1)
         {
             RCLCPP_ERROR(logger_, "Start device failed...");
             return false;

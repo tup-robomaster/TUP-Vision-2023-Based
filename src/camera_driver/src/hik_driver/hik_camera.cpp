@@ -2,14 +2,20 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:13:23
- * @LastEditTime: 2022-12-31 00:02:04
+ * @LastEditTime: 2023-02-26 12:40:51
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp
  */
 #include "../../include/hik_driver/hik_camera.hpp"
 
 namespace camera_driver 
 {
-    HikCamera::HikCamera(const HikCamParam& cam_params)
+    HikCamera::HikCamera()
+    : logger_(rclcpp::get_logger("hik_driver"))
+    {
+        g_nPayloadSize = 0;
+    }
+
+    HikCamera::HikCamera(const CameraParam& cam_params)
     : logger_(rclcpp::get_logger("hik_driver"))
     {
         g_nPayloadSize = 0;
@@ -34,7 +40,7 @@ namespace camera_driver
 
         set_trigger_mode();
         
-        start_device(this->hik_cam_params_.hik_cam_id);
+        start_device(this->hik_cam_params_.cam_id);
         // printf("9\n");
         // 设置分辨率
         set_resolution(this->hik_cam_params_.image_width, this->hik_cam_params_.image_height);

@@ -2,7 +2,7 @@
  * @Description is a ros-based project!
  * @AuthorBiao
  * @Date-09-05 03:13:49
- * @LastEditTime: 2022-12-31 00:00:49
+ * @LastEditTime: 2023-02-26 12:40:26
  * @FilePath_2023/src/camera_driver/include/hik_driver/HikCamera.hpp
  */
 //ros
@@ -18,9 +18,6 @@
 #include <fstream>
 #include <unistd.h>
 #include <yaml-cpp/yaml.h>
-#include <fmt/format.h>
-#include <fmt/color.h>
-#include <glog/logging.h>
 
 //opencv
 #include <opencv2/opencv.hpp>
@@ -35,6 +32,9 @@
 #include "../../dependencies/hik_sdk/include/MvErrorDefine.h"                         
 #include "../../dependencies/hik_sdk/include/CameraParams.h"                         
 
+#include "../../global_user/include/global_user/global_user.hpp"
+
+using namespace global_user;
 namespace camera_driver
 {
     typedef enum _GAIN_MODE_
@@ -43,32 +43,12 @@ namespace camera_driver
         G_CHANNEL,
         B_CHANNEL
     } GAIN_MODE;
-
-    struct HikCamParam
-    {
-        int hik_cam_id;
-        int image_width;
-        int image_height;
-        int exposure_time;
-        double exposure_gain;           
-        double exposure_gain_b;            
-        double exposure_gain_g;            
-        double exposure_gain_r;  
-        bool auto_balance;         
-        int balance_b;
-        int balance_g;
-        int balance_r;
-
-        HikCamParam()
-        {
-            auto_balance = false;
-        }
-    };
     
     class HikCamera
     {
     public:
-        HikCamera(const HikCamParam& cam_params);
+        HikCamera();
+        HikCamera(const CameraParam& cam_params);
         ~HikCamera();
 
         bool open();
@@ -108,7 +88,7 @@ namespace camera_driver
     
     private:
         // Camera params.
-        HikCamParam hik_cam_params_;
+        CameraParam hik_cam_params_;
         bool _is_open; 
         double timestamp_offset = 0;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};

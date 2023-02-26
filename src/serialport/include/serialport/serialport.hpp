@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-15 22:01:49
- * @LastEditTime: 2023-02-25 11:26:00
+ * @LastEditTime: 2023-02-25 16:34:39
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport/serialport.hpp
  */
 #ifndef SERIALPORT_HPP_
@@ -81,7 +81,7 @@ namespace serialport
         bool openPort();
         void closePort();
         
-        uchar Tdata[64] = {0x01}; 
+        uchar Tdata[64] = {0x00}; 
         SerialData serial_data_;
     private:
         string serial_id_;

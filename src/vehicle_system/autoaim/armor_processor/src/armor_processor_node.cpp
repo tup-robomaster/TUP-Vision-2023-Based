@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-02-25 12:24:10
+ * @LastEditTime: 2023-02-26 14:01:49
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -156,7 +156,7 @@ namespace armor_processor
 
         if(this->debug_)
         {
-            RCLCPP_INFO(this->get_logger(), "Tracking msgs pub!!!");
+            // RCLCPP_INFO(this->get_logger(), "Tracking msgs pub!!!");
             GimbalMsg tracking_info;
             tracking_info.header.frame_id = "barrel_link1";
             tracking_info.header.stamp = target_info.header.stamp;
@@ -166,7 +166,7 @@ namespace armor_processor
             tracking_info.is_switched = target_info.target_switched;
             tracking_info.is_spinning = target_info.is_spinning;
             tracking_info_pub_->publish(std::move(tracking_info));
-            RCLCPP_INFO(this->get_logger(), "pitch_angle:%f yaw_angle:%f", tracking_angle[0], tracking_angle[1]);
+            RCLCPP_INFO(this->get_logger(), "pitch_angle:%.2f yaw_angle:%.2f", tracking_angle[0], tracking_angle[1]);
 
             if(!target.is_target_lost)
             {

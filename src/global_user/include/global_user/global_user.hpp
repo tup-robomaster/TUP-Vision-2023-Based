@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-02-09 00:25:47
+ * @LastEditTime: 2023-02-26 13:31:27
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -50,6 +50,48 @@ namespace global_user
      * @brief Global variables and funcs.
      * 
      */
+
+    struct CameraParam
+    {
+        int fps;
+        int cam_id;
+        int image_width;
+        int image_height;
+        int width_scale;
+        int height_scale;
+        int exposure_time;
+        double exposure_gain;
+        bool auto_balance;
+        double exposure_gain_b;
+        double exposure_gain_g;
+        double exposure_gain_r;
+        double balance_b;
+        double balance_g;
+        double balance_r;
+        bool using_video;
+        string video_path;
+
+        CameraParam()
+        {
+            cam_id = 1;
+            image_width = 1280;
+            image_height = 1024;
+            width_scale = 1;
+            height_scale = 1;
+            exposure_time = 3000;
+            exposure_gain = 14;
+            auto_balance = false;
+            exposure_gain_b = 0;
+            exposure_gain_g = 0;
+            exposure_gain_r = 0;
+            balance_b = 1.56;
+            balance_g = 1.0;
+            balance_r = 1.548;
+            fps = 30;
+            using_video = false;
+            video_path = "\0";
+        }
+    };
 
     struct ImageSize
     {
