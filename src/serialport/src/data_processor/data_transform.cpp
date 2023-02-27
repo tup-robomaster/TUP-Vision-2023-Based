@@ -66,7 +66,7 @@ namespace serialport
     void DataTransform::getQuatData(uchar* raw_data, vector<float>& quat)
     {
         ucharRaw2FloatVector(raw_data, 16, quat);
-        RCLCPP_INFO(logger_, "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
+        return;
     }
 
     /**
@@ -78,7 +78,7 @@ namespace serialport
     void DataTransform::getGyroData(uchar* raw_data, vector<float>& gyro)
     {
         ucharRaw2FloatVector(raw_data, 12, gyro);
-        RCLCPP_INFO(logger_, "gyro:[%f %f %f]", gyro[0], gyro[1], gyro[2]);
+        return;
     }
 
     /**
@@ -90,7 +90,7 @@ namespace serialport
     void DataTransform::getAccData(uchar* raw_data, vector<float>& acc)
     {
         ucharRaw2FloatVector(raw_data, 12, acc);
-        RCLCPP_INFO(logger_, "acc:[%f %f %f]", acc[0], acc[1], acc[2]);
+        return;
     }
 
     /**
@@ -102,12 +102,13 @@ namespace serialport
     void DataTransform::getBulletSpeed(uchar* raw_data, float& bullet_speed)
     {
         bullet_speed = ucharRaw2Float(raw_data);
-        // RCLCPP_INFO(logger_, "bullet_speed::%f", bullet_speed);
+        return;
     }
 
     void DataTransform::getThetaAngle(uchar* raw_data, float& theta)
     {
         theta = ucharRaw2Float(raw_data);
+        return;
     }
 
     /**

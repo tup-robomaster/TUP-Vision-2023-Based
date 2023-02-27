@@ -25,7 +25,7 @@ Date:2022-10-05 完成相机驱动功能包的开发，包括相机驱动和相�
 
 ## 使用说明
 ### 1）Env
-    TODO:
+    OpenVINO:https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/download.html
 ### 2）Compile
     colcon build --symlink-install
     . install/setup.bash
@@ -52,6 +52,11 @@ Date:2022-10-05 完成相机驱动功能包的开发，包括相机驱动和相�
 运行命令：
 
     ros2 launch global_user buff_bringup.launch.py
+## 问题解决
+1.串口权限永久解决：
+    
+    1) whoami --查看用户名
+    2) sudo usermod -aG dialout username
 
      
 

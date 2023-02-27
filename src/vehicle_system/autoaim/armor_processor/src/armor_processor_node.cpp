@@ -147,8 +147,8 @@ namespace armor_processor
         GimbalMsg gimbal_info;
         gimbal_info.header.frame_id = "barrel_link";
         gimbal_info.header.stamp = target_info.header.stamp;
-        gimbal_info.pitch = angle[0];
-        gimbal_info.yaw = angle[1];
+        gimbal_info.pitch = angle[1];
+        gimbal_info.yaw = angle[0];
         gimbal_info.distance = aiming_point_cam.norm();
         gimbal_info.is_switched = target_info.target_switched;
         gimbal_info.is_spinning = target_info.is_spinning;
@@ -160,13 +160,13 @@ namespace armor_processor
             GimbalMsg tracking_info;
             tracking_info.header.frame_id = "barrel_link1";
             tracking_info.header.stamp = target_info.header.stamp;
-            tracking_info.pitch = tracking_angle[0];
-            tracking_info.yaw = tracking_angle[1];
+            tracking_info.pitch = tracking_angle[1];
+            tracking_info.yaw = tracking_angle[0];
             tracking_info.distance = tracking_point_cam.norm();
             tracking_info.is_switched = target_info.target_switched;
             tracking_info.is_spinning = target_info.is_spinning;
             tracking_info_pub_->publish(std::move(tracking_info));
-            RCLCPP_INFO(this->get_logger(), "pitch_angle:%.2f yaw_angle:%.2f", tracking_angle[0], tracking_angle[1]);
+            RCLCPP_INFO(this->get_logger(), "pitch_angle:%.2f yaw_angle:%.2f", tracking_angle[1], tracking_angle[0]);
 
             if(!target.is_target_lost)
             {

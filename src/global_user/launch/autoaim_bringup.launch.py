@@ -69,7 +69,8 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[{
                 'using_port': True,
-                'tracking_target': True
+                'tracking_target': True,
+                'print_serial_info': False
             }],
             condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
         ),

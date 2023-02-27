@@ -99,7 +99,7 @@ namespace serialport
             // 若串口离线则跳过数据发送
             if (!serial_port_->serial_data_.is_initialized)
             {
-                RCLCPP_WARN(this->get_logger(), "Serial port offline!!!");
+                RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "Serial port offline!!!");
                 usleep(5000);
                 continue;
             }
@@ -107,14 +107,14 @@ namespace serialport
             // 数据读取不成功进行循环
             while (!serial_port_->receiveData())
             {
-                RCLCPP_WARN(this->get_logger(), "CHECKSUM FAILED OR NO DATA RECVIED!!!");
+                RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
                 usleep(5000);
             }
             
             uchar mode = serial_port_->serial_data_.rdata[1];
             mode_ = mode;
-            // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
-            RCLCPP_INFO(this->get_logger(), "mode:%d", mode);
+            RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
+            // RCLCPP_INFO(this->get_logger(), "mode:%d", mode);
             
             if(mode == 1)
             {
@@ -129,6 +129,13 @@ namespace serialport
                 data_transform_->getGyroData(&serial_port_->serial_data_.rdata[19], gyro);
                 data_transform_->getAccData(&serial_port_->serial_data_.rdata[31], acc);
                 data_transform_->getBulletSpeed(&serial_port_->serial_data_.rdata[43], bullet_speed);
+                if(print_serial_info_)
+                {
+                    RCLCPP_INFO(this->get_logger(), "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
+                    RCLCPP_INFO(this->get_logger(), "gyro:[%f %f %f]", gyro[0], gyro[1], gyro[2]);
+                    RCLCPP_INFO(this->get_logger(), "acc:[%f %f %f]", acc[0], acc[1], acc[2]);
+                    RCLCPP_INFO(this->get_logger(), "bullet_speed::%f", bullet_speed);
+                }
 
                 SerialMsg serial_msg;
                 serial_msg.imu.header.frame_id = "imu_link";
@@ -283,6 +290,9 @@ namespace serialport
         case 2:
             this->tracking_target_ = param.as_bool();
             break;
+        case 3:
+            this->print_serial_info_ = param.as_bool();
+            break;
         default:
             break;
         }
@@ -307,7 +317,8 @@ namespace serialport
         {
             {"using_port", 0},
             {"baud", 1},
-            {"tracking_target", 2}
+            {"tracking_target", 2},
+            {"print_serial_info", 3}
         };
 
         this->declare_parameter<std::string>("port_id", "483/5740/200");
@@ -321,6 +332,9 @@ namespace serialport
 
         this->declare_parameter<bool>("tracking_target", false);
         this->get_parameter("tracking_target", tracking_target_);
+
+        this->declare_parameter("print_serial_info", false);
+        this->get_parameter("print_serial_info", this->print_serial_info_);
 
         return std::make_unique<SerialPort>(id_, baud_, using_port_);
     }

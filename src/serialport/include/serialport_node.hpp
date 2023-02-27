@@ -52,6 +52,7 @@ namespace serialport
         std::string device_name_;
         std::thread receive_thread_;
         CoordSolver coordsolver_;
+        bool print_serial_info_;
         
         mutex mutex_;
         bool using_port_;
