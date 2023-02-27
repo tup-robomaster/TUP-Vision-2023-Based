@@ -30,7 +30,7 @@ namespace serialport
         trans_data[0] = 0xA5;
         trans_data[1] = mode;
         crc_check_.Append_CRC8_Check_Sum(trans_data, 3);
-        if(mode == AUTOAIM || mode == HERO_SLING || mode == SMALL_BUFF || mode == BIG_BUFF)
+        if(mode == AUTOAIM || mode == HERO_SLING || mode == SMALL_BUFF || mode == BIG_BUFF || mode == OUTPOST_ROTATION_MODE)
         {
             float float_data[] = {vision_data.pitch_angle, vision_data.yaw_angle, vision_data.distance};
             float2UcharRawArray(float_data, 3, &trans_data[3]);
@@ -43,15 +43,11 @@ namespace serialport
         }
         else if(mode == SENTRY_RECV_NORMAL)
         {
-            float float_data[] = {vision_data.pitch_angle, vision_data.yaw_angle, vision_data.distance};
-            float2UcharRawArray(float_data, 3, &trans_data[3]);
-            trans_data[15] = vision_data.isSwitched;
-            trans_data[16] = vision_data.isFindTarget;
-            trans_data[17] = vision_data.isSpinning;
-            trans_data[18] = vision_data.ismiddle;
+            float angle_data[] = {vision_data.pitch_angle, vision_data.yaw_angle};
+            float2UcharRawArray(angle_data, 2, &trans_data[3]);
             float twist[] = {vision_data.linear_velocity[0], vision_data.linear_velocity[1], vision_data.linear_velocity[2],
                 vision_data.angular_velocity[0], vision_data.angular_velocity[1], vision_data.angular_velocity[2]};
-            float2UcharRawArray(twist, 6, &trans_data[19]);
+            float2UcharRawArray(twist, 6, &trans_data[11]);
             trans_data[43] = 0x00;
             crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
         }

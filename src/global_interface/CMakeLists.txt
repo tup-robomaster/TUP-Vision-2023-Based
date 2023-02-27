@@ -20,6 +20,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Buff.msg"
   "msg/Autoaim.msg"
   "msg/Gimbal.msg"
+  "msg/Sentry.msg"
   # "msg/SpinInfo.msg"
   # "srv/*.srv"
   # "action/*.action"

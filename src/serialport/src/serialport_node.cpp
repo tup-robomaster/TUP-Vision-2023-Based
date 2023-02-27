@@ -70,6 +70,14 @@ namespace serialport
                 serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", qos);
                 joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
                 receive_thread_ = std::thread(&SerialPortNode::receiveData, this);
+                if(is_sentry_)
+                {
+                    sentry_msg_sub_ = this->create_subscription<SentryMsg>(
+                        "/sentry_msg",
+                        qos, 
+                        std::bind(&SerialPortNode::sentryMsgSub, this, _1)
+                    );
+                }
             }
         }
     }
@@ -116,14 +124,14 @@ namespace serialport
             RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
             // RCLCPP_INFO(this->get_logger(), "mode:%d", mode);
             
-            if(mode == 1)
+            if(mode)
             {
                 // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
-
                 std::vector<float> quat(4);
                 std::vector<float> gyro(3);
                 std::vector<float> acc(3);
                 float bullet_speed;
+                
                 //Process IMU Datas
                 data_transform_->getQuatData(&serial_port_->serial_data_.rdata[3], quat);
                 data_transform_->getGyroData(&serial_port_->serial_data_.rdata[19], gyro);
@@ -206,7 +214,7 @@ namespace serialport
         if(this->using_port_)
         {   
             VisionData vision_data;
-            if(mode == AUTOAIM || mode == HERO_SLING)
+            if(mode == AUTOAIM || mode == HERO_SLING || mode == OUTPOST_ROTATION_MODE)
             {
                 RCLCPP_WARN(this->get_logger(), "Sub autoaim msg!!!");
                 mutex_.lock();
@@ -260,6 +268,44 @@ namespace serialport
                     0,
                     {0, 0, 0},
                     {0, 0, 0}
+                };
+
+                //根据不同mode进行对应的数据转换
+                data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
+                //数据发送
+                serial_port_->sendData();
+                mutex_.unlock();
+                flag_ = true;
+            }
+        }
+        else
+        {
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
+        }
+    }
+
+    void SerialPortNode::sentryMsgSub(SentryMsg::SharedPtr target_info)
+    {
+        int mode = mode_;
+        RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
+        if(this->using_port_)
+        {
+            VisionData vision_data;
+            if(mode == SENTRY_RECV_NORMAL)
+            {
+                mutex_.lock();
+                vision_data = 
+                {
+                    (serial_port_->steady_clock_.now().nanoseconds() / 1e6),
+                    (float)target_info->pitch, 
+                    (float)target_info->yaw, 
+                    0,
+                    false,
+                    true,
+                    false,
+                    true,
+                    {target_info->twist.linear.x, target_info->twist.linear.y, target_info->twist.linear.z},
+                    {target_info->twist.angular.x, target_info->twist.angular.y, target_info->twist.angular.z}
                 };
 
                 //根据不同mode进行对应的数据转换

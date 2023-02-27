@@ -24,6 +24,7 @@
 
 #include "global_interface/msg/serial.hpp"
 #include "global_interface/msg/gimbal.hpp"
+#include "global_interface/msg/sentry.hpp"
 #include "../../global_user/include/coordsolver.hpp"
 
 using namespace global_user;
@@ -34,6 +35,7 @@ namespace serialport
     {
         typedef global_interface::msg::Gimbal GimbalMsg;
         typedef global_interface::msg::Serial SerialMsg;
+        typedef global_interface::msg::Sentry SentryMsg;
 
     public:
         SerialPortNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
@@ -44,6 +46,7 @@ namespace serialport
         void sendData();
         void armorMsgSub(GimbalMsg::SharedPtr msg);
         void buffMsgSub(GimbalMsg::SharedPtr msg);
+        void sentryMsgSub(SentryMsg::SharedPtr msg);
         void serialWatcher();
     
     private:
@@ -57,6 +60,7 @@ namespace serialport
         mutex mutex_;
         bool using_port_;
         bool tracking_target_;
+        bool is_sentry_;
         atomic<int> mode_;
         atomic<bool> flag_;
         // VisionData vision_data_;
@@ -68,11 +72,13 @@ namespace serialport
          * 
          */
         rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
+        rclcpp::Subscription<SentryMsg>::SharedPtr sentry_msg_sub_;;
 
         // 其他兵种
         rclcpp::Subscription<GimbalMsg>::SharedPtr autoaim_info_sub_;
         rclcpp::Subscription<GimbalMsg>::SharedPtr autoaim_tracking_sub_;
         rclcpp::Subscription<GimbalMsg>::SharedPtr buff_info_sub_;
+
         rclcpp::Publisher<SerialMsg>::SharedPtr serial_msg_pub_;
 
     private:
