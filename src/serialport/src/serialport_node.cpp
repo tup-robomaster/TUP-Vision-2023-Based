@@ -115,7 +115,6 @@ namespace serialport
                 usleep(5000);
                 continue;
             }
-
             // 数据读取不成功进行循环
             while (!serial_port_->receiveData())
             {
@@ -129,7 +128,7 @@ namespace serialport
             RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
             // RCLCPP_INFO(this->get_logger(), "mode:%d", mode);
             
-            if(mode)
+            if (mode)
             {
                 // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
                 std::vector<float> quat(4);
@@ -170,23 +169,24 @@ namespace serialport
 
             if (mode == SENTRY_RECV_NORMAL)
             {
-                float theta;
-                data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata[47], theta);
 
-                sensor_msgs::msg::JointState joint_state;
-                joint_state.header.stamp = this->get_clock()->now();
-                joint_state.name.push_back("gimbal_yaw_joint");
-                joint_state.name.push_back("gimbal_pitch_joint");
-                joint_state.position.push_back(theta);
-                joint_state.position.push_back(0);
-                joint_state_pub_->publish(joint_state);
-
-                if (flag == 0xB5)
+                if (flag == 0xA5)
+                {
+                    float theta;
+                    data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata[47], theta);
+                    sensor_msgs::msg::JointState joint_state;
+                    joint_state.header.stamp = this->get_clock()->now();
+                    joint_state.name.push_back("gimbal_yaw_joint");
+                    joint_state.name.push_back("gimbal_pitch_joint");
+                    joint_state.position.push_back(theta);
+                    joint_state.position.push_back(0);
+                    joint_state_pub_->publish(joint_state);
+                }
+                else if (flag == 0xB5)
                 {
                     data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
                 }
-
-                if (flag == 0xC5)
+                else if (flag == 0xC5)
                 {
                     vector<uint16_t> hp(10);
                     uint16_t timestamp;
@@ -198,7 +198,6 @@ namespace serialport
                     CarPosMsg car_pos_msg;
                     CarHPMsg car_hp_msg;
                     GameMsg game_msg;
-                    cout << endl;
                     for(int ii = 0; ii < 20; ii+=2)
                     {
                         car_pos_msg.pos[ii].x = vehicle_pos_info[ii];
@@ -429,7 +428,7 @@ namespace serialport
         this->declare_parameter<int>("baud", 115200);
         this->get_parameter("baud", baud_);
 
-        this->declare_parameter<bool>("using_port", false);
+        this->declare_parameter<bool>("using_port", true);
         this->get_parameter("using_port", using_port_);
 
         this->declare_parameter<bool>("tracking_target", false);
