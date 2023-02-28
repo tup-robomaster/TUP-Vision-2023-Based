@@ -69,6 +69,9 @@ namespace serialport
             {
                 serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", qos);
                 joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
+                car_pos_pub_ = this->create_publisher<CarPosMsg>("/car_pos", qos);
+                car_hp_pub_ = this->create_publisher<CarHPMsg>("/car_hp", qos);
+                game_msg_pub_ = this->create_publisher<GameMsg>("/game_info", qos);
                 receive_thread_ = std::thread(&SerialPortNode::receiveData, this);
                 if(is_sentry_)
                 {
@@ -102,6 +105,7 @@ namespace serialport
     
     void SerialPortNode::receiveData()
     {
+        vector<float> vehicle_pos_info(20);
         while(1)
         {
             // 若串口离线则跳过数据发送
@@ -119,6 +123,7 @@ namespace serialport
                 usleep(5000);
             }
             
+            uchar flag = serial_port_->serial_data_.rdata[0];
             uchar mode = serial_port_->serial_data_.rdata[1];
             mode_ = mode;
             RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
@@ -175,6 +180,57 @@ namespace serialport
                 joint_state.position.push_back(theta);
                 joint_state.position.push_back(0);
                 joint_state_pub_->publish(joint_state);
+
+                if (flag == 0xB5)
+                {
+                    data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
+                }
+
+                if (flag == 0xC5)
+                {
+                    vector<uint16_t> hp(10);
+                    uint16_t timestamp;
+                    data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
+                    // data_transform_->getHPInfo(flag, &serial_port_->serial_data_.rdata[27], hp);
+                    // data_transform_->getGameInfo(flag, &serial_port_->serial_data_.rdata[47], timestamp);
+
+                    // cout << "pos_info:" << endl;
+                    CarPosMsg car_pos_msg;
+                    CarHPMsg car_hp_msg;
+                    GameMsg game_msg;
+                    cout << endl;
+                    for(int ii = 0; ii < 20; ii+=2)
+                    {
+                        car_pos_msg.pos[ii].x = vehicle_pos_info[ii];
+                        car_pos_msg.pos[ii].y = vehicle_pos_info[ii+1];
+                        // car_hp_msg.hp[ii/2] = hp[ii/2];
+                    }
+                    // for(int ii = 0; ii < 20; ii++)
+                    // {
+                    //     cout << "pos:" << vehicle_pos_info[ii];
+                    //     if(ii < 10)
+                    //         cout << " hp:" << hp[ii] << endl;
+                    //     else
+                    //         cout << endl;
+                    // }
+                    // cout << "timestamp:" << timestamp << endl;
+
+                    rclcpp::Time now = this->get_clock()->now();
+                    car_pos_msg.header.frame_id = "";
+                    car_pos_msg.header.stamp = now;
+                    car_pos_pub_->publish(move(car_pos_msg));
+                    
+                    // car_hp_msg.header.frame_id = "";
+                    // car_hp_msg.header.stamp = now;
+                    // car_hp_pub_->publish(move(car_hp_msg));
+
+                    // game_msg.header.frame_id = "";
+                    // game_msg.header.stamp = now;
+                    // game_msg.timestamp = timestamp;
+                    // game_msg_pub_->publish(move(game_msg));
+
+                    vehicle_pos_info.clear();
+                }
             }
         }
     }

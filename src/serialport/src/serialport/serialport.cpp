@@ -66,15 +66,26 @@ namespace serialport
             && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3)
             && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
         {
+            // RCLCPP_WARN(logger_, "0XA5");
             return true;
         }
+
         if(serial_data_.rdata[0] == 0xB5
             && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3)
             && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
         {
+            // RCLCPP_WARN(logger_, "0XB5");
             return true;
         }
-        
+
+        if(serial_data_.rdata[0] == 0xC5
+            && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3)
+            && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
+        {
+            // RCLCPP_WARN(logger_, "0XC5");
+            return true;
+        }
+
         return false;
     }
 

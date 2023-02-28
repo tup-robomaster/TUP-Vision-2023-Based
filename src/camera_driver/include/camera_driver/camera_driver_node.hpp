@@ -183,6 +183,10 @@ namespace camera_driver
                 if(!cam_driver_->get_frame(frame))
                 {
                     RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
+                    // Reopen camera.
+                    if(!cam_driver_->open())
+                        RCLCPP_ERROR(this->get_logger(), "Open failed!");
+                    sleep(1);
                     return;
                 }
 
@@ -212,6 +216,10 @@ namespace camera_driver
             if(!cam_driver_->get_frame(frame))
             {
                 RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
+                // Reopen camera.
+                if(!cam_driver_->open())
+                    RCLCPP_ERROR(this->get_logger(), "Open failed!");
+                sleep(1);
                 return;
             }
 

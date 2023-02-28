@@ -34,7 +34,7 @@
 
 #define ECHOFLAGS (ECHO | ECHOE | ECHOK | ECHONL) //C_lflag
 const std::vector<std::string> DEFAULT_PORT = {"ttyUSB", "ttyACM"}; //默认串口名
-constexpr int MAX_ITER = 4; //默认串口最大编号
+constexpr int MAX_ITER = 10; //默认串口最大编号
 
 using namespace std;
 using namespace global_user;

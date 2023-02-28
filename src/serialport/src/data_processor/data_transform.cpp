@@ -52,6 +52,35 @@ namespace serialport
             crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
         }
     }
+
+    void DataTransform::getPosInfo(uchar flag, uchar* raw_data, vector<float>& pos)
+    {
+        if(flag == 0xB5)
+            ucharRaw2FloatVector(raw_data, 56, pos);
+        else if(flag == 0xC5)
+            ucharRaw2FloatVector(raw_data, 24, pos);
+        return;
+    }
+
+    void DataTransform::getHPInfo(uchar flag, uchar* raw_data, vector<uint16_t>& hp)
+    {
+        if(flag == 0xC5)
+        {
+            ucharRaw2Int16Vector(raw_data, 20, hp);
+            cout << "HPInfo!!!" << endl;
+        }
+        return;
+    }
+
+    void DataTransform::getGameInfo(uchar flag, uchar* raw_data, uint16_t& timestamp)
+    {
+        if(flag == 0xC5)
+        {
+            timestamp = ucharRaw2Int16(raw_data);
+            cout << "GameInfo!!!" << endl;
+        }
+        return;
+    }
     
     /**
      * @brief 获取四元数
@@ -107,6 +136,26 @@ namespace serialport
         return;
     }
 
+    uint16_t DataTransform::ucharRaw2Int16(uchar *data)
+    {
+        uint16_t int16_data;
+        int16_data = *((uint16_t*)data);
+        // cout << "uint16:" << int16_data << " ";
+        return int16_data;
+    }
+
+    bool DataTransform::ucharRaw2Int16Vector(uchar *data, int bytes, vector<uint16_t>& vec)
+    {
+        assert(bytes % 2 == 0);
+        for (int i = 0; i < bytes; i += 2)
+        {
+            uint16_t int16_data = ucharRaw2Int16(&data[i]);
+            cout << "int16_data:" << int16_data << " ";
+            vec.push_back(int16_data);
+        }
+        return true;
+    }
+
     /**
      * @brief 将4个uchar转换为float
      * @param data data首地址指针
@@ -116,6 +165,7 @@ namespace serialport
     {
         float float_data;
         float_data = *((float*)data);
+        // cout << "float_data:" << float_data << " ";
         return float_data;
     };
 
@@ -142,7 +192,7 @@ namespace serialport
     {
         // std::vector<uchar*> pts;
         assert(bytes % 4 == 0);
-        vec.clear();
+        // vec.clear();
         for (int i = 0; i < bytes; i += 4)
         {
             float float_data = ucharRaw2Float(&data[i]);
