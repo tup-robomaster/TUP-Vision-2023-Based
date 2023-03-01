@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-02-24 21:39:08
+ * @LastEditTime: 2023-03-01 09:51:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -864,7 +864,6 @@ namespace armor_processor
                         x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
                     if(y_pred > y_origin * 0.95)
                         y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
-
                 }
                 else
                 {

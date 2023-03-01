@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-02-26 14:01:49
+ * @LastEditTime: 2023-03-01 09:50:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -80,7 +80,7 @@ namespace armor_processor
                 image_size_ = image_info_.image_size_map[camera_type];
                 std::string camera_topic = image_info_.camera_topic_map[camera_type];
                 
-                sleep(5);
+                sleep(2);
                 // image sub.
                 img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
                     std::bind(&ArmorProcessorNode::imageCallback, this, _1), transport));

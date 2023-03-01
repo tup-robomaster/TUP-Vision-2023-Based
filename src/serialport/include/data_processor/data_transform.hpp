@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 01:45:19
- * @LastEditTime: 2023-02-25 12:15:49
+ * @LastEditTime: 2023-03-01 13:04:39
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/data_processor/data_transform.hpp
  */
 #ifndef DATA_TRANSFORM_HPP_
@@ -41,7 +41,7 @@ namespace serialport
         HERO_SLING,
         SMALL_BUFF,
         BIG_BUFF,
-        SENTRY_RECV_NORMAL,
+        SENTRY_MODE,
         OUTPOST_ROTATION_MODE
     };
 
@@ -72,8 +72,8 @@ namespace serialport
         void getBulletSpeed(uchar* raw_data, float& bullet_speed);
         void getThetaAngle(uchar* raw_data, float& theta);
         void getPosInfo(uchar flag, uchar* raw_data, vector<float>& pos);
-        void getHPInfo(uchar flag, uchar* raw_data, vector<uint16_t>& hp);
-        void getGameInfo(uchar flag, uchar* raw_data, uint16_t& timestamp);
+        void getHPInfo(uchar flag, uchar* raw_data, vector<ushort>& hp);
+        void getGameInfo(uchar flag, uchar* raw_data, ushort& timestamp);
 
         int mode_;     
         rclcpp::Logger logger_;  
@@ -83,8 +83,8 @@ namespace serialport
         bool ucharRaw2FloatVector(uchar *data, int bytes, vector<float> &vec);
         uchar* float2UcharRaw(float float_data);
         bool float2UcharRawArray(float float_data[], int num, uchar* raw_data);
-        uint16_t ucharRaw2Int16(uchar *data);
-        bool ucharRaw2Int16Vector(uchar *data, int bytes, vector<uint16_t>& vec);
+        ushort ucharRaw2Int16(uchar *data);
+        bool ucharRaw2Int16Vector(uchar *data, int bytes, vector<ushort>& vec);
     };
 } //namespace serialport
 

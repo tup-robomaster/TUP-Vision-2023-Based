@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-02-26 12:33:52
+LastEditTime: 2023-03-01 12:58:38
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -70,7 +70,8 @@ def generate_launch_description():
             parameters=[{
                 'using_port': True,
                 'tracking_target': True,
-                'print_serial_info': False
+                'print_serial_info': False,
+                'print_referee_info': False
             }],
             condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
         ),
