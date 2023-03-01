@@ -57,16 +57,14 @@ namespace serialport
         {
             return false;
         }
-        // cout << "bytes_num:" << bytes << endl;
         
         bytes = read(serial_data_.fd, serial_data_.rdata, (size_t)(lens));
         timestamp_ = this->steady_clock_.now();
 
-        if((serial_data_.rdata[0] == 0xA5 || serial_data_.rdata[0] == 0xB5 || serial_data_.rdata[0] == 0xC5)
+        if ((serial_data_.rdata[0] == 0xA5 || serial_data_.rdata[0] == 0xB5 || serial_data_.rdata[0] == 0xC5)
             && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3)
             && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
         {
-            // RCLCPP_WARN(logger_, "0XA5");
             return true;
         }
 
@@ -95,7 +93,7 @@ namespace serialport
         serial_data_.device = setDeviceByID(listPorts());
         const string alias = "/dev/" + serial_data_.device.alias;
 
-        if(alias.length() - 4 == 0)
+        if (alias.length() - 4 == 0)
             return false;
 
         close(serial_data_.last_fd);
@@ -114,7 +112,7 @@ namespace serialport
 
         RCLCPP_INFO(logger_, "Openning %s...", alias.c_str());
         setBrate();
-        if(!setBit())
+        if (!setBit())
         {
             RCLCPP_WARN(logger_, "Set Parity Error.");
             exit(0);
@@ -186,7 +184,7 @@ namespace serialport
             string config_type = text.substr(0,equal_idx);
             string config_info = text.substr(equal_idx + 1);
 
-            if(config_type == "PRODUCT")
+            if (config_type == "PRODUCT")
             {
                 dev.id = config_info;
             }

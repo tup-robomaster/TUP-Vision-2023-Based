@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-02-25 16:09:55
+ * @LastEditTime: 2023-03-01 13:59:19
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -49,7 +49,8 @@ namespace serialport
 
     public:
         void receiveData();
-        void sendData();
+        // void sendData();
+        bool sendData(GimbalMsg::SharedPtr msg);
         void armorMsgSub(GimbalMsg::SharedPtr msg);
         void buffMsgSub(GimbalMsg::SharedPtr msg);
         void sentryMsgSub(SentryMsg::SharedPtr msg);
@@ -62,6 +63,7 @@ namespace serialport
         std::thread receive_thread_;
         CoordSolver coordsolver_;
         bool print_serial_info_;
+        bool print_referee_info_;
         
         mutex mutex_;
         bool using_port_;

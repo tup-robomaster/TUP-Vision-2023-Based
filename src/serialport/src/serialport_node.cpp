@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-02-25 16:31:43
+ * @LastEditTime: 2023-03-01 14:39:41
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -33,7 +33,7 @@ namespace serialport
         qos.durability_volatile();
         
         //自瞄msg订阅
-        if(!tracking_target_)
+        if (!tracking_target_)
         {   //预测信息订阅
             RCLCPP_WARN(this->get_logger(), "Prediciton!!!");
             autoaim_info_sub_ = this->create_subscription<GimbalMsg>(
@@ -63,9 +63,9 @@ namespace serialport
         // timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
         timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
 
-        if(using_port_)
+        if (using_port_)
         {   // Use serial port.
-            if(serial_port_->openPort())
+            if (serial_port_->openPort())
             {
                 serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", qos);
                 joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
@@ -73,7 +73,7 @@ namespace serialport
                 car_hp_pub_ = this->create_publisher<CarHPMsg>("/car_hp", qos);
                 game_msg_pub_ = this->create_publisher<GameMsg>("/game_info", qos);
                 receive_thread_ = std::thread(&SerialPortNode::receiveData, this);
-                if(is_sentry_)
+                if (is_sentry_)
                 {
                     sentry_msg_sub_ = this->create_subscription<SentryMsg>(
                         "/sentry_msg",
@@ -87,26 +87,34 @@ namespace serialport
 
     SerialPortNode::~SerialPortNode()
     {
-        if(receive_thread_.joinable())
+        if (receive_thread_.joinable())
             receive_thread_.join();
     }
 
+    /**
+     * @brief 串口监管线程
+     * 
+     */
     void SerialPortNode::serialWatcher()
     {
-        if(access(serial_port_->serial_data_.device.path.c_str(), F_OK) == -1 || !serial_port_->serial_data_.is_initialized)
+        if (access(serial_port_->serial_data_.device.path.c_str(), F_OK) == -1 || !serial_port_->serial_data_.is_initialized)
         {
             serial_port_->serial_data_.is_initialized = true;
-            if(!serial_port_->openPort())
+            if (!serial_port_->openPort())
             {
                 RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Port open failed!!!");
             }
         }
     }
     
+    /**
+     * @brief 数据发送线程
+     * 
+     */
     void SerialPortNode::receiveData()
     {
-        vector<float> vehicle_pos_info(20);
-        while(1)
+        vector<float> vehicle_pos_info;
+        while (1)
         {
             // 若串口离线则跳过数据发送
             if (!serial_port_->serial_data_.is_initialized)
@@ -115,25 +123,32 @@ namespace serialport
                 usleep(5000);
                 continue;
             }
+
+            bool is_receive_data = false; 
             // 数据读取不成功进行循环
-            while (!serial_port_->receiveData())
+            while (!is_receive_data)
             {
-                RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
+                mutex_.lock();
+                is_receive_data = serial_port_->receiveData();
+                mutex_.unlock();
+
+                if(!is_receive_data)
+                    RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
                 usleep(5000);
             }
             
             uchar flag = serial_port_->serial_data_.rdata[0];
             uchar mode = serial_port_->serial_data_.rdata[1];
             mode_ = mode;
-            RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
+            // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
             // RCLCPP_INFO(this->get_logger(), "mode:%d", mode);
             
-            if (mode)
+            if (flag == 0xA5)
             {
                 // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
-                std::vector<float> quat(4);
-                std::vector<float> gyro(3);
-                std::vector<float> acc(3);
+                std::vector<float> quat;
+                std::vector<float> gyro;
+                std::vector<float> acc;
                 float bullet_speed;
                 
                 //Process IMU Datas
@@ -141,7 +156,7 @@ namespace serialport
                 data_transform_->getGyroData(&serial_port_->serial_data_.rdata[19], gyro);
                 data_transform_->getAccData(&serial_port_->serial_data_.rdata[31], acc);
                 data_transform_->getBulletSpeed(&serial_port_->serial_data_.rdata[43], bullet_speed);
-                if(print_serial_info_)
+                if (print_serial_info_)
                 {
                     RCLCPP_INFO(this->get_logger(), "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
                     RCLCPP_INFO(this->get_logger(), "gyro:[%f %f %f]", gyro[0], gyro[1], gyro[2]);
@@ -165,15 +180,12 @@ namespace serialport
                 serial_msg.imu.linear_acceleration.y = acc[1];
                 serial_msg.imu.linear_acceleration.z = acc[2];
                 serial_msg_pub_->publish(std::move(serial_msg));
-            }
-
-            if (mode == SENTRY_RECV_NORMAL)
-            {
-
-                if (flag == 0xA5)
+                
+                if (mode == SENTRY_MODE)
                 {
                     float theta;
                     data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata[47], theta);
+
                     sensor_msgs::msg::JointState joint_state;
                     joint_state.header.stamp = this->get_clock()->now();
                     joint_state.name.push_back("gimbal_yaw_joint");
@@ -182,97 +194,69 @@ namespace serialport
                     joint_state.position.push_back(0);
                     joint_state_pub_->publish(joint_state);
                 }
-                else if (flag == 0xB5)
+            }
+            else if (flag == 0xB5)
+            {
+                data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
+            }
+            else if (flag == 0xC5)
+            {
+                vector<ushort> hp;
+                ushort timestamp;
+                data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
+                data_transform_->getHPInfo(flag, &serial_port_->serial_data_.rdata[27], hp);
+                data_transform_->getGameInfo(flag, &serial_port_->serial_data_.rdata[47], timestamp);
+
+                CarPosMsg car_pos_msg;
+                CarHPMsg car_hp_msg;
+                GameMsg game_msg;
+
+                for(int ii = 0; ii < 20; ii+=2)
                 {
-                    data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
+                    car_pos_msg.pos[ii].x = vehicle_pos_info[ii];
+                    car_pos_msg.pos[ii].y = vehicle_pos_info[ii+1];
+                    car_hp_msg.hp[ii/2] = hp[ii/2];
                 }
-                else if (flag == 0xC5)
+
+                if (print_referee_info_)
                 {
-                    vector<uint16_t> hp(10);
-                    uint16_t timestamp;
-                    data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
-                    // data_transform_->getHPInfo(flag, &serial_port_->serial_data_.rdata[27], hp);
-                    // data_transform_->getGameInfo(flag, &serial_port_->serial_data_.rdata[47], timestamp);
-
-                    // cout << "pos_info:" << endl;
-                    CarPosMsg car_pos_msg;
-                    CarHPMsg car_hp_msg;
-                    GameMsg game_msg;
-                    for(int ii = 0; ii < 20; ii+=2)
-                    {
-                        car_pos_msg.pos[ii].x = vehicle_pos_info[ii];
-                        car_pos_msg.pos[ii].y = vehicle_pos_info[ii+1];
-                        // car_hp_msg.hp[ii/2] = hp[ii/2];
-                    }
-                    // for(int ii = 0; ii < 20; ii++)
-                    // {
-                    //     cout << "pos:" << vehicle_pos_info[ii];
-                    //     if(ii < 10)
-                    //         cout << " hp:" << hp[ii] << endl;
-                    //     else
-                    //         cout << endl;
-                    // }
-                    // cout << "timestamp:" << timestamp << endl;
-
-                    rclcpp::Time now = this->get_clock()->now();
-                    car_pos_msg.header.frame_id = "";
-                    car_pos_msg.header.stamp = now;
-                    car_pos_pub_->publish(move(car_pos_msg));
-                    
-                    // car_hp_msg.header.frame_id = "";
-                    // car_hp_msg.header.stamp = now;
-                    // car_hp_pub_->publish(move(car_hp_msg));
-
-                    // game_msg.header.frame_id = "";
-                    // game_msg.header.stamp = now;
-                    // game_msg.timestamp = timestamp;
-                    // game_msg_pub_->publish(move(game_msg));
-
-                    vehicle_pos_info.clear();
+                    for(int ii = 0; ii < 20; ii++)
+                        RCLCPP_INFO(this->get_logger(), "Pos:%.2f", vehicle_pos_info[ii]);
+                    for(int ii = 0; ii < 10; ii++)
+                        RCLCPP_INFO(this->get_logger(), "HP:%.2d", hp[ii]);
+                    RCLCPP_INFO(this->get_logger(), "timestamp:%.2d", timestamp);
                 }
+
+                rclcpp::Time now = this->get_clock()->now();
+                car_pos_msg.header.frame_id = "";
+                car_pos_msg.header.stamp = now;
+                car_pos_pub_->publish(move(car_pos_msg));
+                
+                car_hp_msg.header.frame_id = "";
+                car_hp_msg.header.stamp = now;
+                car_hp_pub_->publish(move(car_hp_msg));
+
+                game_msg.header.frame_id = "";
+                game_msg.header.stamp = now;
+                game_msg.timestamp = timestamp;
+                game_msg_pub_->publish(move(game_msg));
+
+                vehicle_pos_info.clear();
             }
         }
     }
 
-    /**
-     * @brief 数据发送回调函数
-     * 
-     */
-    void SerialPortNode::sendData()
-    {
-        // VisionData vision_data = {0.0, (float)0.0, (float)0.0, (float)0.0, 0, 1, 0, 0};
-        // if(flag_)
-        // {
-        //     auto now = (serial_port_->steady_clock_.now().nanoseconds() / 1e6);
-        //     mutex_.lock();
-        //     if(abs(now - vision_data_.timestamp) < 50) //(ms)，若时间差过大，则忽略此帧数据
-        //     {
-        //         vision_data = vision_data_;
-        //     }
-        //     mutex_.unlock();
-        //     flag_ = false;
-        // }
-        // // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10, "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
-        // // RCLCPP_WARN(this->get_logger(), "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
-        // //根据不同mode进行对应的数据转换
-        // data_transform_->transformData(mode_, vision_data, serial_port_->Tdata);
-        // //数据发送
-        // serial_port_->sendData();
-
-        return;
-    }
-
-    void SerialPortNode::armorMsgSub(GimbalMsg::SharedPtr target_info) 
+    bool SerialPortNode::sendData(GimbalMsg::SharedPtr target_info)
     {
         int mode = mode_;
         // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
-        if(this->using_port_)
+        if (this->using_port_)
         {   
             VisionData vision_data;
-            if(mode == AUTOAIM || mode == HERO_SLING || mode == OUTPOST_ROTATION_MODE)
+            if (mode == AUTOAIM || mode == HERO_SLING || mode == OUTPOST_ROTATION_MODE
+            || mode == SMALL_BUFF || mode == BIG_BUFF)
             {
                 RCLCPP_WARN(this->get_logger(), "Sub autoaim msg!!!");
-                mutex_.lock();
                 vision_data = 
                 {
                     (serial_port_->steady_clock_.now().nanoseconds() / 1e6),
@@ -286,69 +270,63 @@ namespace serialport
                     {0, 0, 0},
                     {0, 0, 0}
                 };
-                
-                //根据不同mode进行对应的数据转换
-                data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
-                //数据发送
-                serial_port_->sendData();
-                mutex_.unlock();
-                flag_ = true;
             }
+            else
+                return false;
+
+            //根据不同mode进行对应的数据转换
+            data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
+            //数据发送
+            mutex_.lock();
+            serial_port_->sendData();
+            mutex_.unlock();
+            return true;
         }
         else
+            return false;
+    }
+
+    /**
+     * @brief 自瞄消息订阅回调函数
+     * 
+     * @param target_info 目标信息
+     */
+    void SerialPortNode::armorMsgSub(GimbalMsg::SharedPtr target_info) 
+    {
+        if (!sendData(target_info))
         {   // Debug without com.
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub autoaim msg...");
         }
+        return;
     }
 
+    /**
+     * @brief 能量机关消息订阅回调函数
+     * 
+     * @param target_info 目标信息
+     */
     void SerialPortNode::buffMsgSub(GimbalMsg::SharedPtr target_info) 
     {
-        int mode = mode_;
-        RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
-        if(this->using_port_)
-        {
-            VisionData vision_data;
-            if(mode == SMALL_BUFF || mode == BIG_BUFF)
-            {
-                mutex_.lock();
-                vision_data = 
-                {
-                    (serial_port_->steady_clock_.now().nanoseconds() / 1e6),
-                    (float)target_info->pitch, 
-                    (float)target_info->yaw, 
-                    (float)target_info->distance, 
-                    target_info->is_switched, 
-                    1, 
-                    target_info->is_spinning, 
-                    0,
-                    {0, 0, 0},
-                    {0, 0, 0}
-                };
-
-                //根据不同mode进行对应的数据转换
-                data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
-                //数据发送
-                serial_port_->sendData();
-                mutex_.unlock();
-                flag_ = true;
-            }
-        }
-        else
-        {
+        if (!sendData(target_info))
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
-        }
+        return;
     }
 
+    /**
+     * @brief 哨兵消息订阅回调函数
+     * 
+     * @param target_info 目标信息
+     */
     void SerialPortNode::sentryMsgSub(SentryMsg::SharedPtr target_info)
     {
         int mode = mode_;
-        RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
-        if(this->using_port_)
-        {
+        // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
+        if (this->using_port_)
+        {   
             VisionData vision_data;
-            if(mode == SENTRY_RECV_NORMAL)
+            if (mode == SENTRY_MODE)
             {
-                mutex_.lock();
+                RCLCPP_WARN(this->get_logger(), "Sub sentry msg!!!");
                 vision_data = 
                 {
                     (serial_port_->steady_clock_.now().nanoseconds() / 1e6),
@@ -362,20 +340,50 @@ namespace serialport
                     {target_info->twist.linear.x, target_info->twist.linear.y, target_info->twist.linear.z},
                     {target_info->twist.angular.x, target_info->twist.angular.y, target_info->twist.angular.z}
                 };
-
-                //根据不同mode进行对应的数据转换
-                data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
-                //数据发送
-                serial_port_->sendData();
-                mutex_.unlock();
-                flag_ = true;
             }
+            else
+                return;
+
+            //根据不同mode进行对应的数据转换
+            data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
+            //数据发送
+            mutex_.lock();
+            serial_port_->sendData();
+            mutex_.unlock();
+            return;
         }
         else
-        {
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
-        }
+        return;
     }
+
+    /**
+     * @brief 数据发送回调函数
+     * 
+     */
+    // void SerialPortNode::sendData()
+    // {
+    //     VisionData vision_data = {0.0, (float)0.0, (float)0.0, (float)0.0, 0, 1, 0, 0};
+    //     if(flag_)
+    //     {
+    //         auto now = (serial_port_->steady_clock_.now().nanoseconds() / 1e6);
+    //         mutex_.lock();
+    //         if(abs(now - vision_data_.timestamp) < 50) //(ms)，若时间差过大，则忽略此帧数据
+    //         {
+    //             vision_data = vision_data_;
+    //         }
+    //         mutex_.unlock();
+    //         flag_ = false;
+    //     }
+    //     // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10, "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
+    //     // RCLCPP_WARN(this->get_logger(), "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
+    //     //根据不同mode进行对应的数据转换
+    //     data_transform_->transformData(mode_, vision_data, serial_port_->Tdata);
+    //     //数据发送
+    //     serial_port_->sendData();
+
+    //     return;
+    // }
 
     bool SerialPortNode::setParam(rclcpp::Parameter param)
     {
@@ -393,6 +401,9 @@ namespace serialport
             break;
         case 3:
             this->print_serial_info_ = param.as_bool();
+            break;
+        case 4:
+            this->print_referee_info_= param.as_bool();
             break;
         default:
             break;
@@ -419,7 +430,8 @@ namespace serialport
             {"using_port", 0},
             {"baud", 1},
             {"tracking_target", 2},
-            {"print_serial_info", 3}
+            {"print_serial_info", 3},
+            {"print_referee_info", 4}
         };
 
         this->declare_parameter<std::string>("port_id", "483/5740/200");
@@ -428,7 +440,7 @@ namespace serialport
         this->declare_parameter<int>("baud", 115200);
         this->get_parameter("baud", baud_);
 
-        this->declare_parameter<bool>("using_port", true);
+        this->declare_parameter<bool>("using_port", false);
         this->get_parameter("using_port", using_port_);
 
         this->declare_parameter<bool>("tracking_target", false);
@@ -436,6 +448,9 @@ namespace serialport
 
         this->declare_parameter("print_serial_info", false);
         this->get_parameter("print_serial_info", this->print_serial_info_);
+
+        this->declare_parameter("print_referee_info", false);
+        this->get_parameter("print_referee_info", this->print_referee_info_);
 
         return std::make_unique<SerialPort>(id_, baud_, using_port_);
     }
