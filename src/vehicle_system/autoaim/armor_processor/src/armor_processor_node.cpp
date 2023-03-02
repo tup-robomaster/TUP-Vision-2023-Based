@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-03-01 09:50:15
+ * @LastEditTime: 2023-03-02 09:59:19
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -80,7 +80,7 @@ namespace armor_processor
                 image_size_ = image_info_.image_size_map[camera_type];
                 std::string camera_topic = image_info_.camera_topic_map[camera_type];
                 
-                sleep(2);
+                sleep(5);
                 // image sub.
                 img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
                     std::bind(&ArmorProcessorNode::imageCallback, this, _1), transport));
@@ -112,6 +112,8 @@ namespace armor_processor
         Eigen::Vector3d aiming_point_cam = {0.0, 0.0, 0.0};
         Eigen::Vector3d tracking_point_cam = {0.0, 0.0, 0.0};
         Eigen::Vector2d tracking_angle = {0.0, 0.0};
+
+        auto start = processor_->steady_clock_.now();
         if(target.is_target_lost)
         {
             processor_->error_cnt_ = 0;
@@ -160,6 +162,9 @@ namespace armor_processor
             GimbalMsg tracking_info;
             tracking_info.header.frame_id = "barrel_link1";
             tracking_info.header.stamp = target_info.header.stamp;
+            auto end = processor_->steady_clock_.now();
+            double dura = end.nanoseconds() - start.nanoseconds() + target_info.header.stamp.nanosec;
+
             tracking_info.pitch = tracking_angle[1];
             tracking_info.yaw = tracking_angle[0];
             tracking_info.distance = tracking_point_cam.norm();
@@ -167,11 +172,13 @@ namespace armor_processor
             tracking_info.is_spinning = target_info.is_spinning;
             tracking_info_pub_->publish(std::move(tracking_info));
             RCLCPP_INFO(this->get_logger(), "pitch_angle:%.2f yaw_angle:%.2f", tracking_angle[1], tracking_angle[0]);
+            RCLCPP_WARN(this->get_logger(), "delay:%.3fms", (dura/1e6));
 
             if(!target.is_target_lost)
             {
                 AutoaimMsg predict_info;
                 predict_info.header.frame_id = "camera_link";
+
                 predict_info.header.stamp = target_info.header.stamp;
                 predict_info.header.stamp.nanosec += sleep_time;
                 predict_info.aiming_point_cam.x = aiming_point_cam[0];

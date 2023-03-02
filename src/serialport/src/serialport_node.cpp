@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-03-01 14:12:09
+ * @LastEditTime: 2023-03-02 15:09:46
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -33,7 +33,7 @@ namespace serialport
         qos.durability_volatile();
         
         //自瞄msg订阅
-        if(!tracking_target_)
+        if (!tracking_target_)
         {   //预测信息订阅
             RCLCPP_WARN(this->get_logger(), "Prediciton!!!");
             autoaim_info_sub_ = this->create_subscription<GimbalMsg>(
@@ -61,11 +61,12 @@ namespace serialport
         
         //创建发送数据定时器
         // timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
-        timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
-
-        if(using_port_)
+        watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
+        send_timer_ = rclcpp::create_timer(this, this->get_clock(), 50ms, std::bind(&SerialPortNode::sendingData, this));
+        
+        if (using_port_)
         {   // Use serial port.
-            if(serial_port_->openPort())
+            if (serial_port_->openPort())
             {
                 serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", qos);
                 joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
@@ -73,7 +74,7 @@ namespace serialport
                 car_hp_pub_ = this->create_publisher<CarHPMsg>("/car_hp", qos);
                 game_msg_pub_ = this->create_publisher<GameMsg>("/game_info", qos);
                 receive_thread_ = std::thread(&SerialPortNode::receiveData, this);
-                if(is_sentry_)
+                if (is_sentry_)
                 {
                     sentry_msg_sub_ = this->create_subscription<SentryMsg>(
                         "/sentry_msg",
@@ -87,7 +88,7 @@ namespace serialport
 
     SerialPortNode::~SerialPortNode()
     {
-        if(receive_thread_.joinable())
+        if (receive_thread_.joinable())
             receive_thread_.join();
     }
 
@@ -97,10 +98,10 @@ namespace serialport
      */
     void SerialPortNode::serialWatcher()
     {
-        if(access(serial_port_->serial_data_.device.path.c_str(), F_OK) == -1 || !serial_port_->serial_data_.is_initialized)
+        if (access(serial_port_->serial_data_.device.path.c_str(), F_OK) == -1 || !serial_port_->serial_data_.is_initialized)
         {
             serial_port_->serial_data_.is_initialized = true;
-            if(!serial_port_->openPort())
+            if (!serial_port_->openPort())
             {
                 RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Port open failed!!!");
             }
@@ -114,7 +115,7 @@ namespace serialport
     void SerialPortNode::receiveData()
     {
         vector<float> vehicle_pos_info;
-        while(1)
+        while (1)
         {
             // 若串口离线则跳过数据发送
             if (!serial_port_->serial_data_.is_initialized)
@@ -156,7 +157,7 @@ namespace serialport
                 data_transform_->getGyroData(&serial_port_->serial_data_.rdata[19], gyro);
                 data_transform_->getAccData(&serial_port_->serial_data_.rdata[31], acc);
                 data_transform_->getBulletSpeed(&serial_port_->serial_data_.rdata[43], bullet_speed);
-                if(print_serial_info_)
+                if (print_serial_info_)
                 {
                     RCLCPP_INFO(this->get_logger(), "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
                     RCLCPP_INFO(this->get_logger(), "gyro:[%f %f %f]", gyro[0], gyro[1], gyro[2]);
@@ -218,7 +219,7 @@ namespace serialport
                     car_hp_msg.hp[ii/2] = hp[ii/2];
                 }
 
-                if(print_referee_info_)
+                if (print_referee_info_)
                 {
                     for(int ii = 0; ii < 20; ii++)
                         RCLCPP_INFO(this->get_logger(), "Pos:%.2f", vehicle_pos_info[ii]);
@@ -250,10 +251,10 @@ namespace serialport
     {
         int mode = mode_;
         // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
-        if(this->using_port_)
+        if (this->using_port_)
         {   
             VisionData vision_data;
-            if(mode == AUTOAIM || mode == HERO_SLING || mode == OUTPOST_ROTATION_MODE
+            if (mode == AUTOAIM || mode == HERO_SLING || mode == OUTPOST_ROTATION_MODE
             || mode == SMALL_BUFF || mode == BIG_BUFF)
             {
                 RCLCPP_WARN(this->get_logger(), "Sub autoaim msg!!!");
@@ -270,16 +271,25 @@ namespace serialport
                     {0, 0, 0},
                     {0, 0, 0}
                 };
+                mutex_.lock();
+                if(vision_data_queue_.size() < 3)
+                    vision_data_queue_.push(vision_data);
+                else
+                {
+                    vision_data_queue_.pop();
+                    vision_data_queue_.push(vision_data)
+                }
+                mutex_.unlock();
             }
             else
                 return false;
 
-            //根据不同mode进行对应的数据转换
-            data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
-            //数据发送
-            mutex_.lock();
-            serial_port_->sendData();
-            mutex_.unlock();
+            // 根据不同mode进行对应的数据转换
+            // data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
+            // //数据发送
+            // mutex_.lock();
+            // serial_port_->sendData();
+            // mutex_.unlock();
             return true;
         }
         else
@@ -293,7 +303,7 @@ namespace serialport
      */
     void SerialPortNode::armorMsgSub(GimbalMsg::SharedPtr target_info) 
     {
-        if(!sendData(target_info))
+        if (!sendData(target_info))
         {   // Debug without com.
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub autoaim msg...");
         }
@@ -307,7 +317,7 @@ namespace serialport
      */
     void SerialPortNode::buffMsgSub(GimbalMsg::SharedPtr target_info) 
     {
-        if(!sendData(target_info))
+        if (!sendData(target_info))
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
         return;
     }
@@ -321,10 +331,10 @@ namespace serialport
     {
         int mode = mode_;
         // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
-        if(this->using_port_)
+        if (this->using_port_)
         {   
             VisionData vision_data;
-            if(mode == SENTRY_MODE)
+            if (mode == SENTRY_MODE)
             {
                 RCLCPP_WARN(this->get_logger(), "Sub sentry msg!!!");
                 vision_data = 
@@ -361,29 +371,37 @@ namespace serialport
      * @brief 数据发送回调函数
      * 
      */
-    // void SerialPortNode::sendData()
-    // {
-    //     VisionData vision_data = {0.0, (float)0.0, (float)0.0, (float)0.0, 0, 1, 0, 0};
-    //     if(flag_)
-    //     {
-    //         auto now = (serial_port_->steady_clock_.now().nanoseconds() / 1e6);
-    //         mutex_.lock();
-    //         if(abs(now - vision_data_.timestamp) < 50) //(ms)，若时间差过大，则忽略此帧数据
-    //         {
-    //             vision_data = vision_data_;
-    //         }
-    //         mutex_.unlock();
-    //         flag_ = false;
-    //     }
-    //     // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10, "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
-    //     // RCLCPP_WARN(this->get_logger(), "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
-    //     //根据不同mode进行对应的数据转换
-    //     data_transform_->transformData(mode_, vision_data, serial_port_->Tdata);
-    //     //数据发送
-    //     serial_port_->sendData();
+    void SerialPortNode::sendingData()
+    {
+        VisionData vision_data = {0.0, (float)0.0, (float)0.0, (float)0.0, 0, 1, 0, 0};
+        // if(flag_)
+        // {
+        //     auto now = (serial_port_->steady_clock_.now().nanoseconds() / 1e6);
+        //     mutex_.lock();
+        //     if(abs(now - vision_data_.timestamp) < 50) //(ms)，若时间差过大，则忽略此帧数据
+        //     {
+        //         vision_data = vision_data_;
+        //     }
+        //     mutex_.unlock();
+        //     flag_ = false;
+        // }
+        mutex_.lock();
+        if(vision_data_queue_.size() > 0)
+        {
+            vision_data = vision_data_queue_.front();
+            vision_data_queue_.pop();
+        }
+        mutex_.unlock();
 
-    //     return;
-    // }
+        // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10, "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
+        // RCLCPP_WARN(this->get_logger(), "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
+        //根据不同mode进行对应的数据转换
+        data_transform_->transformData(mode_, vision_data, serial_port_->Tdata);
+        //数据发送
+        serial_port_->sendData();
+
+        return;
+    }
 
     bool SerialPortNode::setParam(rclcpp::Parameter param)
     {
@@ -401,6 +419,9 @@ namespace serialport
             break;
         case 3:
             this->print_serial_info_ = param.as_bool();
+            break;
+        case 4:
+            this->print_referee_info_= param.as_bool();
             break;
         default:
             break;
@@ -427,7 +448,8 @@ namespace serialport
             {"using_port", 0},
             {"baud", 1},
             {"tracking_target", 2},
-            {"print_serial_info", 3}
+            {"print_serial_info", 3},
+            {"print_referee_info", 4}
         };
 
         this->declare_parameter<std::string>("port_id", "483/5740/200");
@@ -444,6 +466,9 @@ namespace serialport
 
         this->declare_parameter("print_serial_info", false);
         this->get_parameter("print_serial_info", this->print_serial_info_);
+
+        this->declare_parameter("print_referee_info", false);
+        this->get_parameter("print_referee_info", this->print_referee_info_);
 
         return std::make_unique<SerialPort>(id_, baud_, using_port_);
     }

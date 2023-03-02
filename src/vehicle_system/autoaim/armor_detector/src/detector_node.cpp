@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-02-24 20:14:23
+ * @LastEditTime: 2023-03-02 10:01:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -176,6 +176,7 @@ namespace armor_detector
         target_info.is_target_lost = is_target_lost;
         
         // Publish target's information containing 3d point and timestamp.
+        target_info.header.stamp.nanosec = (detector_->steady_clock_.now().nanoseconds() - img_sub_time.nanoseconds());
         armor_info_pub_->publish(std::move(target_info));
         
         debug_.show_img = this->get_parameter("show_img").as_bool();

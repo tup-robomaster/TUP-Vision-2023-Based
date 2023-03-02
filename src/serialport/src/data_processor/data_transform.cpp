@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 02:02:10
- * @LastEditTime: 2023-03-01 14:10:11
+ * @LastEditTime: 2023-03-01 14:33:37
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/data_processor/data_transform.cpp
  */
 #include "../../include/data_processor/data_transform.hpp"
@@ -30,7 +30,8 @@ namespace serialport
         trans_data[0] = 0xA5;
         trans_data[1] = mode;
         crc_check_.Append_CRC8_Check_Sum(trans_data, 3);
-        if(mode == AUTOAIM || mode == HERO_SLING || mode == SMALL_BUFF || mode == BIG_BUFF || mode == OUTPOST_ROTATION_MODE)
+        if (mode == AUTOAIM || mode == HERO_SLING || mode == SMALL_BUFF 
+        || mode == BIG_BUFF || mode == OUTPOST_ROTATION_MODE)
         {
             float float_data[] = {vision_data.pitch_angle, vision_data.yaw_angle, vision_data.distance};
             float2UcharRawArray(float_data, 3, &trans_data[3]);
@@ -41,7 +42,7 @@ namespace serialport
             trans_data[19] = 0x00;
             crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
         }
-        else if(mode == SENTRY_MODE)
+        else if (mode == SENTRY_MODE)
         {
             float angle_data[] = {vision_data.pitch_angle, vision_data.yaw_angle};
             float2UcharRawArray(angle_data, 2, &trans_data[3]);
@@ -55,26 +56,26 @@ namespace serialport
 
     void DataTransform::getPosInfo(uchar flag, uchar* raw_data, vector<float>& pos)
     {
-        if(flag == 0xB5)
-            if(!ucharRaw2FloatVector(raw_data, 56, pos))
+        if (flag == 0xB5)
+            if (!ucharRaw2FloatVector(raw_data, 56, pos))
                 RCLCPP_ERROR(logger_, "Get Pos data failed!!!");
-        else if(flag == 0xC5)
-            if(!ucharRaw2FloatVector(raw_data, 24, pos))
+        else if (flag == 0xC5)
+            if (!ucharRaw2FloatVector(raw_data, 24, pos))
                 RCLCPP_ERROR(logger_, "Get Pos data failed!!!");
         return;
     }
 
     void DataTransform::getHPInfo(uchar flag, uchar* raw_data, vector<ushort>& hp)
     {
-        if(flag == 0xC5)
-            if(!ucharRaw2Int16Vector(raw_data, 20, hp))
+        if (flag == 0xC5)
+            if (!ucharRaw2Int16Vector(raw_data, 20, hp))
                 RCLCPP_ERROR(logger_, "Get HP data failed!!!");
         return;
     }
 
     void DataTransform::getGameInfo(uchar flag, uchar* raw_data, ushort& timestamp)
     {
-        if(flag == 0xC5)
+        if (flag == 0xC5)
             timestamp = ucharRaw2Int16(raw_data);
         return;
     }
@@ -87,7 +88,7 @@ namespace serialport
      */
     void DataTransform::getQuatData(uchar* raw_data, vector<float>& quat)
     {
-        if(!ucharRaw2FloatVector(raw_data, 16, quat))
+        if (!ucharRaw2FloatVector(raw_data, 16, quat))
             RCLCPP_ERROR(logger_, "Get quat data failed!!!");
         return;
     }
@@ -100,7 +101,7 @@ namespace serialport
      */
     void DataTransform::getGyroData(uchar* raw_data, vector<float>& gyro)
     {
-        if(!ucharRaw2FloatVector(raw_data, 12, gyro))
+        if (!ucharRaw2FloatVector(raw_data, 12, gyro))
             RCLCPP_ERROR(logger_, "Get gyro data failed!!!");
         return;
     }
@@ -113,7 +114,7 @@ namespace serialport
      */
     void DataTransform::getAccData(uchar* raw_data, vector<float>& acc)
     {
-        if(!ucharRaw2FloatVector(raw_data, 12, acc))
+        if (!ucharRaw2FloatVector(raw_data, 12, acc))
             RCLCPP_ERROR(logger_, "Get acc data failed!!!");
         return;
     }
@@ -147,7 +148,7 @@ namespace serialport
     bool DataTransform::ucharRaw2Int16Vector(uchar *data, int bytes, vector<ushort>& vec)
     {
         assert(bytes % 2 == 0);
-        for (int i = 0; i < bytes; i += 2)
+        for(int i = 0; i < bytes; i += 2)
         {
             ushort ushort_data = ucharRaw2Int16(&data[i]);
             vec.push_back(ushort_data);
@@ -190,7 +191,7 @@ namespace serialport
     bool DataTransform::ucharRaw2FloatVector(uchar *data, int bytes, std::vector<float> &vec)
     {
         assert(bytes % 4 == 0);
-        for (int i = 0; i < bytes; i += 4)
+        for(int i = 0; i < bytes; i += 4)
         {
             float float_data = ucharRaw2Float(&data[i]);
             vec.push_back(float_data);

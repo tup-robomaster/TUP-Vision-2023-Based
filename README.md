@@ -58,6 +58,10 @@ Date:2022-10-05 完成相机驱动功能包的开发，包括相机驱动和相�
     1) whoami --查看用户名
     2) sudo usermod -aG dialout username
 
-     
+2.程序运行出现INFO:selected interface "lo" is not multicast-capable: disabling multicast / ERROR:Failed to find a free participant index for domain 0
+    
+    FIXED:创建一个脚本/etc/network/if-up.d/ros2-lo-multicast：
+        #!/bin/sh
+        ip link set lo multicast on
 
 

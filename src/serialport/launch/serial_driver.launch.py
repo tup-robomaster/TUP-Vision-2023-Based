@@ -34,7 +34,10 @@ def generate_launch_description():
             parameters=[param_file,
                 {
                     "using_port": True,
-                    "baud": 115200 
+                    "baud": 115200,
+                    'tracking_target': True,
+                    'print_serial_info': False,
+                    'print_referee_info': False
                 }
             ]
         )

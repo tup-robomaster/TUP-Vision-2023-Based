@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-03-01 13:59:19
+ * @LastEditTime: 2023-03-02 15:09:34
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -49,7 +49,7 @@ namespace serialport
 
     public:
         void receiveData();
-        // void sendData();
+        void sendingData();
         bool sendData(GimbalMsg::SharedPtr msg);
         void armorMsgSub(GimbalMsg::SharedPtr msg);
         void buffMsgSub(GimbalMsg::SharedPtr msg);
@@ -72,7 +72,9 @@ namespace serialport
         atomic<int> mode_;
         atomic<bool> flag_;
         // VisionData vision_data_;
-        rclcpp::TimerBase::SharedPtr timer_;
+        rclcpp::TimerBase::SharedPtr watch_timer_;
+        rclcpp::TimerBase::SharedPtr send_timer_;
+        queue<VisionData> vision_data_queue_;
         
     public:
         /**
