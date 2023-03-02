@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-03-02 15:09:46
+ * @LastEditTime: 2023-03-02 18:08:21
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -271,25 +271,25 @@ namespace serialport
                     {0, 0, 0},
                     {0, 0, 0}
                 };
+
                 mutex_.lock();
                 if(vision_data_queue_.size() < 3)
                     vision_data_queue_.push(vision_data);
                 else
                 {
                     vision_data_queue_.pop();
-                    vision_data_queue_.push(vision_data)
+                    vision_data_queue_.push(vision_data);
                 }
                 mutex_.unlock();
             }
-            else
+            else 
                 return false;
-
-            // 根据不同mode进行对应的数据转换
-            // data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
-            // //数据发送
-            // mutex_.lock();
-            // serial_port_->sendData();
-            // mutex_.unlock();
+                // //根据不同mode进行对应的数据转换
+                // data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
+                // //数据发送
+                // serial_port_->sendData();
+                // mutex_.unlock();
+                // flag_ = true;
             return true;
         }
         else
@@ -364,7 +364,6 @@ namespace serialport
         }
         else
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
-        return;
     }
 
     /**
@@ -385,6 +384,7 @@ namespace serialport
         //     mutex_.unlock();
         //     flag_ = false;
         // }
+
         mutex_.lock();
         if(vision_data_queue_.size() > 0)
         {
@@ -392,7 +392,6 @@ namespace serialport
             vision_data_queue_.pop();
         }
         mutex_.unlock();
-
         // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10, "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
         // RCLCPP_WARN(this->get_logger(), "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
         //根据不同mode进行对应的数据转换
