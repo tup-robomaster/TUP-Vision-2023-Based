@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-03-02 09:59:19
+ * @LastEditTime: 2023-03-06 19:25:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -26,11 +26,11 @@ namespace armor_processor
 
         // QoS
         rclcpp::QoS qos(0);
-        qos.keep_last(5);
-        qos.best_effort();
+        qos.keep_last(3);
+        // qos.best_effort();
         qos.reliable();
-        qos.durability();
-        // qos.transient_local();
+        // // qos.durability();
+        qos.transient_local();
         qos.durability_volatile();
 
         // 发布云台转动信息（pitch、yaw角度）
@@ -38,7 +38,8 @@ namespace armor_processor
         tracking_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/tracking_msg", qos);
 
         // 订阅目标装甲板信息
-        target_info_sub_ = this->create_subscription<AutoaimMsg>("/armor_detector/armor_msg", qos,
+        target_info_sub_ = this->create_subscription<AutoaimMsg>("/armor_detector/armor_msg",
+            rclcpp::SensorDataQoS(),
             std::bind(&ArmorProcessorNode::targetMsgCallback, this, _1));
 
         // 是否使用共享内存
@@ -77,13 +78,13 @@ namespace armor_processor
             }
             else
             {
-                image_size_ = image_info_.image_size_map[camera_type];
-                std::string camera_topic = image_info_.camera_topic_map[camera_type];
+                // image_size_ = image_info_.image_size_map[camera_type];
+                // std::string camera_topic = image_info_.camera_topic_map[camera_type];
                 
-                sleep(5);
-                // image sub.
-                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
-                    std::bind(&ArmorProcessorNode::imageCallback, this, _1), transport));
+                // sleep(5);
+                // // image sub.
+                // img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
+                //     std::bind(&ArmorProcessorNode::imageCallback, this, _1), transport));
             }
         }
     }
@@ -108,12 +109,16 @@ namespace armor_processor
     {
         double sleep_time = 0.0;
         AutoaimMsg target = std::move(target_info);
+        target.timestamp = target.header.stamp.nanosec;
         Eigen::Vector2d angle = {0.0, 0.0};
         Eigen::Vector3d aiming_point_cam = {0.0, 0.0, 0.0};
         Eigen::Vector3d tracking_point_cam = {0.0, 0.0, 0.0};
         Eigen::Vector2d tracking_angle = {0.0, 0.0};
 
-        auto start = processor_->steady_clock_.now();
+        rclcpp::Time last = target_info.header.stamp;
+        rclcpp::Time now = this->get_clock()->now();
+        // RCLCPP_WARN(this->get_logger(), "Delay:%.4fs", (now.nanoseconds() - last.nanoseconds())/1e9);
+
         if(target.is_target_lost)
         {
             processor_->error_cnt_ = 0;
@@ -162,8 +167,8 @@ namespace armor_processor
             GimbalMsg tracking_info;
             tracking_info.header.frame_id = "barrel_link1";
             tracking_info.header.stamp = target_info.header.stamp;
-            auto end = processor_->steady_clock_.now();
-            double dura = end.nanoseconds() - start.nanoseconds() + target_info.header.stamp.nanosec;
+            // auto end = processor_->steady_clock_.now();
+            // double dura = end.nanoseconds() - start.nanoseconds() + target_info.header.stamp.nanosec;
 
             tracking_info.pitch = tracking_angle[1];
             tracking_info.yaw = tracking_angle[0];
@@ -171,8 +176,8 @@ namespace armor_processor
             tracking_info.is_switched = target_info.target_switched;
             tracking_info.is_spinning = target_info.is_spinning;
             tracking_info_pub_->publish(std::move(tracking_info));
-            RCLCPP_INFO(this->get_logger(), "pitch_angle:%.2f yaw_angle:%.2f", tracking_angle[1], tracking_angle[0]);
-            RCLCPP_WARN(this->get_logger(), "delay:%.3fms", (dura/1e6));
+            RCLCPP_INFO(this->get_logger(), "pitch_angle:%.3f yaw_angle:%.3f", tracking_angle[1], tracking_angle[0]);
+            // RCLCPP_WARN(this->get_logger(), "delay:%.3fms", (dura/1e6));
 
             if(!target.is_target_lost)
             {
@@ -254,6 +259,11 @@ namespace armor_processor
         {
             // 读取共享内存图像数据
             memcpy(img.data, shared_memory_param_.shared_memory_ptr, this->image_size_.height * this->image_size_.width * 3);
+            if(img.empty())
+                continue;
+
+            // rclcpp::Time now = this->get_clock()->now();
+            // RCLCPP_WARN(this->get_logger(), "now:%.4fs", now.nanoseconds() / 1e9);
             imageProcessor(img);
         }
     }

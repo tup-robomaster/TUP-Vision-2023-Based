@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-03-02 17:47:39
+ * @LastEditTime: 2023-03-06 15:45:06
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -74,7 +74,9 @@ namespace serialport
         // VisionData vision_data_;
         rclcpp::TimerBase::SharedPtr watch_timer_;
         rclcpp::TimerBase::SharedPtr send_timer_;
+        rclcpp::TimerBase::SharedPtr receive_timer_;
         queue<VisionData> vision_data_queue_;
+        vector<float> vehicle_pos_info_;
         
     public:
         /**

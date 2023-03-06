@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-25 18:41:51
- * @LastEditTime: 2023-02-26 12:35:01
+ * @LastEditTime: 2023-03-05 21:43:57
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_cam_node.hpp
  */
 #ifndef DAHENG_CAM_NODE_HPP_
@@ -30,6 +30,7 @@ namespace camera_driver
     private:
         // Update params.
         bool setParam(rclcpp::Parameter);
+        std::unique_ptr<DaHengCam> init_cam_driver();
 
         // Params callback.
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);

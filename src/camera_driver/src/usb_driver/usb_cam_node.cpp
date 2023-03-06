@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2023-02-26 13:50:56
+ * @LastEditTime: 2023-03-05 21:48:00
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -28,6 +28,11 @@ namespace camera_driver
 
     UsbCamNode::~UsbCamNode()
     {
+    }
+
+    std::unique_ptr<UsbCam> UsbCamNode::init_cam_driver()
+    {
+        return std::make_unique<UsbCam>();
     }
 
     bool UsbCamNode::setParam(rclcpp::Parameter param)

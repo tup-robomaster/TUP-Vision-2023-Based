@@ -60,8 +60,8 @@
     using_imu: true
     using_roi: false
     # draw_predict: true
-    show_img: false
-    show_fps: false
+    show_img: true
+    show_fps: true
     print_letency: false
     print_target_info: false
     detect_red: true
@@ -71,7 +71,8 @@
     using_shared_memory: false
     show_transformed_info: false
     auto_label: false
-    show_all_armors: false
+    show_all_armors: true
+    sync_transport: false
 
 /armor_processor:
   ros__parameters:
@@ -89,7 +90,7 @@
     disable_filter: true
     disable_fitting: false
     draw_predict: false
-    show_predict: true
+    show_predict: false
     show_transformed_info: false
     debug: true
 

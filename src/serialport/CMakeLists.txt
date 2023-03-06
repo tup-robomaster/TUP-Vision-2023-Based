@@ -108,7 +108,7 @@ target_link_libraries(${PROJECT_NAME}_node
 
 # register component nodes
 rclcpp_components_register_nodes(${PROJECT_NAME} 
-  PLUGIN "serialport::serial_driver"
+  PLUGIN "serialport::SerialPortNode"
   EXECUTABLE ${PROJECT_NAME}_node  
 )
 

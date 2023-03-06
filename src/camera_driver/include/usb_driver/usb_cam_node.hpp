@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:40
- * @LastEditTime: 2023-02-26 13:52:58
+ * @LastEditTime: 2023-03-05 21:47:41
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/usb_driver/usb_cam_node.hpp
  */
 #ifndef USB_CAM_NODE_HPP_
@@ -41,6 +41,8 @@ namespace camera_driver
         
         // Update params.
         bool setParam(rclcpp::Parameter);
+
+        std::unique_ptr<UsbCam> init_cam_driver();
 
         // Params callback.
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
