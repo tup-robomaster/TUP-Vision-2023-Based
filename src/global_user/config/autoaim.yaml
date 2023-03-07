@@ -92,6 +92,7 @@
     draw_predict: false
     show_predict: false
     show_transformed_info: false
+    show_img: false    
     debug: true
 
   # Camera params.

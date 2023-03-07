@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 16:51:24
- * @LastEditTime: 2023-02-26 13:51:21
+ * @LastEditTime: 2023-03-07 19:14:32
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/usb_driver/usb_cam.hpp
  */
 //ros
@@ -36,6 +36,8 @@ namespace camera_driver
         ~UsbCam();
 
         bool open();
+        bool init();
+        bool close();
         bool get_frame(cv::Mat &src);
     }; // usb_cam
 } // camera_driver

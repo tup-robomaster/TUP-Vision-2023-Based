@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-03-06 19:26:41
+ * @LastEditTime: 2023-03-07 13:07:05
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -146,6 +146,7 @@ namespace armor_processor
 
         bool using_imu;
         bool show_predict;
+        bool show_img;
 
         bool show_transformed_info;
 
@@ -158,6 +159,7 @@ namespace armor_processor
             using_imu = false;
             show_predict = false;
             show_transformed_info = true;
+            show_img = false;
         }
     };
 

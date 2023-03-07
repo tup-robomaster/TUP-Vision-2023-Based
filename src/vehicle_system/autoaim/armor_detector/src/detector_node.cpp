@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-03-06 21:54:35
+ * @LastEditTime: 2023-03-07 19:41:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -75,7 +75,7 @@ namespace armor_detector
             {
                 // Imu msg sub.
                 serial_msg_sub_ = this->create_subscription<SerialMsg>("/serial_msg",
-                    rclcpp::SensorDataQoS(),
+                    qos,
                     std::bind(&DetectorNode::sensorMsgCallback, this, _1)
                 );
             }
@@ -169,7 +169,7 @@ namespace armor_detector
         rclcpp::Time now = this->get_clock()->now();
         double dura = (now.nanoseconds() - time.nanoseconds()) / 1e6;
         RCLCPP_WARN(this->get_logger(), "delay:%.2fms", dura);
-        if((int)(dura) > 5.0)
+        if((dura) > 2.5)
             return;
             
         TaskData src;
@@ -324,7 +324,7 @@ namespace armor_detector
         rclcpp::Time now = this->get_clock()->now();
         double dura = (now.nanoseconds() - time.nanoseconds()) / 1e6;
         RCLCPP_WARN(this->get_logger(), "delay:%.2fms", dura);
-        if((int)(dura) > 8.0)
+        if((dura) > 2.5)
             return;
 
         TaskData src;

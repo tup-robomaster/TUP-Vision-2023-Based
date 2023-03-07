@@ -5,17 +5,14 @@ namespace camera_driver
     DaHengCam::DaHengCam()
     : logger_(rclcpp::get_logger("daheng_driver"))
     {
-        //初始化库
-        status = GXInitLib();
-
-        //检测初始化是否成功
-        if (status != GX_STATUS_SUCCESS)
+        try
         {
-            RCLCPP_ERROR(logger_, "相机库初始化失败!");
+            auto is_init = this->init();
         }
-
-        // logger initializes.
-        RCLCPP_INFO(logger_, "[CAMERA] Initializing...");
+        catch(const std::exception& e)
+        {
+            RCLCPP_ERROR(logger_, "Error while initializing camera: %s", e.what());
+        }
     }
 
     /**
@@ -24,19 +21,16 @@ namespace camera_driver
     DaHengCam::DaHengCam(CameraParam daheng_param)
     : logger_(rclcpp::get_logger("daheng_driver"))
     {
-        //初始化库
-        status = GXInitLib();
-        //检测初始化是否成功
-        if (status != GX_STATUS_SUCCESS)
-        {
-            RCLCPP_ERROR(logger_, "相机库初始化失败!");
-        }
-
         // Camera initializes.
         this->daheng_cam_param_ = daheng_param;
-
-        // logger initializes.
-        RCLCPP_INFO(logger_, "[CAMERA] Initializing...");
+        try
+        {
+            auto is_init = this->init();
+        }
+        catch(const std::exception& e)
+        {
+            RCLCPP_ERROR(logger_, "Error while initializing camera: %s", e.what());
+        }
     }
 
     /**
@@ -44,16 +38,45 @@ namespace camera_driver
      */
     DaHengCam::~DaHengCam()
     {
+        auto is_close = close();
+    }
+
+    bool DaHengCam::init()
+    {
+        //初始化库
+        status = GXInitLib();
+
+        //检测初始化是否成功
+        if (status != GX_STATUS_SUCCESS)
+        {
+            RCLCPP_ERROR(logger_, "相机库初始化失败!");
+            return false;
+        }
+
+        // logger initializes.
+        RCLCPP_INFO(logger_, "[CAMERA] Initializing...");
+        return true;
+    }
+
+    bool DaHengCam::close()
+    {
         //停 采
         status = GXStreamOff(hDevice);
+        if(status != GX_STATUS_SUCCESS)
+            return false;
+        
         //关闭设备链接
         status = GXCloseDevice(hDevice);
+        if(status != GX_STATUS_SUCCESS)
+            return false;
+
         //释放库
         status = GXCloseLib();
         if(status != GX_STATUS_SUCCESS)
             RCLCPP_ERROR(logger_, "析构失败！");
         else
             RCLCPP_INFO(logger_, "析构!");
+        return true;
     }
 
     bool DaHengCam::open()
