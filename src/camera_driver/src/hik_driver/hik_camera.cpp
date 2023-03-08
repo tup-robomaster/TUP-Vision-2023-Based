@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:13:23
- * @LastEditTime: 2023-03-07 19:09:50
+ * @LastEditTime: 2023-02-26 12:40:51
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp
  */
 #include "../../include/hik_driver/hik_camera.hpp"
@@ -12,44 +12,40 @@ namespace camera_driver
     HikCamera::HikCamera()
     : logger_(rclcpp::get_logger("hik_driver"))
     {
-        auto is_init = init();
+        g_nPayloadSize = 0;
     }
 
     HikCamera::HikCamera(const CameraParam& cam_params)
     : logger_(rclcpp::get_logger("hik_driver"))
     {
-        // Params set.
+        g_nPayloadSize = 0;
+
+        //params set
         this->hik_cam_params_ = cam_params;
-        
-        auto is_init = init();
     }
 
     HikCamera::~HikCamera()
     {
-        auto is_release = close();
+        nRet = MV_CC_FreeImageBuffer(handle, (&pFrame));
+        if(nRet != MV_OK)
+        {
+            RCLCPP_ERROR(logger_, "Free image buffer failed!");
+        }
     } 
-
-    bool HikCamera::init()
-    {
-        g_nPayloadSize = 0;
-        return true;
-    }
 
     bool HikCamera::open()
     {
         //TODO:
         set_digital_io_control();
 
-        // 设置触发模式
         set_trigger_mode();
-
-        // 打开设备 
+        
         start_device(this->hik_cam_params_.cam_id);
-       
+        // printf("9\n");
         // 设置分辨率
         set_resolution(this->hik_cam_params_.image_width, this->hik_cam_params_.image_height);
         
-        // 更新时间戳，设置时间戳偏移量
+        //更新时间戳，设置时间戳偏移量
         update_timestamp(time_start_);
         
         // 开始采集帧
@@ -69,6 +65,7 @@ namespace camera_driver
         set_balance(0, this->hik_cam_params_.balance_b);
         set_balance(1, this->hik_cam_params_.balance_g);
         set_balance(2, this->hik_cam_params_.balance_r);
+
         // _is_open = get_frame(frame);
 
         return true;
@@ -76,13 +73,7 @@ namespace camera_driver
 
     bool HikCamera::close() 
     {
-        nRet = MV_CC_FreeImageBuffer(handle, (&pFrame));
-        if(nRet != MV_OK)
-        {
-            RCLCPP_ERROR(logger_, "Free image buffer failed!");
-            return false;
-        }
-        return true;
+        return false;
     }
 
     bool HikCamera::is_open()
@@ -366,7 +357,7 @@ namespace camera_driver
         return ((int)time_start.time_since_epoch().count() - timestamp_offset);
     }
 
-    bool HikCamera::get_frame(::cv::Mat &Src)
+    bool HikCamera::get_frame(::cv::Mat &Src, sensor_msgs::msg::Image& image_msg)
     {
         // ch:获取数据包大小 | en:Get payload size
         MVCC_INTVALUE stParam;

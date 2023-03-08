@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 14:30:38
- * @LastEditTime: 2023-03-05 21:48:45
+ * @LastEditTime: 2023-02-26 12:45:27
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_cam_node.cpp
  */
 #include "../../include/hik_driver/hik_cam_node.hpp"
@@ -27,11 +27,6 @@ namespace camera_driver
 
     HikCamNode::~HikCamNode()
     {
-    }
-
-    std::unique_ptr<HikCamera> HikCamNode::init_cam_driver()
-    {
-        return std::make_unique<HikCamera>();
     }
 
     bool HikCamNode::setParam(rclcpp::Parameter param)

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-03-03 09:39:19
+ * @LastEditTime: 2023-02-23 18:09:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //C++
@@ -164,7 +164,7 @@ namespace armor_detector
     
     private:
         int lost_cnt;
-        int64_t timestamp;
+        double timestamp;
         int dead_buffer_cnt;
         double last_timestamp; //当前帧时间戳
         double prev_timestamp; //上一帧时间戳

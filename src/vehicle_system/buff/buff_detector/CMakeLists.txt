@@ -38,7 +38,7 @@ find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
 find_package(yaml-cpp REQUIRED)
 # find_package(fmt REQUIRED)
-find_package(filter REQUIRED)
+# find_package(filter REQUIRED)
 find_package(global_user REQUIRED)
 find_package(global_interface REQUIRED)
 
@@ -67,7 +67,7 @@ set(dependencies
   
   global_user
   global_interface
-  filter
+  #filter
 )
 
 include_directories(include)

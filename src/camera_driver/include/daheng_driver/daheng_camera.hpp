@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 12:12:19
- * @LastEditTime: 2023-03-07 18:42:51
+ * @LastEditTime: 2023-02-26 12:09:42
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_camera.hpp
  */
 //daheng
@@ -18,6 +18,8 @@
 
 //ros
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/image_encodings.hpp>
+#include <sensor_msgs/msg/image.hpp>
 
 #include "../../global_user/include/global_user/global_user.hpp"
 
@@ -55,6 +57,8 @@ namespace camera_driver
         int64_t             nColorCorrectionParam;
         VxInt16             nSaturation;
 
+        // char *pRGB24Buf;
+
     public:
         //构造函数，初始化库
         DaHengCam(CameraParam daheng_param);
@@ -63,9 +67,7 @@ namespace camera_driver
         ~DaHengCam();
         
     public:
-        bool init();
         bool open();
-        bool close();
     
     private:
         //打开设备
@@ -102,7 +104,7 @@ namespace camera_driver
         int Get_TIMESTAMP();
     
         //采集图像
-        bool get_frame(cv::Mat &Src);
+        bool get_frame(cv::Mat &Src, sensor_msgs::msg::Image& image_msg);
 
     public:
         CameraParam daheng_cam_param_;

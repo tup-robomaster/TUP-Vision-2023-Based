@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-03-06 18:37:46
+LastEditTime: 2023-03-01 14:39:24
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -132,20 +132,6 @@ def generate_launch_description():
                         'use_intra_process_comms':True
                     }]
                 ),
-                # ComposableNode(
-                #     package='serialport',
-                #     plugin='serialport::SerialPortNode',
-                #     name='serialport',
-                #     # parameters=[],
-                #     # output='screen',
-                #     # emulate_tty=True,
-                #     extra_arguments=[{
-                #         'using_port': True,
-                #         'tracking_target': True,
-                #         'print_serial_info': False,
-                #         'print_referee_info': False
-                #     }]                    
-                # ),
                 ComposableNode(
                     package='armor_detector',
                     plugin='armor_detector::DetectorNode',

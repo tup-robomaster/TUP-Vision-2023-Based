@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 02:03:45
- * @LastEditTime: 2023-03-05 21:47:28
+ * @LastEditTime: 2023-02-26 12:35:58
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/hik_driver/hik_cam_node.hpp
  */
 
@@ -32,8 +32,6 @@ namespace camera_driver
     private:
         // Update params.
         bool setParam(rclcpp::Parameter);
-
-        std::unique_ptr<HikCamera> init_cam_driver();
 
         // Params callback.
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);

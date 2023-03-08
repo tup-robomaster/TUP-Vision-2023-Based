@@ -38,7 +38,7 @@
 
   # Camera config params.
     # camera_name: "00J90630561" 
-    camera_name: "KE0200110075" 
+    camera_name: "KE0200110073" 
     camera_type: 0
     camera_param_path: "src/global_user/config/camera.yaml"
 
@@ -72,7 +72,6 @@
     show_transformed_info: false
     auto_label: false
     show_all_armors: true
-    sync_transport: false
 
 /armor_processor:
   ros__parameters:
@@ -92,13 +91,12 @@
     draw_predict: false
     show_predict: false
     show_transformed_info: false
-    show_img: false    
     debug: true
 
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110075" 
+    coord_param_name: "KE0200110073" 
     coord_param_path: "src/global_user/config/camera.yaml"
     
   # Filter params.

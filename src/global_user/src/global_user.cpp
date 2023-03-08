@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 14:01:05
- * @LastEditTime: 2023-03-03 09:50:18
+ * @LastEditTime: 2023-02-04 00:14:13
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/global_user.cpp
  */
 #include "../include/global_user/global_user.hpp"
@@ -324,7 +324,7 @@ namespace global_user
         return true;
     }
 
-    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_prefix, int64_t &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size)
+    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_prefix, double &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size)
     {
         if(!is_init)
         {

@@ -1,7 +1,7 @@
 std_msgs/Header header
 geometry_msgs/Point aiming_point_cam
 geometry_msgs/Point aiming_point_world
-uint64 timestamp
+float64 timestamp
 float64 w
 float64 period
 geometry_msgs/Quaternion quat_imu

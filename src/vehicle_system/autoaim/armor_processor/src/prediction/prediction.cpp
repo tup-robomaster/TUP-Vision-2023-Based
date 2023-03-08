@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-03-06 20:13:56
+ * @LastEditTime: 2023-03-01 09:51:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -79,7 +79,7 @@ namespace armor_processor
      * @param src 图像数据
      * @return Eigen::Vector3d 
      */
-    Eigen::Vector3d ArmorPredictor::predict(AutoaimMsg& target_msg, uint64 timestamp, double& sleep_time, cv::Mat* src)
+    Eigen::Vector3d ArmorPredictor::predict(AutoaimMsg& target_msg, double timestamp, double& sleep_time, cv::Mat* src)
     {
         auto t1 = steady_clock_.now();
 
@@ -99,11 +99,6 @@ namespace armor_processor
             NORMAL,
             CSMODEL
         };
-
-        // std::cout << "x_now:" << xyz[0] << "" << std::endl;
-        // std::cout << "y_now:" << xyz[1] << "" << std::endl;
-
-        // cout << "timestamp:" << target_msg.timestamp << endl;
 
         if(target.is_sentry_mode || target.is_spinning)
         {
@@ -265,8 +260,6 @@ namespace armor_processor
             auto delta_t_now = (target.timestamp - history_info_.at(history_info_.size() - 2).timestamp) / 1e9;
             auto vx_now = delta_x_now / delta_t_now;
             auto vy_now = delta_y_now / delta_t_now;
-            // std::cout << "delta_x_now:" << target.xyz[0] << "" << std::endl;
-            // std::cout << "delta_y_now:" << target.xyz[1] << "" << std::endl;
 
             ax = (vx_now - vx_last) / ((delta_t_now + delta_t_last) / 2);
             ay = (vy_now - vy_last) / ((delta_t_now + delta_t_last) / 2);

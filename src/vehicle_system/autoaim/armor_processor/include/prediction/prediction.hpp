@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-03-07 13:07:05
+ * @LastEditTime: 2023-02-10 00:33:30
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -81,7 +81,7 @@ namespace armor_processor
     {
         Eigen::Vector3d xyz;
         int dist;
-        uint64 timestamp;
+        double timestamp;
         double period;
         bool is_target_switched;
         bool is_spinning;
@@ -146,7 +146,6 @@ namespace armor_processor
 
         bool using_imu;
         bool show_predict;
-        bool show_img;
 
         bool show_transformed_info;
 
@@ -159,7 +158,6 @@ namespace armor_processor
             using_imu = false;
             show_predict = false;
             show_transformed_info = true;
-            show_img = false;
         }
     };
 
@@ -310,7 +308,7 @@ namespace armor_processor
         
         bool setBulletSpeed(double speed);
         void loadParam(std::string filter_param_path);
-        Eigen::Vector3d predict(AutoaimMsg& target_msg, uint64 timestamp, double& sleep_time, cv::Mat* src = nullptr);
+        Eigen::Vector3d predict(AutoaimMsg& target_msg, double timestamp, double& sleep_time, cv::Mat* src = nullptr);
     
     private:
         std::deque<cv::Point2d> history_pred_info_;

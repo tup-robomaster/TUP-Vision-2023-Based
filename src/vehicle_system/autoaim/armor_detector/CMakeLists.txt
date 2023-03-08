@@ -94,6 +94,9 @@ target_compile_definitions(${PROJECT_NAME}
 # PRIVATE "COMPOSITION_BUILDING_DLL")
   
 add_executable(armor_detector_node
+  # ./include/armor_detector/inference.h 
+  # include/armor_detector/inference_api2.hpp
+  # ./include/armor_detector/spinning_detector.hpp
   src/armor_tracker/armor_tracker.cpp 
   src/armor_detector/armor_detector.cpp 
   src/spinning_detector/spinning_detector.cpp

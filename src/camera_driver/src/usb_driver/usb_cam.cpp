@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:03:26
- * @LastEditTime: 2023-03-07 19:12:37
+ * @LastEditTime: 2023-02-26 13:54:44
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam.cpp
  */
 #include "../../include/usb_driver/usb_cam.hpp"
@@ -23,18 +23,7 @@ namespace camera_driver
 
     UsbCam::~UsbCam()
     {
-        auto is_release = close();
-    }
 
-    bool UsbCam::init()
-    {
-        return true;
-    }
-
-    bool UsbCam::close()
-    {
-        this->cap.release();
-        return true;
     }
 
     bool UsbCam::open()
@@ -65,7 +54,7 @@ namespace camera_driver
         }
     }
 
-    bool UsbCam::get_frame(cv::Mat &src)
+    bool UsbCam::get_frame(cv::Mat &src, sensor_msgs::msg::Image& image_msg)
     {
         cap >> src;
         if(src.empty())

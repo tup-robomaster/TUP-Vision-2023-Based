@@ -2,11 +2,13 @@
  * @Description is a ros-based project!
  * @AuthorBiao
  * @Date-09-05 03:13:49
- * @LastEditTime: 2023-03-07 19:04:28
+ * @LastEditTime: 2023-02-26 12:40:26
  * @FilePath_2023/src/camera_driver/include/hik_driver/HikCamera.hpp
  */
 //ros
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/image_encodings.hpp>
+#include <sensor_msgs/msg/image.hpp>
 
 //c++
 #include <string>
@@ -51,12 +53,11 @@ namespace camera_driver
         HikCamera(const CameraParam& cam_params);
         ~HikCamera();
 
-        bool init();
         bool open();
         bool close();
         bool is_open();
 
-        bool get_frame(cv::Mat &src);
+        bool get_frame(cv::Mat &src, sensor_msgs::msg::Image& image_msg);
         bool set_gain(int value, int exp_gain);
         bool set_exposure_time(float exposure_time);
         bool set_balance(int value, unsigned int value_num);
