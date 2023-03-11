@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:55:36
- * @LastEditTime: 2022-12-20 16:43:27
+ * @LastEditTime: 2022-12-27 18:31:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/inference/inference.hpp
  */
 #ifndef INFERENCE_HPP_
@@ -18,7 +18,7 @@
 #include <opencv2/opencv.hpp>
 #include <Eigen/Core>
 
-#include "../../../global_user/include/global_user/global_user.hpp"
+#include "../../global_user/include/global_user/global_user.hpp"
 
 using namespace std;
 using namespace cv;

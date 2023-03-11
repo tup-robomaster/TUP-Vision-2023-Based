@@ -2,9 +2,14 @@
  * @Description is a ros-based project!
  * @AuthorBiao
  * @Date-09-05 03:13:49
- * @LastEditTime: 2022-12-24 00:16:01
+ * @LastEditTime: 2023-02-26 12:40:26
  * @FilePath_2023/src/camera_driver/include/hik_driver/HikCamera.hpp
  */
+//ros
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/image_encodings.hpp>
+#include <sensor_msgs/msg/image.hpp>
+
 //c++
 #include <string>
 #include <vector>
@@ -15,9 +20,6 @@
 #include <fstream>
 #include <unistd.h>
 #include <yaml-cpp/yaml.h>
-#include <fmt/format.h>
-#include <fmt/color.h>
-#include <glog/logging.h>
 
 //opencv
 #include <opencv2/opencv.hpp>
@@ -32,6 +34,9 @@
 #include "../../dependencies/hik_sdk/include/MvErrorDefine.h"                         
 #include "../../dependencies/hik_sdk/include/CameraParams.h"                         
 
+#include "../../global_user/include/global_user/global_user.hpp"
+
+using namespace global_user;
 namespace camera_driver
 {
     typedef enum _GAIN_MODE_
@@ -40,39 +45,19 @@ namespace camera_driver
         G_CHANNEL,
         B_CHANNEL
     } GAIN_MODE;
-
-    struct HikCamParam
-    {
-        int hik_cam_id;
-        int image_width;
-        int image_height;
-        int exposure_time;
-        double exposure_gain;           
-        double exposure_gain_b;            
-        double exposure_gain_g;            
-        double exposure_gain_r;  
-        bool auto_balance;         
-        int balance_b;
-        int balance_g;
-        int balance_r;
-
-        HikCamParam()
-        {
-            auto_balance = false;
-        }
-    };
     
     class HikCamera
     {
     public:
-        HikCamera(const HikCamParam& cam_params);
+        HikCamera();
+        HikCamera(const CameraParam& cam_params);
         ~HikCamera();
 
         bool open();
         bool close();
         bool is_open();
 
-        bool get_frame(cv::Mat &src);
+        bool get_frame(cv::Mat &src, sensor_msgs::msg::Image& image_msg);
         bool set_gain(int value, int exp_gain);
         bool set_exposure_time(float exposure_time);
         bool set_balance(int value, unsigned int value_num);
@@ -85,7 +70,7 @@ namespace camera_driver
         bool set_gamma(bool set_status, double gamma_param);
         bool color_correct(bool value);
         bool set_contrast(bool set_status, int contrast_param);
-        bool update_timestamp(std::chrono::_V2::steady_clock::time_point time_start);
+        bool update_timestamp(rclcpp::Time time_start);
         int get_timestamp();
 
         bool set_trigger_mode(unsigned int acquisition_mode = 2,
@@ -105,11 +90,12 @@ namespace camera_driver
     
     private:
         // Camera params.
-        HikCamParam hik_cam_params_;
-
+        CameraParam hik_cam_params_;
         bool _is_open; 
-        int timestamp_offset = 0;
-        std::chrono::_V2::steady_clock::time_point time_start;
+        double timestamp_offset = 0;
+        rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
+        rclcpp::Time time_start_;
+        rclcpp::Logger logger_;
 
     protected:
         int nRet = MV_OK;

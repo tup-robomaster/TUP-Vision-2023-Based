@@ -2,21 +2,24 @@
   ros__parameters:
   # Detector params.
     max_lost_cnt: 4 
-    max_v: 4   
-    max_delta_t: 100 
+    max_v: 4.0  
+    max_delta_t: 100.0
     fan_length: 0.7
-    no_crop_thres: 2e-3
+    no_crop_thres: 0.002
 
   # Paths.
-    network_path: "src/vehicle_system/buff/model/buff.xml"
+    camera_type: 3
+    # network_path: "src/vehicle_system/buff/buff_detector/model/buff.xml"
+    network_path: "src/vehicle_system/buff/buff_detector/model/yolox.xml"
     camera_param_path: "src/global_user/config/camera.yaml"
     camera_name: "KE0200110075"
-    path_prefix: "src/vehicle_system/buff/dataset/"
+    path_prefix: "src/recorder/dataset/"
 
   # Debug.
     using_imu: false
     using_roi: false
-    detect_red: true
+    detect_red: false
+    show_img: true
     show_all_fans: true
     show_fps: true
     print_target_info: false 
@@ -28,12 +31,12 @@
   # Predict params.
     bullet_speed: 28.0
     max_timespan: 20000.0       
-    max_rmse: 0.5
+    max_rmse: 3.5
     max_v: 3.0
     max_a: 8.0
-    history_deque_len_cos: 250
-    history_deque_len_phase: 100
-    history_deque_len_uniform: 100
+    history_deque_len_cos: 100
+    history_deque_len_phase: 50
+    history_deque_len_uniform: 50
     delay_small: 175.0
     delay_big: 100.0
     window_size: 2
@@ -44,5 +47,6 @@
     camera_param_path: "src/global_user/config/camera.yaml"
 
   # Debug.
+    debug: true
     using_imu: false
-    show_predict: true
+    show_predict: false

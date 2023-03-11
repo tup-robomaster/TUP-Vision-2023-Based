@@ -2,10 +2,9 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2022-12-24 18:42:19
+ * @LastEditTime: 2023-03-09 19:37:56
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
-
 #ifndef GLOBAL_USER_HPP_
 #define GLOBAL_USER_HPP_
 
@@ -16,12 +15,8 @@
 #include <iterator>
 #include <unistd.h>
 #include <future>
-
 #include <fstream>
 #include <yaml-cpp/yaml.h>
-#include <fmt/format.h>
-#include <fmt/color.h>
-#include <glog/logging.h>
 
 //opencv
 #include <opencv2/opencv.hpp>
@@ -36,30 +31,113 @@
 #include <sys/shm.h>
 
 // daheng
-#define DAHENG_IMAGE_WIDTH 1280
+#define DAHENG_IMAGE_WIDTH 1280 
 #define DAHENG_IMAGE_HEIGHT 1024
 // hik
-#define HIK_IMAGE_WIDTH 1440
+#define HIK_IMAGE_WIDTH 1440     
 #define HIK_IMAGE_HEIGHT 1080
 // usb
-#define USB_IMAGE_WIDTH 640
+#define USB_IMAGE_WIDTH 640     
 #define USB_IMAGE_HEIGHT 480
 // mvs
-#define MVS_IMAGE_WIDTH 1280
+#define MVS_IMAGE_WIDTH 1280     
 #define MVS_IMAGE_HEIGHT 1024
 
+using namespace std;
 namespace global_user
 {   
     /**
      * @brief Global variables and funcs.
      * 
      */
+
+    struct CameraParam
+    {
+        int fps;
+        int cam_id;
+        int image_width;
+        int image_height;
+        int width_scale;
+        int height_scale;
+        int exposure_time;
+        double exposure_gain;
+        bool auto_balance;
+        double exposure_gain_b;
+        double exposure_gain_g;
+        double exposure_gain_r;
+        double balance_b;
+        double balance_g;
+        double balance_r;
+        bool using_video;
+        string video_path;
+
+        CameraParam()
+        {
+            cam_id = 1;
+            image_width = 1280;
+            image_height = 1024;
+            width_scale = 1;
+            height_scale = 1;
+            exposure_time = 3000;
+            exposure_gain = 14;
+            auto_balance = false;
+            exposure_gain_b = 0;
+            exposure_gain_g = 0;
+            exposure_gain_r = 0;
+            balance_b = 1.56;
+            balance_g = 1.0;
+            balance_r = 1.548;
+            fps = 30;
+            using_video = false;
+            video_path = "\0";
+        }
+    };
+
+    struct ImageSize
+    {
+        int width;
+        int height;
+
+        ImageSize()
+        {
+            this->width = DAHENG_IMAGE_WIDTH;
+            this->height = DAHENG_IMAGE_HEIGHT;
+        }
+    };
+
+    class ImageInfo
+    {
+    public:
+        std::map<int, std::string> camera_topic_map;
+        std::map<int, ImageSize> image_size_map;
+
+        ImageInfo()
+        {
+            camera_topic_map = 
+            {
+                {0, "/daheng_img"},
+                {1, "/hik_img"},
+                {2, "/mvs_img"},
+                {3, "/usb_img"}
+            };
+
+            image_size_map[0].width = DAHENG_IMAGE_WIDTH;
+            image_size_map[0].height = DAHENG_IMAGE_HEIGHT;
+            image_size_map[1].width = HIK_IMAGE_WIDTH;
+            image_size_map[1].height = HIK_IMAGE_HEIGHT;
+            image_size_map[2].width = MVS_IMAGE_WIDTH;
+            image_size_map[2].height = MVS_IMAGE_HEIGHT;
+            image_size_map[3].width = USB_IMAGE_WIDTH;
+            image_size_map[3].height = USB_IMAGE_HEIGHT;
+        }
+    };
+
     enum CameraType
     {
-      DaHeng,
-      HikRobot,
-      MVSCam,
-      USBCam,
+        DaHeng,
+        HikRobot,
+        MVSCam,
+        USBCam,
     };
 
     enum TargetType 
@@ -69,13 +147,28 @@ namespace global_user
         BUFF
     };
 
+    /**
+     * @brief 模式选择（取消视觉，自瞄，英雄吊射，小符，大符，哨兵）
+     * 
+     */
+    enum MODE
+    {
+        CLOSE_VISION,
+        AUTOAIM,
+        HERO_SLING,
+        SMALL_BUFF,
+        BIG_BUFF,
+        SENTRY_MODE,
+        OUTPOST_ROTATION_MODE
+    };
+
     struct TaskData
     {
         int mode;
         double bullet_speed;
         cv::Mat img;
         Eigen::Quaterniond quat;
-        double timestamp; 
+        int64_t timestamp; 
     };
 
     struct GridAndStride
@@ -83,6 +176,27 @@ namespace global_user
         int grid0;
         int grid1;
         int stride;
+    };
+
+    struct ObjectBase
+    {
+        int id;
+        int color;
+        double conf;
+        std::string key;
+        Eigen::Vector3d armor3d_cam;
+        Eigen::Vector3d armor3d_world;
+        Eigen::Vector3d euler;
+        Eigen::Matrix3d rmat;
+    };
+    
+    struct Object
+    {
+        cv::Rect_<float> rect;
+        int cls;
+        int color;
+        float prob;
+        std::vector<cv::Point2f> pts;
     };
 
     struct VideoRecordParam
@@ -156,6 +270,7 @@ namespace global_user
     bool setSharedMemory(SharedMemoryParam& shared_memory_param, int id, int image_width = 1280, int image_height = 1024);
     bool getSharedMemory(SharedMemoryParam& shared_memory_param, int id);
     bool destorySharedMemory(SharedMemoryParam& shared_memory_param);
+    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_name, int64_t &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size);
 } // namespace global_user
 
 #endif

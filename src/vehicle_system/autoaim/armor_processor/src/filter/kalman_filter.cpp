@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2022-11-27 17:35:36
+ * @LastEditTime: 2023-02-05 00:55:28
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/kalman_filter.cpp
  */
 #include "../../include/filter/kalman_filter.hpp"
@@ -13,6 +13,11 @@ using Eigen::MatrixXd;
 namespace armor_processor
 {
     KalmanFilter::KalmanFilter(){}
+
+    KalmanFilter::KalmanFilter(KFParam kf_param)
+    {
+        kf_param_ = kf_param;
+    }
 
     KalmanFilter::~KalmanFilter(){}
 
@@ -97,6 +102,12 @@ namespace armor_processor
         P_ = (I - K * H_) * P_;
     }
 
+    /**
+     * @brief 卡尔曼滤波更新步骤
+     * 此处应用于IMM模型，需要计算模型似然值
+     * @param z 
+     * @param mp 
+     */
     void KalmanFilter::Update(const Eigen::VectorXd& z, int mp)
     {
         updateMeasurement();

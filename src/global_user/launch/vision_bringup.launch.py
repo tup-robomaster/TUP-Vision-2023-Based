@@ -17,15 +17,18 @@ def generate_launch_description():
     autoaim_param_file = os.path.join(get_package_share_directory('global_user'), 'config/autoaim.yaml')
     buff_param_file = os.path.join(get_package_share_directory('global_user'), 'config/buff.yaml')
     
-    camera_type = DeclareLaunchArgument(
+    camera_type = LaunchConfiguration('camera_type')
+    use_serial = LaunchConfiguration('using_imu')
+
+    declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='daheng',
+        default_value='usb',
         description='hik daheng mvs usb'
     )
 
-    use_serial = DeclareLaunchArgument(
+    declare_use_serial = DeclareLaunchArgument(
         name='using_imu',
-        default_value='false',
+        default_value='False',
         description='debug without serial port.'
     )
 
@@ -47,24 +50,13 @@ def generate_launch_description():
         armor_processor_params = yaml.safe_load(f)['/armor_processor']['ros__parameters']
     
     with open(buff_param_file, 'r') as f:
-        buff_detector_params = yaml.safe_load(f)['/buff_detector']['ros_parameters']
+        buff_detector_params = yaml.safe_load(f)['/buff_detector']['ros__parameters']
     with open(buff_param_file, 'r') as f:
-        buff_processor_params = yaml.safe_load(f)['/buff_processor']['ros_parameters']
+        buff_processor_params = yaml.safe_load(f)['/buff_processor']['ros__parameters']
 
     return LaunchDescription([
-        camera_type,
-        use_serial,
-
-        # Node(
-        #     package='camera_driver',
-        #     executable='daheng_cam_node',
-        #     name='daheng_cam_node',
-        #     output='screen',
-        #     emulate_tty=True,
-        #     parameters=[{
-        #         'camera_type':LaunchConfiguration('camera_type'),
-        #     }]
-        # ),
+        declare_camera_type,
+        declare_use_serial,
 
         Node(
             package='serialport',
@@ -76,17 +68,11 @@ def generate_launch_description():
                 'using_imu':LaunchConfiguration('using_imu'),
                 'debug_without_com': 'false'
             }],
-            condition=IfCondition(PythonExpression([LaunchConfiguration('using_imu'), "== 'true'"]))
+            condition=IfCondition(PythonExpression([LaunchConfiguration('using_imu'), "== 'True'"]))
         ),
 
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource(
-        #         launch_file_path=buff_launch_file
-        #     )
-        # ),
-
         ComposableNodeContainer(
-            name='usb_cam_autoaim_container',
+            name='usb_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -96,7 +82,7 @@ def generate_launch_description():
                 ComposableNode(
                     package='camera_driver',
                     plugin='camera_driver::UsbCamNode',
-                    name='usb_cam_node',
+                    name='usb_driver',
                     parameters=[usb_cam_params],
                     extra_arguments=[{
                         'use_intra_process_comms':True
@@ -122,9 +108,8 @@ def generate_launch_description():
                 )
             ],
         ),
-
         ComposableNodeContainer(
-            name='daheng_cam_autoaim_container',
+            name='daheng_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -134,7 +119,7 @@ def generate_launch_description():
                 ComposableNode(
                     package='camera_driver',
                     plugin='camera_driver::DahengCamNode',
-                    name='daheng_cam_node',
+                    name='daheng_driver',
                     parameters=[daheng_cam_params],
                     extra_arguments=[{
                         'use_intra_process_comms':True
@@ -160,9 +145,8 @@ def generate_launch_description():
                 )
             ],
         ),
-
         ComposableNodeContainer(
-            name='hik_cam_autoaim_container',
+            name='hik_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -172,7 +156,7 @@ def generate_launch_description():
                 ComposableNode(
                     package='camera_driver',
                     plugin='camera_driver::HikCamNode',
-                    name='hik_cam_node',
+                    name='hik_driver',
                     parameters=[hik_cam_params],
                     extra_arguments=[{
                         'use_intra_process_comms':True
@@ -198,9 +182,8 @@ def generate_launch_description():
                 )
             ],
         ),
-
         ComposableNodeContainer(
-            name='mvs_cam_autoaim_container',
+            name='mvs_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -210,7 +193,7 @@ def generate_launch_description():
                 ComposableNode(
                     package='camera_driver',
                     plugin='camera_driver::MVSCamNode',
-                    name='mvs_cam_node',
+                    name='mvs_driver',
                     parameters=[mvs_cam_params],
                     extra_arguments=[{
                         'use_intra_process_comms':True
@@ -236,7 +219,6 @@ def generate_launch_description():
                 )
             ],
         ),
-
         Node(
             package='armor_processor',
             executable='armor_processor_node',
@@ -244,7 +226,6 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[armor_processor_params]
         ),
-
         Node(
             package='buff_processor',
             executable='buff_processor_node',
@@ -252,5 +233,4 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[buff_processor_params]
         )
-
     ])

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2022-12-21 19:04:03
+ * @LastEditTime: 2022-12-27 19:01:00
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/inference/inference_api2.hpp
  */
 #ifndef INFERENCE_API2_HPP_
@@ -20,26 +20,18 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/opencv.hpp>
 #include <Eigen/Core>
-#include <fftw3.h>
-#include <fmt/color.h>
 
+// #include <fftw3.h>
+// #include <fmt/color.h>
+
+#include "../../global_user/include/global_user/global_user.hpp"
+
+using namespace global_user;
 namespace buff_detector
 {
-    struct BuffObject
+    struct BuffObject : Object
     {
-        Point2f apex[5];
-        cv::Rect_<float> rect;
-        int cls;
-        int color;
-        float prob;
-        std::vector<cv::Point2f> pts;
-    };
-
-    struct GridAndStride
-    {
-        int grid0;
-        int grid1;
-        int stride;
+        cv::Point2f apex[5];
     };
 
     class BuffDetector
@@ -48,7 +40,7 @@ namespace buff_detector
         BuffDetector();
         ~BuffDetector();
         
-        bool detect(cv::Mat &src, std::vector<ArmorObject>& objects);
+        bool detect(cv::Mat &src, std::vector<BuffObject>& objects);
         bool initModel(std::string path);
     private:
         int dw, dh;

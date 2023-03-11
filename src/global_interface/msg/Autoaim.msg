@@ -1,0 +1,20 @@
+std_msgs/Header header
+string key
+uint16 hp
+uint8 mode
+geometry_msgs/Point aiming_point_cam
+geometry_msgs/Point aiming_point_world
+uint64 timestamp
+# float64 w
+float64 period
+geometry_msgs/Quaternion quat_imu
+bool is_target_lost
+bool target_switched
+bool spinning_switched
+bool is_spinning
+bool is_still_spinning
+bool is_controlled
+bool clockwise
+Point2f[4] point2d
+
+

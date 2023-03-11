@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2022-12-21 20:48:39
+ * @LastEditTime: 2023-02-10 00:01:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -10,15 +10,25 @@
 namespace buff_processor
 {
     BuffPredictor::BuffPredictor()
+    : logger_(rclcpp::get_logger("buff_predictor"))
     {
         is_params_confirmed = false;
+        last_mode = mode = -1;
+        
         params[0] = 0;
         params[1] = 0; 
         params[2] = 0; 
         params[3] = 0;
 
-        YAML::Node config = YAML::LoadFile(predictor_param_.pf_path);
-        pf_param_loader.initParam(config, "buff");
+        try
+        {
+            YAML::Node config = YAML::LoadFile(predictor_param_.pf_path);
+            pf_param_loader.initParam(config, "buff");
+        }
+        catch(const std::exception& e)
+        {
+            RCLCPP_ERROR(logger_, "Error while initializing pf param: %s", e.what());
+        }
     }
 
     BuffPredictor::~BuffPredictor()
@@ -35,8 +45,8 @@ namespace buff_processor
     */
     bool BuffPredictor::predict(double speed, double dist, double timestamp, double &result)
     {
-        auto t1 = std::chrono::steady_clock::now();
         TargetInfo target = {speed, dist, timestamp};
+       
         if (mode != last_mode)
         {
             last_mode = mode;
@@ -44,8 +54,7 @@ namespace buff_processor
             pf.initParam(pf_param_loader);
             is_params_confirmed = false;
         }
-
-        if (history_info.size() == 0 || target.timestamp - history_info.front().timestamp >= predictor_param_.max_timespan)
+        if((history_info.size() < 1) || (((target.timestamp - history_info.front().timestamp) / 1e6) >= predictor_param_.max_timespan))
         {   //当时间跨度过长视作目标已更新，需清空历史信息队列
             history_info.clear();
             history_info.push_back(target);
@@ -56,6 +65,7 @@ namespace buff_processor
             pf.initParam(pf_param_loader);
             last_target = target;
             is_params_confirmed = false;
+            
             return false;
         }
 
@@ -73,9 +83,7 @@ namespace buff_processor
 
         int deque_len = 0;
         if (mode == 0)
-        {
             deque_len = predictor_param_.history_deque_len_uniform;
-        }
         else if (mode == 1)
         {
             if (!is_params_confirmed)
@@ -83,31 +91,32 @@ namespace buff_processor
             else
                 deque_len = predictor_param_.history_deque_len_phase;
         }
-
-        if (history_info.size() < deque_len)    
+        if ((int)(history_info.size()) < deque_len)    
         {
             history_info.push_back(target);
             last_target = target;
             return false;
         }
-        else if (history_info.size() == deque_len)
+        else if ((int)(history_info.size()) == deque_len)
         {
             history_info.pop_front();
             history_info.push_back(target);
         }
-        else if (history_info.size() > deque_len)
+        else if ((int)(history_info.size()) > deque_len)
         {
-            while(history_info.size() >= deque_len)
+            while((int)(history_info.size()) >= deque_len)
                 history_info.pop_front();
             history_info.push_back(target);
         }
 
         // 计算旋转方向
         double rotate_speed_sum = 0;
-        int rotate_sign;
+        int rotate_sign = 0;
         for (auto target_info : history_info)
             rotate_speed_sum += target_info.speed;
         auto mean_velocity = rotate_speed_sum / history_info.size();
+        // cout << "mode:" << mode << endl;
+        // cout << endl;
 
         if (mode == 0)
         {   //TODO:小符模式不需要额外计算,也可增加判断，小符模式给定恒定转速进行击打
@@ -130,17 +139,20 @@ namespace buff_processor
                 else
                     rotate_sign = -1;
 
+                // std::cout << "target_speed:"; 
                 for (auto target_info : history_info)
                 {
+                    // std::cout << target_info.speed << " ";
                     problem.AddResidualBlock (     // 向问题中添加误差项
                     // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致
                         new ceres::AutoDiffCostFunction<CURVE_FITTING_COST, 1, 4> ( 
-                            new CURVE_FITTING_COST (target_info.speed  * rotate_sign, (double)(target_info.timestamp) / 1e3)
+                            new CURVE_FITTING_COST (target_info.speed  * rotate_sign, (double)(target_info.timestamp) / 1e9)
                         ),
                         new ceres::CauchyLoss(0.5),
                         params_fitting                 // 待估计参数
                     );
                 }
+                // std::cout << std::endl;
 
                 //设置上下限
                 //FIXME:参数需根据场上大符实际调整
@@ -157,7 +169,10 @@ namespace buff_processor
                 double params_tmp[4] = {params_fitting[0] * rotate_sign, params_fitting[1], params_fitting[2], params_fitting[3] * rotate_sign};
                 auto rmse = evalRMSE(params_tmp);
                 if (rmse > predictor_param_.max_rmse)
+                {
+                    RCLCPP_INFO(logger_, "rmse: %lf", rmse);
                     return false;
+                }
                 else
                 {
                     params[0] = params_fitting[0] * rotate_sign;
@@ -181,7 +196,7 @@ namespace buff_processor
                         new ceres::AutoDiffCostFunction<CURVE_FITTING_COST_PHASE, 1, 1> 
                         ( 
                             new CURVE_FITTING_COST_PHASE ((target_info.speed - params[3]) * rotate_sign, 
-                            (float)(target_info.timestamp) / 1e3,
+                            (float)((target_info.timestamp) / 1e9),
                             params[0], 
                             params[1], 
                             params[3])
@@ -212,11 +227,10 @@ namespace buff_processor
 
         int delay = (mode == 1 ? predictor_param_.delay_big : predictor_param_.delay_small);
         float delta_time_estimate = ((double)dist / predictor_param_.bullet_speed) * 1e3 + delay;
-        // cout<<"ETA:"<<delta_time_estimate<<endl;
-        float timespan = history_info.back().timestamp;
-        // delta_time_estimate = 0;
+        delta_time_estimate = 500;
+        float timespan = history_info.back().timestamp / 1e6;
         float time_estimate = delta_time_estimate + timespan;
-        // cout<<delta_time_estimate<<endl;     
+
         result = calcAimingAngleOffset(params, timespan / 1e3, time_estimate / 1e3, mode);
         last_target = target;
         
@@ -314,6 +328,7 @@ namespace buff_processor
             auto pred = params[0] * sin (params[1] * t + params[2]) + params[3];
             auto measure = target_info.speed;
             rmse_sum += pow((pred - measure), 2);
+            // cout << "pre:" << pred << " measure:" << measure << endl;
         }
         rmse = sqrt(rmse_sum / history_info.size());
         return rmse;

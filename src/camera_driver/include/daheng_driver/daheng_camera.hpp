@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 12:12:19
- * @LastEditTime: 2022-12-23 23:33:39
+ * @LastEditTime: 2023-02-26 12:09:42
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_camera.hpp
  */
 //daheng
@@ -16,32 +16,18 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 
-//geogle
-#include <fmt/format.h>
-#include <fmt/color.h>
+//ros
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/image_encodings.hpp>
+#include <sensor_msgs/msg/image.hpp>
+
+#include "../../global_user/include/global_user/global_user.hpp"
 
 using namespace std;
 using namespace cv;
+using namespace global_user;
 namespace camera_driver
 {
-    struct DahengCamParam
-    {
-        int daheng_cam_id;
-        int image_width;
-        int image_height;
-        int width_scale;
-        int height_scale;
-        int exposure_time;
-        double exposure_gain;
-        bool auto_balance;
-        double exposure_gain_b;
-        double exposure_gain_g;
-        double exposure_gain_r;
-        double balance_b;
-        double balance_g;
-        double balance_r;
-    };
-    
     //本类现只应对使用单个相机的情况
     class DaHengCam
     {
@@ -71,9 +57,12 @@ namespace camera_driver
         int64_t             nColorCorrectionParam;
         VxInt16             nSaturation;
 
+        // char *pRGB24Buf;
+
     public:
         //构造函数，初始化库
-        DaHengCam(DahengCamParam daheng_param);
+        DaHengCam(CameraParam daheng_param);
+        DaHengCam();
         //析构函数释放资源
         ~DaHengCam();
         
@@ -110,13 +99,16 @@ namespace camera_driver
         
         //采集一次图像,更新时间戳
         bool UpdateTimestampOffset(std::chrono::_V2::steady_clock::time_point time_start);
+        
         //读取相机时间戳
         int Get_TIMESTAMP();
-        //采集图像
-        bool get_frame(cv::Mat &Src);
     
-    private:
-        DahengCamParam daheng_cam_param_;
+        //采集图像
+        bool get_frame(cv::Mat &Src, sensor_msgs::msg::Image& image_msg);
+
+    public:
+        CameraParam daheng_cam_param_;
+        rclcpp::Logger logger_;
     };
 
 }

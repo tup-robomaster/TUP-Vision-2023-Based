@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-17 00:27:33
- * @LastEditTime: 2022-12-26 00:57:42
+ * @LastEditTime: 2023-03-11 11:42:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor/armor_processor.hpp
  */
 #ifndef ARMOR_PRECESSOR_HPP_
@@ -10,60 +10,35 @@
 
 #pragma once 
 
-// #include "../../global_user/include/coordsolver.hpp"
-#include "global_interface/msg/target.hpp"
-// #include "global_interface/msg/gimbal.hpp"
-// #include "global_interface/msg/armor.hpp"
-// #include "global_interface/msg/armors.hpp"
-
+#include "global_interface/msg/autoaim.hpp"
+#include "global_interface/msg/car_hp.hpp"
 #include "../prediction/prediction.hpp"
 
-// #include <Eigen/Core>
-// #include <ceres/ceres.h>
-// #include <glog/logging.h>
-// #include <fmt/format.h>
-// #include <yaml-cpp/yaml.h>
-
 using namespace global_user;
-// using namespace coordsolver;
+using namespace coordsolver;
 namespace armor_processor
 {
     class Processor : public ArmorPredictor
     {
-        typedef geometry_msgs::msg::Point GeometryPoint;
-        // typedef global_interface::msg::Target TargetMsg;
+        typedef global_interface::msg::Autoaim AutoaimMsg;
+        typedef global_interface::msg::CarHP CarHPMsg;
+
     public:
-        // Processor(const PredictParam& predict_param, const SingerModelParam& singer_model_param, const DebugParam& debug_param, 
-        //     const std::string& filter_param_path, const std::string& coord_param_path, 
-        //     const std::string& coord_param_name);
         Processor();
-        // Processor(const PredictParam& predict_param, const SingerModel& singer_model_param, const DebugParam& debug_param, 
-        //     const std::string& filter_param_path, const std::string& coord_param_path, 
-        //     const std::string& coord_param_name);
+        Processor(const PredictParam& predict_param, const vector<double>& singer_model_param, const PathParam& path_param, const DebugParam& debug_param);
         ~Processor();
 
         //预测(接收armor_detector节点发布的目标信息进行预测)
-        void predictor(TargetInfo& target);
-        void predictor(TaskData& src, TargetInfo& target);
-
-    private:
-        // Eigen::Vector3d aiming_point_;
-        // std::unique_ptr<ArmorPredictor> armor_predictor_;
-        // GeometryPoint aiming_point_;
-
-    public:
-        // bool is_initialized_;
-        // bool is_ekf_initialized_;
-        // std::string coord_param_path_;
-        // std::string coord_param_name_;
-        // CoordSolver coordsolver_;
-        // Eigen::Matrix3d rmat_imu;
+        CoordSolver coordsolver_;
+        std::unique_ptr<Eigen::Vector3d> predictor(AutoaimMsg& Autoaim, double& sleep_time);
+        std::unique_ptr<Eigen::Vector3d> predictor(cv::Mat& src, AutoaimMsg& Autoaim, double& sleep_time);
+        
+        void init(std::string coord_path, std::string coord_name);
+        bool autoShootingLogic(AutoaimMsg& armor, PostProcessInfo& post_process_info);
     
-    public:
-        // Debug dynamically.
-        void setPredictParam(int& param, int idx);
-        void setDebugParam(bool& param, int idx);
-        void setSingerParam(double& param, int idx);
+    private:
+        PathParam path_param_;
+        std::map<std::string, int> car_id_map_;
     };
 } //namespace armor_processor
 

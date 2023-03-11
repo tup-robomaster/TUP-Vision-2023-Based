@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2022-12-21 19:32:48
+ * @LastEditTime: 2023-03-10 13:42:30
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -21,7 +21,7 @@ namespace buff_detector
     static constexpr int NUM_COLORS = 2;       // Number of color
     static constexpr int TOPK = 128;           // TopK
     static constexpr float NMS_THRESH  = 0.1;
-    static constexpr float BBOX_CONF_THRESH = 0.6;
+    static constexpr float BBOX_CONF_THRESH = 0.20;
     static constexpr float MERGE_CONF_ERROR = 0.15;
     static constexpr float MERGE_MIN_IOU = 0.2;
 
@@ -83,7 +83,7 @@ namespace buff_detector
             {
                 for (int g0 = 0; g0 < num_grid_w; g0++)
                 {
-                    grid_strides.push_back((GridAndStride){g0, g1, stride});
+                    grid_strides.push_back(std::move((GridAndStride){g0, g1, stride}));
                 }
             }
         }
@@ -98,7 +98,7 @@ namespace buff_detector
      */
     static void generateYoloxProposals(std::vector<GridAndStride> grid_strides, const float* feat_ptr,
                                         Eigen::Matrix<float,3,3> &transform_matrix,float prob_threshold,
-                                        std::vector<ArmorObject>& objects)
+                                        std::vector<BuffObject>& objects)
     {
 
         const int num_anchors = grid_strides.size();
@@ -174,13 +174,13 @@ namespace buff_detector
      * @param b Object b.
      * @return Area of intersection.
      */
-    static inline float intersection_area(const ArmorObject& a, const ArmorObject& b)
+    static inline float intersection_area(const BuffObject& a, const BuffObject& b)
     {
         cv::Rect_<float> inter = a.rect & b.rect;
         return inter.area();
     }
 
-    static void qsort_descent_inplace(std::vector<ArmorObject>& faceobjects, int left, int right)
+    static void qsort_descent_inplace(std::vector<BuffObject>& faceobjects, int left, int right)
     {
         int i = left;
         int j = right;
@@ -218,7 +218,7 @@ namespace buff_detector
     }
 
 
-    static void qsort_descent_inplace(std::vector<ArmorObject>& objects)
+    static void qsort_descent_inplace(std::vector<BuffObject>& objects)
     {
         if (objects.empty())
             return;
@@ -227,12 +227,13 @@ namespace buff_detector
     }
 
 
-    static void nms_sorted_bboxes(std::vector<ArmorObject>& faceobjects, std::vector<int>& picked,
+    static void nms_sorted_bboxes(std::vector<BuffObject>& faceobjects, std::vector<int>& picked,
                                 float nms_threshold)
     {
         picked.clear();
         const int n = faceobjects.size();
-
+        // std::cout << "np:" << n << std::endl;
+        
         std::vector<float> areas(n);
         for (int i = 0; i < n; i++)
         {
@@ -243,13 +244,13 @@ namespace buff_detector
 
         for (int i = 0; i < n; i++)
         {
-            ArmorObject& a = faceobjects[i];
+            BuffObject& a = faceobjects[i];
             std::vector<cv::Point2f> apex_a(a.apex, a.apex + 5);
 
             int keep = 1;
             for (int j = 0; j < (int)picked.size(); j++)
             {
-                ArmorObject& b = faceobjects[picked[j]];
+                BuffObject& b = faceobjects[picked[j]];
                 std::vector<cv::Point2f> apex_b(b.apex, b.apex + 5);
                 std::vector<cv::Point2f> apex_inter;
 
@@ -268,8 +269,10 @@ namespace buff_detector
                     if (iou > MERGE_MIN_IOU && abs(a.prob - b.prob) < MERGE_CONF_ERROR 
                                             && a.cls == b.cls && a.color == b.color)
                     {
+                        // std::cout << "a.color: " << a.color << std::endl;
                         for (int i = 0; i < 5; i++)
                         {
+                            // std::cout << "find" << std::endl;
                             b.pts.push_back(a.apex[i]);
                         }
                     }
@@ -289,28 +292,28 @@ namespace buff_detector
      * @param img_w Width of Image.
      * @param img_h Height of Image.
      */
-    static void decodeOutputs(const float* prob, std::vector<ArmorObject>& objects,
+    static void decodeOutputs(const float* prob, std::vector<BuffObject>& objects,
                                 Eigen::Matrix<float,3,3> &transform_matrix, const int img_w, const int img_h)
     {
-            std::vector<ArmorObject> proposals;
-            std::vector<int> strides = {8, 16, 32};
-            std::vector<GridAndStride> grid_strides;
+        std::vector<BuffObject> proposals;
+        std::vector<int> strides = {8, 16, 32};
+        std::vector<GridAndStride> grid_strides;
 
-            generate_grids_and_stride(INPUT_W, INPUT_H, strides, grid_strides);
-            generateYoloxProposals(grid_strides, prob, transform_matrix, BBOX_CONF_THRESH, proposals);
-            qsort_descent_inplace(proposals);
+        generate_grids_and_stride(INPUT_W, INPUT_H, strides, grid_strides);
+        generateYoloxProposals(grid_strides, prob, transform_matrix, BBOX_CONF_THRESH, proposals);
+        qsort_descent_inplace(proposals);
 
-            if (proposals.size() >= TOPK) 
-                proposals.resize(TOPK);
-            std::vector<int> picked;
-            nms_sorted_bboxes(proposals, picked, NMS_THRESH);
-            int count = picked.size();
-            objects.resize(count);
+        if (proposals.size() >= TOPK) 
+            proposals.resize(TOPK);
+        std::vector<int> picked;
+        nms_sorted_bboxes(proposals, picked, NMS_THRESH);
+        int count = picked.size();
+        objects.resize(count);
 
-            for (int i = 0; i < count; i++)
-            {
-                objects[i] = proposals[picked[i]];
-            }
+        for (int i = 0; i < count; i++)
+        {
+            objects[i] = proposals[picked[i]];
+        }
     }
 
     float calcTriangleArea(cv::Point2f pts[3])
@@ -358,6 +361,7 @@ namespace buff_detector
         // }
 
         std::cout << "Start initialize model..." << std::endl;
+        
         // Setting Configuration Values.
         core.set_property("CPU", ov::enable_profiling(true));
 
@@ -417,16 +421,16 @@ namespace buff_detector
         return true;
     }
 
-    bool BuffDetector::detect(cv::Mat &src, std::vector<ArmorObject>& objects)
+    bool BuffDetector::detect(cv::Mat &src, std::vector<BuffObject>& objects)
     {
         if (src.empty())
         {
-            fmt::print(fmt::fg(fmt::color::red), "[DETECT] ERROR: 传入了空的src\n");
+            // fmt::print(fmt::fg(fmt::color::red), "[DETECT] ERROR: 传入了空的src\n");
             return false;
         }
 
         cv::Mat pr_img = scaledResize(src, transfrom_matrix);
-        dw = this->dw;
+        // dw = this->dw;
 
         cv::Mat pre;
         cv::Mat pre_split[3];
@@ -439,13 +443,13 @@ namespace buff_detector
         // 准备输入
         infer_request.set_input_tensor(input_tensor);
 
-        u_int8_t* tensor_data = input_tensor.data<u_int8_t *>();
+        float* tensor_data = input_tensor.data<float_t>();
         
         auto img_offset = INPUT_H * INPUT_W;
         // Copy img into tensor
         for(int c = 0; c < 3; c++)
         {
-            memcpy(tensor_data, pre_split[c].data, INPUT_H * INPUT_W * sizeof(u_int8_t));
+            memcpy(tensor_data, pre_split[c].data, INPUT_H * INPUT_W * sizeof(float));
             tensor_data += img_offset;
         }
 
@@ -463,7 +467,7 @@ namespace buff_detector
         
         // 处理推理结果
         ov::Tensor output_tensor = infer_request.get_output_tensor();
-        uint8_t* output = output_tensor.data<u_int8_t *>();
+        float* output = output_tensor.data<float_t>();
 
         // std::cout << &output << std::endl;
 
@@ -477,7 +481,11 @@ namespace buff_detector
             //对候选框预测角点进行平均,降低误差
             if ((*object).pts.size() >= 10)
             {
-                auto N = (*object).pts.size();
+                int N = (*object).pts.size();
+                // std::cout << "obj_color:" << object->color << std::endl;
+                // std::cout << "color:" << object->color << std::endl;
+                // std::cout << "cls:" << object->cls << std::endl;
+                // std::cout << "conf:" << object->prob << std::endl;
                 cv::Point2f pts_final[5];
 
                 for (int i = 0; i < N; i++)

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2022-12-23 20:02:38
+ * @LastEditTime: 2023-02-24 20:18:51
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -17,22 +17,25 @@ namespace buff_processor
 
         try
         {
-            buff_processor_ = init_buff_processor();
+            buff_processor_ = initBuffProcessor();
         }
         catch(const std::exception& e)
         {
-            std::cerr << e.what() << '\n';
-        }
-
-        if(!buff_processor_->is_initialized)
-        {
-            buff_processor_->coordsolver_->loadParam(path_param_.camera_param_path, path_param_.camera_name);
-            buff_processor_->is_initialized = true;
+            RCLCPP_FATAL_ONCE(this->get_logger(), "Fatal while initializing buff processor node: %s", e.what());
         }
         
+        if(!buff_processor_->is_initialized)
+        {
+            RCLCPP_INFO_ONCE(this->get_logger(), "Init coord params...");
+            buff_processor_->coordsolver_.loadParam(path_param_.camera_param_path, path_param_.camera_name);
+            buff_processor_->is_initialized = true;
+        }
+
+        pred_point3d_ = {0, 0, 0};
+
         // QoS
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(5);
         qos.best_effort();
         qos.reliable();
         qos.durability();
@@ -40,14 +43,21 @@ namespace buff_processor
         qos.durability_volatile();
 
         // 发布云台转动信息（pitch、yaw角度）
-        gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/buff_processor/gimbal_info", qos);
+        gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/buff_processor/gimbal_msg", qos);
 
         // 发布预测点信息
-        predict_info_pub_ = this->create_publisher<BuffMsg>("/buff_predict_info", qos);
+        predict_info_pub_ = this->create_publisher<BuffMsg>("/buff_processor/predict_msg", qos);
 
         // 订阅待打击目标信息
-        target_info_sub_ = this->create_subscription<BuffMsg>("/buff_info", qos,
-            std::bind(&BuffProcessorNode::target_info_callback, this, _1));
+        target_info_sub_ = this->create_subscription<BuffMsg>("/buff_detector/buff_msg", qos,
+            std::bind(&BuffProcessorNode::targetMsgCallback, this, _1));
+        
+        // 相机类型
+        this->declare_parameter<int>("camera_type", USBCam);
+        int camera_type = this->get_parameter("camera_type").as_int();
+        
+        // 图像的传输方式
+        std::string transport_type = "raw";
         
         bool debug = false;
         this->declare_parameter<bool>("debug", true);
@@ -55,39 +65,88 @@ namespace buff_processor
         if(debug)
         {
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffProcessorNode::paramsCallback, this, _1));
+            
+            image_size_ = image_info_.image_size_map[camera_type];
+            std::string camera_topic = image_info_.camera_topic_map[camera_type];
+            
+            sleep(5);
+            // image sub.
+            img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic, 
+                std::bind(&BuffProcessorNode::imageCallback, this, _1), transport_type));
         }
     }
 
     BuffProcessorNode::~BuffProcessorNode()
     {}
 
-    void BuffProcessorNode::target_info_callback(const BuffMsg& target_info)
+    void BuffProcessorNode::targetMsgCallback(const BuffMsg& target_info)
     {
         if(target_info.target_switched)
         {
             RCLCPP_INFO(this->get_logger(), "Target switched...");    
         }
+        
         TargetInfo target;
+        param_mutex_.lock();
         if(buff_processor_->predictor(target_info, target))
         {
+            RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "predict...");
+            param_mutex_.unlock();
             GimbalMsg gimbal_msg;
-            gimbal_msg.header.frame_id = "gimbal";
-            gimbal_msg.header.stamp = this->get_clock()->now();
+            gimbal_msg.header.frame_id = "barrel_link";
+            gimbal_msg.header.stamp = target_info.header.stamp;
             gimbal_msg.pitch = target.angle[0];
             gimbal_msg.yaw = target.angle[1];
             gimbal_msg.distance = target.hit_point_cam.norm();
             gimbal_msg.is_switched = target.target_switched;
             
-            gimbal_info_pub_->publish(gimbal_msg);
+            gimbal_info_pub_->publish(std::move(gimbal_msg));
 
-            BuffMsg predict_info;
-            predict_info.header.frame_id = "buff_predictor";
-            predict_info.header.stamp = this->get_clock()->now();
-            predict_info.predict_point.x = target.hit_point_cam[0];
-            predict_info.predict_point.y = target.hit_point_cam[1];
-            predict_info.predict_point.z = target.hit_point_cam[2];
+            debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
+            if(debug_param_.show_predict)
+            {
+                BuffMsg predict_info;
+                predict_info.header.frame_id = "camera_link";
+                predict_info.header.stamp = target_info.header.stamp;
+                predict_info.header.stamp.nanosec += (30 * 1e6);
+                // predict_info.predict_point.x = target.hit_point_cam[0];
+                // predict_info.predict_point.y = target.hit_point_cam[1];
+                // predict_info.predict_point.z = target.hit_point_cam[2];
+                predict_info.predict_point.x = target.hit_point_world[0];
+                predict_info.predict_point.y = target.hit_point_world[1];
+                predict_info.predict_point.z = target.hit_point_world[2];
+            
+                predict_info_pub_->publish(std::move(predict_info));
+            }
 
-            predict_info_pub_->publish(predict_info);
+            image_mutex_.lock();
+            pred_point3d_ = target.hit_point_cam;
+            image_mutex_.unlock();
+            RCLCPP_INFO(this->get_logger(), "hit point in cam: %lf %lf %lf", target.hit_point_cam[0], target.hit_point_cam[1], target.hit_point_cam[2]);
+        }
+        else
+            param_mutex_.unlock();
+    }
+
+    void BuffProcessorNode::imageCallback(const ImageMsg::ConstSharedPtr &img_info)
+    {
+        if(!img_info)
+            return;
+        auto img = cv_bridge::toCvShare(std::move(img_info), "bgr8")->image;
+
+        if(!img.empty())
+        {
+            image_mutex_.lock();
+            Eigen::Vector3d point3d = pred_point3d_;
+            image_mutex_.unlock();
+           
+            cv::Point2f point_2d = buff_processor_->coordsolver_.reproject(point3d);
+            cv::circle(img, point_2d, 5, (0, 255, 255), -1);
+            // for(int i = 0; i < 5; i++)
+            //     cv::line(img, apex2d[i % 5], apex2d[(i + 1) % 5], {0, 255, 255}, 5);
+            cv::namedWindow("pred_img");
+            cv::imshow("pred_img", img);
+            cv::waitKey(1);
         }
     }
 
@@ -96,94 +155,18 @@ namespace buff_processor
         rcl_interfaces::msg::SetParametersResult result;
         result.successful = false;
         result.reason = "debug";
-        for(const auto& param : params)
-        {
-            result.successful = setParam(param);
-        }
+        result.successful = updateParam();
+        param_mutex_.lock();
+        buff_processor_->predictor_param_ = this->predict_param_;
+        buff_processor_->debug_param_ = this->debug_param_;
+        param_mutex_.unlock();
+        
         return result;
     }
 
-    bool BuffProcessorNode::setParam(rclcpp::Parameter param)
+    bool BuffProcessorNode::updateParam()
     {
-        auto param_idx = param_map_[param.get_name()];
-        switch (param_idx)
-        {
-        case 0:
-            buff_processor_->setPredictorParam(param.as_double(), 1);
-            break;
-        case 1:
-            buff_processor_->setPredictorParam(param.as_double(), 2);
-            break;
-        case 2:
-            buff_processor_->setPredictorParam(param.as_double(), 3);
-            break;
-        case 3:
-            buff_processor_->setPredictorParam(param.as_double(), 4);
-            break;
-        case 4:
-            buff_processor_->setPredictorParam(param.as_double(), 5);
-            break;
-        case 5:
-            buff_processor_->setPredictorParam(param.as_double(), 6);
-            break;
-        case 6:
-            buff_processor_->setPredictorParam(param.as_double(), 7);
-            break;
-        case 7:
-            buff_processor_->setPredictorParam(param.as_double(), 8);
-            break;
-        case 8:
-            buff_processor_->setPredictorParam(param.as_double(), 9);
-            break;
-        case 9:
-            buff_processor_->setPredictorParam(param.as_double(), 10);
-            break;
-        case 10:
-            buff_processor_->setPredictorParam(param.as_double(), 11);
-            break;
-        case 11:
-            buff_processor_->setDebugParam(param.as_bool(), 1);
-            break;        
-        case 12:
-            buff_processor_->setDebugParam(param.as_bool(), 2);
-            break;        
-        default:
-            break;
-        }
-        return true;
-    }
-
-    std::unique_ptr<Processor> BuffProcessorNode::init_buff_processor()
-    {
-        param_map_ = 
-        {
-            {"bullet_speed", 0},
-            {"delay_big", 1},
-            {"delay_small", 2},
-            {"history_deque_len_cos", 3},
-            {"history_deque_len_phase", 4},
-            {"history_deque_len_uniform", 5},
-            {"max_a", 6},
-            {"max_rmse", 7},
-            {"max_timespan", 8},
-            {"max_v", 9},
-            {"window_size", 10},
-            {"show_predict", 11},
-            {"using_imu", 12}
-        };
-
-        this->declare_parameter<std::string>("pf_path", "src/global_user/config/filter_param.yaml");
-        this->declare_parameter<double>("bullet_speed", 28.0);
-        this->declare_parameter<double>("delay_big", 175.0);
-        this->declare_parameter<double>("delay_small", 100.0);
-        this->declare_parameter<int>("history_deque_len_cos", 250);
-        this->declare_parameter<int>("history_deque_len_phase", 100);
-        this->declare_parameter<int>("history_deque_len_uniform", 100);
-        this->declare_parameter<double>("max_a", 8.0);
-        this->declare_parameter<double>("max_rmse", 0.5);
-        this->declare_parameter<double>("max_timespan", 20000.0);
-        this->declare_parameter<double>("max_v", 3.0);
-        this->declare_parameter<int>("window_size", 2);
+        //Prediction param.
         this->get_parameter("bullet_speed", predict_param_.bullet_speed);
         this->get_parameter("delay_big", predict_param_.delay_big);
         this->get_parameter("delay_small", predict_param_.delay_small);
@@ -196,16 +179,43 @@ namespace buff_processor
         this->get_parameter("max_v", predict_param_.max_v);
         this->get_parameter("pf_path", predict_param_.pf_path);
         this->get_parameter("window_size", predict_param_.window_size);
+        
+        //Debug param.
+        this->get_parameter("show_predict", this->debug_param_.show_predict);
+        this->get_parameter("using_imu", this->debug_param_.using_imu);
+        
+        return true;
+    }
 
+    std::unique_ptr<Processor> BuffProcessorNode::initBuffProcessor()
+    {
+        //Prediction param.
+        this->declare_parameter<std::string>("pf_path", "src/global_user/config/filter_param.yaml");
+        this->declare_parameter<double>("bullet_speed", 28.0);
+        this->declare_parameter<double>("delay_big", 175.0);
+        this->declare_parameter<double>("delay_small", 100.0);
+        this->declare_parameter<int>("history_deque_len_cos", 250);
+        this->declare_parameter<int>("history_deque_len_phase", 100);
+        this->declare_parameter<int>("history_deque_len_uniform", 100);
+        this->declare_parameter<double>("max_a", 8.0);
+        this->declare_parameter<double>("max_rmse", 0.5);
+        this->declare_parameter<double>("max_timespan", 20000.0);
+        this->declare_parameter<double>("max_v", 3.0);
+        this->declare_parameter<int>("window_size", 2);
+
+        //Path param.
         this->declare_parameter<std::string>("camera_name", "KE0200110075");
         this->declare_parameter<std::string>("camera_param_path", "src/global_user/config/camera.yaml");
         this->get_parameter("camera_name", this->path_param_.camera_name);
         this->get_parameter("camera_param_path", this->path_param_.camera_param_path);
 
+        //Debug param.
         this->declare_parameter<bool>("show_predict", true);
         this->declare_parameter<bool>("using_imu", false);
-        this->get_parameter("show_predict", this->debug_param_.show_predict);
-        this->get_parameter("using_imu", this->debug_param_.using_imu);
+
+        bool success = updateParam();
+        if(success)
+            RCLCPP_INFO(this->get_logger(), "Update param!");
 
         return std::make_unique<Processor>(predict_param_, path_param_, debug_param_);
     }

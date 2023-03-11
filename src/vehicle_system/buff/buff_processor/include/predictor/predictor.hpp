@@ -2,24 +2,31 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2022-12-23 19:55:53
+ * @LastEditTime: 2023-01-07 00:38:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
 #define PREDICTOR_HPP_
 
 # pragma once
+//c++
 #include <iostream>
-
 #include <ctime>
 #include <future>
 #include <random>
 #include <vector>
 
+//opencv
+#include <opencv2/opencv.hpp>
+
+//ceres/eigen
 #include <ceres/ceres.h>
 #include <Eigen/Core>
-#include <opencv2/opencv.hpp>
+
 #include <yaml-cpp/yaml.h>
+
+//ros
+#include <rclcpp/rclcpp.hpp>
 
 #include "../../../filter/include/particle_filter.hpp"
 #include "../../../../global_user/include/global_user/global_user.hpp"
@@ -147,7 +154,8 @@ namespace buff_processor
         std::deque<TargetInfo> history_info;                                    //目标队列
     
     private:
-        double params[4];
+        double params[4] = {0.01, 0.01, 0.01, 0.01};
+        rclcpp::Logger logger_;
 
     public:
         TargetInfo last_target;                                                  //最后目标

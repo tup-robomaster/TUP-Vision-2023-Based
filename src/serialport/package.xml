@@ -26,6 +26,8 @@
   <depend>angles</depend>
   <depend>robot_state_publisher</depend>
   <depend>OpenCV</depend>
+  <depend>Ceres</depend>
+  <depend>Eigen3</depend>
 
   <!-- <build_depend>sensor_msgs</build_depend> -->
 

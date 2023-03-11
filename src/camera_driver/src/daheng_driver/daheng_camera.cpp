@@ -2,21 +2,53 @@
 
 namespace camera_driver
 {
+    DaHengCam::DaHengCam()
+    : logger_(rclcpp::get_logger("daheng_driver"))
+    {
+        //初始化库
+        status = GXInitLib();
+
+        //检测初始化是否成功
+        if (status != GX_STATUS_SUCCESS)
+        {
+            RCLCPP_ERROR(logger_, "相机库初始化失败!");
+        }
+
+        // pRGB24Buf = new char[pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3]; //输 出 图 像 RGB 数 据
+        // if (pRGB24Buf == NULL)
+        //     return false;
+        // else //缓 冲 区 初 始 化
+        //     memset(pRGB24Buf, 0, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3 * sizeof(char));
+
+        // logger initializes.
+        RCLCPP_INFO(logger_, "[CAMERA] Initializing...");
+    }
+
     /**
      * @brief 相机构建函数,完成库的初始化
      */
-    DaHengCam::DaHengCam(DahengCamParam daheng_param)
+    DaHengCam::DaHengCam(CameraParam daheng_param)
+    : logger_(rclcpp::get_logger("daheng_driver"))
     {
         //初始化库
         status = GXInitLib();
         //检测初始化是否成功
         if (status != GX_STATUS_SUCCESS)
         {
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 相机库初始化失败!\n");
+            RCLCPP_ERROR(logger_, "相机库初始化失败!");
         }
 
-        // Camera initialize.
+        // Camera initializes.
         this->daheng_cam_param_ = daheng_param;
+
+        // pRGB24Buf = new char[pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3]; //输 出 图 像 RGB 数 据
+        // if (pRGB24Buf == NULL)
+        //     return false;
+        // else //缓 冲 区 初 始 化
+        //     memset(pRGB24Buf, 0, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3 * sizeof(char));
+
+        // logger initializes.
+        RCLCPP_INFO(logger_, "[CAMERA] Initializing...");
     }
 
     /**
@@ -30,7 +62,10 @@ namespace camera_driver
         status = GXCloseDevice(hDevice);
         //释放库
         status = GXCloseLib();
-        fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 析构!\n");
+        if(status != GX_STATUS_SUCCESS)
+            RCLCPP_ERROR(logger_, "析构失败！");
+        else
+            RCLCPP_INFO(logger_, "析构!");
     }
 
     bool DaHengCam::open()
@@ -38,16 +73,16 @@ namespace camera_driver
         /**
          * @brief 外部调用接口
         */
-        if(StartDevice(daheng_cam_param_.daheng_cam_id) == -1)
+        if(StartDevice(daheng_cam_param_.cam_id) == -1)
         {
-            printf("Start device failed...\n");
+            RCLCPP_ERROR(logger_, "Start device failed...");
             return false;
         }
         
         // 设置分辨率
         if(!SetResolution(daheng_cam_param_.width_scale, daheng_cam_param_.height_scale))
         {
-            printf("Set resolution failed...\n");
+            RCLCPP_ERROR(logger_, "Set resolution failed...");
             return false;
         }      
 
@@ -57,21 +92,21 @@ namespace camera_driver
         // 开始采集帧
         if(!SetStreamOn())
         {
-            printf("Set stream on failed...\n");
+            RCLCPP_ERROR(logger_, "Set stream on failed...");
             return false;
         }
 
         // 设置曝光事件
         if(!SetExposureTime(daheng_cam_param_.exposure_time))
         {
-            printf("Set exposure time failed...\n");
+            RCLCPP_WARN(logger_, "Set exposure time failed...");
             return false;
         }
 
         // 设置1
         if(!SetGAIN(3, daheng_cam_param_.exposure_gain))
         {
-            printf("Set gain failed...\n");
+            RCLCPP_WARN(logger_, "Set gain failed...");
             return false;
         }
         
@@ -85,9 +120,10 @@ namespace camera_driver
         return true;
     }
 
+
     /**
      * @brief 打开相机
-     * @param serial_number 要打开设备的序列号
+     * @param serial_number为要打开设备的序列号
      * @return 返回检测到的连接相机个数
      */
     int DaHengCam::StartDevice(int serial_number)
@@ -97,22 +133,19 @@ namespace camera_driver
         status = GXUpdateDeviceList(&nDeviceNum, 1000);
         if (serial_number > int(nDeviceNum))
         {
-            // printf("[CAMERA] 设备号错误，超过所枚举数量\n");
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 设备号错误，超过所枚举数量\n");
+            RCLCPP_ERROR(logger_, "设备号错误，超过所枚举数量");
             return -1;
         }
         //打 开 设 备
         status = GXOpenDeviceByIndex(serial_number, &hDevice);
         if (status == GX_STATUS_SUCCESS)
         {
-            // printf("[CAMERA] 设备打开成功!\n");
-            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 设备打开成功!\n");
+            RCLCPP_INFO(logger_, "设备打开成功!");
             return nDeviceNum;
         }
         else
         {
-            // printf("[CAMERA] 设备打开失败!\n");
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 设备打开失败!\n");
+            RCLCPP_ERROR(logger_, "设备打开失败!");
             return -1;
         }
     }
@@ -162,32 +195,43 @@ namespace camera_driver
         //设 置 采 集 buffer 个 数
         status = GXSetAcqusitionBufferNumber(hDevice, 2);
         if (status == GX_STATUS_SUCCESS)
-            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] buffer设置成功!\n");
+        {
+            RCLCPP_INFO(logger_, "buffer设置成功!");
+        }
         else
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] buffer设置失败!\n");
+        {
+            RCLCPP_ERROR(logger_, "buffer设置失败!");
+        }
 
         status = GXSetBool(hDevice, GX_BOOL_CHUNKMODE_ACTIVE, true);
         if (status == GX_STATUS_SUCCESS)
-            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 帧信息模式已设置为使能!\n");
+        {
+            RCLCPP_INFO(logger_, "帧信息模式已设置为使能");
+        }
         else
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 帧信息模式设置失败!\n");
+        {
+            RCLCPP_ERROR(logger_, "帧信息模式设置失败");
+        }
 
         status = GXSetEnum(hDevice, GX_ENUM_CHUNK_SELECTOR, GX_CHUNK_SELECTOR_CHUNK_TIME_STAMP);
         if (status == GX_STATUS_SUCCESS)
-            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 时间戳帧信息已启用!\n");
+        {
+            RCLCPP_INFO(logger_, "时间戳帧信息已启用!");
+        }
         else
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 时间戳帧信息启用失败!\n");
-
+        {
+            RCLCPP_ERROR(logger_, "时间戳帧信息启用失败!");
+        }
         //开 采
         status = GXStreamOn(hDevice);
         if (status == GX_STATUS_SUCCESS)
         {
-            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 开始采集图像!\n");
+            RCLCPP_INFO(logger_, "开始采集图像!");
             return true;
         }
         else
         {
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 采集失败!\n");
+            RCLCPP_ERROR(logger_, "采集失败!");
             return false;
         }
     }
@@ -233,7 +277,7 @@ namespace camera_driver
      * @param Src 引入方式传递
      * @return bool 返回是否成功
      */
-    bool DaHengCam::get_frame(cv::Mat &Src)
+    bool DaHengCam::get_frame(cv::Mat &Src, sensor_msgs::msg::Image& image_msg)
     {
         // ------------------------------------------- For Soft Trigger------------------------------------------------------------
         // int64_t nPayLoadSize = 0;
@@ -337,14 +381,10 @@ namespace camera_driver
             lastImgTimestamp = pFrameBuffer->nTimestamp;
             char *pRGB24Buf = new char[pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3]; //输 出 图 像 RGB 数 据
             if (pRGB24Buf == NULL)
-            {
                 return false;
-            }
-            else
-            {
-                memset(pRGB24Buf, 0, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3 * sizeof(char));
-                //缓 冲 区 初 始 化
-            }
+            // else //缓 冲 区 初 始 化
+            //     memset(pRGB24Buf, 0, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3 * sizeof(char));
+
             DX_BAYER_CONVERT_TYPE cvtype = RAW2RGB_NEIGHBOUR3; //选 择 插 值 算 法
             DX_PIXEL_COLOR_FILTER nBayerType = DX_PIXEL_COLOR_FILTER(BAYERBG);
             //选 择 图 像 Bayer 格 式
@@ -353,7 +393,7 @@ namespace camera_driver
             VxInt32 DxStatus = DxRaw8toRGB24(pFrameBuffer->pImgBuf, pRGB24Buf, pFrameBuffer->nWidth, pFrameBuffer->nHeight, cvtype, nBayerType, bFlip);
             if (DxStatus != DX_OK)
             {
-                fmt::print(fmt::fg(fmt::color::red), "[CAMERA] Raw8 to RGB24 failed!\n");
+                RCLCPP_ERROR(logger_, "Raw8 to RGB24 failed!");
                 if (pRGB24Buf != NULL)
                 {
                     delete[] pRGB24Buf;
@@ -368,12 +408,14 @@ namespace camera_driver
             //     if (DxStatus != DX_OK)
             //         cout << "Contrast Set Failed" <<endl;
             // }
-            if (set_color)
-            {
-                DxStatus = DxImageImprovment(pRGB24Buf, pRGB24Buf,pFrameBuffer->nWidth, pFrameBuffer->nHeight, nColorCorrectionParam,NULL,pGammaLut);
-                if (DxStatus != DX_OK)
-                fmt::print(fmt::fg(fmt::color::red), "[CAMERA] Color Set Failed!\n");
-            }
+            // if (set_color)
+            // {
+            //     DxStatus = DxImageImprovment(pRGB24Buf, pRGB24Buf,pFrameBuffer->nWidth, pFrameBuffer->nHeight, nColorCorrectionParam,NULL,pGammaLut);
+            //     if (DxStatus != DX_OK)
+            //     {
+            //         RCLCPP_ERROR(logger_, "Color Set Failed!");
+            //     }
+            // }
             // if (set_saturation)
             // {
             //     DxStatus = DxSaturation(pRGB24Buf, pRGB24Buf,pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3, saturation_factor);
@@ -381,9 +423,12 @@ namespace camera_driver
             //         cout << "Saturation Set Failed" <<endl;
             // }
 
-            Mat src = Mat(pFrameBuffer->nHeight, pFrameBuffer->nWidth, CV_8UC3);
-            memcpy(src.data, pRGB24Buf, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3);
-            src.copyTo(Src);
+            Src = Mat(pFrameBuffer->nHeight, pFrameBuffer->nWidth, CV_8UC3);
+            memcpy(Src.data, pRGB24Buf, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3);
+            // src.copyTo(Src);
+            image_msg.step = static_cast<sensor_msgs::msg::Image::_step_type>(Src.step);  
+            image_msg.is_bigendian = false;
+            image_msg.data.assign(Src.datastart, Src.dataend);
 
             delete[] pRGB24Buf;
             pRGB24Buf = NULL;
@@ -393,8 +438,7 @@ namespace camera_driver
         }
         else
         {
-            // cout << "读取图片缓冲失败" << endl;
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] GetMat:读取图片缓冲失败\n");
+            RCLCPP_ERROR(logger_, "GetMat:读取图片缓冲失败");
             status = GXQBuf(hDevice, pFrameBuffer);
             return false;
         }
@@ -426,14 +470,12 @@ namespace camera_driver
         status = GXSetInt(hDevice, GX_INT_DECIMATION_VERTICAL, nDecimationV);
         if (status == GX_STATUS_SUCCESS)
         {
-            // printf("[CAMERA] 分辨率设置成功\n");
-            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 分辨率设置成功\n");
+            RCLCPP_INFO(logger_, "分辨率设置成功");
             return true;
         }
         else
         {
-            // printf("[CAMERA] 分辨率设置失败\n");
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 分辨率设置失败\n");
+            RCLCPP_WARN(logger_, "分辨率设置失败");
             return false;
         }
     }
@@ -449,12 +491,12 @@ namespace camera_driver
         status = GXSetFloat(hDevice, GX_FLOAT_EXPOSURE_TIME, ExposureTime);
         if (status == GX_STATUS_SUCCESS)
         {
-            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 曝光值设置成功\n");
+            RCLCPP_INFO(logger_, "曝光值设置成功: %dus", ExposureTime);
             return true;
         }
         else
         {
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 曝光值设置失败\n");
+            RCLCPP_WARN(logger_, "曝光值设置失败");
             return false;
         }
     }
@@ -502,12 +544,12 @@ namespace camera_driver
         status = GXSetEnum(hDevice, GX_ENUM_BALANCE_WHITE_AUTO, value);
         if (status == GX_STATUS_SUCCESS)
         {
-            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 自动白平衡设置成功\n");
+            RCLCPP_INFO(logger_, "自动白平衡设置成功");
             return true;
         }
         else
         {
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 自动白平衡设置失败\n");
+            RCLCPP_WARN(logger_, "自动白平衡设置失败");
             return false;
         }
     }
@@ -524,7 +566,6 @@ namespace camera_driver
             VxInt16*parrCC = new VxInt16[(sizeof(VxInt16))*9];
             if (parrCC== NULL)
             {
-                // cout<<"Color Failed"<<endl;
                 return false;
             }
             //获 取 颜 色 校 正 系 数
@@ -538,13 +579,11 @@ namespace camera_driver
                     delete []parrCC;
                     parrCC= NULL;
                 };
-                // cout<<"Color Failed"<<endl;
                 return false;
             }
             set_color = value;
             return true;
         }
-        // cout<<"Color Failed"<<endl;
         return false;
     }
 
@@ -571,13 +610,14 @@ namespace camera_driver
             status = GXSetEnum(hDevice, GX_ENUM_BALANCE_RATIO_SELECTOR, GX_BALANCE_RATIO_SELECTOR_RED);
         }
         status = GXSetFloat(hDevice, GX_FLOAT_BALANCE_RATIO, (float)value_number);
-        if (status == GX_STATUS_SUCCESS){
-            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] 白平衡 {} 设置成功\n",value);
+        if (status == GX_STATUS_SUCCESS)
+        {
+            RCLCPP_INFO(logger_, "白平衡 %d 设置成功: %f", value, value_number);
             return true;
         }
         else
         {
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] 白平衡 {} 设置失败\n",value);
+            RCLCPP_WARN(logger_, "白平衡 %d 设置失败", value);
             return false;
         }
     }
@@ -606,8 +646,8 @@ namespace camera_driver
             // {
             //     return false;
             // }
-        
-            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] Gamma {} 设置成功\n",dGammaParam);
+
+            RCLCPP_INFO(logger_, "Gamma %lf 设置成功", dGammaParam);
 
             do
             {
@@ -635,7 +675,7 @@ namespace camera_driver
         }
         else
         {
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] NOT Seting Gamma Value!\n");
+            RCLCPP_WARN(logger_, "NOT Seting Gamma Value!");
             return -1;
         }
     }
@@ -652,12 +692,12 @@ namespace camera_driver
         if(set_status)
         {
             contrast_factor = dContrastParam;
-            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] Contrast {} 设置成功\n",dContrastParam);
+            RCLCPP_INFO(logger_, "Contrast %d 设置成功", dContrastParam);
             return true;
         }
         else
         {
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] Using Default Contrast Value!\n");
+            RCLCPP_WARN(logger_, "Using Default Contrast Value!");
             return -1;
         }
     }
@@ -674,12 +714,12 @@ namespace camera_driver
         if(set_status)
         {
             saturation_factor = dSaturationParam;
-            fmt::print(fmt::fg(fmt::color::green), "[CAMERA] Saturation {} 设置成功\n",saturation_factor);
+            RCLCPP_INFO(logger_, "Saturation %d 设置成功", saturation_factor);
             return true;
         }
         else
         {
-            fmt::print(fmt::fg(fmt::color::red), "[CAMERA] Using Default Saturation Value!\n");
+            RCLCPP_ERROR(logger_, "Using Default Saturation Value!");
             return -1;
         }
     }

@@ -6,33 +6,35 @@
     max_armors_cnt: 8
     max_v: 8
     max_delta_t: 100
-    no_crop_thres: 1e-2
+    no_crop_thres: 0.01
     hero_danger_zone: 4
     color: true # red: true
                 # blue: false
-    no_crop_ratio: 2e-3
-    full_crop_ratio: 1e-4
+    no_crop_ratio: 0.002
+    full_crop_ratio: 0.0001
     armor_roi_expand_ratio_width: 1.1
     armor_roi_expand_ratio_height: 1.5
     armor_conf_high_thres: 0.82
 
   # Spinning params.
-    anti_spin_judge_high_thres: 2e4
-    anti_spin_judge_low_thres: 2e3
+    anti_spin_judge_high_thres: 20000.0
+    anti_spin_judge_low_thres: 2000.0
     anti_spin_max_r_multiple: 4.5
     max_dead_buffer: 2
     max_delta_dist: 0.5
     min_fitting_lens: 10
     shoot_delay: 50
     max_cost: 500
-    delta_x_3d_high_thresh: 0.37
-    delta_x_3d_higher_thresh: 0.44
-    delta_x_3d_low_thresh: 0.23
-    delta_x_3d_lower_thresh: 0.15
-    delta_x_2d_high_thresh: 65.0
-    delta_x_2d_higher_thresh: 85.0
-    delta_x_2d_low_thresh: 35.0
-    delta_x_2d_lower_thresh: 24.0
+    switch_max_dt: 10000.0
+    
+    delta_x_3d_high_thresh: 0.18
+    delta_x_3d_higher_thresh: 0.25
+    delta_x_3d_low_thresh: 0.10
+    delta_x_3d_lower_thresh: 0.05
+    delta_y_3d_high_thresh: 0.18
+    delta_y_3d_higher_thresh: 0.25
+    delta_y_3d_low_thresh: 0.10
+    delta_y_3d_lower_thresh: 0.05
 
   # Camera config params.
     # camera_name: "00J90630561" 
@@ -41,35 +43,36 @@
     camera_param_path: "src/global_user/config/camera.yaml"
 
   # Network model path.
-    network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
+    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0127-001.xml"
+    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
+    # network_path: "src/vehicle_system/autoaim/armor_detector/model/1106-333.xml"
     # network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
-
+    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-1208-001.xml"
+    network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0127-001.xml"
+  
+  # Data saving.
+    save_data: false
+    save_path: "src/data/infer2_5.txt"
+    save_dataset: false
+  
   # Debug params.
     debug: true
-    using_imu: false
-    using_roi: true
-    draw_predict: true
-    show_img: false
-    show_fps: false
+    using_imu: true
+    using_roi: false
+    # draw_predict: true
+    show_img: true
+    show_fps: true
     print_letency: false
     print_target_info: false
     detect_red: true
+    # disable_filter: false
+    # disable_fitting: true
+    # show_predict: false
     using_shared_memory: false
-    disable_filter: false
-    disable_fitting: true
-    show_predict: false
     show_transformed_info: false
     auto_label: false
-
-  # Singer model(--->CS Model).
-    singer_alpha: 1.0 # 1/f
-    singer_a_max: 0.1
-    singer_p_max: 0.1
-    singer_p0: 0.8
-    singer_dt: 1.2
-    singer_sigma: 0.1
-    singer_p: 1.0
-    singer_r: 1.0
+    show_all_armors: true
+    sync_transport: false
 
 /armor_processor:
   ros__parameters:
@@ -83,32 +86,42 @@
     window_size: 3
 
   # Debug params.
-    using_shared_memory: true
-    disable_filter: false
-    disable_fitting: true
+    using_shared_memory: false
+    disable_filter: true
+    disable_fitting: false
     draw_predict: false
-    show_predict: true
+    show_predict: false
     show_transformed_info: false
+    show_img: false 
+    sync_transport: false   
+    print_delay: false
     debug: true
 
   # Camera params.
-    camera_type: 0
+    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110075"
+    coord_param_name: "KE0200110075" 
     coord_param_path: "src/global_user/config/camera.yaml"
     
   # Filter params.
     filter_param_path: "src/global_user/config/filter_param.yaml"
 
   # Singer model(--->CS Model).
-    singer_alpha: 5.0 # 1/f（机动频率倒数） 
-    singer_a_max: 0.5
-    singer_p_max: 0.1
-    singer_p0: 0.8
-    singer_dt: 5.0
-    singer_sigma: 0.1
-    singer_p: 1.0
-    singer_r: 1.0
+    # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 dt:采样时间间隔 
+    #  sigma:机动加速度标准差 p:过程协方差系数 r:观测协方差系数 coeff:预测提前量系数)
+    singer_model: [0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0] 
+  
+  # IMM model.
+    #状态转移概率
+    trans_prob_matrix: [0.6, 0.3, 0.05, 0.05, #row prob sum = 1
+                        0.5, 0.4, 0.05, 0.05,
+                        0.1, 0.1, 0.75, 0.05,
+                        0.1, 0.1, 0.05, 0.75]
+    #模型概率
+    model_prob_vector: [0.4, 0.3, 0.15, 0.15] #prob sum = 1
+    process_noise: [0.4, 0.4, 0.3, 0.3, 0.2, 0.2]
+    measure_noise: [60.0, 60.0, 30.0, 30.0]
+
   
 
     

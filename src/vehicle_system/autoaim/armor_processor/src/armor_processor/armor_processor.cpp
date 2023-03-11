@@ -2,182 +2,154 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2022-12-26 00:56:26
+ * @LastEditTime: 2023-03-11 23:35:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
 
 namespace armor_processor
 {
-    // Processor::Processor(const PredictParam& predict_param, const SingerModelParam& singer_model_param,
-    //     const DebugParam& debug_param, const std::string& filter_param_path, 
-    //     const std::string& coord_param_path, const std::string& coord_param_name)
-    // : armor_predictor_(predict_param, singer_model_param, debug_param, filter_param_path)
-    // {
-    //     // if(!debug_param.using_imu)
-    //     // {
-    //     //     //TODO:暂时未使用陀螺仪数据
-    //     //     rmat_imu = Eigen::Matrix3d::Identity();
-    //     // }
-    //     coord_param_path_ = coord_param_path;
-    //     coord_param_name_ = coord_param_name;
-    //     is_initialized = false;
-
-    //     rmat_imu = Eigen::Matrix3d::Identity();
-    // }
-    Processor::Processor()
-    : is_init(false), is_ekf_init(false), is_imm_init(false)
+    Processor::Processor(const PredictParam& predict_param, const vector<double>& singer_model_param, const PathParam& path_param, const DebugParam& debug_param)
+    : ArmorPredictor(predict_param, singer_model_param, path_param, debug_param), path_param_(path_param)
     {
-        
+        is_init_ = false;
+        is_imm_init_ = false;
+        // is_ekf_init = false;
+        is_singer_init_[0] = false;
+        is_singer_init_[1] = false;
+
+        car_id_map_ = {
+            {"B0", 0}, {"B1", 1},
+            {"B2", 2}, {"B3", 3},
+            {"B4", 4}, {"R0", 5},
+            {"R1", 6}, {"R2", 7},
+            {"R3", 8}, {"R4", 9} 
+        };
+        // init(path_param.coord_path, path_param.coord_name);
     }
-
-    Processor::Processor(const PredictParam& predict_param, const SingerModel& singer_model_param,
-        const DebugParam& debug_param, const std::string& filter_param_path, 
-        const std::string& coord_param_path, const std::string& coord_param_name)
+    
+    Processor::Processor()
+    : ArmorPredictor()
     {
-        armor_predictor_->predict_param_ = predict_param;
-        armor_predictor_->singer_param_ = singer_model_param;
-        armor_predictor_->filter_param_path_ = filter_param_path;
-        // if(!debug_param.using_imu)
-        // {
-        //     //TODO:暂时未使用陀螺仪数据
-        //     rmat_imu = Eigen::Matrix3d::Identity();
-        // }
-        coord_param_path_ = coord_param_path;
-        coord_param_name_ = coord_param_name;
-        is_initialized_ = false;
+        is_init_ = false;
+        is_imm_init_ = false;
+        // is_ekf_init = false;
+        is_singer_init_[0] = false;
+        is_singer_init_[1] = false;
 
-        // rmat_imu = Eigen::Matrix3d::Identity();
+        car_id_map_ = {
+            {"B0", 0}, {"B1", 1},
+            {"B2", 2}, {"B3", 3},
+            {"B4", 4}, {"R0", 5},
+            {"R1", 6}, {"R2", 7},
+            {"R3", 8}, {"R4", 9} 
+        };
+        // PathParam path;
+        // init(path.coord_path, path.coord_name);
     }
 
     Processor::~Processor()
     {
-
-    }
-    
-    void Processor::predictor(TargetInfo& target)
-    {
         
     }
-    
-    void Processor::predictor(TaskData& src, TargetInfo& target_info)
-    {
-        // if(!is_initialized)
-        // {
-        //     coordsolver_.loadParam(coord_param_path_, coord_param_name_);
-        //     is_initialized = true;
-        // }
-        if(!is_ekf_initialized_)
-        {
-            armor_predictor_->is_ekf_init = false;
-        }
 
-        // Eigen::Vector3d target_ = {target_info.xyz[0], target_info.aiming_point.y, target_[2] = target_info.aiming_point.z};
-        // if(armor_predictor_.debug_param_.using_imu)
-        // {
-        //     rmat_imu[0] = target_info.rmat_imu.x;
-        //     rmat_imu[1] = target_info.rmat_imu.y;
-        //     rmat_imu[2] = target_info.rmat_imu.z;
-        // }
-        double sleep_time = 0;
-        if(target_info.is_target_switched)
+    /**
+     * @brief 从外部加载坐标解算类参数
+     * 
+     * @param coord_path 相机标定参数文件路径
+     * @param coord_name 相机型号名
+     */
+    void Processor::init(std::string coord_path, std::string coord_name)
+    {
+        try
         {
-            aiming_point_ = target_info.xyz;
+            auto success = coordsolver_.loadParam(coord_path, coord_name);
+        }
+        catch(const std::exception& e)
+        {
+            RCLCPP_ERROR(logger_, "Error while initializing: %s", e.what());
+        }
+    }
+
+    /**
+     * @brief 自动发弹逻辑函数
+     * 
+     * @param armor 目标装甲信息
+     * @param hp 车辆血量信息
+     * @return true 
+     * @return false 
+     */
+    bool Processor::autoShootingLogic(AutoaimMsg& armor, PostProcessInfo& post_process_info)
+    {
+        post_process_info = postProcess(armor);
+    
+        // 如果当前目标血量偏低直接发弹
+        if (armor.hp <= 75)
+        {
+            post_process_info.find_target = true;
+            post_process_info.is_shooting = true;
+            post_process_info.switch_target = false;    
+        } 
+        else if (post_process_info.track_3d_pos.norm() <= 4.5 && post_process_info.hp <= 200)
+        {
+            post_process_info.find_target = true;
+            post_process_info.is_shooting = true;
+            post_process_info.switch_target = false;
+        }
+        else if (post_process_info.track_3d_pos.norm() <= 2.5 && post_process_info.hp <= 500)
+        {
+            post_process_info.find_target = true;
+            post_process_info.is_shooting = true;
+            post_process_info.switch_target = false;
         }
         else
         {
-            auto aiming_point_world = armor_predictor_->predict(target_info, src.timestamp, sleep_time, &src.img);
-            // aiming_point_ = coordsolver_.worldToCam(aiming_point_world, rmat_imu);
+            return false;
         }
-
-        // if(armor_predictor_.debug_param_.show_predict)
-        // {
-        //     auto aiming_2d = coordsolver_.reproject(aiming_point_);
-        //     // circle(src.img, aiming_2d, 2, {0, 255, 255}, 2);
-        // }
+        
+        return true;
     }
 
-    void Processor::setPredictParam(int& param, int idx)
+    /**
+     * @brief 对目标装甲板的位置进行预测
+     * 
+     * @param target 目标装甲板message信息
+     * @param sleep_time 休眠时间，对应预测延迟时间，用于改变预测点message的时间戳从而方便观察测量值与预测量间的误差
+     * @return std::unique_ptr<Eigen::Vector3d> 
+     */
+    std::unique_ptr<Eigen::Vector3d> Processor::predictor(AutoaimMsg& target, double& sleep_time)
     {
-        switch (idx)
+        if(target.target_switched)
         {
-        case 1:
-            armor_predictor_->predict_param_.max_delta_time = param;
-            break;
-        case 2:
-            armor_predictor_->predict_param_.min_fitting_lens = param;
-            break;
-        case 3:
-            armor_predictor_->predict_param_.max_v = param;
-            break;
-        case 4:
-            armor_predictor_->predict_param_.shoot_delay = param;
-            break;
-        case 5:
-            armor_predictor_->predict_param_.max_cost = param;
-            break;
-        default:
-            break;
+            // is_ekf_init = false;
+            is_singer_init_[0] = false;
+            is_singer_init_[1] = false;
+            is_imm_init_ = false;
         }
-    }
 
-    void Processor::setDebugParam(bool& param, int idx)
-    {
-        switch (idx)
-        {
-        case 1:
-            armor_predictor_->debug_param_.disable_fitting = param;
-            break;
-        case 2:
-            armor_predictor_->debug_param_.disable_filter = param;
-            break;
-        case 3:
-            armor_predictor_->debug_param_.draw_predict = param;
-            break;
-        case 4:
-            armor_predictor_->debug_param_.show_predict = param;
-            break;
-        case 5:
-            armor_predictor_->debug_param_.show_transformed_info = param;
-            break;
-        case 6:
-            armor_predictor_->debug_param_.using_imu = param;
-            break;
-        default:
-            break;
-        }
+        auto hit_point = predict(target, target.timestamp, sleep_time);
+        return std::make_unique<Eigen::Vector3d>(hit_point);
     }
-
-    void Processor::setSingerParam(double& param, int idx)
+    
+    /**
+     * @brief 同上
+     * 
+     * @param src 传入图像信息，方便可视化
+     * @param target 
+     * @param sleep_time 
+     * @return std::unique_ptr<Eigen::Vector3d> 
+     */
+    std::unique_ptr<Eigen::Vector3d> Processor::predictor(cv::Mat& src, AutoaimMsg& target, double& sleep_time)
     {
-        switch (idx)
+        if(target.target_switched)
         {
-        case 1:
-            armor_predictor_->setSingerParam(param, 1);
-            break;
-        case 2:
-            armor_predictor_->setSingerParam(param, 2);
-            break;
-        case 3:
-            armor_predictor_->setSingerParam(param, 3);
-            break;
-        case 4:
-            armor_predictor_->setSingerParam(param, 4);
-            break;
-        case 5:
-            armor_predictor_->setSingerParam(param, 5);
-            break;
-        case 6:
-            armor_predictor_->setSingerParam(param, 6);
-            break;
-        case 7:
-            armor_predictor_->setSingerParam(param, 7);
-            break;
-        case 8:
-            armor_predictor_->setSingerParam(param, 8);
-            break;
-        default:
-            break;
+            // is_ekf_init = false;
+            is_imm_init_ = false;
+            is_singer_init_[0] = false;
+            is_singer_init_[1] = false;
         }
+
+        auto hit_point = predict(target, target.timestamp, sleep_time, &src);
+        return std::make_unique<Eigen::Vector3d>(hit_point);
     }
 } // armor_processor

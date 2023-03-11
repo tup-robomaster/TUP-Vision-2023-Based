@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 14:01:05
- * @LastEditTime: 2022-12-24 18:45:46
+ * @LastEditTime: 2023-03-03 09:50:18
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/global_user.cpp
  */
 #include "../include/global_user/global_user.hpp"
@@ -188,7 +188,7 @@ namespace global_user
         int last_slash_idx = 0;
         std::string path_tmp = path;
 
-        for(auto i = 0; i = path_tmp.find("/"), i != path_tmp.npos; path_tmp = path_tmp.substr(i + 1))
+        for(auto i = 0; i = path_tmp.find("/"), i != (int)(path_tmp.npos); path_tmp = path_tmp.substr(i + 1))
         {   
             last_slash_idx += i + 1;
         }
@@ -208,7 +208,7 @@ namespace global_user
             path.insert(0,"/");
 
         //使用逗号表达式控制循环
-        for(auto i = 0; i = path.find("/"), i != path.npos; path = path.substr(i + 1))
+        for(auto i = 0; i = path.find("/"), i != (int)(path.npos); path = path.substr(i + 1))
         {   
             if(i == 0)
                 continue;
@@ -323,4 +323,38 @@ namespace global_user
         }
         return true;
     }
+
+    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_prefix, int64_t &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size)
+    {
+        if(!is_init)
+        {
+            std::string img_name = path_prefix + to_string(timestamp) + ".jpg";
+            cv::imwrite(img_name, img);
+            is_init = true;
+        }
+        std::string label_name = path_prefix + to_string(timestamp) + ".txt";
+        std::string content;
+
+        int cls = 0;
+        if(id == 7)
+            cls = 9 * color - 1;
+        if(id != 7)
+            cls = id + color * 9;
+        
+        content.append(to_string(cls) + " ");
+        for(auto apex : apex2d)
+        {
+            content.append(to_string((apex.x - roi_offset.x) / input_size.width));
+            content.append(" ");
+            content.append(to_string((apex.y - roi_offset.y) / input_size.height));
+            content.append(" ");
+        }
+        content.pop_back();
+        content.append("\n");
+        file.open(label_name, std::ofstream::app);
+        file << content;
+        file.close();
+        usleep(5000);
+    }
+
 } //global_user
