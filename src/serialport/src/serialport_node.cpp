@@ -62,7 +62,6 @@ namespace serialport
         //创建发送数据定时器
         // timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
         watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
-        // send_timer_ = rclcpp::create_timer(this, this->get_clock(), 30ms, std::bind(&SerialPortNode::sendingData, this));
         
         if (using_port_)
         {   // Use serial port.
@@ -76,10 +75,10 @@ namespace serialport
                 receive_thread_ = std::thread(&SerialPortNode::receiveData, this);
                 if (is_sentry_)
                 {
-                    sentry_msg_sub_ = this->create_subscription<SentryMsg>(
-                        "/sentry_msg",
+                    sentry_twist_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
+                        "/cmd_vel",
                         rclcpp::SensorDataQoS(), 
-                        std::bind(&SerialPortNode::sentryMsgSub, this, _1)
+                        std::bind(&SerialPortNode::sentryNavCallback, this, _1)
                     );
                 }
             }
@@ -255,34 +254,20 @@ namespace serialport
         // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
         if (this->using_port_)
         {   
-            VisionData vision_data;
-            if (mode == AUTOAIM || mode == HERO_SLING || mode == OUTPOST_ROTATION_MODE
-            || mode == SMALL_BUFF || mode == BIG_BUFF)
+            VisionAimData vision_data;
+            if (mode == AUTOAIM || mode == HERO_SLING || mode == OUTPOST_ROTATION_MODE ||
+                                                mode == SMALL_BUFF || mode == BIG_BUFF)
             {
                 RCLCPP_WARN(this->get_logger(), "Sub autoaim msg!!!");
-                vision_data = 
-                {
-                    (serial_port_->steady_clock_.now().nanoseconds() / 1e6),
-                    (float)target_info->pitch, 
-                    (float)target_info->yaw, 
-                    (float)target_info->distance, 
-                    target_info->is_switched, 
-                    1, 
-                    target_info->is_spinning, 
-                    0,
-                    {0, 0, 0},
-                    {0, 0, 0}
-                };
+                vision_data = {(serial_port_->steady_clock_.now().nanoseconds() / 1e6),
+                                                            (float)target_info->pitch, 
+                                                            (float)target_info->yaw, 
+                                                            (float)target_info->distance, 
+                                                            target_info->is_switched, 
+                                                            1, 
+                                                            target_info->is_spinning, 
+                                                            0};
 
-                // mutex_.lock();
-                // if(vision_data_queue_.size() < 3)
-                //     vision_data_queue_.push(vision_data);
-                // else
-                // {
-                //     vision_data_queue_.pop();
-                //     vision_data_queue_.push(vision_data);
-                // }
-                // mutex_.unlock();
             }
             else 
                 return false;
@@ -336,33 +321,20 @@ namespace serialport
      * 
      * @param target_info 目标信息
      */
-    void SerialPortNode::sentryMsgSub(SentryMsg::SharedPtr target_info)
+    void SerialPortNode::sentryNavCallback(geometry_msgs::msg::Twist::SharedPtr msg)
     {
         int mode = mode_;
         // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
         if (this->using_port_)
         {   
-            VisionData vision_data;
-            if (mode == SENTRY_MODE)
-            {
-                RCLCPP_WARN(this->get_logger(), "Sub sentry msg!!!");
-                vision_data = 
-                {
-                    (serial_port_->steady_clock_.now().nanoseconds() / 1e6),
-                    (float)target_info->pitch, 
-                    (float)target_info->yaw, 
-                    0,
-                    false,
-                    true,
-                    false,
-                    true,
-                    {target_info->twist.linear.x, target_info->twist.linear.y, target_info->twist.linear.z},
-                    {target_info->twist.angular.x, target_info->twist.angular.y, target_info->twist.angular.z}
-                };
-            }
-            else
-                return;
-
+            
+            VisionNavData vision_data;
+            vision_data.linear_velocity[0] = msg->linear.x;
+            vision_data.linear_velocity[1] = msg->linear.y;
+            vision_data.linear_velocity[2] = msg->linear.z;
+            vision_data.angular_velocity[0] = msg->angular.x;
+            vision_data.angular_velocity[1] = msg->angular.y;
+            vision_data.angular_velocity[2] = msg->angular.z;
             //根据不同mode进行对应的数据转换
             data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
             //数据发送
@@ -373,42 +345,6 @@ namespace serialport
         }
         else
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
-    }
-
-    /**
-     * @brief 数据发送回调函数
-     * 
-     */
-    void SerialPortNode::sendingData()
-    {
-        VisionData vision_data = {0.0, (float)0.0, (float)0.0, (float)0.0, 0, 1, 0, 0};
-        // if(flag_)
-        // {
-        //     auto now = (serial_port_->steady_clock_.now().nanoseconds() / 1e6);
-        //     mutex_.lock();
-        //     if(abs(now - vision_data_.timestamp) < 50) //(ms)，若时间差过大，则忽略此帧数据
-        //     {
-        //         vision_data = vision_data_;
-        //     }
-        //     mutex_.unlock();
-        //     flag_ = false;
-        // }
-
-        mutex_.lock();
-        if(vision_data_queue_.size() > 0)
-        {
-            vision_data = vision_data_queue_.front();
-            vision_data_queue_.pop();
-        }
-        mutex_.unlock();
-        // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10, "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
-        // RCLCPP_WARN(this->get_logger(), "pitch:%f yaw:%f", vision_data.pitch_angle, vision_data.yaw_angle);
-        //根据不同mode进行对应的数据转换
-        data_transform_->transformData(mode_, vision_data, serial_port_->Tdata);
-        //数据发送
-        serial_port_->sendData();
-
-        return;
     }
 
     bool SerialPortNode::setParam(rclcpp::Parameter param)

@@ -45,7 +45,7 @@ namespace serialport
         OUTPOST_ROTATION_MODE
     };
 
-    typedef struct VisionData
+    typedef struct VisionAimData
     {
         double timestamp;
         float pitch_angle;                //俯仰角
@@ -55,17 +55,28 @@ namespace serialport
         int isFindTarget;                 //当识别的图片范围内有目标且电控发来的信号不为0x00（关闭视觉）置为1，否则置0
         int isSpinning;                   //目标是否处于陀螺状态
         int ismiddle;                     //设置1表示目标进入了可以开火的范围，设置0则表示目标尚未进入可开火的范围，默认置0
+    } VisionAimData;
+
+    typedef struct VisionNavData
+    {
         Eigen::Vector3f linear_velocity;  //线速度
         Eigen::Vector3f angular_velocity; //角速度
-    } VisionData;
-    
+    } VisionNavData;
+    typedef struct VisionDecisionData
+    {
+        int mode;               //车辆设定模式
+        float theta_gimbal;    //指定云台所需转动的相对角度
+        float theta_chassis;   //指定底盘所需转动的相对角度
+    } VisionDecisionData;
     class DataTransform
     {
     public:
         DataTransform();
         ~DataTransform();
 
-        void transformData(int mode, const VisionData &data, uchar* trans_data); 
+        void transformData(int mode, const VisionAimData &data, uchar* trans_data);
+        void transformData(int mode, const VisionNavData &data, uchar* trans_data);
+        void transformData(int mode, const VisionDecisionData &data, uchar* trans_data);
         void getQuatData(uchar* raw_data, vector<float>& quat);
         void getGyroData(uchar* raw_data, vector<float>& gyro);
         void getAccData(uchar* raw_data, vector<float>& acc);
