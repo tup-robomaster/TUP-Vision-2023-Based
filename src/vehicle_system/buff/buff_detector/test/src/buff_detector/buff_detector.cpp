@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-03-10 21:47:04
+ * @LastEditTime: 2023-03-12 10:31:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -147,7 +147,7 @@ namespace buff_detector
             }
             center_vec.push_back(center_r);
             cv::RotatedRect r_rect = cv::minAreaRect(points_pic);
-            cv::RotatedRect armor_rect = cv::minAreaRect(points_rect);
+            // cv::RotatedRect armor_rect = cv::minAreaRect(points_rect);
 
             if(debug_param_.show_img)
             {
@@ -696,8 +696,8 @@ namespace buff_detector
 
     bool Detector::chooseTarget(std::vector<Fan> &fans_, Fan &target)
     {
-        float max_area = 0;
-        int target_idx = 0;
+        // float max_area = 0;
+        // int target_idx = 0;
         int target_fan_cnt = 0;
         for (auto fan : fans_)
         {

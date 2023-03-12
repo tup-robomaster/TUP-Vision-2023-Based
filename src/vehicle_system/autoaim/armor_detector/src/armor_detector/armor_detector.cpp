@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-03-11 19:27:41
+ * @LastEditTime: 2023-03-12 18:40:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -341,7 +341,11 @@ namespace armor_detector
         {
             target_id = chooseTargetID(src, armors_, hp);
         }
-        else if (src.mode == AUTOAIM || src.mode == HERO_SLING)
+        // else if (src.mode == AUTOAIM || src.mode == HERO_SLING)
+        // {
+        //     target_id = chooseTargetID(src, armors_, timestamp_);
+        // }
+        else
         {
             target_id = chooseTargetID(src, armors_, timestamp_);
         }

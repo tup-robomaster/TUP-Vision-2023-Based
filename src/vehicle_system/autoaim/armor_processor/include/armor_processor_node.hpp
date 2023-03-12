@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-03-08 14:11:14
+ * @LastEditTime: 2023-03-12 20:51:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -43,10 +43,10 @@ namespace armor_processor
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
         typedef global_interface::msg::Gimbal GimbalMsg;
-        typedef global_interface::msg::CarHP CarHPMsg;
-        typedef global_interface::msg::CarPos CarPosMsg;
+        // typedef global_interface::msg::CarHP CarHPMsg;
+        // typedef global_interface::msg::CarPos CarPosMsg;
         typedef global_interface::msg::GameInfo GameMsg;
-        typedef sync_policies::ApproximateTime<AutoaimMsg, CarHPMsg> MySyncPolicy;
+        typedef sync_policies::ApproximateTime<sensor_msgs::msg::Image, AutoaimMsg> MySyncPolicy;
 
     public:
         explicit ArmorProcessorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
@@ -55,22 +55,27 @@ namespace armor_processor
     private:
         rclcpp::Subscription<AutoaimMsg>::SharedPtr target_info_sub_;
         void targetMsgCallback(const AutoaimMsg& target_info);
+        bool processTargetMsg(const AutoaimMsg& target_info, cv::Mat* src = nullptr);
 
         mutex debug_mutex_;
         atomic<bool> flag_;
         cv::Point2f apex2d[4];
         Eigen::Vector3d predict_point_;
+        cv::Mat src_;
+        mutex image_mutex_;
         
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
         rclcpp::Publisher<AutoaimMsg>::SharedPtr predict_info_pub_;
         
         // message_filter
-        std::shared_ptr<message_filters::Subscriber<CarHPMsg>> hp_msg_sync_sub_;
+        MySyncPolicy my_sync_policy_;
+        std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image>> img_msg_sync_sub_;
         std::shared_ptr<message_filters::Subscriber<AutoaimMsg>> target_msg_sync_sub_;
         std::shared_ptr<message_filters::Synchronizer<MySyncPolicy>> sync_;
-        void syncCallback(const AutoaimMsg::ConstSharedPtr &target_msg, const CarHPMsg::ConstSharedPtr &car_hp_msg);
-    
+        void syncCallback(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg, const AutoaimMsg::ConstSharedPtr& target_msg);
+        bool sync_transport_ = false;
+
     private:
         std::unique_ptr<Processor> processor_;
         std::unique_ptr<Processor> initArmorProcessor();
@@ -98,15 +103,6 @@ namespace armor_processor
         bool updateParam();
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
-        
-        // std::shared_ptr<ParamSubcriber> cb_;
-        // std::shared_ptr<ParamCbHandle> param_cb_;
-    protected:
-        // 共享图像数据内存
-        bool using_shared_memory_;
-        SharedMemoryParam shared_memory_param_;
-        std::thread read_memory_thread_; //共享内存读线程
-        void imgCallbackThread();
     };
 } //armor_processor
 

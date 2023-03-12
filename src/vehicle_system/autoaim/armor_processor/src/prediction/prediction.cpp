@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-03-12 00:25:13
+ * @LastEditTime: 2023-03-12 21:31:47
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -36,9 +36,9 @@ namespace armor_processor
 
     ArmorPredictor::~ArmorPredictor(){}
 
-    ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, const vector<double>& singer_param, 
+    ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, 
         const PathParam& path_param, const DebugParam& debug_param)
-    : predict_param_(predict_param), singer_param_(singer_param), filter_param_path_(path_param.filter_path), debug_param_(debug_param),
+    : predict_param_(predict_param), filter_param_path_(path_param.filter_path), debug_param_(debug_param),
     logger_(rclcpp::get_logger("armor_prediction"))
     {
         // config_ = YAML::LoadFile(coord_file);
@@ -47,10 +47,12 @@ namespace armor_processor
 
         // KF initialized.
         // kalman_filter_.Init(3, 1, 1);
+        singer_param_[0] = singer_param[0];
+        singer_param_[1] = singer_param[1];
         singer_kf_[0].Init(3, 1, 1);
         singer_kf_[1].Init(3, 1, 1);
-        singer_model_[0] = SingerModel(3, 1, 1);
-        singer_model_[1] = SingerModel(3, 1, 1);
+        singer_model_[0] = SingerModel(singer_param_[0], 3, 1, 1);
+        singer_model_[1] = SingerModel(singer_param_[1], 3, 1, 1);
 
         // SingerModel singer;
         kfInit();
@@ -166,45 +168,40 @@ namespace armor_processor
             predict_param_.system_model
         };
 
-        // std::cout << "x_now:" << xyz[0] << "" << std::endl;
-        // std::cout << "y_now:" << xyz[1] << "" << std::endl;
-
-        // cout << "timestamp:" << target_msg.timestamp << endl;
-
         if(target.is_outpost_mode || target.is_spinning)
         {
             fitting_disabled_ = false;
             filter_disabled_ = true;
-            std::cout << "Spinning..." << std::endl;
+            RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "Spinning...");
         }
         else
         {
             fitting_disabled_ = true;
             filter_disabled_ = false;
-            std::cout << "Maneuvering..." << std::endl;
+            RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "Maneuvering...");
         }
 
-        // -----------------对位置进行粒子滤波,以降低测距噪声影响-------------------------------------
+        // -------------对位置进行粒子滤波,以降低测距噪声影响-----------------
         // Eigen::VectorXd measure (2);
         // measure << target.xyz[1], target.xyz[0];
         // bool is_pos_filter_ready = pf_pos.update(measure);
         // Eigen::VectorXd predict_pos_xy = pf_pos.predict();
         // Eigen::Vector3d predict_pos = {predict_pos_xy[0], predict_pos_xy[1], target.xyz[2]};
-
-        Eigen::Vector3d result = {0, 0, 0};
-        Eigen::Vector3d result_pf = {0, 0, 0};
-        Eigen::Vector3d result_fitting = {0, 0, 0};
-        Eigen::Vector3d result_singer = {0, 0, 0};
-        Eigen::Vector3d result_imm = {0, 0, 0};
-        PredictStatus is_pf_available;
-        PredictStatus is_fitting_available;
-        PredictStatus is_singer_available;
-        PredictStatus is_imm_available;
-
         // if(is_pos_filter_ready || abs(target.xyz[2] - predict_pos[1]) < 0.20)
         // {   //对位置进行粒子滤波,以降低测距噪声影响
         //     target.xyz[2] = predict_pos[1];
         // }
+
+        // Eigen::Vector3d result_pf = {0, 0, 0};
+        // PredictStatus is_pf_available;
+
+        Eigen::Vector3d result = {0, 0, 0};
+        Eigen::Vector3d result_fitting = {0, 0, 0};
+        Eigen::Vector3d result_singer = {0, 0, 0};
+        Eigen::Vector3d result_imm = {0, 0, 0};
+        PredictStatus is_fitting_available;
+        PredictStatus is_singer_available;
+        PredictStatus is_imm_available;
         
         if(!fitting_disabled_)
         {
@@ -233,9 +230,9 @@ namespace armor_processor
                 RCLCPP_INFO(logger_, "Target spinning switched...");
             }
         }
-        else if(!filter_disabled_)
+        else if (!filter_disabled_)
         {
-            if(target.is_target_switched)
+            if (target.is_target_switched)
             {
                 history_vel_[0][3] = history_vel_[0][2] = history_vel_[0][1] = history_vel_[0][0] = 0.0;
                 history_acc_[0][3] = history_acc_[0][2] = history_acc_[0][1] = history_acc_[0][0] = 0.0;
@@ -245,7 +242,6 @@ namespace armor_processor
                 history_acc_[1][3] = history_acc_[1][2] = history_acc_[1][1] = history_acc_[1][0] = 0.0;
                 predict_vel_[1][3] = predict_vel_[1][2] = predict_vel_[1][1] = predict_vel_[1][0] = 0.0;
                 predict_acc_[1][3] = predict_acc_[1][2] = predict_acc_[1][1] = predict_acc_[1][0] = 0.0;
-                
                 error_cnt_ = 0;
                 history_info_.clear();
                 history_pred_.clear();
@@ -324,7 +320,6 @@ namespace armor_processor
             auto delta_x_last = (history_info_.at(history_info_.size() - 2).xyz[0] - history_info_.at(history_info_.size() - 3).xyz[0]);
             auto delta_y_last = (history_info_.at(history_info_.size() - 2).xyz[1] - history_info_.at(history_info_.size() - 3).xyz[1]);
             auto delta_t_last = (history_info_.at(history_info_.size() - 2).timestamp - history_info_.at(history_info_.size() - 3).timestamp) / 1e9;
-            // std::cout << "delta_t:" << delta_t_last << "s" << std::endl;
 
             auto vx_last = delta_x_last / delta_t_last;
             auto vy_last = delta_y_last / delta_t_last;
@@ -335,8 +330,6 @@ namespace armor_processor
             auto delta_t_now = (target.timestamp - history_info_.at(history_info_.size() - 2).timestamp) / 1e9;
             auto vx_now = delta_x_now / delta_t_now;
             auto vy_now = delta_y_now / delta_t_now;
-            // std::cout << "delta_x_now:" << target.xyz[0] << "" << std::endl;
-            // std::cout << "delta_y_now:" << target.xyz[1] << "" << std::endl;
 
             ax = (vx_now - vx_last) / ((delta_t_now + delta_t_last) / 2);
             ay = (vy_now - vy_last) / ((delta_t_now + delta_t_last) / 2);
@@ -350,28 +343,28 @@ namespace armor_processor
             target_vel = measure_vel;
             target_acc = measure_acc;
 
-            history_vel_[0][3] = history_vel_[0][2];
-            history_vel_[0][2] = history_vel_[0][1];
-            history_vel_[0][1] = history_vel_[0][0];
-            history_vel_[0][0] = target_vel[0];
+            if (debug_param_.draw_predict)
+            {
+                history_vel_[0][3] = history_vel_[0][2];
+                history_vel_[0][2] = history_vel_[0][1];
+                history_vel_[0][1] = history_vel_[0][0];
+                history_vel_[0][0] = target_vel[0];
 
-            history_acc_[0][3] = history_acc_[0][2];
-            history_acc_[0][2] = history_acc_[0][1];
-            history_acc_[0][1] = history_acc_[0][0];
-            history_acc_[0][0] = target_acc[0];
+                history_acc_[0][3] = history_acc_[0][2];
+                history_acc_[0][2] = history_acc_[0][1];
+                history_acc_[0][1] = history_acc_[0][0];
+                history_acc_[0][0] = target_acc[0];
 
-            history_vel_[1][3] = history_vel_[1][2];
-            history_vel_[1][2] = history_vel_[1][1];
-            history_vel_[1][1] = history_vel_[1][0];
-            history_vel_[1][0] = target_vel[1];
+                history_vel_[1][3] = history_vel_[1][2];
+                history_vel_[1][2] = history_vel_[1][1];
+                history_vel_[1][1] = history_vel_[1][0];
+                history_vel_[1][0] = target_vel[1];
 
-            history_acc_[1][3] = history_acc_[1][2];
-            history_acc_[1][2] = history_acc_[1][1];
-            history_acc_[1][1] = history_acc_[1][0];
-            history_acc_[1][0] = target_acc[1];
-
-            // RCLCPP_INFO(logger_, "target_vel: x:%lf y:%lf", target_vel[0], target_vel[1]);
-            // RCLCPP_INFO(logger_, "target_acc: x:%lf y:%lf", target_acc[0], target_acc[1]);
+                history_acc_[1][3] = history_acc_[1][2];
+                history_acc_[1][2] = history_acc_[1][1];
+                history_acc_[1][1] = history_acc_[1][0];
+                history_acc_[1][0] = target_acc[1];
+            }
         }
 
         // if(is_v_filter_ready)
@@ -387,9 +380,14 @@ namespace armor_processor
             {   // 基于CS模型的卡尔曼滤波
                 // RCLCPP_INFO(logger_, "CS model is predicting...");
                 // is_ekf_available = predictBasedSinger(target, result_ekf, target_vel, target_acc, delta_time_estimate);
-                is_singer_available.xyz_status[0] = predictBasedSinger(singer_kf_[0], 0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
-                is_singer_available.xyz_status[1] = predictBasedSinger(singer_kf_[1], 1, target.xyz[1], result_singer[1], target_vel[1], target_acc[1], delta_time_estimate);
-                
+                if (debug_param_.pitch_filter)
+                {
+                    is_singer_available.xyz_status[0] = predictBasedSinger(singer_kf_[0], 0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
+                }
+                else if(debug_param_.yaw_filter)
+                {
+                    is_singer_available.xyz_status[1] = predictBasedSinger(singer_kf_[1], 1, target.xyz[1], result_singer[1], target_vel[1], target_acc[1], delta_time_estimate);
+                }
                 result[0] = is_singer_available.xyz_status[0] ? result_singer[0] : target.xyz[0];
                 result[1] = is_singer_available.xyz_status[1] ? result_singer[1] : target.xyz[1];
                 result[2] = target.xyz[2];
@@ -474,6 +472,13 @@ namespace armor_processor
             curveDrawer(0, *src, history_vel_[0], cv::Point2i(600, 250));
             curveDrawer(1, *src, predict_vel_[1], cv::Point2i(300, 250));
             curveDrawer(1, *src, history_vel_[1], cv::Point2i(600, 250));
+            if(debug_param_.show_fps)
+            {
+                char ch[20];
+                sprintf(ch, "FPS:%.1f", (1e9 / dr_ns));
+                std::string fps_str = ch;
+                putText(*src, fps_str, {10, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {255, 255, 0});
+            }
         }
 
         final_target_.xyz = result;
@@ -1137,18 +1142,18 @@ namespace armor_processor
             // State << singer_kf.x_[0], singer_kf.x_[1], singer_kf.x_[2];
             State << singer_kf_[axis].x_[0], singer_kf_[axis].x_[1], singer_kf_[axis].x_[2];
 
-            // predict_vel_[3] = predict_vel_[2];
-            // predict_vel_[2] = predict_vel_[1];
-            // predict_vel_[1] = predict_vel_[0];
-            // predict_vel_[0] = State[1];
+            predict_vel_[axis][3] = predict_vel_[axis][2];
+            predict_vel_[axis][2] = predict_vel_[axis][1];
+            predict_vel_[axis][1] = predict_vel_[axis][0];
+            predict_vel_[axis][0] = State[1];
             
-            // predict_acc_[3] = predict_acc_[2];
-            // predict_acc_[2] = predict_acc_[1];
-            // predict_acc_[1] = predict_acc_[0];
-            // predict_acc_[0] = State[2];
+            predict_acc_[axis][3] = predict_acc_[axis][2];
+            predict_acc_[axis][2] = predict_acc_[axis][1];
+            predict_acc_[axis][1] = predict_acc_[axis][0];
+            predict_acc_[axis][0] = State[2];
 
-            double alpha = singer_param_[0];
-            double dt = singer_param_[8] * singer_param_[4];
+            double alpha = singer_param_[axis][0];
+            double dt = singer_param_[axis][8] * singer_param_[axis][4];
             dt = timestamp / 1e9;
             
             Eigen::MatrixXd F(3, 3);
@@ -1242,7 +1247,7 @@ namespace armor_processor
     PredictStatus ArmorPredictor::predictBasedImm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d& target_v, double& ax, double timestamp)
     {
         PredictStatus is_available;
-        double dt = singer_param_[4];   
+        double dt = singer_param_[0][4];   
         if(!is_imm_init_)
         {
             Eigen::VectorXd x(6);

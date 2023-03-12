@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-03-12 00:24:43
+ * @LastEditTime: 2023-03-12 11:07:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -40,7 +40,7 @@ namespace armor_processor
     public:
         ArmorPredictor();
         ~ArmorPredictor();
-        ArmorPredictor(const PredictParam& predict_param, const vector<double>& singer_param, 
+        ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, 
             const PathParam& path_param, const DebugParam& debug_param);
     
     private:
@@ -54,7 +54,7 @@ namespace armor_processor
     public:
         YAML::Node config_;
         PredictParam predict_param_;  //滤波先验参数/模型先验参数/调试参数
-        vector<double> singer_param_; //cs模型参数 
+        vector<double> singer_param_[2]; //cs模型参数 
         DebugParam debug_param_;
         std::string filter_param_path_;
         

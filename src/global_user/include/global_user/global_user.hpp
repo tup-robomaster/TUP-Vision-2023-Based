@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-03-09 19:37:56
+ * @LastEditTime: 2023-03-12 18:36:16
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -169,6 +169,13 @@ namespace global_user
         cv::Mat img;
         Eigen::Quaterniond quat;
         int64_t timestamp; 
+        
+        TaskData()
+        {
+            mode = 1;
+            bullet_speed = 28.0;
+            timestamp = 0;
+        }
     };
 
     struct GridAndStride

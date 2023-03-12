@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-03-11 23:56:28
+ * @LastEditTime: 2023-03-12 21:29:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -11,7 +11,7 @@ using namespace std::placeholders;
 namespace armor_processor
 {
     ArmorProcessorNode::ArmorProcessorNode(const rclcpp::NodeOptions& options)
-    : Node("armor_processor", options)
+    : Node("armor_processor", options), my_sync_policy_(MySyncPolicy(5))
     {
         RCLCPP_INFO(this->get_logger(), "Starting processor node...");
         
@@ -41,9 +41,9 @@ namespace armor_processor
         tracking_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/tracking_msg", qos);
 
         this->declare_parameter<bool>("sync_transport", false);
-        bool sync_transport = this->get_parameter("sync_transport").as_bool();
+        sync_transport_ = this->get_parameter("sync_transport").as_bool();
 
-        if(!sync_transport)
+        if(!sync_transport_)
         {
             // 订阅目标装甲板信息
             target_info_sub_ = this->create_subscription<AutoaimMsg>("/armor_detector/armor_msg",
@@ -51,10 +51,6 @@ namespace armor_processor
                 std::bind(&ArmorProcessorNode::targetMsgCallback, this, _1));
         }
 
-        // 是否使用共享内存
-        this->declare_parameter<bool>("using_shared_memory", false);
-        using_shared_memory_ = this->get_parameter("using_shared_memory").as_bool();
-        
         // 相机类型
         this->declare_parameter<int>("camera_type", global_user::DaHeng);
         int camera_type = this->get_parameter("camera_type").as_int();
@@ -67,41 +63,27 @@ namespace armor_processor
         if(debug_)
         {
             RCLCPP_INFO(this->get_logger(), "debug...");
-            
             // Prediction info pub.
             predict_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_processor/predict_msg", qos);
-
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, _1));
-            
-            if(using_shared_memory_)
+            if(debug_param_.show_img)
             {
-                RCLCPP_INFO(this->get_logger(), "Using shared memory...");
-                sleep(5);
-                // 共享内存配置
-                if(!getSharedMemory(shared_memory_param_, 5))
-                    RCLCPP_ERROR(this->get_logger(), "Shared memory init failed...");
-
-                // 图像读取线程
-                this->read_memory_thread_ = std::thread(&ArmorProcessorNode::imgCallbackThread, this);
-            }
-            else
-            {
-                if(sync_transport)
+                image_size_ = image_info_.image_size_map[camera_type];
+                std::string camera_topic = image_info_.camera_topic_map[camera_type];
+                if(sync_transport_)
                 {
-                    target_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<AutoaimMsg>>(this, "/armor_detector/armor_msg", rmw_qos);
-                    hp_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<CarHPMsg>>(this, "/car_hp", rmw_qos);
-                    sync_ = std::make_shared<message_filters::Synchronizer<MySyncPolicy>>(MySyncPolicy(5), *target_msg_sync_sub_, *hp_msg_sync_sub_);
-                    sync_->registerCallback(std::bind(&ArmorProcessorNode::syncCallback, this, _1, _2));
                     RCLCPP_WARN(this->get_logger(), "Synchronously...");
+                    my_sync_policy_.setInterMessageLowerBound(0, rclcpp::Duration(0, 3e5));
+                    my_sync_policy_.setInterMessageLowerBound(1, rclcpp::Duration(0, 3e5));
+                    my_sync_policy_.setMaxIntervalDuration(rclcpp::Duration(0, 3e7));
+                    img_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this, camera_topic, rmw_qos);
+                    target_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<AutoaimMsg>>(this, "/armor_detector/armor_msg", rmw_qos);
+                    sync_ = std::make_shared<message_filters::Synchronizer<MySyncPolicy>>(MySyncPolicy(my_sync_policy_), *img_msg_sync_sub_, *target_msg_sync_sub_);
+                    sync_->registerCallback(std::bind(&ArmorProcessorNode::syncCallback, this, _1, _2));
                 }
-
-                if(debug_param_.show_img)
+                else
                 {
-                    image_size_ = image_info_.image_size_map[camera_type];
-                    std::string camera_topic = image_info_.camera_topic_map[camera_type];
-                    
-                    sleep(3);
                     // image sub.
                     img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
                         std::bind(&ArmorProcessorNode::imageCallback, this, _1), transport, rmw_qos));
@@ -112,23 +94,24 @@ namespace armor_processor
 
     ArmorProcessorNode::~ArmorProcessorNode()
     {
-        if(using_shared_memory_)
-        {
-            if(!destorySharedMemory(shared_memory_param_))
-                RCLCPP_ERROR(this->get_logger(), "Destory shared memory failed...");
-            if(this->read_memory_thread_.joinable())
-                this->read_memory_thread_.join();
-        }
     }
 
-    void ArmorProcessorNode::syncCallback(const AutoaimMsg::ConstSharedPtr &target_msg, const CarHPMsg::ConstSharedPtr &car_hp_msg)
+    void ArmorProcessorNode::syncCallback(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg, const AutoaimMsg::ConstSharedPtr& target_msg)
     {
-        AutoaimMsg armor_msg = *target_msg;
-        CarHPMsg hp_msg = *car_hp_msg;
-    
-        double sleep_time = 0.0;
-        PostProcessInfo post_process_info;
-        processor_->autoShootingLogic(armor_msg, post_process_info);
+        rclcpp::Time last = img_msg->header.stamp;
+        rclcpp::Time now = this->get_clock()->now();
+        RCLCPP_WARN(this->get_logger(), "Delay:%.2fms", (now.nanoseconds() - last.nanoseconds()) / 1e6);
+
+        cv::Mat src = cv_bridge::toCvShare(img_msg, "bgr8")->image;
+        if(!processTargetMsg(*target_msg, &src))
+            RCLCPP_ERROR(this->get_logger(), "Armor processes error synchronously...");
+        
+        if (debug_param_.show_img)
+        {
+            cv::namedWindow("pred", cv::WINDOW_AUTOSIZE);
+            cv::imshow("pred", src);
+            cv::waitKey(1);
+        }
         return;
     }
 
@@ -138,6 +121,13 @@ namespace armor_processor
      * @param target_info 装甲板信息
      */
     void ArmorProcessorNode::targetMsgCallback(const AutoaimMsg& target_info)
+    {
+        if(!processTargetMsg(target_info))
+            RCLCPP_WARN(this->get_logger(), "Armor processes error...");            
+        return;
+    }
+
+    bool ArmorProcessorNode::processTargetMsg(const AutoaimMsg& target_info, cv::Mat* src)
     {
         double sleep_time = 0.0;
         AutoaimMsg target = std::move(target_info);
@@ -151,11 +141,19 @@ namespace armor_processor
         Eigen::Matrix3d rmat_imu;
         Eigen::Quaterniond quat_imu;
 
-        // rclcpp::Time last = target_info.header.stamp;
-        // rclcpp::Time now = this->get_clock()->now();
-        // RCLCPP_WARN(this->get_logger(), "Delay:%.4fs", (now.nanoseconds() - last.nanoseconds())/1e9);
+        cv::Mat dst;
+        if (debug_param_.show_img)
+        {
+            image_mutex_.lock();
+            if(!src_.empty() && flag_)
+            {
+                src_.copyTo(dst);
+                flag_ = false;
+            }
+            image_mutex_.unlock();
+        }
 
-        if(target.is_target_lost)
+        if (target.is_target_lost)
         {
             processor_->error_cnt_ = 0;
             // processor_->is_ekf_init = false;
@@ -189,7 +187,14 @@ namespace armor_processor
             else
             {
                 // RCLCPP_INFO(this->get_logger(), "Predict...");
-                aiming_point_world = std::move(processor_->predictor(target, sleep_time));
+                if(debug_param_.show_img)
+                {
+                    aiming_point_world = std::move(processor_->predictor(dst, target, sleep_time));
+                }
+                else
+                {
+                    aiming_point_world = std::move(processor_->predictor(target, sleep_time));
+                }
                 aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
             }
             param_mutex_.unlock();
@@ -228,7 +233,7 @@ namespace armor_processor
             tracking_info.is_switched = target_info.target_switched;
             tracking_info.is_spinning = target_info.is_spinning;
             tracking_info_pub_->publish(std::move(tracking_info));
-            RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "pitch_angle:%.3f yaw_angle:%.3f", tracking_angle[1], tracking_angle[0]);
+            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "pitch_angle:%.3f yaw_angle:%.3f", tracking_angle[1], tracking_angle[0]);
             // RCLCPP_WARN(this->get_logger(), "delay:%.3fms", (dura/1e6));
 
             if(!target.is_target_lost)
@@ -246,78 +251,45 @@ namespace armor_processor
             }
         }
 
-        if(!target.is_target_lost)
+        if (debug_param_.show_img && !dst.empty()) 
         {
-            debug_mutex_.lock();
-            if(this->debug_param_.show_predict)
+            // debug_mutex_.lock();
+            if (!target.is_target_lost)
             {
-                // Get target 2d cornor points.
-                for(int i = 0; i < 4; ++i)
+                if (this->debug_param_.show_predict)
                 {
-                    apex2d[i].x = target_info.point2d[i].x;
-                    apex2d[i].y = target_info.point2d[i].y;
-                }
-            }
-            predict_point_ = aiming_point_cam;
-            flag_ = true;
-            debug_mutex_.unlock();
-        }
-        return;
-    }
-
-    /**
-     * @brief 目标信息可视化
-     * 
-     * @param img 
-     */
-    void ArmorProcessorNode::imageProcessor(cv::Mat& img)
-    {
-        if(this->debug_param_.show_predict)
-        {
-            if(!img.empty())
-            {
-                debug_mutex_.lock();
-                if(flag_)
-                {
+                    // Get target 2d cornor points.
+                    for (int i = 0; i < 4; ++i)
+                    {
+                        apex2d[i].x = target_info.point2d[i].x;
+                        apex2d[i].y = target_info.point2d[i].y;
+                    }
                     for(int i = 0; i < 4; i++)
-                        cv::line(img, apex2d[i % 4], apex2d[(i + 1) % 4], {0, 255, 255}, 5);
-                    auto point_pred = predict_point_;
-                    cv::Point2f point_2d = processor_->coordsolver_.reproject(point_pred);
-                    cv::circle(img, point_2d, 10, {255, 255, 0}, -1);
-                    flag_ = false;
+                        cv::line(dst, apex2d[i % 4], apex2d[(i + 1) % 4], {255, 255, 0}, 5);
+                    // auto point_pred = predict_point_;
+                    cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
+                    cv::circle(dst, point_2d, 10, {255, 255, 0}, -1);
                 }
-                debug_mutex_.unlock();
-                // std::vector<cv::Point2f> points_pic(apex2d, apex2d + 4);
-                // cv::RotatedRect points_pic_rrect = cv::minAreaRect(points_pic);
-                // cv::Rect rect = points_pic_rrect.boundingRect();
-                // cv::rectangle(img, rect, {255, 0, 255}, 5);
-                
-                cv::namedWindow("ekf_predict", cv::WINDOW_AUTOSIZE);
-                cv::imshow("ekf_predict", img);
-                cv::waitKey(1);
             }
+            // predict_point_ = aiming_point_cam;
+            // flag_ = true;
+            // debug_mutex_.unlock();
+            if(debug_param_.show_aim_cross)
+            {
+                line(dst, cv::Point2f(dst.size().width / 2, 0), cv::Point2f(dst.size().width / 2, dst.size().height), {0, 255, 0}, 1);
+                line(dst, cv::Point2f(0, dst.size().height / 2), cv::Point2f(dst.size().width, dst.size().height / 2), {0, 255, 0}, 1);
+            }
+
+            char ch[50];
+            sprintf(ch, "pitch_angle:%.2f yaw_angle:%.2f", tracking_angle[1], tracking_angle[0]);
+            std::string angle_str = ch;
+            putText(dst, angle_str, {dst.size().width / 2 + 50, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
+
+            cv::namedWindow("pred", cv::WINDOW_AUTOSIZE);
+            cv::imshow("pred", dst);
+            cv::waitKey(1);
         }
-    }
-
-    /**
-     * @brief 以共享内存的方式传输图像，方便可视化
-     * 
-     */
-    void ArmorProcessorNode::imgCallbackThread()
-    {
-        cv::Mat img = cv::Mat(this->image_size_.height, this->image_size_.width, CV_8UC3);
-
-        while(1)
-        {
-            // 读取共享内存图像数据
-            memcpy(img.data, shared_memory_param_.shared_memory_ptr, this->image_size_.height * this->image_size_.width * 3);
-            if(img.empty())
-                continue;
-
-            // rclcpp::Time now = this->get_clock()->now();
-            // RCLCPP_WARN(this->get_logger(), "now:%.4fs", now.nanoseconds() / 1e9);
-            imageProcessor(img);
-        }
+        return true;
     }
 
     /**
@@ -325,13 +297,21 @@ namespace armor_processor
      * 
      * @param img_info 图像数据信息
      */
-    void ArmorProcessorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
+    void ArmorProcessorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {
-        if(!img_info)
+        if(!img_msg)
             return;
 
-        auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
-        imageProcessor(img);
+        // rclcpp::Time last = img_msg->header.stamp;
+        // rclcpp::Time now = this->get_clock()->now();
+        // RCLCPP_WARN(this->get_logger(), "Delay:%.2fms", (now.nanoseconds() - last.nanoseconds()) / 1e6);
+
+        image_mutex_.lock();
+        src_ = cv_bridge::toCvShare(img_msg, "bgr8")->image;
+        flag_ = true;
+        image_mutex_.unlock();
+        
+        // imageProcessor(img);
     }
 
     /**
@@ -351,14 +331,17 @@ namespace armor_processor
         this->declare_parameter<int>("window_size", 3);
 
         // Declare debug params.
+        this->declare_parameter("show_img", false);
+        this->declare_parameter("using_imu", false);
+        this->declare_parameter("draw_predict", false);
+        this->declare_parameter("show_predict", true);
+        this->declare_parameter("print_delay", false);
+        this->declare_parameter("yaw_filter", true);
+        this->declare_parameter("pitch_filter", false);
         this->declare_parameter("disable_filter", false);
         this->declare_parameter("disable_fitting", true);
-        this->declare_parameter("draw_predict", false);
-        this->declare_parameter("using_imu", false);
-        this->declare_parameter("show_predict", true);
         this->declare_parameter("show_transformed_info", false);
-        this->declare_parameter("show_img", false);
-        this->declare_parameter("print_delay", false);
+        this->declare_parameter("show_aim_cross", true);
 
         // Declare path params.
         this->declare_parameter<std::string>("filter_param_path", "src/global_user/config/filter_param.yaml");
@@ -391,9 +374,11 @@ namespace armor_processor
         this->declare_parameter("measure_noise", measure_noise_params);
         measure_noise_params = this->get_parameter("measure_noise").as_double_array();
 
-        vector<double> singer_model_params = {0.8, 0.1, 0.1, 0.8, 1.0, 0.1, 1.0, 1.0, 5.0};
-        this->declare_parameter("singer_model", singer_model_params);
-        singer_model_params = this->get_parameter("singer_model").as_double_array();
+        vector<double> singer_model_params[2] = {{0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0}, {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0}};
+        this->declare_parameter("singer_model_yaw", singer_model_params[0]);
+        this->declare_parameter("singer_model_pitch", singer_model_params[1]);
+        singer_model_params[0] = this->get_parameter("singer_model_yaw").as_double_array();
+        singer_model_params[1] = this->get_parameter("singer_model_pitch").as_double_array();
 
         predict_param_.filter_model_param.imm_model_trans_prob_params = imm_model_trans_prob_params;
         predict_param_.filter_model_param.imm_model_prob_params = imm_model_prob_params;
@@ -440,14 +425,17 @@ namespace armor_processor
         predict_param_.window_size = this->get_parameter("window_size").as_int();
         
         //Debug param.
+        debug_param_.show_img = this->get_parameter("show_img").as_bool();
+        debug_param_.using_imu = this->get_parameter("using_imu").as_bool();
+        debug_param_.draw_predict = this->get_parameter("draw_predict").as_bool();
+        debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
+        debug_param_.yaw_filter = this->get_parameter("yaw_filter").as_bool();
+        debug_param_.pitch_filter = this->get_parameter("pitch_filter").as_bool();
+        debug_param_.print_delay = this->get_parameter("print_delay").as_bool();
         debug_param_.disable_filter = this->get_parameter("disable_filter").as_bool();
         debug_param_.disable_fitting = this->get_parameter("disable_fitting").as_bool();
-        debug_param_.draw_predict = this->get_parameter("draw_predict").as_bool();
-        debug_param_.using_imu = this->get_parameter("using_imu").as_bool();
-        debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
         debug_param_.show_transformed_info = this->get_parameter("show_transformed_info").as_bool();
-        debug_param_.show_img = this->get_parameter("show_img").as_bool();
-        debug_param_.print_delay = this->get_parameter("print_delay").as_bool();
+        debug_param_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
         
         return true;
     }

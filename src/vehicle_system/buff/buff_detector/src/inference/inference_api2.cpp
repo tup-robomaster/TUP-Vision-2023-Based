@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-03-10 13:42:30
+ * @LastEditTime: 2023-03-12 10:28:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -130,9 +130,8 @@ namespace buff_detector
 
             float box_objectness = (feat_ptr[basic_pos + 10]);
             
-            float color_conf = (feat_ptr[basic_pos + 11 + box_color]);
-            float cls_conf = (feat_ptr[basic_pos + 11 + NUM_COLORS + box_class]);
-
+            // float color_conf = (feat_ptr[basic_pos + 11 + box_color]);
+            // float cls_conf = (feat_ptr[basic_pos + 11 + NUM_COLORS + box_class]);
             // float box_prob = (box_objectness + cls_conf + color_conf) / 3.0;
             float box_prob = box_objectness;
 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-02-24 20:18:35
+ * @LastEditTime: 2023-03-12 20:56:40
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -36,11 +36,14 @@ namespace buff_detector
 
         // QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(5);
-        qos.best_effort();
+        qos.keep_last(1);
+        // qos.best_effort();
         qos.reliable();
         qos.durability();
         qos.durability_volatile();
+
+        rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
+        rmw_qos.depth = 1;
 
         // buff info pub.
         buff_info_pub_ = this->create_publisher<BuffMsg>("/buff_detector/buff_msg", qos);
@@ -64,7 +67,7 @@ namespace buff_detector
         // image sub.
         std::string camera_topic = image_info_.camera_topic_map[camera_type];
         img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
-            std::bind(&BuffDetectorNode::imageCallback, this, _1), transport));
+            std::bind(&BuffDetectorNode::imageCallback, this, _1), transport, rmw_qos));
 
         bool debug = false;
         this->declare_parameter<bool>("debug", true);

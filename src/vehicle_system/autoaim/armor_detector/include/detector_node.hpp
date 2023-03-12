@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2023-03-11 15:29:44
+ * @LastEditTime: 2023-03-12 20:48:58
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -88,11 +88,5 @@ namespace armor_detector
 
         std::unique_ptr<Detector> detector_;
         std::unique_ptr<Detector> initDetector();
-
-    protected:
-        bool using_shared_memory_;
-        SharedMemoryParam shared_memory_param_;
-        std::thread read_memory_thread_; //共享内存读线程
-        void threadCallback();
     };
 } //namespace detector

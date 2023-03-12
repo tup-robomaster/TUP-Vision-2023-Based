@@ -17,15 +17,15 @@
     armor_conf_high_thres: 0.82
 
   # Spinning params.
-    anti_spin_judge_high_thres: 20000.0
-    anti_spin_judge_low_thres: 2000.0
-    anti_spin_max_r_multiple: 4.5
+    max_cost: 500
+    shoot_delay: 50
     max_dead_buffer: 2
     max_delta_dist: 0.5
     min_fitting_lens: 10
-    shoot_delay: 50
-    max_cost: 500
     switch_max_dt: 10000.0
+    anti_spin_max_r_multiple: 4.5
+    anti_spin_judge_low_thres: 2000.0
+    anti_spin_judge_high_thres: 20000.0
     
     delta_x_3d_high_thresh: 0.18
     delta_x_3d_higher_thresh: 0.25
@@ -57,22 +57,19 @@
   
   # Debug params.
     debug: true
-    using_imu: true
+    show_img: false
+    show_fps: false
+    using_imu: false
     using_roi: false
-    # draw_predict: true
-    show_img: true
-    show_fps: true
-    print_letency: false
-    print_target_info: false
     detect_red: true
-    # disable_filter: false
-    # disable_fitting: true
-    # show_predict: false
+    auto_label: false
+    print_letency: false
+    show_aim_cross: false
+    sync_transport: false
+    show_all_armors: false
+    print_target_info: false
     using_shared_memory: false
     show_transformed_info: false
-    auto_label: false
-    show_all_armors: true
-    sync_transport: false
 
 /armor_processor:
   ros__parameters:
@@ -86,16 +83,20 @@
     window_size: 3
 
   # Debug params.
+    debug: true
+    show_img: true
+    draw_predict: true
+    show_predict: true
+    sync_transport: false
+    print_delay: false
+    yaw_filter: true
+    pitch_filter: false
     using_shared_memory: false
     disable_filter: true
     disable_fitting: false
-    draw_predict: false
-    show_predict: false
     show_transformed_info: false
-    show_img: false 
-    sync_transport: false   
-    print_delay: false
-    debug: true
+    show_aim_cross: true
+    show_fps: true
 
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
@@ -109,7 +110,8 @@
   # Singer model(--->CS Model).
     # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 dt:采样时间间隔 
     #  sigma:机动加速度标准差 p:过程协方差系数 r:观测协方差系数 coeff:预测提前量系数)
-    singer_model: [0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0] 
+    singer_model_yaw: [0.80, 5.0, 0.10, 0.80, 1.0, 0.10, 1.0, 1.0, 5.0] 
+    singer_model_pitch: [0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0]
   
   # IMM model.
     #状态转移概率

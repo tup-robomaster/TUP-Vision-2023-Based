@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-09 22:50:31
- * @LastEditTime: 2023-03-11 21:08:00
+ * @LastEditTime: 2023-03-12 20:30:46
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -45,7 +45,7 @@ namespace armor_processor
     struct TargetInfo
     {
         Eigen::Vector3d xyz;
-        int dist;
+        double dist;
         uint64_t timestamp;
         double period;
         bool is_target_switched;
@@ -106,24 +106,33 @@ namespace armor_processor
 
     struct DebugParam
     {
+        bool show_img;
+        bool using_imu;
+        bool draw_predict;
+        bool show_predict;
+        bool print_delay;
+        bool yaw_filter;
+        bool pitch_filter;
         bool disable_filter;
         bool disable_fitting;
-        bool draw_predict;
-        bool using_imu;
-        bool show_predict;
-        bool show_img;
-        bool print_delay;
         bool show_transformed_info;
+        bool show_aim_cross;
+        bool show_fps;
+
         DebugParam()
         {
+            show_img = false;
+            using_imu = false;
+            draw_predict = true;
+            show_predict = false;
+            print_delay = false;
+            yaw_filter = true;
+            pitch_filter = false;
             disable_filter = false;
             disable_fitting = false;
-            draw_predict = true;
-            using_imu = false;
-            show_predict = false;
             show_transformed_info = true;
-            show_img = false;
-            print_delay = false;
+            show_aim_cross = true;
+            show_fps = true;
         }
     };
 

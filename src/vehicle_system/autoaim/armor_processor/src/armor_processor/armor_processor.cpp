@@ -2,14 +2,14 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-03-11 23:35:41
+ * @LastEditTime: 2023-03-12 12:23:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
 
 namespace armor_processor
 {
-    Processor::Processor(const PredictParam& predict_param, const vector<double>& singer_model_param, const PathParam& path_param, const DebugParam& debug_param)
+    Processor::Processor(const PredictParam& predict_param, vector<double>* singer_model_param, const PathParam& path_param, const DebugParam& debug_param)
     : ArmorPredictor(predict_param, singer_model_param, path_param, debug_param), path_param_(path_param)
     {
         is_init_ = false;
