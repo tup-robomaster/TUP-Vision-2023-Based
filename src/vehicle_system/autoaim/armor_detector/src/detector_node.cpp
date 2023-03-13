@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-03-12 20:50:45
+ * @LastEditTime: 2023-03-13 18:46:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -275,7 +275,7 @@ namespace armor_detector
                     target_info.quat_imu.y = src.quat.y();
                     target_info.quat_imu.z = src.quat.z();
                 }
-                // RCLCPP_INFO(this->get_logger(), "target info: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
+                // RCLCPP_INFO(this->get_logger(), "target info: %lf %lf %lf", target_info.aiming_point_world.x, target_info.aiming_point_world.y, target_info.aiming_point_world.z);
             }
             // else
             // {

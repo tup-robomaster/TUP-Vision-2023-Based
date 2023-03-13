@@ -59,7 +59,7 @@
     debug: true
     show_img: false
     show_fps: false
-    using_imu: false
+    using_imu: true
     using_roi: false
     detect_red: true
     auto_label: false
@@ -89,8 +89,8 @@
     show_predict: true
     sync_transport: false
     print_delay: false
-    yaw_filter: true
-    pitch_filter: false
+    yaw_filter: false
+    pitch_filter: true
     using_shared_memory: false
     disable_filter: true
     disable_fitting: false
@@ -110,8 +110,8 @@
   # Singer model(--->CS Model).
     # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 dt:采样时间间隔 
     #  sigma:机动加速度标准差 p:过程协方差系数 r:观测协方差系数 coeff:预测提前量系数)
-    singer_model_yaw: [0.80, 5.0, 0.10, 0.80, 1.0, 0.10, 1.0, 1.0, 5.0] 
-    singer_model_pitch: [0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0]
+    singer_model_yaw: [1.0, 20.0, 0.40, 0.35, 0.25, 2.5, 1.0, 50.0, 5.0] 
+    singer_model_pitch: [0.9, 20.0, 0.30, 0.40, 0.15, 2.0, 1.0, 5.0, 5.0]
   
   # IMM model.
     #状态转移概率
@@ -123,7 +123,3 @@
     model_prob_vector: [0.4, 0.3, 0.15, 0.15] #prob sum = 1
     process_noise: [0.4, 0.4, 0.3, 0.3, 0.2, 0.2]
     measure_noise: [60.0, 60.0, 30.0, 30.0]
-
-  
-
-    

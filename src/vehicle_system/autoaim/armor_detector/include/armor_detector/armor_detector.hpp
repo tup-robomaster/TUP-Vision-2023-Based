@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-03-11 18:55:12
+ * @LastEditTime: 2023-03-13 10:10:30
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
@@ -45,7 +45,7 @@ namespace armor_detector
 
         std::vector<Armor> armors_;
         std::vector<Armor> last_armors_;
-        atomic<int> target_id_ = 0; 
+        atomic<int> target_id_ = -1; 
 
         bool is_init_;
         ofstream data_save_;

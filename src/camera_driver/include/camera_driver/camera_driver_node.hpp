@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-03-12 20:48:10
+ * @LastEditTime: 2023-03-13 20:46:56
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -162,11 +162,15 @@ namespace camera_driver
             // rclcpp::Time start = this->get_clock()->now();
 
             // cv::Mat frame;
-            if(!cam_driver_->get_frame(frame_, image_msg_))
+            if (!cam_driver_->get_frame(frame_, image_msg_))
             {
                 RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
                 // Reopen camera.
-                if(!cam_driver_->open())
+                cam_driver_->close();
+                cam_driver_->init();
+                // cam_driver_ = std::make_unique<T>();
+                cam_driver_->cam_param_.cam_id = (cam_driver_->cam_param_.cam_id < 5) ? (cam_driver_->cam_param_.cam_id + 1) : 0;
+                if (!cam_driver_->open())
                 {
                     RCLCPP_ERROR(this->get_logger(), "Open failed!");
                     sleep(1);
@@ -185,23 +189,21 @@ namespace camera_driver
             image_msg_.height = this->image_size_.height;
             // image_msg_.step = static_cast<sensor_msgs::msg::Image::_step_type>(frame_.step);  
             // image_msg_.is_bigendian = false;
-
             camera_pub_.publish(std::move(image_msg_), camera_info_msg_);
                 
-            // save_video_ = this->get_parameter("save_video").as_bool();
-            // if(save_video_)
-            // {   // Video recorder.
-            //     videoRecorder(video_record_param_, &frame);
-            // }
+            save_video_ = this->get_parameter("save_video").as_bool();
+            if (save_video_)
+            {   // Video recorder.
+                videoRecorder(video_record_param_, &frame_);
+            }
             
-            // bool show_img = this->get_parameter("show_img").as_bool();
-            // if(show_img)
-            // {
-            //     cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
-            //     cv::imshow("frame", frame);
-            //     cv::waitKey(1);
-            // }
-
+            bool show_img = this->get_parameter("show_img").as_bool();
+            if (show_img)
+            {
+                cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
+                cv::imshow("frame", frame_);
+                cv::waitKey(1);
+            }
             // rclcpp::Time now = this->get_clock()->now();
             // RCLCPP_WARN(this->get_logger(), "Dur_delay:%.3fms", (now.nanoseconds() - start.nanoseconds()) / 1e6);
         // }

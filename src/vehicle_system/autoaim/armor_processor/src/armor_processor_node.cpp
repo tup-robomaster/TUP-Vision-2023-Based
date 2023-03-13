@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-03-12 21:29:52
+ * @LastEditTime: 2023-03-13 19:18:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -209,8 +209,8 @@ namespace armor_processor
         GimbalMsg gimbal_info;
         gimbal_info.header.frame_id = "barrel_link";
         gimbal_info.header.stamp = target_info.header.stamp;
-        gimbal_info.pitch = angle[1];
-        gimbal_info.yaw = angle[0];
+        gimbal_info.pitch = angle[1] >= 90 ? 0.0 : angle[1];
+        gimbal_info.yaw = angle[0] >= 90 ? 0.0 : angle[0];
         gimbal_info.distance = aiming_point_cam.norm();
         gimbal_info.is_target = target_info.mode == SENTRY_MODE ? post_process_info.find_target : true;
         gimbal_info.is_switched = target_info.target_switched;
@@ -226,8 +226,8 @@ namespace armor_processor
             // auto end = processor_->steady_clock_.now();
             // double dura = end.nanoseconds() - start.nanoseconds() + target_info.header.stamp.nanosec;
 
-            tracking_info.pitch = tracking_angle[1];
-            tracking_info.yaw = tracking_angle[0];
+            tracking_info.pitch = tracking_angle[1] >= 90 ? 0.0 : tracking_angle[1];
+            tracking_info.yaw = tracking_angle[0] >= 90 ? 0.0 : tracking_angle[0];
             tracking_info.distance = tracking_point_cam.norm();
             tracking_info.is_target = target_info.mode == SENTRY_MODE ? post_process_info.find_target : true;
             tracking_info.is_switched = target_info.target_switched;
@@ -265,10 +265,10 @@ namespace armor_processor
                         apex2d[i].y = target_info.point2d[i].y;
                     }
                     for(int i = 0; i < 4; i++)
-                        cv::line(dst, apex2d[i % 4], apex2d[(i + 1) % 4], {255, 255, 0}, 5);
+                        cv::line(dst, apex2d[i % 4], apex2d[(i + 1) % 4], {255, 0, 125}, 2);
                     // auto point_pred = predict_point_;
                     cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
-                    cv::circle(dst, point_2d, 10, {255, 255, 0}, -1);
+                    cv::circle(dst, point_2d, 8, {255, 255, 0}, -1);
                 }
             }
             // predict_point_ = aiming_point_cam;

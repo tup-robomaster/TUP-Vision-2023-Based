@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-03-12 18:40:27
+ * @LastEditTime: 2023-03-13 10:10:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -362,7 +362,7 @@ namespace armor_detector
         string target_key;
         string vehicle_key;
         int idx = target_id_;
-        target_id_ = 0; //置零，确保哨兵发送的目标ID信息是在更新
+        target_id_ = -1; //置零，确保哨兵发送的目标ID信息是在更新
         if (detector_params_.color == BLUE)
         {
             vehicle_key = "B" + to_string(idx);

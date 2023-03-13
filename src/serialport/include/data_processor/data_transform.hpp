@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 01:45:19
- * @LastEditTime: 2023-03-09 19:45:55
+ * @LastEditTime: 2023-03-13 21:56:49
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/data_processor/data_transform.hpp
  */
 #ifndef DATA_TRANSFORM_HPP_
@@ -33,7 +33,7 @@ using namespace global_user;
 namespace serialport
 {
     /**
-     * @brief 模式选择（取消视觉，自瞄，英雄吊射，小符，大符，哨兵）
+     * @brief 模式选择（取消视觉，自瞄，英雄吊射，小符，大符，哨兵, 前哨站旋转模式）
      * 
      */
     // enum MODE
@@ -47,7 +47,7 @@ namespace serialport
     //     OUTPOST_ROTATION_MODE
     // };
 
-    typedef struct VisionData
+    typedef struct VisionAimData
     {
         double timestamp;
         float pitch_angle;                //俯仰角
@@ -59,15 +59,29 @@ namespace serialport
         int ismiddle;                     //设置1表示目标进入了可以开火的范围，设置0则表示目标尚未进入可开火的范围，默认置0
         Eigen::Vector3f linear_velocity;  //线速度
         Eigen::Vector3f angular_velocity; //角速度
-    } VisionData;
-    
+    } VisionAimData;
+
+    typedef struct VisionNavData
+    {
+        Eigen::Vector3f linear_velocity;  //线速度
+        Eigen::Vector3f angular_velocity; //角速度
+    } VisionNavData;
+    typedef struct VisionDecisionData
+    {
+        int mode;               //车辆设定模式
+        float theta_gimbal;    //指定云台所需转动的相对角度
+        float theta_chassis;   //指定底盘所需转动的相对角度
+    } VisionDecisionData;
+
     class DataTransform
     {
     public:
         DataTransform();
         ~DataTransform();
 
-        void transformData(int mode, const VisionData &data, uchar* trans_data); 
+        void transformData(int mode, const VisionAimData &data, uchar* trans_data);
+        void transformData(int mode, const VisionNavData &data, uchar* trans_data);
+        void transformData(int mode, const VisionDecisionData &data, uchar* trans_data); 
         void getQuatData(uchar* raw_data, vector<float>& quat);
         void getGyroData(uchar* raw_data, vector<float>& gyro);
         void getAccData(uchar* raw_data, vector<float>& acc);

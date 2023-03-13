@@ -5,23 +5,14 @@ namespace camera_driver
     DaHengCam::DaHengCam()
     : logger_(rclcpp::get_logger("daheng_driver"))
     {
-        //初始化库
-        status = GXInitLib();
-
-        //检测初始化是否成功
-        if (status != GX_STATUS_SUCCESS)
+        try
         {
-            RCLCPP_ERROR(logger_, "相机库初始化失败!");
+            auto is_init = this->init();
         }
-
-        // pRGB24Buf = new char[pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3]; //输 出 图 像 RGB 数 据
-        // if (pRGB24Buf == NULL)
-        //     return false;
-        // else //缓 冲 区 初 始 化
-        //     memset(pRGB24Buf, 0, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3 * sizeof(char));
-
-        // logger initializes.
-        RCLCPP_INFO(logger_, "[CAMERA] Initializing...");
+        catch(const std::exception& e)
+        {
+            RCLCPP_ERROR(logger_, "Error while initializing camera: %s", e.what());
+        }
     }
 
     /**
@@ -30,25 +21,16 @@ namespace camera_driver
     DaHengCam::DaHengCam(CameraParam daheng_param)
     : logger_(rclcpp::get_logger("daheng_driver"))
     {
-        //初始化库
-        status = GXInitLib();
-        //检测初始化是否成功
-        if (status != GX_STATUS_SUCCESS)
-        {
-            RCLCPP_ERROR(logger_, "相机库初始化失败!");
-        }
-
         // Camera initializes.
-        this->daheng_cam_param_ = daheng_param;
-
-        // pRGB24Buf = new char[pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3]; //输 出 图 像 RGB 数 据
-        // if (pRGB24Buf == NULL)
-        //     return false;
-        // else //缓 冲 区 初 始 化
-        //     memset(pRGB24Buf, 0, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3 * sizeof(char));
-
-        // logger initializes.
-        RCLCPP_INFO(logger_, "[CAMERA] Initializing...");
+        this->cam_param_ = daheng_param;
+        try
+        {
+            auto is_init = this->init();
+        }
+        catch(const std::exception& e)
+        {
+            RCLCPP_ERROR(logger_, "Error while initializing camera: %s", e.what());
+        }
     }
 
     /**
@@ -56,16 +38,45 @@ namespace camera_driver
      */
     DaHengCam::~DaHengCam()
     {
+        auto is_close = close();
+    }
+
+    bool DaHengCam::init()
+    {
+        //初始化库
+        status = GXInitLib();
+
+        //检测初始化是否成功
+        if (status != GX_STATUS_SUCCESS)
+        {
+            RCLCPP_ERROR(logger_, "相机库初始化失败!");
+            return false;
+        }
+
+        // logger initializes.
+        RCLCPP_INFO(logger_, "[CAMERA] Initializing...");
+        return true;
+    }
+
+    bool DaHengCam::close()
+    {
         //停 采
         status = GXStreamOff(hDevice);
+        if(status != GX_STATUS_SUCCESS)
+            return false;
+        
         //关闭设备链接
         status = GXCloseDevice(hDevice);
+        if(status != GX_STATUS_SUCCESS)
+            return false;
+
         //释放库
         status = GXCloseLib();
         if(status != GX_STATUS_SUCCESS)
             RCLCPP_ERROR(logger_, "析构失败！");
         else
             RCLCPP_INFO(logger_, "析构!");
+        return true;
     }
 
     bool DaHengCam::open()
@@ -73,14 +84,14 @@ namespace camera_driver
         /**
          * @brief 外部调用接口
         */
-        if(StartDevice(daheng_cam_param_.cam_id) == -1)
+        if(StartDevice(cam_param_.cam_id) == -1)
         {
             RCLCPP_ERROR(logger_, "Start device failed...");
             return false;
         }
         
         // 设置分辨率
-        if(!SetResolution(daheng_cam_param_.width_scale, daheng_cam_param_.height_scale))
+        if(!SetResolution(cam_param_.width_scale, cam_param_.height_scale))
         {
             RCLCPP_ERROR(logger_, "Set resolution failed...");
             return false;
@@ -97,14 +108,14 @@ namespace camera_driver
         }
 
         // 设置曝光事件
-        if(!SetExposureTime(daheng_cam_param_.exposure_time))
+        if(!SetExposureTime(cam_param_.exposure_time))
         {
             RCLCPP_WARN(logger_, "Set exposure time failed...");
             return false;
         }
 
         // 设置1
-        if(!SetGAIN(3, daheng_cam_param_.exposure_gain))
+        if(!SetGAIN(3, cam_param_.exposure_gain))
         {
             RCLCPP_WARN(logger_, "Set gain failed...");
             return false;
@@ -113,9 +124,9 @@ namespace camera_driver
         // 是否启用自动白平衡7
         // Set_BALANCE_AUTO(0);
         // manual白平衡 BGR->012
-        Set_BALANCE(0, daheng_cam_param_.balance_b);
-        Set_BALANCE(1, daheng_cam_param_.balance_g);
-        Set_BALANCE(2, daheng_cam_param_.balance_r);
+        Set_BALANCE(0, cam_param_.balance_b);
+        Set_BALANCE(1, cam_param_.balance_g);
+        Set_BALANCE(2, cam_param_.balance_r);
 
         return true;
     }
