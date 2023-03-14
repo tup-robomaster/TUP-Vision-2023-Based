@@ -41,15 +41,18 @@ namespace armor_detector
 
         //QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(5);
+        qos.keep_last(1);
         qos.best_effort();
-        qos.reliable();
+        // qos.reliable();
         qos.durability();
         // qos.transient_local();
         qos.durability_volatile();
-        
+
+        rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
+        rmw_qos.depth = 1;
+                
         // target info pub.
-        armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_detector/armor_msg", qos);
+        armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_detector/armor_msg", rclcpp::SensorDataQoS());
 
         if(debug_.using_imu)
         {
@@ -59,7 +62,7 @@ namespace armor_detector
             this->get_parameter("bullet_speed", serial_msg_.bullet_speed);
             serial_msg_.mode = this->declare_parameter<int>("autoaim_mode", 1);
             // imu msg sub.
-            serial_msg_sub_ = this->create_subscription<SerialMsg>("/serial_msg", qos,
+            serial_msg_sub_ = this->create_subscription<SerialMsg>("/serial_msg", rclcpp::SensorDataQoS(),
                 std::bind(&DetectorNode::sensorMsgCallback, this, _1));
         }
          
@@ -96,7 +99,7 @@ namespace armor_detector
             // image sub.
             std::string camera_topic = image_info_.camera_topic_map[camera_type];
             img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
-                std::bind(&DetectorNode::imageCallback, this, _1), transport_type));
+                std::bind(&DetectorNode::imageCallback, this, _1), transport_type, rmw_qos));
         }
 
         bool debug = false;
@@ -121,7 +124,7 @@ namespace armor_detector
         }
     }
 
-    void DetectorNode::detect(TaskData& src)
+    void DetectorNode::detect(TaskData& src, rclcpp::Time timestamp)
     {
         auto img_sub_time = detector_->steady_clock_.now();
         src.timestamp = (img_sub_time - time_start_).nanoseconds();
@@ -159,9 +162,6 @@ namespace armor_detector
             {
                 RCLCPP_INFO(this->get_logger(), "Spinning detector...");
                 
-                target_info.header.frame_id = "gimbal_link";
-                target_info.header.stamp = this->get_clock()->now();
-                target_info.timestamp = src.timestamp;
                 if(debug_.using_imu && detector_->debug_params_.using_imu)
                 {
                     target_info.quat_imu.w = src.quat.w();
@@ -176,7 +176,10 @@ namespace armor_detector
         target_info.is_target_lost = is_target_lost;
         
         // Publish target's information containing 3d point and timestamp.
-        target_info.header.stamp.nanosec = (detector_->steady_clock_.now().nanoseconds() - img_sub_time.nanoseconds());
+        target_info.header.frame_id = "gimbal_link";
+        target_info.header.stamp = timestamp;
+        target_info.timestamp = src.timestamp;
+        // target_info.header.stamp.nanosec = (detector_->steady_clock_.now().nanoseconds() - img_sub_time.nanoseconds());
         armor_info_pub_->publish(std::move(target_info));
         
         debug_.show_img = this->get_parameter("show_img").as_bool();
@@ -217,13 +220,20 @@ namespace armor_detector
         TaskData src;
         std::vector<Armor> armors;
 
+        rclcpp::Time now = this->get_clock()->now();
+        rclcpp::Time last = now;
+        rclcpp::Time img_pub_time = img_info->header.stamp;
+
+        RCLCPP_WARN(this->get_logger(), "img_trans_img:%.4fms", (now.nanoseconds() - img_pub_time.nanoseconds()) / 1e6);
+        
         if(!img_info)
             return;
-        auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
-        img.copyTo(src.img);
+        src.img = cv_bridge::toCvShare(img_info, "bgr8")->image;
+        // img.copyTo(src.img);
 
+        now = this->get_clock()->now();
         //目标检测接口函数
-        detect(src);
+        detect(src, img_pub_time);
     }
 
     /**
@@ -242,8 +252,9 @@ namespace armor_detector
             memcpy(img.data, shared_memory_param_.shared_memory_ptr, this->image_size_.height * this->image_size_.width * 3);
             img.copyTo(src.img);
 
+            rclcpp::Time now = this->get_clock()->now();
             //目标检测接口函数
-            detect(src);
+            detect(src, now);
         }
     }
 

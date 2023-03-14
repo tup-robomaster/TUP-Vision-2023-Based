@@ -7,6 +7,8 @@
  */
 //ros
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/image_encodings.hpp>
+#include <sensor_msgs/msg/image.hpp>
 
 //c++
 #include <string>
@@ -55,7 +57,7 @@ namespace camera_driver
         bool close();
         bool is_open();
 
-        bool get_frame(cv::Mat &src);
+        bool get_frame(cv::Mat &src, sensor_msgs::msg::Image& image_msg);
         bool set_gain(int value, int exp_gain);
         bool set_exposure_time(float exposure_time);
         bool set_balance(int value, unsigned int value_num);

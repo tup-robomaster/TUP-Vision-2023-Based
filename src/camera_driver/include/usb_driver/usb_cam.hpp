@@ -7,6 +7,8 @@
  */
 //ros
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/image_encodings.hpp>
+#include <sensor_msgs/msg/image.hpp>
 
 //c++
 #include <iostream>
@@ -36,6 +38,6 @@ namespace camera_driver
         ~UsbCam();
 
         bool open();
-        bool get_frame(cv::Mat &src);
+        bool get_frame(cv::Mat &src, sensor_msgs::msg::Image& image_msg);
     }; // usb_cam
 } // camera_driver

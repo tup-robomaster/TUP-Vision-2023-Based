@@ -47,7 +47,7 @@ namespace camera_driver
         ~CameraBaseNode();
         
         void image_callback();
-        std::unique_ptr<sensor_msgs::msg::Image> convert_frame_to_msg(cv::Mat frame);
+        void convert_frame_to_msg(cv::Mat& frame);
         virtual std::unique_ptr<T> init_cam_driver();
 
     public:
@@ -75,6 +75,11 @@ namespace camera_driver
         std::map<std::string, int> param_map_;
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
         rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_;
+        image_transport::CameraPublisher camera_pub_;
+        sensor_msgs::msg::Image image_msg_;
+        sensor_msgs::msg::CameraInfo camera_info_msg_;
+        // std::thread img_pub_thread_;
+        cv::Mat frame_;
   
         // 图像数据内存共享
         bool using_shared_memory_;   
@@ -94,6 +99,8 @@ namespace camera_driver
             if(!destorySharedMemory(shared_memory_param_))
                 RCLCPP_ERROR(this->get_logger(), "Destory shared memory failed...");
         }
+        // if(img_pub_thread_.joinable())
+        //     img_pub_thread_.join();
     }
 
     template<class T>
@@ -128,6 +135,9 @@ namespace camera_driver
         qos.durability();
         // qos.transient_local();
         qos.durability_volatile();
+
+        rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
+        rmw_qos.depth = 1;
         
         // Camera type.
         this->declare_parameter<int>("camera_type", DaHeng);
@@ -140,7 +150,8 @@ namespace camera_driver
         string camera_topic = image_info_.camera_topic_map[camera_type];
 
         // Create img publisher.
-        this->image_pub_ = this->create_publisher<sensor_msgs::msg::Image>(camera_topic, qos);
+        // this->image_pub_ = this->create_publisher<sensor_msgs::msg::Image>(camera_topic, rclcpp::SensorDataQoS());
+        this->camera_pub_ = image_transport::create_camera_publisher(this, camera_topic, rmw_qos);
         
         // Open camera.
         if(!cam_driver_->open())
@@ -167,8 +178,11 @@ namespace camera_driver
         }
         else
         {
-            timer_ = this->create_wall_timer(5ms, std::bind(&CameraBaseNode::image_callback, this));
-            RCLCPP_INFO(this->get_logger(), "Using image callback func...");
+            image_msg_.header.frame_id = this->frame_id_;
+            image_msg_.encoding = "bgr8";
+            // img_pub_thread_ = std::thread(&CameraBaseNode::image_callback, this);    
+            timer_ = this->create_wall_timer(1ms, std::bind(&CameraBaseNode::image_callback, this));
+            // RCLCPP_INFO(this->get_logger(), "Using image callback func...");
         }
     }
 
@@ -180,7 +194,7 @@ namespace camera_driver
             while(1)
             {
                 cv::Mat frame;
-                if(!cam_driver_->get_frame(frame))
+                if(!cam_driver_->get_frame(frame, image_msg_))
                 {
                     RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
                     // Reopen camera.
@@ -212,8 +226,10 @@ namespace camera_driver
         }
         else
         {
-            cv::Mat frame;
-            if(!cam_driver_->get_frame(frame))
+            rclcpp::Time start = this->get_clock()->now();
+
+            // cv::Mat frame;
+            if(!cam_driver_->get_frame(frame_, image_msg_))
             {
                 RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
                 // Reopen camera.
@@ -223,30 +239,44 @@ namespace camera_driver
                 return;
             }
 
-            sensor_msgs::msg::Image::UniquePtr msg = convert_frame_to_msg(frame);
-            image_pub_->publish(std::move(msg));
+            // rclcpp::Time now = this->get_clock()->now();
+            // convert_frame_to_msg(frame_);
+            // msg->header.stamp = now;
+            // image_pub_->publish(std::move(msg));
+
+            image_msg_.header.stamp = this->get_clock()->now();
+            camera_info_msg_.header = image_msg_.header;
+            image_msg_.width = this->image_size_.width;
+            image_msg_.height = this->image_size_.height;
+            // image_msg_.step = static_cast<sensor_msgs::msg::Image::_step_type>(frame_.step);  
+            // image_msg_.is_bigendian = false;
+
+            camera_pub_.publish(image_msg_, camera_info_msg_);
                 
-            save_video_ = this->get_parameter("save_video").as_bool();
-            if(save_video_)
-            {   // Video recorder.
-                videoRecorder(video_record_param_, &frame);
-            }
+            // save_video_ = this->get_parameter("save_video").as_bool();
+            // if(save_video_)
+            // {   // Video recorder.
+            //     videoRecorder(video_record_param_, &frame);
+            // }
             
-            bool show_img = this->get_parameter("show_img").as_bool();
-            if(show_img)
-            {
-                cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
-                cv::imshow("frame", frame);
-                cv::waitKey(1);
-            }
+            // bool show_img = this->get_parameter("show_img").as_bool();
+            // if(show_img)
+            // {
+            //     cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
+            //     cv::imshow("frame", frame);
+            //     cv::waitKey(1);
+            // }
+
+            rclcpp::Time now = this->get_clock()->now();
+            RCLCPP_WARN(this->get_logger(), "Dur_delay:%.3fms", (now.nanoseconds() - start.nanoseconds()) / 1e6);
         }
     }
 
     template<class T>
-    std::unique_ptr<sensor_msgs::msg::Image> CameraBaseNode<T>::convert_frame_to_msg(cv::Mat frame)
+    void CameraBaseNode<T>::convert_frame_to_msg(cv::Mat& frame)
     {
-        std_msgs::msg::Header header;
-        sensor_msgs::msg::Image ros_image;
+        // std_msgs::msg::Header header;
+        // sensor_msgs::msg::Image ros_image;
 
         if(frame.size().width != this->image_size_.width || frame.size().height != this->image_size_.height)
         {
@@ -254,18 +284,18 @@ namespace camera_driver
             RCLCPP_WARN(this->get_logger(), "Resize frame: width:%d height:%d", this->image_size_.width, this->image_size_.height);
         }
 
-        ros_image.header.frame_id = this->frame_id_;
-        ros_image.header.stamp = this->get_clock()->now();
-        ros_image.width = this->image_size_.width;
-        ros_image.height = this->image_size_.height;
-        ros_image.encoding = "bgr8";
+        image_msg_.header.frame_id = this->frame_id_;
+        image_msg_.header.stamp = this->get_clock()->now();
+        image_msg_.width = this->image_size_.width;
+        image_msg_.height = this->image_size_.height;
+        image_msg_.encoding = "bgr8";
         
-        ros_image.step = static_cast<sensor_msgs::msg::Image::_step_type>(frame.step);  
-        ros_image.is_bigendian = false;
-        ros_image.data.assign(frame.datastart, frame.dataend);
+        image_msg_.step = static_cast<sensor_msgs::msg::Image::_step_type>(frame.step);  
+        image_msg_.is_bigendian = false;
+        image_msg_.data.assign(frame.datastart, frame.dataend);
 
-        auto msg_ptr = std::make_unique<sensor_msgs::msg::Image>(ros_image);      
-        return msg_ptr;
+        // auto msg_ptr = std::make_unique<sensor_msgs::msg::Image>(ros_image);      
+        // return msg_ptr;
     }
 
     template<class T>

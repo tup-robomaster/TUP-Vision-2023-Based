@@ -34,11 +34,11 @@ namespace armor_processor
         qos.durability_volatile();
 
         // 发布云台转动信息（pitch、yaw角度）
-        gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", qos);
-        tracking_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/tracking_msg", qos);
+        gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", rclcpp::SensorDataQoS());
+        tracking_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/tracking_msg", rclcpp::SensorDataQoS());
 
         // 订阅目标装甲板信息
-        target_info_sub_ = this->create_subscription<AutoaimMsg>("/armor_detector/armor_msg", qos,
+        target_info_sub_ = this->create_subscription<AutoaimMsg>("/armor_detector/armor_msg", rclcpp::SensorDataQoS(),
             std::bind(&ArmorProcessorNode::targetMsgCallback, this, _1));
 
         // 是否使用共享内存
@@ -59,7 +59,7 @@ namespace armor_processor
             RCLCPP_INFO(this->get_logger(), "debug...");
             
             // Prediction info pub.
-            predict_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_processor/predict_msg", qos);
+            predict_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_processor/predict_msg", rclcpp::SensorDataQoS());
 
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, _1));
@@ -80,10 +80,10 @@ namespace armor_processor
                 image_size_ = image_info_.image_size_map[camera_type];
                 std::string camera_topic = image_info_.camera_topic_map[camera_type];
                 
-                sleep(5);
-                // image sub.
-                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
-                    std::bind(&ArmorProcessorNode::imageCallback, this, _1), transport));
+                // sleep(5);
+                // // image sub.
+                // img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
+                //     std::bind(&ArmorProcessorNode::imageCallback, this, _1), transport, rmw_qos_profile_sensor_data));
             }
         }
     }
@@ -163,7 +163,7 @@ namespace armor_processor
             tracking_info.header.frame_id = "barrel_link1";
             tracking_info.header.stamp = target_info.header.stamp;
             auto end = processor_->steady_clock_.now();
-            double dura = end.nanoseconds() - start.nanoseconds() + target_info.header.stamp.nanosec;
+            // double dura = end.nanoseconds() - start.nanoseconds() + target_info.header.stamp.nanosec;
 
             tracking_info.pitch = tracking_angle[1];
             tracking_info.yaw = tracking_angle[0];
@@ -172,7 +172,7 @@ namespace armor_processor
             tracking_info.is_spinning = target_info.is_spinning;
             tracking_info_pub_->publish(std::move(tracking_info));
             RCLCPP_INFO(this->get_logger(), "pitch_angle:%.2f yaw_angle:%.2f", tracking_angle[1], tracking_angle[0]);
-            RCLCPP_WARN(this->get_logger(), "delay:%.3fms", (dura/1e6));
+            // RCLCPP_WARN(this->get_logger(), "delay:%.3fms", (dura/1e6));
 
             if(!target.is_target_lost)
             {

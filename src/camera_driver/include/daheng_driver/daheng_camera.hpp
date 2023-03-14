@@ -18,6 +18,8 @@
 
 //ros
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/image_encodings.hpp>
+#include <sensor_msgs/msg/image.hpp>
 
 #include "../../global_user/include/global_user/global_user.hpp"
 
@@ -54,6 +56,8 @@ namespace camera_driver
         int64_t             nContrastParam;
         int64_t             nColorCorrectionParam;
         VxInt16             nSaturation;
+
+        // char *pRGB24Buf;
 
     public:
         //构造函数，初始化库
@@ -100,7 +104,7 @@ namespace camera_driver
         int Get_TIMESTAMP();
     
         //采集图像
-        bool get_frame(cv::Mat &Src);
+        bool get_frame(cv::Mat &Src, sensor_msgs::msg::Image& image_msg);
 
     public:
         CameraParam daheng_cam_param_;

@@ -37,14 +37,15 @@ find_package(angles REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
+#find_package(CXSparse REQUIRED)
 
 # find_package(lapack REQUIRED)
 
 find_package(global_interface REQUIRED)
 find_package(global_user REQUIRED)
 
-# find_package(glog REQUIRED)
-# find_package(fmt REQUIRED)
+find_package(glog REQUIRED)
+find_package(fmt REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 set(dependencies 
@@ -62,6 +63,7 @@ set(dependencies
   sensor_msgs
   cv_bridge
   yaml-cpp
+  fmt
   # lapack 
 
   global_interface
@@ -88,10 +90,12 @@ ament_target_dependencies(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
+  ${Eigen3_LIBRARIES}
   ceres.so
+  #ceres.a
   glog.so 
   yaml-cpp.so
-  # lapack.so 
+  #lapack.so 
 )
 
 add_executable(${PROJECT_NAME}_node

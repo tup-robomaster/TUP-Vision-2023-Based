@@ -54,7 +54,7 @@ namespace camera_driver
         }
     }
 
-    bool UsbCam::get_frame(cv::Mat &src)
+    bool UsbCam::get_frame(cv::Mat &src, sensor_msgs::msg::Image& image_msg)
     {
         cap >> src;
         if(src.empty())

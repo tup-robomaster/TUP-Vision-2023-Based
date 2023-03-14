@@ -357,7 +357,7 @@ namespace camera_driver
         return ((int)time_start.time_since_epoch().count() - timestamp_offset);
     }
 
-    bool HikCamera::get_frame(::cv::Mat &Src)
+    bool HikCamera::get_frame(::cv::Mat &Src, sensor_msgs::msg::Image& image_msg)
     {
         // ch:获取数据包大小 | en:Get payload size
         MVCC_INTVALUE stParam;

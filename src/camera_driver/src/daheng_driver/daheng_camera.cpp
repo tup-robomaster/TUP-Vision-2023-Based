@@ -14,6 +14,12 @@ namespace camera_driver
             RCLCPP_ERROR(logger_, "相机库初始化失败!");
         }
 
+        // pRGB24Buf = new char[pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3]; //输 出 图 像 RGB 数 据
+        // if (pRGB24Buf == NULL)
+        //     return false;
+        // else //缓 冲 区 初 始 化
+        //     memset(pRGB24Buf, 0, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3 * sizeof(char));
+
         // logger initializes.
         RCLCPP_INFO(logger_, "[CAMERA] Initializing...");
     }
@@ -34,6 +40,12 @@ namespace camera_driver
 
         // Camera initializes.
         this->daheng_cam_param_ = daheng_param;
+
+        // pRGB24Buf = new char[pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3]; //输 出 图 像 RGB 数 据
+        // if (pRGB24Buf == NULL)
+        //     return false;
+        // else //缓 冲 区 初 始 化
+        //     memset(pRGB24Buf, 0, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3 * sizeof(char));
 
         // logger initializes.
         RCLCPP_INFO(logger_, "[CAMERA] Initializing...");
@@ -265,7 +277,7 @@ namespace camera_driver
      * @param Src 引入方式传递
      * @return bool 返回是否成功
      */
-    bool DaHengCam::get_frame(cv::Mat &Src)
+    bool DaHengCam::get_frame(cv::Mat &Src, sensor_msgs::msg::Image& image_msg)
     {
         // ------------------------------------------- For Soft Trigger------------------------------------------------------------
         // int64_t nPayLoadSize = 0;
@@ -369,14 +381,10 @@ namespace camera_driver
             lastImgTimestamp = pFrameBuffer->nTimestamp;
             char *pRGB24Buf = new char[pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3]; //输 出 图 像 RGB 数 据
             if (pRGB24Buf == NULL)
-            {
                 return false;
-            }
-            else
-            {
-                memset(pRGB24Buf, 0, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3 * sizeof(char));
-                //缓 冲 区 初 始 化
-            }
+            // else //缓 冲 区 初 始 化
+            //     memset(pRGB24Buf, 0, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3 * sizeof(char));
+
             DX_BAYER_CONVERT_TYPE cvtype = RAW2RGB_NEIGHBOUR3; //选 择 插 值 算 法
             DX_PIXEL_COLOR_FILTER nBayerType = DX_PIXEL_COLOR_FILTER(BAYERBG);
             //选 择 图 像 Bayer 格 式
@@ -400,14 +408,14 @@ namespace camera_driver
             //     if (DxStatus != DX_OK)
             //         cout << "Contrast Set Failed" <<endl;
             // }
-            if (set_color)
-            {
-                DxStatus = DxImageImprovment(pRGB24Buf, pRGB24Buf,pFrameBuffer->nWidth, pFrameBuffer->nHeight, nColorCorrectionParam,NULL,pGammaLut);
-                if (DxStatus != DX_OK)
-                {
-                    RCLCPP_ERROR(logger_, "Color Set Failed!");
-                }
-            }
+            // if (set_color)
+            // {
+            //     DxStatus = DxImageImprovment(pRGB24Buf, pRGB24Buf,pFrameBuffer->nWidth, pFrameBuffer->nHeight, nColorCorrectionParam,NULL,pGammaLut);
+            //     if (DxStatus != DX_OK)
+            //     {
+            //         RCLCPP_ERROR(logger_, "Color Set Failed!");
+            //     }
+            // }
             // if (set_saturation)
             // {
             //     DxStatus = DxSaturation(pRGB24Buf, pRGB24Buf,pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3, saturation_factor);
@@ -415,9 +423,12 @@ namespace camera_driver
             //         cout << "Saturation Set Failed" <<endl;
             // }
 
-            Mat src = Mat(pFrameBuffer->nHeight, pFrameBuffer->nWidth, CV_8UC3);
-            memcpy(src.data, pRGB24Buf, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3);
-            src.copyTo(Src);
+            Src = Mat(pFrameBuffer->nHeight, pFrameBuffer->nWidth, CV_8UC3);
+            memcpy(Src.data, pRGB24Buf, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3);
+            // src.copyTo(Src);
+            image_msg.step = static_cast<sensor_msgs::msg::Image::_step_type>(Src.step);  
+            image_msg.is_bigendian = false;
+            image_msg.data.assign(Src.datastart, Src.dataend);
 
             delete[] pRGB24Buf;
             pRGB24Buf = NULL;

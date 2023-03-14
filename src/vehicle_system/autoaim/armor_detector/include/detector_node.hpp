@@ -38,7 +38,7 @@ namespace armor_detector
         DetectorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         ~DetectorNode();
         
-        void detect(TaskData& src);
+        void detect(TaskData& src, rclcpp::Time now);
     private:
         rclcpp::Time time_start_;
         ImageInfo image_info_;

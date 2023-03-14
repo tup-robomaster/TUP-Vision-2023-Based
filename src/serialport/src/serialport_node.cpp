@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-03-02 18:08:21
+ * @LastEditTime: 2023-03-02 18:14:41
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -38,7 +38,7 @@ namespace serialport
             RCLCPP_WARN(this->get_logger(), "Prediciton!!!");
             autoaim_info_sub_ = this->create_subscription<GimbalMsg>(
                 "/armor_processor/gimbal_msg", 
-                qos,
+                rclcpp::SensorDataQoS(),
                 std::bind(&SerialPortNode::armorMsgSub, this, _1)
             );
         }
@@ -47,7 +47,7 @@ namespace serialport
             RCLCPP_WARN(this->get_logger(), "Tracking!!!");
             autoaim_tracking_sub_ = this->create_subscription<GimbalMsg>(
                 "/armor_processor/tracking_msg", 
-                qos,
+                rclcpp::SensorDataQoS(),
                 std::bind(&SerialPortNode::armorMsgSub, this, _1)
             );
         }
@@ -55,30 +55,30 @@ namespace serialport
         //能量机关msg订阅
         buff_info_sub_ = this->create_subscription<GimbalMsg>(
             "/buff_processor/gimbal_msg",
-            qos,
+            rclcpp::SensorDataQoS(),
             std::bind(&SerialPortNode::buffMsgSub, this, _1)
         );
         
         //创建发送数据定时器
         // timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
         watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
-        send_timer_ = rclcpp::create_timer(this, this->get_clock(), 50ms, std::bind(&SerialPortNode::sendingData, this));
+        // send_timer_ = rclcpp::create_timer(this, this->get_clock(), 30ms, std::bind(&SerialPortNode::sendingData, this));
         
         if (using_port_)
         {   // Use serial port.
             if (serial_port_->openPort())
             {
-                serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", qos);
-                joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
-                car_pos_pub_ = this->create_publisher<CarPosMsg>("/car_pos", qos);
-                car_hp_pub_ = this->create_publisher<CarHPMsg>("/car_hp", qos);
-                game_msg_pub_ = this->create_publisher<GameMsg>("/game_info", qos);
+                serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", rclcpp::SensorDataQoS());
+                joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", rclcpp::SensorDataQoS());
+                car_pos_pub_ = this->create_publisher<CarPosMsg>("/car_pos", rclcpp::SensorDataQoS());
+                car_hp_pub_ = this->create_publisher<CarHPMsg>("/car_hp", rclcpp::SensorDataQoS());
+                game_msg_pub_ = this->create_publisher<GameMsg>("/game_info", rclcpp::SensorDataQoS());
                 receive_thread_ = std::thread(&SerialPortNode::receiveData, this);
                 if (is_sentry_)
                 {
                     sentry_msg_sub_ = this->create_subscription<SentryMsg>(
                         "/sentry_msg",
-                        qos, 
+                        rclcpp::SensorDataQoS(), 
                         std::bind(&SerialPortNode::sentryMsgSub, this, _1)
                     );
                 }
@@ -272,24 +272,31 @@ namespace serialport
                     {0, 0, 0}
                 };
 
-                mutex_.lock();
-                if(vision_data_queue_.size() < 3)
-                    vision_data_queue_.push(vision_data);
-                else
-                {
-                    vision_data_queue_.pop();
-                    vision_data_queue_.push(vision_data);
-                }
-                mutex_.unlock();
+                // mutex_.lock();
+                // if(vision_data_queue_.size() < 3)
+                //     vision_data_queue_.push(vision_data);
+                // else
+                // {
+                //     vision_data_queue_.pop();
+                //     vision_data_queue_.push(vision_data);
+                // }
+                // mutex_.unlock();
             }
             else 
                 return false;
-                // //根据不同mode进行对应的数据转换
-                // data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
-                // //数据发送
-                // serial_port_->sendData();
-                // mutex_.unlock();
-                // flag_ = true;
+            
+
+            //根据不同mode进行对应的数据转换
+            data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
+            
+            rclcpp::Time now = this->get_clock()->now();
+            rclcpp::Time start = target_info->header.stamp;
+            RCLCPP_WARN(this->get_logger(), "All_delay:%.4fms", (now.nanoseconds() - start.nanoseconds()) / 1e6);
+            
+            //数据发送
+            mutex_.lock();
+            serial_port_->sendData();
+            mutex_.unlock();
             return true;
         }
         else
