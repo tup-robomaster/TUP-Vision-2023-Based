@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 12:12:19
- * @LastEditTime: 2023-02-26 12:09:42
+ * @LastEditTime: 2023-03-14 22:42:43
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_camera.hpp
  */
 //daheng
@@ -67,7 +67,9 @@ namespace camera_driver
         ~DaHengCam();
         
     public:
+        bool init();
         bool open();
+        bool close();
     
     private:
         //打开设备
@@ -106,8 +108,10 @@ namespace camera_driver
         //采集图像
         bool get_frame(cv::Mat &Src, sensor_msgs::msg::Image& image_msg);
 
+        //设备复位
+        bool deviceReset();
     public:
-        CameraParam daheng_cam_param_;
+        CameraParam cam_param_;
         rclcpp::Logger logger_;
     };
 

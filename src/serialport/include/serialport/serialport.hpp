@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-15 22:01:49
- * @LastEditTime: 2023-02-25 16:34:39
+ * @LastEditTime: 2023-03-14 22:55:02
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport/serialport.hpp
  */
 #ifndef SERIALPORT_HPP_
@@ -34,7 +34,7 @@
 
 #define ECHOFLAGS (ECHO | ECHOE | ECHOK | ECHONL) //C_lflag
 const std::vector<std::string> DEFAULT_PORT = {"ttyUSB", "ttyACM"}; //默认串口名
-constexpr int MAX_ITER = 10; //默认串口最大编号
+constexpr int MAX_ITER = 20; //默认串口最大编号
 
 using namespace std;
 using namespace global_user;
