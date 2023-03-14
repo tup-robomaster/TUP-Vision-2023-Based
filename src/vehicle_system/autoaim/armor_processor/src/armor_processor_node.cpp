@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-03-13 19:18:50
+ * @LastEditTime: 2023-03-14 19:11:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -42,7 +42,6 @@ namespace armor_processor
 
         this->declare_parameter<bool>("sync_transport", false);
         sync_transport_ = this->get_parameter("sync_transport").as_bool();
-
         if(!sync_transport_)
         {
             // 订阅目标装甲板信息
@@ -50,13 +49,9 @@ namespace armor_processor
                 qos,
                 std::bind(&ArmorProcessorNode::targetMsgCallback, this, _1));
         }
-
         // 相机类型
         this->declare_parameter<int>("camera_type", global_user::DaHeng);
         int camera_type = this->get_parameter("camera_type").as_int();
-        
-        // 图像的传输方式
-        std::string transport = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
         
         this->declare_parameter<bool>("debug", true);
         this->get_parameter("debug", debug_);
@@ -65,7 +60,7 @@ namespace armor_processor
             RCLCPP_INFO(this->get_logger(), "debug...");
             // Prediction info pub.
             predict_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_processor/predict_msg", qos);
-            //动态调参回调
+            // 动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, _1));
             if(debug_param_.show_img)
             {
@@ -84,6 +79,8 @@ namespace armor_processor
                 }
                 else
                 {
+                    // 图像的传输方式
+                    std::string transport = "raw";
                     // image sub.
                     img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
                         std::bind(&ArmorProcessorNode::imageCallback, this, _1), transport, rmw_qos));
@@ -103,7 +100,7 @@ namespace armor_processor
         RCLCPP_WARN(this->get_logger(), "Delay:%.2fms", (now.nanoseconds() - last.nanoseconds()) / 1e6);
 
         cv::Mat src = cv_bridge::toCvShare(img_msg, "bgr8")->image;
-        if(!processTargetMsg(*target_msg, &src))
+        if (!processTargetMsg(*target_msg, &src))
             RCLCPP_ERROR(this->get_logger(), "Armor processes error synchronously...");
         
         if (debug_param_.show_img)
@@ -122,7 +119,7 @@ namespace armor_processor
      */
     void ArmorProcessorNode::targetMsgCallback(const AutoaimMsg& target_info)
     {
-        if(!processTargetMsg(target_info))
+        if (!processTargetMsg(target_info))
             RCLCPP_WARN(this->get_logger(), "Armor processes error...");            
         return;
     }
@@ -156,7 +153,6 @@ namespace armor_processor
         if (target.is_target_lost)
         {
             processor_->error_cnt_ = 0;
-            // processor_->is_ekf_init = false;
             processor_->is_singer_init_[0] = false;
             processor_->is_singer_init_[1] = false;
             processor_->is_imm_init_ = false;
@@ -212,12 +208,12 @@ namespace armor_processor
         gimbal_info.pitch = angle[1] >= 90 ? 0.0 : angle[1];
         gimbal_info.yaw = angle[0] >= 90 ? 0.0 : angle[0];
         gimbal_info.distance = aiming_point_cam.norm();
-        gimbal_info.is_target = target_info.mode == SENTRY_MODE ? post_process_info.find_target : true;
+        gimbal_info.is_target = target_info.mode == SENTRY_MODE ? post_process_info.find_target : (!target_info.is_target_lost);
         gimbal_info.is_switched = target_info.target_switched;
         gimbal_info.is_spinning = target_info.is_spinning;
         gimbal_info_pub_->publish(std::move(gimbal_info));
 
-        if(this->debug_)
+        if (this->debug_)
         {
             // RCLCPP_INFO(this->get_logger(), "Tracking msgs pub!!!");
             GimbalMsg tracking_info;
@@ -229,14 +225,14 @@ namespace armor_processor
             tracking_info.pitch = tracking_angle[1] >= 90 ? 0.0 : tracking_angle[1];
             tracking_info.yaw = tracking_angle[0] >= 90 ? 0.0 : tracking_angle[0];
             tracking_info.distance = tracking_point_cam.norm();
-            tracking_info.is_target = target_info.mode == SENTRY_MODE ? post_process_info.find_target : true;
+            tracking_info.is_target = target_info.mode == SENTRY_MODE ? (post_process_info.find_target) : (!target_info.is_target_lost);
             tracking_info.is_switched = target_info.target_switched;
             tracking_info.is_spinning = target_info.is_spinning;
             tracking_info_pub_->publish(std::move(tracking_info));
-            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "pitch_angle:%.3f yaw_angle:%.3f", tracking_angle[1], tracking_angle[0]);
+            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 25, "pitch_angle:%.2f yaw_angle:%.2f", tracking_angle[1], tracking_angle[0]);
             // RCLCPP_WARN(this->get_logger(), "delay:%.3fms", (dura/1e6));
 
-            if(!target.is_target_lost)
+            if (!target.is_target_lost)
             {
                 AutoaimMsg predict_info;
                 predict_info.header.frame_id = "camera_link";
@@ -299,7 +295,7 @@ namespace armor_processor
      */
     void ArmorProcessorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {
-        if(!img_msg)
+        if (!img_msg)
             return;
 
         // rclcpp::Time last = img_msg->header.stamp;
