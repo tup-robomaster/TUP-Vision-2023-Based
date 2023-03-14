@@ -23,6 +23,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Sentry.msg"
   "msg/CarHP.msg"
   "msg/CarPos.msg"
+  "msg/Object.msg"
+  "msg/ObjectArray.msg"
   "msg/GameInfo.msg"
   "msg/SpinInfo.msg"
   # "srv/*.srv"
