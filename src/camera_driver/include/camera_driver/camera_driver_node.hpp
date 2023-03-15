@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-03-15 09:50:44
+ * @LastEditTime: 2023-03-15 11:33:08
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -169,8 +169,9 @@ namespace camera_driver
                 // Reopen camera.
                 auto status = cam_driver_->close();
                 // status = cam_driver_->init();
-                // cam_driver_ = std::make_unique<T>();
-                cam_driver_->cam_param_.cam_id = (cam_driver_->cam_param_.cam_id < 5) ? (cam_driver_->cam_param_.cam_id + 1) : 0;
+                // cam_driver_.reset();
+                cam_driver_ = std::make_unique<T>();
+                // cam_driver_->cam_param_.cam_id = (cam_driver_->cam_param_.cam_id < 5) ? (cam_driver_->cam_param_.cam_id + 1) : 1;
                 status = cam_driver_->deviceReset();
                 if (!cam_driver_->open())
                 {

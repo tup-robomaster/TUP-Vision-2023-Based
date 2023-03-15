@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-03-02 10:01:31
+ * @LastEditTime: 2023-03-15 11:27:26
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -224,11 +224,12 @@ namespace armor_detector
         rclcpp::Time last = now;
         rclcpp::Time img_pub_time = img_info->header.stamp;
 
-        RCLCPP_WARN(this->get_logger(), "img_trans_img:%.4fms", (now.nanoseconds() - img_pub_time.nanoseconds()) / 1e6);
+        // RCLCPP_WARN(this->get_logger(), "img_trans_img:%.2fms", (now.nanoseconds() - img_pub_time.nanoseconds()) / 1e6);
         
         if(!img_info)
             return;
         src.img = cv_bridge::toCvShare(img_info, "bgr8")->image;
+        src.img = img_info->header.stamp.nanosec;
         // img.copyTo(src.img);
 
         now = this->get_clock()->now();
