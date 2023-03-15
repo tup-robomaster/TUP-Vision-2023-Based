@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:13:23
- * @LastEditTime: 2023-02-26 12:40:51
+ * @LastEditTime: 2023-03-14 20:20:44
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp
  */
 #include "../../include/hik_driver/hik_camera.hpp"
@@ -12,60 +12,53 @@ namespace camera_driver
     HikCamera::HikCamera()
     : logger_(rclcpp::get_logger("hik_driver"))
     {
-        g_nPayloadSize = 0;
+        auto is_init = init();
     }
 
     HikCamera::HikCamera(const CameraParam& cam_params)
     : logger_(rclcpp::get_logger("hik_driver"))
     {
-        g_nPayloadSize = 0;
-
-        //params set
-        this->hik_cam_params_ = cam_params;
+        // Params set.
+        this->cam_param_ = cam_params;
+        auto is_init = init();
     }
 
     HikCamera::~HikCamera()
     {
-        nRet = MV_CC_FreeImageBuffer(handle, (&pFrame));
-        if(nRet != MV_OK)
-        {
-            RCLCPP_ERROR(logger_, "Free image buffer failed!");
-        }
+        auto is_release = close();
     } 
+
+    bool HikCamera::init()
+    {
+        g_nPayloadSize = 0;
+        return true;
+    }
 
     bool HikCamera::open()
     {
         //TODO:
         set_digital_io_control();
-
         set_trigger_mode();
-        
-        start_device(this->hik_cam_params_.cam_id);
-        // printf("9\n");
+        start_device(this->cam_param_.cam_id);
         // 设置分辨率
-        set_resolution(this->hik_cam_params_.image_width, this->hik_cam_params_.image_height);
-        
-        //更新时间戳，设置时间戳偏移量
+        set_resolution(this->cam_param_.image_width, this->cam_param_.image_height);
+        // 更新时间戳，设置时间戳偏移量
         update_timestamp(time_start_);
-        
         // 开始采集帧
         set_stream_on();
-
         // 设置曝光事件
-        set_exposure_time(this->hik_cam_params_.exposure_time);
-
-        // 设置1
+        set_exposure_time(this->cam_param_.exposure_time);
+        // 设置增益
         // SetGAIN(0, hik_cam_params.exposure_gain_b);
         // SetGAIN(1, hik_cam_params.exposure_gain_g);
         // SetGAIN(2, hik_cam_params.exposure_gain_r;
-        set_gain(3, this->hik_cam_params_.exposure_gain);
+        set_gain(3, this->cam_param_.exposure_gain);
         // 是否启用自动白平衡7
         // Set_BALANCE_AUTO(0);
         // manual白平衡 BGR->012
-        set_balance(0, this->hik_cam_params_.balance_b);
-        set_balance(1, this->hik_cam_params_.balance_g);
-        set_balance(2, this->hik_cam_params_.balance_r);
-
+        set_balance(0, this->cam_param_.balance_b);
+        set_balance(1, this->cam_param_.balance_g);
+        set_balance(2, this->cam_param_.balance_r);
         // _is_open = get_frame(frame);
 
         return true;
@@ -73,7 +66,18 @@ namespace camera_driver
 
     bool HikCamera::close() 
     {
-        return false;
+        nRet = MV_CC_FreeImageBuffer(handle, (&pFrame));
+        if(nRet != MV_OK)
+        {
+            RCLCPP_ERROR(logger_, "Free image buffer failed!");
+            return false;
+        }
+        return true;
+    }
+
+    bool HikCamera::deviceReset()
+    {
+        
     }
 
     bool HikCamera::is_open()

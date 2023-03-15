@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 16:51:24
- * @LastEditTime: 2023-02-26 13:51:21
+ * @LastEditTime: 2023-03-15 10:00:00
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/usb_driver/usb_cam.hpp
  */
 //ros
@@ -16,28 +16,35 @@
 //opencv
 #include <opencv2/opencv.hpp>
 
-#include "../../global_user/include/global_user/global_user.hpp"
-
-using namespace global_user;
 namespace camera_driver
 {
+    struct UsbCamParam
+    {
+        std::string frame_id;
+        int camera_id;
+        int image_width;
+        int image_height;
+        int fps;
+    };
+    
     class UsbCam
     {
     private:     
+        UsbCamParam usb_cam_params_;
         rclcpp::Logger logger_;
 
     public:
-        cv::Mat src;
-        bool is_open;
         cv::VideoCapture cap;
-        CameraParam usb_cam_params_;
+        bool is_open;
+        cv::Mat src;
 
     public:
         UsbCam();
-        UsbCam(const CameraParam& usb_params);
+        UsbCam(UsbCamParam usb_params);
         ~UsbCam();
 
-        bool open();
-        bool get_frame(cv::Mat &src, sensor_msgs::msg::Image& image_msg);
+        // bool open();
+        bool get_frame(cv::Mat &src);
+        void init();
     }; // usb_cam
 } // camera_driver
