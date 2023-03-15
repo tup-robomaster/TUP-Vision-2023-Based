@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-03-01 09:51:45
+ * @LastEditTime: 2023-03-08 21:25:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -139,8 +139,8 @@ namespace armor_processor
         {
             if(!target.is_target_switched)
             {
-                history_origin_info_.push_back(cv::Point2d(history_info_.front().xyz[1], history_info_.front().xyz[0]));
-                history_info_.push_back(std::move(target));
+                history_origin_info_.emplace_back(cv::Point2d(history_info_.front().xyz[1], history_info_.front().xyz[0]));
+                history_info_.emplace_back(std::move(target));
                 if(history_origin_info_.size() > 2)
                 {   // Reserve history fitting front element.
                     history_origin_info_.pop_front();    
@@ -150,15 +150,15 @@ namespace armor_processor
             {
                 is_predicted = false;
                 history_origin_info_.clear();
-                history_origin_info_.push_back(cv::Point2d(history_info_.front().xyz[1], history_info_.front().xyz[0]));
+                history_origin_info_.emplace_back(cv::Point2d(history_info_.front().xyz[1], history_info_.front().xyz[0]));
                 history_info_.clear();
-                history_info_.push_back(target);
+                history_info_.emplace_back(target);
             }
 
             if(target.spinning_switched)
             {
                 history_info_.clear();
-                history_info_.push_back(target);
+                history_info_.emplace_back(target);
                 RCLCPP_INFO(logger_, "Target spinning switched...");
             }
         }
@@ -174,20 +174,20 @@ namespace armor_processor
                 history_info_.pop_front();
             if(history_pred_.size() > 50)
                 history_pred_.pop_front();
-            history_info_.push_back(target);
+            history_info_.emplace_back(target);
         }
         
         // //若位置粒子滤波器未完成初始化或滤波结果与目前位置相距过远,则本次不对目标位置做滤波,直接向队列压入原值
         // if (!is_pos_filter_ready || (predict_pos - xyz).norm() > 0.1)
         // {
-        //     history_info_.push_back(target);
+        //     history_info_.emplace_back(target);
         // }
         // else
         // {  //若位置粒子滤波器已完成初始化且预测值大小恰当,则对目标位置做滤波
         //     // cout<<"FIL:"<<predict_pos[0] - xyz[0]<<endl;
         //     target.xyz[0] = predict_pos[0];
         //     target.xyz[1] = predict_pos[1];
-        //     history_info_.push_back(target);
+        //     history_info_.emplace_back(target);
         // }
 
         // auto d_xyz = target.xyz - final_target_.xyz;
@@ -228,7 +228,7 @@ namespace armor_processor
         //如速度过大,可认为为噪声干扰,进行滑窗滤波滤除
         // if (((d_xyz.norm() / delta_t) * 1e3) >= max_v)
         // {
-        //     history_info.push_back(target);
+        //     history_info.emplace_back(target);
         //     auto filtered_xyz = shiftWindowFilter(history_info.size() - window_size - 1);
         //     target = {filtered_xyz, (int)filtered_xyz.norm(), timestamp};
         //     history_info.pop_back();
@@ -967,12 +967,12 @@ namespace armor_processor
         // double delta_x_to_pred = x_pred - target.xyz[0];
         // if(history_delta_x_pred_.size() < 1)
         // {
-        //     history_delta_x_pred_.push_back(delta_x_to_pred);
+        //     history_delta_x_pred_.emplace_back(delta_x_to_pred);
         // }
         // else
         // {
         //     history_delta_x_pred_.pop_front();
-        //     history_delta_x_pred_.push_back(delta_x_to_pred);
+        //     history_delta_x_pred_.emplace_back(delta_x_to_pred);
         // }
         
         // result = {x_pred, target.xyz[1], target.xyz[2]}; //camera frame
@@ -1251,7 +1251,7 @@ namespace armor_processor
             TargetInfo pred_info;
             pred_info.xyz = result;
             pred_info.timestamp = target.timestamp + timestamp;
-            history_pred_.push_back(pred_info);
+            history_pred_.emplace_back(pred_info);
 
             is_available.xyz_status[1] = true;
         }

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-01-26 16:36:45
+ * @LastEditTime: 2023-03-08 21:24:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -79,7 +79,7 @@ namespace armor_detector
             {
                 for (int g0 = 0; g0 < num_grid_w; g0++)
                 {
-                    grid_strides.push_back((GridAndStride){g0, g1, stride});
+                    grid_strides.emplace_back((GridAndStride){g0, g1, stride});
                 }
             }
         }
@@ -146,7 +146,7 @@ namespace armor_detector
                 for (int i = 0; i < 4; i++)
                 {
                     obj.apex[i] = cv::Point2f(apex_dst(0,i),apex_dst(1,i));
-                    obj.pts.push_back(obj.apex[i]);
+                    obj.pts.emplace_back(obj.apex[i]);
                 }
                 
                 std::vector<cv::Point2f> tmp(obj.apex,obj.apex + 4);
@@ -156,7 +156,7 @@ namespace armor_detector
                 obj.color = box_color;
                 obj.prob = box_prob;
 
-                objects.push_back(obj);
+                objects.emplace_back(obj);
             }
 
         } // point anchor loop
@@ -256,7 +256,7 @@ namespace armor_detector
                     {
                         for (int i = 0; i < 4; i++)
                         {
-                            b.pts.push_back(a.apex[i]);
+                            b.pts.emplace_back(a.apex[i]);
                         }
                     }
                     // cout<<b.pts_x.size()<<endl;
@@ -264,7 +264,7 @@ namespace armor_detector
             }
 
             if (keep)
-                picked.push_back(i);
+                picked.emplace_back(i);
         }
     }
 

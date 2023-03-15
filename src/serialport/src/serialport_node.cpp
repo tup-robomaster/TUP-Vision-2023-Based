@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-03-02 18:14:41
+ * @LastEditTime: 2023-03-08 21:23:02
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -191,10 +191,10 @@ namespace serialport
 
                     sensor_msgs::msg::JointState joint_state;
                     joint_state.header.stamp = this->get_clock()->now();
-                    joint_state.name.push_back("gimbal_yaw_joint");
-                    joint_state.name.push_back("gimbal_pitch_joint");
-                    joint_state.position.push_back(theta);
-                    joint_state.position.push_back(0);
+                    joint_state.name.emplace_back("gimbal_yaw_joint");
+                    joint_state.name.emplace_back("gimbal_pitch_joint");
+                    joint_state.position.emplace_back(theta);
+                    joint_state.position.emplace_back(0);
                     joint_state_pub_->publish(joint_state);
                 }
             }

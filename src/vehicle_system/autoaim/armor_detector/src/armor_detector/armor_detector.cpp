@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-02-25 09:31:46
+ * @LastEditTime: 2023-03-08 21:24:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -259,7 +259,7 @@ namespace armor_detector
             armor.euler = pnp_result.euler;
             armor.rmat = pnp_result.rmat;
             armor.area = object.area;
-            armors.push_back(armor);
+            armors.emplace_back(armor);
         }
         
         //若无合适装甲板
@@ -414,8 +414,8 @@ namespace armor_detector
             {
                 if ((*iter).second.last_timestamp == src.timestamp)
                 {
-                    final_armors.push_back((*iter).second.last_armor);
-                    final_trackers.push_back(&(*iter).second);
+                    final_armors.emplace_back((*iter).second.last_armor);
+                    final_trackers.emplace_back(&(*iter).second);
                     if((*iter).second.is_initialized)
                     {
                         auto dt = (((*iter).second.last_timestamp) - ((*iter).second.prev_timestamp)) / 1e9;
@@ -424,7 +424,7 @@ namespace armor_detector
                         auto angle = angle_axisd.angle();
                         w = (angle / dt);
                         period = ((2 * CV_PI) / w / 4.0);
-                        new_period_deq_.push_back(period);
+                        new_period_deq_.emplace_back(period);
                         RCLCPP_WARN(logger_, "period:%lfs", period);
                     }
                 }
@@ -455,7 +455,7 @@ namespace armor_detector
 
                 // if(history_period_.size() < 3)
                 // {
-                //     history_period_.push_back(cur_period_);
+                //     history_period_.emplace_back(cur_period_);
                 // }
                 // // std::cout << std::endl;
                 // // std::cout << "period:" << cur_period_ << std::endl;
@@ -480,7 +480,7 @@ namespace armor_detector
                 //         last_period_ = cur_period_;
                 //         if(history_period_.size() < 9)
                 //         {
-                //             history_period_.push_back(cur_period_);
+                //             history_period_.emplace_back(cur_period_);
                 //         }
                 //         else
                 //         {
@@ -621,8 +621,8 @@ namespace armor_detector
 
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
-                // final_armors.push_back((*iter).second.last_armor);
-                final_trackers.push_back(&(*iter).second);
+                // final_armors.emplace_back((*iter).second.last_armor);
+                final_trackers.emplace_back(&(*iter).second);
             }
             //进行目标选择
             auto tracker = chooseTargetTracker(final_trackers, src.timestamp);
