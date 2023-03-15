@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:10:59
- * @LastEditTime: 2023-02-09 17:16:50
+ * @LastEditTime: 2023-03-15 20:39:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/buff_processor_node.hpp
  */
 #ifndef BUFF_PROCESSOR_NODE_HPP_
@@ -18,6 +18,7 @@
 #include <image_transport/publisher.hpp>
 #include <image_transport/subscriber_filter.hpp>
 #include <cv_bridge/cv_bridge.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 //c++
 #include <mutex>
@@ -32,6 +33,7 @@
 
 using namespace global_user;
 using namespace coordsolver;
+using namespace ament_index_cpp;
 namespace buff_processor
 {
     class BuffProcessorNode : public rclcpp::Node

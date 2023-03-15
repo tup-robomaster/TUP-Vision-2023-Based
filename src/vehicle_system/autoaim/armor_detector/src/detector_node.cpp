@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-03-15 11:27:26
+ * @LastEditTime: 2023-03-15 20:59:05
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -37,20 +37,19 @@ namespace armor_detector
             detector_->is_init_ = true;
         }
 
-        time_start_ = detector_->steady_clock_.now();
-
         //QoS    
         rclcpp::QoS qos(0);
         qos.keep_last(1);
-        qos.best_effort();
-        // qos.reliable();
-        qos.durability();
-        // qos.transient_local();
+        qos.reliable();
+        qos.transient_local();
         qos.durability_volatile();
+        // qos.best_effort();
+        // qos.durability();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
                 
+        time_start_ = detector_->steady_clock_.now();
         // target info pub.
         armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_detector/armor_msg", rclcpp::SensorDataQoS());
 
@@ -71,36 +70,14 @@ namespace armor_detector
         int camera_type = this->get_parameter("camera_type").as_int();
 
         // Subscriptions transport type.
-        std::string transport_type = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
+        std::string transport_type = "raw";
         
-        // Using shared memory.
-        this->declare_parameter("using_shared_memory", false);
-        using_shared_memory_ = this->get_parameter("using_shared_memory").as_bool();
-        if(using_shared_memory_)
-        {
-            RCLCPP_INFO(this->get_logger(), "Using shared memory...");
-            sleep(5);
-            try
-            {
-                if(!getSharedMemory(shared_memory_param_, 5))
-                    RCLCPP_ERROR(this->get_logger(), "Shared memory init failed...");
-            }
-            catch(const std::exception& e)
-            {
-                RCLCPP_ERROR(this->get_logger(), "Error while initializing shared memory: %s", e.what());
-            }
-
-            // img process thread.
-            this->read_memory_thread_ = std::thread(&DetectorNode::threadCallback, this);
-        }
-        else
-        {
-            image_size_ = image_info_.image_size_map[camera_type];
-            // image sub.
-            std::string camera_topic = image_info_.camera_topic_map[camera_type];
-            img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
-                std::bind(&DetectorNode::imageCallback, this, _1), transport_type, rmw_qos));
-        }
+        // Image size.
+        image_size_ = image_info_.image_size_map[camera_type];
+        // image sub.
+        std::string camera_topic = image_info_.camera_topic_map[camera_type];
+        img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
+            std::bind(&DetectorNode::imageCallback, this, _1), transport_type, rmw_qos));
 
         bool debug = false;
         this->declare_parameter<bool>("debug", true);
@@ -115,13 +92,6 @@ namespace armor_detector
 
     DetectorNode::~DetectorNode()
     {
-        if(using_shared_memory_)
-        {
-            if(!destorySharedMemory(shared_memory_param_))
-                RCLCPP_ERROR(this->get_logger(), "Destory shared memory failed...");
-            if(read_memory_thread_.joinable())
-                read_memory_thread_.join();
-        }
     }
 
     void DetectorNode::detect(TaskData& src, rclcpp::Time timestamp)
@@ -133,7 +103,7 @@ namespace armor_detector
         if(debug_.using_imu)
         {
             auto dt = (this->get_clock()->now() - serial_msg_.imu.header.stamp).nanoseconds();
-            if(abs(dt / 1e6) > 200)
+            if(abs(dt / 1e6) > 50)
             {
                 detector_->debug_params_.using_imu = false;
             }
@@ -151,17 +121,17 @@ namespace armor_detector
         msg_mutex_.unlock(); 
         
         AutoaimMsg target_info;
+        Eigen::Vector2d tracking_angle = {0.0, 0.0};
+        Eigen::Matrix3d rmat_imu = Eigen::Matrix3d::Identity();
         bool is_target_lost = true;
         param_mutex_.lock();
         if(detector_->armor_detect(src, is_target_lost))
         {   
-            RCLCPP_INFO(this->get_logger(), "armors detector...");
-
+            // RCLCPP_INFO(this->get_logger(), "armors detector...");
             // Target spinning detector. 
             if(detector_->gyro_detector(src, target_info))
             {
-                RCLCPP_INFO(this->get_logger(), "Spinning detector...");
-                
+                // RCLCPP_INFO(this->get_logger(), "Spinning detector...");
                 if(debug_.using_imu && detector_->debug_params_.using_imu)
                 {
                     target_info.quat_imu.w = src.quat.w();
@@ -169,10 +139,13 @@ namespace armor_detector
                     target_info.quat_imu.y = src.quat.y();
                     target_info.quat_imu.z = src.quat.z();
                 }
-                RCLCPP_INFO(this->get_logger(), "target info: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
+                rmat_imu = src.quat.toRotationMatrix();
+                Eigen::Vector3d armor_3d_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
+                tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_imu);
+                // RCLCPP_INFO(this->get_logger(), "target info: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
             }
         }
-        param_mutex_.lock();
+        param_mutex_.unlock();
         target_info.is_target_lost = is_target_lost;
         
         // Publish target's information containing 3d point and timestamp.
@@ -185,6 +158,10 @@ namespace armor_detector
         debug_.show_img = this->get_parameter("show_img").as_bool();
         if(debug_.show_img)
         {
+            char ch[50];
+            sprintf(ch, "pitch_angle:%.2f yaw_angle:%.2f", tracking_angle[1], tracking_angle[0]);
+            std::string angle_str = ch;
+            putText(src.img, angle_str, {src.img.size().width / 2 + 50, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
             cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
             cv::imshow("dst", src.img);
             cv::waitKey(1);
@@ -217,46 +194,29 @@ namespace armor_detector
     void DetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
     {
         // RCLCPP_INFO(this->get_logger(), "image callback...");
-        TaskData src;
-        std::vector<Armor> armors;
-
-        rclcpp::Time now = this->get_clock()->now();
-        rclcpp::Time last = now;
-        rclcpp::Time img_pub_time = img_info->header.stamp;
-
-        // RCLCPP_WARN(this->get_logger(), "img_trans_img:%.2fms", (now.nanoseconds() - img_pub_time.nanoseconds()) / 1e6);
-        
         if(!img_info)
             return;
-        src.img = cv_bridge::toCvShare(img_info, "bgr8")->image;
-        src.img = img_info->header.stamp.nanosec;
-        // img.copyTo(src.img);
+            
+        rclcpp::Time time = img_info->header.stamp;
+        rclcpp::Time now = this->get_clock()->now();
+        double dura = (now.nanoseconds() - time.nanoseconds()) / 1e6;
+        // RCLCPP_WARN(this->get_logger(), "delay:%.2fms", dura);
+        if ((dura) > 10.0)
+            return;
 
-        now = this->get_clock()->now();
-        //目标检测接口函数
-        detect(src, img_pub_time);
-    }
-
-    /**
-     * @brief 使用共享内存的方式进行图像传输，并进行后续处理
-     * 
-     */
-    void DetectorNode::threadCallback()
-    {
         TaskData src;
-        std::vector<Armor> armors;
-
-        Mat img = Mat(this->image_size_.height, this->image_size_.width, CV_8UC3);
-        while(1)
+        src.timestamp = img_info->header.stamp.nanosec;
+        src.img = cv_bridge::toCvShare(img_info, "bgr8")->image;
+        if (debug_.show_img)
         {
-            //读取共享内存图像数据
-            memcpy(img.data, shared_memory_param_.shared_memory_ptr, this->image_size_.height * this->image_size_.width * 3);
-            img.copyTo(src.img);
-
-            rclcpp::Time now = this->get_clock()->now();
-            //目标检测接口函数
-            detect(src, now);
+            char ch[25];
+            sprintf(ch, "img_trans_delay:%.2fms", dura);
+            std::string delay_str = ch;
+            putText(src.img, delay_str, {src.img.size().width / 5 - 40, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 125, 255});
         }
+
+        //目标检测接口函数
+        detect(src, img_info->header.stamp);
     }
 
     /**
@@ -303,10 +263,10 @@ namespace armor_detector
         
         //TODO:Set by your own path.
         this->declare_parameter("camera_name", "KE0200110075"); //相机型号
-        this->declare_parameter("camera_param_path", "src/global_user/config/camera.yaml");
-        this->declare_parameter("network_path", "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml");
-        this->declare_parameter("save_path", "src/data/old_infer1_2.txt");
-        
+        this->declare_parameter("camera_param_path", "../../../global_user/share/global_user/config/camera.yaml");
+        this->declare_parameter("network_path", "../../../armor_detector/share/armor_detector/model/opt-0527-002.xml");
+        this->declare_parameter("save_path", "../../../global_user/share/global_user/data/info.txt");
+
         //Debug.
         this->declare_parameter("debug_without_com", true);
         this->declare_parameter("using_imu", false);
@@ -383,10 +343,11 @@ namespace armor_detector
         gyro_params_.max_delta_t = this->get_parameter("max_delta_t").as_int();
         gyro_params_.switch_max_dt = this->get_parameter("switch_max_dt").as_double();
 
+        string pkg_share_directory = get_package_share_directory("armor_detector");
         path_params_.camera_name = this->get_parameter("camera_name").as_string();
-        path_params_.camera_param_path = this->get_parameter("camera_param_path").as_string();
-        path_params_.network_path = this->get_parameter("network_path").as_string();
-        path_params_.save_path = this->get_parameter("save_path").as_string();
+        path_params_.camera_param_path = pkg_share_directory + "/" + this->get_parameter("camera_param_path").as_string();
+        path_params_.network_path = pkg_share_directory + "/" + this->get_parameter("network_path").as_string();
+        path_params_.save_path = pkg_share_directory + "/" + this->get_parameter("save_path").as_string();
 
         return true;
     }

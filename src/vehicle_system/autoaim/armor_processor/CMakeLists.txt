@@ -37,15 +37,8 @@ find_package(angles REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
-#find_package(CXSparse REQUIRED)
-
-# find_package(lapack REQUIRED)
-
 find_package(global_interface REQUIRED)
 find_package(global_user REQUIRED)
-
-find_package(glog REQUIRED)
-find_package(fmt REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 set(dependencies 
@@ -63,9 +56,6 @@ set(dependencies
   sensor_msgs
   cv_bridge
   yaml-cpp
-  fmt
-  # lapack 
-
   global_interface
   global_user
 )
@@ -75,14 +65,14 @@ include_directories(include
 )
 
 add_library(${PROJECT_NAME} SHARED
-  src/filter/particle_filter.cpp 
-  src/filter/kalman_filter.cpp
-  src/filter/motion_model.cpp 
   src/filter/imm.cpp 
-  src/filter/model_generator.cpp 
+  src/filter/singer_model.cpp
+  src/filter/motion_model.cpp 
+  src/filter/kalman_filter.cpp
   src/prediction/prediction.cpp 
+  src/filter/particle_filter.cpp 
+  src/filter/model_generator.cpp 
   src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
-  # src/${PROJECT_NAME}_node.cpp  
 )
 
 ament_target_dependencies(${PROJECT_NAME}
@@ -92,32 +82,16 @@ ament_target_dependencies(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${Eigen3_LIBRARIES}
   ceres.so
-  #ceres.a
   glog.so 
   yaml-cpp.so
-  #lapack.so 
 )
 
 add_executable(${PROJECT_NAME}_node
   src/${PROJECT_NAME}_node.cpp 
 )
 
-# target_link_libraries(${PROJECT_NAME}
-#   ${dependencies}
-#   ceres.a
-#   fmt.so 
-#   ceres.so
-#   yaml-cpp.so
-#   lapack.so 
-# )
-
-# ament_target_dependencies(${PROJECT_NAME}_node
-#   ${dependencies}
-# )
-
 target_link_libraries(${PROJECT_NAME}_node 
   ${PROJECT_NAME}
-  # ${dependencies}
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME} 

@@ -148,6 +148,7 @@ install(TARGETS
 install(DIRECTORY 
   launch
   config
+  recorder
   DESTINATION share/${PROJECT_NAME}
 )
 

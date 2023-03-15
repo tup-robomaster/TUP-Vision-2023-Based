@@ -1,4 +1,6 @@
-recorder/
+video/
+autoaim_dataset/
+buff_dataset/
 devel/
 logs/
 log/

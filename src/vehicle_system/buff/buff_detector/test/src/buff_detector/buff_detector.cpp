@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-02-09 23:33:46
+ * @LastEditTime: 2023-03-15 15:04:19
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -145,7 +145,7 @@ namespace buff_detector
             }
             center_vec.push_back(center_r);
             cv::RotatedRect r_rect = cv::minAreaRect(points_pic);
-            cv::RotatedRect armor_rect = cv::minAreaRect(points_rect);
+            // cv::RotatedRect armor_rect = cv::minAreaRect(points_rect);
 
             if(debug_param_.show_img)
             {
@@ -351,7 +351,7 @@ namespace buff_detector
                     Eigen::AngleAxisd angle_axisd;
                     double delta_angle;
                     double rotation_angle;
-                    int sign;
+                    // int sign;
                     //----------------------------计算角度,求解转速----------------------------
                     // 若该扇叶完成初始化,且隔一帧时间较短
                     if ((*iter).is_initialized && (src.timestamp - (*iter).prev_timestamp) / 1e6 < buff_param_.max_delta_t)
@@ -694,8 +694,6 @@ namespace buff_detector
 
     bool Detector::chooseTarget(std::vector<Fan> &fans_, Fan &target)
     {
-        float max_area = 0;
-        int target_idx = 0;
         int target_fan_cnt = 0;
         for (auto fan : fans_)
         {

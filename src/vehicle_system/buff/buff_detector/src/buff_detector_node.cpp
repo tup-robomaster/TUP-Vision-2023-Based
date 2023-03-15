@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-02-24 20:18:35
+ * @LastEditTime: 2023-03-15 20:32:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -206,13 +206,15 @@ namespace buff_detector
         this->declare_parameter<double>("no_crop_thres", 2e-3);
 
         this->declare_parameter<std::string>("camera_name", "KE0200110075");
-        this->declare_parameter<std::string>("camera_param_path", "src/global_user/config/camera.yaml");
-        this->declare_parameter<std::string>("network_path", "src/vehicle_system/buff/model/buff.xml");
-        this->declare_parameter<std::string>("path_prefix", "src/vehicle_system/buff/dataset/");
-        this->get_parameter("camera_name", this->path_param_.camera_name);
-        this->get_parameter("camera_param_path", this->path_param_.camera_param_path);
-        this->get_parameter("network_path", this->path_param_.network_path);
-        this->get_parameter("path_prefix", this->path_param_.path_prefix);
+        this->declare_parameter<std::string>("camera_param_path", "../../../global_user/share/global_user/config/camera.yaml");
+        this->declare_parameter<std::string>("network_path", "../../../buff_detector/share/buff_detector/model/buff.xml");
+        this->declare_parameter<std::string>("path_prefix", "../../../camera_driver/share/camera_driver/dataset/");
+        
+        string pkg_share_pth = get_package_share_directory("buff_detector");
+        this->path_param_.camera_name = this->get_parameter("camera_name").as_string();
+        this->path_param_.camera_param_path = pkg_share_pth + "/" +  + this->get_parameter("camera_param_path").as_string();
+        this->path_param_.network_path = pkg_share_pth + "/" + this->get_parameter("network_path").as_string();
+        this->path_param_.path_prefix = pkg_share_pth + "/" + this->get_parameter("path_prefix").as_string();
 
         this->declare_parameter<int>("debug_mode", 3);
         this->declare_parameter<bool>("assist_label", false);

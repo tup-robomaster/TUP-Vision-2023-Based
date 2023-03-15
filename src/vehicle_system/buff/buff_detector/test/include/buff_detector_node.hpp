@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2023-02-09 16:52:57
+ * @LastEditTime: 2023-03-15 20:33:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/include/buff_detector_node.hpp
  */
 #ifndef BUFF_DETECTOR_NODE_HPP_
@@ -21,6 +21,7 @@
 #include <image_transport/publisher.hpp>
 #include <image_transport/subscriber_filter.hpp>
 #include <cv_bridge/cv_bridge.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 //c++
 #include <atomic>
@@ -33,6 +34,7 @@
 
 using namespace global_user;
 using namespace coordsolver;
+using namespace ament_index_cpp;
 namespace buff_detector
 {
     class BuffDetectorNode : public rclcpp::Node

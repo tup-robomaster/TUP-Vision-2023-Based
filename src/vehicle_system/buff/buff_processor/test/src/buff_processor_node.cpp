@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-02-24 20:19:25
+ * @LastEditTime: 2023-03-15 20:39:33
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -263,7 +263,6 @@ namespace buff_processor
     std::unique_ptr<Processor> BuffProcessorNode::initBuffProcessor()
     {
         //Prediction param.
-        this->declare_parameter<std::string>("pf_path", "src/global_user/config/filter_param.yaml");
         this->declare_parameter<double>("bullet_speed", 28.0);
         this->declare_parameter<double>("delay_big", 175.0);
         this->declare_parameter<double>("delay_small", 100.0);
@@ -278,9 +277,13 @@ namespace buff_processor
 
         //Path param.
         this->declare_parameter<std::string>("camera_name", "KE0200110075");
-        this->declare_parameter<std::string>("camera_param_path", "src/global_user/config/camera.yaml");
-        this->get_parameter("camera_name", this->path_param_.camera_name);
-        this->get_parameter("camera_param_path", this->path_param_.camera_param_path);
+        this->declare_parameter<std::string>("camera_param_path", "../../../global_user/share/global_user/config/camera.yaml");
+        this->declare_parameter<std::string>("pf_path", "../../../global_user/share/global_user/config/filter_param.yaml");
+        
+        string pkg_share_pth = get_package_share_directory("buff_processor");
+        this->path_param_.camera_name = this->get_parameter("camera_name").as_string();
+        predict_param_.pf_path = pkg_share_pth + "/" + this->get_parameter("pf_path").as_string();
+        this->path_param_.camera_param_path = pkg_share_pth + "/" + this->get_parameter("camera_param_path").as_string();
 
         //Debug param.
         this->declare_parameter<bool>("show_predict", true);

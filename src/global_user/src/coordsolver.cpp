@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-02-09 18:07:33
+ * @LastEditTime: 2023-03-15 21:39:25
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -157,13 +157,12 @@ namespace coordsolver
         {
             result.armor_cam = tvec_eigen;
             result.armor_world = camToWorld(result.armor_cam, rmat_imu);
-            
             Eigen::Matrix3d rmat_eigen_world = rmat_imu * (transform_ic.block(0, 0, 3, 3) * rmat_eigen);
             result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;
-            auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
-            double angle = angle_axisd.angle();
-            RCLCPP_INFO(logger_, "rotate angle:%lf", angle * (180 / CV_PI));
+            // auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
+            // double angle = angle_axisd.angle();
+            // RCLCPP_INFO(logger_, "rotate angle:%lf", angle * (180 / CV_PI));
         }
         else
         {
@@ -171,8 +170,8 @@ namespace coordsolver
             result.armor_world = camToWorld(result.armor_cam, rmat_imu);
             result.R_cam = (rmat_eigen * R_center_world) + tvec_eigen;
             result.R_world = camToWorld(result.R_cam, rmat_imu);
-            // result.euler = rotationMatrixToEulerAngles(transform_ci.block(0,0,2,2) * rmat_imu * rmat_eigen);
-            Eigen::Matrix3d rmat_eigen_world = rmat_imu * (transform_ic.block(0, 0, 3, 3) * rmat_eigen);
+            // result.euler = rotationMatrixToEulerAngles(transform_ci.block(0, 0, 2, 2) * rmat_imu * rmat_eigen);
+            Eigen::Matrix3d rmat_eigen_world = rmat_imu * (transform_ic.block(0, 0 , 3, 3) * rmat_eigen);
             // result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
             result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;

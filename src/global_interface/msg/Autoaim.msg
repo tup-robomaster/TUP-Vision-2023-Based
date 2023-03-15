@@ -1,8 +1,10 @@
 std_msgs/Header header
+uint8 mode
+string key
+uint16 hp
 geometry_msgs/Point aiming_point_cam
 geometry_msgs/Point aiming_point_world
 float64 timestamp
-float64 w
 float64 period
 geometry_msgs/Quaternion quat_imu
 bool is_target_lost
