@@ -37,8 +37,7 @@ find_package(OpenVINO REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
 find_package(yaml-cpp REQUIRED)
-# find_package(fmt REQUIRED)
-# find_package(filter REQUIRED)
+find_package(filter REQUIRED)
 find_package(global_user REQUIRED)
 find_package(global_interface REQUIRED)
 
@@ -64,10 +63,9 @@ set(dependencies
   message_filters
   image_transport
   cv_bridge
-  
   global_user
   global_interface
-  #filter
+  filter
 )
 
 include_directories(include)
@@ -102,16 +100,8 @@ ament_target_dependencies(${PROJECT_NAME}_node
 )
 
 target_link_libraries(${PROJECT_NAME}_node 
-  # ${PROJECT_NAME}
-  # ${OpenCV_LIBRARIES}
-  # ${InferenceEngine_LIBRARIES}
   openvino::runtime 
-  # ${Eigen3_LIBRARIES}
-  
   yaml-cpp.so 
-  # fmt.so
-  # ceres.so
-  # lapack.so 
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME} 

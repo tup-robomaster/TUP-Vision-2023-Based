@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-03-15 21:30:43
+ * @LastEditTime: 2023-03-15 23:15:20
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -252,24 +252,30 @@ namespace armor_processor
         this->declare_parameter("disable_fitting", true);
         this->declare_parameter("draw_predict", false);
         this->declare_parameter("show_predict", true);
-        this->declare_parameter("show_transformed_info", false);
 
+        // Declare path params.
         this->declare_parameter<std::string>("coord_param_name", "00J90630561");
-        this->declare_parameter<std::string>("coord_param_path", "../../../global_user/share/global_user/config/camera.yaml");
-        this->declare_parameter<std::string>("filter_param_path", "../../../global_user/share/global_user/config/filter_param.yaml");
+        this->declare_parameter<std::string>("coord_param_path", "/config/camera.yaml");
+        this->declare_parameter<std::string>("filter_param_path", "/config/filter_param.yaml");
         
         // Get path param.
         string pkg_share_path = get_package_share_directory("armor_processor");
         path_param_.coord_name = this->get_parameter("coord_param_name").as_string();
-        path_param_.coord_path = pkg_share_path + "/" + this->get_parameter("coord_param_path").as_string();
-        path_param_.filter_path = pkg_share_path + "/" + this->get_parameter("filter_param_path").as_string();
+        path_param_.coord_path = pkg_share_path + this->get_parameter("coord_param_path").as_string();
+        path_param_.filter_path = pkg_share_path + this->get_parameter("filter_param_path").as_string();
 
         // Get param from param server.
         bool success = updateParam();
         if(success)
             RCLCPP_INFO(this->get_logger(), "Update param success!");
 
-        vector<double> imm_model_trans_prob_params = {0.6, 0.3, 0.05, 0.05, 0.5, 0.4, 0.05, 0.05, 0.1, 0.1, 0.75, 0.05, 0.1, 0.1, 0.05, 0.75};
+        vector<double> imm_model_trans_prob_params = 
+        {   
+            0.6, 0.3, 0.05, 0.05,
+            0.5, 0.4, 0.05, 0.05, 
+            0.1, 0.1, 0.75, 0.05, 
+            0.1, 0.1, 0.05, 0.75
+        };
         this->declare_parameter("trans_prob_matrix", imm_model_trans_prob_params);
         imm_model_trans_prob_params = this->get_parameter("trans_prob_matrix").as_double_array();
 
@@ -285,7 +291,11 @@ namespace armor_processor
         this->declare_parameter("measure_noise", measure_noise_params);
         measure_noise_params = this->get_parameter("measure_noise").as_double_array();
 
-        vector<double> singer_model_params[2] = {{1.0, 20.0, 0.40, 0.35, 0.25, 2.5, 1.0, 50.0, 5.0}, {0.9, 20.0, 0.30, 0.40, 0.15, 2.0, 1.0, 5.0, 5.0}};
+        vector<double> singer_model_params[2] = 
+        {
+            {1.0, 20.0, 0.40, 0.35, 0.25, 2.5, 1.0, 50.0, 5.0},
+            {0.9, 20.0, 0.30, 0.40, 0.15, 2.0, 1.0, 5.0, 5.0}
+        };
         this->declare_parameter("singer_model_yaw", singer_model_params[0]);
         this->declare_parameter("singer_model_pitch", singer_model_params[1]);
         singer_model_params[0] = this->get_parameter("singer_model_yaw").as_double_array();
