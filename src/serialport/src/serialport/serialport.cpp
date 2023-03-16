@@ -64,7 +64,7 @@ namespace serialport
         }
         if (bytes == 0)
         {
-            RCLCPP_ERROR_THROTTLE(logger_, steady_clock_, 500, "Byte num is zero...");
+            RCLCPP_ERROR_THROTTLE(logger_, steady_clock_, 1000, "Byte num is zero...");
             return false;
         }
         

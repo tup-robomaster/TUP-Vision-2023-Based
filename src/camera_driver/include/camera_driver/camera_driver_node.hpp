@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-03-15 20:52:27
+ * @LastEditTime: 2023-03-16 19:57:24
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -102,7 +102,7 @@ namespace camera_driver
             // Reopen camera.
             auto status = cam_driver_->close();
             status = cam_driver_->init();
-            if (!cam_driver_->open())
+            if (!cam_driver_->open() && !status)
             {
                 RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Open failed!");
             }
@@ -145,6 +145,7 @@ namespace camera_driver
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
+        // rmw_qos.reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
         rmw_qos.depth = 1;
 
         // Camera type.
@@ -229,7 +230,7 @@ namespace camera_driver
         this->declare_parameter("show_img", false);
         this->declare_parameter("using_video", false);
         this->declare_parameter("fps", 30);
-        this->declare_parameter("video_path", "\0");
+        this->declare_parameter("video_path", "/config/camera_ros.yaml");
         this->declare_parameter<bool>("save_video", false);
 
         camera_params_.cam_id = this->get_parameter("cam_id").as_int();
@@ -251,8 +252,8 @@ namespace camera_driver
         show_img_ = this->get_parameter("show_img").as_bool();
         save_video_ = this->get_parameter("save_video").as_bool();
 
-        string pkg_share_pth = get_package_share_directory("camera_driver");
-        camera_params_.video_path = pkg_share_pth + "/" + this->get_parameter("video_path").as_string();
+        string pkg_share_pth = get_package_share_directory("global_user");
+        camera_params_.video_path = pkg_share_pth + this->get_parameter("video_path").as_string();
         
         return std::make_unique<T>(camera_params_);
     }

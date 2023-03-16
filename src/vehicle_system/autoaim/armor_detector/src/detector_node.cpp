@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-03-16 12:22:25
+ * @LastEditTime: 2023-03-16 20:10:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -40,18 +40,18 @@ namespace armor_detector
         //QoS    
         rclcpp::QoS qos(0);
         qos.keep_last(1);
-        qos.reliable();
-        qos.transient_local();
-        qos.durability_volatile();
-        // qos.best_effort();
-        // qos.durability();
+        qos.best_effort();
+        qos.durability();
+        // qos.reliable();
+        // qos.transient_local();
+        // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
                 
         time_start_ = detector_->steady_clock_.now();
         // target info pub.
-        armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_detector/armor_msg", rclcpp::SensorDataQoS());
+        armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_detector/armor_msg", qos);
 
         if(debug_.using_imu)
         {
@@ -61,7 +61,9 @@ namespace armor_detector
             this->get_parameter("bullet_speed", serial_msg_.bullet_speed);
             serial_msg_.mode = this->declare_parameter<int>("autoaim_mode", 1);
             // imu msg sub.
-            serial_msg_sub_ = this->create_subscription<SerialMsg>("/serial_msg", rclcpp::SensorDataQoS(),
+            serial_msg_sub_ = this->create_subscription<SerialMsg>(
+                "/serial_msg",
+                rclcpp::SensorDataQoS(),
                 std::bind(&DetectorNode::sensorMsgCallback, this, _1));
         }
          
@@ -146,13 +148,12 @@ namespace armor_detector
             }
         }
         param_mutex_.unlock();
-        target_info.is_target_lost = is_target_lost;
         
         // Publish target's information containing 3d point and timestamp.
+        target_info.is_target_lost = is_target_lost;
         target_info.header.frame_id = "gimbal_link";
         target_info.header.stamp = timestamp;
         target_info.timestamp = src.timestamp;
-        // target_info.header.stamp.nanosec = (detector_->steady_clock_.now().nanoseconds() - img_sub_time.nanoseconds());
         armor_info_pub_->publish(std::move(target_info));
         
         debug_.show_img = this->get_parameter("show_img").as_bool();
@@ -194,13 +195,12 @@ namespace armor_detector
     void DetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
     {
         // RCLCPP_INFO(this->get_logger(), "image callback...");
-        if(!img_info)
+        if (!img_info)
             return;
             
         rclcpp::Time time = img_info->header.stamp;
         rclcpp::Time now = this->get_clock()->now();
         double dura = (now.nanoseconds() - time.nanoseconds()) / 1e6;
-        // RCLCPP_WARN(this->get_logger(), "delay:%.2fms", dura);
         if ((dura) > 10.0)
             return;
 
@@ -349,9 +349,9 @@ namespace armor_detector
             {get_package_share_directory("armor_detector")}
         };
         path_params_.camera_name = this->get_parameter("camera_name").as_string();
-        path_params_.camera_param_path = pkg_share_directory + "/" + this->get_parameter("camera_param_path").as_string();
-        path_params_.network_path = pkg_share_directory + "/" + this->get_parameter("network_path").as_string();
-        path_params_.save_path = pkg_share_directory + "/" + this->get_parameter("save_path").as_string();
+        path_params_.camera_param_path = pkg_share_directory[0] + this->get_parameter("camera_param_path").as_string();
+        path_params_.network_path = pkg_share_directory[1] + this->get_parameter("network_path").as_string();
+        path_params_.save_path = pkg_share_directory[0] + this->get_parameter("save_path").as_string();
 
         return true;
     }

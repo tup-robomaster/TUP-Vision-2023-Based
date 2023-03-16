@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-03-15 20:24:46
+ * @LastEditTime: 2023-03-16 20:14:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -10,15 +10,15 @@
 
 //ros
 #include <rclcpp/rclcpp.hpp>
-#include <message_filters/subscriber.h>
-#include <sensor_msgs/msg/camera_info.hpp>
-#include <sensor_msgs/msg/image.hpp>
-#include <message_filters/sync_policies/approximate_time.h>
-#include <message_filters/synchronizer.h>
-#include <image_transport/image_transport.hpp>
-#include <image_transport/publisher.hpp>
-#include <image_transport/subscriber_filter.hpp>
 #include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
+#include <image_transport/publisher.hpp>
+#include <image_transport/image_transport.hpp>
+#include <image_transport/subscriber_filter.hpp>
+#include <message_filters/subscriber.h>
+#include <message_filters/time_synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
 //std
@@ -28,11 +28,16 @@
 
 #include "./armor_processor/armor_processor.hpp"
 #include "../../global_user/include/global_user/global_user.hpp"
+
 #include "global_interface/msg/autoaim.hpp"
 #include "global_interface/msg/gimbal.hpp"
+#include "global_interface/msg/car_pos.hpp"
+#include "global_interface/msg/car_hp.hpp"
+#include "global_interface/msg/game_info.hpp"
 
 using namespace global_user;
 using namespace coordsolver;
+using namespace message_filters;
 using namespace ament_index_cpp;
 namespace armor_processor
 {
@@ -40,6 +45,10 @@ namespace armor_processor
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
         typedef global_interface::msg::Gimbal GimbalMsg;
+        typedef global_interface::msg::CarHP CarHPMsg;
+        typedef global_interface::msg::CarPos CarPosMsg;
+        typedef global_interface::msg::GameInfo GameMsg;
+        typedef sync_policies::ApproximateTime<sensor_msgs::msg::Image, AutoaimMsg> MySyncPolicy;
 
     public:
         explicit ArmorProcessorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
@@ -48,16 +57,26 @@ namespace armor_processor
     private:
         rclcpp::Subscription<AutoaimMsg>::SharedPtr target_info_sub_;
         void targetMsgCallback(const AutoaimMsg& target_info);
+        bool processTargetMsg(const AutoaimMsg& target_info, cv::Mat* src = nullptr);
 
         mutex debug_mutex_;
+        mutex image_mutex_;
         atomic<bool> flag_;
         cv::Point2f apex2d[4];
-        Eigen::Vector3d predict_point_;
+        cv::Mat src_;
         
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
         rclcpp::Publisher<AutoaimMsg>::SharedPtr predict_info_pub_;
-    
+        
+        // message_filter
+        MySyncPolicy my_sync_policy_;
+        std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image>> img_msg_sync_sub_;
+        std::shared_ptr<message_filters::Subscriber<AutoaimMsg>> target_msg_sync_sub_;
+        std::shared_ptr<message_filters::Synchronizer<MySyncPolicy>> sync_;
+        void syncCallback(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg, const AutoaimMsg::ConstSharedPtr& target_msg);
+        bool sync_transport_ = false;
+
     private:
         std::unique_ptr<Processor> processor_;
         std::unique_ptr<Processor> initArmorProcessor();
@@ -65,9 +84,7 @@ namespace armor_processor
     protected:
         ImageSize image_size_;
         ImageInfo image_info_;
-        cv::Mat src_;
-        mutex image_mutex_;
-        
+
         // Image callback.
         void imageProcessor(cv::Mat& img);
         void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
