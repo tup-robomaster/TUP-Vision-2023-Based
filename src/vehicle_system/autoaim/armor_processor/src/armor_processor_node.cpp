@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-03-15 21:30:43
+ * @LastEditTime: 2023-03-15 21:59:42
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -22,29 +22,30 @@ namespace armor_processor
             RCLCPP_INFO(this->get_logger(), "Loading param...");
             processor_->loadParam(path_param_.filter_path);
             processor_->init(path_param_.coord_path, path_param_.coord_name);
+            cout << path_param_.filter_path << " " << path_param_.coord_path << endl;
         }
 
         // QoS
         rclcpp::QoS qos(0);
         qos.keep_last(1);
-        qos.best_effort();
         qos.reliable();
         qos.durability();
+        // qos.best_effort();
         // qos.transient_local();
-        qos.durability_volatile();
+        // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
+        
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", rclcpp::SensorDataQoS());
         tracking_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/tracking_msg", rclcpp::SensorDataQoS());
-
         // 订阅目标装甲板信息
         target_info_sub_ = this->create_subscription<AutoaimMsg>("/armor_detector/armor_msg", rclcpp::SensorDataQoS(),
             std::bind(&ArmorProcessorNode::targetMsgCallback, this, _1));
 
         // 相机类型
-        this->declare_parameter<int>("camera_type", global_user::DaHeng);
+        this->declare_parameter<int>("camera_type", DaHeng);
         int camera_type = this->get_parameter("camera_type").as_int();
         
         // 图像的传输方式
@@ -60,7 +61,6 @@ namespace armor_processor
 
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, _1));
-            
             if (debug_param_.show_img)
             {
                 image_size_ = image_info_.image_size_map[camera_type];
@@ -68,7 +68,7 @@ namespace armor_processor
                 
                 // image sub.
                 img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
-                    std::bind(&ArmorProcessorNode::imageCallback, this, _1), transport, rmw_qos_profile_sensor_data));
+                    std::bind(&ArmorProcessorNode::imageCallback, this, _1), transport, rmw_qos));
             }
         }
     }
@@ -222,7 +222,7 @@ namespace armor_processor
      */
     void ArmorProcessorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {
-        if(!img_msg)
+        if (!img_msg)
             return;
         image_mutex_.lock();
         src_ = cv_bridge::toCvShare(img_msg, "bgr8")->image;
