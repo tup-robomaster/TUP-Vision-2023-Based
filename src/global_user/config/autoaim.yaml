@@ -40,19 +40,19 @@
     # camera_name: "00J90630561" 
     camera_name: "KE0200110073" 
     camera_type: 0
-    camera_param_path: "../../../global_user/share/global_user/config/camera.yaml"
+    camera_param_path: "/config/camera.yaml"
 
   # Network model path.
-    # network_path: "../../../armor_detector/share/armor_detector/model/opt-0127-001.xml"
-    # network_path: "../../../armor_detector/share/armor_detector/model/opt-0527-002.xml"
-    # network_path: "../../../armor_detector/share/armor_detector/model/1106-333.xml"
-    # network_path: "../../../armor_detector/share/armor_detector/model/yolox.xml"
-    # network_path: "../../../armor_detector/share/armor_detector/model/opt-1208-001.xml"
-    network_path: "../../../armor_detector/share/armor_detector/model/opt-0127-001.xml"
+    # network_path: "/model/opt-0127-001.xml"
+    # network_path: "/model/opt-0527-002.xml"
+    # network_path: "/model/1106-333.xml"
+    # network_path: "/model/yolox.xml"
+    # network_path: "/model/opt-1208-001.xml"
+    network_path: "/model/opt-0127-001.xml"
   
   # Data saving.
     save_data: false
-    save_path: "../../../global_user/share/global_user/data/info.txt"
+    save_path: "/data/info.txt"
     save_dataset: false
   
   # Debug params.
@@ -100,10 +100,10 @@
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
     coord_param_name: "KE0200110073" 
-    coord_param_path: "../../../global_user/share/global_user/config/camera.yaml"
+    coord_param_path: "/config/camera.yaml"
     
   # Filter params.
-    filter_param_path: "../../../global_user/share/global_user/config/filter_param.yaml"
+    filter_param_path: "/config/filter_param.yaml"
 
   # Singer model(--->CS Model).
     # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 dt:采样时间间隔 
