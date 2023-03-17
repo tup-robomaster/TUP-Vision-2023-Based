@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:13:23
- * @LastEditTime: 2023-03-13 20:35:43
+ * @LastEditTime: 2023-03-14 20:20:44
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp
  */
 #include "../../include/hik_driver/hik_camera.hpp"
@@ -73,6 +73,11 @@ namespace camera_driver
             return false;
         }
         return true;
+    }
+
+    bool HikCamera::deviceReset()
+    {
+        
     }
 
     bool HikCamera::is_open()

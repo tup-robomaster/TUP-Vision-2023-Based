@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-03-13 21:52:13
+ * @LastEditTime: 2023-03-14 19:06:18
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -126,14 +126,13 @@ namespace serialport
                 continue;
             }
 
-            bool is_receive_data = false; 
             // 数据读取不成功进行循环
+            bool is_receive_data = false; 
             while (!is_receive_data)
             {
                 mutex_.lock();
                 is_receive_data = serial_port_->receiveData();
                 mutex_.unlock();
-
                 if(!is_receive_data)
                 {
                     RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
@@ -277,9 +276,9 @@ namespace serialport
                     (float)target_info->yaw, 
                     (float)target_info->distance, 
                     target_info->is_switched, 
-                    1, 
+                    target_info->is_target, 
                     target_info->is_spinning, 
-                    0
+                    1
                 };
             }
             else 
@@ -293,7 +292,7 @@ namespace serialport
             rclcpp::Time start = target_info->header.stamp;
             // builtin_interfaces::msg::Time now_timestamp = now;
             // double dura = (now_timestamp.nanosec - target_info->header.stamp.nanosec) / 1e6;
-            RCLCPP_WARN(this->get_logger(), "All_delay:%.2fms", (now.nanoseconds() - start.nanoseconds()) / 1e6);
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "All_delay:%.2fms", (now.nanoseconds() - start.nanoseconds()) / 1e6);
             
             //数据发送
             mutex_.lock();

@@ -65,6 +65,10 @@ namespace camera_driver
         if(status != GX_STATUS_SUCCESS)
             return false;
         
+        // status = deviceReset();
+        // if(status != GX_STATUS_SUCCESS)
+        //     return false;
+        
         //关闭设备链接
         status = GXCloseDevice(hDevice);
         if(status != GX_STATUS_SUCCESS)
@@ -131,7 +135,6 @@ namespace camera_driver
         return true;
     }
 
-
     /**
      * @brief 打开相机
      * @param serial_number为要打开设备的序列号
@@ -140,15 +143,25 @@ namespace camera_driver
     int DaHengCam::StartDevice(int serial_number)
     {
         uint32_t nDeviceNum = 0;
+        GX_OPEN_PARAM stOpenParam;
+        hDevice = NULL;
+
         //枚 举 设 备 列 表
-        status = GXUpdateDeviceList(&nDeviceNum, 1000);
-        if (serial_number > int(nDeviceNum))
+        status = GXUpdateAllDeviceList(&nDeviceNum, 1000);
+        if (status != GX_STATUS_SUCCESS || (int(nDeviceNum) <= 0))
         {
-            RCLCPP_ERROR(logger_, "设备号错误，超过所枚举数量");
+            RCLCPP_ERROR(logger_, "未检测到设备...");
             return -1;
         }
         //打 开 设 备
-        status = GXOpenDeviceByIndex(serial_number, &hDevice);
+        stOpenParam.accessMode = GX_ACCESS_EXCLUSIVE;
+        stOpenParam.openMode = GX_OPEN_INDEX;
+        stOpenParam.pszContent = (char*)to_string(serial_number).c_str();
+        RCLCPP_WARN(logger_, "Device_num:%d id:%s", int(nDeviceNum), stOpenParam.pszContent);
+        // stOpenParam.pszContent = "1";
+        // status = GXOpenDeviceByIndex(serial_number, &hDevice);
+        status = GXOpenDevice(&stOpenParam, &hDevice);
+        // auto success = deviceReset();
         if (status == GX_STATUS_SUCCESS)
         {
             RCLCPP_INFO(logger_, "设备打开成功!");
@@ -159,6 +172,32 @@ namespace camera_driver
             RCLCPP_ERROR(logger_, "设备打开失败!");
             return -1;
         }
+    }
+
+    bool DaHengCam::deviceReset()
+    {
+        //发送重置时间戳命令
+        // status = GXSendCommand(hDevice, GX_COMMAND_TIMESTAMP_RESET);
+        
+        //发送设备复位命令
+        status = GXSendCommand(hDevice, GX_COMMAND_DEVICE_RESET);
+        
+        //获取当前设备温度选择的位置
+        // int64_t nValue = 0;
+        // status = GXGetEnum(hDevice, GX_ENUM_DEVICE_TEM, &nValue);
+        
+        //设置当前设备温度选择的位置
+        // nValue = GX_DEVICE_TEMPERATURE_SELECTOR_SENSOR;
+        // status = GXSetEnum(hDevice, GX_ENUM_DEVICE_TEMPERATURE_SELECTOR, nValue);
+
+        //获取当前设备温度选择的位置的温度
+        // double dValue = 0;
+        // status = GXGetFloat(hDevice, GX_FLOAT_DEVICE_TEMPERATURE, &dValue);
+        // RCLCPP_INFO(logger_, "T:%.2f", dValue);
+        
+        if (status != GX_STATUS_SUCCESS)
+            return false;
+        return true;
     }
 
     /**

@@ -2,7 +2,7 @@
  * @Description is a ros-based project!
  * @AuthorBiao
  * @Date-09-05 03:13:49
- * @LastEditTime: 2023-03-13 20:34:40
+ * @LastEditTime: 2023-03-14 20:23:26
  * @FilePath_2023/src/camera_driver/include/hik_driver/HikCamera.hpp
  */
 //ros
@@ -62,6 +62,7 @@ namespace camera_driver
         bool set_gain(int value, int exp_gain);
         bool set_exposure_time(float exposure_time);
         bool set_balance(int value, unsigned int value_num);
+        bool deviceReset();
     
     private:
         void start_device(int serial_number);

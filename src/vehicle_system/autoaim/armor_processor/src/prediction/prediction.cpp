@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-03-13 20:16:35
+ * @LastEditTime: 2023-03-14 19:09:56
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -334,7 +334,6 @@ namespace armor_processor
                 vx_now = delta_x_now / delta_t_now;
                 vy_now = delta_y_now / delta_t_now;
             }
-
             vx_now = vx_now > 5.0 ? 5.0 : vx_now;
             vy_now = vy_now > 5.0 ? 5.0 : vy_now;
             if (delta_t_now + delta_t_last != 0)
@@ -342,16 +341,13 @@ namespace armor_processor
                 ax = (vx_now - vx_last) / ((delta_t_now + delta_t_last) / 2);
                 ay = (vy_now - vy_last) / ((delta_t_now + delta_t_last) / 2);
             }
-            
             measure_vel << vx_now, vy_now;
             measure_acc << ax, ay;
 
             // bool is_v_filter_ready = pf_v.update(measure_v);
             // Eigen::Vector2d predict_v_xy = pf_v.predict();
-
             target_vel = measure_vel;
             target_acc = measure_acc;
-
             if (debug_param_.draw_predict)
             {
                 history_vel_[0][3] = history_vel_[0][2];

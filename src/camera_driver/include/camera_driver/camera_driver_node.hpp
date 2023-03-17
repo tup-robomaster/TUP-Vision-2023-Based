@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-03-13 20:46:56
+ * @LastEditTime: 2023-03-14 20:51:10
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -120,7 +120,7 @@ namespace camera_driver
 
         //QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(3);
+        qos.keep_last(1);
         qos.best_effort();
         // qos.reliable();
         qos.durability();
@@ -128,7 +128,7 @@ namespace camera_driver
         qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 3;
+        rmw_qos.depth = 1;
 
         // Camera type.
         this->declare_parameter<int>("camera_type", DaHeng);
@@ -167,10 +167,11 @@ namespace camera_driver
             {
                 RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
                 // Reopen camera.
-                cam_driver_->close();
-                cam_driver_->init();
+                auto status = cam_driver_->close();
+                // status = cam_driver_->init();
                 // cam_driver_ = std::make_unique<T>();
                 cam_driver_->cam_param_.cam_id = (cam_driver_->cam_param_.cam_id < 5) ? (cam_driver_->cam_param_.cam_id + 1) : 0;
+                status = cam_driver_->deviceReset();
                 if (!cam_driver_->open())
                 {
                     RCLCPP_ERROR(this->get_logger(), "Open failed!");

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-03-13 18:46:31
+ * @LastEditTime: 2023-03-14 17:42:29
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -258,6 +258,8 @@ namespace armor_detector
         // RCLCPP_WARN(this->get_logger(), "mode:%d", src.mode);
 
         AutoaimMsg target_info;
+        Eigen::Vector2d tracking_angle = {0.0, 0.0};
+        Eigen::Matrix3d rmat_imu = Eigen::Matrix3d::Identity();
         bool is_target_lost = true;
         param_mutex_.lock();
         if (detector_->armor_detect(src, is_target_lost))
@@ -289,6 +291,10 @@ namespace armor_detector
                     target_info.quat_imu.y = src.quat.y();
                     target_info.quat_imu.z = src.quat.z();
                 }
+
+                rmat_imu = src.quat.toRotationMatrix();
+                Eigen::Vector3d armor_3d_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
+                tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_imu);
                 // RCLCPP_INFO(this->get_logger(), "target info: %lf %lf %lf", target_info.aiming_point_world.x, target_info.aiming_point_world.y, target_info.aiming_point_world.z);
             }
             // else
@@ -311,6 +317,11 @@ namespace armor_detector
         debug_.show_img = this->get_parameter("show_img").as_bool();
         if (debug_.show_img)
         {
+            char ch[50];
+            sprintf(ch, "pitch_angle:%.2f yaw_angle:%.2f", tracking_angle[1], tracking_angle[0]);
+            std::string angle_str = ch;
+            putText(src.img, angle_str, {src.img.size().width / 2 + 50, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
+
             cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
             cv::imshow("dst", src.img);
             cv::waitKey(1);
@@ -367,6 +378,13 @@ namespace armor_detector
         src.timestamp = img_info->header.stamp.nanosec;
         src.img = cv_bridge::toCvShare(img_info, "bgr8")->image;
         // img.copyTo(src.img);
+        if (debug_.show_img)
+        {
+            char ch[25];
+            sprintf(ch, "img_trans_delay:%.2fms", dura);
+            std::string delay_str = ch;
+            putText(src.img, delay_str, {src.img.size().width / 5 - 40, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 125, 255});
+        }
 
         //目标检测接口函数
         detect(src, img_info->header.stamp);

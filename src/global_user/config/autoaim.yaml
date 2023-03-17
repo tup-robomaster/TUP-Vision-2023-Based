@@ -57,16 +57,16 @@
   
   # Debug params.
     debug: true
-    show_img: false
-    show_fps: false
+    show_img: true
+    show_fps: true
     using_imu: true
     using_roi: false
     detect_red: true
     auto_label: false
     print_letency: false
-    show_aim_cross: false
+    show_aim_cross: true
     sync_transport: false
-    show_all_armors: false
+    show_all_armors: true
     print_target_info: false
     using_shared_memory: false
     show_transformed_info: false
@@ -84,9 +84,9 @@
 
   # Debug params.
     debug: true
-    show_img: true
-    draw_predict: true
-    show_predict: true
+    show_img: false
+    draw_predict: false
+    show_predict: false
     sync_transport: false
     print_delay: false
     yaw_filter: false
@@ -95,8 +95,8 @@
     disable_filter: true
     disable_fitting: false
     show_transformed_info: false
-    show_aim_cross: true
-    show_fps: true
+    show_aim_cross: false
+    show_fps: false
 
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
