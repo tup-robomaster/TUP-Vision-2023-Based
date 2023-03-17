@@ -80,6 +80,7 @@ namespace camera_driver
         sensor_msgs::msg::CameraInfo camera_info_msg_;
         // std::thread img_pub_thread_;
         cv::Mat frame_;
+        int camera_type_;
 
         // 图像保存
         bool save_video_;
@@ -131,13 +132,13 @@ namespace camera_driver
 
         // Camera type.
         this->declare_parameter<int>("camera_type", DaHeng);
-        int camera_type = this->get_parameter("camera_type").as_int();
+        camera_type_ = this->get_parameter("camera_type").as_int();
 
         // Subscriptions transport type.
         string transport_type = "raw";
     
-        image_size_ = image_info_.image_size_map[camera_type];
-        string camera_topic = image_info_.camera_topic_map[camera_type];
+        image_size_ = image_info_.image_size_map[camera_type_];
+        string camera_topic = image_info_.camera_topic_map[camera_type_];
 
         // Create img publisher.
         // this->image_pub_ = this->create_publisher<sensor_msgs::msg::Image>(camera_topic, rclcpp::SensorDataQoS());
@@ -184,6 +185,7 @@ namespace camera_driver
             // image_pub_->publish(std::move(msg));
 
             image_msg_.header.stamp = this->get_clock()->now();
+            image_msg_.header.frame_id = image_info_.camera_topic_map[camera_type_];
             camera_info_msg_.header = image_msg_.header;
             image_msg_.width = this->image_size_.width;
             image_msg_.height = this->image_size_.height;
@@ -221,7 +223,6 @@ namespace camera_driver
             RCLCPP_WARN(this->get_logger(), "Resize frame: width:%d height:%d", this->image_size_.width, this->image_size_.height);
         }
 
-        image_msg_.header.frame_id = this->frame_id_;
         image_msg_.header.stamp = this->get_clock()->now();
         image_msg_.width = this->image_size_.width;
         image_msg_.height = this->image_size_.height;

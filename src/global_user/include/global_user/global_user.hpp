@@ -115,10 +115,10 @@ namespace global_user
         {
             camera_topic_map = 
             {
-                {0, "/daheng_img"},
-                {1, "/hik_img"},
-                {2, "/mvs_img"},
-                {3, "/usb_img"}
+                {0, "daheng_img"},
+                {1, "hik_img"},
+                {2, "mvs_img"},
+                {3, "usb_img"}
             };
 
             image_size_map[0].width = DAHENG_IMAGE_WIDTH;
@@ -158,8 +158,8 @@ namespace global_user
         HERO_SLING,
         SMALL_BUFF,
         BIG_BUFF,
-        SENTRY_MODE,
-        OUTPOST_ROTATION_MODE
+        OUTPOST_ROTATION_MODE,
+        SENTRY_NORMAL
     };
 
     struct TaskData

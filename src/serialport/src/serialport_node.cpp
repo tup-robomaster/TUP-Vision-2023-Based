@@ -75,14 +75,11 @@ namespace serialport
                 game_msg_pub_ = this->create_publisher<GameMsg>("/game_info", qos);
                 receive_thread_ = std::thread(&SerialPortNode::receiveData, this);
                 // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
-                if (is_sentry_)
-                {
-                    sentry_twist_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
-                        "/cmd_vel",
-                        rclcpp::SensorDataQoS(), 
-                        std::bind(&SerialPortNode::sentryNavCallback, this, _1)
-                    );
-                }
+                sentry_twist_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
+                    "/cmd_vel",
+                    rclcpp::SensorDataQoS(), 
+                    std::bind(&SerialPortNode::sentryNavCallback, this, _1)
+                );
                 watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
             }
         }
@@ -157,7 +154,10 @@ namespace serialport
                 std::vector<float> gyro;
                 std::vector<float> acc;
                 float bullet_speed;
-                
+                float theta;
+                float pitch;
+                data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata[47], theta);
+                data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata[51], pitch);
                 //Process IMU Datas
                 data_transform_->getQuatData(&serial_port_->serial_data_.rdata[3], quat);
                 data_transform_->getGyroData(&serial_port_->serial_data_.rdata[19], gyro);
@@ -192,19 +192,14 @@ namespace serialport
                 serial_msg_pub_->publish(std::move(serial_msg));
                 // RCLCPP_WARN(this->get_logger(), "serial_msg_pub:%.3fs", now.nanoseconds() / 1e9);
 
-                if (mode == SENTRY_MODE)
-                {
-                    float theta;
-                    data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata[47], theta);
 
-                    sensor_msgs::msg::JointState joint_state;
-                    joint_state.header.stamp = this->get_clock()->now();
-                    joint_state.name.push_back("gimbal_yaw_joint");
-                    joint_state.name.push_back("gimbal_pitch_joint");
-                    joint_state.position.push_back(theta);
-                    joint_state.position.push_back(0);
-                    joint_state_pub_->publish(joint_state);
-                }
+                sensor_msgs::msg::JointState joint_state;
+                joint_state.header.stamp = this->get_clock()->now();
+                joint_state.name.push_back("gimbal_yaw_joint");
+                joint_state.name.push_back("gimbal_pitch_joint");
+                joint_state.position.push_back(theta);
+                joint_state.position.push_back(-pitch);
+                joint_state_pub_->publish(joint_state);
             }
             else if (flag == 0xB5)
             {
@@ -354,7 +349,7 @@ namespace serialport
             vision_data.linear_velocity[2] = msg->linear.z;
             vision_data.angular_velocity[0] = msg->angular.x;
             vision_data.angular_velocity[1] = msg->angular.y;
-            vision_data.angular_velocity[2] = msg->angular.z;
+            vision_data.angular_velocity[2] = msg->angular.z * 0.003;
             //根据不同mode进行对应的数据转换
             data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
             //数据发送
@@ -364,7 +359,9 @@ namespace serialport
             return;
         }
         else
+        {
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
+        }
     }
 
     /**
@@ -440,7 +437,7 @@ namespace serialport
         this->declare_parameter<int>("baud", 115200);
         this->get_parameter("baud", baud_);
 
-        this->declare_parameter<bool>("using_port", false);
+        this->declare_parameter<bool>("using_port", true);
         this->get_parameter("using_port", using_port_);
 
         this->declare_parameter<bool>("tracking_target", false);

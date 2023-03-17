@@ -64,7 +64,7 @@ namespace armor_detector
 
         // target info pub.
         armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_detector/armor_msg", qos);
-
+        detections_pub_ = this->create_publisher<global_interface::msg::DetectionArray>("/armor_detector/detections", qos);
         if (debug_.using_imu)
         {
             RCLCPP_INFO(this->get_logger(), "Using imu...");
@@ -143,7 +143,6 @@ namespace armor_detector
         RCLCPP_WARN(this->get_logger(), "delay:%.2fms", dura);
         if ((dura) > 5.0)
             return;
-            
         TaskData src;
         // Convert the image to opencv format.
         // cv_bridge::CvImagePtr cv_ptr;
@@ -166,7 +165,7 @@ namespace armor_detector
         
         RCLCPP_WARN(this->get_logger(), "mode:%d", src.mode);
         CarHPMsg car_hp_msg;
-        if (src.mode == SENTRY_MODE)
+        if (src.mode == SENTRY_NORMAL)
         {
             auto dt = (this->get_clock()->now() - car_hp_msg_.header.stamp).nanoseconds() / 1e6;
             if (dt > 500)
@@ -190,7 +189,7 @@ namespace armor_detector
             }
             else
             {   // Target spinning detector. 
-                if (src.mode == SENTRY_MODE)
+                if (src.mode == SENTRY_NORMAL)
                 {
                     if (!detector_->gyro_detector(src, target_info, car_hp_msg))
                     {
@@ -263,8 +262,23 @@ namespace armor_detector
         param_mutex_.lock();
         if (detector_->armor_detect(src, is_target_lost))
         {   
-            // RCLCPP_INFO(this->get_logger(), "armors detector...");
-            // Target spinning detector. 
+
+            global_interface::msg::DetectionArray detection_array;
+            detection_array.header = img_header_;
+            detection_array.header.frame_id = detection_array.header.frame_id + "_frame";
+            for (auto armor : detector_->armors_)
+            {
+                global_interface::msg::Detection detection;
+                detection.header = img_header_;
+                detection.header.frame_id = detection.header.frame_id + "_frame";
+                detection.conf = armor.conf;
+                detection.type = armor.key;
+                detection.center.position.x = armor.armor3d_cam[0];
+                detection.center.position.y = armor.armor3d_cam[1];
+                detection.center.position.z = armor.armor3d_cam[2];
+                detection_array.detections.push_back(detection);
+            }
+            detections_pub_->publish(detection_array);
             if (detector_->gyro_detector(src, target_info))
             {
                 // RCLCPP_INFO(this->get_logger(), "Spinning detector...");
@@ -341,7 +355,7 @@ namespace armor_detector
         // RCLCPP_INFO(this->get_logger(), "image callback...");
         if(!img_info)
             return;
-        
+        img_header_ = img_info->header;
         rclcpp::Time time = img_info->header.stamp;
         rclcpp::Time now = this->get_clock()->now();
         double dura = (now.nanoseconds() - time.nanoseconds()) / 1e6;
@@ -484,7 +498,7 @@ namespace armor_detector
 
         path_params_.camera_name = this->get_parameter("camera_name").as_string();
         path_params_.camera_param_path = this->get_parameter("camera_param_path").as_string();
-        path_params_.network_path = this->get_parameter("network_path").as_string();
+        path_params_.network_path = ament_index_cpp::get_package_share_directory("armor_detector") + "/"+ this->get_parameter("network_path").as_string();
         path_params_.save_path = this->get_parameter("save_path").as_string();
 
         return true;
@@ -496,7 +510,6 @@ int main(int argc, char** argv)
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<armor_detector::DetectorNode>());
     rclcpp::shutdown();
-
     return 0;
 }
 

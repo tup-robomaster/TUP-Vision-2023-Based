@@ -46,9 +46,9 @@ namespace armor_detector
         rclcpp::Time time_start_;
         ImageInfo image_info_;
         ImageSize image_size_;
-
         // Pub target armor msg.
         rclcpp::Publisher<AutoaimMsg>::SharedPtr armor_info_pub_;
+        rclcpp::Publisher<global_interface::msg::DetectionArray>::SharedPtr detections_pub_;
     private:    
         // Params callback.
         bool updateParam();
@@ -59,6 +59,8 @@ namespace armor_detector
         // Subscribe img. 
         std::shared_ptr<image_transport::Subscriber> img_sub_;
         void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
+
+        std_msgs::msg::Header img_header_;
 
         // Subscribe serial msg.
         SerialMsg serial_msg_;

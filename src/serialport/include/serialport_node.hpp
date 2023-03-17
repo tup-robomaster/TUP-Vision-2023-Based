@@ -68,7 +68,6 @@ namespace serialport
         mutex mutex_;
         bool using_port_;
         bool tracking_target_;
-        bool is_sentry_;
         atomic<int> mode_;
         atomic<bool> flag_;
         // VisionData vision_data_;

@@ -337,7 +337,7 @@ namespace armor_detector
         //Choose target vehicle
         //此处首先根据哨兵发来的ID指令进行目标车辆追踪
         int target_id = -1;
-        if (src.mode == SENTRY_MODE)
+        if (src.mode == SENTRY_NORMAL)
         {
             target_id = chooseTargetID(src, armors_, hp);
         }
@@ -812,7 +812,7 @@ namespace armor_detector
     {
         std::vector<Armor> new_armors;
         cv::Point2d img_center = cv::Point2d(src.img.size().width / 2, src.img.size().height / 2);
-        if (src.mode == SENTRY_MODE)
+        if (src.mode == SENTRY_NORMAL)
         {
             for (auto& armor : armors)
             {

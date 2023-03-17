@@ -25,6 +25,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/CarPos.msg"
   "msg/GameInfo.msg"
   "msg/SpinInfo.msg"
+  "msg/Detection.msg"
+  "msg/DetectionArray.msg"
   # "srv/*.srv"
   # "action/*.action"
   DEPENDENCIES

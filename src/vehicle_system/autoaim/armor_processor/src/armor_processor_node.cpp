@@ -174,7 +174,7 @@ namespace armor_processor
             }
             
             param_mutex_.lock();
-            if (target_info.mode == SENTRY_MODE)
+            if (target_info.mode == SENTRY_NORMAL)
             {
                 RCLCPP_INFO(this->get_logger(), "Sentry mode...");
                 if(processor_->autoShootingLogic(target, post_process_info))
@@ -212,7 +212,7 @@ namespace armor_processor
         gimbal_info.pitch = angle[1] >= 90 ? 0.0 : angle[1];
         gimbal_info.yaw = angle[0] >= 90 ? 0.0 : angle[0];
         gimbal_info.distance = aiming_point_cam.norm();
-        gimbal_info.is_target = target_info.mode == SENTRY_MODE ? post_process_info.find_target : true;
+        gimbal_info.is_target = target_info.mode == SENTRY_NORMAL ? post_process_info.find_target : true;
         gimbal_info.is_switched = target_info.target_switched;
         gimbal_info.is_spinning = target_info.is_spinning;
         gimbal_info_pub_->publish(std::move(gimbal_info));
@@ -229,7 +229,7 @@ namespace armor_processor
             tracking_info.pitch = tracking_angle[1] >= 90 ? 0.0 : tracking_angle[1];
             tracking_info.yaw = tracking_angle[0] >= 90 ? 0.0 : tracking_angle[0];
             tracking_info.distance = tracking_point_cam.norm();
-            tracking_info.is_target = target_info.mode == SENTRY_MODE ? post_process_info.find_target : true;
+            tracking_info.is_target = target_info.mode == SENTRY_NORMAL ? post_process_info.find_target : true;
             tracking_info.is_switched = target_info.target_switched;
             tracking_info.is_spinning = target_info.is_spinning;
             tracking_info_pub_->publish(std::move(tracking_info));

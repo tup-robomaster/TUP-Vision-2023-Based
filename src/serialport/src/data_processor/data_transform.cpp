@@ -52,13 +52,10 @@ namespace serialport
         trans_data[0] = 0xB5;
         trans_data[1] = mode;
         crc_check_.Append_CRC8_Check_Sum(trans_data, 3);
-        if (mode == SENTRY_MODE)
-        {
-            float twist[] = {vision_data.linear_velocity[0], vision_data.linear_velocity[1], vision_data.linear_velocity[2],
-                vision_data.angular_velocity[0], vision_data.angular_velocity[1], vision_data.angular_velocity[2]};
-            float2UcharRawArray(twist, 6, &trans_data[3]);
-            crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
-        }
+        float twist[] = {vision_data.linear_velocity[0], vision_data.linear_velocity[1], vision_data.linear_velocity[2],
+            vision_data.angular_velocity[0], vision_data.angular_velocity[1], vision_data.angular_velocity[2]};
+        float2UcharRawArray(twist, 6, &trans_data[3]);
+        crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
     }
 
     /**
@@ -73,12 +70,9 @@ namespace serialport
         trans_data[0] = 0xC5;
         trans_data[1] = mode;
         crc_check_.Append_CRC8_Check_Sum(trans_data, 3);
-        if (mode == SENTRY_MODE)
-        {
-            float theta[] = {vision_data.theta_gimbal,vision_data.theta_chassis};
-            float2UcharRawArray(theta, 2, &trans_data[3]);
-            crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
-        }
+        float theta[] = {vision_data.theta_gimbal,vision_data.theta_chassis};
+        float2UcharRawArray(theta, 2, &trans_data[3]);
+        crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
     }
 
     void DataTransform::getPosInfo(uchar flag, uchar* raw_data, vector<float>& pos)
