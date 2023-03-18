@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-03-14 17:42:29
+ * @LastEditTime: 2023-03-17 19:05:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -88,7 +88,7 @@ namespace armor_detector
         int camera_type = this->get_parameter("camera_type").as_int();
 
         // Subscriptions transport type.
-        std::string transport_type = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
+        std::string transport_type = "raw";
         
         // Image size.
         image_size_ = image_info_.image_size_map[camera_type];
@@ -420,9 +420,9 @@ namespace armor_detector
         
         //TODO:Set by your own path.
         this->declare_parameter("camera_name", "KE0200110075"); //相机型号
-        this->declare_parameter("camera_param_path", "src/global_user/config/camera.yaml");
-        this->declare_parameter("network_path", "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml");
-        this->declare_parameter("save_path", "src/data/old_infer1_2.txt");
+        this->declare_parameter("camera_param_path", "/config/camera.yaml");
+        this->declare_parameter("network_path", "/model/opt-0527-002.xml");
+        this->declare_parameter("save_path", "/data/info.txt");
         
         //Debug.
         this->declare_parameter("debug_without_com", true);
@@ -500,10 +500,15 @@ namespace armor_detector
         gyro_params_.max_delta_t = this->get_parameter("max_delta_t").as_int();
         gyro_params_.switch_max_dt = this->get_parameter("switch_max_dt").as_double();
 
+        string pkg_share_directory[2] = 
+        {
+            {get_package_share_directory("global_user")}, 
+            {get_package_share_directory("armor_detector")}
+        };
         path_params_.camera_name = this->get_parameter("camera_name").as_string();
-        path_params_.camera_param_path = this->get_parameter("camera_param_path").as_string();
-        path_params_.network_path = this->get_parameter("network_path").as_string();
-        path_params_.save_path = this->get_parameter("save_path").as_string();
+        path_params_.camera_param_path = pkg_share_directory[0] + this->get_parameter("camera_param_path").as_string();
+        path_params_.network_path = pkg_share_directory[1] + this->get_parameter("network_path").as_string();
+        path_params_.save_path = pkg_share_directory[0] + this->get_parameter("save_path").as_string();
 
         return true;
     }

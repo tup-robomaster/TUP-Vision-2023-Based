@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-03-13 16:37:24
+ * @LastEditTime: 2023-03-17 20:00:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -19,6 +19,7 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 //std
 #include <mutex>
@@ -37,14 +38,15 @@
 using namespace global_user;
 using namespace coordsolver;
 using namespace message_filters;
+using namespace ament_index_cpp;
 namespace armor_processor
 {
     class ArmorProcessorNode : public rclcpp::Node 
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
         typedef global_interface::msg::Gimbal GimbalMsg;
-        // typedef global_interface::msg::CarHP CarHPMsg;
-        // typedef global_interface::msg::CarPos CarPosMsg;
+        typedef global_interface::msg::CarHP CarHPMsg;
+        typedef global_interface::msg::CarPos CarPosMsg;
         typedef global_interface::msg::GameInfo GameMsg;
         typedef sync_policies::ApproximateTime<sensor_msgs::msg::Image, AutoaimMsg> MySyncPolicy;
 
@@ -58,12 +60,10 @@ namespace armor_processor
         bool processTargetMsg(const AutoaimMsg& target_info, cv::Mat* src = nullptr);
 
         mutex debug_mutex_;
+        mutex image_mutex_;
         atomic<bool> flag_;
         cv::Point2f apex2d[4];
-        Eigen::Vector3d predict_point_;
         cv::Mat src_;
-        deque<cv::Mat> image_queue_;
-        mutex image_mutex_;
         
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;

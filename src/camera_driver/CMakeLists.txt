@@ -20,21 +20,19 @@ find_package(Eigen3 REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(camera_info_manager REQUIRED)
 find_package(OpenCV REQUIRED)
-
 find_package(global_user REQUIRED)
 find_package(global_interface REQUIRED)
 
-include_directories(include ${cv_bridge_INCLUDE_DIRS})
 include_directories("dependencies/hik_sdk/include")
 include_directories("dependencies/daheng_sdk/include")
-
-include_directories(include
+include_directories(
+  include
   ${OpenCV_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
+  ${cv_bridge_INCLUDE_DIRS}
 )
 
 link_directories(/opt/MVS/lib/64/)
-
 set(dependencies 
   rclcpp
   rclcpp_components
@@ -43,7 +41,6 @@ set(dependencies
   camera_info_manager
   image_transport
   camera_calibration_parsers
-  tf2
   OpenCV
   Eigen3
   yaml-cpp
@@ -51,7 +48,6 @@ set(dependencies
   global_interface 
 )
 
-include_directories(include)
 add_library(${PROJECT_NAME} SHARED
   src/usb_driver/usb_cam.cpp
   src/usb_driver/usb_cam_node.cpp
@@ -60,15 +56,12 @@ add_library(${PROJECT_NAME} SHARED
   src/daheng_driver/daheng_camera.cpp
   src/daheng_driver/daheng_cam_node.cpp
 )
-  
 target_compile_definitions(${PROJECT_NAME}
   PRIVATE "COMPOSITION_BUILDING_DLL"
 )
-
 ament_target_dependencies(${PROJECT_NAME} 
   ${dependencies}
 )
-
 target_link_libraries(${PROJECT_NAME}
   MvCameraControl
   MVRender
@@ -78,40 +71,22 @@ target_link_libraries(${PROJECT_NAME}
   yaml-cpp.so
 )
 
-add_executable(usb_cam_driver_node
-  src/usb_driver/usb_cam_node_main.cpp
-)
-
-add_executable(hik_cam_driver_node
-  src/hik_driver/hik_cam_node_main.cpp
-)
-
-add_executable(daheng_cam_driver_node
-  src/daheng_driver/daheng_cam_node_main.cpp
-)
-
-ament_target_dependencies(usb_cam_driver_node
-  ${dependencies}
-)
-
-ament_target_dependencies(hik_cam_driver_node
-  ${dependencies}  
-)
-
-ament_target_dependencies(daheng_cam_driver_node
-  ${dependencies}  
-)
-
+add_executable(usb_cam_driver_node src/usb_driver/usb_cam_node_main.cpp)
+ament_target_dependencies(usb_cam_driver_node ${dependencies})
 target_link_libraries(usb_cam_driver_node
   ${PROJECT_NAME}
   yaml-cpp.so
 )
-  
+
+add_executable(hik_cam_driver_node src/hik_driver/hik_cam_node_main.cpp)
+ament_target_dependencies(hik_cam_driver_node ${dependencies})
 target_link_libraries(hik_cam_driver_node 
   ${PROJECT_NAME}
   yaml-cpp.so
 )
-  
+
+add_executable(daheng_cam_driver_node src/daheng_driver/daheng_cam_node_main.cpp)
+ament_target_dependencies(daheng_cam_driver_node ${dependencies})
 target_link_libraries(daheng_cam_driver_node
   ${PROJECT_NAME}
   gxiapi
@@ -148,6 +123,7 @@ install(TARGETS
 install(DIRECTORY 
   launch
   config
+  recorder
   DESTINATION share/${PROJECT_NAME}
 )
 

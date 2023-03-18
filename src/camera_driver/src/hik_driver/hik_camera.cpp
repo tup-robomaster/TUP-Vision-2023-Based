@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:13:23
- * @LastEditTime: 2023-03-14 20:20:44
+ * @LastEditTime: 2023-03-17 18:45:37
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_camera.cpp
  */
 #include "../../include/hik_driver/hik_camera.hpp"
@@ -13,6 +13,10 @@ namespace camera_driver
     : logger_(rclcpp::get_logger("hik_driver"))
     {
         auto is_init = init();
+        if (!is_init)
+        {
+            RCLCPP_FATAL(logger_, "Camera initializing failed...");
+        }
     }
 
     HikCamera::HikCamera(const CameraParam& cam_params)
@@ -21,11 +25,19 @@ namespace camera_driver
         // Params set.
         this->cam_param_ = cam_params;
         auto is_init = init();
+        if (!is_init)
+        {
+            RCLCPP_FATAL(logger_, "Camera initializing failed...");
+        }
     }
 
     HikCamera::~HikCamera()
     {
         auto is_release = close();
+        if(!is_release)
+        {
+            RCLCPP_FATAL(logger_, "Camera initializing failed...");
+        }
     } 
 
     bool HikCamera::init()
@@ -59,7 +71,7 @@ namespace camera_driver
         set_balance(0, this->cam_param_.balance_b);
         set_balance(1, this->cam_param_.balance_g);
         set_balance(2, this->cam_param_.balance_r);
-        // _is_open = get_frame(frame);
+        // is_open_ = get_frame(frame);
 
         return true;
     }
@@ -77,12 +89,12 @@ namespace camera_driver
 
     bool HikCamera::deviceReset()
     {
-        
+        return true;
     }
 
     bool HikCamera::is_open()
     {
-        return _is_open;
+        return is_open_;
     }
 
     void HikCamera::start_device(int serial_number)
@@ -341,7 +353,7 @@ namespace camera_driver
     {   //计算时间戳偏移
         rclcpp::Time time_end = steady_clock_.now();
         double time_span = (time_end - time_start).nanoseconds();
-        timestamp_offset = time_span / 1e9;
+        timestamp_offset_ = time_span / 1e9;
         return true;
     }
 
@@ -358,7 +370,7 @@ namespace camera_driver
         if(MV_OK != nRet)
             RCLCPP_WARN(logger_, "获取时间戳失败...");
 
-        return ((int)time_start.time_since_epoch().count() - timestamp_offset);
+        return ((int)time_start.time_since_epoch().count() - timestamp_offset_);
     }
 
     bool HikCamera::get_frame(::cv::Mat &Src, sensor_msgs::msg::Image& image_msg)
@@ -401,11 +413,13 @@ namespace camera_driver
         // printf("fps:%f fps_max:%f fps_min:%f\n", stFrameInfo.fFrameRateValue,
         // stFrameInfo.fFrameRateMax, stFrameInfo.fFrameRateMin);
 
-        cv::Mat src = cv::Mat(stImageInfo.nHeight, stImageInfo.nWidth, CV_8UC3);
-        memcpy(src.data, pData, stImageInfo.nWidth * stImageInfo.nHeight * 3);
-        src.copyTo(Src);
         // cv::Mat src(stImageInfo.nHeight, stImageInfo.nWidth, CV_8UC3, pData);
+        Src = cv::Mat(stImageInfo.nHeight, stImageInfo.nWidth, CV_8UC3);
+        memcpy(Src.data, pData, stImageInfo.nWidth * stImageInfo.nHeight * 3);
         // src.copyTo(Src);
+        image_msg.step = static_cast<sensor_msgs::msg::Image::_step_type>(Src.step);  
+        image_msg.is_bigendian = false;
+        image_msg.data.assign(Src.datastart, Src.dataend);
 
         if(pData)
         {

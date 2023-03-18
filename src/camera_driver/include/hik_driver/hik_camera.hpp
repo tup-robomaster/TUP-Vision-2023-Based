@@ -2,7 +2,7 @@
  * @Description is a ros-based project!
  * @AuthorBiao
  * @Date-09-05 03:13:49
- * @LastEditTime: 2023-03-14 20:23:26
+ * @LastEditTime: 2023-03-17 18:45:03
  * @FilePath_2023/src/camera_driver/include/hik_driver/HikCamera.hpp
  */
 //ros
@@ -95,8 +95,8 @@ namespace camera_driver
         CameraParam cam_param_;
     
     private:
-        bool _is_open; 
-        double timestamp_offset = 0;
+        bool is_open_; 
+        double timestamp_offset_ = 0;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         rclcpp::Time time_start_;
         rclcpp::Logger logger_;

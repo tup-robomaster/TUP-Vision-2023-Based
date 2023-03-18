@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-03-12 10:31:04
+ * @LastEditTime: 2023-03-17 19:44:26
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -353,7 +353,7 @@ namespace buff_detector
                     Eigen::AngleAxisd angle_axisd;
                     double delta_angle;
                     double rotation_angle;
-                    int sign;
+                    int sign = 0;
                     //----------------------------计算角度,求解转速----------------------------
                     // 若该扇叶完成初始化,且隔一帧时间较短
                     if ((*iter).is_initialized && (src.timestamp - (*iter).prev_timestamp) / 1e6 < buff_param_.max_delta_t)

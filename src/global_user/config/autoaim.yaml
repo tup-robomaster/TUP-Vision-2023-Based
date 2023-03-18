@@ -38,17 +38,17 @@
 
   # Camera config params.
     # camera_name: "00J90630561" 
-    camera_name: "KE0200110075" 
+    camera_name: "KE0200110073" #FIXME:根据相机序列号修改
     camera_type: 0
-    camera_param_path: "src/global_user/config/camera.yaml"
+    camera_param_path: "/config/camera.yaml"
 
   # Network model path.
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0127-001.xml"
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/1106-333.xml"
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-1208-001.xml"
-    network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0127-001.xml"
+    # network_path: "/model/opt-0127-001.xml"
+    # network_path: "/model/opt-0527-002.xml"
+    # network_path: "/model/1106-333.xml"
+    # network_path: "/model/yolox.xml"
+    # network_path: "/model/opt-1208-001.xml"
+    network_path: "/model/opt-0127-001.xml"
   
   # Data saving.
     save_data: false
@@ -57,19 +57,17 @@
   
   # Debug params.
     debug: true
-    show_img: true
-    show_fps: true
+    show_img: false
+    show_fps: false
     using_imu: true
     using_roi: false
     detect_red: true
     auto_label: false
     print_letency: false
-    show_aim_cross: true
+    show_aim_cross: false
     sync_transport: false
-    show_all_armors: true
+    show_all_armors: false
     print_target_info: false
-    using_shared_memory: false
-    show_transformed_info: false
 
 /armor_processor:
   ros__parameters:
@@ -84,28 +82,26 @@
 
   # Debug params.
     debug: true
-    show_img: false
-    draw_predict: false
-    show_predict: false
+    show_img: true
+    draw_predict: true
+    show_predict: true
     sync_transport: false
     print_delay: false
-    yaw_filter: false
-    pitch_filter: true
-    using_shared_memory: false
+    yaw_filter: true
+    pitch_filter: false
     disable_filter: true
     disable_fitting: false
-    show_transformed_info: false
-    show_aim_cross: false
-    show_fps: false
+    show_aim_cross: true
+    show_fps: true
 
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110075" 
-    coord_param_path: "src/global_user/config/camera.yaml"
+    coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
+    coord_param_path: "/config/camera.yaml"
     
   # Filter params.
-    filter_param_path: "src/global_user/config/filter_param.yaml"
+    filter_param_path: "/config/filter_param.yaml"
 
   # Singer model(--->CS Model).
     # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 dt:采样时间间隔 

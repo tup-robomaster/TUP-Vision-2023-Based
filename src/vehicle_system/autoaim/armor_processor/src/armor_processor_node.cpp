@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-03-14 19:11:10
+ * @LastEditTime: 2023-03-17 19:57:37
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -27,11 +27,11 @@ namespace armor_processor
         // QoS
         rclcpp::QoS qos(0);
         qos.keep_last(1);
-        // qos.best_effort();
+        qos.durability();
         qos.reliable();
-        // // qos.durability();
-        qos.transient_local();
-        qos.durability_volatile();
+        // qos.best_effort();
+        // qos.transient_local();
+        // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
@@ -45,12 +45,13 @@ namespace armor_processor
         if(!sync_transport_)
         {
             // 订阅目标装甲板信息
-            target_info_sub_ = this->create_subscription<AutoaimMsg>("/armor_detector/armor_msg",
+            target_info_sub_ = this->create_subscription<AutoaimMsg>(
+                "/armor_detector/armor_msg",
                 qos,
                 std::bind(&ArmorProcessorNode::targetMsgCallback, this, _1));
         }
         // 相机类型
-        this->declare_parameter<int>("camera_type", global_user::DaHeng);
+        this->declare_parameter<int>("camera_type", DaHeng);
         int camera_type = this->get_parameter("camera_type").as_int();
         
         this->declare_parameter<bool>("debug", true);
@@ -60,13 +61,11 @@ namespace armor_processor
             RCLCPP_INFO(this->get_logger(), "debug...");
             // Prediction info pub.
             predict_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_processor/predict_msg", qos);
-            // 动态调参回调
-            callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, _1));
-            if(debug_param_.show_img)
+            if (debug_param_.show_img)
             {
                 image_size_ = image_info_.image_size_map[camera_type];
                 std::string camera_topic = image_info_.camera_topic_map[camera_type];
-                if(sync_transport_)
+                if (sync_transport_)
                 {
                     RCLCPP_WARN(this->get_logger(), "Synchronously...");
                     my_sync_policy_.setInterMessageLowerBound(0, rclcpp::Duration(0, 3e5));
@@ -79,12 +78,15 @@ namespace armor_processor
                 }
                 else
                 {
+                    RCLCPP_WARN(this->get_logger(), "Img subscribing...");
                     // 图像的传输方式
                     std::string transport = "raw";
                     // image sub.
                     img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
                         std::bind(&ArmorProcessorNode::imageCallback, this, _1), transport, rmw_qos));
                 }
+                // 动态调参回调
+                callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, _1));
             }
         }
     }
@@ -182,8 +184,8 @@ namespace armor_processor
             }
             else
             {
-                // RCLCPP_INFO(this->get_logger(), "Predict...");
-                if(debug_param_.show_img)
+                // RCLCPP_WARN(this->get_logger(), "Predict...");
+                if(debug_param_.show_img && !dst.empty())
                 {
                     aiming_point_world = std::move(processor_->predictor(dst, target, sleep_time));
                 }
@@ -194,7 +196,6 @@ namespace armor_processor
                 aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
             }
             param_mutex_.unlock();
-            
             // std::cout << "predict_cam: x:" << aiming_point_cam[0] << " y:" << aiming_point_cam[1] << " z:" << aiming_point_cam[2] << std::endl;
             angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
             tracking_point_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
@@ -219,9 +220,6 @@ namespace armor_processor
             GimbalMsg tracking_info;
             tracking_info.header.frame_id = "barrel_link1";
             tracking_info.header.stamp = target_info.header.stamp;
-            // auto end = processor_->steady_clock_.now();
-            // double dura = end.nanoseconds() - start.nanoseconds() + target_info.header.stamp.nanosec;
-
             tracking_info.pitch = tracking_angle[1] >= 90 ? 0.0 : tracking_angle[1];
             tracking_info.yaw = tracking_angle[0] >= 90 ? 0.0 : tracking_angle[0];
             tracking_info.distance = tracking_point_cam.norm();
@@ -229,9 +227,6 @@ namespace armor_processor
             tracking_info.is_switched = target_info.target_switched;
             tracking_info.is_spinning = target_info.is_spinning;
             tracking_info_pub_->publish(std::move(tracking_info));
-            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 25, "pitch_angle:%.2f yaw_angle:%.2f", tracking_angle[1], tracking_angle[0]);
-            // RCLCPP_WARN(this->get_logger(), "delay:%.3fms", (dura/1e6));
-
             if (!target.is_target_lost)
             {
                 AutoaimMsg predict_info;
@@ -249,7 +244,6 @@ namespace armor_processor
 
         if (debug_param_.show_img && !dst.empty()) 
         {
-            // debug_mutex_.lock();
             if (!target.is_target_lost)
             {
                 if (this->debug_param_.show_predict)
@@ -262,15 +256,11 @@ namespace armor_processor
                     }
                     for(int i = 0; i < 4; i++)
                         cv::line(dst, apex2d[i % 4], apex2d[(i + 1) % 4], {255, 0, 125}, 2);
-                    // auto point_pred = predict_point_;
                     cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
                     cv::circle(dst, point_2d, 8, {255, 255, 0}, -1);
                 }
             }
-            // predict_point_ = aiming_point_cam;
-            // flag_ = true;
-            // debug_mutex_.unlock();
-            if(debug_param_.show_aim_cross)
+            if (debug_param_.show_aim_cross)
             {
                 line(dst, cv::Point2f(dst.size().width / 2, 0), cv::Point2f(dst.size().width / 2, dst.size().height), {0, 255, 0}, 1);
                 line(dst, cv::Point2f(0, dst.size().height / 2), cv::Point2f(dst.size().width, dst.size().height / 2), {0, 255, 0}, 1);
@@ -297,17 +287,13 @@ namespace armor_processor
     {
         if (!img_msg)
             return;
-
         // rclcpp::Time last = img_msg->header.stamp;
         // rclcpp::Time now = this->get_clock()->now();
-        // RCLCPP_WARN(this->get_logger(), "Delay:%.2fms", (now.nanoseconds() - last.nanoseconds()) / 1e6);
-
+        // RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Delay:%.2fms", (now.nanoseconds() - last.nanoseconds()) / 1e6);
         image_mutex_.lock();
         src_ = cv_bridge::toCvShare(img_msg, "bgr8")->image;
         flag_ = true;
         image_mutex_.unlock();
-        
-        // imageProcessor(img);
     }
 
     /**
@@ -340,14 +326,15 @@ namespace armor_processor
         this->declare_parameter("show_aim_cross", true);
 
         // Declare path params.
-        this->declare_parameter<std::string>("filter_param_path", "src/global_user/config/filter_param.yaml");
-        this->declare_parameter<std::string>("coord_param_path", "src/global_user/config/camera.yaml");
+        this->declare_parameter<std::string>("filter_param_path", "/config/filter_param.yaml");
+        this->declare_parameter<std::string>("coord_param_path", "/config/camera.yaml");
         this->declare_parameter<std::string>("coord_param_name", "00J90630561");
         
         // Get path param.
+        string pkg_share_path = get_package_share_directory("global_user");
         path_param_.coord_name = this->get_parameter("coord_param_name").as_string();
-        path_param_.coord_path = this->get_parameter("coord_param_path").as_string();
-        path_param_.filter_path = this->get_parameter("filter_param_path").as_string();
+        path_param_.coord_path = pkg_share_path + this->get_parameter("coord_param_path").as_string();
+        path_param_.filter_path = pkg_share_path + this->get_parameter("filter_param_path").as_string();
 
         // Get param from param server.
         bool success = updateParam();

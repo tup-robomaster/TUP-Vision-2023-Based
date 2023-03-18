@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2023-03-12 20:48:58
+ * @LastEditTime: 2023-03-17 19:24:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -18,6 +18,7 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <image_transport/image_transport.hpp>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 //custom message
 #include "global_interface/msg/gimbal.hpp" 
@@ -28,6 +29,7 @@
 using namespace global_user;
 using namespace coordsolver;
 using namespace message_filters;
+using namespace ament_index_cpp;
 namespace armor_detector
 {
     class DetectorNode : public rclcpp::Node
