@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-03-17 19:05:09
+ * @LastEditTime: 2023-03-18 10:03:35
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -86,10 +86,8 @@ namespace armor_detector
         // CameraType camera_type;
         this->declare_parameter<int>("camera_type", DaHeng);
         int camera_type = this->get_parameter("camera_type").as_int();
-
         // Subscriptions transport type.
         std::string transport_type = "raw";
-        
         // Image size.
         image_size_ = image_info_.image_size_map[camera_type];
         // image sub.
@@ -103,10 +101,10 @@ namespace armor_detector
             img_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this, camera_topic, rmw_qos);
 
             // Create synchronous timer.
-            // sync_ = std::make_shared<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, SerialMsg>>(*img_msg_sync_sub_, *serial_msg_sync_sub_, 0.005);
             my_sync_policy_.setInterMessageLowerBound(0, rclcpp::Duration(0, 3e6));
             my_sync_policy_.setInterMessageLowerBound(1, rclcpp::Duration(0, 3e6));
             my_sync_policy_.setMaxIntervalDuration(rclcpp::Duration(0, 1e7));
+            // sync_ = std::make_shared<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, SerialMsg>>(*img_msg_sync_sub_, *serial_msg_sync_sub_, 0.005);
             sync_ = std::make_shared<message_filters::Synchronizer<MySyncPolicy>>(MySyncPolicy(my_sync_policy_), *img_msg_sync_sub_, *serial_msg_sync_sub_);
 
             // Register a callback function to process.
@@ -140,7 +138,7 @@ namespace armor_detector
         rclcpp::Time time = img_msg->header.stamp;
         rclcpp::Time now = this->get_clock()->now();
         double dura = (now.nanoseconds() - time.nanoseconds()) / 1e6;
-        RCLCPP_WARN(this->get_logger(), "delay:%.2fms", dura);
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "delay:%.2fms", dura);
         if ((dura) > 5.0)
             return;
         TaskData src;
@@ -195,7 +193,7 @@ namespace armor_detector
                     {
                         RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "[SENTRY MODE]: Not spinning...");
                     }
-                    RCLCPP_WARN(this->get_logger(), "Spinning detecting...");
+                    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 250, "Spinning detecting...");
                 }
                 else
                 {
@@ -203,7 +201,7 @@ namespace armor_detector
                     {
                         RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Not spinning...");
                     }
-                    RCLCPP_WARN(this->get_logger(), "Spinning detecting...");
+                    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 250, "Spinning detecting...");
                 }
             }
             param_mutex_.unlock();
@@ -308,7 +306,6 @@ namespace armor_detector
         // }
         param_mutex_.unlock();
         target_info.is_target_lost = is_target_lost;
-        
         target_info.header.frame_id = "gimbal_link";
         target_info.header.stamp = start;
         target_info.timestamp = src.timestamp;
@@ -344,7 +341,6 @@ namespace armor_detector
      */
     void DetectorNode::sensorMsgCallback(const SerialMsg& serial_msg)
     {
-        // cout << 1 << endl;
         serial_msg_mutex_.lock();
         serial_msg_.imu.header.stamp = this->get_clock()->now();
         if(serial_msg.bullet_speed > 10)

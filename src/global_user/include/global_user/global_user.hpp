@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-03-12 18:36:16
+ * @LastEditTime: 2023-03-18 13:44:05
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -115,10 +115,10 @@ namespace global_user
         {
             camera_topic_map = 
             {
-                {0, "daheng_img"},
-                {1, "hik_img"},
-                {2, "mvs_img"},
-                {3, "usb_img"}
+                {0, "/daheng_img"},
+                {1, "/hik_img"},
+                {2, "/mvs_img"},
+                {3, "/usb_img"}
             };
 
             image_size_map[0].width = DAHENG_IMAGE_WIDTH;
@@ -267,7 +267,6 @@ namespace global_user
     std::vector<std::string> generatePathTree(std::string path);
 
     Eigen::Vector3d rotationMatrixToEulerAngles(Eigen::Matrix3d &R);
-
     Eigen::Vector3d calcDeltaEuler(Eigen::Vector3d euler1, Eigen::Vector3d euler2);
     Eigen::AngleAxisd eulerToAngleAxisd(Eigen::Vector3d euler);
     Eigen::Matrix3d eulerToRotationMatrix(Eigen::Vector3d &theta);

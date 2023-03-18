@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-03-17 19:57:37
+ * @LastEditTime: 2023-03-18 11:24:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -248,14 +248,10 @@ namespace armor_processor
             {
                 if (this->debug_param_.show_predict)
                 {
-                    // Get target 2d cornor points.
-                    for (int i = 0; i < 4; ++i)
-                    {
-                        apex2d[i].x = target_info.point2d[i].x;
-                        apex2d[i].y = target_info.point2d[i].y;
-                    }
+                    // Draw target 2d rectangle.
                     for(int i = 0; i < 4; i++)
-                        cv::line(dst, apex2d[i % 4], apex2d[(i + 1) % 4], {255, 0, 125}, 2);
+                        cv::line(dst, cv::Point2f(target_info.point2d[i % 4].x, target_info.point2d[i % 4].y),
+                            cv::Point2f(target_info.point2d[(i + 1) % 4].x, target_info.point2d[(i + 1) % 4].y), {255, 0, 125}, 2);
                     cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
                     cv::circle(dst, point_2d, 8, {255, 255, 0}, -1);
                 }
