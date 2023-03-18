@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-03-17 12:32:21
+ * @LastEditTime: 2023-03-18 09:35:18
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -82,6 +82,7 @@ namespace camera_driver
         sensor_msgs::msg::Image image_msg_;
         cv::Mat frame_;
         bool is_cam_open_;
+        int camera_type_;
 
         // 图像保存
         bool save_video_;
@@ -149,13 +150,13 @@ namespace camera_driver
 
         // Camera type.
         this->declare_parameter<int>("camera_type", DaHeng);
-        int camera_type = this->get_parameter("camera_type").as_int();
+        camera_type_ = this->get_parameter("camera_type").as_int();
 
         // Subscriptions transport type.
         string transport_type = "raw";
     
-        image_size_ = image_info_.image_size_map[camera_type];
-        string camera_topic = image_info_.camera_topic_map[camera_type];
+        image_size_ = image_info_.image_size_map[camera_type_];
+        string camera_topic = image_info_.camera_topic_map[camera_type_];
 
         // Create img publisher.
         this->camera_pub_ = image_transport::create_camera_publisher(this, camera_topic, rmw_qos);
@@ -178,7 +179,7 @@ namespace camera_driver
         if (!cam_driver_->get_frame(frame_, image_msg_))
         {
             RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
-        is_cam_open_ = false;
+            is_cam_open_ = false;
             return;
         }
 

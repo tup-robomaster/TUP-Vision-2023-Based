@@ -7,13 +7,15 @@
  */
 //ros
 #include <rclcpp/rclcpp.hpp>
-
+#include <ament_index_cpp/get_package_share_directory.hpp>
 #include "../param_struct/param_struct.hpp"
 #include "../inference/inference_api2.hpp"
 #include "../armor_tracker/armor_tracker.hpp"
 #include "../spinning_detector/spinning_detector.hpp"
 #include "../../global_user/include/global_user/global_user.hpp"
 #include "../../global_user/include/coordsolver.hpp"
+#include "global_interface/msg/detection.hpp"
+#include "global_interface/msg/detection_array.hpp"
 #include "global_interface/msg/autoaim.hpp"
 #include "global_interface/msg/car_hp.hpp"
 
