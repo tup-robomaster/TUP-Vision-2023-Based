@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-03-15 23:34:33
+ * @LastEditTime: 2023-03-18 11:50:26
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -27,9 +27,9 @@ namespace serialport
         // QoS
         rclcpp::QoS qos(0);
         qos.keep_last(1);
-        // qos.best_effort();
-        qos.reliable();
+        qos.best_effort();
         qos.durability();
+        // qos.reliable();
         // qos.durability_volatile();
         
         //自瞄msg订阅
@@ -201,10 +201,6 @@ namespace serialport
                     joint_state.position.push_back(0);
                     joint_state_pub_->publish(joint_state);
                 }
-            }
-            else if (flag == 0xB5)
-            {
-                data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
             }
             else if (flag == 0xC5)
             {
