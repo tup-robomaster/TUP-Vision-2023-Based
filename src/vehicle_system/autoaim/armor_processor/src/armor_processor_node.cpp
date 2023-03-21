@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-03-18 11:24:48
+ * @LastEditTime: 2023-03-21 13:08:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -13,7 +13,7 @@ namespace armor_processor
     ArmorProcessorNode::ArmorProcessorNode(const rclcpp::NodeOptions& options)
     : Node("armor_processor", options), my_sync_policy_(MySyncPolicy(5))
     {
-        RCLCPP_WARN(this->get_logger(), "Starting processor node...");
+        RCLCPP_INFO(this->get_logger(), "Starting processor node...");
         
         flag_ = false;
         processor_ = initArmorProcessor();
@@ -27,14 +27,14 @@ namespace armor_processor
         // QoS
         rclcpp::QoS qos(0);
         qos.keep_last(1);
-        qos.best_effort();
         qos.durability();
-        // qos.reliable();
+        qos.reliable();
+        // qos.best_effort();
         // qos.transient_local();
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 3;
+        rmw_qos.depth = 1;
 
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", qos);
@@ -140,7 +140,7 @@ namespace armor_processor
         Eigen::Matrix3d rmat_imu;
         Eigen::Quaterniond quat_imu;
 
-        cv::Mat dst;
+        cv::Mat dst = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
         if (debug_param_.show_img)
         {
             image_mutex_.lock();
@@ -172,7 +172,7 @@ namespace armor_processor
             }
             
             param_mutex_.lock();
-            if (target_info.mode == SENTRY_MODE)
+            if (target_info.mode == SENTRY_NORMAL)
             {
                 RCLCPP_INFO(this->get_logger(), "Sentry mode...");
                 if(processor_->autoShootingLogic(target, post_process_info))
@@ -195,21 +195,21 @@ namespace armor_processor
                 }
                 aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
             }
-            param_mutex_.unlock();
             // std::cout << "predict_cam: x:" << aiming_point_cam[0] << " y:" << aiming_point_cam[1] << " z:" << aiming_point_cam[2] << std::endl;
             angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
             tracking_point_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
             tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
         }
+        param_mutex_.unlock();
 
         // Gimbal info pub.
         GimbalMsg gimbal_info;
         gimbal_info.header.frame_id = "barrel_link";
         gimbal_info.header.stamp = target_info.header.stamp;
-        gimbal_info.pitch = angle[1] >= 90 ? 0.0 : angle[1];
-        gimbal_info.yaw = angle[0] >= 90 ? 0.0 : angle[0];
+        gimbal_info.pitch = angle[1] >= 45.0 ? 0.0 : angle[1];
+        gimbal_info.yaw = angle[0] >= 45.0 ? 0.0 : angle[0];
         gimbal_info.distance = aiming_point_cam.norm();
-        gimbal_info.is_target = target_info.mode == SENTRY_MODE ? post_process_info.find_target : (!target_info.is_target_lost);
+        gimbal_info.is_target = target_info.mode == SENTRY_NORMAL ? post_process_info.find_target : !target_info.is_target_lost;
         gimbal_info.is_switched = target_info.target_switched;
         gimbal_info.is_spinning = target_info.is_spinning;
         gimbal_info_pub_->publish(std::move(gimbal_info));
@@ -220,10 +220,10 @@ namespace armor_processor
             GimbalMsg tracking_info;
             tracking_info.header.frame_id = "barrel_link1";
             tracking_info.header.stamp = target_info.header.stamp;
-            tracking_info.pitch = tracking_angle[1] >= 90 ? 0.0 : tracking_angle[1];
-            tracking_info.yaw = tracking_angle[0] >= 90 ? 0.0 : tracking_angle[0];
+            tracking_info.pitch = tracking_angle[1] >= 45.0 ? 0.0 : tracking_angle[1];
+            tracking_info.yaw = tracking_angle[0] >= 45.0 ? 0.0 : tracking_angle[0];
             tracking_info.distance = tracking_point_cam.norm();
-            tracking_info.is_target = target_info.mode == SENTRY_MODE ? (post_process_info.find_target) : (!target_info.is_target_lost);
+            tracking_info.is_target = target_info.mode == SENTRY_NORMAL ? post_process_info.find_target : !target_info.is_target_lost;
             tracking_info.is_switched = target_info.target_switched;
             tracking_info.is_spinning = target_info.is_spinning;
             tracking_info_pub_->publish(std::move(tracking_info));
@@ -248,14 +248,10 @@ namespace armor_processor
             {
                 if (this->debug_param_.show_predict)
                 {
-                    // Get target 2d cornor points.
-                    for (int i = 0; i < 4; ++i)
-                    {
-                        apex2d[i].x = target_info.point2d[i].x;
-                        apex2d[i].y = target_info.point2d[i].y;
-                    }
+                    // Draw target 2d rectangle.
                     for(int i = 0; i < 4; i++)
-                        cv::line(dst, apex2d[i % 4], apex2d[(i + 1) % 4], {255, 0, 125}, 2);
+                        cv::line(dst, cv::Point2f(target_info.point2d[i % 4].x, target_info.point2d[i % 4].y),
+                            cv::Point2f(target_info.point2d[(i + 1) % 4].x, target_info.point2d[(i + 1) % 4].y), {255, 0, 125}, 2);
                     cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
                     cv::circle(dst, point_2d, 8, {255, 255, 0}, -1);
                 }
@@ -266,10 +262,14 @@ namespace armor_processor
                 line(dst, cv::Point2f(0, dst.size().height / 2), cv::Point2f(dst.size().width, dst.size().height / 2), {0, 255, 0}, 1);
             }
 
-            char ch[50];
-            sprintf(ch, "pitch_angle:%.2f yaw_angle:%.2f", tracking_angle[1], tracking_angle[0]);
+            char ch[40];
+            char ch1[40];
+            sprintf(ch, "Track:pitchAngle:%.2f yawAngle:%.2f", tracking_angle[1], tracking_angle[0]);
+            sprintf(ch1, "Pred:pitchAngle:%.2f yawAngle:%.2f", angle[1], angle[0]);
             std::string angle_str = ch;
-            putText(dst, angle_str, {dst.size().width / 2 + 50, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
+            std::string angle_str1 = ch1;
+            putText(dst, angle_str, {dst.size().width / 2 + 5, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
+            putText(dst, angle_str1, {dst.size().width / 2 + 5, 65}, cv::FONT_HERSHEY_SIMPLEX, 1, {255, 255, 0});
 
             cv::namedWindow("pred", cv::WINDOW_AUTOSIZE);
             cv::imshow("pred", dst);
@@ -318,8 +318,9 @@ namespace armor_processor
         this->declare_parameter("draw_predict", false);
         this->declare_parameter("show_predict", true);
         this->declare_parameter("print_delay", false);
-        this->declare_parameter("yaw_filter", true);
-        this->declare_parameter("pitch_filter", false);
+        this->declare_parameter("x_axis_filter", true);
+        this->declare_parameter("y_axis_filter", false);
+        this->declare_parameter("z_axis_filter", false);
         this->declare_parameter("disable_filter", false);
         this->declare_parameter("disable_fitting", true);
         this->declare_parameter("show_transformed_info", false);
@@ -357,17 +358,24 @@ namespace armor_processor
         this->declare_parameter("measure_noise", measure_noise_params);
         measure_noise_params = this->get_parameter("measure_noise").as_double_array();
 
-        vector<double> singer_model_params[2] = {{0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0}, {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0}};
-        this->declare_parameter("singer_model_yaw", singer_model_params[0]);
-        this->declare_parameter("singer_model_pitch", singer_model_params[1]);
-        singer_model_params[0] = this->get_parameter("singer_model_yaw").as_double_array();
-        singer_model_params[1] = this->get_parameter("singer_model_pitch").as_double_array();
+        vector<double> singer_model_params[3] = 
+        {
+            {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0}, 
+            {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0},
+            {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0}
+        };
+        this->declare_parameter("singer_model_x_axis", singer_model_params[0]);
+        this->declare_parameter("singer_model_y_axis", singer_model_params[1]);
+        this->declare_parameter("singer_model_z_axis", singer_model_params[2]);
+        
+        singer_model_params[0] = this->get_parameter("singer_model_x_axis").as_double_array();
+        singer_model_params[1] = this->get_parameter("singer_model_y_axis").as_double_array();
+        singer_model_params[2] = this->get_parameter("singer_model_z_axis").as_double_array();
 
         predict_param_.filter_model_param.imm_model_trans_prob_params = imm_model_trans_prob_params;
         predict_param_.filter_model_param.imm_model_prob_params = imm_model_prob_params;
         predict_param_.filter_model_param.process_noise_params = process_noise_params;
         predict_param_.filter_model_param.measure_noise_params = measure_noise_params;
-
         return std::make_unique<Processor>(predict_param_, singer_model_params, path_param_, debug_param_);
     }
 
@@ -412,8 +420,9 @@ namespace armor_processor
         debug_param_.using_imu = this->get_parameter("using_imu").as_bool();
         debug_param_.draw_predict = this->get_parameter("draw_predict").as_bool();
         debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
-        debug_param_.yaw_filter = this->get_parameter("yaw_filter").as_bool();
-        debug_param_.pitch_filter = this->get_parameter("pitch_filter").as_bool();
+        debug_param_.x_axis_filter = this->get_parameter("x_axis_filter").as_bool();
+        debug_param_.y_axis_filter = this->get_parameter("y_axis_filter").as_bool();
+        debug_param_.z_axis_filter = this->get_parameter("z_axis_filter").as_bool();
         debug_param_.print_delay = this->get_parameter("print_delay").as_bool();
         debug_param_.disable_filter = this->get_parameter("disable_filter").as_bool();
         debug_param_.disable_fitting = this->get_parameter("disable_fitting").as_bool();

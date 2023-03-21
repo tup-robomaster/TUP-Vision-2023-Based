@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:03:26
- * @LastEditTime: 2023-03-15 10:00:32
+ * @LastEditTime: 2022-12-30 23:22:55
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam.cpp
  */
 #include "../../include/usb_driver/usb_cam.hpp"
@@ -38,12 +38,14 @@ namespace camera_driver
         }
     }
 
-    bool UsbCam::get_frame(cv::Mat &src)
-    {
-        cap >> src;
-        if(src.empty())
-            return false;
-        else
-            return true;
-    }
+    // bool UsbCam::get_frame(cv::Mat &src)
+    // {
+    //     this->cap >> src;
+    //     if(src.size().empty())
+    //     {
+    //         printf("grab image failed!");
+    //         return false;
+    //     }
+    //     return true;
+    // }   
 } //namespace UsbCam

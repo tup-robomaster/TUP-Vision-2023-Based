@@ -2,7 +2,7 @@
  * @Description is a ros-based project!
  * @AuthorBiao
  * @Date-09-05 03:13:49
- * @LastEditTime: 2023-03-14 22:43:17
+ * @LastEditTime: 2023-03-17 18:45:03
  * @FilePath_2023/src/camera_driver/include/hik_driver/HikCamera.hpp
  */
 //ros
@@ -62,7 +62,8 @@ namespace camera_driver
         bool set_gain(int value, int exp_gain);
         bool set_exposure_time(float exposure_time);
         bool set_balance(int value, unsigned int value_num);
-        bool deviceReset();    
+        bool deviceReset();
+    
     private:
         void start_device(int serial_number);
         bool set_stream_on();
@@ -92,10 +93,10 @@ namespace camera_driver
     public:
         // Camera params.
         CameraParam cam_param_;
-        
+    
     private:
-        bool _is_open; 
-        double timestamp_offset = 0;
+        bool is_open_; 
+        double timestamp_offset_ = 0;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         rclcpp::Time time_start_;
         rclcpp::Logger logger_;

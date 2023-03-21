@@ -58,13 +58,11 @@ namespace serialport
         int result = ioctl(serial_data_.fd, FIONREAD, &bytes);
         if (result == -1)
         {
-            RCLCPP_ERROR_THROTTLE(logger_, steady_clock_, 500, "IO CONTROL ERROR...");
             serial_data_.is_initialized = false;
             return false;
         }
         if (bytes == 0)
         {
-            RCLCPP_ERROR_THROTTLE(logger_, steady_clock_, 1000, "Byte num is zero...");
             return false;
         }
         

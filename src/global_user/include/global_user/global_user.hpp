@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-03-18 14:02:03
+ * @LastEditTime: 2023-03-18 13:44:05
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -115,10 +115,10 @@ namespace global_user
         {
             camera_topic_map = 
             {
-                {0, "daheng_img"},
-                {1, "hik_img"},
-                {2, "mvs_img"},
-                {3, "usb_img"}
+                {0, "/daheng_img"},
+                {1, "/hik_img"},
+                {2, "/mvs_img"},
+                {3, "/usb_img"}
             };
 
             image_size_map[0].width = DAHENG_IMAGE_WIDTH;
@@ -131,7 +131,7 @@ namespace global_user
             image_size_map[3].height = USB_IMAGE_HEIGHT;
         }
     };
-    
+
     enum CameraType
     {
         DaHeng,
@@ -158,8 +158,8 @@ namespace global_user
         HERO_SLING,
         SMALL_BUFF,
         BIG_BUFF,
-        SENTRY_MODE,
-        OUTPOST_ROTATION_MODE
+        OUTPOST_ROTATION_MODE,
+        SENTRY_NORMAL
     };
 
     struct TaskData
@@ -168,13 +168,14 @@ namespace global_user
         double bullet_speed;
         cv::Mat img;
         Eigen::Quaterniond quat;
-        double timestamp;
+        int64_t timestamp; 
+        
         TaskData()
         {
             mode = 1;
             bullet_speed = 28.0;
             timestamp = 0;
-        } 
+        }
     };
 
     struct GridAndStride
@@ -218,7 +219,7 @@ namespace global_user
 
         VideoRecordParam()
         {
-            save_path = "/video/";
+            save_path = "src/camera_driver/video/";
             is_initialized = false;
             is_first_loop = true;
             frame_cnt = 0;
@@ -266,7 +267,6 @@ namespace global_user
     std::vector<std::string> generatePathTree(std::string path);
 
     Eigen::Vector3d rotationMatrixToEulerAngles(Eigen::Matrix3d &R);
-
     Eigen::Vector3d calcDeltaEuler(Eigen::Vector3d euler1, Eigen::Vector3d euler2);
     Eigen::AngleAxisd eulerToAngleAxisd(Eigen::Vector3d euler);
     Eigen::Matrix3d eulerToRotationMatrix(Eigen::Vector3d &theta);
@@ -276,7 +276,7 @@ namespace global_user
     bool setSharedMemory(SharedMemoryParam& shared_memory_param, int id, int image_width = 1280, int image_height = 1024);
     bool getSharedMemory(SharedMemoryParam& shared_memory_param, int id);
     bool destorySharedMemory(SharedMemoryParam& shared_memory_param);
-    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_name, double &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size);
+    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_name, int64_t &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size);
 } // namespace global_user
 
 #endif

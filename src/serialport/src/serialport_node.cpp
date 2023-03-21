@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-03-18 11:50:26
+ * @LastEditTime: 2023-03-14 19:06:18
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -27,9 +27,10 @@ namespace serialport
         // QoS
         rclcpp::QoS qos(0);
         qos.keep_last(1);
-        qos.best_effort();
+        // qos.best_effort();
+        qos.reliable();
         qos.durability();
-        // qos.reliable();
+        qos.deadline();
         // qos.durability_volatile();
         
         //自瞄msg订阅
@@ -38,7 +39,7 @@ namespace serialport
             RCLCPP_WARN(this->get_logger(), "Prediciton!!!");
             autoaim_info_sub_ = this->create_subscription<GimbalMsg>(
                 "/armor_processor/gimbal_msg", 
-                rclcpp::SensorDataQoS(),
+                qos,
                 std::bind(&SerialPortNode::armorMsgCallback, this, _1)
             );
         }
@@ -47,7 +48,7 @@ namespace serialport
             RCLCPP_WARN(this->get_logger(), "Tracking!!!");
             autoaim_tracking_sub_ = this->create_subscription<GimbalMsg>(
                 "/armor_processor/tracking_msg", 
-                rclcpp::SensorDataQoS(),
+                qos,
                 std::bind(&SerialPortNode::armorMsgCallback, this, _1)
             );
         }
@@ -55,31 +56,30 @@ namespace serialport
         //能量机关msg订阅
         buff_info_sub_ = this->create_subscription<GimbalMsg>(
             "/buff_processor/gimbal_msg",
-            rclcpp::SensorDataQoS(),
+            qos,
             std::bind(&SerialPortNode::buffMsgCallback, this, _1)
         );
         
         //创建发送数据定时器
         // timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
-        
+        // send_timer_ = rclcpp::create_timer(this, this->get_clock(), 30ms, std::bind(&SerialPortNode::sendingData, this));
+
         if (using_port_)
         {   // Use serial port.
             if (serial_port_->openPort())
             {
-                serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", rclcpp::SensorDataQoS());
-                joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", rclcpp::SensorDataQoS());
-                car_pos_pub_ = this->create_publisher<CarPosMsg>("/car_pos", rclcpp::SensorDataQoS());
-                car_hp_pub_ = this->create_publisher<CarHPMsg>("/car_hp", rclcpp::SensorDataQoS());
-                game_msg_pub_ = this->create_publisher<GameMsg>("/game_info", rclcpp::SensorDataQoS());
+                serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", qos);
+                joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
+                car_pos_pub_ = this->create_publisher<CarPosMsg>("/car_pos", qos);
+                car_hp_pub_ = this->create_publisher<CarHPMsg>("/car_hp", qos);
+                game_msg_pub_ = this->create_publisher<GameMsg>("/game_info", qos);
                 receive_thread_ = std::thread(&SerialPortNode::receiveData, this);
-                if (is_sentry_)
-                {
-                    sentry_twist_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
-                        "/cmd_vel",
-                        rclcpp::SensorDataQoS(), 
-                        std::bind(&SerialPortNode::sentryNavCallback, this, _1)
-                    );
-                }
+                // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
+                sentry_twist_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
+                    "/cmd_vel",
+                    rclcpp::SensorDataQoS(), 
+                    std::bind(&SerialPortNode::sentryNavCallback, this, _1)
+                );
                 watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
             }
         }
@@ -153,7 +153,10 @@ namespace serialport
                 std::vector<float> gyro;
                 std::vector<float> acc;
                 float bullet_speed;
-                
+                float theta;
+                float pitch;
+                data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata[47], theta);
+                data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata[51], pitch);
                 //Process IMU Datas
                 data_transform_->getQuatData(&serial_port_->serial_data_.rdata[3], quat);
                 data_transform_->getGyroData(&serial_port_->serial_data_.rdata[19], gyro);
@@ -188,19 +191,18 @@ namespace serialport
                 serial_msg_pub_->publish(std::move(serial_msg));
                 // RCLCPP_WARN(this->get_logger(), "serial_msg_pub:%.3fs", now.nanoseconds() / 1e9);
 
-                if (mode == SENTRY_MODE)
-                {
-                    float theta;
-                    data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata[47], theta);
 
-                    sensor_msgs::msg::JointState joint_state;
-                    joint_state.header.stamp = this->get_clock()->now();
-                    joint_state.name.push_back("gimbal_yaw_joint");
-                    joint_state.name.push_back("gimbal_pitch_joint");
-                    joint_state.position.push_back(theta);
-                    joint_state.position.push_back(0);
-                    joint_state_pub_->publish(joint_state);
-                }
+                sensor_msgs::msg::JointState joint_state;
+                joint_state.header.stamp = this->get_clock()->now();
+                joint_state.name.push_back("gimbal_yaw_joint");
+                joint_state.name.push_back("gimbal_pitch_joint");
+                joint_state.position.push_back(theta);
+                joint_state.position.push_back(-pitch);
+                joint_state_pub_->publish(joint_state);
+            }
+            else if (flag == 0xB5)
+            {
+                data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
             }
             else if (flag == 0xC5)
             {
@@ -285,8 +287,10 @@ namespace serialport
             //根据不同mode进行对应的数据转换
             data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
             
+            // End!
             rclcpp::Time now = this->get_clock()->now();
             rclcpp::Time start = target_info->header.stamp;
+            // builtin_interfaces::msg::Time now_timestamp = now;
             // double dura = (now_timestamp.nanosec - target_info->header.stamp.nanosec) / 1e6;
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "All_delay:%.2fms", (now.nanoseconds() - start.nanoseconds()) / 1e6);
             
@@ -294,6 +298,7 @@ namespace serialport
             mutex_.lock();
             serial_port_->sendData();
             mutex_.unlock();
+            // flag_ = true;
             return true;
         }
         else
@@ -343,7 +348,7 @@ namespace serialport
             vision_data.linear_velocity[2] = msg->linear.z;
             vision_data.angular_velocity[0] = msg->angular.x;
             vision_data.angular_velocity[1] = msg->angular.y;
-            vision_data.angular_velocity[2] = msg->angular.z;
+            vision_data.angular_velocity[2] = msg->angular.z * 0.003;
             //根据不同mode进行对应的数据转换
             data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
             //数据发送
@@ -353,7 +358,9 @@ namespace serialport
             return;
         }
         else
+        {
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
+        }
     }
 
     /**
@@ -429,7 +436,7 @@ namespace serialport
         this->declare_parameter<int>("baud", 115200);
         this->get_parameter("baud", baud_);
 
-        this->declare_parameter<bool>("using_port", false);
+        this->declare_parameter<bool>("using_port", true);
         this->get_parameter("using_port", using_port_);
 
         this->declare_parameter<bool>("tracking_target", false);

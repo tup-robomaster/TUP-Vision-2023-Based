@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-09 22:50:31
- * @LastEditTime: 2023-03-12 20:30:46
+ * @LastEditTime: 2023-03-21 12:59:43
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -111,8 +111,9 @@ namespace armor_processor
         bool draw_predict;
         bool show_predict;
         bool print_delay;
-        bool yaw_filter;
-        bool pitch_filter;
+        bool x_axis_filter;
+        bool y_axis_filter;
+        bool z_axis_filter;
         bool disable_filter;
         bool disable_fitting;
         bool show_transformed_info;
@@ -126,8 +127,9 @@ namespace armor_processor
             draw_predict = true;
             show_predict = false;
             print_delay = false;
-            yaw_filter = true;
-            pitch_filter = false;
+            x_axis_filter = true;
+            y_axis_filter = false;
+            z_axis_filter = false;
             disable_filter = false;
             disable_fitting = false;
             show_transformed_info = true;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-03-15 21:12:44
+ * @LastEditTime: 2023-03-21 12:33:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -72,7 +72,7 @@ namespace armor_detector
 
         auto input = src.img;
         timestamp_ = src.timestamp;
-        if(!debug_params_.debug_without_com)
+        if (!debug_params_.debug_without_com)
         {   //有串口
             //设置弹速,若弹速大于10m/s值,且弹速变化大于0.5m/s则更新
             if (src.bullet_speed > 10 && abs(src.bullet_speed - last_bullet_speed_) > 0.5)
@@ -89,10 +89,10 @@ namespace armor_detector
         }
 
         // Eigen::Matrix3d rmat_imu;
-        if(debug_params_.using_imu)
+        if (debug_params_.using_imu)
         {   //使用陀螺仪数据
             rmat_imu_ = src.quat.toRotationMatrix();
-            RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 2000, "Using imu...");
+            RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 1000, "Using imu...");
             // RCLCPP_INFO(logger_, "quat:[%f %f %f %f]", src.quat.x(), src.quat.y(), src.quat.z(), src.quat.w());
         }
         else
@@ -101,7 +101,7 @@ namespace armor_detector
             RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 1000, "No imu...");
         }
 
-        if(debug_params_.using_roi)
+        if (debug_params_.using_roi)
         {   //启用roi
             //吊射模式采用固定ROI
             if (src.mode == 2)
@@ -337,14 +337,14 @@ namespace armor_detector
         //Choose target vehicle
         //此处首先根据哨兵发来的ID指令进行目标车辆追踪
         int target_id = -1;
-        if (src.mode == SENTRY_MODE)
+        if (src.mode == SENTRY_NORMAL)
         {
             target_id = chooseTargetID(src, armors_, hp);
         }
-        else if (src.mode == AUTOAIM || src.mode == HERO_SLING)
-        {
-            target_id = chooseTargetID(src, armors_, timestamp_);
-        }
+        // else if (src.mode == AUTOAIM || src.mode == HERO_SLING)
+        // {
+        //     target_id = chooseTargetID(src, armors_, timestamp_);
+        // }
         else
         {
             target_id = chooseTargetID(src, armors_, timestamp_);
@@ -380,7 +380,9 @@ namespace armor_detector
             RCLCPP_WARN_THROTTLE(logger_, this->steady_clock_, 500, "Detect sentry sending id: %s", vehicle_key.c_str());
             target_key = vehicle_key;
         }
-        RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Target key: %s", target_key.c_str());
+
+        // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Target key: %s", target_key.c_str());
+
         ///-----------------------------detect whether exists matched tracker------------------------------------------
         if (trackers_map_.count(target_key) == 0)
         {
@@ -699,7 +701,7 @@ namespace armor_detector
         target_info.aiming_point_cam.x = target.armor3d_cam[0];
         target_info.aiming_point_cam.y = target.armor3d_cam[1];
         target_info.aiming_point_cam.z = target.armor3d_cam[2];
-        // RCLCPP_INFO(logger_, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
+        RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
 
         if (target.color == 2)
             dead_buffer_cnt_++;
@@ -810,7 +812,7 @@ namespace armor_detector
     {
         std::vector<Armor> new_armors;
         cv::Point2d img_center = cv::Point2d(src.img.size().width / 2, src.img.size().height / 2);
-        if (src.mode == SENTRY_MODE)
+        if (src.mode == SENTRY_NORMAL)
         {
             for (auto& armor : armors)
             {

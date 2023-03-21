@@ -28,8 +28,6 @@ find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -53,13 +51,9 @@ set(dependencies
   OpenCV
   OpenVINO
   geometry_msgs
-  tf2_geometry_msgs
-  tf2_ros
   Ceres 
   Eigen3 
   rclpy 
-  tf2 
-  tf2_sensor_msgs
   message_filters
   image_transport
   cv_bridge
@@ -68,7 +62,6 @@ set(dependencies
   filter
 )
 
-include_directories(include)
 add_library(${PROJECT_NAME} SHARED
   src/fan_tracker/fan_tracker.cpp
   src/inference/inference_api2.cpp
@@ -77,11 +70,9 @@ add_library(${PROJECT_NAME} SHARED
   # src/buff_detector/buff_detector.cpp
   # src/buff_detector_node.cpp
 )
-
 ament_target_dependencies(${PROJECT_NAME}
   ${dependencies}
 )
-
 target_link_libraries(${PROJECT_NAME}
   openvino::runtime
 )
@@ -94,11 +85,9 @@ add_executable(${PROJECT_NAME}_node
   test/src/buff_detector/buff_detector.cpp
   test/src/buff_detector_node.cpp
 )
-
 ament_target_dependencies(${PROJECT_NAME}_node 
   ${dependencies}
 )
-
 target_link_libraries(${PROJECT_NAME}_node 
   openvino::runtime 
   yaml-cpp.so 

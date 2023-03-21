@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-03-16 19:57:24
+ * @LastEditTime: 2023-03-18 09:35:18
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -82,6 +82,7 @@ namespace camera_driver
         sensor_msgs::msg::Image image_msg_;
         cv::Mat frame_;
         bool is_cam_open_;
+        int camera_type_;
 
         // 图像保存
         bool save_video_;
@@ -145,18 +146,17 @@ namespace camera_driver
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        // rmw_qos.reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
         rmw_qos.depth = 1;
 
         // Camera type.
         this->declare_parameter<int>("camera_type", DaHeng);
-        int camera_type = this->get_parameter("camera_type").as_int();
+        camera_type_ = this->get_parameter("camera_type").as_int();
 
         // Subscriptions transport type.
         string transport_type = "raw";
     
-        image_size_ = image_info_.image_size_map[camera_type];
-        string camera_topic = image_info_.camera_topic_map[camera_type];
+        image_size_ = image_info_.image_size_map[camera_type_];
+        string camera_topic = image_info_.camera_topic_map[camera_type_];
 
         // Create img publisher.
         this->camera_pub_ = image_transport::create_camera_publisher(this, camera_topic, rmw_qos);
@@ -194,10 +194,10 @@ namespace camera_driver
             videoRecorder(video_record_param_, &frame_);
         }
         if (show_img_)
-        {
-            cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
-            cv::imshow("frame", frame_);
-            cv::waitKey(1);
+            {
+                cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
+                cv::imshow("frame", frame_);
+                cv::waitKey(1);
         }
     }
 
@@ -254,7 +254,7 @@ namespace camera_driver
 
         string pkg_share_pth = get_package_share_directory("global_user");
         camera_params_.video_path = pkg_share_pth + this->get_parameter("video_path").as_string();
-        
+
         return std::make_unique<T>(camera_params_);
     }
 } //namespace camera_driver

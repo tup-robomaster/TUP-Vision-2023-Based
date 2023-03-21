@@ -8,6 +8,10 @@ namespace camera_driver
         try
         {
             auto is_init = this->init();
+            if (!is_init)
+            {
+                RCLCPP_FATAL(logger_, "Camera initializing failed...");
+            }
         }
         catch(const std::exception& e)
         {
@@ -26,6 +30,10 @@ namespace camera_driver
         try
         {
             auto is_init = this->init();
+            if (!is_init)
+            {
+                RCLCPP_FATAL(logger_, "Camera initializing failed...");
+            }
         }
         catch(const std::exception& e)
         {
@@ -39,10 +47,15 @@ namespace camera_driver
     DaHengCam::~DaHengCam()
     {
         auto is_close = close();
+        if (!is_close)
+        {
+            RCLCPP_FATAL(logger_, "Camera initializing failed...");
+        }
     }
 
     bool DaHengCam::init()
     {
+        is_initialized_ = false;
         //初始化库
         status = GXInitLib();
 
@@ -58,16 +71,22 @@ namespace camera_driver
         return true;
     }
 
-     bool DaHengCam::close()
+    bool DaHengCam::close()
     {
         //停 采
         status = GXStreamOff(hDevice);
-        status = GXFlushQueue(hDevice);
+        if(status != GX_STATUS_SUCCESS)
+            return false;
+        
         // status = deviceReset();
         // if(status != GX_STATUS_SUCCESS)
         //     return false;
+        
         //关闭设备链接
         status = GXCloseDevice(hDevice);
+        if(status != GX_STATUS_SUCCESS)
+            return false;
+
         //释放库
         status = GXCloseLib();
         if(status != GX_STATUS_SUCCESS)
@@ -93,7 +112,7 @@ namespace camera_driver
         {
             RCLCPP_ERROR(logger_, "Set resolution failed...");
             return false;
-        }   
+        }      
 
         //更新时间戳，设置时间戳偏移量
         // UpdateTimestampOffset(time_start);
@@ -125,6 +144,7 @@ namespace camera_driver
         Set_BALANCE(0, cam_param_.balance_b);
         Set_BALANCE(1, cam_param_.balance_g);
         Set_BALANCE(2, cam_param_.balance_r);
+
         return true;
     }
 
@@ -141,29 +161,20 @@ namespace camera_driver
 
         //枚 举 设 备 列 表
         status = GXUpdateAllDeviceList(&nDeviceNum, 1000);
-        // status = GXUpdateDeviceList(&nDeviceNum, 1000);
         if (status != GX_STATUS_SUCCESS || (int(nDeviceNum) <= 0))
         {
             RCLCPP_ERROR(logger_, "未检测到设备...");
             return -1;
         }
-        else
-        {
-            GX_DEVICE_BASE_INFO *pBaseinfo = new GX_DEVICE_BASE_INFO[nDeviceNum];
-            size_t nSize = nDeviceNum * sizeof(GX_DEVICE_BASE_INFO);
-            //获取所有设备的基础信息
-            status = GXGetAllDeviceBaseInfo(pBaseinfo, &nSize);
-            // RCLCPP_WARN(logger_, "Device_Info: %d %s %s %s %s %s %s", pBaseinfo->accessStatus, pBaseinfo->szDeviceID, pBaseinfo->szDisplayName,
-            //     pBaseinfo->szModelName, pBaseinfo->szSN, pBaseinfo->szUserID, pBaseinfo->szVendorName);
-            delete []pBaseinfo;
-        }
-
         //打 开 设 备
         stOpenParam.accessMode = GX_ACCESS_EXCLUSIVE;
         stOpenParam.openMode = GX_OPEN_INDEX;
         stOpenParam.pszContent = "1";
+        // stOpenParam.pszContent = (char*)to_string(serial_number).c_str();
+        // RCLCPP_WARN(logger_, "Device_num:%d id:%s", int(nDeviceNum), stOpenParam.pszContent);
         // status = GXOpenDeviceByIndex(serial_number, &hDevice);
         status = GXOpenDevice(&stOpenParam, &hDevice);
+        // auto success = deviceReset();
         if (status == GX_STATUS_SUCCESS)
         {
             RCLCPP_INFO(logger_, "设备打开成功!");
@@ -201,15 +212,14 @@ namespace camera_driver
             return false;
         return true;
     }
-    
+
     /**
      * @brief DaHengCam::SetStreamOn 设置设备开始采集，设置分辨率应在采集图像之前
      * @return bool 返回是否设置成功
      */
     bool DaHengCam::SetStreamOn()
     {
-        //设置buffer数量
-        //设 置 采 集 buffer 个 数
+        // 设 置 采 集 buffer 个 数
         status = GXSetAcqusitionBufferNumber(hDevice, 2);
         if (status == GX_STATUS_SUCCESS)
         {
@@ -239,6 +249,27 @@ namespace camera_driver
         {
             RCLCPP_ERROR(logger_, "时间戳帧信息启用失败!");
         }
+
+        status = GXSetEnum(hDevice, GX_ENUM_EVENT_SELECTOR, GX_ENUM_EVENT_SELECTOR_EXPOSUREEND);
+        if (status == GX_STATUS_SUCCESS)
+        {
+            RCLCPP_INFO(logger_, "设置曝光结束时间成功...");
+        }
+        else
+        {
+            RCLCPP_ERROR(logger_, "设置曝光结束时间失败...");
+        }
+
+        status = GXSetEnum(hDevice, GX_ENUM_EVENT_NOTIFICATION, GX_ENUM_EVENT_NOTIFICATION_ON);
+        if (status == GX_STATUS_SUCCESS)
+        {
+            RCLCPP_INFO(logger_, "开启曝光结束时间成功...");
+        }
+        else
+        {
+            RCLCPP_ERROR(logger_, "开启曝光结束时间失败...");
+        }
+
         //开 采
         status = GXStreamOn(hDevice);
         if (status == GX_STATUS_SUCCESS)
@@ -300,12 +331,23 @@ namespace camera_driver
         status = GXDQBuf(hDevice, &pFrameBuffer, 1000);
         if (status == GX_STATUS_SUCCESS && pFrameBuffer->nStatus == GX_FRAME_STATUS_SUCCESS)
         {
-            lastImgTimestamp = pFrameBuffer->nTimestamp;
+            // if (!is_initialized_)
+            // {
+            //     lastImgTimestamp = pFrameBuffer->nTimestamp;
+            //     is_initialized_ = true;
+            // }
+            // else
+            // {
+            //     uint64_t t = pFrameBuffer->nTimestamp;
+            //     cout << "delay:" << ((t - lastImgTimestamp) / 125000000.0) * 1000 << "ms" << endl;
+            //     lastImgTimestamp = t;
+            // }
+
             char *pRGB24Buf = new char[pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3]; //输 出 图 像 RGB 数 据
             if (pRGB24Buf == NULL)
                 return false;
-            else //缓 冲 区 初 始 化
-                memset(pRGB24Buf, 0, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3 * sizeof(char));
+            // else //缓 冲 区 初 始 化
+            //     memset(pRGB24Buf, 0, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3 * sizeof(char));
 
             DX_BAYER_CONVERT_TYPE cvtype = RAW2RGB_NEIGHBOUR3; //选 择 插 值 算 法
             DX_PIXEL_COLOR_FILTER nBayerType = DX_PIXEL_COLOR_FILTER(BAYERBG);
@@ -344,7 +386,7 @@ namespace camera_driver
             //     if (DxStatus != DX_OK)
             //         cout << "Saturation Set Failed" <<endl;
             // }
-        
+
             Src = Mat(pFrameBuffer->nHeight, pFrameBuffer->nWidth, CV_8UC3);
             memcpy(Src.data, pRGB24Buf, pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3);
             // src.copyTo(Src);

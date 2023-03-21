@@ -2,7 +2,7 @@
 # Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-27 01:40:28
-LastEditTime: 2023-03-16 20:37:12
+LastEditTime: 2023-03-19 21:35:28
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/buff_bringup.launch.py
 '''
 import os
@@ -75,7 +75,7 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[{
                 'using_port': True,
-                'tracking_target': True,
+                'tracking_target': False,
                 'print_serial_info': False,
                 'print_referee_info': False
             }],
@@ -106,7 +106,7 @@ def generate_launch_description():
                 ),
                 ComposableNode(
                     package='buff_processor',
-                    plugin='buff_processor::BuffProcessorNode',
+                    plugin='buff_processor::BuffDetectorNode',
                     name='buff_processor',
                     parameters=[buff_processor_params], 
                     extra_arguments=[{
@@ -117,7 +117,7 @@ def generate_launch_description():
         ),
 
         ComposableNodeContainer(
-            name='buff_container',
+            name='buff_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -156,7 +156,7 @@ def generate_launch_description():
         ),
 
         ComposableNodeContainer(
-            name='armor_detector_container',
+            name='buff_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -195,7 +195,7 @@ def generate_launch_description():
         ),
 
         ComposableNodeContainer(
-            name='armor_detector_container',
+            name='buff_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -234,7 +234,7 @@ def generate_launch_description():
         ),
 
         ComposableNodeContainer(
-            name='armor_detector_container',
+            name='buff_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',

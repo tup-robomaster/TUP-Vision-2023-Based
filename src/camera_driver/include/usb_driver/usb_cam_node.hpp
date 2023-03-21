@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:40
- * @LastEditTime: 2023-03-15 10:01:04
+ * @LastEditTime: 2023-03-20 10:18:35
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/usb_driver/usb_cam_node.hpp
  */
 #ifndef USB_CAM_NODE_HPP_
@@ -23,11 +23,13 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <camera_info_manager/camera_info_manager.hpp>
 #include <rcl_interfaces/msg/set_parameters_result.hpp>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include "./usb_cam.hpp"
 #include "../../global_user/include/global_user/global_user.hpp"
 
 using namespace global_user;
+using namespace ament_index_cpp;
 namespace camera_driver
 {
     class UsbCamNode : public rclcpp::Node
@@ -48,7 +50,7 @@ namespace camera_driver
         bool is_filpped;
 
         // std::unique_ptr<usb_cam> usb_cam_;
-        rclcpp::TimerBase::SharedPtr timer;
+        rclcpp::TimerBase::SharedPtr img_pub_timer_;
         rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr frame_pub;
 
         rclcpp::Time last_frame_;
@@ -70,6 +72,9 @@ namespace camera_driver
         std::unique_ptr<UsbCam> init_usb_cam();
     
     protected:
+        // std::shared_ptr<ParamSubscriber> param_subscriber_;
+        // std::shared_ptr<ParamCbHandle> param_cb_handle_;
+        
         // params callback.
         std::map<std::string, int> param_map_;
         bool setParam(rclcpp::Parameter param);

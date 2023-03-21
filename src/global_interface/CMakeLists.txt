@@ -23,10 +23,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Sentry.msg"
   "msg/CarHP.msg"
   "msg/CarPos.msg"
-  "msg/Object.msg"
-  "msg/ObjectArray.msg"
   "msg/GameInfo.msg"
   "msg/SpinInfo.msg"
+  "msg/Detection.msg"
+  "msg/DetectionArray.msg"
   # "srv/*.srv"
   # "action/*.action"
   DEPENDENCIES

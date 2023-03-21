@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2023-03-15 10:03:40
+ * @LastEditTime: 2023-03-20 10:19:59
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -33,12 +33,15 @@ namespace camera_driver
         }
 
         rclcpp::QoS qos(0);
-        qos.keep_last(5);
-        qos.best_effort();
+        qos.keep_last(1);
         qos.reliable();
-        qos.durability();
-        // qos.transient_local();
         qos.durability_volatile();
+        // qos.durability();
+        // qos.best_effort();
+        // qos.transient_local();
+
+        rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
+        rmw_qos.depth = 1;
 
         frame_pub = this->create_publisher<sensor_msgs::msg::Image>("usb_img", qos);
         
@@ -49,12 +52,14 @@ namespace camera_driver
         // cam_info_manager->loadCameraInfo(camera_calibr_file);
         this->declare_parameter<bool>("using_video", true);
         using_video_ = this->get_parameter("using_video").as_bool();
-        this->declare_parameter<std::string>("video_path", " ");
-        video_path_ = this->get_parameter("video_path").as_string();
-        
+
         // sleep(10);
         if(using_video_)
         {
+            string pkg_share_pth = get_package_share_directory("camera_driver");
+            this->declare_parameter<std::string>("video_path", " ");
+            video_path_ = pkg_share_pth + this->get_parameter("video_path").as_string();
+
             cap.open(video_path_);
             cout << "Video_path:" << video_path_ << endl;
             if(!cap.isOpened())
@@ -75,8 +80,7 @@ namespace camera_driver
         cap.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_height);
 
         last_frame_ = this->get_clock()->now();
-
-        timer = this->create_wall_timer(1ms, std::bind(&UsbCamNode::image_callback, this));
+        img_pub_timer_ = this->create_wall_timer(1ms, std::bind(&UsbCamNode::image_callback, this));
 
         bool debug_;
         this->declare_parameter<bool>("debug", false);
@@ -129,18 +133,12 @@ namespace camera_driver
         ros_image.is_bigendian = false;
         ros_image.data.assign(frame.datastart, frame.dataend);
 
-        RCLCPP_INFO(this->get_logger(), "Copy frame...");
+        // RCLCPP_INFO(this->get_logger(), "Copy frame...");
         // ros_image.is_bigendian = (std::endian::native == std::endian::big);
         // ros_image.step = frame.cols * frame.elemSize();
         // size_t size = ros_image.step * frame.rows;
-        
         // ros_image.data.resize(size);
         // RCLCPP_INFO(this->get_logger(), "resize ros frame...");
-
-        // RCLCPP_INFO(this->get_logger(), "ros_image: %d %d", ros_image.height, ros_image.width);
-        // RCLCPP_INFO(this->get_logger(), "raw_image: %d %d", frame.size().height, frame.size().width);
-        // RCLCPP_INFO(this->get_logger(), "size: %ld", size / frame.size().width);
-
         // if(frame.isContinuous())
         // {
         //     RCLCPP_INFO(this->get_logger(), "copy frame...");
@@ -160,27 +158,23 @@ namespace camera_driver
         //         cv_data_ptr += frame.step;
         //     }
         // }
-
         auto msg_ptr = std::make_shared<sensor_msgs::msg::Image>(ros_image);
-
-        // cv::namedWindow("raw", cv::WINDOW_AUTOSIZE);
-        // cv::imshow("raw", frame);
-        // cv::waitKey(1);
         return msg_ptr;
     }
 
     void UsbCamNode::image_callback()
     {
         cap >> frame;
-        
-        // RCLCPP_INFO(this->get_logger(), "frame stream...");
         auto now = this->get_clock()->now();
-
         auto dt = (now.nanoseconds() - last_frame_.nanoseconds()) / 1e9;
-        if(!frame.empty() && 
-            dt > (1 / usb_cam_params_.fps))
+        if(!frame.empty() && dt > (1 / usb_cam_params_.fps))
         {
             last_frame_ = now;
+            if(frame.rows != usb_cam_params_.image_width || frame.cols != usb_cam_params_.image_height)
+            { 
+                cv::resize(frame, frame, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Resize frame...");
+            }
             // if(!is_filpped)
             // {
             //     RCLCPP_INFO(this->get_logger(), "is_filpped...");
@@ -199,18 +193,15 @@ namespace camera_driver
             // RCLCPP_INFO(this->get_logger(), "get info...");
             // sensor_msgs::msg::CameraInfo::SharedPtr camera_info_msg(
             //     new sensor_msgs::msg::CameraInfo(cam_info_manager->getCameraInfo()));
-
-            rclcpp::Time timestamp = this->get_clock()->now();
-
             // image_msg->header.stamp = timestamp;
             // image_msg->header.frame_id = frame_id;
-            
             // camera_info_msg->header.stamp = timestamp;
             // camera_info_msg->header.frame_id = frame_id;
-            sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>();
 
+            sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>();
+            rclcpp::Time now = this->get_clock()->now();
             msg->header.frame_id = usb_cam_params_.frame_id;
-            msg->header.stamp = timestamp;
+            msg->header.stamp = now;
             msg->encoding = "bgr8";
             msg->width = frame.cols;
             msg->height = frame.rows;
@@ -235,6 +226,7 @@ namespace camera_driver
             cv::imshow("raw_image", frame);
             cv::waitKey(2000);
         }
+
         // if(using_video_)
         //     usleep(10000);
     }
@@ -282,12 +274,10 @@ namespace camera_driver
 
         this->declare_parameter("camera_id", 0);
         this->declare_parameter("frame_id", "usb_camera_link");
-        this->declare_parameter("image_width", 480);
+        this->declare_parameter("image_width", 640);
         this->declare_parameter("image_height", 480);
         this->declare_parameter("fps", 30);
-
         this->declare_parameter<bool>("show_img", false);
-
         usb_cam_params_.camera_id = this->get_parameter("camera_id").as_int();
         usb_cam_params_.frame_id = this->get_parameter("frame_id").as_string();
         usb_cam_params_.image_width = this->get_parameter("image_width").as_int();

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-03-15 23:23:56
+ * @LastEditTime: 2023-03-20 12:13:43
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -36,14 +36,17 @@ namespace buff_detector
 
         // QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(5);
-        qos.best_effort();
+        qos.keep_last(1);
         qos.reliable();
         qos.durability();
-        qos.durability_volatile();
+        // qos.durability_volatile();
+        // qos.best_effort();
+
+        rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
+        rmw_qos.depth = 1;
 
         // buff info pub.
-        buff_info_pub_ = this->create_publisher<BuffMsg>("buff_detector", qos);
+        buff_info_pub_ = this->create_publisher<BuffMsg>("/buff_detector/buff_msg", qos);
 
         if(debug_param_.using_imu)
         {
@@ -58,13 +61,13 @@ namespace buff_detector
 
         this->declare_parameter<int>("camera_type", DaHeng);
         int camera_type = this->get_parameter("camera_type").as_int();
-        std::string transport_type = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
+        std::string transport_type = "raw";
 
         image_size_ = image_info_.image_size_map[camera_type];
         // image sub.
         std::string image_topic = image_info_.camera_topic_map[camera_type];
         img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, image_topic,
-            std::bind(&BuffDetectorNode::imageCallback, this, _1), transport_type));
+            std::bind(&BuffDetectorNode::imageCallback, this, _1), transport_type, rmw_qos));
 
         bool debug = false;
         this->declare_parameter<bool>("debug", true);
@@ -109,7 +112,6 @@ namespace buff_detector
         rclcpp::Time time_img_sub = detector_->steady_clock_.now();
         src.timestamp = (time_img_sub - time_start_).nanoseconds();
 
-        TargetInfo target_info;
         BuffMsg buff_msg;
         serial_mutex_.lock();
         if(debug_param_.using_imu)
@@ -139,19 +141,18 @@ namespace buff_detector
         }
         serial_mutex_.unlock();
         
-        if(!debug_param_.using_imu)
+        if (!debug_param_.using_imu)
         {
             //debug
             buff_msg.mode = this->get_parameter("debug_mode").as_int(); //小符
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000, "debug mode is: %d", (int)buff_msg.mode);
         }
 
+        TargetInfo target_info;
         param_mutex_.lock();
         if(detector_->run(src, target_info))
         {
             param_mutex_.unlock();
-            buff_msg.header.frame_id = "gimbal_link";
-            buff_msg.header.stamp = this->get_clock()->now();
             buff_msg.r_center.x = target_info.r_center[0];
             buff_msg.r_center.y = target_info.r_center[1];
             buff_msg.r_center.z = target_info.r_center[2];
@@ -159,6 +160,7 @@ namespace buff_detector
             buff_msg.angle = target_info.angle;
             buff_msg.delta_angle = target_info.delta_angle;
             buff_msg.angle_offset = target_info.angle_offset;
+            buff_msg.bullet_speed = target_info.bullet_speed;
             buff_msg.target_switched = target_info.target_switched;
             Eigen::Quaterniond quat(target_info.rmat);
             buff_msg.quat_cam.w = quat.w();
@@ -168,11 +170,9 @@ namespace buff_detector
             buff_msg.armor3d_world.x = target_info.armor3d_world[0];
             buff_msg.armor3d_world.y = target_info.armor3d_world[1];
             buff_msg.armor3d_world.z = target_info.armor3d_world[2];
-
             buff_msg.armor3d_cam.x = target_info.armor3d_cam[0];
             buff_msg.armor3d_cam.y = target_info.armor3d_cam[1];
             buff_msg.armor3d_cam.z = target_info.armor3d_cam[2];
-            
             buff_msg.points2d[0].x = target_info.points2d[0].x;
             buff_msg.points2d[0].y = target_info.points2d[0].y;
             buff_msg.points2d[1].x = target_info.points2d[1].x;
@@ -183,18 +183,19 @@ namespace buff_detector
             buff_msg.points2d[3].y = target_info.points2d[3].y;
             buff_msg.points2d[4].x = target_info.points2d[4].x;
             buff_msg.points2d[4].y = target_info.points2d[4].y;
-            
-            //Publish buff msg.
-            buff_info_pub_->publish(std::move(buff_msg));
         }
-        else
-            param_mutex_.unlock();
+        param_mutex_.unlock();
 
-        bool show_img;
-        this->get_parameter("show_img", show_img);
-        if(show_img)
+        //Publish buff msg.
+        buff_msg.header.frame_id = "gimbal_link";
+        buff_msg.header.stamp = this->get_clock()->now();
+        buff_msg.is_target_lost = target_info.find_target ? false : true;
+        buff_info_pub_->publish(std::move(buff_msg));
+
+        bool show_img = this->get_parameter("show_img").as_bool();
+        if (show_img)
         {
-            cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
+            cv::namedWindow("dst", cv::WINDOW_NORMAL);
             cv::imshow("dst", src.img);
             cv::waitKey(1);
         }
