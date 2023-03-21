@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-03-11 19:42:28
+ * @LastEditTime: 2023-03-20 22:46:40
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -191,7 +191,7 @@ namespace coordsolver
     {
         auto xyz_offseted = staticCoordOffset(xyz_cam);
 
-        rmat = Eigen::Matrix3d::Identity();
+        // rmat = Eigen::Matrix3d::Identity();
         auto xyz_world = camToWorld(xyz_offseted, rmat);
         auto angle_cam = calcYawPitch(xyz_cam);
         // auto dist = xyz_offseted.norm();

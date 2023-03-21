@@ -171,7 +171,6 @@ namespace camera_driver
                 // status = cam_driver_->init();
                 // cam_driver_ = std::make_unique<T>();
                 cam_driver_->cam_param_.cam_id = (cam_driver_->cam_param_.cam_id < 5) ? (cam_driver_->cam_param_.cam_id + 1) : 0;
-                status = cam_driver_->deviceReset();
                 if (!cam_driver_->open())
                 {
                     RCLCPP_ERROR(this->get_logger(), "Open failed!");

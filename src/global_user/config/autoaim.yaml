@@ -84,6 +84,7 @@
 
   # Debug params.
     debug: true
+    using_imu: true
     show_img: false
     draw_predict: false
     show_predict: false
