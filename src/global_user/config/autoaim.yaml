@@ -17,15 +17,15 @@
     armor_conf_high_thres: 0.82
 
   # Spinning params.
-    anti_spin_judge_high_thres: 20000.0
-    anti_spin_judge_low_thres: 2000.0
-    anti_spin_max_r_multiple: 4.5
+    max_cost: 500
+    shoot_delay: 50
     max_dead_buffer: 2
     max_delta_dist: 0.5
     min_fitting_lens: 10
-    shoot_delay: 50
-    max_cost: 500
     switch_max_dt: 10000.0
+    anti_spin_max_r_multiple: 4.5
+    anti_spin_judge_low_thres: 2000.0
+    anti_spin_judge_high_thres: 20000.0
     
     delta_x_3d_high_thresh: 0.18
     delta_x_3d_higher_thresh: 0.25
@@ -38,41 +38,36 @@
 
   # Camera config params.
     # camera_name: "00J90630561" 
-    camera_name: "KE0200110073" 
+    camera_name: "KE0200110073" #FIXME:根据相机序列号修改
     camera_type: 0
-    camera_param_path: "src/global_user/config/camera.yaml"
+    camera_param_path: "/config/camera.yaml"
 
   # Network model path.
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0127-001.xml"
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/1106-333.xml"
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-1208-001.xml"
-    network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0127-001.xml"
+    # network_path: "/model/opt-0127-001.xml"
+    # network_path: "/model/opt-0527-002.xml"
+    # network_path: "/model/1106-333.xml"
+    # network_path: "/model/yolox.xml"
+    # network_path: "/model/opt-1208-001.xml"
+    network_path: "/model/opt-0127-001.xml"
   
   # Data saving.
     save_data: false
-    save_path: "src/data/infer2_5.txt"
+    save_path: "/data/infer2_5.txt"
     save_dataset: false
   
   # Debug params.
     debug: true
-    using_imu: true
+    using_imu: false
+    show_img: false
+    show_fps: false
     using_roi: false
-    # draw_predict: true
-    show_img: true
-    show_fps: true
-    print_letency: false
-    print_target_info: false
     detect_red: true
-    # disable_filter: false
-    # disable_fitting: true
-    # show_predict: false
-    using_shared_memory: false
-    show_transformed_info: false
     auto_label: false
-    show_all_armors: true
-    show_aim_cross: true
+    print_letency: false
+    show_aim_cross: false
+    sync_transport: false
+    show_all_armors: false
+    print_target_info: false
 
 /armor_processor:
   ros__parameters:
@@ -86,28 +81,37 @@
     window_size: 3
 
   # Debug params.
-    using_shared_memory: false
-    disable_filter: true
-    disable_fitting: false
-    draw_predict: false
-    show_predict: false
-    show_transformed_info: false
     debug: true
+    using_imu: false
+    show_img: true
+    draw_predict: true
+    show_predict: true
+    sync_transport: false
+    print_delay: false
+    x_axis_filter: false
+    y_axis_filter: true
+    z_axis_filter: false
+    # disable_filter: true
+    # disable_fitting: false
+    show_aim_cross: true
+    show_fps: true
 
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110073" 
-    coord_param_path: "src/global_user/config/camera.yaml"
+    coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
+    coord_param_path: "/config/camera.yaml"
     
   # Filter params.
-    filter_param_path: "src/global_user/config/filter_param.yaml"
+    filter_param_path: "/config/filter_param.yaml"
 
   # Singer model(--->CS Model).
     # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 dt:采样时间间隔 
     #  sigma:机动加速度标准差 p:过程协方差系数 r:观测协方差系数 coeff:预测提前量系数)
-    singer_model: [0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0] 
-  
+    singer_model_x_axis: [5.0, 0.5, 0.1, 0.8, 5.0, 0.1, 1.0, 1.0, 5.0] 
+    singer_model_y_axis: [5.0, 0.5, 0.1, 0.8, 5.0, 0.1, 1.0, 1.0, 5.0] 
+    singer_model_z_axis: [1.0, 20.0, 0.30, 0.40, 0.15, 10.00, 2.0, 60.0, 5.0]
+    
   # IMM model.
     #状态转移概率
     trans_prob_matrix: [0.6, 0.3, 0.05, 0.05, #row prob sum = 1
@@ -118,7 +122,3 @@
     model_prob_vector: [0.4, 0.3, 0.15, 0.15] #prob sum = 1
     process_noise: [0.4, 0.4, 0.3, 0.3, 0.2, 0.2]
     measure_noise: [60.0, 60.0, 30.0, 30.0]
-
-  
-
-    

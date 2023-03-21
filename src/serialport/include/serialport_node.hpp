@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-03-02 17:47:39
+ * @LastEditTime: 2023-03-13 21:57:29
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -49,11 +49,11 @@ namespace serialport
 
     public:
         void receiveData();
-        void sendingData();
+        // void sendingData();
         bool sendData(GimbalMsg::SharedPtr msg);
-        void armorMsgSub(GimbalMsg::SharedPtr msg);
-        void buffMsgSub(GimbalMsg::SharedPtr msg);
-        void sentryMsgSub(SentryMsg::SharedPtr msg);
+        void armorMsgCallback(GimbalMsg::SharedPtr msg);
+        void buffMsgCallback(GimbalMsg::SharedPtr msg);
+        void sentryNavCallback(geometry_msgs::msg::Twist::SharedPtr msg);
         void serialWatcher();
     
     private:
@@ -68,13 +68,14 @@ namespace serialport
         mutex mutex_;
         bool using_port_;
         bool tracking_target_;
-        bool is_sentry_;
         atomic<int> mode_;
         atomic<bool> flag_;
         // VisionData vision_data_;
         rclcpp::TimerBase::SharedPtr watch_timer_;
         rclcpp::TimerBase::SharedPtr send_timer_;
-        queue<VisionData> vision_data_queue_;
+        // rclcpp::TimerBase::SharedPtr receive_timer_;
+        queue<VisionAimData> vision_data_queue_;
+        // vector<float> vehicle_pos_info;
         
     public:
         /**
@@ -82,7 +83,7 @@ namespace serialport
          * 
          */
         rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
-        rclcpp::Subscription<SentryMsg>::SharedPtr sentry_msg_sub_;
+        rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sentry_twist_sub_;
         rclcpp::Publisher<CarPosMsg>::SharedPtr car_pos_pub_;
         rclcpp::Publisher<CarHPMsg>::SharedPtr car_hp_pub_;
         rclcpp::Publisher<GameMsg>::SharedPtr game_msg_pub_;
