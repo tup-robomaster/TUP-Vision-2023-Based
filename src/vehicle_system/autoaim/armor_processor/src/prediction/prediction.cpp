@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-03-21 18:25:04
+ * @LastEditTime: 2023-03-21 21:54:47
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -53,9 +53,9 @@ namespace armor_processor
         singer_param_[0] = singer_param[0];
         singer_param_[1] = singer_param[1];
         singer_param_[2] = singer_param[2];
-        singer_model_[0] = SingerModel(3, 1, 1);
-        singer_model_[1] = SingerModel(3, 1, 1);
-        singer_model_[2] = SingerModel(3, 1, 1);
+        singer_model_[0] = SingerModel(singer_param_[0], 3, 1, 1);
+        singer_model_[1] = SingerModel(singer_param_[1], 3, 1, 1);
+        singer_model_[2] = SingerModel(singer_param_[2], 3, 1, 1);
 
         // SingerModel singer;
         kfInit();
@@ -154,7 +154,7 @@ namespace armor_processor
     {
         auto t1 = steady_clock_.now();
 
-        Eigen::Vector3d xyz = {-target_msg.aiming_point_world.x, target_msg.aiming_point_world.y, target_msg.aiming_point_world.z};
+        Eigen::Vector3d xyz = {target_msg.aiming_point_world.x, target_msg.aiming_point_world.y, target_msg.aiming_point_world.z};
         TargetInfo target = 
         {
             std::move(xyz),
@@ -206,13 +206,13 @@ namespace armor_processor
         PredictStatus is_singer_available;
         PredictStatus is_imm_available;
         
-        if(!fitting_disabled_)
+        if (!fitting_disabled_)
         {
-            if(!target.is_target_switched)
+            if (!target.is_target_switched)
             {
                 history_origin_info_.push_back(cv::Point2d(history_info_.front().xyz[1], history_info_.front().xyz[0]));
                 history_info_.push_back(std::move(target));
-                if(history_origin_info_.size() > 2)
+                if (history_origin_info_.size() > 2)
                 {   // Reserve history fitting front element.
                     history_origin_info_.pop_front();    
                 }
@@ -226,7 +226,7 @@ namespace armor_processor
                 history_info_.push_back(target);
             }
 
-            if(target.spinning_switched)
+            if (target.spinning_switched)
             {
                 history_info_.clear();
                 history_info_.push_back(target);
@@ -249,9 +249,9 @@ namespace armor_processor
                 history_info_.clear();
                 history_pred_.clear();
             }
-            if(history_info_.size() > 200)
+            if (history_info_.size() > 200)
                 history_info_.pop_front();
-            if(history_pred_.size() > 50)
+            if (history_pred_.size() > 50)
                 history_pred_.pop_front();
             history_info_.push_back(target);
         }
@@ -278,7 +278,7 @@ namespace armor_processor
         
         if (history_info_.size() < 4)
         {
-            if(!fitting_disabled_ && is_predicted_ && history_info_.size() > 0)
+            if (!fitting_disabled_ && is_predicted_ && history_info_.size() > 0)
             {
                 double last_to_now_timestamp = history_info_.back().timestamp - last_start_timestamp_;
                 double tt = time_estimate - last_start_timestamp_;
@@ -286,14 +286,14 @@ namespace armor_processor
                 double delta_y = last_pred_x - target.xyz[0]; 
                 // double tt = time_estimate / 1e3;
                 // result[0] = fitting_params_[0] * (delta_time_estimate * history_info_.size() / 1e3) + history_info_.front().xyz[0]; // x(t)=kt+x0
-                result[0] = -target.xyz[0]; // x(t)=kt+d
+                result[0] = target.xyz[0]; // x(t)=kt+d
                 result[1] = fitting_params_[0] * (tt / 1e9) + fitting_params_[1] - delta_y;
                 result[2] = target.xyz[2];
                 final_target_.xyz = result;
                 return result;
             }
             final_target_ = target;
-            return Vector3d{-target.xyz[0], target.xyz[1], target.xyz[2]};
+            return Vector3d{target.xyz[0], target.xyz[1], target.xyz[2]};
         }
 
         //-----------------进行滑窗滤波,备选方案,暂未使用-------------------------------------
@@ -471,8 +471,8 @@ namespace armor_processor
             }
             else if (is_singer_available.xyz_status[2])
             {
-                curveDrawer(3, *src, predict_vel_[2], cv::Point2i(260, 200));
-                curveDrawer(3, *src, history_vel_[2], cv::Point2i(620, 200));
+                curveDrawer(2, *src, predict_vel_[2], cv::Point2i(260, 200));
+                curveDrawer(2, *src, history_vel_[2], cv::Point2i(620, 200));
             }
             if (debug_param_.show_fps)
             {
@@ -483,9 +483,8 @@ namespace armor_processor
             }
         }
         final_target_.xyz = result;
-        return Vector3d{-result[0], result[1], result[2]};
+        return Vector3d{result[0], result[1], result[2]};
     }
-
 
     /**
      * @brief 计算滤波预测值与测量值的误差，判断滤波是否发散
