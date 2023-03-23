@@ -71,7 +71,7 @@ namespace serialport
                 serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", qos);
                 joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
                 car_pos_pub_ = this->create_publisher<CarPosMsg>("/car_pos", qos);
-                car_hp_pub_ = this->create_publisher<CarHPMsg>("/car_hp", qos);
+                obj_hp_pub_ = this->create_publisher<ObjHPMsg>("/obj_hp", qos);
                 game_msg_pub_ = this->create_publisher<GameMsg>("/game_info", qos);
                 receive_thread_ = std::thread(&SerialPortNode::receiveData, this);
                 // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
@@ -213,14 +213,14 @@ namespace serialport
                 data_transform_->getGameInfo(flag, &serial_port_->serial_data_.rdata[47], timestamp);
 
                 CarPosMsg car_pos_msg;
-                CarHPMsg car_hp_msg;
+                ObjHPMsg obj_hp_msg;
                 GameMsg game_msg;
 
                 for(int ii = 0; ii < 20; ii+=2)
                 {
                     car_pos_msg.pos[ii].x = vehicle_pos_info[ii];
                     car_pos_msg.pos[ii].y = vehicle_pos_info[ii+1];
-                    car_hp_msg.hp[ii/2] = hp[ii/2];
+                    obj_hp_msg.hp[ii/2] = hp[ii/2];
                 }
 
                 if (print_referee_info_)
@@ -237,9 +237,9 @@ namespace serialport
                 car_pos_msg.header.stamp = now;
                 car_pos_pub_->publish(move(car_pos_msg));
                 
-                car_hp_msg.header.frame_id = "";
-                car_hp_msg.header.stamp = now;
-                car_hp_pub_->publish(move(car_hp_msg));
+                obj_hp_msg.header.frame_id = "";
+                obj_hp_msg.header.stamp = now;
+                obj_hp_pub_->publish(move(obj_hp_msg));
 
                 game_msg.header.frame_id = "";
                 game_msg.header.stamp = now;

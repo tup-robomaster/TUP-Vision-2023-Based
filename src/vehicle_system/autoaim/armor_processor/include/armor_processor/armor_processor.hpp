@@ -11,7 +11,7 @@
 #pragma once 
 
 #include "global_interface/msg/autoaim.hpp"
-#include "global_interface/msg/car_hp.hpp"
+#include "global_interface/msg/obj_hp.hpp"
 #include "../prediction/prediction.hpp"
 
 using namespace global_user;
@@ -21,7 +21,7 @@ namespace armor_processor
     class Processor : public ArmorPredictor
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
-        typedef global_interface::msg::CarHP CarHPMsg;
+        typedef global_interface::msg::ObjHP ObjHPMsg;
 
     public:
         Processor();

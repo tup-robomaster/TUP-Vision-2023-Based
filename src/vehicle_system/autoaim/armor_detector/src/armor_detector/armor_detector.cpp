@@ -323,7 +323,7 @@ namespace armor_detector
      * @return true 
      * @return false 
      */
-    bool Detector::gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, CarHPMsg hp)
+    bool Detector::gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp)
     {
         //Create ArmorTracker for new armors 
         spinning_detector_.createArmorTracker(trackers_map_, armors_, new_armors_cnt_map_, timestamp_, dead_buffer_cnt_);
@@ -808,7 +808,7 @@ namespace armor_detector
         }
     }
 
-    int Detector::chooseTargetID(TaskData &src, std::vector<Armor>& armors, CarHPMsg hps)
+    int Detector::chooseTargetID(TaskData &src, std::vector<Armor>& armors, ObjHPMsg hps)
     {
         std::vector<Armor> new_armors;
         cv::Point2d img_center = cv::Point2d(src.img.size().width / 2, src.img.size().height / 2);

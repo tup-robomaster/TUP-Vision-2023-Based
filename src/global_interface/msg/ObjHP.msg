@@ -1,2 +1,2 @@
 std_msgs/Header header
-uint16[10] hp
+uint16[16] hp

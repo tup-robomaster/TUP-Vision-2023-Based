@@ -162,16 +162,16 @@ namespace armor_detector
         }
         
         RCLCPP_WARN(this->get_logger(), "mode:%d", src.mode);
-        CarHPMsg car_hp_msg;
+        ObjHPMsg obj_hp_msg;
         if (src.mode == SENTRY_NORMAL)
         {
-            auto dt = (this->get_clock()->now() - car_hp_msg_.header.stamp).nanoseconds() / 1e6;
+            auto dt = (this->get_clock()->now() - obj_hp_msg_.header.stamp).nanoseconds() / 1e6;
             if (dt > 500)
             {
-                RCLCPP_WARN(this->get_logger(), "Car hp msg is timeout: %.2fms...", dt);
-                car_hp_msg_mutex_.lock();
-                car_hp_msg = car_hp_msg_;
-                car_hp_msg_mutex_.unlock();
+                RCLCPP_WARN(this->get_logger(), "Obj hp msg is timeout: %.2fms...", dt);
+                obj_hp_msg_mutex_.lock();
+                obj_hp_msg = obj_hp_msg_;
+                obj_hp_msg_mutex_.unlock();
             }
         }
 
@@ -189,7 +189,7 @@ namespace armor_detector
             {   // Target spinning detector. 
                 if (src.mode == SENTRY_NORMAL)
                 {
-                    if (!detector_->gyro_detector(src, target_info, car_hp_msg))
+                    if (!detector_->gyro_detector(src, target_info, obj_hp_msg))
                     {
                         RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "[SENTRY MODE]: Not spinning...");
                     }
@@ -325,12 +325,12 @@ namespace armor_detector
         }
     }
 
-    void DetectorNode::carHPMsgCallback(const CarHPMsg& car_hp_msg)
+    void DetectorNode::objHPMsgCallback(const ObjHPMsg& obj_hp_msg)
     {
-        car_hp_msg_mutex_.lock();
-        car_hp_msg_ = car_hp_msg;
-        car_hp_msg_.header.stamp = this->get_clock()->now();
-        car_hp_msg_mutex_.unlock();
+        obj_hp_msg_mutex_.lock();
+        obj_hp_msg_ = obj_hp_msg;
+        obj_hp_msg_.header.stamp = this->get_clock()->now();
+        obj_hp_msg_mutex_.unlock();
         return;
     }
 

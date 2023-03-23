@@ -32,7 +32,7 @@
 #include "global_interface/msg/autoaim.hpp"
 #include "global_interface/msg/gimbal.hpp"
 #include "global_interface/msg/car_pos.hpp"
-#include "global_interface/msg/car_hp.hpp"
+#include "global_interface/msg/obj_hp.hpp"
 #include "global_interface/msg/game_info.hpp"
 
 using namespace global_user;
@@ -45,7 +45,7 @@ namespace armor_processor
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
         typedef global_interface::msg::Gimbal GimbalMsg;
-        typedef global_interface::msg::CarHP CarHPMsg;
+        typedef global_interface::msg::ObjHP ObjHPMsg;
         typedef global_interface::msg::CarPos CarPosMsg;
         typedef global_interface::msg::GameInfo GameMsg;
         typedef sync_policies::ApproximateTime<sensor_msgs::msg::Image, AutoaimMsg> MySyncPolicy;
