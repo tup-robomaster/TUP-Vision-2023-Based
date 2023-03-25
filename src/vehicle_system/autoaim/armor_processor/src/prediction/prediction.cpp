@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-03-22 17:02:18
+ * @LastEditTime: 2023-03-25 23:57:01
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -203,7 +203,7 @@ namespace armor_processor
 
         Eigen::Vector3d result = {0, 0, 0};
         Eigen::Vector3d result_fitting = {0, 0, 0};
-        Eigen::Vector3d result_singer = {0, 0, 0};
+        double result_singer[3] = {0.0, 0.0, 0.0};
         Eigen::Vector3d result_imm = {0, 0, 0};
         PredictStatus is_fitting_available;
         PredictStatus is_singer_available;
@@ -367,18 +367,40 @@ namespace armor_processor
             if (target.system_model == CSMODEL)
             {   // 基于CS模型的卡尔曼滤波
                 RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "CS model is predicting...");
+                std::future<void> xyz_future[3];
                 // is_ekf_available = predictBasedSinger(target, result_ekf, target_vel, target_acc, delta_time_estimate);
                 if (debug_param_.x_axis_filter)
                 {
-                    is_singer_available.xyz_status[0] = predictBasedSinger(0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
+                    // is_singer_available.xyz_status[0] = predictBasedSinger(0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
+                    xyz_future[0] = std::async(std::launch::async, [&](){
+                        is_singer_available.xyz_status[0] = predictBasedSinger(0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
+                    });
                 }
                 if (debug_param_.y_axis_filter)
                 {
-                    is_singer_available.xyz_status[1] = predictBasedSinger(1, target.xyz[1], result_singer[1], target_vel[1], target_acc[1], delta_time_estimate);
+                    // is_singer_available.xyz_status[1] = predictBasedSinger(1, target.xyz[1], result_singer[1], target_vel[1], target_acc[1], delta_time_estimate);
+                    xyz_future[1] = std::async(std::launch::async, [&](){
+                        is_singer_available.xyz_status[1] = predictBasedSinger(1, target.xyz[1], result_singer[1], target_vel[1], target_acc[1], delta_time_estimate);
+                    });
                 }
                 if (debug_param_.z_axis_filter)
                 {
-                    is_singer_available.xyz_status[2] = predictBasedSinger(2, target.xyz[2], result_singer[2], target_vel[2], target_acc[2], delta_time_estimate);
+                    // is_singer_available.xyz_status[2] = predictBasedSinger(2, target.xyz[2], result_singer[2], target_vel[2], target_acc[2], delta_time_estimate);
+                    xyz_future[2] = std::async(std::launch::async, [&](){
+                        is_singer_available.xyz_status[2] = predictBasedSinger(2, target.xyz[2], result_singer[2], target_vel[2], target_acc[2], delta_time_estimate);
+                    });
+                }
+                if (debug_param_.x_axis_filter && xyz_future[0].wait_for(1ms) == std::future_status::timeout)
+                {
+                    RCLCPP_WARN(logger_, "X_axis prediction timeout...");
+                }
+                if (debug_param_.y_axis_filter && xyz_future[1].wait_for(1ms) == std::future_status::timeout)
+                {
+                    RCLCPP_WARN(logger_, "Y_axis prediction timeout...");
+                }
+                if (debug_param_.z_axis_filter && xyz_future[2].wait_for(1ms) == std::future_status::timeout)
+                {
+                    RCLCPP_WARN(logger_, "Z_axis prediction timeout...");
                 }
                 result[0] = is_singer_available.xyz_status[0] ? result_singer[0] : target.xyz[0];
                 result[1] = is_singer_available.xyz_status[1] ? result_singer[1] : target.xyz[1];
@@ -464,18 +486,18 @@ namespace armor_processor
         {   // Draw curve.
             if (is_singer_available.xyz_status[0])
             {
-                curveDrawer(0, *src, predict_vel_[0], cv::Point2i(260, 200));
-                curveDrawer(0, *src, history_vel_[0], cv::Point2i(620, 200));
+                curveDrawer(0, *src, predict_acc_[0], cv::Point2i(260, 200));
+                // curveDrawer(0, *src, history_acc_[0], cv::Point2i(620, 200));
             } 
             if (is_singer_available.xyz_status[1])
             {
-                curveDrawer(1, *src, predict_vel_[1], cv::Point2i(260, 200));
-                curveDrawer(1, *src, history_vel_[1], cv::Point2i(620, 200));
+                curveDrawer(1, *src, predict_acc_[1], cv::Point2i(260, 200));
+                // curveDrawer(1, *src, history_acc_[1], cv::Point2i(620, 200));
             }
             if (is_singer_available.xyz_status[2])
             {
-                curveDrawer(3, *src, predict_vel_[2], cv::Point2i(260, 200));
-                curveDrawer(3, *src, history_vel_[2], cv::Point2i(620, 200));
+                curveDrawer(3, *src, predict_acc_[2], cv::Point2i(260, 200));
+                // curveDrawer(3, *src, history_acc_[2], cv::Point2i(620, 200));
             }
             if (debug_param_.show_fps)
             {
@@ -952,8 +974,8 @@ namespace armor_processor
 
             double alpha = singer_param_[axis][0];
             double dt = singer_param_[axis][8] * singer_param_[axis][4];
+            dt = timestamp / 1e9;
             // cout << dt << endl;
-            // dt = timestamp / 1e9;
             
             Eigen::MatrixXd F(3, 3);
             singer_model_[axis].setF(F, dt, alpha);
@@ -966,7 +988,7 @@ namespace armor_processor
 
             if (abs(result - meas) > 0.25)
                 result = meas;
-            result = post_pos;
+            // result = post_pos;
             // cout << axis << ":" << post_pos << endl;
 
             is_available = true;

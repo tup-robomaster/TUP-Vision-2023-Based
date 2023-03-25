@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-03-23 13:11:42
+ * @LastEditTime: 2023-03-25 18:29:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -224,7 +224,7 @@ namespace armor_processor
             //         angle = tracking_angle;
             //     }
             // }
-            if (abs(tracking_angle[0]) < 0.25 && abs(tracking_angle[1]) < 0.25)
+            if (abs(tracking_angle[0]) < 0.25 || abs(tracking_angle[1]) < 0.25)
             {
                 is_pred_ = true;
                 is_aimed_ = true;
@@ -263,10 +263,10 @@ namespace armor_processor
         }
         else
         {
-            // pred_angle_[0][0] = pred_angle_[0][1];
-            // pred_angle_[1][0] = pred_angle_[1][1];
-            // pred_angle_[0][1] = angle[0];
-            // pred_angle_[1][1] = angle[1];
+            pred_angle_[0][0] = pred_angle_[0][1];
+            pred_angle_[1][0] = pred_angle_[1][1];
+            pred_angle_[0][1] = angle[0];
+            pred_angle_[1][1] = angle[1];
 
             // if (pred_angle_[0][1] / pred_angle_[0][0] < 0)
             // {
