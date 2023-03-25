@@ -100,12 +100,12 @@ target_link_libraries(armor_detector_node
   ${OpenCV_LIBRARIES}
   openvino::runtime 
   ${Eigen3_LIBRARIES}
-  yaml-cpp.so 
+  yaml-cpp 
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME}
   PLUGIN "armor_detector::DetectorNode"
-  EXECUTABLE armor_detector_node
+  # EXECUTABLE armor_detector_node
 )
 
 install(TARGETS 

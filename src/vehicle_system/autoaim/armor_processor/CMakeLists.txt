@@ -5,21 +5,19 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD 17)
 #default to C++14
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17 -Os -pthread -g")
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-set(CMAKE_C_VISIBILITY_PRESET default)
-set(CMAKE_CXX_VISIBILITY_PRESET default)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN OFF)
+# set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17 -Os -pthread -g")
+# set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# set(CMAKE_C_VISIBILITY_PRESET default)
+# set(CMAKE_CXX_VISIBILITY_PRESET default)
+# set(CMAKE_VISIBILITY_INLINES_HIDDEN OFF)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -70,9 +68,9 @@ add_library(${PROJECT_NAME} SHARED
 )
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 target_link_libraries(${PROJECT_NAME}
-  ceres.so
-  glog.so 
-  yaml-cpp.so
+  ceres
+  glog 
+  yaml-cpp
 )
 
 add_executable(${PROJECT_NAME}_node src/${PROJECT_NAME}_node.cpp)
@@ -81,12 +79,12 @@ target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME})
 
 rclcpp_components_register_nodes(${PROJECT_NAME} 
   PLUGIN "armor_processor::ArmorProcessorNode"
-  EXECUTABLE ${PROJECT_NAME}_node 
+  # EXECUTABLE ${PROJECT_NAME}_node 
 )
 
-install(
-  TARGETS ${PROJECT_NAME}
-  EXPORT ${PROJECT_NAME}
+install(TARGETS 
+  ${PROJECT_NAME}
+  # EXPORT ${PROJECT_NAME}
   ARCHIVE DESTINATION lib 
   LIBRARY DESTINATION lib 
   RUNTIME DESTINATION lib 

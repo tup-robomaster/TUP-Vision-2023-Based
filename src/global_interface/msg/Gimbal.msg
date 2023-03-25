@@ -6,3 +6,5 @@ bool is_switched
 bool is_target
 bool is_spinning
 bool is_middle
+geometry_msgs/Point meas_point_cam
+geometry_msgs/Point pred_point_cam

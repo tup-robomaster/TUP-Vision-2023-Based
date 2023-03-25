@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-03-17 20:00:03
+ * @LastEditTime: 2023-03-22 17:49:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -64,6 +64,9 @@ namespace armor_processor
         atomic<bool> flag_;
         cv::Point2f apex2d[4];
         cv::Mat src_;
+        // bool is_aimed_[2];
+        bool is_aimed_;
+        bool is_pred_;
         
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
@@ -99,6 +102,9 @@ namespace armor_processor
         vector<double> singer_param_;
         DebugParam debug_param_;
         PathParam path_param_;
+        double pred_angle_[2][2];
+        bool is_pred_failed_;
+        int count_;
 
     private:
         bool updateParam();

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2023-03-17 19:35:30
+ * @LastEditTime: 2023-03-20 10:19:59
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -34,11 +34,11 @@ namespace camera_driver
 
         rclcpp::QoS qos(0);
         qos.keep_last(1);
-        qos.best_effort();
         qos.reliable();
-        qos.durability();
-        // qos.transient_local();
         qos.durability_volatile();
+        // qos.durability();
+        // qos.best_effort();
+        // qos.transient_local();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
@@ -110,11 +110,6 @@ namespace camera_driver
 
     UsbCamNode::~UsbCamNode()
     {
-        if(using_shared_memory_)
-        {
-            if(!destorySharedMemory(shared_memory_param_))
-                RCLCPP_ERROR(this->get_logger(), "Destory shared memory failed...");
-        }
     }
 
     std::shared_ptr<sensor_msgs::msg::Image> UsbCamNode::convert_frame_to_message(cv::Mat &frame)
@@ -138,18 +133,12 @@ namespace camera_driver
         ros_image.is_bigendian = false;
         ros_image.data.assign(frame.datastart, frame.dataend);
 
-        RCLCPP_INFO(this->get_logger(), "Copy frame...");
+        // RCLCPP_INFO(this->get_logger(), "Copy frame...");
         // ros_image.is_bigendian = (std::endian::native == std::endian::big);
         // ros_image.step = frame.cols * frame.elemSize();
         // size_t size = ros_image.step * frame.rows;
-        
         // ros_image.data.resize(size);
         // RCLCPP_INFO(this->get_logger(), "resize ros frame...");
-
-        // RCLCPP_INFO(this->get_logger(), "ros_image: %d %d", ros_image.height, ros_image.width);
-        // RCLCPP_INFO(this->get_logger(), "raw_image: %d %d", frame.size().height, frame.size().width);
-        // RCLCPP_INFO(this->get_logger(), "size: %ld", size / frame.size().width);
-
         // if(frame.isContinuous())
         // {
         //     RCLCPP_INFO(this->get_logger(), "copy frame...");
@@ -169,93 +158,77 @@ namespace camera_driver
         //         cv_data_ptr += frame.step;
         //     }
         // }
-
         auto msg_ptr = std::make_shared<sensor_msgs::msg::Image>(ros_image);
-
-        // cv::namedWindow("raw", cv::WINDOW_AUTOSIZE);
-        // cv::imshow("raw", frame);
-        // cv::waitKey(1);
         return msg_ptr;
     }
 
     void UsbCamNode::image_callback()
     {
         cap >> frame;
-        
-        // RCLCPP_INFO(this->get_logger(), "frame stream...");
         auto now = this->get_clock()->now();
-
         auto dt = (now.nanoseconds() - last_frame_.nanoseconds()) / 1e9;
-        if(!frame.empty() && 
-            dt > (1 / usb_cam_params_.fps))
+        if(!frame.empty() && dt > (1 / usb_cam_params_.fps))
         {
             last_frame_ = now;
-            if(using_shared_memory_)
-            {
-                memcpy(shared_memory_param_.shared_memory_ptr, frame.data, USB_IMAGE_HEIGHT * USB_IMAGE_WIDTH * 3);
+            if(frame.rows != usb_cam_params_.image_width || frame.cols != usb_cam_params_.image_height)
+            { 
+                cv::resize(frame, frame, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Resize frame...");
             }
-            else
-            {
-                // std::cout << "Pub img..." << std::endl;
+            // if(!is_filpped)
+            // {
+            //     RCLCPP_INFO(this->get_logger(), "is_filpped...");
+            //     image_msg = convert_frame_to_message(frame);
+            //     RCLCPP_INFO(this->get_logger(), "convert success...");
+            // }
+            // else
+            // {
+            //     //flip the image
+            //     // cv::filp(frame, filpped_frame, 1);
+            //     image_msg = convert_frame_to_message(frame);
+            // }
 
-                // if(!is_filpped)
-                // {
-                //     RCLCPP_INFO(this->get_logger(), "is_filpped...");
-                //     image_msg = convert_frame_to_message(frame);
-                //     RCLCPP_INFO(this->get_logger(), "convert success...");
-                // }
-                // else
-                // {
-                //     //flip the image
-                //     // cv::filp(frame, filpped_frame, 1);
-                //     image_msg = convert_frame_to_message(frame);
-                // }
+            // Put the message into a queue to be processed by the middleware.
+            // This call is non-blocking.
+            // RCLCPP_INFO(this->get_logger(), "get info...");
+            // sensor_msgs::msg::CameraInfo::SharedPtr camera_info_msg(
+            //     new sensor_msgs::msg::CameraInfo(cam_info_manager->getCameraInfo()));
+            // image_msg->header.stamp = timestamp;
+            // image_msg->header.frame_id = frame_id;
+            // camera_info_msg->header.stamp = timestamp;
+            // camera_info_msg->header.frame_id = frame_id;
 
-                // Put the message into a queue to be processed by the middleware.
-                // This call is non-blocking.
-                // RCLCPP_INFO(this->get_logger(), "get info...");
-                // sensor_msgs::msg::CameraInfo::SharedPtr camera_info_msg(
-                //     new sensor_msgs::msg::CameraInfo(cam_info_manager->getCameraInfo()));
-                
-                rclcpp::Time now = this->get_clock()->now();
+            sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>();
+            rclcpp::Time now = this->get_clock()->now();
+            msg->header.frame_id = usb_cam_params_.frame_id;
+            msg->header.stamp = now;
+            msg->encoding = "bgr8";
+            msg->width = frame.cols;
+            msg->height = frame.rows;
+            msg->step = static_cast<sensor_msgs::msg::Image::_step_type>(frame.step);
+            msg->is_bigendian = false;
+            msg->data.assign(frame.datastart, frame.dataend);
 
-                // image_msg->header.stamp = timestamp;
-                // image_msg->header.frame_id = frame_id;
-                
-                // camera_info_msg->header.stamp = timestamp;
-                // camera_info_msg->header.frame_id = frame_id;
-                sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>();
-
-                msg->header.frame_id = usb_cam_params_.frame_id;
-                msg->header.stamp = now;
-                msg->encoding = "bgr8";
-                msg->width = frame.cols;
-                msg->height = frame.rows;
-                msg->step = static_cast<sensor_msgs::msg::Image::_step_type>(frame.step);
-                msg->is_bigendian = false;
-                msg->data.assign(frame.datastart, frame.dataend);
-
-                // camera_info_pub.publish(image_msg, camera_info_msg);
-                frame_pub->publish(std::move(msg));
-            }
-
-            save_video_ = this->get_parameter("save_video").as_bool();
-            if(save_video_)
-            {   // Video recorder.
-                videoRecorder(video_record_param_, &frame);
-            }
-
-            bool show_img = this->get_parameter("show_img").as_bool();
-            if(show_img)
-            {
-                cv::namedWindow("raw_image", cv::WINDOW_AUTOSIZE);
-                cv::imshow("raw_image", frame);
-                cv::waitKey(2000);
-            }
-
-            // if(using_video_)
-            //     usleep(10000);
+            // camera_info_pub.publish(image_msg, camera_info_msg);
+            frame_pub->publish(std::move(msg));
         }
+
+        save_video_ = this->get_parameter("save_video").as_bool();
+        if(save_video_)
+        {   // Video recorder.
+            videoRecorder(video_record_param_, &frame);
+        }
+
+        bool show_img = this->get_parameter("show_img").as_bool();
+        if(show_img)
+        {
+            cv::namedWindow("raw_image", cv::WINDOW_AUTOSIZE);
+            cv::imshow("raw_image", frame);
+            cv::waitKey(2000);
+        }
+
+        // if(using_video_)
+        //     usleep(10000);
     }
 
     bool UsbCamNode::setParam(rclcpp::Parameter param)
@@ -301,7 +274,7 @@ namespace camera_driver
 
         this->declare_parameter("camera_id", 0);
         this->declare_parameter("frame_id", "usb_camera_link");
-        this->declare_parameter("image_width", 480);
+        this->declare_parameter("image_width", 640);
         this->declare_parameter("image_height", 480);
         this->declare_parameter("fps", 30);
         this->declare_parameter<bool>("show_img", false);

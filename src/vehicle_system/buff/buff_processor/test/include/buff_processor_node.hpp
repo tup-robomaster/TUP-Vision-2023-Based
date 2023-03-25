@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:10:59
- * @LastEditTime: 2023-03-17 19:26:17
+ * @LastEditTime: 2023-03-19 21:46:58
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/buff_processor_node.hpp
  */
 #ifndef BUFF_PROCESSOR_NODE_HPP_
@@ -69,6 +69,7 @@ namespace buff_processor
         cv::Point2f apex2d[5];
         Eigen::Vector3d pred_point3d_;
         std::shared_ptr<image_transport::Subscriber> img_sub_;
+        cv::Mat src_;
         
         void imageCallback(const ImageMsg::ConstSharedPtr &img_info);
         

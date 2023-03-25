@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-03-18 10:03:35
+ * @LastEditTime: 2023-03-22 16:59:53
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -101,9 +101,9 @@ namespace armor_detector
             img_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this, camera_topic, rmw_qos);
 
             // Create synchronous timer.
-            my_sync_policy_.setInterMessageLowerBound(0, rclcpp::Duration(0, 3e6));
-            my_sync_policy_.setInterMessageLowerBound(1, rclcpp::Duration(0, 3e6));
-            my_sync_policy_.setMaxIntervalDuration(rclcpp::Duration(0, 1e7));
+            my_sync_policy_.setInterMessageLowerBound(0, rclcpp::Duration(0, 1e7));
+            my_sync_policy_.setInterMessageLowerBound(1, rclcpp::Duration(0, 1e7));
+            my_sync_policy_.setMaxIntervalDuration(rclcpp::Duration(0, 3e7));
             // sync_ = std::make_shared<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, SerialMsg>>(*img_msg_sync_sub_, *serial_msg_sync_sub_, 0.005);
             sync_ = std::make_shared<message_filters::Synchronizer<MySyncPolicy>>(MySyncPolicy(my_sync_policy_), *img_msg_sync_sub_, *serial_msg_sync_sub_);
 
@@ -139,8 +139,8 @@ namespace armor_detector
         rclcpp::Time now = this->get_clock()->now();
         double dura = (now.nanoseconds() - time.nanoseconds()) / 1e6;
         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "delay:%.2fms", dura);
-        if ((dura) > 5.0)
-            return;
+        // if ((dura) > 20.0)
+        //     return;
         TaskData src;
         // Convert the image to opencv format.
         // cv_bridge::CvImagePtr cv_ptr;
@@ -161,18 +161,18 @@ namespace armor_detector
             return;
         }
         
-        RCLCPP_WARN(this->get_logger(), "mode:%d", src.mode);
-        CarHPMsg car_hp_msg;
+        // RCLCPP_WARN(this->get_logger(), "mode:%d", src.mode);
+        ObjHPMsg obj_hp_msg;
         if (src.mode == SENTRY_NORMAL)
         {
-            auto dt = (this->get_clock()->now() - car_hp_msg_.header.stamp).nanoseconds() / 1e6;
-            if (dt > 500)
-            {
-                RCLCPP_WARN(this->get_logger(), "Car hp msg is timeout: %.2fms...", dt);
-                car_hp_msg_mutex_.lock();
-                car_hp_msg = car_hp_msg_;
-                car_hp_msg_mutex_.unlock();
-            }
+            // auto dt = (this->get_clock()->now() - obj_hp_msg_.header.stamp).nanoseconds() / 1e6;
+            // if (dt > 500)
+            // {
+                // RCLCPP_WARN(this->get_logger(), "obj hp msg is timeout: %.2fms...", dt);
+                obj_hp_msg_mutex_.lock();
+                obj_hp_msg = obj_hp_msg_;
+                obj_hp_msg_mutex_.unlock();
+            // }
         }
 
         AutoaimMsg target_info;
@@ -189,7 +189,7 @@ namespace armor_detector
             {   // Target spinning detector. 
                 if (src.mode == SENTRY_NORMAL)
                 {
-                    if (!detector_->gyro_detector(src, target_info, car_hp_msg))
+                    if (!detector_->gyro_detector(src, target_info, obj_hp_msg))
                     {
                         RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "[SENTRY MODE]: Not spinning...");
                     }
@@ -231,17 +231,18 @@ namespace armor_detector
     void DetectorNode::detect(TaskData& src, rclcpp::Time start)
     {
         serial_msg_mutex_.lock();
-        if(debug_.using_imu)
+        if (debug_.using_imu)
         {
             auto dt = (this->get_clock()->now() - serial_msg_.imu.header.stamp).nanoseconds() / 1e6;
-            if(dt > 50)
-            {
-                src.mode = serial_msg_.mode;
-                src.bullet_speed = serial_msg_.bullet_speed;
-                detector_->debug_params_.using_imu = false;
-            }
-            else
-            {
+            putText(src.img, "IMU_DELAY:" + to_string(dt) + "ms", cv::Point2i(50, 80), cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
+            // if(dt > 50)
+            // {
+            //     src.mode = serial_msg_.mode;
+            //     src.bullet_speed = serial_msg_.bullet_speed;
+            //     detector_->debug_params_.using_imu = false;
+            // }
+            // else
+            // {
                 src.bullet_speed = serial_msg_.bullet_speed;
                 src.mode = serial_msg_.mode;
                 src.quat.w() = serial_msg_.imu.orientation.w;
@@ -249,7 +250,7 @@ namespace armor_detector
                 src.quat.y() = serial_msg_.imu.orientation.y;
                 src.quat.z() = serial_msg_.imu.orientation.z;
                 detector_->debug_params_.using_imu = true;
-            }
+            // }
         }
         serial_msg_mutex_.unlock(); 
         
@@ -262,7 +263,6 @@ namespace armor_detector
         param_mutex_.lock();
         if (detector_->armor_detect(src, is_target_lost))
         {   
-
             global_interface::msg::DetectionArray detection_array;
             detection_array.header = img_header_;
             detection_array.header.frame_id = detection_array.header.frame_id + "_frame";
@@ -282,7 +282,8 @@ namespace armor_detector
             if (detector_->gyro_detector(src, target_info))
             {
                 // RCLCPP_INFO(this->get_logger(), "Spinning detector...");
-                if(debug_.using_imu && detector_->debug_params_.using_imu)
+                // if(debug_.using_imu && detector_->debug_params_.using_imu)
+                if (debug_.using_imu)
                 {
                     target_info.quat_imu.w = src.quat.w();
                     target_info.quat_imu.x = src.quat.x();
@@ -293,7 +294,7 @@ namespace armor_detector
                 rmat_imu = src.quat.toRotationMatrix();
                 Eigen::Vector3d armor_3d_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
                 tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_imu);
-                // RCLCPP_INFO(this->get_logger(), "target info: %lf %lf %lf", target_info.aiming_point_world.x, target_info.aiming_point_world.y, target_info.aiming_point_world.z);
+                // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 20, "target info: %lf %lf %lf", target_info.aiming_point_world.x, target_info.aiming_point_world.y, target_info.aiming_point_world.z);
             }
             // else
             // {
@@ -325,12 +326,12 @@ namespace armor_detector
         }
     }
 
-    void DetectorNode::carHPMsgCallback(const CarHPMsg& car_hp_msg)
+    void DetectorNode::objHPMsgCallback(const ObjHPMsg& obj_hp_msg)
     {
-        car_hp_msg_mutex_.lock();
-        car_hp_msg_ = car_hp_msg;
-        car_hp_msg_.header.stamp = this->get_clock()->now();
-        car_hp_msg_mutex_.unlock();
+        obj_hp_msg_mutex_.lock();
+        obj_hp_msg_ = obj_hp_msg;
+        obj_hp_msg_.header.stamp = this->get_clock()->now();
+        obj_hp_msg_mutex_.unlock();
         return;
     }
 
@@ -367,7 +368,7 @@ namespace armor_detector
         rclcpp::Time now = this->get_clock()->now();
         double dura = (now.nanoseconds() - time.nanoseconds()) / 1e6;
         // RCLCPP_WARN(this->get_logger(), "delay:%.2fms", dura);
-        if ((dura) > 10.0)
+        if ((dura) > 20.0)
             return;
 
         TaskData src;

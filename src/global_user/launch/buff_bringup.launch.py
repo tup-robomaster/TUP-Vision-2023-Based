@@ -2,7 +2,7 @@
 # Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-27 01:40:28
-LastEditTime: 2023-03-18 13:55:52
+LastEditTime: 2023-03-19 21:35:28
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/buff_bringup.launch.py
 '''
 import os
@@ -65,6 +65,7 @@ def generate_launch_description():
     return LaunchDescription([
         declare_camera_type,
         declare_use_serial,
+        declare_debug_pred,
 
         Node(
             package='serialport',
@@ -73,10 +74,12 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             parameters=[{
-                'using_imu':LaunchConfiguration('using_imu'),
-                'debug_without_com': 'false'
+                'using_port': True,
+                'tracking_target': False,
+                'print_serial_info': False,
+                'print_referee_info': False
             }],
-            condition=IfCondition(PythonExpression([LaunchConfiguration('using_imu'), "== 'True'"]))
+            condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
         ),
         
         ComposableNodeContainer(

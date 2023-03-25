@@ -11,19 +11,8 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(tf2_ros REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(rclpy REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(laser_geometry REQUIRED)
 find_package(message_filters REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_sensor_msgs REQUIRED)
-find_package(visualization_msgs REQUIRED)
-find_package(angles REQUIRED)
-find_package(robot_state_publisher REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED COMPONENTS EigenSparse)
 find_package(matplotlib_cpp REQUIRED)
@@ -31,19 +20,11 @@ find_package(matplotlib_cpp REQUIRED)
 set(dependencies
   geometry_msgs
   rclcpp
-  rclcpp_lifecycle
   sensor_msgs
   std_msgs
-  tf2
-  tf2_geometry_msgs
-  tf2_ros
-  tf2_sensor_msgs
-  visualization_msgs
-  angles
   OpenCV
   Eigen3
   Ceres
-
   global_user
   global_interface
 )
@@ -86,9 +67,9 @@ add_library(${PROJECT_NAME} SHARED
 target_link_libraries(${PROJECT_NAME}
   # ${dependencies}
   ${OpenCV_LIBRARIES}
-  yaml-cpp.so
-  fmt.so 
-  glog.so
+  yaml-cpp
+  fmt 
+  glog
 )
 
 add_executable(testing 
@@ -104,7 +85,7 @@ add_executable(testing
 target_link_libraries(testing
   ${PROJECT_NAME}
   ${Eigen3_LIBRARIES}
-  ceres.so
+  ceres
   matplotlib_cpp::matplotlib_cpp
 )
 
@@ -125,7 +106,7 @@ target_link_libraries(figure
 
 # target_link_libraries(imm_testing 
 #   ${PROJECT_NAME}
-#   ceres.so
+#   ceres
 # )
       
 # 添加头文件地址

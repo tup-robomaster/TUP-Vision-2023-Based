@@ -26,7 +26,7 @@
 #include "global_interface/msg/gimbal.hpp"
 #include "global_interface/msg/sentry.hpp"
 #include "global_interface/msg/car_pos.hpp"
-#include "global_interface/msg/car_hp.hpp"
+#include "global_interface/msg/obj_hp.hpp"
 #include "global_interface/msg/game_info.hpp"
 #include "../../global_user/include/coordsolver.hpp"
 
@@ -39,7 +39,7 @@ namespace serialport
         typedef global_interface::msg::Gimbal GimbalMsg;
         typedef global_interface::msg::Serial SerialMsg;
         typedef global_interface::msg::Sentry SentryMsg;
-        typedef global_interface::msg::CarHP CarHPMsg;
+        typedef global_interface::msg::ObjHP ObjHPMsg;
         typedef global_interface::msg::CarPos CarPosMsg;
         typedef global_interface::msg::GameInfo GameMsg;
 
@@ -85,7 +85,7 @@ namespace serialport
         rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
         rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sentry_twist_sub_;
         rclcpp::Publisher<CarPosMsg>::SharedPtr car_pos_pub_;
-        rclcpp::Publisher<CarHPMsg>::SharedPtr car_hp_pub_;
+        rclcpp::Publisher<ObjHPMsg>::SharedPtr obj_hp_pub_;
         rclcpp::Publisher<GameMsg>::SharedPtr game_msg_pub_;
 
         // 其他兵种

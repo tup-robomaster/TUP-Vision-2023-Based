@@ -5,6 +5,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+set(CMAKE_BUILD_TYPE=Release)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) # 添加-fPIC编译，即：装成一个动态库
 # option(WITH_MVSSDK "Build with hikMVSSDK" ON)
 
@@ -68,21 +69,21 @@ target_link_libraries(${PROJECT_NAME}
   FormatConversion
   MediaProcess
   gxiapi
-  yaml-cpp.so
+  yaml-cpp
 )
 
 add_executable(usb_cam_driver_node src/usb_driver/usb_cam_node_main.cpp)
 ament_target_dependencies(usb_cam_driver_node ${dependencies})
 target_link_libraries(usb_cam_driver_node
   ${PROJECT_NAME}
-  yaml-cpp.so
+  yaml-cpp
 )
 
 add_executable(hik_cam_driver_node src/hik_driver/hik_cam_node_main.cpp)
 ament_target_dependencies(hik_cam_driver_node ${dependencies})
 target_link_libraries(hik_cam_driver_node 
   ${PROJECT_NAME}
-  yaml-cpp.so
+  yaml-cpp
 )
 
 add_executable(daheng_cam_driver_node src/daheng_driver/daheng_cam_node_main.cpp)
@@ -90,7 +91,7 @@ ament_target_dependencies(daheng_cam_driver_node ${dependencies})
 target_link_libraries(daheng_cam_driver_node
   ${PROJECT_NAME}
   gxiapi
-  yaml-cpp.so
+  yaml-cpp
 )
     
 rclcpp_components_register_nodes(${PROJECT_NAME} 

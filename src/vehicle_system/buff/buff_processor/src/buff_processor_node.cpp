@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-02-24 20:18:51
+ * @LastEditTime: 2023-03-20 10:28:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -42,6 +42,9 @@ namespace buff_processor
         // qos.transient_local();
         qos.durability_volatile();
 
+        rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
+        rmw_qos.depth = 1;
+
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/buff_processor/gimbal_msg", qos);
 
@@ -62,17 +65,14 @@ namespace buff_processor
         bool debug = false;
         this->declare_parameter<bool>("debug", true);
         this->get_parameter("debug", debug);
-        if(debug)
+        if (debug)
         {
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffProcessorNode::paramsCallback, this, _1));
-            
             image_size_ = image_info_.image_size_map[camera_type];
             std::string camera_topic = image_info_.camera_topic_map[camera_type];
-            
-            sleep(5);
             // image sub.
             img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic, 
-                std::bind(&BuffProcessorNode::imageCallback, this, _1), transport_type));
+                std::bind(&BuffProcessorNode::imageCallback, this, _1), transport_type, rmw_qos));
         }
     }
 

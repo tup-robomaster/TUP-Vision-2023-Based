@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-03-17 19:23:09
+ * @LastEditTime: 2023-03-20 10:06:49
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -61,7 +61,7 @@ namespace buff_detector
 
         this->declare_parameter<int>("camera_type", DaHeng);
         int camera_type = this->get_parameter("camera_type").as_int();
-        std::string transport = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
+        std::string transport = "raw";
         
         image_size_ = image_info_.image_size_map[camera_type];
         // image sub.

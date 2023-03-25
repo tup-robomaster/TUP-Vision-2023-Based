@@ -169,9 +169,9 @@ namespace camera_driver
         //打 开 设 备
         stOpenParam.accessMode = GX_ACCESS_EXCLUSIVE;
         stOpenParam.openMode = GX_OPEN_INDEX;
-        stOpenParam.pszContent = (char*)to_string(serial_number).c_str();
-        RCLCPP_WARN(logger_, "Device_num:%d id:%s", int(nDeviceNum), stOpenParam.pszContent);
-        // stOpenParam.pszContent = "1";
+        stOpenParam.pszContent = "1";
+        // stOpenParam.pszContent = (char*)to_string(serial_number).c_str();
+        // RCLCPP_WARN(logger_, "Device_num:%d id:%s", int(nDeviceNum), stOpenParam.pszContent);
         // status = GXOpenDeviceByIndex(serial_number, &hDevice);
         status = GXOpenDevice(&stOpenParam, &hDevice);
         // auto success = deviceReset();

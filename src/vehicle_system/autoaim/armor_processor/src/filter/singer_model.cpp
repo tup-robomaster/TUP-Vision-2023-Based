@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-11 13:18:53
- * @LastEditTime: 2023-03-11 21:59:44
+ * @LastEditTime: 2023-03-22 02:23:37
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/singer_model.cpp
  */
 #include "../../include/filter/singer_model.hpp"
@@ -44,6 +44,8 @@ namespace armor_processor
 
     void SingerModel::init()
     {
+        cout << "singer_param:" <<  singer_param_[0] << " " << singer_param_[1] << " " << singer_param_[2] << " " <<  singer_param_[3]
+            << " " <<  singer_param_[4] << " " <<  singer_param_[5] << " " <<  singer_param_[6] << " " <<  singer_param_[7] << endl;
         double alpha = singer_param_[0];
         double dt = singer_param_[4];
 
@@ -111,14 +113,14 @@ namespace armor_processor
         double q33 = 1 / (2 * alpha) * (1 - exp(-2 * alpha * dt));
         
         double sigma = singer_param_[5];
-        if(acc > 0)
-        {
-            sigma = ((4 - M_PI) / M_PI) * pow(singer_param_[1] - acc, 2);
-        }
-        else
-        {
-            sigma = ((4 - M_PI) / M_PI) * pow(singer_param_[1] + acc, 2);
-        }
+        // if(acc > 0)
+        // {
+        //     sigma = ((4 - M_PI) / M_PI) * pow(singer_param_[1] - acc, 2);
+        // }
+        // else
+        // {
+        //     sigma = ((4 - M_PI) / M_PI) * pow(singer_param_[1] + acc, 2);
+        // }
         Q << 2 * pow(sigma, 2) * alpha * q11, 2 * pow(sigma, 2) * alpha * q12, 2 * pow(sigma, 2) * alpha* q13,
             2 * pow(sigma, 2) * alpha* q12, 2 * pow(sigma, 2) * alpha* q22, 2 * pow(sigma, 2) * alpha* q23,
             2 * pow(sigma, 2) * alpha* q13, 2 * pow(sigma, 2) * alpha* q23, 2 * pow(sigma, 2) * alpha* q33;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:40
- * @LastEditTime: 2023-03-17 19:34:44
+ * @LastEditTime: 2023-03-20 10:18:35
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/usb_driver/usb_cam_node.hpp
  */
 #ifndef USB_CAM_NODE_HPP_
@@ -80,11 +80,6 @@ namespace camera_driver
         bool setParam(rclcpp::Parameter param);
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
-    
-    protected:
-        bool using_shared_memory_;   //图像数据内存共享
-        SharedMemoryParam shared_memory_param_;   
-        std::thread memory_write_thread_;
     }; // UsbCamNode
 } //namespace camera_driver
 

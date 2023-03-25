@@ -17,7 +17,7 @@
 #include "global_interface/msg/detection.hpp"
 #include "global_interface/msg/detection_array.hpp"
 #include "global_interface/msg/autoaim.hpp"
-#include "global_interface/msg/car_hp.hpp"
+#include "global_interface/msg/obj_hp.hpp"
 
 using namespace global_user;
 using namespace coordsolver;
@@ -25,7 +25,7 @@ namespace armor_detector
 {
     class Detector
     {
-        typedef global_interface::msg::CarHP CarHPMsg;
+        typedef global_interface::msg::ObjHP ObjHPMsg;
 
     public:
         Detector(const PathParam& path_params, const DetectorParam& detector_params_, const DebugParam& debug_params_, const GyroParam& gyro_params_);
@@ -33,12 +33,12 @@ namespace armor_detector
 
         // void run();
         bool armor_detect(TaskData &src, bool& is_target_lost);
-        bool gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, CarHPMsg hp = CarHPMsg());
+        bool gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp = ObjHPMsg());
 
         Point2i cropImageByROI(Mat &img);
         ArmorTracker* chooseTargetTracker(TaskData& src, vector<ArmorTracker*> trackers, double timestamp);
         int chooseTargetID(TaskData& src, vector<Armor> &armors, double timestamp);
-        int chooseTargetID(TaskData& src, std::vector<Armor>& armors, CarHPMsg hp = CarHPMsg());
+        int chooseTargetID(TaskData& src, std::vector<Armor>& armors, ObjHPMsg hp = ObjHPMsg());
 
     public:
         CoordSolver coordsolver_;
