@@ -327,7 +327,12 @@ namespace armor_detector
     }
 
     void DetectorNode::objHPMsgCallback(const ObjHPMsg& obj_hp_msg)
+    void DetectorNode::objHPMsgCallback(const ObjHPMsg& obj_hp_msg)
     {
+        obj_hp_msg_mutex_.lock();
+        obj_hp_msg_ = obj_hp_msg;
+        obj_hp_msg_.header.stamp = this->get_clock()->now();
+        obj_hp_msg_mutex_.unlock();
         obj_hp_msg_mutex_.lock();
         obj_hp_msg_ = obj_hp_msg;
         obj_hp_msg_.header.stamp = this->get_clock()->now();

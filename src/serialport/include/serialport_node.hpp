@@ -72,7 +72,7 @@ namespace serialport
         atomic<bool> flag_;
         // VisionData vision_data_;
         rclcpp::TimerBase::SharedPtr watch_timer_;
-        rclcpp::TimerBase::SharedPtr send_timer_;
+        rclcpp::TimerBase::SharedPtr send_timer_;\
         // rclcpp::TimerBase::SharedPtr receive_timer_;
         queue<VisionAimData> vision_data_queue_;
         // vector<float> vehicle_pos_info;
