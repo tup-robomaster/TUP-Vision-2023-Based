@@ -23,7 +23,7 @@
     image_height: 1024
     width_scale: 1
     height_scale: 1
-    exposure_time: 3000
+    exposure_time: 2500
     exposure_gain: 14
     exposure_gain_b: 0
     exposure_gain_g: 0

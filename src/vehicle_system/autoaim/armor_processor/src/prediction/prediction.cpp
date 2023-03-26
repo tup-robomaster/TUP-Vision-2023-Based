@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-03-25 23:57:01
+ * @LastEditTime: 2023-03-26 04:19:11
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -486,17 +486,17 @@ namespace armor_processor
         {   // Draw curve.
             if (is_singer_available.xyz_status[0])
             {
-                curveDrawer(0, *src, predict_acc_[0], cv::Point2i(260, 200));
+                curveDrawer(0, *src, predict_vel_[0], cv::Point2i(260, 200));
                 // curveDrawer(0, *src, history_acc_[0], cv::Point2i(620, 200));
             } 
             if (is_singer_available.xyz_status[1])
             {
-                curveDrawer(1, *src, predict_acc_[1], cv::Point2i(260, 200));
+                curveDrawer(1, *src, predict_vel_[1], cv::Point2i(260, 200));
                 // curveDrawer(1, *src, history_acc_[1], cv::Point2i(620, 200));
             }
             if (is_singer_available.xyz_status[2])
             {
-                curveDrawer(3, *src, predict_acc_[2], cv::Point2i(260, 200));
+                curveDrawer(3, *src, predict_vel_[2], cv::Point2i(260, 200));
                 // curveDrawer(3, *src, history_acc_[2], cv::Point2i(620, 200));
             }
             if (debug_param_.show_fps)
@@ -982,7 +982,12 @@ namespace armor_processor
 
             Eigen::MatrixXd control(3, 1);
             singer_model_[axis].setC(control, dt, alpha);
-            
+
+            // if (history_acc_[axis][0] == 0.0)
+            //     singer_model_[axis].setQ(target_acc);
+            // else
+            //     singer_model_[axis].setQ(State[2]);
+
             VectorXd pred = F * State + control * State[2];
             result = pred[0];
 
@@ -1140,19 +1145,19 @@ namespace armor_processor
         history_acc_[0][3] = history_acc_[0][2];
         history_acc_[0][2] = history_acc_[0][1];
         history_acc_[0][1] = history_acc_[0][0];
-        history_acc_[0][0] = acc_3d[0];
+        history_acc_[0][0] = acc_3d[0] > 5.0 ? 0.0 : acc_3d[0];
 
         // Y-AXIS
         history_acc_[1][3] = history_acc_[1][2];
         history_acc_[1][2] = history_acc_[1][1];
         history_acc_[1][1] = history_acc_[1][0];
-        history_acc_[1][0] = acc_3d[1];
+        history_acc_[1][0] = acc_3d[1] > 5.0 ? 0.0 : acc_3d[1];
 
         // Z-AXIS
         history_acc_[2][3] = history_acc_[2][2];
         history_acc_[2][2] = history_acc_[2][1];
         history_acc_[2][1] = history_acc_[2][0];
-        history_acc_[2][0] = acc_3d[2];
+        history_acc_[2][0] = acc_3d[2] > 5.0 ? 0.0 : acc_3d[2];
         return;
     }
 
