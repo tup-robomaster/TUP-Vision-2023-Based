@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-02-09 18:07:33
+ * @LastEditTime: 2023-03-21 18:07:25
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -123,11 +123,11 @@ namespace coordsolver
         {
             points_world = 
             {
-                {-0.1125, 0.027, 0},
-                {-0.1125, -0.027, 0},
                 {0, -0.7, -0.05},
                 {0.1125, -0.027, 0},
-                {0.1125, 0.027, 0}
+                {0.1125, 0.027, 0},
+                {-0.1125, 0.027, 0},
+                {-0.1125, -0.027, 0}
             };
             // points_world = {
             // {-0.1125,0.027,0},
@@ -161,9 +161,9 @@ namespace coordsolver
             Eigen::Matrix3d rmat_eigen_world = rmat_imu * (transform_ic.block(0, 0, 3, 3) * rmat_eigen);
             result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;
-            auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
-            double angle = angle_axisd.angle();
-            RCLCPP_INFO(logger_, "rotate angle:%lf", angle * (180 / CV_PI));
+            // auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
+            // double angle = angle_axisd.angle();
+            // RCLCPP_INFO(logger_, "rotate angle:%lf", angle * (180 / CV_PI));
         }
         else
         {
@@ -190,13 +190,10 @@ namespace coordsolver
     Eigen::Vector2d CoordSolver::getAngle(Eigen::Vector3d &xyz_cam, Eigen::Matrix3d &rmat)
     {
         auto xyz_offseted = staticCoordOffset(xyz_cam);
-
-        rmat = Eigen::Matrix3d::Identity();
         auto xyz_world = camToWorld(xyz_offseted, rmat);
         auto angle_cam = calcYawPitch(xyz_cam);
         // auto dist = xyz_offseted.norm();
         // auto pitch_offset = 6.457e04 * pow(dist,-2.199);
-        
         auto pitch_offset = dynamicCalcPitchOffset(xyz_world);
         angle_cam[1] = angle_cam[1] + pitch_offset;
         auto angle_offseted = staticAngleOffset(angle_cam);
@@ -212,7 +209,6 @@ namespace coordsolver
      */
     cv::Point2f CoordSolver::reproject(Eigen::Vector3d &xyz)
     {
-
         Eigen::Matrix3d mat_intrinsic;
         cv2eigen(intrinsic, mat_intrinsic);
         //(u,v,1)^T = (1/Z) * K * (X,Y,Z)^T
@@ -330,8 +326,8 @@ namespace coordsolver
                 u += (delta_x / 6) * (k1_u + 2 * k2_u + 2 * k3_u + k4_u);
                 p += (delta_x / 6) * (k1_p + 2 * k2_p + 2 * k3_p + k4_p);
                 
-                x+=delta_x;
-                y+=p * delta_x;
+                x += delta_x;
+                y += p * delta_x;
             }
             //评估迭代结果,若小于迭代精度需求则停止迭代
             auto error = dist_vertical - y;

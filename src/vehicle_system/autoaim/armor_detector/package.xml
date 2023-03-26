@@ -17,8 +17,6 @@
   <depend>sensor_msgs</depend>
   <depend>global_user</depend>
   <depend>global_interface</depend>
-
-  <!-- <depend>InferenceEngine</depend> -->
   <depend>OpenVINO</depend>
   <depend>Ceres</depend>
   <depend>Eigen3</depend>

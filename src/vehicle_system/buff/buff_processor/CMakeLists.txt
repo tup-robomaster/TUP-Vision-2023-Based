@@ -37,10 +37,10 @@ find_package(yaml-cpp REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(cv_bridge REQUIRED)
 # find_package(fmt REQUIRED)
-find_package(glog REQUIRED)
+# find_package(glog REQUIRED)
 find_package(global_interface REQUIRED)
 find_package(global_user REQUIRED)
-#find_package(filter REQUIRED)
+find_package(filter REQUIRED)
 
 include_directories(include 
   ${OpenCV_INCLUDE_DIRS}
@@ -66,8 +66,7 @@ set(dependencies
   
   global_user
   global_interface
-  #filter
-  glog
+  filter
 )
   
 include_directories(include)
@@ -76,7 +75,6 @@ add_library(${PROJECT_NAME} SHARED
   # src/buff_processor/buff_processor.cpp
   # src/buff_processor_node.cpp
   test/src/predictor/predictor.cpp
-  src/predictor/particle_filter.cpp
   test/src/buff_processor/buff_processor.cpp
   test/src/buff_processor_node.cpp
 )
@@ -88,10 +86,9 @@ ament_target_dependencies(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${OpenCV_LIBRARIES}
   ${Eigen3_LIBRARIES}
-  yaml-cpp.so 
-  ceres.so
-  lapack.so
-  glog.so
+  yaml-cpp 
+  ceres
+  lapack
 )
   
 rclcpp_components_register_nodes(${PROJECT_NAME}

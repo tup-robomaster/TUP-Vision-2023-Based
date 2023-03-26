@@ -2,8 +2,8 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-03-01 14:39:24
-FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
+LastEditTime: 2023-03-26 18:01:32
+FilePath: /TUP-Vision-2023-Based/install/global_user/share/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
 import yaml
@@ -30,6 +30,7 @@ def generate_launch_description():
     
     camera_type = LaunchConfiguration('camera_type')
     use_serial = LaunchConfiguration('using_imu')
+    debug_pred = LaunchConfiguration("debug_pred")
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
@@ -42,7 +43,13 @@ def generate_launch_description():
         default_value='True',
         description='debug without serial port.'
     )
-
+    
+    declare_debug_pred = DeclareLaunchArgument(
+        name='debug_pred',
+        default_value='False',
+        description='debug armor prediction.'
+    )
+    
     with open(camera_param_file, 'r') as f:
         usb_cam_params = yaml.safe_load(f)['/usb_cam_driver']['ros__parameters']
     with open(camera_param_file, 'r') as f:
@@ -60,6 +67,15 @@ def generate_launch_description():
     return LaunchDescription([
         declare_camera_type,
         declare_use_serial,
+        declare_debug_pred,
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(
+                    get_package_share_directory('robot_description'), 'launch', 'view_model.launch'
+                ),
+            ),
+        ),
 
         Node(
             package='serialport',
@@ -74,6 +90,40 @@ def generate_launch_description():
                 'print_referee_info': False
             }],
             condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
+        ),
+        
+        ComposableNodeContainer(
+            name='serial_processor_container',
+            package='rclcpp_components',
+            executable='component_container',
+            namespace='',
+            output='screen',
+            condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'True'"])),
+            composable_node_descriptions=[
+                ComposableNode(
+                    package='serialport',
+                    plugin='serialport::SerialPortNode',
+                    name='serialport',
+                    parameters=[{
+                        'using_port': True,
+                        'tracking_target': True,
+                        'print_serial_info': False,
+                        'print_referee_info': False            
+                    }],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                ),
+                ComposableNode(
+                    package='armor_processor',
+                    plugin='armor_processor::ArmorProcessorNode',
+                    name='armor_processor',
+                    parameters=[armor_processor_params], 
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                ),
+            ]
         ),
         
         ComposableNodeContainer(
@@ -114,7 +164,7 @@ def generate_launch_description():
                 # ),  
             ],
         ),
-
+        
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
@@ -145,7 +195,7 @@ def generate_launch_description():
                 #     package='armor_processor',
                 #     plugin='armor_processor::ArmorProcessorNode',
                 #     name='armor_processor',
-                #     namespace='armor_processor',
+                #     namespace='',
                 #     parameters=[armor_processor_params],
                 #     extra_arguments=[{
                 #         'use_intra_process_comms':True
@@ -178,8 +228,18 @@ def generate_launch_description():
                     parameters=[armor_detector_params],
                     extra_arguments=[{
                         'use_intra_process_comms':True
-                    }]
-                )
+                    }],
+                ),
+                # ComposableNode(
+                #     package='armor_processor',
+                #     plugin='armor_processor::ArmorProcessorNode',
+                #     name='armor_processor',
+                #     namespace='',
+                #     parameters=[armor_processor_params],
+                #     extra_arguments=[{
+                #         'use_intra_process_comms':True
+                #     }]
+                # ),  
             ],
         ),
 
@@ -208,7 +268,17 @@ def generate_launch_description():
                     extra_arguments=[{
                         'use_intra_process_comms':True
                     }]
-                )
+                ),
+                # ComposableNode(
+                #     package='armor_processor',
+                #     plugin='armor_processor::ArmorProcessorNode',
+                #     name='armor_processor',
+                #     namespace='',
+                #     parameters=[armor_processor_params],
+                #     extra_arguments=[{
+                #         'use_intra_process_comms':True
+                #     }]
+                # ),  
             ],
         ),
 
@@ -218,6 +288,7 @@ def generate_launch_description():
             namespace='armor_processor',
             output='screen',
             emulate_tty=True,
-            parameters=[armor_processor_params]
+            parameters=[armor_processor_params],
+            condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
         ),
     ])
