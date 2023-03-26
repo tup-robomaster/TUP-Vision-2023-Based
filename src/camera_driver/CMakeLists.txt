@@ -69,21 +69,21 @@ target_link_libraries(${PROJECT_NAME}
   FormatConversion
   MediaProcess
   gxiapi
-  yaml-cpp.so
+  yaml-cpp
 )
 
 add_executable(usb_cam_driver_node src/usb_driver/usb_cam_node_main.cpp)
 ament_target_dependencies(usb_cam_driver_node ${dependencies})
 target_link_libraries(usb_cam_driver_node
   ${PROJECT_NAME}
-  yaml-cpp.so
+  yaml-cpp
 )
 
 add_executable(hik_cam_driver_node src/hik_driver/hik_cam_node_main.cpp)
 ament_target_dependencies(hik_cam_driver_node ${dependencies})
 target_link_libraries(hik_cam_driver_node 
   ${PROJECT_NAME}
-  yaml-cpp.so
+  yaml-cpp
 )
 
 add_executable(daheng_cam_driver_node src/daheng_driver/daheng_cam_node_main.cpp)
@@ -91,7 +91,7 @@ ament_target_dependencies(daheng_cam_driver_node ${dependencies})
 target_link_libraries(daheng_cam_driver_node
   ${PROJECT_NAME}
   gxiapi
-  yaml-cpp.so
+  yaml-cpp
 )
     
 rclcpp_components_register_nodes(${PROJECT_NAME} 

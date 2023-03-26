@@ -68,9 +68,9 @@ add_library(${PROJECT_NAME} SHARED
 )
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 target_link_libraries(${PROJECT_NAME}
-  ceres.so
-  glog.so 
-  yaml-cpp.so
+  ceres
+  glog 
+  yaml-cpp
 )
 
 add_executable(${PROJECT_NAME}_node src/${PROJECT_NAME}_node.cpp)

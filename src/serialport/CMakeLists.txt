@@ -65,7 +65,7 @@ ament_target_dependencies(${PROJECT_NAME}
   ${dependencies}
 )
 target_link_libraries(${PROJECT_NAME}
-  yaml-cpp.so
+  yaml-cpp
 )
 
 add_executable(${PROJECT_NAME}_node
@@ -78,7 +78,7 @@ ament_target_dependencies(${PROJECT_NAME}_node
   ${dependencies}
 )
 target_link_libraries(${PROJECT_NAME}_node 
-  yaml-cpp.so
+  yaml-cpp
 )
 
 # register component nodes

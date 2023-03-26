@@ -2,8 +2,8 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-03-21 18:13:43
-FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
+LastEditTime: 2023-03-26 18:01:32
+FilePath: /TUP-Vision-2023-Based/install/global_user/share/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
 import yaml
@@ -68,6 +68,14 @@ def generate_launch_description():
         declare_camera_type,
         declare_use_serial,
         declare_debug_pred,
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(
+                    get_package_share_directory('robot_description'), 'launch', 'view_model.launch'
+                ),
+            ),
+        ),
 
         Node(
             package='serialport',

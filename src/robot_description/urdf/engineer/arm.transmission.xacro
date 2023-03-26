@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="arm">
+
+    <xacro:macro name="arm_transmission" params="simulation">
+
+        <!-- transmission -->
+        <transmission name="trans_joint1">
+            <type>transmission_interface/SimpleTransmission</type>
+            <actuator name="joint1_motor">
+                <mechanicalReduction>406.489213</mechanicalReduction>
+            </actuator>
+            <joint name="joint1">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <offset>0</offset>
+            </joint>
+        </transmission>
+
+        <transmission name="trans_joint2">
+            <type>transmission_interface/SimpleTransmission</type>
+            <actuator name="joint2_motor">
+                <mechanicalReduction>476.977368</mechanicalReduction>
+            </actuator>
+            <joint name="joint2">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <offset>0</offset>
+            </joint>
+        </transmission>
+
+        <transmission name="trans_joint3">
+            <type>transmission_interface/SimpleTransmission</type>
+            <actuator name="joint3_motor">
+                <mechanicalReduction>1036.0854</mechanicalReduction>
+            </actuator>
+            <joint name="joint3">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <offset>0</offset>
+            </joint>
+        </transmission>
+
+        <transmission name="trans_joint4">
+            <type>transmission_interface/SimpleTransmission</type>
+            <actuator name="joint4_motor">
+                <mechanicalReduction>328.29</mechanicalReduction>
+            </actuator>
+            <joint name="joint4">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <offset>0.3415371896670</offset>
+            </joint>
+        </transmission>
+
+        <transmission name="trans_joint5">
+            <type>transmission_interface/SimpleTransmission</type>
+            <actuator name="joint5_motor">
+                <mechanicalReduction>50.895</mechanicalReduction>
+            </actuator>
+            <joint name="joint5">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <offset>0</offset>
+            </joint>
+        </transmission>
+
+        <transmission name="trans_joint6">
+            <type>transmission_interface/SimpleTransmission</type>
+            <actuator name="joint6_motor">
+                <mechanicalReduction>50.895</mechanicalReduction>
+            </actuator>
+            <joint name="joint6">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <offset>0</offset>
+            </joint>
+        </transmission>
+
+        <transmission name="trans_joint7">
+            <type>transmission_interface/SimpleTransmission</type>
+            <actuator name="joint7_motor">
+                <mechanicalReduction>19.2032</mechanicalReduction>
+            </actuator>
+            <joint name="joint7">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <offset>0</offset>
+            </joint>
+        </transmission>
+
+        <xacro:unless value="${simulation}">
+            <transmission name="trans_mimic_joint1">
+                <type>transmission_interface/SimpleTransmission</type>
+                <actuator name="mimic_joint1_motor">
+                    <mechanicalReduction>-406.489213</mechanicalReduction>
+                </actuator>
+                <joint name="mimic_joint1">
+                    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                    <offset>0</offset>
+                </joint>
+            </transmission>
+
+            <transmission name="trans_mimic_joint2">
+                <type>transmission_interface/SimpleTransmission</type>
+                <actuator name="mimic_joint2_motor">
+                    <mechanicalReduction>-476.977368</mechanicalReduction>
+                </actuator>
+                <joint name="mimic_joint2">
+                    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                    <offset>0</offset>
+                </joint>
+            </transmission>
+
+            <transmission name="trans_mimic_joint3">
+                <type>transmission_interface/SimpleTransmission</type>
+                <actuator name="mimic_joint3_motor">
+                    <mechanicalReduction>-1036.0854</mechanicalReduction>
+                </actuator>
+                <joint name="mimic_joint3">
+                    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                    <offset>0</offset>
+                </joint>
+            </transmission>
+        </xacro:unless>
+    </xacro:macro>
+
+</robot>
