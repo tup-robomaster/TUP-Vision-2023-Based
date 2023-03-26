@@ -2,8 +2,8 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-03-26 18:01:32
-FilePath: /TUP-Vision-2023-Based/install/global_user/share/global_user/launch/autoaim_bringup.launch.py
+LastEditTime: 2023-03-26 19:21:53
+FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
 import yaml
@@ -72,7 +72,7 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 os.path.join(
-                    get_package_share_directory('robot_description'), 'launch', 'view_model.launch'
+                    get_package_share_directory('robot_description'), 'launch', 'view_model.launch.py'
                 ),
             ),
         ),

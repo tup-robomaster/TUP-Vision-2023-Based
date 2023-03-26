@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-03-21 12:33:23
+ * @LastEditTime: 2023-03-26 19:51:16
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -307,7 +307,7 @@ namespace armor_detector
         // }
         param_mutex_.unlock();
         target_info.is_target_lost = is_target_lost;
-        target_info.header.frame_id = "gimbal_link";
+        target_info.header.frame_id = "camera_link";
         target_info.header.stamp = start;
         target_info.timestamp = src.timestamp;
         armor_info_pub_->publish(std::move(target_info));
