@@ -65,7 +65,6 @@ set(dependencies
   yaml-cpp
   fmt
   # lapack 
-
   global_interface
   global_user
 )
@@ -91,11 +90,11 @@ ament_target_dependencies(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   ${Eigen3_LIBRARIES}
-  ceres.so
+  ceres
   #ceres.a
-  glog.so 
-  yaml-cpp.so
-  #lapack.so 
+  glog 
+  yaml-cpp
+  #lapack 
 )
 
 add_executable(${PROJECT_NAME}_node
@@ -105,10 +104,10 @@ add_executable(${PROJECT_NAME}_node
 # target_link_libraries(${PROJECT_NAME}
 #   ${dependencies}
 #   ceres.a
-#   fmt.so 
-#   ceres.so
-#   yaml-cpp.so
-#   lapack.so 
+#   fmt 
+#   ceres
+#   yaml-cpp
+#   lapack 
 # )
 
 # ament_target_dependencies(${PROJECT_NAME}_node

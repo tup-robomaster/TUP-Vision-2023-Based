@@ -86,9 +86,9 @@ add_library(${PROJECT_NAME} SHARED
 target_link_libraries(${PROJECT_NAME}
   # ${dependencies}
   ${OpenCV_LIBRARIES}
-  yaml-cpp.so
-  fmt.so 
-  glog.so
+  yaml-cpp
+  fmt 
+  glog
 )
 
 add_executable(testing 
@@ -104,7 +104,7 @@ add_executable(testing
 target_link_libraries(testing
   ${PROJECT_NAME}
   ${Eigen3_LIBRARIES}
-  ceres.so
+  ceres
   matplotlib_cpp::matplotlib_cpp
 )
 
@@ -125,7 +125,7 @@ target_link_libraries(figure
 
 # target_link_libraries(imm_testing 
 #   ${PROJECT_NAME}
-#   ceres.so
+#   ceres
 # )
       
 # 添加头文件地址

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-01-26 16:36:45
+ * @LastEditTime: 2023-03-22 15:36:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -79,7 +79,8 @@ namespace armor_detector
             {
                 for (int g0 = 0; g0 < num_grid_w; g0++)
                 {
-                    grid_strides.push_back((GridAndStride){g0, g1, stride});
+                    GridAndStride grid_stride = {g0, g1, stride}; 
+                    grid_strides.push_back(grid_stride);
                 }
             }
         }
@@ -124,8 +125,8 @@ namespace armor_detector
 
             float box_objectness = (feat_ptr[basic_pos + 8]);
             
-            float color_conf = (feat_ptr[basic_pos + 9 + box_color]);
-            float cls_conf = (feat_ptr[basic_pos + 9 + NUM_COLORS + box_class]);
+            // float color_conf = (feat_ptr[basic_pos + 9 + box_color]);
+            // float cls_conf = (feat_ptr[basic_pos + 9 + NUM_COLORS + box_class]);
 
             // float box_prob = (box_objectness + cls_conf + color_conf) / 3.0;
             float box_prob = box_objectness;
@@ -198,19 +199,21 @@ namespace armor_detector
             }
         }
 
-        #pragma omp parallel sections
-        {
-            #pragma omp section
-            {
-                if (left < j) qsort_descent_inplace(faceobjects, left, j);
-            }
-            #pragma omp section
-            {
-                if (i < right) qsort_descent_inplace(faceobjects, i, right);
-            }
-        }
-    }
+        if (left < j) qsort_descent_inplace(faceobjects, left, j);
+        if (i < right) qsort_descent_inplace(faceobjects, i, right);
 
+        // #pragma omp parallel sections
+        // {
+        //     #pragma omp section
+        //     {
+        //         if (left < j) qsort_descent_inplace(faceobjects, left, j);
+        //     }
+        //     #pragma omp section
+        //     {
+        //         if (i < right) qsort_descent_inplace(faceobjects, i, right);
+        //     }
+        // }
+    }
 
     static void qsort_descent_inplace(std::vector<ArmorObject>& objects)
     {
@@ -276,7 +279,7 @@ namespace armor_detector
      * @param img_h Height of Image.
      */
     static void decodeOutputs(const float* prob, std::vector<ArmorObject>& objects,
-                                Eigen::Matrix<float,3,3> &transform_matrix, const int img_w, const int img_h)
+                                Eigen::Matrix<float,3,3> &transform_matrix)
     {
             std::vector<ArmorObject> proposals;
             std::vector<int> strides = {8, 16, 32};
@@ -459,21 +462,17 @@ namespace armor_detector
         ov::Tensor output_tensor = infer_request.get_output_tensor();
         float* output = output_tensor.data<float_t>();
         // u_int8_t* output = output_tensor.data<u_int8_t>();
-
         // std::cout << &output << std::endl;
 
-        int img_w = src.cols;
-        int img_h = src.rows;
-
-        decodeOutputs(output, objects, transfrom_matrix, img_w, img_h);
-
-        // std::cout << 15 << std::endl;
+        // int img_w = src.cols;
+        // int img_h = src.rows;
+        decodeOutputs(output, objects, transfrom_matrix);
         for (auto object = objects.begin(); object != objects.end(); ++object)
         {
             //对候选框预测角点进行平均,降低误差
             if ((*object).pts.size() >= 8)
             {
-                auto N = (*object).pts.size();
+                int N = (*object).pts.size();
                 cv::Point2f pts_final[4];
 
                 for (int i = 0; i < N; i++)

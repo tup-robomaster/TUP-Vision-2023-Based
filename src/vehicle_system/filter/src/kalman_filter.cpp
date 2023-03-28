@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2022-11-06 15:33:12
+ * @LastEditTime: 2023-03-22 15:41:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/src/kalman_filter.cpp
  */
 #include "../include/kalman_filter.hpp"
@@ -72,6 +72,4 @@ namespace kalman_filter
     {
         //TODO:
     }
-
-
 } // kalman_filter

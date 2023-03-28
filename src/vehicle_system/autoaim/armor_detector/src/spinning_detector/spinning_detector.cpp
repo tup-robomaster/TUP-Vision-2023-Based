@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-02-09 22:12:44
+ * @LastEditTime: 2023-03-22 15:35:06
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -187,7 +187,7 @@ namespace armor_detector
                 {   // 遍历所有同Key预测器，匹配速度最小且更新时间最近的ArmorTracker
                     double delta_t = timestamp - (*iter).second.last_timestamp;
                     double delta_dist = ((*armor).armor3d_world - (*iter).second.last_armor.armor3d_world).norm();
-                    double velocity = (delta_dist / delta_t) * 1e9;
+                    // double velocity = (delta_dist / delta_t) * 1e9;
                     
                     if ((*iter).second.last_armor.roi.contains((*armor).center2d) && delta_t > 0)
                     {   // 若当前预测器中的装甲板的roi包含当前装甲板的中心
@@ -202,8 +202,8 @@ namespace armor_detector
                 }
                 if (is_best_candidate_exist)
                 {   // 若找到速度最小且更新时间最近的tracker，则更新
-                    auto velocity = min_delta_dist;
-                    auto delta_t = min_delta_t;
+                    // auto velocity = min_delta_dist;
+                    // auto delta_t = min_delta_t;
                     (*best_candidate).second.update((*armor), timestamp);
                 }
                 else if ((*armor).color != 2)

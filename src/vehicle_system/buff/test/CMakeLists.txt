@@ -107,12 +107,11 @@ target_link_libraries(${PROJECT_NAME}_node
   # ${InferenceEngine_LIBRARIES}
   openvino::runtime 
   ${Eigen3_LIBRARIES}
-
-  yaml-cpp.so 
-  glog.so 
-  fmt.so
-  ceres.so
-  lapack.so 
+  yaml-cpp 
+  glog 
+  fmt
+  ceres
+  lapack 
 )
 
 install(TARGETS 

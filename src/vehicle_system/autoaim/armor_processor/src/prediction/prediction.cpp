@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-03-01 09:51:45
+ * @LastEditTime: 2023-03-22 15:38:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -685,7 +685,7 @@ namespace armor_processor
 
         double y0 = history_info_.front().xyz[0];
         double x_sum = 0;
-        double y_sum = 0;
+        // double y_sum = 0;
         for(auto& target_info : history_info_)
         {   
             // imu frame.

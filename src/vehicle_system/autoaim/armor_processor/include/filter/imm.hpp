@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 16:29:25
- * @LastEditTime: 2023-02-01 22:52:56
+ * @LastEditTime: 2023-03-22 15:38:20
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/imm.hpp
  */
 #ifndef IMM_HPP_
@@ -28,8 +28,8 @@ namespace armor_processor
         Eigen::VectorXd model_prob_;     //模型概率
         Eigen::VectorXd x_;              //目标状态向量
 
-        size_t model_num_;      //模型数量
-        size_t state_num_;      //状态向量元素个数
+        int model_num_;      //模型数量
+        int state_num_;      //状态向量元素个数
 
         std::vector<std::shared_ptr<KalmanFilter>> models_; //多模型
     public:

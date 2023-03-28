@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:03:26
- * @LastEditTime: 2023-02-26 13:54:44
+ * @LastEditTime: 2023-03-22 15:37:33
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam.cpp
  */
 #include "../../include/usb_driver/usb_cam.hpp"
@@ -43,7 +43,7 @@ namespace camera_driver
         else
         {
             cap.open(this->usb_cam_params_.video_path);
-            RCLCPP_INFO(logger_, "[Video path:] %s", this->usb_cam_params_.video_path);
+            RCLCPP_INFO(logger_, "[Video path:] %s", this->usb_cam_params_.video_path.c_str());
             if(cap.isOpened())
             {
                 this->is_open = true;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-02-25 09:31:46
+ * @LastEditTime: 2023-03-22 15:35:47
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -604,7 +604,7 @@ namespace armor_detector
             //判断装甲板是否切换，若切换将变量置1
             auto delta_t = src.timestamp - prev_timestamp;
             auto delta_dist = (target.armor3d_world - last_armor.armor3d_world).norm();
-            auto velocity = (delta_dist / delta_t) * 1e9;
+            // auto velocity = (delta_dist / delta_t) * 1e9;
             if ((target.id != last_armor.id || !last_armor.roi.contains((target.center2d))) &&
                 !is_last_target_exists)
                 target_info.spinning_switched = true;
@@ -633,7 +633,7 @@ namespace armor_detector
             //判断装甲板是否切换，若切换将变量置1
             auto delta_t = src.timestamp - prev_timestamp;
             auto delta_dist = (target.armor3d_world - last_armor.armor3d_world).norm();
-            auto velocity = (delta_dist / delta_t) * 1e9;
+            // auto velocity = (delta_dist / delta_t) * 1e9;
             if ((target.id != last_armor.id || !last_armor.roi.contains((target.center2d))) && !is_last_target_exists)
             {
                 is_target_switched = true;

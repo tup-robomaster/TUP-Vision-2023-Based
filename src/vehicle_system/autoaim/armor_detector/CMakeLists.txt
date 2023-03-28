@@ -120,9 +120,8 @@ target_link_libraries(armor_detector_node
   # ${InferenceEngine_LIBRARIES}
   openvino::runtime 
   ${Eigen3_LIBRARIES}
-
-  yaml-cpp.so 
-  # fmt.so
+  yaml-cpp 
+  # fmt
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME}

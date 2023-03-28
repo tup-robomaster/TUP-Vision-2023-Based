@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 14:01:05
- * @LastEditTime: 2023-02-04 00:14:13
+ * @LastEditTime: 2023-03-22 15:26:16
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/global_user.cpp
  */
 #include "../include/global_user/global_user.hpp"
@@ -355,6 +355,8 @@ namespace global_user
         file << content;
         file.close();
         usleep(5000);
+
+        return true;
     }
 
 } //global_user

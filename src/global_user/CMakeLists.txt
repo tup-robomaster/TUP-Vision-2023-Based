@@ -61,13 +61,13 @@ add_library(${PROJECT_NAME} SHARED
 # 用于代替传统的target_link_libraries
 ament_target_dependencies(${PROJECT_NAME}
   ${dependencies}
-  # yaml-cpp.so
+  # yaml-cpp
 )
 
 # target_link_libraries(${PROJECT_NAME}
   # ${OpenCV_LIBRARIES}
-  # yaml-cpp.so
-  # fmt.so 
+  # yaml-cpp
+  # fmt 
 # )
       
 # 添加头文件地址

@@ -107,11 +107,10 @@ target_link_libraries(${PROJECT_NAME}_node
   # ${InferenceEngine_LIBRARIES}
   openvino::runtime 
   # ${Eigen3_LIBRARIES}
-  
-  yaml-cpp.so 
-  # fmt.so
-  # ceres.so
-  # lapack.so 
+  yaml-cpp 
+  # fmt
+  # ceres
+  # lapack 
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME} 

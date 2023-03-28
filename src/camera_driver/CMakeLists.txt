@@ -75,7 +75,7 @@ target_link_libraries(${PROJECT_NAME}
   FormatConversion
   MediaProcess
   gxiapi
-  yaml-cpp.so
+  yaml-cpp
 )
 
 add_executable(usb_cam_driver_node
@@ -104,18 +104,18 @@ ament_target_dependencies(daheng_cam_driver_node
 
 target_link_libraries(usb_cam_driver_node
   ${PROJECT_NAME}
-  yaml-cpp.so
+  yaml-cpp
 )
   
 target_link_libraries(hik_cam_driver_node 
   ${PROJECT_NAME}
-  yaml-cpp.so
+  yaml-cpp
 )
   
 target_link_libraries(daheng_cam_driver_node
   ${PROJECT_NAME}
   gxiapi
-  yaml-cpp.so
+  yaml-cpp
 )
     
 rclcpp_components_register_nodes(${PROJECT_NAME} 
