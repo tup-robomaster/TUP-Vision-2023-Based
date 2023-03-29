@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-03-14 19:06:18
+ * @LastEditTime: 2023-03-27 12:40:07
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -190,7 +190,6 @@ namespace serialport
                 serial_msg.imu.linear_acceleration.z = acc[2];
                 serial_msg_pub_->publish(std::move(serial_msg));
                 // RCLCPP_WARN(this->get_logger(), "serial_msg_pub:%.3fs", now.nanoseconds() / 1e9);
-
 
                 sensor_msgs::msg::JointState joint_state;
                 joint_state.header.stamp = this->get_clock()->now();

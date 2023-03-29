@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-03-21 13:08:34
+ * @LastEditTime: 2023-03-27 16:42:58
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -39,6 +39,7 @@ namespace armor_processor
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", qos);
         tracking_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/tracking_msg", qos);
+        joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
 
         this->declare_parameter<bool>("sync_transport", false);
         sync_transport_ = this->get_parameter("sync_transport").as_bool();
@@ -213,6 +214,31 @@ namespace armor_processor
         gimbal_info.is_switched = target_info.target_switched;
         gimbal_info.is_spinning = target_info.is_spinning;
         gimbal_info_pub_->publish(std::move(gimbal_info));
+
+        sensor_msgs::msg::JointState gimbal_yaw_joint_states;
+        gimbal_yaw_joint_states.header.frame_id = "yaw";
+        gimbal_yaw_joint_states.name.emplace_back("yaw_joint");
+        gimbal_yaw_joint_states.position.emplace_back(gimbal_info.yaw * CV_PI / 180);
+        
+        sensor_msgs::msg::JointState gimbal_pitch_joint_states;
+        gimbal_pitch_joint_states.header.frame_id = "pitch";
+        gimbal_pitch_joint_states.name.emplace_back("pitch_joint");
+        gimbal_pitch_joint_states.position.emplace_back(gimbal_info.pitch * CV_PI / 180);
+
+        sensor_msgs::msg::JointState shooter_yaw_joint_states;
+        shooter_yaw_joint_states.header.frame_id = "trigger";
+        shooter_yaw_joint_states.name.emplace_back("trigger_joint");
+        shooter_yaw_joint_states.position.emplace_back(gimbal_info.yaw * CV_PI / 180);
+
+        sensor_msgs::msg::JointState shooter_cover_joint_states;
+        shooter_cover_joint_states.header.frame_id = "cover";
+        shooter_cover_joint_states.name.emplace_back("cover_joint");
+        shooter_cover_joint_states.position.emplace_back(gimbal_info.pitch * CV_PI / 180);
+
+        joint_state_pub_->publish(gimbal_yaw_joint_states);
+        joint_state_pub_->publish(gimbal_pitch_joint_states);
+        joint_state_pub_->publish(shooter_cover_joint_states);
+        joint_state_pub_->publish(shooter_yaw_joint_states);
 
         if (this->debug_)
         {
