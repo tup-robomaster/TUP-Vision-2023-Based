@@ -8,6 +8,10 @@ namespace camera_driver
         try
         {
             auto is_init = this->init();
+            if (!is_init)
+            {
+                RCLCPP_FATAL(logger_, "Camera initializing failed...");
+            }
         }
         catch(const std::exception& e)
         {
@@ -26,6 +30,10 @@ namespace camera_driver
         try
         {
             auto is_init = this->init();
+            if (!is_init)
+            {
+                RCLCPP_FATAL(logger_, "Camera initializing failed...");
+            }
         }
         catch(const std::exception& e)
         {
@@ -39,10 +47,15 @@ namespace camera_driver
     DaHengCam::~DaHengCam()
     {
         auto is_close = close();
+        if (!is_close)
+        {
+            RCLCPP_FATAL(logger_, "Camera initializing failed...");
+        }
     }
 
     bool DaHengCam::init()
     {
+        is_initialized_ = false;
         //初始化库
         status = GXInitLib();
 
@@ -156,9 +169,9 @@ namespace camera_driver
         //打 开 设 备
         stOpenParam.accessMode = GX_ACCESS_EXCLUSIVE;
         stOpenParam.openMode = GX_OPEN_INDEX;
-        stOpenParam.pszContent = (char*)to_string(serial_number).c_str();
-        RCLCPP_WARN(logger_, "Device_num:%d id:%s", int(nDeviceNum), stOpenParam.pszContent);
-        // stOpenParam.pszContent = "1";
+        stOpenParam.pszContent = "1";
+        // stOpenParam.pszContent = (char*)to_string(serial_number).c_str();
+        // RCLCPP_WARN(logger_, "Device_num:%d id:%s", int(nDeviceNum), stOpenParam.pszContent);
         // status = GXOpenDeviceByIndex(serial_number, &hDevice);
         status = GXOpenDevice(&stOpenParam, &hDevice);
         // auto success = deviceReset();
@@ -206,43 +219,7 @@ namespace camera_driver
      */
     bool DaHengCam::SetStreamOn()
     {
-        //    status = GXSetAcqusitionBufferNumber(hDevice,1);
-        //    if(status == GX_STATUS_SUCCESS){
-        //        cout<<"buffer设置成功!"<<endl;
-        //    }else{
-        //        cout<<"buffer设置失败!"<<endl;
-        //    }
-        //    int64_t nAcqMode = GX_ACQ_MODE_CONTINUOUS;
-        //    status = GXSetEnum(hDevice, GX_ENUM_ACQUISITION_MODE, nAcqMode);
-        //    if(status == GX_STATUS_SUCCESS){
-        //        cout<<"设置单帧成功!"<<endl;
-        //        return true;
-        //    }else{
-        //        if(status == GX_STATUS_INVALID_ACCESS){
-        //            cout<<"单帧采集功能当前不可访问!"<<endl;
-        //        }
-        //        if(status == GX_STATUS_INVALID_PARAMETER){
-        //            cout<<"单帧采集功能无效参数!"<<endl;
-        //        }
-        //        if(status == GX_STATUS_INVALID_CALL){
-        //            cout<<"单帧采集功能无效的接口调用!"<<endl;
-        //        }
-        //        cout<<"设置单帧失败!"<<endl;
-        //        return false;
-        //    }
-        //发 送 开 始 采 集 命 令
-        //    status = GXSendCommand(hDevice, GX_COMMAND_ACQUISITION_START);
-        //    if(status == GX_STATUS_SUCCESS){
-        //        cout<<"开始采集图像!"<<endl;
-        //        return true;
-        //    }else{
-        //        cout<<"采集失败!"<<endl;
-        //        return false;
-        //    }
-
-        /**********************/
-        //设置buffer数量
-        //设 置 采 集 buffer 个 数
+        // 设 置 采 集 buffer 个 数
         status = GXSetAcqusitionBufferNumber(hDevice, 2);
         if (status == GX_STATUS_SUCCESS)
         {
@@ -272,6 +249,27 @@ namespace camera_driver
         {
             RCLCPP_ERROR(logger_, "时间戳帧信息启用失败!");
         }
+
+        status = GXSetEnum(hDevice, GX_ENUM_EVENT_SELECTOR, GX_ENUM_EVENT_SELECTOR_EXPOSUREEND);
+        if (status == GX_STATUS_SUCCESS)
+        {
+            RCLCPP_INFO(logger_, "设置曝光结束时间成功...");
+        }
+        else
+        {
+            RCLCPP_ERROR(logger_, "设置曝光结束时间失败...");
+        }
+
+        status = GXSetEnum(hDevice, GX_ENUM_EVENT_NOTIFICATION, GX_ENUM_EVENT_NOTIFICATION_ON);
+        if (status == GX_STATUS_SUCCESS)
+        {
+            RCLCPP_INFO(logger_, "开启曝光结束时间成功...");
+        }
+        else
+        {
+            RCLCPP_ERROR(logger_, "开启曝光结束时间失败...");
+        }
+
         //开 采
         status = GXStreamOn(hDevice);
         if (status == GX_STATUS_SUCCESS)
@@ -329,106 +327,22 @@ namespace camera_driver
      */
     bool DaHengCam::get_frame(cv::Mat &Src, sensor_msgs::msg::Image& image_msg)
     {
-        // ------------------------------------------- For Soft Trigger------------------------------------------------------------
-        // int64_t nPayLoadSize = 0;
-        // //获 取 图 像 buffer 大 小 , 下 面 动 态 申 请 内 存
-        // status = GXGetInt(hDevice, GX_INT_PAYLOAD_SIZE, &nPayLoadSize);
-        // if (status == GX_STATUS_SUCCESS && nPayLoadSize > 0)
-        // {
-        //     //定 义 GXGetImage 的 传 入 参 数
-        //     GX_FRAME_DATA stFrameData;
-        //     //根 据 获 取 的 图 像 buffer 大 小 m_nPayLoadSize 申 请 buffer
-        //     stFrameData.pImgBuf = malloc((size_t)nPayLoadSize);
-
-        //     //发 送 开 始 采 集 命 令
-        //     // int64_t nAcqMode = GX_ACQ_MODE_SINGLE_FRAME;
-        //     // status = GXSetEnum(hDevice, GX_ENUM_ACQUISITION_MODE, nAcqMode);
-        //     status = GXSendCommand(hDevice, GX_COMMAND_ACQUISITION_START);
-        //     if (status == GX_STATUS_SUCCESS)
-        //     {
-        //         //调 用 GXGetImage 取 一 帧 图 像
-        //         status = GXGetImage(hDevice, &stFrameData, 100);
-        //         lastImgTimestamp = stFrameData.nTimestamp;
-        //     }
-        //     else
-        //     {
-        //         return false;
-        //     }
-
-        //     if (status == GX_STATUS_SUCCESS && stFrameData.nStatus == GX_FRAME_STATUS_SUCCESS)
-        //     {
-        //         lastImgTimestamp = stFrameData.nTimestamp;
-        //         char *pRGB24Buf = new char[stFrameData.nWidth * stFrameData.nHeight * 3]; //输 出 图 像 RGB 数 据
-        //         if (pRGB24Buf == NULL)
-        //         {
-        //             return false;
-        //         }
-        //         else
-        //         {
-        //             memset(pRGB24Buf, 0, stFrameData.nWidth * stFrameData.nHeight * 3 * sizeof(char));
-        //             //缓 冲 区 初 始 化
-        //         }
-        //         DX_BAYER_CONVERT_TYPE cvtype = RAW2RGB_NEIGHBOUR3; //选 择 插 值 算 法
-        //         DX_PIXEL_COLOR_FILTER nBayerType = DX_PIXEL_COLOR_FILTER(BAYERBG);
-        //         //选 择 图 像 Bayer 格 式
-        //         bool bFlip = false;
-
-        //         VxInt32 DxStatus = DxRaw8toRGB24(stFrameData.pImgBuf, pRGB24Buf, stFrameData.nWidth, stFrameData.nHeight, cvtype, nBayerType, bFlip);
-        //         if (DxStatus != DX_OK)
-        //         {
-                    // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] Raw8 to RGB24 failed!\n");
-        //             if (pRGB24Buf != NULL)
-        //             {
-        //                 delete[] pRGB24Buf;
-        //                 pRGB24Buf = NULL;
-        //             }
-        //             return false;
-        //         }
-
-        //         // if (set_contrast)
-        //         // {
-        //         //     DxStatus = DxContrast(pRGB24Buf, pRGB24Buf,stFrameData.nWidth * stFrameData.nHeight * 3, contrast_factor);
-        //         //     if (DxStatus != DX_OK)
-        //         //         cout << "Contrast Set Failed" <<endl;
-        //         // }
-        //         // if (set_color)
-        //         // {
-        //         //     DxStatus = DxImageImprovment(pRGB24Buf, pRGB24Buf,stFrameData.nWidth, stFrameData.nHeight, nColorCorrectionParam,NULL,pGammaLut);
-        //         //     if (DxStatus != DX_OK)
-                //         fmt::print(fmt::fg(fmt::color::red), "[CAMERA] Color Set Failed!\n");
-        //         // }
-        //         // if (set_saturation)
-        //         // {
-        //         //     DxStatus = DxSaturation(pRGB24Buf, pRGB24Buf,stFrameData.nWidth * stFrameData.nHeight * 3, saturation_factor);
-        //         //     if (DxStatus != DX_OK)
-        //         //         cout << "Saturation Set Failed" <<endl;
-        //         // }
-
-        //         Mat src = Mat(stFrameData.nHeight, stFrameData.nWidth, CV_8UC3);
-        //         memcpy(src.data, pRGB24Buf, stFrameData.nWidth * stFrameData.nHeight * 3);
-        //         src.copyTo(Src);
-
-        //         delete[] pRGB24Buf;
-        //         pRGB24Buf = NULL;
-        //         return true;
-        //     }
-        //     else
-        //     {
-        //         // cout << "读取图片缓冲失败" << endl;
-                // fmt::print(fmt::fg(fmt::color::red), "[CAMERA] GetMat:采图失败\n");
-        //         return false;
-        //     }
-        // }
-        // else
-        // {
-        //     return false;
-        // }
-        // ------------------------------------------- For Stream------------------------------------------------------------
         //调 用 GXDQBuf 取 一 帧 图 像
         status = GXDQBuf(hDevice, &pFrameBuffer, 1000);
         if (status == GX_STATUS_SUCCESS && pFrameBuffer->nStatus == GX_FRAME_STATUS_SUCCESS)
         {
-            lastImgTimestamp = pFrameBuffer->nTimestamp;
+            // if (!is_initialized_)
+            // {
+            //     lastImgTimestamp = pFrameBuffer->nTimestamp;
+            //     is_initialized_ = true;
+            // }
+            // else
+            // {
+            //     uint64_t t = pFrameBuffer->nTimestamp;
+            //     cout << "delay:" << ((t - lastImgTimestamp) / 125000000.0) * 1000 << "ms" << endl;
+            //     lastImgTimestamp = t;
+            // }
+
             char *pRGB24Buf = new char[pFrameBuffer->nWidth * pFrameBuffer->nHeight * 3]; //输 出 图 像 RGB 数 据
             if (pRGB24Buf == NULL)
                 return false;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-03-12 10:28:54
+ * @LastEditTime: 2023-03-17 19:55:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -83,7 +83,8 @@ namespace buff_detector
             {
                 for (int g0 = 0; g0 < num_grid_w; g0++)
                 {
-                    grid_strides.push_back(std::move((GridAndStride){g0, g1, stride}));
+                    GridAndStride grid_stride = {g0, g1, stride};
+                    grid_strides.emplace_back(grid_stride);
                 }
             }
         }
@@ -203,19 +204,20 @@ namespace buff_detector
             }
         }
 
-        #pragma omp parallel sections
-        {
-            #pragma omp section
-            {
-                if (left < j) qsort_descent_inplace(faceobjects, left, j);
-            }
-            #pragma omp section
-            {
-                if (i < right) qsort_descent_inplace(faceobjects, i, right);
-            }
-        }
+        // #pragma omp parallel sections
+        // {
+        //     #pragma omp section
+        //     {
+        //         if (left < j) qsort_descent_inplace(faceobjects, left, j);
+        //     }
+        //     #pragma omp section
+        //     {
+        //         if (i < right) qsort_descent_inplace(faceobjects, i, right);
+        //     }
+        // }
+        if (left < j) qsort_descent_inplace(faceobjects, left, j);
+        if (i < right) qsort_descent_inplace(faceobjects, i, right);
     }
-
 
     static void qsort_descent_inplace(std::vector<BuffObject>& objects)
     {
@@ -292,7 +294,7 @@ namespace buff_detector
      * @param img_h Height of Image.
      */
     static void decodeOutputs(const float* prob, std::vector<BuffObject>& objects,
-                                Eigen::Matrix<float,3,3> &transform_matrix, const int img_w, const int img_h)
+                                Eigen::Matrix<float,3,3> &transform_matrix)
     {
         std::vector<BuffObject> proposals;
         std::vector<int> strides = {8, 16, 32};
@@ -380,7 +382,7 @@ namespace buff_detector
         // Step 2. Compile the model
         compiled_model = core.compile_model(
             model,
-            "GPU",
+            "CPU",
             ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
             // "AUTO:GPU,CPU", 
             // ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
@@ -469,11 +471,10 @@ namespace buff_detector
         float* output = output_tensor.data<float_t>();
 
         // std::cout << &output << std::endl;
+        // int img_w = src.cols;
+        // int img_h = src.rows;
 
-        int img_w = src.cols;
-        int img_h = src.rows;
-
-        decodeOutputs(output, objects, transfrom_matrix, img_w, img_h);
+        decodeOutputs(output, objects, transfrom_matrix);
 
         for (auto object = objects.begin(); object != objects.end(); ++object)
         {
@@ -481,12 +482,7 @@ namespace buff_detector
             if ((*object).pts.size() >= 10)
             {
                 int N = (*object).pts.size();
-                // std::cout << "obj_color:" << object->color << std::endl;
-                // std::cout << "color:" << object->color << std::endl;
-                // std::cout << "cls:" << object->cls << std::endl;
-                // std::cout << "conf:" << object->prob << std::endl;
                 cv::Point2f pts_final[5];
-
                 for (int i = 0; i < N; i++)
                 {
                     pts_final[i % 5]+=(*object).pts[i];

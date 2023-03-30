@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-03-13 10:10:18
+ * @LastEditTime: 2023-03-23 13:14:47
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -72,7 +72,7 @@ namespace armor_detector
 
         auto input = src.img;
         timestamp_ = src.timestamp;
-        if(!debug_params_.debug_without_com)
+        if (!debug_params_.debug_without_com)
         {   //有串口
             //设置弹速,若弹速大于10m/s值,且弹速变化大于0.5m/s则更新
             if (src.bullet_speed > 10 && abs(src.bullet_speed - last_bullet_speed_) > 0.5)
@@ -89,10 +89,13 @@ namespace armor_detector
         }
 
         // Eigen::Matrix3d rmat_imu;
-        if(debug_params_.using_imu)
+        if (debug_params_.using_imu)
         {   //使用陀螺仪数据
             rmat_imu_ = src.quat.toRotationMatrix();
-            RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 2000, "Using imu...");
+            auto vec = rotationMatrixToEulerAngles(rmat_imu_);
+            // cout<<"Euler : "<<vec[0] * 180.f / CV_PI<<" "<<vec[1] * 180.f / CV_PI<<" "<<vec[2] * 180.f / CV_PI<<endl;
+            // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Euler: %lf %lf %lf", vec[0] * 180 / CV_PI, vec[1] * 180 / CV_PI, vec[2] * 180 / CV_PI);
+            RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 1000, "Using imu...");
             // RCLCPP_INFO(logger_, "quat:[%f %f %f %f]", src.quat.x(), src.quat.y(), src.quat.z(), src.quat.w());
         }
         else
@@ -101,7 +104,7 @@ namespace armor_detector
             RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 1000, "No imu...");
         }
 
-        if(debug_params_.using_roi)
+        if (debug_params_.using_roi)
         {   //启用roi
             //吊射模式采用固定ROI
             if (src.mode == 2)
@@ -220,14 +223,14 @@ namespace armor_detector
                 }
             }
             //进行PnP，目标较少时采取迭代法，较多时采用IPPE
-            int pnp_method;
-            if (objects_.size() <= 2)
-                pnp_method = SOLVEPNP_ITERATIVE;
-            else
-                pnp_method = SOLVEPNP_IPPE;
-            TargetType target_type = SMALL;
+            // int pnp_method;
+            // if (objects_.size() <= 2)
+            //     pnp_method = SOLVEPNP_ITERATIVE;
+            // else
+            //     pnp_method = SOLVEPNP_IPPE;
 
             //计算长宽比,确定装甲板类型
+            TargetType target_type = SMALL;
             auto apex_wh_ratio = max(points_pic_rrect.size.height, points_pic_rrect.size.width) /
                                     min(points_pic_rrect.size.height, points_pic_rrect.size.width);
             //若大于长宽阈值或为哨兵、英雄装甲板
@@ -240,9 +243,9 @@ namespace armor_detector
                 target_type = BIG;
 
             //单目PnP
-            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
-            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
-            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu, target_type, SOLVEPNP_IPPE);
+            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
+            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
+            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
             
             //防止装甲板类型出错导致解算问题，首先尝试切换装甲板类型，若仍无效则直接跳过该装甲板
             if (pnp_result.armor_cam.norm() > 10 ||
@@ -323,7 +326,7 @@ namespace armor_detector
      * @return true 
      * @return false 
      */
-    bool Detector::gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, CarHPMsg hp)
+    bool Detector::gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp)
     {
         //Create ArmorTracker for new armors 
         spinning_detector_.createArmorTracker(trackers_map_, armors_, new_armors_cnt_map_, timestamp_, dead_buffer_cnt_);
@@ -701,7 +704,7 @@ namespace armor_detector
         target_info.aiming_point_cam.x = target.armor3d_cam[0];
         target_info.aiming_point_cam.y = target.armor3d_cam[1];
         target_info.aiming_point_cam.z = target.armor3d_cam[2];
-        // RCLCPP_INFO(logger_, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
+        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
 
         if (target.color == 2)
             dead_buffer_cnt_++;
@@ -805,10 +808,12 @@ namespace armor_detector
             rectangle(src.img, armor.roi, {255, 0, 255}, 1);
             auto armor_center = coordsolver_.reproject(armor.armor3d_cam);
             circle(src.img, armor_center, 4, {0, 0, 255}, 2);
+            line(src.img, cv::Point2f(armor_center.x - 25, armor_center.y), cv::Point2f(armor_center.x + 25, armor_center.y), {0, 0, 255}, 1);
+            line(src.img, cv::Point2f(armor_center.x, armor_center.y - 30), cv::Point2f(armor_center.x, armor_center.y + 30), {0, 0, 255}, 1);
         }
     }
 
-    int Detector::chooseTargetID(TaskData &src, std::vector<Armor>& armors, CarHPMsg hps)
+    int Detector::chooseTargetID(TaskData &src, std::vector<Armor>& armors, ObjHPMsg hps)
     {
         std::vector<Armor> new_armors;
         cv::Point2d img_center = cv::Point2d(src.img.size().width / 2, src.img.size().height / 2);

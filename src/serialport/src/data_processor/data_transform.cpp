@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 02:02:10
- * @LastEditTime: 2023-03-13 21:55:38
+ * @LastEditTime: 2023-03-22 02:48:55
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/data_processor/data_transform.cpp
  */
 #include "../../include/data_processor/data_transform.hpp"
@@ -36,7 +36,11 @@ namespace serialport
         trans_data[16] = vision_data.isFindTarget;
         trans_data[17] = vision_data.isSpinning;
         trans_data[18] = vision_data.ismiddle;
-        trans_data[19] = 0x00;
+        float float_3d_data[] = {(float)vision_data.meas_tracking_point[0], (float)vision_data.meas_tracking_point[1], (float)vision_data.meas_tracking_point[2],
+            (float)vision_data.pred_aiming_point[0], (float)vision_data.pred_aiming_point[1], (float)vision_data.pred_aiming_point[2]};
+        // cout << "x:" << float_3d_data[0] <<  " y:" << float_3d_data[1] << " z:" << float_3d_data[2] << endl;
+        float2UcharRawArray(float_3d_data, 6, &trans_data[19]);
+        trans_data[43] = 0x00;
         crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
     }
 
@@ -73,6 +77,24 @@ namespace serialport
         float theta[] = {vision_data.theta_gimbal,vision_data.theta_chassis};
         float2UcharRawArray(theta, 2, &trans_data[3]);
         crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
+    }
+
+    void DataTransform::getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle)
+    {
+        if (flag == 0xA5)
+        {
+            yaw_angle = ucharRaw2Float(raw_data);
+        }
+        return;
+    }
+
+    void DataTransform::getPitchAngle(uchar flag, uchar* raw_data, float& pitch_angle)
+    {
+        if (flag == 0xA5)
+        {
+            pitch_angle = ucharRaw2Float(raw_data);
+        }
+        return;
     }
 
     void DataTransform::getPosInfo(uchar flag, uchar* raw_data, vector<float>& pos)

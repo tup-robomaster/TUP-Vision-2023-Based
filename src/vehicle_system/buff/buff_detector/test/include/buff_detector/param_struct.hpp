@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:35:11
- * @LastEditTime: 2023-03-10 15:58:22
+ * @LastEditTime: 2023-03-20 11:38:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/include/buff_detector/param_struct.hpp
  */
 //c++
@@ -83,6 +83,8 @@ namespace buff_detector
         double rotate_speed;
         double delta_angle;
         bool target_switched;
+        bool find_target;
+        double bullet_speed;
         Eigen::Vector3d r_center;
         Eigen::Vector3d armor3d_cam;
         Eigen::Vector3d armor3d_world;
@@ -94,6 +96,7 @@ namespace buff_detector
             rotate_speed = 0.0;
             delta_angle = 0.0;
             target_switched = false;
+            find_target = false;
             rmat = Eigen::Matrix3d::Identity();
         }
     };

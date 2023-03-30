@@ -38,38 +38,36 @@
 
   # Camera config params.
     # camera_name: "00J90630561" 
-    camera_name: "KE0200110075" 
+    camera_name: "KE0200110073" #FIXME:根据相机序列号修改
     camera_type: 0
-    camera_param_path: "src/global_user/config/camera.yaml"
+    camera_param_path: "/config/camera.yaml"
 
   # Network model path.
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0127-001.xml"
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml"
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/1106-333.xml"
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/yolox.xml"
-    # network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-1208-001.xml"
-    network_path: "src/vehicle_system/autoaim/armor_detector/model/opt-0127-001.xml"
+    # network_path: "/model/opt-0127-001.xml"
+    # network_path: "/model/opt-0527-002.xml"
+    # network_path: "/model/1106-333.xml"
+    # network_path: "/model/yolox.xml"
+    # network_path: "/model/opt-1208-001.xml"
+    network_path: "/model/opt-0127-001.xml"
   
   # Data saving.
     save_data: false
-    save_path: "src/data/infer2_5.txt"
+    save_path: "/data/infer2_5.txt"
     save_dataset: false
   
   # Debug params.
-    debug: true
-    show_img: true
-    show_fps: true
+    debug: false
     using_imu: true
+    show_img: false
+    show_fps: false
     using_roi: false
     detect_red: true
     auto_label: false
     print_letency: false
-    show_aim_cross: true
+    show_aim_cross: false
     sync_transport: false
-    show_all_armors: true
+    show_all_armors: false
     print_target_info: false
-    using_shared_memory: false
-    show_transformed_info: false
 
 /armor_processor:
   ros__parameters:
@@ -79,41 +77,58 @@
     max_cost: 10
     max_v: 8
     min_fitting_lens: 10
-    shoot_delay: 50
+    shoot_delay: 400
     window_size: 3
 
   # Debug params.
-    debug: true
+    debug: false
+    using_imu: true
     using_imu: true
     show_img: false
     draw_predict: false
     show_predict: false
     sync_transport: false
     print_delay: false
-    yaw_filter: false
-    pitch_filter: true
-    using_shared_memory: false
-    disable_filter: true
-    disable_fitting: false
-    show_transformed_info: false
+    x_axis_filter: true
+    y_axis_filter: true
+    z_axis_filter: true
+    # disable_filter: true
+    # disable_fitting: false
     show_aim_cross: false
     show_fps: false
 
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110075" 
-    coord_param_path: "src/global_user/config/camera.yaml"
+    coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
+    coord_param_path: "/config/camera.yaml"
     
   # Filter params.
-    filter_param_path: "src/global_user/config/filter_param.yaml"
+    filter_param_path: "/config/filter_param.yaml"
 
   # Singer model(--->CS Model).
     # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 dt:采样时间间隔 
     #  sigma:机动加速度标准差 p:过程协方差系数 r:观测协方差系数 coeff:预测提前量系数)
-    singer_model_yaw: [1.0, 20.0, 0.40, 0.35, 0.25, 2.5, 1.0, 50.0, 5.0] 
-    singer_model_pitch: [0.9, 20.0, 0.30, 0.40, 0.15, 2.0, 1.0, 5.0, 5.0]
-  
+    # singer_model_x_axis: [1.05, 5.0, 0.2, 0.2, 0.275, 1.05, 1.0, 1.0, 2.0] 
+    # singer_model_y_axis: [1.18, 5.0, 0.2, 0.2, 0.190, 1.15, 1.0, 1.0, 0.1] 
+    # singer_model_z_axis: [1.25, 5.0, 0.1, 0.9, 0.200, 1.2, 1.0, 1.0, 0.1]
+
+    singer_model_x_axis: [1.0, 10.0, 0.1, 0.8, 0.30, 2.50, 0.25, 1.0, 0.1] 
+    singer_model_y_axis: [1.18, 10.0, 0.1, 0.8, 0.20, 1.8, 1.0, 1.0, 0.1] 
+    singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.200, 1.2, 1.0, 1.0, 0.1]
+
+    # singer_model_x_axis: [1.00, 10.0, 0.1, 0.8, 0.24, 2.60, 1.0, 1.0, 0.1] 
+    # singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.18, 1.85, 1.0, 1.0, 0.1] 
+    # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.20, 1.2, 1.0, 1.0, 0.1]
+
+    # singer_model_x_axis: [1.00, 10.0, 0.1, 0.8, 0.22, 2.80, 1.0, 1.0, 0.1] 
+    # singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.17, 1.90, 1.0, 1.0, 0.1] 
+    # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.20, 1.2, 1.0, 1.0, 0.1]
+
+    # singer_model_x_axis: [1.00, 10.0, 0.1, 0.8, 0.215, 2.85, 1.0, 1.0, 0.1] 
+    # singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.165, 1.95, 1.0, 1.0, 0.1] 
+    # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.20, 1.2, 1.0, 1.0, 0.1]
+
   # IMM model.
     #状态转移概率
     trans_prob_matrix: [0.6, 0.3, 0.05, 0.05, #row prob sum = 1
