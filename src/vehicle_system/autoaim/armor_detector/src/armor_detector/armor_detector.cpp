@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-03-23 13:14:47
+ * @LastEditTime: 2023-03-31 01:53:17
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -92,10 +92,10 @@ namespace armor_detector
         if (debug_params_.using_imu)
         {   //使用陀螺仪数据
             rmat_imu_ = src.quat.toRotationMatrix();
-            auto vec = rotationMatrixToEulerAngles(rmat_imu_);
+            // auto vec = rotationMatrixToEulerAngles(rmat_imu_);
             // cout<<"Euler : "<<vec[0] * 180.f / CV_PI<<" "<<vec[1] * 180.f / CV_PI<<" "<<vec[2] * 180.f / CV_PI<<endl;
             // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Euler: %lf %lf %lf", vec[0] * 180 / CV_PI, vec[1] * 180 / CV_PI, vec[2] * 180 / CV_PI);
-            RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 1000, "Using imu...");
+            // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 1000, "Using imu...");
             // RCLCPP_INFO(logger_, "quat:[%f %f %f %f]", src.quat.x(), src.quat.y(), src.quat.z(), src.quat.w());
         }
         else
@@ -223,11 +223,11 @@ namespace armor_detector
                 }
             }
             //进行PnP，目标较少时采取迭代法，较多时采用IPPE
-            // int pnp_method;
-            // if (objects_.size() <= 2)
-            //     pnp_method = SOLVEPNP_ITERATIVE;
-            // else
-            //     pnp_method = SOLVEPNP_IPPE;
+            int pnp_method;
+            if (objects_.size() <= 2)
+                pnp_method = SOLVEPNP_ITERATIVE;
+            else
+                pnp_method = SOLVEPNP_IPPE;
 
             //计算长宽比,确定装甲板类型
             TargetType target_type = SMALL;
@@ -272,7 +272,7 @@ namespace armor_detector
             armor.euler = pnp_result.euler;
             armor.rmat = pnp_result.rmat;
             armor.area = object.area;
-            armors_.push_back(armor);
+            armors_.emplace_back(armor);
         }
         
         //若无合适装甲板
@@ -451,8 +451,8 @@ namespace armor_detector
             {
                 if ((*iter).second.last_timestamp == src.timestamp)
                 {
-                    final_armors.push_back((*iter).second.last_armor);
-                    final_trackers.push_back(&(*iter).second);
+                    final_armors.emplace_back((*iter).second.last_armor);
+                    final_trackers.emplace_back(&(*iter).second);
                     if((*iter).second.is_initialized)
                     {
                         auto dt = (((*iter).second.last_timestamp) - ((*iter).second.prev_timestamp)) / 1e9;
@@ -461,7 +461,7 @@ namespace armor_detector
                         auto angle = angle_axisd.angle();
                         w = (angle / dt);
                         period = ((2 * CV_PI) / w / 4.0);
-                        new_period_deq_.push_back(period);
+                        new_period_deq_.emplace_back(period);
                         RCLCPP_WARN(logger_, "period:%lfs", period);
                     }
                 }
@@ -492,7 +492,7 @@ namespace armor_detector
 
                 // if(history_period_.size() < 3)
                 // {
-                //     history_period_.push_back(cur_period_);
+                //     history_period_.emplace_back(cur_period_);
                 // }
                 // // std::cout << std::endl;
                 // // std::cout << "period:" << cur_period_ << std::endl;
@@ -517,7 +517,7 @@ namespace armor_detector
                 //         last_period_ = cur_period_;
                 //         if(history_period_.size() < 9)
                 //         {
-                //             history_period_.push_back(cur_period_);
+                //             history_period_.emplace_back(cur_period_);
                 //         }
                 //         else
                 //         {
@@ -658,8 +658,8 @@ namespace armor_detector
 
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
-                // final_armors.push_back((*iter).second.last_armor);
-                final_trackers.push_back(&(*iter).second);
+                // final_armors.emplace_back((*iter).second.last_armor);
+                final_trackers.emplace_back(&(*iter).second);
             }
             //进行目标选择
             auto tracker = chooseTargetTracker(src, final_trackers, src.timestamp);

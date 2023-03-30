@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-03-10 15:56:09
+ * @LastEditTime: 2023-03-31 01:33:46
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -17,6 +17,9 @@
 #include <future>
 #include <vector>
 
+//angle
+#include <angles/angles.h>
+
 //eigen
 #include <Eigen/Core>
 
@@ -24,11 +27,18 @@ namespace armor_detector
 {
     enum SpinHeading
     {
-        UNKNOWN, 
+        UNKNOWN,
         CLOCKWISE, 
         COUNTER_CLOCKWISE
     };
 
+    enum SwitchStatus
+    {
+        NONE,
+        SINGER,
+        DOUBLE
+    };
+    
     enum Color 
     {
         BLUE,
@@ -56,6 +66,11 @@ namespace armor_detector
         double delta_y_3d_higher_thresh;
         double delta_y_3d_low_thresh;
         double delta_y_3d_lower_thresh;
+
+        double max_yaw_hop_angle;
+        double max_pitch_hop_angle;
+        double max_hop_period;
+        double max_conf_dis;
         GyroParam()
         {
             max_delta_t = 100;
@@ -69,6 +84,11 @@ namespace armor_detector
             delta_y_3d_higher_thresh = 0.25;
             delta_y_3d_low_thresh = 0.10;
             delta_y_3d_lower_thresh = 0.05;
+
+            max_yaw_hop_angle = 0.05;
+            max_pitch_hop_angle = 0.05;
+            max_hop_period = 1.0;
+            max_conf_dis = 3.5;
         }
     };
 
@@ -198,12 +218,6 @@ namespace armor_detector
         std::string save_path;
     };
 
-    enum SwitchStatus
-    {
-        NONE,
-        SINGER,
-        DOUBLE
-    };
 } //namespace armor_detector
 
 #endif

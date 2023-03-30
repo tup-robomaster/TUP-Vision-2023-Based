@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-03-22 21:17:53
+ * @LastEditTime: 2023-03-31 01:51:10
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -32,7 +32,7 @@ namespace serialport
         qos.durability();
         qos.deadline();
         // qos.durability_volatile();
-
+   
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
         
@@ -76,7 +76,7 @@ namespace serialport
                 car_pos_pub_ = this->create_publisher<CarPosMsg>("/car_pos", qos);
                 obj_hp_pub_ = this->create_publisher<ObjHPMsg>("/obj_hp", qos);
                 game_msg_pub_ = this->create_publisher<GameMsg>("/game_info", qos);
-                receive_thread_ = std::thread(&SerialPortNode::receiveData, this);
+                receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
                 // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
                 sentry_twist_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
                     "/cmd_vel",
@@ -90,8 +90,8 @@ namespace serialport
 
     SerialPortNode::~SerialPortNode()
     {
-        if (receive_thread_.joinable())
-            receive_thread_.join();
+        // if (receive_thread_.joinable())
+            // receive_thread_.join();
     }
 
     /**

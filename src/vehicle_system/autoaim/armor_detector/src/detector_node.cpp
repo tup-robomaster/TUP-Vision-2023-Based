@@ -332,10 +332,6 @@ namespace armor_detector
         obj_hp_msg_ = obj_hp_msg;
         obj_hp_msg_.header.stamp = this->get_clock()->now();
         obj_hp_msg_mutex_.unlock();
-        obj_hp_msg_mutex_.lock();
-        obj_hp_msg_ = obj_hp_msg;
-        obj_hp_msg_.header.stamp = this->get_clock()->now();
-        obj_hp_msg_mutex_.unlock();
         return;
     }
 

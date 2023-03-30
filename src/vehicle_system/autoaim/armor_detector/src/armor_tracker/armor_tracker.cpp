@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-02-05 00:35:56
+ * @LastEditTime: 2023-03-30 21:17:48
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_tracker/armor_tracker.cpp
  */
 #include "../../include/armor_tracker/armor_tracker.hpp"
@@ -11,7 +11,12 @@ namespace armor_detector
 {
     ArmorTracker::ArmorTracker()
     {
-        
+        normal_gyro_status_counter_ = 0;
+        switch_gyro_status_counter_ = 0;
+        last_yaw_diff_ = 0.0;
+        last_pitch_diff_ = 0.0;
+        hop_timestamp_ = 0.0;
+        spin_status_ = UNKNOWN;
     }
 
     /**
@@ -29,6 +34,12 @@ namespace armor_detector
         hit_score = 0;
         history_info_.push_back(src);
         calcTargetScore();
+        normal_gyro_status_counter_ = 0;
+        switch_gyro_status_counter_ = 0;
+        last_yaw_diff_ = 0.0;
+        last_pitch_diff_ = 0.0;
+        hop_timestamp_ = 0.0;
+        spin_status_ = UNKNOWN;
     }
 
     /**

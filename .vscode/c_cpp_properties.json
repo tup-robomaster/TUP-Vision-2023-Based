@@ -6,8 +6,7 @@
                 "/opt/ros/noetic/include/**",
                 "/opt/ros/galactic/include/**",
                 "/usr/include/**",
-                "/usr/local/lib/**",
-                "/opt/ros/galactic/include/**"
+                "/usr/local/lib/**"
             ],
             "name": "ros-galactic",
             "defines": [],
