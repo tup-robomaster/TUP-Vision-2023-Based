@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-03-26 04:19:11
+ * @LastEditTime: 2023-03-30 03:09:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -954,6 +954,9 @@ namespace armor_processor
             measurement << meas;
             
             singer_kf_[axis].Predict();
+            Eigen::MatrixXd stateCovPre = singer_kf_[axis].P();
+            Eigen::MatrixXd statePre = singer_kf_[axis].x();
+
             singer_kf_[axis].Update(measurement);
 
             // Eigen::MatrixXd predictState(3, 1);
@@ -991,12 +994,29 @@ namespace armor_processor
             VectorXd pred = F * State + control * State[2];
             result = pred[0];
 
-            if (abs(result - meas) > 0.25)
+            MatrixXd r1(1, 1);
+            r1 = singer_kf_[axis].H_ * stateCovPre * singer_kf_[axis].H_.transpose() + singer_kf_[axis].Q_; 
+            MatrixXd r2(1, 1);
+            r2 = measurement - singer_kf_[axis].H_ * statePre;
+            MatrixXd r3(1, 1);
+            r3 = r2.transpose() * r2;
+            if (r3(0, 0) >= 50 * r1(0, 0))
+            {
+                RCLCPP_WARN(logger_, "Filter is diverging...");
+                is_singer_init_[axis] = false;
+                is_available = false;   
+            }
+            else if (abs(result - meas) > 0.25)
+            {
                 result = meas;
-            // result = post_pos;
+                is_available = true;
+            }
+            else
+            {
+                result = post_pos;
+                is_available = true;
+            }
             // cout << axis << ":" << post_pos << endl;
-
-            is_available = true;
         }
         return is_available;
     }
