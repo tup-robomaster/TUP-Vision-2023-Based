@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-03-13 10:10:30
+ * @LastEditTime: 2023-03-31 18:46:26
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
@@ -36,8 +36,8 @@ namespace armor_detector
         bool gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp = ObjHPMsg());
 
         Point2i cropImageByROI(Mat &img);
-        ArmorTracker* chooseTargetTracker(TaskData& src, vector<ArmorTracker*> trackers, double timestamp);
-        int chooseTargetID(TaskData& src, vector<Armor> &armors, double timestamp);
+        ArmorTracker* chooseTargetTracker(TaskData& src, vector<ArmorTracker*> trackers);
+        int chooseTargetID(TaskData& src);
         int chooseTargetID(TaskData& src, std::vector<Armor>& armors, ObjHPMsg hp = ObjHPMsg());
 
     public:
@@ -45,8 +45,8 @@ namespace armor_detector
         ArmorDetector armor_detector_;
         SpinningDetector spinning_detector_;
 
-        std::vector<Armor> armors_;
         std::vector<Armor> last_armors_;
+        std::vector<Armor> new_armors_;
         atomic<int> target_id_ = -1; 
 
         bool is_init_;
@@ -76,11 +76,11 @@ namespace armor_detector
         rclcpp::Time time_crop_;
     
     private:
+        int64_t now_; //当前帧时间戳
+        int64_t last_timestamp_; //上一帧时间戳
+
         int lost_cnt_;
-        int64_t timestamp_;
         int dead_buffer_cnt_;
-        double last_timestamp_; //当前帧时间戳
-        double prev_timestamp_; //上一帧时间戳
         bool is_target_switched_;
         double last_target_area_;
         Point2i last_roi_center_;

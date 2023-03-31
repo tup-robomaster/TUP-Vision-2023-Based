@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-03-31 01:33:46
+ * @LastEditTime: 2023-03-31 16:40:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -128,10 +128,25 @@ namespace armor_detector
         double new_add_tracker_timestamp;
     };
 
+    struct SpinCounter
+    {
+        int flag;
+        int normal_gyro_status_counter;
+        int switch_gyro_status_counter;
+        SpinCounter()
+        {
+            normal_gyro_status_counter = 0;
+            switch_gyro_status_counter = 0;
+            flag = 0;
+        }
+    };
+
     struct SpinningMap
     {
         std::map<std::string, SpinHeading> spin_status_map; //反小陀螺，记录该车小陀螺状态
-        std::map<std::string, double> spin_score_map;       //反小陀螺，记录各装甲板小陀螺可能性分数，大于0为逆时针旋转，小于0为顺时针旋转
+        // std::map<std::string, double> spin_score_map;       //反小陀螺，记录各装甲板小陀螺可能性分数，大于0为逆时针旋转，小于0为顺时针旋转
+        std::map<std::string, SpinCounter> spin_counter_map; //记录装甲板旋转帧数，大于0为逆时针旋转，小于0为顺时针
+
         std::multimap<std::string, TimeInfo> spinning_time_map;
         std::multimap<std::string, GyroInfo> spinning_x_map;
     };

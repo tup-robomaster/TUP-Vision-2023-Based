@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-15 11:25:33
- * @LastEditTime: 2023-03-31 01:46:28
+ * @LastEditTime: 2023-03-31 17:25:33
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/spinning_detector/spinning_detector.hpp
  */
 #ifndef SPINNING_DETECTOR_HPP_
@@ -23,6 +23,7 @@ namespace armor_detector
         Color detect_color;
         Armor last_armor;
         rclcpp::Logger logger_;
+        rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         DetectorInfo detector_info_;
 
     public:
@@ -30,7 +31,7 @@ namespace armor_detector
         SpinningDetector(Color color, GyroParam gyro_params);
         ~SpinningDetector();
 
-        bool updateSpinScore();
+        // bool updateSpinScore();
         void createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map,
             std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, double timestamp, int dead_buffer_cnt);
         bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, double now);

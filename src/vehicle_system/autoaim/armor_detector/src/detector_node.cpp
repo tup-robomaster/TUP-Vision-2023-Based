@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-03-22 16:59:53
+ * @LastEditTime: 2023-03-31 18:48:56
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -266,7 +266,7 @@ namespace armor_detector
             global_interface::msg::DetectionArray detection_array;
             detection_array.header = img_header_;
             detection_array.header.frame_id = detection_array.header.frame_id + "_frame";
-            for (auto armor : detector_->armors_)
+            for (auto armor : detector_->new_armors_)
             {
                 global_interface::msg::Detection detection;
                 detection.header = img_header_;
