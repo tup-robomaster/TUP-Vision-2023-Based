@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-03-31 18:46:26
+ * @LastEditTime: 2023-04-02 00:15:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
@@ -39,6 +39,8 @@ namespace armor_detector
         ArmorTracker* chooseTargetTracker(TaskData& src, vector<ArmorTracker*> trackers);
         int chooseTargetID(TaskData& src);
         int chooseTargetID(TaskData& src, std::vector<Armor>& armors, ObjHPMsg hp = ObjHPMsg());
+        void showArmors(TaskData& src);
+        bool isPnpSolverValidation(Eigen::Vector3d& point3d);
 
     public:
         CoordSolver coordsolver_;
@@ -67,7 +69,7 @@ namespace armor_detector
     private:
         ofstream file_;
         bool save_dataset_;
-        std::string path_prefix_ = "src/camera_driver/recorder/autoaim_dataset/";
+        std::string path_prefix_ = "/recorder/autoaim_dataset/";
 
     private:
         int count_;
@@ -82,6 +84,7 @@ namespace armor_detector
         int lost_cnt_;
         int dead_buffer_cnt_;
         bool is_target_switched_;
+        bool is_id_switched_;
         double last_target_area_;
         Point2i last_roi_center_;
         double last_bullet_speed_;
@@ -90,8 +93,6 @@ namespace armor_detector
         
         Point2i roi_offset_;
         Size2i input_size_;
-
-        void showArmors(TaskData& src);
         
     private:
         SwitchStatus last_last_status_;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-03-21 15:44:52
+ * @LastEditTime: 2023-04-02 05:27:20
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -67,7 +67,7 @@ namespace armor_processor
         std::deque<cv::Point2d> history_pred_info_;
         std::deque<cv::Point2d> history_origin_info_;
         std::deque<double> history_y_info_;
-        double last_start_timestamp_;
+        int64_t last_start_timestamp_;
         double last_end_x_;
         bool is_predicted_;
         TargetInfo final_target_;  //最终击打目标信息
@@ -111,19 +111,19 @@ namespace armor_processor
         // IMM Model.
         std::shared_ptr<IMM> imm_;
         ModelGenerator model_generator_;
-        PredictStatus predictBasedImm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector3d& target_vel, Eigen::Vector3d& target_acc, double timestamp);
+        PredictStatus predictBasedImm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector3d& target_vel, Eigen::Vector3d& target_acc, int64_t timestamp);
         
         // CS Model.
-        // PredictStatus predictBasedSinger(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, double timestamp);
-        bool predictBasedSinger(int axis, double measurement, double& result, double target_vel, double target_acc, double timestamp);
+        // PredictStatus predictBasedSinger(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, int64_t timestamp);
+        bool predictBasedSinger(int axis, double measurement, double& result, double target_vel, double target_acc, int64_t timestamp);
 
         // 前哨站旋转装甲板曲线拟合预测函数    
-        PredictStatus spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, double timestamp);
+        PredictStatus spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int64_t timestamp);
         
         // 粒子滤波
-        PredictStatus predictBasePF(TargetInfo target, Vector3d& result, double timestamp);
-        // PredictStatus uncoupleFittingPredict(Eigen::Vector3d& result, double timestamp);
-        PredictStatus coupleFittingPredict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, double timestamp);
+        PredictStatus predictBasePF(TargetInfo target, Vector3d& result, int64_t timestamp);
+        // PredictStatus uncoupleFittingPredict(Eigen::Vector3d& result, int64_t timestamp);
+        PredictStatus coupleFittingPredict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, int64_t timestamp);
         
         // 滑窗滤波
         Eigen::Vector3d shiftWindowFilter(int start_idx);

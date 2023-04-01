@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-03-31 18:37:38
+ * @LastEditTime: 2023-04-01 19:47:24
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_tracker/armor_tracker.cpp
  */
 #include "../../include/armor_tracker/armor_tracker.hpp"
@@ -13,41 +13,43 @@ namespace armor_detector
     {
         // normal_gyro_status_counter_ = 0;
         // switch_gyro_status_counter_ = 0;
-        // flag_ = 0;
-        now = 0;
-        last_timestamp = 0;
-        last_yaw_diff_ = 0.0;
-        last_pitch_diff_ = 0.0;
-        hop_timestamp_ = 0.0;
         // spin_status_ = UNKNOWN;
+        // flag_ = 0;
+
+        this->now = 0;
+        this->last_timestamp = 0;
+        this->last_yaw_diff_ = 0.0;
+        this->last_pitch_diff_ = 0.0;
+        // this->hop_timestamp_ = 0.0;
     }
 
     /**
      * @brief Construct a new Armor Tracker:: Armor Tracker object
      * 
-     * @param src 装甲板对象
-     * @param src_timestamp 本帧对应的时间戳
+     * @param armor 装甲板对象
+     * @param now_timestamp 本帧对应的时间戳
      */
-    ArmorTracker::ArmorTracker(Armor src, double src_timestamp)
+    ArmorTracker::ArmorTracker(Armor armor, int64_t now_timestamp)
     {
-        last_timestamp = 0;
-        now = src_timestamp;
-        last_armor = Armor();
-        new_armor = src;
-
-        key = src.key;
-        is_initialized = false;
-        hit_score = 0;
-        history_info_.push_back(src);
-        calcTargetScore();
+        this->key = armor.key;
+        this->last_timestamp = 0;
+        this->now = now_timestamp;
+        this->last_armor = Armor();
+        this->new_armor = armor;
+        this->hit_score = 0;
+        this->history_info_.push_back(armor);
+        this->calcTargetScore();
         
         // normal_gyro_status_counter_ = 0;
         // switch_gyro_status_counter_ = 0;
-        // flag_ = 0;
-        last_yaw_diff_ = 0.0;
-        last_pitch_diff_ = 0.0;
-        hop_timestamp_ = 0.0;
         // spin_status_ = UNKNOWN;
+        // flag_ = 0;
+        this->last_yaw_diff_ = 0.0;
+        this->last_pitch_diff_ = 0.0;
+        // this->hop_timestamp_ = 0.0;
+        this->is_initialized = false;
+
+        // cout << "init_dt:" << now_timestamp / 1e6 << endl;
     }
 
     /**
@@ -58,7 +60,7 @@ namespace armor_detector
      * @return true 
      * @return false 
      */
-    bool ArmorTracker::update(Armor new_add_armor, double new_timestamp)
+    bool ArmorTracker::update(Armor new_add_armor, int64_t new_timestamp)
     {
         if (history_info_.size() <= max_history_len)
         {   // 若历史队列装甲板信息小于给定阈值，直接将当前目标信息放入队列
@@ -70,13 +72,14 @@ namespace armor_detector
             history_info_.push_back(new_add_armor);
         }
 
-        is_initialized = true;
-        last_timestamp = now; //上一帧目标装甲板对应的时间戳信息
-        now = new_timestamp;  //当前装甲板对应的时间戳信息
-        last_armor = last_armor;         //上一帧目标装甲板信息
-        new_armor = new_add_armor;          //当前装甲板信息
+        this->last_timestamp = this->now; //上一帧目标装甲板对应的时间戳信息
+        this->now = new_timestamp;  //当前装甲板对应的时间戳信息
+        this->last_armor = this->new_armor;         //上一帧目标装甲板信息
+        this->new_armor = new_add_armor;          //当前装甲板信息
 
-        calcTargetScore();  //计算装甲板分数，作为打击目标切换判据，防止随意切换造成云台乱抖
+        this->calcTargetScore();  //计算装甲板分数，作为打击目标切换判据，防止随意切换造成云台乱抖
+        this->is_initialized = true;
+        // cout << "update_dt:" << new_timestamp / 1e6 << endl;
         return true;
     }
 

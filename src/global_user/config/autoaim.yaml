@@ -5,7 +5,7 @@
     max_lost_cnt: 5
     max_armors_cnt: 8
     max_v: 8
-    max_delta_t: 100
+    max_delta_t: 200
     no_crop_thres: 0.01
     hero_danger_zone: 4
     color: true # red: true
@@ -20,9 +20,9 @@
     max_cost: 500
     shoot_delay: 50
     max_dead_buffer: 2
-    max_delta_dist: 0.5
+    max_delta_dist: 0.8
     min_fitting_lens: 10
-    switch_max_dt: 10000.0
+    switch_max_dt: 2000.0
     anti_spin_max_r_multiple: 4.5
     anti_spin_judge_low_thres: 2000.0
     anti_spin_judge_high_thres: 20000.0
@@ -64,7 +64,7 @@
     detect_red: true
     auto_label: false
     print_letency: false
-    show_aim_cross: false
+    show_aim_cross: true
     sync_transport: false
     show_all_armors: true
     print_target_info: false
@@ -76,9 +76,11 @@
     max_time_delta: 1000
     max_cost: 10
     max_v: 8
-    min_fitting_lens: 10
+    min_fitting_lens: 3
     shoot_delay: 400
     window_size: 3
+    max_offset_value: 0.45
+    reserve_factor: 15.0 #储备系数（r>=1）
 
   # Debug params.
     debug: false

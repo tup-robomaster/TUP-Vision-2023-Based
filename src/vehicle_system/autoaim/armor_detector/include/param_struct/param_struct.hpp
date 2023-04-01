@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-03-31 16:40:36
+ * @LastEditTime: 2023-04-01 21:05:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -30,6 +30,17 @@ namespace armor_detector
         UNKNOWN,
         CLOCKWISE, 
         COUNTER_CLOCKWISE
+    };
+
+    struct SpinState
+    {
+        int64_t switch_timestamp;
+        SpinHeading spin_state;
+        SpinState()
+        {
+            switch_timestamp = 0;
+            spin_state = UNKNOWN;
+        }
     };
 
     enum SwitchStatus
@@ -74,7 +85,7 @@ namespace armor_detector
         GyroParam()
         {
             max_delta_t = 100;
-            switch_max_dt = 10000.0;
+            switch_max_dt = 2000.0;
             delta_x_3d_high_thresh = 0.18;
             delta_x_3d_higher_thresh = 0.25;
             delta_x_3d_low_thresh = 0.10;
@@ -85,8 +96,8 @@ namespace armor_detector
             delta_y_3d_low_thresh = 0.10;
             delta_y_3d_lower_thresh = 0.05;
 
-            max_yaw_hop_angle = 0.05;
-            max_pitch_hop_angle = 0.05;
+            max_yaw_hop_angle = 0.75 * (M_PI / 180);
+            max_pitch_hop_angle = 0.35 * (M_PI / 180);
             max_hop_period = 1.0;
             max_conf_dis = 3.5;
         }
@@ -143,7 +154,7 @@ namespace armor_detector
 
     struct SpinningMap
     {
-        std::map<std::string, SpinHeading> spin_status_map; //反小陀螺，记录该车小陀螺状态
+        std::map<std::string, SpinState> spin_status_map; //反小陀螺，记录该车小陀螺状态
         // std::map<std::string, double> spin_score_map;       //反小陀螺，记录各装甲板小陀螺可能性分数，大于0为逆时针旋转，小于0为顺时针旋转
         std::map<std::string, SpinCounter> spin_counter_map; //记录装甲板旋转帧数，大于0为逆时针旋转，小于0为顺时针
 

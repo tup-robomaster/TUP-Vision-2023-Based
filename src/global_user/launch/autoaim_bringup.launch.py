@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-03-31 17:51:50
+LastEditTime: 2023-04-02 01:51:21
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -274,13 +274,13 @@ def generate_launch_description():
             ],
         ),
 
-        # Node(
-        #     package='armor_processor',
-        #     executable='armor_processor_node',
-        #     namespace='armor_processor',
-        #     output='screen',
-        #     emulate_tty=True,
-        #     parameters=[armor_processor_params],
-        #     condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
-        # ),
+        Node(
+            package='armor_processor',
+            executable='armor_processor_node',
+            namespace='armor_processor',
+            output='screen',
+            emulate_tty=True,
+            parameters=[armor_processor_params],
+            condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
+        ),
     ])

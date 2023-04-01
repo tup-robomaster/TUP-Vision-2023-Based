@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 14:01:05
- * @LastEditTime: 2023-03-12 10:22:58
+ * @LastEditTime: 2023-04-02 00:37:19
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/global_user.cpp
  */
 #include "../include/global_user/global_user.hpp"
@@ -358,4 +358,26 @@ namespace global_user
         return true;
     }
 
+    bool isAngleSolverValidataion(Eigen::Vector2d& angle2d)
+    {
+        if (isinf(angle2d[0] || isinf(angle2d[1])))
+        {
+            return false;
+        }
+        else if (isnan(angle2d[0] || isnan(angle2d[1])))
+        {
+            return false;
+        }
+        else if (abs(angle2d[0]) >= 90.0 || abs(angle2d[1]) >= 90.0)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    void drawAimCrossCurve(cv::Mat& src)
+    {
+        line(src, cv::Point2f(src.size().width / 2, 0), cv::Point2f(src.size().width / 2, src.size().height), {0,255,0}, 1);
+        line(src, cv::Point2f(0, src.size().height / 2), cv::Point2f(src.size().width, src.size().height / 2), {0,255,0}, 1);
+    }
 } //global_user

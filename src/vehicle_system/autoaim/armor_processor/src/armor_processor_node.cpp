@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-03-26 18:27:03
+ * @LastEditTime: 2023-04-02 04:58:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -457,6 +457,8 @@ namespace armor_processor
         this->declare_parameter<int>("min_fitting_lens", 10);
         this->declare_parameter<int>("shoot_delay", 100);
         this->declare_parameter<int>("window_size", 3);
+        this->declare_parameter<double>("max_offset_value", 0.25);
+        this->declare_parameter<double>("reserve_factor", 15.0);
 
         // Declare debug params.
         this->declare_parameter("show_img", false);
@@ -518,8 +520,8 @@ namespace armor_processor
         singer_model_params[1] = this->get_parameter("singer_model_y_axis").as_double_array();
         singer_model_params[2] = this->get_parameter("singer_model_z_axis").as_double_array();
 
-        cout << "singer_param:" <<  singer_model_params[0][0] << " " << singer_model_params[0][1] << " " << singer_model_params[0][2] << " " <<  singer_model_params[0][3]
-            << " " <<  singer_model_params[0][4] << " " <<  singer_model_params[0][5] << " " <<  singer_model_params[0][6] << " " <<  singer_model_params[0][7] << endl;
+        // cout << "singer_param:" <<  singer_model_params[0][0] << " " << singer_model_params[0][1] << " " << singer_model_params[0][2] << " " <<  singer_model_params[0][3]
+        //     << " " <<  singer_model_params[0][4] << " " <<  singer_model_params[0][5] << " " <<  singer_model_params[0][6] << " " <<  singer_model_params[0][7] << endl;
         
         predict_param_.filter_model_param.imm_model_trans_prob_params = imm_model_trans_prob_params;
         predict_param_.filter_model_param.imm_model_prob_params = imm_model_prob_params;
@@ -563,6 +565,8 @@ namespace armor_processor
         predict_param_.min_fitting_lens = this->get_parameter("min_fitting_lens").as_int();
         predict_param_.shoot_delay = this->get_parameter("shoot_delay").as_int();
         predict_param_.window_size = this->get_parameter("window_size").as_int();
+        predict_param_.max_offset_value = this->get_parameter("max_offset_value").as_double();
+        predict_param_.reserve_factor = this->get_parameter("reserve_factor").as_double();
         
         //Debug param.
         debug_param_.show_img = this->get_parameter("show_img").as_bool();

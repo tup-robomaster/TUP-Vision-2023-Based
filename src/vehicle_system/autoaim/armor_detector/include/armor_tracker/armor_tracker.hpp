@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-03-31 18:35:41
+ * @LastEditTime: 2023-04-01 19:39:22
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_tracker/armor_tracker.hpp
  */
 #ifndef ARMOR_TRACKER_HPP_
@@ -61,16 +61,17 @@ namespace armor_detector
 
         double last_yaw_diff_;
         double last_pitch_diff_;
-        double hop_timestamp_;
+        std::deque<Armor> history_info_;    //目标队列
+        
+        // int64_t hop_timestamp_;
         // SpinHeading spin_status_;
         // int flag_;
         // int normal_gyro_status_counter_;
         // int switch_gyro_status_counter_;
-        std::deque<Armor> history_info_;    //目标队列
 
         ArmorTracker();
-        ArmorTracker(Armor src, double src_timestamp);
-        bool update(Armor new_armor, double new_timestamp);
+        ArmorTracker(Armor src, int64_t src_timestamp);
+        bool update(Armor new_armor, int64_t new_timestamp);
         bool calcTargetScore();
     };
 }
