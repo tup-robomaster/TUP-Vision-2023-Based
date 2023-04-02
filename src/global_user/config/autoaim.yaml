@@ -39,7 +39,7 @@
   # Camera config params.
     # camera_name: "00J90630561" 
     camera_name: "KE0200110073" #FIXME:根据相机序列号修改
-    camera_type: 3
+    camera_type: 0
     camera_param_path: "/config/camera.yaml"
 
   # Network model path.
@@ -99,7 +99,7 @@
     show_fps: false
 
   # Camera params.
-    camera_type: 3 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
     coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
     coord_param_path: "/config/camera.yaml"
@@ -114,9 +114,9 @@
     # singer_model_y_axis: [1.18, 5.0, 0.2, 0.2, 0.190, 1.15, 1.0, 1.0, 0.1] 
     # singer_model_z_axis: [1.25, 5.0, 0.1, 0.9, 0.200, 1.2, 1.0, 1.0, 0.1]
 
-    singer_model_x_axis: [1.0, 10.0, 0.1, 0.8, 0.30, 2.50, 0.25, 1.0, 0.1] 
-    singer_model_y_axis: [1.18, 10.0, 0.1, 0.8, 0.20, 1.8, 1.0, 1.0, 0.1] 
-    singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.200, 1.2, 1.0, 1.0, 0.1]
+    # singer_model_x_axis: [1.0, 10.0, 0.1, 0.8, 0.30, 2.50, 0.25, 1.0, 0.1] 
+    # singer_model_y_axis: [1.18, 10.0, 0.1, 0.8, 0.20, 1.8, 1.0, 1.0, 0.1] 
+    # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.200, 1.2, 1.0, 1.0, 0.1]
 
     # singer_model_x_axis: [1.00, 10.0, 0.1, 0.8, 0.24, 2.60, 1.0, 1.0, 0.1] 
     # singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.18, 1.85, 1.0, 1.0, 0.1] 
@@ -129,6 +129,10 @@
     # singer_model_x_axis: [1.00, 10.0, 0.1, 0.8, 0.215, 2.85, 1.0, 1.0, 0.1] 
     # singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.165, 1.95, 1.0, 1.0, 0.1] 
     # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.20, 1.2, 1.0, 1.0, 0.1]
+
+    singer_model_x_axis: [1.0, 10.0, 0.1, 0.8, 5.00, 0.005, 1.0, 1.0, 1.0] 
+    singer_model_y_axis: [1.00, 10.0, 0.1, 0.8, 5.00, 0.005, 1.0, 1.0, 7.0] 
+    singer_model_z_axis: [1.00, 10.0, 0.1, 0.8, 5.00, 0.005, 1.0, 1.0, 7.0]
 
   # IMM model.
     #状态转移概率

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-02 05:31:03
+ * @LastEditTime: 2023-04-02 19:03:46
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -974,7 +974,7 @@ namespace armor_processor
 
             double alpha = singer_param_[axis][0];
             double dt = singer_param_[axis][8] * singer_param_[axis][4];
-            dt = timestamp / 1e9;
+            dt = timestamp / 1e9  * 60;
             // cout << dt << endl;
             
             Eigen::MatrixXd F(3, 3);
