@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-02 00:43:14
+ * @LastEditTime: 2023-04-04 02:30:16
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -1026,29 +1026,33 @@ namespace armor_detector
         // }
         // return trackers[target_idx];
 
+        //TODO:增加对打击后暂时熄灭装甲板的防抖处理
         float max_score = 0;
         int target_idx = 0;
         int last_target_idx = -1;
-        for (int i = 0; i < (int)trackers.size(); i++)
+        for (int i = 0; i < trackers.size(); i++)
         {
-            auto horizonal_dist_to_center = abs(trackers[i]->new_armor.center2d.x - (src.img.size().width / 2.0));
+            //计算tracker的切换打击分数,由装甲板旋转角度,距离,面积大小决定
             if (trackers[i]->now == now_)
             {
-                if (trackers[i]->last_selected_timestamp == last_timestamp_)
-                    return trackers[i];
-                else if (trackers[i]->new_armor.area >= max_area)
+                if (trackers[i]->is_initialized && (trackers[i]->last_selected_timestamp / 1e9) == (last_timestamp_ / 1e9) 
+                && (abs(now_ - last_timestamp_) / 1e6) < 100 && (trackers[i]->now / 1e9) == (now_ / 1e9))
                 {
-                    max_area = trackers[i]->new_armor.area;
-                    min_horizonal_dist = horizonal_dist_to_center;
-                    target_idx = i;
+                    last_target_idx = i;
+                    break;
                 }
-                else if (trackers[i]->new_armor.area / max_area > 0.6 && horizonal_dist_to_center < min_horizonal_dist)
+                else if (trackers[i]->hit_score > max_score)
                 {
-                    min_horizonal_dist = horizonal_dist_to_center;
+                    max_score = trackers[i]->hit_score;
                     target_idx = i;
                 }
             }
         }
+        //若存在上次存在目标且分数与相差不大，选择该装甲板
+        // if (last_target_idx != -1 && abs(trackers[last_target_idx]->hit_score - max_score) / max_score < 0.1)
+        //     target_idx = last_target_idx;
+        if (last_target_idx != -1)
+            target_id_ = last_target_idx;
         return trackers[target_idx];
     }   
 
@@ -1085,7 +1089,7 @@ namespace armor_detector
             {
                 return armor.id;
             }
-            else if (armor.id == last_armor_.id && abs(armor.area - last_armor_.area) / (float)armor.area < 0.3 && abs(now_ - last_timestamp_) / 1e6 <= 35)
+            else if (armor.id == last_armor_.id && abs(armor.area - last_armor_.area) / (float)armor.area < 0.40 && abs(now_ - last_timestamp_) / 1e6 <= 100)
             {
                 is_last_id_exists = true;
                 target_id = armor.id;

@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-04-04 00:00:30
+ * @LastEditTime: 2023-04-04 01:36:26
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -44,6 +44,7 @@
 #define MVS_IMAGE_HEIGHT 1024
 
 using namespace std;
+using namespace Eigen;
 namespace global_user
 {   
     /**
@@ -280,6 +281,11 @@ namespace global_user
 
     bool isAngleSolverValidataion(Eigen::Vector2d& angle2d);
     void drawAimCrossCurve(cv::Mat& src);
+
+    // bool checkDivergence(const MatrixXd& residual, const MatrixXd& S, double threshold);
+    // bool checkDivergence(double residual, double threshold, vector<double>& variances, int window_size);
+    // bool checkDivergence(const MatrixXd& F, const MatrixXd& P, const MatrixXd& H, const MatrixXd& R);
+    bool checkDivergence(const MatrixXd& statePre, const MatrixXd& stateCovPre, const MatrixXd& H, const MatrixXd& R, const VectorXd& measurement);
 } // namespace global_user
 
 #endif
