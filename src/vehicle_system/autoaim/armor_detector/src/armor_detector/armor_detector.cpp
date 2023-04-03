@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-03-23 13:14:47
+ * @LastEditTime: 2023-04-03 19:29:21
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -10,11 +10,13 @@
 using namespace std;
 namespace armor_detector
 {
-    Detector::Detector(const PathParam& path_param, const DetectorParam& detector_params, const DebugParam& debug_params, const GyroParam& gyro_params) 
-    : spinning_detector_(detector_params_.color, gyro_params), detector_params_(detector_params), 
-    path_params_(path_param), debug_params_(debug_params), logger_(rclcpp::get_logger("armor_detector"))
+    Detector::Detector(const PathParam& path_param, const DetectorParam& detector_params,
+    const DebugParam& debug_params, const GyroParam& gyro_params, const Eigen::Vector2d& angle_offset) 
+    : spinning_detector_(detector_params_.color, gyro_params), coordsolver_(angle_offset),
+    detector_params_(detector_params), path_params_(path_param), debug_params_(debug_params),
+    logger_(rclcpp::get_logger("armor_detector"))
     {
-        //初始化
+        //初始化clear
         lost_cnt_ = 0;
         is_last_target_exists_ = false;
         is_target_switched_ = false;
@@ -72,7 +74,7 @@ namespace armor_detector
 
         auto input = src.img;
         timestamp_ = src.timestamp;
-        if (!debug_params_.debug_without_com)
+        if (debug_params_.using_imu)
         {   //有串口
             //设置弹速,若弹速大于10m/s值,且弹速变化大于0.5m/s则更新
             if (src.bullet_speed > 10 && abs(src.bullet_speed - last_bullet_speed_) > 0.5)
@@ -86,6 +88,7 @@ namespace armor_detector
                 coordsolver_.setBulletSpeed(bullet_speed);
                 last_bullet_speed_ = bullet_speed;
             }
+            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "serial_bullet_speed:%.2f bullet_speed:%.2f", src.bullet_speed, last_bullet_speed_);
         }
 
         // Eigen::Matrix3d rmat_imu;
@@ -356,6 +359,12 @@ namespace armor_detector
         //未检索到有效车辆ID，直接退出
         if(target_id == -1)
         {
+            target_info.aiming_point_cam.x = 0;
+            target_info.aiming_point_cam.y = 0;
+            target_info.aiming_point_cam.z = 0;
+            target_info.aiming_point_world.x = 0;
+            target_info.aiming_point_world.y = 0;
+            target_info.aiming_point_world.z = 0;
             target_info.is_target_lost = true;
             target_info.target_switched = true;
             target_info.is_spinning = false;
@@ -400,6 +409,12 @@ namespace armor_detector
                 showArmors(src);
             }
 
+            target_info.aiming_point_cam.x = 0;
+            target_info.aiming_point_cam.y = 0;
+            target_info.aiming_point_cam.z = 0;
+            target_info.aiming_point_world.x = 0;
+            target_info.aiming_point_world.y = 0;
+            target_info.aiming_point_world.z = 0;
             target_info.is_target_lost = true;
             lost_cnt_++;
             is_last_target_exists_ = false;
@@ -441,6 +456,7 @@ namespace armor_detector
         ///----------------------------------反陀螺击打---------------------------------------
         target_info.is_spinning = false;
         target_info.is_still_spinning = false;
+        target_info.spinning_switched = false;
         if (spin_status != UNKNOWN)
         {
             //------------------------------估计目标旋转周期-----------------------------------
@@ -449,7 +465,8 @@ namespace armor_detector
             double period = 0.0;
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
-                if ((*iter).second.last_timestamp == src.timestamp)
+                RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 40, "dt:%.8f src.dt:%.8f", (*iter).second.last_timestamp / 1e9, (src.timestamp / 1e9));
+                if (((*iter).second.last_timestamp / 1e9) == (src.timestamp / 1e9))
                 {
                     final_armors.push_back((*iter).second.last_armor);
                     final_trackers.push_back(&(*iter).second);
@@ -469,6 +486,22 @@ namespace armor_detector
                 {
                     continue;
                 }
+            }
+
+            if ((int)final_armors.size() == 0)
+            {
+                target_info.aiming_point_cam.x = 0;
+                target_info.aiming_point_cam.y = 0;
+                target_info.aiming_point_cam.z = 0;
+                target_info.aiming_point_world.x = 0;
+                target_info.aiming_point_world.y = 0;
+                target_info.aiming_point_world.z = 0;
+                target_info.is_target_lost = true;
+                lost_cnt_++;
+                is_last_target_exists_ = false;
+                
+                cout << "died zone..." << endl;
+                return false;
             }
 
             auto cnt = spinning_detector_.spinning_map_.spinning_x_map.count(target_key);
@@ -637,6 +670,21 @@ namespace armor_detector
                     target = final_armors.at(0);
                 }   
             }
+            else
+            {
+                target_info.aiming_point_cam.x = 0;
+                target_info.aiming_point_cam.y = 0;
+                target_info.aiming_point_cam.z = 0;
+                target_info.aiming_point_world.x = 0;
+                target_info.aiming_point_world.y = 0;
+                target_info.aiming_point_world.z = 0;
+                target_info.is_target_lost = true;
+                lost_cnt_++;
+                is_last_target_exists_ = false;
+                // target = final_armors.front();
+                // cout << "died zone..." << endl;
+                return false;
+            }
 
             //判断装甲板是否切换，若切换将变量置1
             // auto delta_t = src.timestamp - prev_timestamp_;
@@ -662,8 +710,8 @@ namespace armor_detector
                 final_trackers.push_back(&(*iter).second);
             }
             //进行目标选择
-            auto tracker = chooseTargetTracker(src, final_trackers, src.timestamp);
-            tracker->last_selected_timestamp = src.timestamp;
+            auto tracker = chooseTargetTracker(src, final_trackers);
+            tracker->last_selected_timestamp = timestamp_;
             tracker->selected_cnt++;
             target = tracker->last_armor;
             
@@ -681,9 +729,16 @@ namespace armor_detector
                 is_target_switched_ = false;
                 target_info.target_switched = false;
             }
+
+            double x_2d_dis = abs(last_armor_.center2d.x - target.center2d.x);
+            if (target_id != last_armor_.id || !last_armor_.roi.contains(target.center2d) || (x_2d_dis > 250))
+            {
+                target_info.spinning_switched = true;
+                // cout << "spinning_switched" << endl;
+            }
+            // cout << "x_dis:" << x_2d_dis << endl;
         }
 
-        target_info.spinning_switched = false;
         if(last_status_ == SINGER && cur_status_ == DOUBLE)
             target_info.spinning_switched = true;
         
@@ -704,20 +759,21 @@ namespace armor_detector
         target_info.aiming_point_cam.x = target.armor3d_cam[0];
         target_info.aiming_point_cam.y = target.armor3d_cam[1];
         target_info.aiming_point_cam.z = target.armor3d_cam[2];
-        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
+        // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 40, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
 
         if (target.color == 2)
             dead_buffer_cnt_++;
         else
             dead_buffer_cnt_ = 0;
 
-        target_info.timestamp = src.timestamp;
+        target_info.timestamp = timestamp_;
         //获取装甲板中心与装甲板面积以下一次ROI截取使用
         last_roi_center_ = target.center2d;
         // last_roi_center_ = Point2i(512,640);
         last_armor_ = target;
         lost_cnt_ = 0;
-        prev_timestamp_ = src.timestamp;
+        // prev_timestamp_ = src.timestamp;
+        last_timestamp_ = timestamp_;
         last_target_area_ = target.area;
         last_aiming_point_ = target.armor3d_cam;
         is_last_target_exists_ = true;
@@ -938,7 +994,7 @@ namespace armor_detector
      * @param timestamp 当前帧对应的时间戳
      * @return ArmorTracker* 返回目标车辆装甲板对应的追踪器
      */
-    ArmorTracker* Detector::chooseTargetTracker(TaskData& src, vector<ArmorTracker*> trackers, double timestamp)
+    ArmorTracker* Detector::chooseTargetTracker(TaskData& src, vector<ArmorTracker*> trackers)
     {
         /*
         该选择逻辑包含三层约束：上次目标tracker约束/目标装甲板面积约束/与图像中心距离约束
@@ -946,29 +1002,52 @@ namespace armor_detector
         2.若tracker的当前装甲面积较大，则作为候选tracker；
         3.若tracker的当前面积与目前最大面积相差较小，且距离图像中心较近，则作为候选tracker。
         */
-        float max_area = 0.0;
-        float min_horizonal_dist = 0.0;
+        // float max_area = 0.0;
+        // float min_horizonal_dist = 0.0;
+        // int target_idx = 0;
+        // for (int i = 0; i < (int)(trackers.size()); i++)
+        // {
+        //     auto horizonal_dist_to_center = abs(trackers[i]->last_armor.center2d.x - (src.img.size().width / 2.0));
+        //     if (trackers[i]->last_timestamp == timestamp)
+        //     {
+        //         if (trackers[i]->last_selected_timestamp == last_timestamp_)
+        //             return trackers[i];
+        //         else if (trackers[i]->last_armor.area >= max_area)
+        //         {
+        //             max_area = trackers[i]->last_armor.area;
+        //             min_horizonal_dist = horizonal_dist_to_center;
+        //             target_idx = i;
+        //         }
+        //         else if (trackers[i]->last_armor.area / max_area > 0.6 && horizonal_dist_to_center < min_horizonal_dist)
+        //         {
+        //             min_horizonal_dist = horizonal_dist_to_center;
+        //             target_idx = i;
+        //         }
+        //     }
+        // }
+        // return trackers[target_idx];
+
+        float max_score = 0;
         int target_idx = 0;
-        for (int i = 0; i < (int)(trackers.size()); i++)
+        int last_target_idx = -1;
+        for (int i = 0; i < (int)trackers.size(); i++)
         {
-            auto horizonal_dist_to_center = abs(trackers[i]->last_armor.center2d.x - (src.img.size().width / 2.0));
-            if (trackers[i]->last_timestamp == timestamp)
+            //计算tracker的切换打击分数,由装甲板旋转角度,距离,面积大小决定
+            if (trackers[i]->last_timestamp == timestamp_)
             {
                 if (trackers[i]->last_selected_timestamp == last_timestamp_)
-                    return trackers[i];
-                else if (trackers[i]->last_armor.area >= max_area)
+                    last_target_idx = i;
+                if (trackers[i]->hit_score > max_score)
                 {
-                    max_area = trackers[i]->last_armor.area;
-                    min_horizonal_dist = horizonal_dist_to_center;
-                    target_idx = i;
-                }
-                else if (trackers[i]->last_armor.area / max_area > 0.6 && horizonal_dist_to_center < min_horizonal_dist)
-                {
-                    min_horizonal_dist = horizonal_dist_to_center;
+                    max_score = trackers[i]->hit_score;
                     target_idx = i;
                 }
             }
         }
+
+        //若存在上次存在目标且分数与相差不大，选择该装甲板
+        if (last_target_idx != -1 && abs(trackers[last_target_idx]->hit_score - max_score) / max_score < 0.1)
+            target_idx = last_target_idx;
         return trackers[target_idx];
     }   
 
@@ -979,7 +1058,7 @@ namespace armor_detector
      * @param timestamp 当前帧对应的时间戳
      * @return int 返回选择的车辆ID
      */
-    int Detector::chooseTargetID(TaskData& src, vector<Armor> &armors, double timestamp)
+    int Detector::chooseTargetID(TaskData& src, vector<Armor> &armors, int64_t timestamp)
     {
         /*
         该选择逻辑主要存在四层约束：前哨站旋转模式约束/英雄约束/上次目标约束/距离位置约束
@@ -1005,7 +1084,7 @@ namespace armor_detector
             {
                 return armor.id;
             }
-            else if (armor.id == last_armor_.id && abs(armor.area - last_armor_.area) / (float)armor.area < 0.3 && abs(timestamp - prev_timestamp_) / 1e6 <= 35)
+            else if (armor.id == last_armor_.id && abs(armor.area - last_armor_.area) / (float)armor.area < 0.3 && abs(timestamp_ - last_timestamp_) / 1e6 <= 35)
             {
                 is_last_id_exists = true;
                 target_id = armor.id;

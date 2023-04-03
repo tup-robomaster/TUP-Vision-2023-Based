@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-03-22 18:44:06
+ * @LastEditTime: 2023-04-03 19:29:35
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -18,12 +18,31 @@ namespace coordsolver
     {  
     }
 
+    CoordSolver::CoordSolver(const Eigen::Vector2d& static_angle_offset)
+    : logger_(rclcpp::get_logger("coordsolver"))
+    {
+        // if (!loadParam(coord_path, param_name))
+        // {
+        //     RCLCPP_ERROR(logger_, "Error while loading coord params...");
+        // }
+        angle_offset = static_angle_offset;
+
+        cout << "3:" << angle_offset[0] << " " << angle_offset[1] << endl;
+    }
+
     /**
      * @brief Destroy the Coord Solver:: Coord Solver object
      * 
      */
     CoordSolver::~CoordSolver()
     {   
+    }
+
+    bool CoordSolver::setStaticAngleOffset(const Eigen::Vector2d& static_angle_offset)
+    {
+        angle_offset = static_angle_offset;
+        cout << "2:" << angle_offset[0] << " " << angle_offset[1] << endl;
+        return true;
     }
 
     /**
@@ -79,6 +98,8 @@ namespace coordsolver
         read_vector = config[param_name]["T_ci"].as<std::vector<float>>();
         initMatrix(mat_ci,read_vector);
         transform_ci = mat_ci;
+
+        cout << "1:" << angle_offset[0] << " " << angle_offset[1] << endl;
 
         return true;
     }
@@ -177,6 +198,8 @@ namespace coordsolver
             result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;
         }
+
+        // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 40, "armor_cam: %.4f %.4f %.4f", result.armor_cam[0], result.armor_cam[1], result.armor_cam[2]);
         return result;
     }
 

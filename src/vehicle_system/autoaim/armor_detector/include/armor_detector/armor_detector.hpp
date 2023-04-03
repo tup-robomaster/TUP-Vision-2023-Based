@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-03-13 10:10:30
+ * @LastEditTime: 2023-04-02 19:31:28
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
@@ -28,7 +28,8 @@ namespace armor_detector
         typedef global_interface::msg::ObjHP ObjHPMsg;
 
     public:
-        Detector(const PathParam& path_params, const DetectorParam& detector_params_, const DebugParam& debug_params_, const GyroParam& gyro_params_);
+        Detector(const PathParam& path_params, const DetectorParam& detector_params, const DebugParam& debug_params,
+            const GyroParam& gyro_params, const Eigen::Vector2d& angle_offset);
         ~Detector();
 
         // void run();
@@ -36,8 +37,8 @@ namespace armor_detector
         bool gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp = ObjHPMsg());
 
         Point2i cropImageByROI(Mat &img);
-        ArmorTracker* chooseTargetTracker(TaskData& src, vector<ArmorTracker*> trackers, double timestamp);
-        int chooseTargetID(TaskData& src, vector<Armor> &armors, double timestamp);
+        ArmorTracker* chooseTargetTracker(TaskData& src, vector<ArmorTracker*> trackers);
+        int chooseTargetID(TaskData& src, vector<Armor> &armors, int64_t timestamp);
         int chooseTargetID(TaskData& src, std::vector<Armor>& armors, ObjHPMsg hp = ObjHPMsg());
 
     public:
@@ -77,14 +78,14 @@ namespace armor_detector
     
     private:
         int lost_cnt_;
-        int64_t timestamp_;
         int dead_buffer_cnt_;
-        double last_timestamp_; //当前帧时间戳
-        double prev_timestamp_; //上一帧时间戳
+        int64_t last_timestamp_; //上一帧时间戳
+        int64_t timestamp_; // 当前帧时间戳
+        // int64_t prev_timestamp_; 
         bool is_target_switched_;
         double last_target_area_;
         Point2i last_roi_center_;
-        double last_bullet_speed_;
+        double last_bullet_speed_ = 15.5;
         bool is_last_target_exists_;
         Eigen::Vector3d last_aiming_point_;
         

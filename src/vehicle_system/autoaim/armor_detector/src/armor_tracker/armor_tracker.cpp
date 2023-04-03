@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-02-05 00:35:56
+ * @LastEditTime: 2023-04-02 18:41:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_tracker/armor_tracker.cpp
  */
 #include "../../include/armor_tracker/armor_tracker.hpp"
@@ -20,7 +20,7 @@ namespace armor_detector
      * @param src 装甲板对象
      * @param src_timestamp 本帧对应的时间戳
      */
-    ArmorTracker::ArmorTracker(Armor src, double src_timestamp)
+    ArmorTracker::ArmorTracker(Armor src, int64_t src_timestamp)
     {
         last_armor = src;
         last_timestamp = src_timestamp;
@@ -39,7 +39,7 @@ namespace armor_detector
      * @return true 
      * @return false 
      */
-    bool ArmorTracker::update(Armor new_armor, double new_timestamp)
+    bool ArmorTracker::update(Armor new_armor, int64_t new_timestamp)
     {
         if (history_info_.size() <= max_history_len)
         {   // 若历史队列装甲板信息小于给定阈值，直接将当前目标信息放入队列

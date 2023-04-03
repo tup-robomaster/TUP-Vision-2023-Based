@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-02-09 22:12:44
+ * @LastEditTime: 2023-04-03 18:45:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -69,7 +69,8 @@ namespace armor_detector
             else
                 spin_status = spinning_map_.spin_status_map[(*score).first];
             
-            RCLCPP_INFO(logger_, "Spin status: %d", (int)(spin_status));
+            // RCLCPP_INFO_THROTTLE(logger_, "Spin status: %d", (int)(spin_status));
+
             // 若分数过低移且目标陀螺状态已知除此元素
             if (abs((*score).second) <= gyro_params_.anti_spin_judge_low_thres && spin_status != UNKNOWN)
             {
@@ -89,7 +90,7 @@ namespace armor_detector
                 (*score).second = 0.997 * (*score).second - 1 * abs((*score).second) / (*score).second;
             }
             
-            RCLCPP_INFO(logger_, "Score: %lf", (*score).second);
+            // RCLCPP_INFO(logger_, "Score: %lf", (*score).second);
             // 当小于该值时移除该元素
             if (abs((*score).second) < 3 || isnan((*score).second))
             {
@@ -353,7 +354,7 @@ namespace armor_detector
                                 (*candidate).second.last_rmat = last_tracker->last_armor.rmat;
                                 (*candidate).second.new_rmat = new_tracker->last_armor.rmat;
 
-                                RCLCPP_INFO(logger_, "last_y_font:%lf last_y_back:%lf new_y_font:%lf new_y_back:%lf", (*candidate).second.last_y_font, (*candidate).second.last_y_back, (*candidate).second.new_y_font, (*candidate).second.new_y_back);
+                                // RCLCPP_INFO(logger_, "last_y_font:%lf last_y_back:%lf new_y_font:%lf new_y_back:%lf", (*candidate).second.last_y_font, (*candidate).second.last_y_back, (*candidate).second.new_y_font, (*candidate).second.new_y_back);
                                 // RCLCPP_INFO(logger_, "now_dt:%lf last_time:%lf", (new_armor_timestamp / 1e9), ((*candidate).second.last_timestamp / 1e9));
                             }
 

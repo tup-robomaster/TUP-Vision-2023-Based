@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-03-22 17:49:25
+ * @LastEditTime: 2023-03-29 00:50:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -108,6 +108,7 @@ namespace armor_processor
 
     private:
         bool updateParam();
+        bool updateAngleOffset();
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
     };

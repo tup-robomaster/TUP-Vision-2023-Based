@@ -73,6 +73,7 @@ namespace serialport
             && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3)
             && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
         {
+            // cout << 1 << endl;
             return true;
         }
 

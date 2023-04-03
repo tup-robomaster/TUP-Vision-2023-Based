@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-03-18 13:44:05
+ * @LastEditTime: 2023-03-28 01:13:26
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -173,7 +173,7 @@ namespace global_user
         TaskData()
         {
             mode = 1;
-            bullet_speed = 28.0;
+            bullet_speed = 16.0;
             timestamp = 0;
         }
     };

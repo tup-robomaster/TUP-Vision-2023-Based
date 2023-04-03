@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-03-10 15:56:09
+ * @LastEditTime: 2023-03-29 00:21:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_

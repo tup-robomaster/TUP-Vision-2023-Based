@@ -4,7 +4,7 @@ string key
 uint16 hp
 float64 period
 float64 bullet_speed
-uint64 timestamp
+int64 timestamp
 Point2f[4] point2d
 # float64 w
 bool clockwise
