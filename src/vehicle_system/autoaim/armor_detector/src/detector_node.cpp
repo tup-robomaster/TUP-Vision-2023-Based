@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-03 19:06:31
+ * @LastEditTime: 2023-04-04 00:03:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -266,7 +266,7 @@ namespace armor_detector
             global_interface::msg::DetectionArray detection_array;
             detection_array.header = img_header_;
             detection_array.header.frame_id = detection_array.header.frame_id + "_frame";
-            for (auto armor : detector_->armors_)
+            for (auto armor : detector_->new_armors_)
             {
                 global_interface::msg::Detection detection;
                 detection.header = img_header_;
@@ -346,10 +346,6 @@ namespace armor_detector
         obj_hp_msg_ = obj_hp_msg;
         obj_hp_msg_.header.stamp = this->get_clock()->now();
         obj_hp_msg_mutex_.unlock();
-        obj_hp_msg_mutex_.lock();
-        obj_hp_msg_ = obj_hp_msg;
-        obj_hp_msg_.header.stamp = this->get_clock()->now();
-        obj_hp_msg_mutex_.unlock();
         return;
     }
 
@@ -392,8 +388,15 @@ namespace armor_detector
         TaskData src;
         rclcpp::Time stamp = img_info->header.stamp;
         src.timestamp = stamp.nanoseconds();
+        rclcpp::Time stamp = img_info->header.stamp;
+        src.timestamp = stamp.nanoseconds();
         src.img = cv_bridge::toCvShare(img_info, "bgr8")->image;
+        // rcl_time_point_value_t ns = stamp.nanoseconds();
+        // uint32_t sec = stamp.nanoseconds();
+        // cout << "dt_sec:" << sec / 1e9 << endl;
         // img.copyTo(src.img);
+        // RCLCPP_WARN(this->get_logger(), "now:%.8f", stamp.nanoseconds() / 1e9);
+
         if (debug_.show_img)
         {
             char ch[25];

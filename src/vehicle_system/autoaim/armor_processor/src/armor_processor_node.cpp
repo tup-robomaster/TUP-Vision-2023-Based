@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-03 20:35:28
+ * @LastEditTime: 2023-04-04 00:09:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -612,6 +612,8 @@ namespace armor_processor
         predict_param_.min_fitting_lens = this->get_parameter("min_fitting_lens").as_int();
         predict_param_.shoot_delay = this->get_parameter("shoot_delay").as_int();
         predict_param_.window_size = this->get_parameter("window_size").as_int();
+        predict_param_.max_offset_value = this->get_parameter("max_offset_value").as_double();
+        predict_param_.reserve_factor = this->get_parameter("reserve_factor").as_double();
         
         //Debug param.
         debug_param_.show_img = this->get_parameter("show_img").as_bool();

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 01:45:19
- * @LastEditTime: 2023-04-03 19:56:22
+ * @LastEditTime: 2023-04-04 00:01:19
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/data_processor/data_transform.hpp
  */
 #ifndef DATA_TRANSFORM_HPP_
@@ -36,17 +36,6 @@ namespace serialport
      * @brief 模式选择（取消视觉，自瞄，英雄吊射，小符，大符，哨兵, 前哨站旋转模式）
      * 
      */
-    // enum MODE
-    // {
-    //     CLOSE_VISION,
-    //     AUTOAIM,
-    //     HERO_SLING,
-    //     SMALL_BUFF,
-    //     BIG_BUFF,
-    //     SENTRY_NORMAL,
-    //     OUTPOST_ROTATION_MODE
-    // };
-
     typedef struct VisionAimData
     {
         double timestamp;
