@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-04-04 00:02:18
+ * @LastEditTime: 2023-04-04 15:36:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
@@ -38,10 +38,9 @@ namespace armor_detector
 
         Point2i cropImageByROI(Mat &img);
         ArmorTracker* chooseTargetTracker(TaskData& src, vector<ArmorTracker*> trackers);
-        int chooseTargetID(TaskData& src, vector<Armor> &armors, int64_t timestamp);
+        int chooseTargetID(TaskData& src);
         int chooseTargetID(TaskData& src, std::vector<Armor>& armors, ObjHPMsg hp = ObjHPMsg());
         void showArmors(TaskData& src);
-        bool isPnpSolverValidation(Eigen::Vector3d& point3d);
 
     public:
         CoordSolver coordsolver_;
@@ -84,9 +83,6 @@ namespace armor_detector
 
         int lost_cnt_;
         int dead_buffer_cnt_;
-        int64_t last_timestamp_; //上一帧时间戳
-        int64_t timestamp_; // 当前帧时间戳
-        // int64_t prev_timestamp_; 
         bool is_target_switched_;
         bool is_id_switched_;
         double last_target_area_;

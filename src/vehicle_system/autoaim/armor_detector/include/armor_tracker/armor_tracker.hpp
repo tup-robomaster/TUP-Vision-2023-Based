@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-04-04 00:02:57
+ * @LastEditTime: 2023-04-04 13:06:53
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_tracker/armor_tracker.hpp
  */
 #ifndef ARMOR_TRACKER_HPP_
@@ -70,8 +70,6 @@ namespace armor_detector
         // int switch_gyro_status_counter_;
 
         ArmorTracker();
-        ArmorTracker(Armor src, int64_t src_timestamp);
-        bool update(Armor new_armor, int64_t new_timestamp);
         ArmorTracker(Armor src, int64_t src_timestamp);
         bool update(Armor new_armor, int64_t new_timestamp);
         bool calcTargetScore();

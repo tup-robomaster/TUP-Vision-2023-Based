@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 14:01:05
- * @LastEditTime: 2023-04-04 01:36:43
+ * @LastEditTime: 2023-04-04 15:37:33
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/global_user.cpp
  */
 #include "../include/global_user/global_user.hpp"
@@ -355,6 +355,23 @@ namespace global_user
         file << content;
         file.close();
         usleep(5000);
+        return true;
+    }
+
+    bool isPnpSolverValidation(Eigen::Vector3d& point3d)
+    {
+        if (isinf(point3d[0] || isinf(point3d[1]) || isinf(point3d[2])))
+        {
+            return false;
+        }
+        else if (isnan(point3d[0]) || isnan(point3d[1] || isnan(point3d[2])))
+        {
+            return false;
+        }
+        else if (point3d.norm() >= 10.0)
+        {
+            return false;
+        }
         return true;
     }
 

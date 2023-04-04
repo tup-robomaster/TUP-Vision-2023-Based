@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-04 02:30:16
+ * @LastEditTime: 2023-04-04 15:43:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -498,7 +498,7 @@ namespace armor_detector
                 lost_cnt_++;
                 is_last_target_exists_ = false;
                 
-                cout << "died zone..." << endl;
+                RCLCPP_ERROR(logger_, "Error in dead zone...");
                 return false;
             }
 
@@ -681,6 +681,7 @@ namespace armor_detector
                 is_last_target_exists_ = false;
                 // target = final_armors.front();
                 // cout << "died zone..." << endl;
+                RCLCPP_ERROR(logger_, "Error in dead zone...");
                 return false;
             }
 
@@ -1115,22 +1116,5 @@ namespace armor_detector
         {
             return (*new_armors_.begin()).id;
         }
-    }
-
-    bool Detector::isPnpSolverValidation(Eigen::Vector3d& point3d)
-    {
-        if (isinf(point3d[0] || isinf(point3d[1]) || isinf(point3d[2])))
-        {
-            return false;
-        }
-        else if (isnan(point3d[0]) || isnan(point3d[1] || isnan(point3d[2])))
-        {
-            return false;
-        }
-        else if (point3d.norm() >= 10.0)
-        {
-            return false;
-        }
-        return true;
     }
 } //namespace Detector

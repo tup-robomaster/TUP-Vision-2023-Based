@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-04-04 01:36:26
+ * @LastEditTime: 2023-04-04 15:36:15
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -279,6 +279,7 @@ namespace global_user
     bool destorySharedMemory(SharedMemoryParam& shared_memory_param);
     bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_name, int64_t &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size);
 
+    bool isPnpSolverValidation(Eigen::Vector3d& point3d);
     bool isAngleSolverValidataion(Eigen::Vector2d& angle2d);
     void drawAimCrossCurve(cv::Mat& src);
 
