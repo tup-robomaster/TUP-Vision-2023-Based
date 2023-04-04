@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-04 16:00:55
+ * @LastEditTime: 2023-04-04 18:31:53
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -956,7 +956,6 @@ namespace armor_processor
             singer_kf_[axis].Predict();
             Eigen::MatrixXd stateCovPre = singer_kf_[axis].P();
             Eigen::MatrixXd statePre = singer_kf_[axis].x();
-
             singer_kf_[axis].Update(measurement);
 
             // Eigen::MatrixXd predictState(3, 1);
@@ -996,29 +995,30 @@ namespace armor_processor
             VectorXd pred = F * State + control * State[2];
             result = pred[0];
 
-            if (checkDivergence(statePre, stateCovPre, singer_kf_[axis].H_, singer_kf_[axis].R_, measurement))
+            if (checkDivergence(statePre, stateCovPre, singer_kf_[axis].H_, singer_kf_[axis].R_, measurement) || abs(result - meas) > 0.85)
             {
                 RCLCPP_WARN(logger_, "Filter is diverging...");
-                is_singer_init_[axis] = false;
+                // singer_kf_->P_ = singer_model_[axis].P();
+                // is_singer_init_[axis] = false;
                 is_available = false;   
             } 
-            else if (abs(result - meas) > 0.85)
-            {
-                result = meas;
-                is_available = true;
-            }
-            else
-            {
-                result = post_pos;
-                is_available = true;
-            }
+            // else if (abs(result - meas) > 0.85)
+            // {
+            //     result = meas;
+            //     is_available = true;
+            // }
+            // else
+            // {
+            //     result = post_pos;
+            //     is_available = true;
+            // }
              
             // if (abs(result - meas) > 0.75)
             // {
             //     is_singer_init_[axis] = false;
             //     result = meas;
             // }
-            // is_available = true;
+            is_available = true;
         }
         return is_available;
     }

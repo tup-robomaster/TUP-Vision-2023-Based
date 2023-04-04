@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-04 15:33:20
+ * @LastEditTime: 2023-04-04 18:16:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -297,15 +297,7 @@ namespace armor_detector
                 // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "target info_cam: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
                 // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "target info_world: %lf %lf %lf", target_info.aiming_point_world.x, target_info.aiming_point_world.y, target_info.aiming_point_world.z);
             }
-            // else
-            // {
-            //     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "Spinning detector failed...");
-            // }
         }
-        // else
-        // {
-        //     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "armors detector failed...");
-        // }
 
         if (is_target_lost)
         {
@@ -389,12 +381,8 @@ namespace armor_detector
         rclcpp::Time stamp = img_info->header.stamp;
         src.timestamp = stamp.nanoseconds();
         src.img = cv_bridge::toCvShare(img_info, "bgr8")->image;
-        // rcl_time_point_value_t ns = stamp.nanoseconds();
-        // uint32_t sec = stamp.nanoseconds();
-        // cout << "dt_sec:" << sec / 1e9 << endl;
         // img.copyTo(src.img);
-        // RCLCPP_WARN(this->get_logger(), "now:%.8f", stamp.nanoseconds() / 1e9);
-
+        
         if (debug_.show_img)
         {
             char ch[25];

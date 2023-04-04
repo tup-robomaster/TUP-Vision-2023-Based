@@ -5,7 +5,7 @@
     max_lost_cnt: 5
     max_armors_cnt: 8
     max_v: 8
-    max_delta_t: 200
+    max_delta_t: 100
     no_crop_thres: 0.01
     hero_danger_zone: 4
     color: true # red: true
@@ -55,7 +55,7 @@
   
   # Data saving.
     save_data: false
-    save_path: "/data/infer2_5.txt"
+    save_path: "/data/infer.txt"
     save_dataset: false
   
   # Debug params.
@@ -84,8 +84,8 @@
     window_size: 3
     yaw_angle_offset: 0.5
     pitch_angle_offset: -2.45
-    max_offset_value: 0.25
-    reserve_factor: 100.0 #储备系数(>=1)
+    max_offset_value: 0.45
+    reserve_factor: 200.0 #储备系数(>=1)
 
   # Debug params.
     debug: true
