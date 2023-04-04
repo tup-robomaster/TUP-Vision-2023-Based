@@ -7,6 +7,8 @@ V1.0
 程序基于ros-galactic框架
 
 ## 开发日志
+Date:2023-03-xx Fixed image transport delay problem.(0.5ms左右)
+
 Date:2022-12-11 Update buff node.
 
 Date:2022-12-01 Merge armor_detector node and armor_processor node to one node.
