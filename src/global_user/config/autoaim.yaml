@@ -14,7 +14,7 @@
     full_crop_ratio: 0.0001
     armor_roi_expand_ratio_width: 1.1
     armor_roi_expand_ratio_height: 1.5
-    armor_conf_high_thres: 0.82
+    armor_conf_high_thres: 0.89
     yaw_angle_offset: 0.5
     pitch_angle_offset: -2.45
 
@@ -62,15 +62,13 @@
     debug: true
     using_imu: true
     show_img: true
-    show_fps: false
+    show_fps: true
     using_roi: false
     detect_red: true
     auto_label: false
     print_letency: false
     show_aim_cross: true
-    show_aim_cross: true
     sync_transport: false
-    show_all_armors: true
     show_all_armors: true
     print_target_info: false
 
@@ -86,6 +84,8 @@
     window_size: 3
     yaw_angle_offset: 0.5
     pitch_angle_offset: -2.45
+    max_offset_value: 0.25
+    reserve_factor: 100.0 #储备系数(>=1)
 
   # Debug params.
     debug: true

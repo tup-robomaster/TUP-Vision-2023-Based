@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-04 00:09:59
+ * @LastEditTime: 2023-04-04 16:19:43
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -491,6 +491,8 @@ namespace armor_processor
         this->declare_parameter<int>("window_size", 3);
         this->declare_parameter<double>("yaw_angle_offset", 0.0);
         this->declare_parameter<double>("pitch_angle_offset", 0.0);
+        this->declare_parameter<double>("max_offset_value", 0.25);
+        this->declare_parameter<double>("reserve_factor", 15.0);
 
         // Declare debug params.
         this->declare_parameter("show_img", false);

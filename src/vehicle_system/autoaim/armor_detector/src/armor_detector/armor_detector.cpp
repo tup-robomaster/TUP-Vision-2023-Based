@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-04 15:43:18
+ * @LastEditTime: 2023-04-04 17:50:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -224,7 +224,7 @@ namespace armor_detector
 
             //生成装甲板旋转矩形和ROI
             std::vector<Point2f> points_pic(armor.apex2d, armor.apex2d + 4);
-            RotatedRect points_pic_rrect = minAreaRect(points_pic);        
+            RotatedRect points_pic_rrect = minAreaRect(points_pic); 
             armor.rrect = points_pic_rrect;
             auto bbox = points_pic_rrect.boundingRect();
             auto x = bbox.x - 0.5 * bbox.width * (detector_params_.armor_roi_expand_ratio_width - 1);
@@ -273,6 +273,9 @@ namespace armor_detector
             armor.rmat = pnp_result.rmat;
             armor.area = object.area;
             new_armors_.emplace_back(armor);
+
+            // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 250, "armor_area:%d", armor.area);
+            // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 200, "rotate_angle:%.3f", points_pic_rrect.angle);       
         }
         
         //若无合适装甲板
@@ -462,9 +465,8 @@ namespace armor_detector
             double period = 0.0;
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
-                if ((*iter).second.last_timestamp == now_)
-                RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 40, "dt:%.8f src.dt:%.8f", (*iter).second.last_timestamp / 1e9, (src.timestamp / 1e9));
-                if (((*iter).second.last_timestamp / 1e9) == (src.timestamp / 1e9))
+                RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "dt:%.8f src.dt:%.8f", ((*iter).second.now / 1e9), (src.timestamp / 1e9));
+                if (((*iter).second.now / 1e9) == (src.timestamp / 1e9))
                 {
                     final_armors.emplace_back((*iter).second.new_armor);
                     final_trackers.emplace_back(&(*iter).second);
@@ -477,7 +479,7 @@ namespace armor_detector
                         w = (angle / dt);
                         period = ((2 * CV_PI) / w / 4.0);
                         new_period_deq_.emplace_back(period);
-                        RCLCPP_WARN(logger_, "period:%lfs", period);
+                        RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "Rotation period:%lfs", period);
                     }
                 }
                 else
@@ -498,7 +500,7 @@ namespace armor_detector
                 lost_cnt_++;
                 is_last_target_exists_ = false;
                 
-                RCLCPP_ERROR(logger_, "Error in dead zone...");
+                RCLCPP_ERROR(logger_, "Error in dead zone : size is zero...");
                 return false;
             }
 
@@ -777,7 +779,8 @@ namespace armor_detector
         last_aiming_point_ = target.armor3d_cam;
         is_last_target_exists_ = true;
         last_armors_ = new_armors_;
-        
+
+
         if(debug_params_.show_aim_cross)
         {
             drawAimCrossCurve(src.img);
@@ -786,6 +789,17 @@ namespace armor_detector
         if(debug_params_.show_all_armors)
         {
             showArmors(src);
+            // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 200, "rotate_angle:%.3f", target.rrect.angle);  
+            char ch[10];
+            sprintf(ch, "%.2f", target.rrect.angle);
+            std::string angle_str = ch;     
+            putText(src.img, angle_str, target.apex2d[1] + cv::Point2f{0, 26}, FONT_HERSHEY_SIMPLEX, 1, {255, 125, 125}, 1);
+            auto armor_center = coordsolver_.reproject(target.armor3d_cam);
+            circle(src.img, armor_center, 4, {0, 0, 255}, 2);
+            line(src.img, cv::Point2f(armor_center.x - 25, armor_center.y), cv::Point2f(armor_center.x + 25, armor_center.y), {0, 0, 255}, 1);
+            line(src.img, cv::Point2f(armor_center.x, armor_center.y - 30), cv::Point2f(armor_center.x, armor_center.y + 30), {0, 0, 255}, 1);
+            line(src.img, cv::Point2f(armor_center.x - 25, armor_center.y), cv::Point2f(armor_center.x + 25, armor_center.y), {0, 0, 255}, 1);
+            line(src.img, cv::Point2f(armor_center.x, armor_center.y - 30), cv::Point2f(armor_center.x, armor_center.y + 30), {0, 0, 255}, 1);
         }
         
         auto angle = coordsolver_.getAngle(target.armor3d_cam, rmat_imu_);
@@ -862,10 +876,10 @@ namespace armor_detector
             for(int i = 0; i < 4; i++)
                 line(src.img, armor.apex2d[i % 4], armor.apex2d[(i + 1) % 4], {0,255,0}, 1);
             rectangle(src.img, armor.roi, {255, 0, 255}, 1);
-            auto armor_center = coordsolver_.reproject(armor.armor3d_cam);
-            circle(src.img, armor_center, 4, {0, 0, 255}, 2);
-            line(src.img, cv::Point2f(armor_center.x - 25, armor_center.y), cv::Point2f(armor_center.x + 25, armor_center.y), {0, 0, 255}, 1);
-            line(src.img, cv::Point2f(armor_center.x, armor_center.y - 30), cv::Point2f(armor_center.x, armor_center.y + 30), {0, 0, 255}, 1);
+            // auto armor_center = coordsolver_.reproject(armor.armor3d_cam);
+            // circle(src.img, armor_center, 4, {0, 0, 255}, 2);
+            // line(src.img, cv::Point2f(armor_center.x - 25, armor_center.y), cv::Point2f(armor_center.x + 25, armor_center.y), {0, 0, 255}, 1);
+            // line(src.img, cv::Point2f(armor_center.x, armor_center.y - 30), cv::Point2f(armor_center.x, armor_center.y + 30), {0, 0, 255}, 1);
         }
     }
 
@@ -1034,10 +1048,10 @@ namespace armor_detector
         for (int i = 0; i < trackers.size(); i++)
         {
             //计算tracker的切换打击分数,由装甲板旋转角度,距离,面积大小决定
-            if (trackers[i]->now == now_)
+            if ((trackers[i]->now / 1e9) == (now_ / 1e9))
             {
                 if (trackers[i]->is_initialized && (trackers[i]->last_selected_timestamp / 1e9) == (last_timestamp_ / 1e9) 
-                && (abs(now_ - last_timestamp_) / 1e6) < 100 && (trackers[i]->now / 1e9) == (now_ / 1e9))
+                && (abs(now_ - last_timestamp_) / 1e6) < 100)
                 {
                     last_target_idx = i;
                     break;
@@ -1076,35 +1090,52 @@ namespace armor_detector
         */
         bool is_last_id_exists = false;
         int target_id = -1;
-        double min_2d_dist = 1e4;
+        // double min_2d_dist = 1e4;
+        float min_rrangle = 1e2;
+        float max_rrangle = 0.0;
         double min_3d_dist = 1e2;
         for (auto armor : new_armors_)
         {   
-            double dist_2d = abs((src.img.size().width / 2.0) - armor.center2d.x);
+            // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "armor_area:%d", armor.area);
+            // double dist_2d = abs((src.img.size().width / 2.0) - armor.center2d.x);
+            float rrangle = armor.rrect.angle;
             double dist_3d = armor.armor3d_world.norm();
+
             if (armor.id == 6 && src.mode == HERO_SLING)
             {
                 return armor.id;
             }
-            if (armor.id == 1 && armor.armor3d_world.norm() <= detector_params_.hero_danger_zone)
+            else if (armor.id == 1 && armor.armor3d_world.norm() <= detector_params_.hero_danger_zone)
             {
                 return armor.id;
             }
-            else if (armor.id == last_armor_.id && abs(armor.area - last_armor_.area) / (float)armor.area < 0.40 && abs(now_ - last_timestamp_) / 1e6 <= 100)
+            else if ((armor.id == last_armor_.id && abs(armor.area - last_armor_.area) / (float)armor.area < 0.40 && abs(now_ - last_timestamp_) / 1e6 <= 100)
+            && !(16.0 <= abs(rrangle) <= 74.0))
             {
                 is_last_id_exists = true;
                 target_id = armor.id;
             }
+            else if (13.0 <= abs(rrangle) <= 77.0)
+            {
+                continue;
+            }
+            else if ((abs(rrangle) > 77.0 || abs(rrangle) < 13.0) && (abs(rrangle) > abs(max_rrangle) || abs(rrangle) < abs(min_rrangle)))
+            {
+                min_rrangle = abs(rrangle) < 13.0 ? rrangle : 1e2;
+                max_rrangle = abs(rrangle) > 77.0 ? rrangle : 0.0; 
+                is_last_id_exists = true;
+                target_id = armor.id;
+            }
+            // else if (dist_2d < min_2d_dist && dist_3d / min_3d_dist >= 0.6 && dist_3d <= detector_params_.fire_zone)
+            // {
+            //     is_last_id_exists = true;
+            //     target_id = armor.id;
+            // }   
             else if (dist_3d < min_3d_dist && dist_3d <= detector_params_.fire_zone)
             {
                 is_last_id_exists = true;
                 target_id = armor.id;
             }
-            else if (dist_2d < min_2d_dist && dist_3d / min_3d_dist >= 0.6 && dist_3d <= detector_params_.fire_zone)
-            {
-                is_last_id_exists = true;
-                target_id = armor.id;
-            }   
         }
         
         //若不存在则返回面积最大的装甲板序号，即队列首元素序号

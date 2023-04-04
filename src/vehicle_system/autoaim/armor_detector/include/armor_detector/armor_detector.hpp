@@ -2,12 +2,14 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-04-04 15:36:55
+ * @LastEditTime: 2023-04-04 17:36:51
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
 #include <rclcpp/rclcpp.hpp>
+#include <angles/angles.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
+
 #include "../param_struct/param_struct.hpp"
 #include "../inference/inference_api2.hpp"
 #include "../armor_tracker/armor_tracker.hpp"
@@ -21,6 +23,7 @@
 
 using namespace global_user;
 using namespace coordsolver;
+using namespace angles;
 namespace armor_detector
 {
     class Detector
@@ -41,6 +44,7 @@ namespace armor_detector
         int chooseTargetID(TaskData& src);
         int chooseTargetID(TaskData& src, std::vector<Armor>& armors, ObjHPMsg hp = ObjHPMsg());
         void showArmors(TaskData& src);
+        bool normlizeAngle();
 
     public:
         CoordSolver coordsolver_;
