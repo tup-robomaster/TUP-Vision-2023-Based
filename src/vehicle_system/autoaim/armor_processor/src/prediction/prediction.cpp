@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-02 19:03:46
+ * @LastEditTime: 2023-04-04 16:00:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -186,6 +186,8 @@ namespace armor_processor
             filter_disabled_ = false;
             RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "Maneuvering...");
         }
+        filter_disabled_ = false;
+        fitting_disabled_ = true;
 
         // -------------对位置进行粒子滤波,以降低测距噪声影响-----------------
         // Eigen::VectorXd measure (2);
@@ -296,6 +298,7 @@ namespace armor_processor
                 return result;
             }
             final_target_ = target;
+            return Vector3d{target.xyz[0], target.xyz[1], target.xyz[2]};
             return Vector3d{target.xyz[0], target.xyz[1], target.xyz[2]};
         }
 
@@ -974,8 +977,10 @@ namespace armor_processor
 
             double alpha = singer_param_[axis][0];
             double dt = singer_param_[axis][8] * singer_param_[axis][4];
-            dt = timestamp / 1e9  * 60;
+            // dt = timestamp / 1e9;
+            dt = timestamp / 1e9 * 60;
             // cout << dt << endl;
+            // cout << dt << " " << timestamp / 1e9 << endl;
             
             Eigen::MatrixXd F(3, 3);
             singer_model_[axis].setF(F, dt, alpha);
@@ -991,20 +996,13 @@ namespace armor_processor
             VectorXd pred = F * State + control * State[2];
             result = pred[0];
 
-            // 滤波发散判据（传统基于单步量测的新息序列不等式）
-            VectorXd innovationCovPre(1, 1);
-            innovationCovPre << singer_kf_[axis].H_ * stateCovPre * singer_kf_[axis].H_.transpose() + singer_kf_[axis].R_; 
-            MatrixXd innovation(1, 1);
-            innovation << measurement - singer_kf_[axis].H_ * statePre;
-            MatrixXd innovationSquare = innovation * innovation.transpose();
-            double traceInnovationCovPre = innovationCovPre.trace();
-            if (innovationSquare(0, 0) > predict_param_.reserve_factor * traceInnovationCovPre)
+            if (checkDivergence(statePre, stateCovPre, singer_kf_[axis].H_, singer_kf_[axis].R_, measurement))
             {
                 RCLCPP_WARN(logger_, "Filter is diverging...");
                 is_singer_init_[axis] = false;
                 is_available = false;   
             } 
-            else if (abs(result - meas) > predict_param_.max_offset_value)
+            else if (abs(result - meas) > 0.85)
             {
                 result = meas;
                 is_available = true;
@@ -1014,7 +1012,13 @@ namespace armor_processor
                 result = post_pos;
                 is_available = true;
             }
-            // cout << axis << ":" << post_pos << endl;
+             
+            // if (abs(result - meas) > 0.75)
+            // {
+            //     is_singer_init_[axis] = false;
+            //     result = meas;
+            // }
+            // is_available = true;
         }
         return is_available;
     }

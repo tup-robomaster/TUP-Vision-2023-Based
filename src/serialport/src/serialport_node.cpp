@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-03-31 01:51:10
+ * @LastEditTime: 2023-04-04 00:01:49
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -91,7 +91,7 @@ namespace serialport
     SerialPortNode::~SerialPortNode()
     {
         // if (receive_thread_.joinable())
-            // receive_thread_.join();
+        //     receive_thread_.join();
     }
 
     /**
@@ -177,8 +177,8 @@ namespace serialport
                     RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1500, "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
                     RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "gyro:[%f %f %f]", gyro[0], gyro[1], gyro[2]);
                     RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "acc:[%f %f %f]", acc[0], acc[1], acc[2]);
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "bullet_speed::%f", bullet_speed);
                 }
+                RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "bullet_speed::%f", bullet_speed);
 
                 rclcpp::Time now = this->get_clock()->now();
                 SerialMsg serial_msg;
@@ -284,13 +284,14 @@ namespace serialport
                     (float)target_info->pitch, 
                     (float)target_info->yaw, 
                     (float)target_info->distance, 
-                    target_info->is_switched, 
+                    (target_info->is_switched || target_info->is_spinning_switched), 
                     target_info->is_target, 
                     target_info->is_spinning, 
-                    1,
+                    target_info->is_prediction,
                     {target_info->meas_point_cam.x, target_info->meas_point_cam.y, target_info->meas_point_cam.z},
                     {target_info->pred_point_cam.x, target_info->pred_point_cam.y, target_info->pred_point_cam.z}
                 };
+                RCLCPP_WARN_EXPRESSION(this->get_logger(), (target_info->is_switched || target_info->is_spinning_switched), "Target switched!!!");
             }
             else 
                 return false;

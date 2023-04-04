@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 14:01:05
- * @LastEditTime: 2023-04-02 00:37:19
+ * @LastEditTime: 2023-04-04 15:37:33
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/global_user.cpp
  */
 #include "../include/global_user/global_user.hpp"
@@ -358,6 +358,23 @@ namespace global_user
         return true;
     }
 
+    bool isPnpSolverValidation(Eigen::Vector3d& point3d)
+    {
+        if (isinf(point3d[0] || isinf(point3d[1]) || isinf(point3d[2])))
+        {
+            return false;
+        }
+        else if (isnan(point3d[0]) || isnan(point3d[1] || isnan(point3d[2])))
+        {
+            return false;
+        }
+        else if (point3d.norm() >= 10.0)
+        {
+            return false;
+        }
+        return true;
+    }
+
     bool isAngleSolverValidataion(Eigen::Vector2d& angle2d)
     {
         if (isinf(angle2d[0] || isinf(angle2d[1])))
@@ -380,4 +397,92 @@ namespace global_user
         line(src, cv::Point2f(src.size().width / 2, 0), cv::Point2f(src.size().width / 2, src.size().height), {0,255,0}, 1);
         line(src, cv::Point2f(0, src.size().height / 2), cv::Point2f(src.size().width, src.size().height / 2), {0,255,0}, 1);
     }
+
+    //新息序列不等式
+    bool checkDivergence(const MatrixXd& statePre, const MatrixXd& stateCovPre, const MatrixXd& H, const MatrixXd& R, const VectorXd& measurement)
+    {
+        // 滤波发散判据（传统基于单步量测的新息序列不等式）
+        VectorXd innovationCovPre(1, 1);
+        innovationCovPre << H * stateCovPre * H.transpose() + R; 
+        MatrixXd innovation(1, 1);
+        innovation << measurement - H * statePre;
+        MatrixXd innovationSquare = innovation * innovation.transpose();
+        double traceInnovationCovPre = innovationCovPre.trace();
+
+        return (innovationSquare(0, 0) > 100 * traceInnovationCovPre);
+    }
+
+    // bool checkDivergence(const MatrixXd& F, const MatrixXd& P, const MatrixXd& H, const MatrixXd& R)
+    // {
+    //     int n = F.rows(); // 状态向量维度
+    //     int m = H.rows(); // 观测向量维度
+
+    //     // 计算新息序列不等式右侧值
+    //     MatrixXd Q = F * P * F.transpose();
+    //     MatrixXd S = H * Q * H.transpose() + R;
+    //     MatrixXd K = Q * H.transpose() * S.inverse();
+    //     MatrixXd I = MatrixXd::Identity(n, n);
+    //     MatrixXd P_new = (I - K * H) * Q;
+
+    //     double rhs = 0;
+    //     for (int i = 0; i < m; i++) 
+    //     {
+    //         rhs += log(S(i, i));
+    //     }
+    //     rhs += n * log(2 * M_PI) + log(P_new.determinant());
+
+    //     // 计算新息序列不等式左侧值
+    //     MatrixXd x = VectorXd::Zero(n);
+    //     MatrixXd z = VectorXd::Zero(m);
+    //     MatrixXd v = z - H * x;
+    //     MatrixXd w = MatrixXd::Zero(n, m);
+    //     MatrixXd S_sqrt = S.llt().matrixL();
+    //     double lhs = 0;
+    //     for (int i = 0; i < m; i++) 
+    //     {
+    //         double d = v(i, 0) / S_sqrt(i, i);
+    //         lhs += d * d;
+    //         for (int j = 0; j < n; j++) 
+    //         {
+    //             w(j, i) = K(j, i) / S_sqrt(i, i);
+    //         }
+    //     }
+    //     lhs += (x.transpose() * P_new.inverse() * x)(0, 0);
+    //     lhs += (w.transpose() * w).sum();
+
+    //     return lhs > rhs;
+    // }
+
+    // //残差方差检测法
+    // bool checkDivergence(double residual, double threshold, vector<double>& variances, int window_size)
+    // {
+    //     variances.push_back(residual * residual);
+    //     if (variances.size() > window_size) 
+    //     {
+    //         variances.erase(variances.begin());
+    //     }
+    //     double var_sum = 0;
+    //     for (double v : variances) 
+    //     {
+    //         var_sum += v;
+    //     }
+    //     double mean_var = var_sum / variances.size();
+    //     double var_diff = 0;
+    //     for (double v : variances) 
+    //     {
+    //         var_diff += (v - mean_var) * (v - mean_var);
+    //     }
+    //     double std_var = sqrt(var_diff / (variances.size() - 1));
+    //     return std_var > threshold;
+    // }
+
+    // //一致性检测法
+    // bool checkDivergence(const MatrixXd& residual, const MatrixXd& S, double threshold)
+    // {
+    //     int n = residual.rows();
+    //     MatrixXd R = residual * residual.transpose() / (n - 1);
+    //     MatrixXd diff = R - S;
+    //     double norm_diff = diff.norm();
+    //     return norm_diff > threshold;
+    // }
 } //global_user

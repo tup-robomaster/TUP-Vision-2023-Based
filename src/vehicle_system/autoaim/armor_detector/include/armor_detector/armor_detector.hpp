@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-04-02 00:15:38
+ * @LastEditTime: 2023-04-04 15:36:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
@@ -28,7 +28,8 @@ namespace armor_detector
         typedef global_interface::msg::ObjHP ObjHPMsg;
 
     public:
-        Detector(const PathParam& path_params, const DetectorParam& detector_params_, const DebugParam& debug_params_, const GyroParam& gyro_params_);
+        Detector(const PathParam& path_params, const DetectorParam& detector_params, const DebugParam& debug_params,
+            const GyroParam& gyro_params, const Eigen::Vector2d& angle_offset);
         ~Detector();
 
         // void run();
@@ -40,7 +41,6 @@ namespace armor_detector
         int chooseTargetID(TaskData& src);
         int chooseTargetID(TaskData& src, std::vector<Armor>& armors, ObjHPMsg hp = ObjHPMsg());
         void showArmors(TaskData& src);
-        bool isPnpSolverValidation(Eigen::Vector3d& point3d);
 
     public:
         CoordSolver coordsolver_;
@@ -87,7 +87,7 @@ namespace armor_detector
         bool is_id_switched_;
         double last_target_area_;
         Point2i last_roi_center_;
-        double last_bullet_speed_;
+        double last_bullet_speed_ = 15.5;
         bool is_last_target_exists_;
         Eigen::Vector3d last_aiming_point_;
         

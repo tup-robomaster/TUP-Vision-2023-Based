@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-01 14:48:13
+ * @LastEditTime: 2023-04-04 15:33:20
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -36,7 +36,6 @@ namespace armor_detector
                 detector_->data_save_ << fixed;
             }
             detector_->is_init_ = true;
-        
         }
         
         // 同步通信/异步通信
@@ -249,7 +248,8 @@ namespace armor_detector
                 src.quat.x() = serial_msg_.imu.orientation.x;
                 src.quat.y() = serial_msg_.imu.orientation.y;
                 src.quat.z() = serial_msg_.imu.orientation.z;
-                detector_->debug_params_.using_imu = true;
+                // detector_->debug_params_.using_imu = true;
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "bulletSpd:%.2f", src.bullet_speed);
             // }
         }
         serial_msg_mutex_.unlock(); 
@@ -294,7 +294,8 @@ namespace armor_detector
                 rmat_imu = src.quat.toRotationMatrix();
                 Eigen::Vector3d armor_3d_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
                 tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_imu);
-                // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 20, "target info: %lf %lf %lf", target_info.aiming_point_world.x, target_info.aiming_point_world.y, target_info.aiming_point_world.z);
+                // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "target info_cam: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
+                // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "target info_world: %lf %lf %lf", target_info.aiming_point_world.x, target_info.aiming_point_world.y, target_info.aiming_point_world.z);
             }
             // else
             // {
@@ -305,11 +306,24 @@ namespace armor_detector
         // {
         //     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "armors detector failed...");
         // }
+
+        if (is_target_lost)
+        {
+            target_info.aiming_point_cam.x = 0;
+            target_info.aiming_point_cam.y = 0;
+            target_info.aiming_point_cam.z = 0;
+            target_info.aiming_point_world.x = 0;
+            target_info.aiming_point_world.y = 0;
+            target_info.aiming_point_world.z = 0;
+        }
         param_mutex_.unlock();
         target_info.is_target_lost = is_target_lost;
         target_info.header.frame_id = "gimbal_link";
         target_info.header.stamp = start;
         target_info.timestamp = src.timestamp;
+        // if (target_info.spinning_switched)
+            // cout << "spinning_switched" << endl;
+
         armor_info_pub_->publish(std::move(target_info));
         
         debug_.show_img = this->get_parameter("show_img").as_bool();
@@ -434,6 +448,8 @@ namespace armor_detector
         this->declare_parameter<double>("armor_roi_expand_ratio_width", 1.1);
         this->declare_parameter<double>("armor_roi_expand_ratio_height", 1.5);
         this->declare_parameter<double>("armor_conf_high_thres", 0.82);
+        this->declare_parameter<double>("yaw_angle_offset", 0.0);
+        this->declare_parameter<double>("pitch_angle_offset", 0.0);
         
         //TODO:Set by your own path.
         this->declare_parameter("camera_name", "KE0200110075"); //相机型号
@@ -467,7 +483,11 @@ namespace armor_detector
         //Update param from param server.
         updateParam();
 
-        return std::make_unique<Detector>(path_params_, detector_params_, debug_, gyro_params_);
+        Eigen::Vector2d angle_offset = {0.0, 0.0};
+        angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
+        angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
+
+        return std::make_unique<Detector>(path_params_, detector_params_, debug_, gyro_params_, angle_offset);
     }
 
     /**
