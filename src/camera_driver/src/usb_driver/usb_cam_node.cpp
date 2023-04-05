@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2023-03-20 10:19:59
+ * @LastEditTime: 2023-04-05 02:00:50
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -208,6 +208,8 @@ namespace camera_driver
             msg->step = static_cast<sensor_msgs::msg::Image::_step_type>(frame.step);
             msg->is_bigendian = false;
             msg->data.assign(frame.datastart, frame.dataend);
+            // RCLCPP_WARN(this->get_logger(), "now:%.12f", now.nanoseconds() / 1e9);
+            // cout << "now:" << now.nanoseconds() / 1e12 << endl;
 
             // camera_info_pub.publish(image_msg, camera_info_msg);
             frame_pub->publish(std::move(msg));
@@ -227,8 +229,8 @@ namespace camera_driver
             cv::waitKey(2000);
         }
 
-        // if(using_video_)
-        //     usleep(10000);
+        if(using_video_)
+            usleep(5000);
     }
 
     bool UsbCamNode::setParam(rclcpp::Parameter param)

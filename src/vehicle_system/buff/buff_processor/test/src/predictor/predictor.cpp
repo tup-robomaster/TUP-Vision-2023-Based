@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-03-20 20:40:43
+ * @LastEditTime: 2023-03-22 16:11:23
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -258,7 +258,7 @@ namespace buff_processor
                 double origin_timestamp = origin_timestamp_;
                 origin_timestamp = history_info.front().timestamp;
                 // for (auto target_info : history_info)
-                for(int ii = 0; ii < history_info.size(); ii += 1)
+                for(int ii = 0; ii < (int)history_info.size(); ii += 1)
                 {
                     problem.AddResidualBlock( // 向问题中添加误差项
                     // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致

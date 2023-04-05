@@ -11,3 +11,12 @@
 ## 自动发弹思路
     1）结合目标车辆的血量、距离信息；
     2）结合预测信息；
+
+## 自瞄防抖
+### Double threshold
+### Spinning constraint
+
+## 小陀螺
+### Detection
+![image](docs/spinning_detect_logic.jpg)
+    

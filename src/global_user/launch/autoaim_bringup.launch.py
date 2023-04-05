@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-03-26 19:21:53
+LastEditTime: 2023-04-05 02:02:38
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -34,13 +34,13 @@ def generate_launch_description():
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='daheng',
+        default_value='usb',
         description='hik daheng mvs usb'
     )
 
     declare_use_serial = DeclareLaunchArgument(
         name='using_imu',
-        default_value='True',
+        default_value='False',
         description='debug without serial port.'
     )
     
@@ -68,14 +68,6 @@ def generate_launch_description():
         declare_camera_type,
         declare_use_serial,
         declare_debug_pred,
-
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                os.path.join(
-                    get_package_share_directory('robot_description'), 'launch', 'view_model.launch.py'
-                ),
-            ),
-        ),
 
         Node(
             package='serialport',
@@ -106,7 +98,7 @@ def generate_launch_description():
                     name='serialport',
                     parameters=[{
                         'using_port': True,
-                        'tracking_target': True,
+                        'tracking_target': False,
                         'print_serial_info': False,
                         'print_referee_info': False            
                     }],

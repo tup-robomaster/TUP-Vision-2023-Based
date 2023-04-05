@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-11 13:18:53
- * @LastEditTime: 2023-03-21 18:19:04
+ * @LastEditTime: 2023-03-26 18:21:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/singer_model.cpp
  */
 #include "../../include/filter/singer_model.hpp"
@@ -44,6 +44,8 @@ namespace armor_processor
 
     void SingerModel::init()
     {
+        cout << "singer_param:" <<  singer_param_[0] << " " << singer_param_[1] << " " << singer_param_[2] << " " <<  singer_param_[3]
+            << " " <<  singer_param_[4] << " " <<  singer_param_[5] << " " <<  singer_param_[6] << " " <<  singer_param_[7] << endl;
         double alpha = singer_param_[0];
         double dt = singer_param_[4];
 
@@ -66,8 +68,8 @@ namespace armor_processor
         double q33 = 1 / (2 * alpha) * (1 - exp(-2 * alpha * dt));
         double sigma = singer_param_[5];
         Q_ << 2 * pow(sigma, 2) * alpha * q11, 2 * pow(sigma, 2) * alpha * q12, 2 * pow(sigma, 2) * alpha* q13,
-                            2 * pow(sigma, 2) * alpha* q12, 2 * pow(sigma, 2) * alpha* q22, 2 * pow(sigma, 2) * alpha* q23,
-		                    2 * pow(sigma, 2) * alpha* q13, 2 * pow(sigma, 2) * alpha* q23, 2 * pow(sigma, 2) * alpha* q33;
+            2 * pow(sigma, 2) * alpha* q12, 2 * pow(sigma, 2) * alpha* q22, 2 * pow(sigma, 2) * alpha* q23,
+            2 * pow(sigma, 2) * alpha* q13, 2 * pow(sigma, 2) * alpha* q23, 2 * pow(sigma, 2) * alpha* q33;
         double meaCov = singer_param_[7];
         R_ << meaCov;
     }
@@ -101,7 +103,7 @@ namespace armor_processor
         return;
     }
 
-    void SingerModel::setQ(MatrixXd& Q, const double& dt, const double& alpha, const double& acc)
+    void SingerModel::setQ(const double& dt, const double& alpha, const double& acc, MatrixXd* Q)
     {
         double q11 = 1 / (2 * pow(alpha, 5)) * (1 - exp(-2 * alpha * dt) + 2 * alpha * dt + 2 * pow(alpha * dt, 3) / 3 - 2 * pow(alpha * dt, 2) - 4 * alpha * dt * exp(-alpha * dt));
         double q12 = 1 / (2 * pow(alpha, 4)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt) + 2 * alpha * dt * exp(-alpha * dt) - 2 * alpha * dt + pow(alpha * dt, 2));
@@ -109,22 +111,34 @@ namespace armor_processor
         double q22 = 1 / (2 * pow(alpha, 3)) * (4 * exp(-alpha * dt) - 3 - exp(-2 * alpha * dt) + 2 * alpha * dt);
         double q23 = 1 / (2 * pow(alpha, 2)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt));
         double q33 = 1 / (2 * alpha) * (1 - exp(-2 * alpha * dt));
-        
         double sigma = singer_param_[5];
-        // if(acc > 0)
-        // {
-        //     sigma = ((4 - M_PI) / M_PI) * pow(singer_param_[1] - acc, 2);
-        // }
-        // else
-        // {
-        //     sigma = ((4 - M_PI) / M_PI) * pow(singer_param_[1] + acc, 2);
-        // }
-        Q << 2 * pow(sigma, 2) * alpha * q11, 2 * pow(sigma, 2) * alpha * q12, 2 * pow(sigma, 2) * alpha* q13,
+        if(acc > 0)
+        {
+            sigma = ((4 - M_PI) / M_PI) * pow(singer_param_[1] - acc, 2);
+        }
+        else
+        {
+            sigma = ((4 - M_PI) / M_PI) * pow(singer_param_[1] + acc, 2);
+        }
+        *Q << 2 * pow(sigma, 2) * alpha * q11, 2 * pow(sigma, 2) * alpha * q12, 2 * pow(sigma, 2) * alpha* q13,
             2 * pow(sigma, 2) * alpha* q12, 2 * pow(sigma, 2) * alpha* q22, 2 * pow(sigma, 2) * alpha* q23,
             2 * pow(sigma, 2) * alpha* q13, 2 * pow(sigma, 2) * alpha* q23, 2 * pow(sigma, 2) * alpha* q33;
         return;
     }
 
+    void SingerModel::setQ(const double acc)
+    {
+        double dt = singer_param_[4];
+        double alpha = singer_param_[0];
+        setQ(dt, alpha, acc, &this->Q_);
+        return;
+    }
+
+    void SingerModel::setQ(const double& dt, const double& alpha, const double& acc)
+    {
+        setQ(dt, alpha, acc, &this->Q_);
+    }
+    
     void SingerModel::setR(MatrixXd& R, const double& cov)
     {
         R << cov;

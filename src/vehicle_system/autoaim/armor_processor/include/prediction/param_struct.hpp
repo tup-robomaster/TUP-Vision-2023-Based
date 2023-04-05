@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-09 22:50:31
- * @LastEditTime: 2023-03-21 12:59:43
+ * @LastEditTime: 2023-04-05 13:45:49
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -46,7 +46,7 @@ namespace armor_processor
     {
         Eigen::Vector3d xyz;
         double dist;
-        uint64_t timestamp;
+        int64_t timestamp;
         double period;
         bool is_target_switched;
         bool is_spinning;
@@ -91,6 +91,12 @@ namespace armor_processor
         KFParam kf_param;       //卡尔曼滤波参数
         FilterModelParam filter_model_param; //滤波模型参数
         SystemModel system_model;
+        double reserve_factor;
+        double max_offset_value;
+        double rotation_yaw;
+        double rotation_pitch;
+        double rotation_roll;
+        
         PredictParam()
         {
             bullet_speed = 28;    
@@ -101,6 +107,11 @@ namespace armor_processor
             shoot_delay = 100;       
             window_size = 3;     
             system_model = CSMODEL;   
+            reserve_factor = 15.0;
+            max_offset_value = 0.25;
+            rotation_yaw = 0.0;
+            rotation_pitch = 0.0;
+            rotation_roll = 0.0;
         }
     };
 

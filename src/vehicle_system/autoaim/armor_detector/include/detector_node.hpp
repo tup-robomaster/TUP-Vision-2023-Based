@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2023-03-17 19:24:54
+ * @LastEditTime: 2023-03-29 00:27:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -24,7 +24,7 @@
 #include "global_interface/msg/gimbal.hpp" 
 #include "global_interface/msg/autoaim.hpp"
 #include "global_interface/msg/serial.hpp"
-#include "global_interface/msg/car_hp.hpp"
+#include "global_interface/msg/obj_hp.hpp"
 
 using namespace global_user;
 using namespace coordsolver;
@@ -36,7 +36,7 @@ namespace armor_detector
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
         typedef global_interface::msg::Serial SerialMsg;
-        typedef global_interface::msg::CarHP CarHPMsg;
+        typedef global_interface::msg::ObjHP ObjHPMsg;
         typedef sync_policies::ApproximateTime<sensor_msgs::msg::Image, SerialMsg> MySyncPolicy;
 
     public:
@@ -70,10 +70,10 @@ namespace armor_detector
         rclcpp::Subscription<SerialMsg>::SharedPtr serial_msg_sub_;
         void sensorMsgCallback(const SerialMsg& serial_msg);
 
-        CarHPMsg car_hp_msg_;
-        Mutex car_hp_msg_mutex_;
-        rclcpp::Subscription<CarHPMsg>::SharedPtr car_hp_msg_sub_;
-        void carHPMsgCallback(const CarHPMsg& car_hp_msg);
+        ObjHPMsg obj_hp_msg_;
+        Mutex obj_hp_msg_mutex_;
+        rclcpp::Subscription<ObjHPMsg>::SharedPtr obj_hp_msg_sub_;
+        void objHPMsgCallback(const ObjHPMsg& obj_hp_msg);
 
         // Subscribe img and serial msgs synchronously.
         std::shared_ptr<message_filters::Subscriber<SerialMsg>> serial_msg_sync_sub_;

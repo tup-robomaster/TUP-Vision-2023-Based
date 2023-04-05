@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-03-26 19:17:22
+ * @LastEditTime: 2023-04-05 13:13:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -57,6 +57,9 @@ namespace armor_processor
         singer_model_[1] = SingerModel(singer_param_[1], 3, 1, 1);
         singer_model_[2] = SingerModel(singer_param_[2], 3, 1, 1);
 
+        // cout << "singer_param:" <<  singer_param_[0][0] << " " << singer_param_[0][1] << " " << singer_param_[0][2] << " " <<  singer_param_[0][3]
+            // << " " <<  singer_param_[0][4] << " " <<  singer_param_[0][5] << " " <<  singer_param_[0][6] << " " <<  singer_param_[0][7] << endl;
+        
         // SingerModel singer;
         kfInit();
 
@@ -117,7 +120,7 @@ namespace armor_processor
                     post_process_info.switch_target = true;
                     post_process_info.is_shooting = false;
                 }
-                if(cur_pred_error_ > 0.1 && ((is_singer_init_[0] && is_singer_init_[1]) || is_imm_init_))
+                if(cur_pred_error_ > 0.1 && ((is_singer_init_[0] && is_singer_init_[1] && is_singer_init_[2]) || is_imm_init_))
                 {
                     post_process_info.is_shooting = false;
                     post_process_info.switch_target = false;
@@ -154,12 +157,14 @@ namespace armor_processor
     {
         auto t1 = steady_clock_.now();
 
+        rclcpp::Time stamp = target_msg.header.stamp;
+        int64_t dt = stamp.nanoseconds();
         Eigen::Vector3d xyz = {target_msg.aiming_point_world.x, target_msg.aiming_point_world.y, target_msg.aiming_point_world.z};
         TargetInfo target = 
         {
             std::move(xyz),
             xyz.norm(),
-            target_msg.timestamp,
+            dt,
             target_msg.period,
             target_msg.target_switched,
             target_msg.is_spinning,
@@ -170,6 +175,7 @@ namespace armor_processor
             (OutpostStatus)(target_msg.is_controlled),
             predict_param_.system_model
         };
+        // RCLCPP_INFO(logger_, "src_timestamp:%.8f", dt / 1e9);
 
         if(target.is_outpost_mode || target.is_spinning)
         {
@@ -183,6 +189,8 @@ namespace armor_processor
             filter_disabled_ = false;
             RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "Maneuvering...");
         }
+        filter_disabled_ = false;
+        fitting_disabled_ = true;
 
         // -------------对位置进行粒子滤波,以降低测距噪声影响-----------------
         // Eigen::VectorXd measure (2);
@@ -200,18 +208,18 @@ namespace armor_processor
 
         Eigen::Vector3d result = {0, 0, 0};
         Eigen::Vector3d result_fitting = {0, 0, 0};
-        Eigen::Vector3d result_singer = {0, 0, 0};
+        double result_singer[3] = {0.0, 0.0, 0.0};
         Eigen::Vector3d result_imm = {0, 0, 0};
         PredictStatus is_fitting_available;
         PredictStatus is_singer_available;
         PredictStatus is_imm_available;
         
-        if (!fitting_disabled_)
+        if(!fitting_disabled_)
         {
-            if (!target.is_target_switched)
+            if(!target.is_target_switched)
             {
-                history_origin_info_.emplace_back(cv::Point2d(history_info_.front().xyz[1], history_info_.front().xyz[0]));
-                history_info_.emplace_back(std::move(target));
+                history_origin_info_.push_back(cv::Point2d(history_info_.front().xyz[1], history_info_.front().xyz[0]));
+                history_info_.push_back(std::move(target));
                 if(history_origin_info_.size() > 2)
                 {   // Reserve history fitting front element.
                     history_origin_info_.pop_front();    
@@ -221,15 +229,15 @@ namespace armor_processor
             {
                 is_predicted_ = false;
                 history_origin_info_.clear();
-                history_origin_info_.emplace_back(cv::Point2d(history_info_.front().xyz[1], history_info_.front().xyz[0]));
+                history_origin_info_.push_back(cv::Point2d(history_info_.front().xyz[1], history_info_.front().xyz[0]));
                 history_info_.clear();
-                history_info_.emplace_back(target);
+                history_info_.push_back(target);
             }
 
-            if (target.spinning_switched)
+            if(target.spinning_switched)
             {
                 history_info_.clear();
-                history_info_.emplace_back(target);
+                history_info_.push_back(target);
                 RCLCPP_INFO(logger_, "Target spinning switched...");
             }
         }
@@ -249,39 +257,41 @@ namespace armor_processor
                 history_info_.clear();
                 history_pred_.clear();
             }
-            if (history_info_.size() > 200)
+            if((int)history_info_.size() > 200)
                 history_info_.pop_front();
-            if (history_pred_.size() > 50)
+            if((int)history_pred_.size() > 50)
                 history_pred_.pop_front();
-            history_info_.emplace_back(target);
+            history_info_.push_back(target);
         }
         
         // //若位置粒子滤波器未完成初始化或滤波结果与目前位置相距过远,则本次不对目标位置做滤波,直接向队列压入原值
         // if (!is_pos_filter_ready || (predict_pos - xyz).norm() > 0.1)
         // {
-        //     history_info_.emplace_back(target);
+        //     history_info_.push_back(target);
         // }
         // else
         // {  //若位置粒子滤波器已完成初始化且预测值大小恰当,则对目标位置做滤波
         //     // cout<<"FIL:"<<predict_pos[0] - xyz[0]<<endl;
         //     target.xyz[0] = predict_pos[0];
         //     target.xyz[1] = predict_pos[1];
-        //     history_info_.emplace_back(target);
+        //     history_info_.push_back(target);
         // }
 
         // auto d_xyz = target.xyz - final_target_.xyz;
         // auto delta_t = timestamp - final_target_.timestamp;
         auto last_dist = history_info_.back().dist;
-        auto delta_time_estimate = (last_dist / predict_param_.bullet_speed) * 1e9 + predict_param_.shoot_delay * 1e6;
-        auto time_estimate = delta_time_estimate + history_info_.back().timestamp;
+        int64_t delta_time_estimate = (int64_t)((last_dist / predict_param_.bullet_speed) * 1e9) + (int64_t)(predict_param_.shoot_delay * 1e6);
+        int64_t time_estimate = delta_time_estimate + history_info_.back().timestamp;
         delay_time = delta_time_estimate;
-        
-        if (history_info_.size() < 4)
+        // cout << "delay_time:" << delta_time_estimate / 1e9 << " dt:" << time_estimate / 1e9 << endl;
+
+        if ((int)history_info_.size() < predict_param_.min_fitting_lens)
         {
-            if (!fitting_disabled_ && is_predicted_ && history_info_.size() > 0)
+            if(!fitting_disabled_ && is_predicted_ && (int)history_info_.size() > 0)
             {
-                double last_to_now_timestamp = history_info_.back().timestamp - last_start_timestamp_;
-                double tt = time_estimate - last_start_timestamp_;
+                // cout << "is_pred..." << endl;
+                int64_t last_to_now_timestamp = history_info_.back().timestamp - last_start_timestamp_;
+                int64_t tt = time_estimate - last_start_timestamp_;
                 double last_pred_x = fitting_params_[0] * (last_to_now_timestamp / 1e9) + fitting_params_[1];
                 double delta_y = last_pred_x - target.xyz[0]; 
                 // double tt = time_estimate / 1e3;
@@ -294,13 +304,14 @@ namespace armor_processor
             }
             final_target_ = target;
             return Vector3d{target.xyz[0], target.xyz[1], target.xyz[2]};
+            return Vector3d{target.xyz[0], target.xyz[1], target.xyz[2]};
         }
 
         //-----------------进行滑窗滤波,备选方案,暂未使用-------------------------------------
         //如速度过大,可认为为噪声干扰,进行滑窗滤波滤除
         // if (((d_xyz.norm() / delta_t) * 1e3) >= max_v)
         // {
-        //     history_info.emplace_back(target);
+        //     history_info.push_back(target);
         //     auto filtered_xyz = shiftWindowFilter(history_info.size() - window_size - 1);
         //     target = {filtered_xyz, (int)filtered_xyz.norm(), timestamp};
         //     history_info.pop_back();
@@ -319,7 +330,7 @@ namespace armor_processor
         Eigen::Vector3d acc_now = {0.0, 0.0, 0.0};
         double dt_last = 0;
         double dt_now = 0;
-        if (!filter_disabled_ && !target.is_spinning && (int)history_info_.size() >= 3)
+        if (!filter_disabled_ && !target.is_spinning && (int)history_info_.size() >= predict_param_.min_fitting_lens)
         {
             // 计算目标速度、加速度 
             // 取目标t-2、t-1、t时刻的坐标信息
@@ -364,18 +375,37 @@ namespace armor_processor
             if (target.system_model == CSMODEL)
             {   // 基于CS模型的卡尔曼滤波
                 RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "CS model is predicting...");
+                std::future<void> xyz_future[3];
                 // is_ekf_available = predictBasedSinger(target, result_ekf, target_vel, target_acc, delta_time_estimate);
                 if (debug_param_.x_axis_filter)
                 {
-                    is_singer_available.xyz_status[0] = predictBasedSinger(0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
+                    // is_singer_available.xyz_status[0] = predictBasedSinger(0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
+                    xyz_future[0] = std::async(std::launch::async, [&](){
+                        is_singer_available.xyz_status[0] = predictBasedSinger(0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);});
                 }
                 if (debug_param_.y_axis_filter)
                 {
-                    is_singer_available.xyz_status[1] = predictBasedSinger(1, target.xyz[1], result_singer[1], target_vel[1], target_acc[1], delta_time_estimate);
+                    // is_singer_available.xyz_status[1] = predictBasedSinger(1, target.xyz[1], result_singer[1], target_vel[1], target_acc[1], delta_time_estimate);
+                    xyz_future[1] = std::async(std::launch::async, [&](){
+                        is_singer_available.xyz_status[1] = predictBasedSinger(1, target.xyz[1], result_singer[1], target_vel[1], target_acc[1], delta_time_estimate);});
                 }
                 if (debug_param_.z_axis_filter)
                 {
-                    is_singer_available.xyz_status[2] = predictBasedSinger(2, target.xyz[2], result_singer[2], target_vel[2], target_acc[2], delta_time_estimate);
+                    // is_singer_available.xyz_status[2] = predictBasedSinger(2, target.xyz[2], result_singer[2], target_vel[2], target_acc[2], delta_time_estimate);
+                    xyz_future[2] = std::async(std::launch::async, [&](){
+                        is_singer_available.xyz_status[2] = predictBasedSinger(2, target.xyz[2], result_singer[2], target_vel[2], target_acc[2], delta_time_estimate);});
+                }
+                if (debug_param_.x_axis_filter && xyz_future[0].wait_for(1ms) == std::future_status::timeout)
+                {
+                    RCLCPP_WARN(logger_, "X_AXIS prediction timeout...");
+                }
+                if (debug_param_.y_axis_filter && xyz_future[1].wait_for(1ms) == std::future_status::timeout)
+                {
+                    RCLCPP_WARN(logger_, "Y_AXIS prediction timeout...");
+                }
+                if (debug_param_.z_axis_filter && xyz_future[2].wait_for(1ms) == std::future_status::timeout)
+                {
+                    RCLCPP_WARN(logger_, "Z_AXIS prediction timeout...");
                 }
                 result[0] = is_singer_available.xyz_status[0] ? result_singer[0] : target.xyz[0];
                 result[1] = is_singer_available.xyz_status[1] ? result_singer[1] : target.xyz[1];
@@ -409,11 +439,13 @@ namespace armor_processor
             {   
                 RCLCPP_INFO(logger_, "STILL_SPINNING");
                 is_fitting_available = coupleFittingPredict(true, target, result_fitting, time_estimate);  
+                is_fitting_available.xyz_status[0] = predictBasedSinger(0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
             }
             else if (target.is_spinning && (!target.spinning_status) == MOVEMENT_SPINNING)
             {
                 RCLCPP_INFO(logger_, "MOVEMENT_SPINNING");
                 is_fitting_available = coupleFittingPredict(false, target, result_fitting, time_estimate);  
+                is_fitting_available.xyz_status[0] = predictBasedSinger(0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
             }
 
             result[0] = is_fitting_available.xyz_status[0] ? result_fitting[0] : target.xyz[0];
@@ -423,7 +455,7 @@ namespace armor_processor
 
         if (fitting_disabled_ && filter_disabled_)
         {   //滤波和拟合均失效，使用当前目标位置信息
-            result = Vector3d{-target.xyz[0], target.xyz[1], target.xyz[2]};
+            result = Vector3d{target.xyz[0], target.xyz[1], target.xyz[2]};
         }
 
         // if (!filter_disabled_)
@@ -462,17 +494,17 @@ namespace armor_processor
             if (is_singer_available.xyz_status[0])
             {
                 curveDrawer(0, *src, predict_vel_[0], cv::Point2i(260, 200));
-                curveDrawer(0, *src, history_vel_[0], cv::Point2i(620, 200));
+                // curveDrawer(0, *src, history_acc_[0], cv::Point2i(620, 200));
             } 
-            else if (is_singer_available.xyz_status[1])
+            if (is_singer_available.xyz_status[1])
             {
                 curveDrawer(1, *src, predict_vel_[1], cv::Point2i(260, 200));
-                curveDrawer(1, *src, history_vel_[1], cv::Point2i(620, 200));
+                // curveDrawer(1, *src, history_acc_[1], cv::Point2i(620, 200));
             }
-            else if (is_singer_available.xyz_status[2])
+            if (is_singer_available.xyz_status[2])
             {
-                curveDrawer(2, *src, predict_vel_[2], cv::Point2i(260, 200));
-                curveDrawer(2, *src, history_vel_[2], cv::Point2i(620, 200));
+                curveDrawer(3, *src, predict_vel_[2], cv::Point2i(260, 200));
+                // curveDrawer(3, *src, history_acc_[2], cv::Point2i(620, 200));
             }
             if (debug_param_.show_fps)
             {
@@ -483,7 +515,8 @@ namespace armor_processor
             }
         }
         final_target_.xyz = result;
-        return Vector3d{result[0], result[1], result[2]};
+        // return Vector3d{result[0], result[1], result[2]};
+        return result;
     }
 
     /**
@@ -496,7 +529,7 @@ namespace armor_processor
         bool flag = false;
         Eigen::Vector3d pred_error = {0.0, 0.0, 0.0};
         double error = 0.0;
-        if((int)history_pred_.size() > 0)
+        if ((int)history_pred_.size() > 0)
         {
             TargetInfo pre_info = history_pred_.front();
             for(int ii = 0; ii < (int)history_info_.size(); ii++)
@@ -530,7 +563,7 @@ namespace armor_processor
                 }
             }
 
-            if(flag)
+            if (flag)
             {
                 error = sqrt(pow(pred_error[0], 2) + pow(pred_error[1], 2) + pow(pred_error[2], 2)) / 3.0;
                 RCLCPP_INFO(logger_, "Prediction error:%lf", error);
@@ -561,13 +594,14 @@ namespace armor_processor
      * @param time_estimated 
      * @return PredictStatus 
      */
-    PredictStatus ArmorPredictor::coupleFittingPredict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, double time_estimated)
+    PredictStatus ArmorPredictor::coupleFittingPredict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, int64_t time_estimated)
     {   
         /**
          * @brief 车辆小陀螺运动轨迹拟合(已知量：角速度&陀螺半径）
          * 若目标仅处于原地小陀螺状态，则剔除掉模型中的横移项，直接给平动项乘以系数0。
          */
-        
+        // cout << "fitting..." << endl;
+
         auto time_start = steady_clock_.now();
 
         double params[5] = {fitting_params_[0], fitting_params_[1], fitting_params_[2], fitting_params_[3], fitting_params_[4]};
@@ -581,7 +615,7 @@ namespace armor_processor
         options.minimizer_progress_to_stdout = false;
         
         double x0 = history_info_.front().xyz[1];
-        int st = history_info_.begin()->timestamp;
+        int64_t st = history_info_.begin()->timestamp;
         last_start_timestamp_ = st;
         // double x_sum = 0;
         for(auto& target_info : history_info_)
@@ -630,10 +664,10 @@ namespace armor_processor
         
         auto time_now = steady_clock_.now();
         auto dt = (time_now - time_start).nanoseconds();
-        RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 100, "Fitting_time: %.2fms x_cost:%.2f x_rmse:%.2f k:%.2f b:%.2f", (dt / 1e6), x_cost, x_rmse, params[0], params[1]);
+        RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "Fitting_time: %.2fms x_cost:%.2f x_rmse:%.2f k:%.2f b:%.2f", (dt / 1e6), x_cost, x_rmse, params[0], params[1]);
 
         double x_pred = 0.0;
-        double start_point = history_info_.front().timestamp;            
+        int64_t start_point = history_info_.front().timestamp;            
         if ((time_estimated - start_point) / 1e9 < target.period)
         {
             // x_pred = params[0] * ((time_estimated - st) / 1e3) + x0; // x(t)=k(t+dt)+x0
@@ -738,16 +772,285 @@ namespace armor_processor
         // double delta_x_to_pred = x_pred - target.xyz[0];
         // if(history_delta_x_pred_.size() < 1)
         // {
-        //     history_delta_x_pred_.emplace_back(delta_x_to_pred);
+        //     history_delta_x_pred_.push_back(delta_x_to_pred);
         // }
         // else
         // {
         //     history_delta_x_pred_.pop_front();
-        //     history_delta_x_pred_.emplace_back(delta_x_to_pred);
+        //     history_delta_x_pred_.push_back(delta_x_to_pred);
         // }
-        
+        // cout << "x_pred:" << x_pred << endl;
         result = {target.xyz[0], x_pred, target.xyz[2]}; 
         return is_available;
+    }
+
+
+    /**
+     * @brief 基于CS模型的卡尔曼滤波初始化
+     * 
+     */
+    void ArmorPredictor::kfInit()
+    {
+        //X-axis
+        kfInit(0);
+        //Y-axis
+        kfInit(1);
+        //Z-axis
+        kfInit(2);
+    }
+
+    void ArmorPredictor::kfInit(int axis)
+    {
+        singer_kf_[axis].F_ = singer_model_[axis].F();
+        singer_kf_[axis].H_ = singer_model_[axis].H();
+        singer_kf_[axis].C_ = singer_model_[axis].C();
+        singer_kf_[axis].P_ = singer_model_[axis].P();
+        singer_kf_[axis].Q_ = singer_model_[axis].Q();
+        singer_kf_[axis].R_ = singer_model_[axis].R();
+    }
+    
+    bool ArmorPredictor::predictBasedSinger(int axis, double meas, double& result, double target_vel, double target_acc, int64_t timestamp)
+    {
+        bool is_available;
+        if (!is_singer_init_[axis])
+        {
+            singer_kf_[axis].x_ << meas, 0, 0;
+            is_available = false;
+            is_singer_init_[axis] = true;
+        }
+        else
+        {
+            Eigen::VectorXd measurement = Eigen::VectorXd(1);
+            measurement << meas;
+            
+            singer_kf_[axis].Predict();
+            Eigen::MatrixXd stateCovPre = singer_kf_[axis].P();
+            Eigen::MatrixXd statePre = singer_kf_[axis].x();
+            singer_kf_[axis].Update(measurement);
+
+            // Eigen::MatrixXd predictState(3, 1);
+			Eigen::VectorXd State(3, 1);
+            State << singer_kf_[axis].x_[0], singer_kf_[axis].x_[1], singer_kf_[axis].x_[2];
+
+            double post_pos = State[0];
+
+            predict_vel_[axis][3] = predict_vel_[axis][2];
+            predict_vel_[axis][2] = predict_vel_[axis][1];
+            predict_vel_[axis][1] = predict_vel_[axis][0];
+            predict_vel_[axis][0] = State[1];
+            
+            predict_acc_[axis][3] = predict_acc_[axis][2];
+            predict_acc_[axis][2] = predict_acc_[axis][1];
+            predict_acc_[axis][1] = predict_acc_[axis][0];
+            predict_acc_[axis][0] = State[2];
+
+            double alpha = singer_param_[axis][0];
+            double dt = singer_param_[axis][8] * singer_param_[axis][4];
+            // dt = timestamp / 1e9;
+            dt = timestamp / 1e9 * 60;
+            // cout << dt << endl;
+            // cout << dt << " " << timestamp / 1e9 << endl;
+            
+            Eigen::MatrixXd F(3, 3);
+            singer_model_[axis].setF(F, dt, alpha);
+
+            Eigen::MatrixXd control(3, 1);
+            singer_model_[axis].setC(control, dt, alpha);
+
+            // if (history_acc_[axis][0] == 0.0)
+            //     singer_model_[axis].setQ(target_acc);
+            // else
+            //     singer_model_[axis].setQ(State[2]);
+
+            VectorXd pred = F * State + control * State[2];
+            result = pred[0];
+
+            if (checkDivergence(statePre, stateCovPre, singer_kf_[axis].H_, singer_kf_[axis].R_, measurement) || abs(result - meas) > 0.85)
+            {
+                RCLCPP_WARN(logger_, "Filter is diverging...");
+                // singer_kf_->P_ = singer_model_[axis].P();
+                // is_singer_init_[axis] = false;
+                is_available = false;   
+            } 
+            // else if (abs(result - meas) > 0.85)
+            // {
+            //     result = meas;
+            //     is_available = true;
+            // }
+            // else
+            // {
+            //     result = post_pos;
+            //     is_available = true;
+            // }
+             
+            // if (abs(result - meas) > 0.75)
+            // {
+            //     is_singer_init_[axis] = false;
+            //     result = meas;
+            // }
+            is_available = true;
+        }
+        return is_available;
+    }
+
+    /**
+     * @brief 基于IMM模型的滤波预测函数
+     * 
+     * @param target 目标信息
+     * @param result 预测结果
+     * @param target_v 目标速度
+     * @param ax 目标加速度
+     * @param timestamp 时间提前量
+     * @return PredictStatus 
+     */
+    PredictStatus ArmorPredictor::predictBasedImm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector3d& target_vel, Eigen::Vector3d& target_acc, int64_t timestamp)
+    {
+        PredictStatus is_available;
+        double dt = singer_param_[0][4];   
+        if(!is_imm_init_)
+        {
+            Eigen::VectorXd x(6);
+            x << target.xyz[0], target.xyz[1], target_vel[0], target_vel[1], 0, 0;
+            imm_ = model_generator_.generateIMMModel(x, dt);   
+            is_imm_init_ = true;
+        }
+        else
+        {
+            Eigen::VectorXd measurement(4);
+            measurement << target.xyz[0], target.xyz[1], target_vel[0], target_vel[1];
+            imm_->updateOnce(measurement, dt);
+
+            Eigen::VectorXd State(6);
+            State = imm_->x();
+
+            result[0] = State[0];
+            result[1] = State[1];
+            result[2] = target.xyz[2];
+            is_available.xyz_status[0] = true;
+            is_available.xyz_status[1] = true;
+        }
+        return is_available;
+    }
+
+    /**
+     * @brief 滑窗滤波
+     * 
+     * @param start_idx 滑窗起始位点
+     * @return Eigen::Vector3d 
+     */
+    Eigen::Vector3d ArmorPredictor::shiftWindowFilter(int start_idx)
+    {
+        //计算最大迭代次数
+        auto max_iter = int(history_info_.size() - start_idx) - predict_param_.window_size + 1;
+        Eigen::Vector3d total_sum = {0, 0, 0};
+        if (max_iter == 0 || start_idx < 0)
+            return history_info_.back().xyz;
+        
+        for (int i = 0; i < max_iter; i++)
+        {
+            Eigen::Vector3d sum = {0,0,0};
+            for (int j = 0; j < predict_param_.window_size; j++)
+                sum += history_info_.at(start_idx + i + j).xyz;
+            total_sum += sum / predict_param_.window_size;
+        }
+        return total_sum / max_iter;
+    }
+
+    /**
+     * @brief 粒子滤波预测函数
+     * 
+     * @param target 目标信息
+     * @param result 预测信息
+     * @param time_estimated 延迟时间量
+     * @return PredictStatus 各个轴预测成功与否
+     */
+    PredictStatus ArmorPredictor::predictBasePF(TargetInfo target, Vector3d& result, int64_t time_estimated)
+    {
+        PredictStatus is_available;
+        //采取中心差分法,使用 t, t-1, t-2时刻速度,计算t-1时刻的速度
+        auto target_prev = history_info_.at(history_info_.size() - 3);
+        auto target_next = target;
+        auto v_xyz = (target_next.xyz - target_prev.xyz) / (target_next.timestamp - target_prev.timestamp) * 1e9;
+        auto t = target_next.timestamp - history_info_.at(history_info_.size() - 2).timestamp;
+
+        is_available.xyz_status[0] = pf_v.is_ready;
+        is_available.xyz_status[1] = pf_v.is_ready;
+        // cout<<v_xyz<<endl;
+
+        //Update
+        Eigen::VectorXd measure (2);
+        measure << v_xyz[0], v_xyz[1];
+        pf_v.update(measure);
+
+        //Predict
+        auto result_v = pf_v.predict();
+
+        std::cout << measure << std::endl;
+
+        // cout<<result_v<<endl;
+        //TODO:恢复速度预测
+        // auto predict_x = target.xyz[0];
+        // auto predict_y = target.xyz[1];
+        double predict_x;
+        double predict_y;
+
+        if (history_info_.size() > 6)
+        {
+            predict_x = target.xyz[0] + result_v[0] * (time_estimated + t) / 1e9;
+            predict_y = target.xyz[1] + result_v[1] * (time_estimated + t) / 1e9;
+        }
+        else
+        {
+            predict_x = target.xyz[0];
+            predict_y = target.xyz[1];       
+        }
+
+        result << predict_x, predict_y, target.xyz[2];
+        return is_available;
+    }
+
+    void ArmorPredictor::updateVel(Eigen::Vector3d vel_3d)
+    {
+        // X-AXIS
+        history_vel_[0][3] = history_vel_[0][2];
+        history_vel_[0][2] = history_vel_[0][1];
+        history_vel_[0][1] = history_vel_[0][0];
+        history_vel_[0][0] = vel_3d[0];
+
+        // Y-AXIS
+        history_vel_[1][3] = history_vel_[1][2];
+        history_vel_[1][2] = history_vel_[1][1];
+        history_vel_[1][1] = history_vel_[1][0];
+        history_vel_[1][0] = vel_3d[1];
+
+        // Z-AXIS
+        history_vel_[2][3] = history_vel_[2][2];
+        history_vel_[2][2] = history_vel_[2][1];
+        history_vel_[2][1] = history_vel_[2][0];
+        history_vel_[2][0] = vel_3d[2];
+        return;
+    }
+    
+    void ArmorPredictor::updateAcc(Eigen::Vector3d acc_3d)
+    {
+        // X-AXIS
+        history_acc_[0][3] = history_acc_[0][2];
+        history_acc_[0][2] = history_acc_[0][1];
+        history_acc_[0][1] = history_acc_[0][0];
+        history_acc_[0][0] = acc_3d[0] > 5.0 ? 0.0 : acc_3d[0];
+
+        // Y-AXIS
+        history_acc_[1][3] = history_acc_[1][2];
+        history_acc_[1][2] = history_acc_[1][1];
+        history_acc_[1][1] = history_acc_[1][0];
+        history_acc_[1][0] = acc_3d[1] > 5.0 ? 0.0 : acc_3d[1];
+
+        // Z-AXIS
+        history_acc_[2][3] = history_acc_[2][2];
+        history_acc_[2][2] = history_acc_[2][1];
+        history_acc_[2][1] = history_acc_[2][0];
+        history_acc_[2][0] = acc_3d[2] > 5.0 ? 0.0 : acc_3d[2];
+        return;
     }
 
     /**
@@ -781,7 +1084,7 @@ namespace armor_processor
      * @param time_estimated 时间延迟量
      * @return PredictStatus 
      */
-    PredictStatus ArmorPredictor::spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, double time_estimated)
+    PredictStatus ArmorPredictor::spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int64_t time_estimated)
     {  
         /**
          * @brief 前哨站旋转装甲运动预测（已知量：旋转半径&转速），考虑我方占领控制区旋转装甲板转速减半，应加入条件判断。
@@ -867,7 +1170,7 @@ namespace armor_processor
 
         auto time_now = steady_clock_.now();
         auto dt_ns = (time_now - time_start).nanoseconds();
-        std::cout << "fitting_time:" << (dt_ns / 1e9) << "s" << std::endl;
+        RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "fitting_time:%.2fs", (dt_ns / 1e9));
 
         PredictStatus is_available;
         // auto rmse = evalRMSE()
@@ -890,239 +1193,6 @@ namespace armor_processor
     }
 
     /**
-     * @brief 基于CS模型的卡尔曼滤波初始化
-     * 
-     */
-    void ArmorPredictor::kfInit()
-    {
-        //X-axis
-        kfInit(0);
-        //Y-axis
-        kfInit(1);
-        //Z-axis
-        kfInit(2);
-    }
-
-    void ArmorPredictor::kfInit(int axis)
-    {
-        singer_kf_[axis].F_ = singer_model_[axis].F();
-        singer_kf_[axis].H_ = singer_model_[axis].H();
-        singer_kf_[axis].C_ = singer_model_[axis].C();
-        singer_kf_[axis].P_ = singer_model_[axis].P();
-        singer_kf_[axis].Q_ = singer_model_[axis].Q();
-        singer_kf_[axis].R_ = singer_model_[axis].R();
-    }
-
-    bool ArmorPredictor::predictBasedSinger(int axis, double meas, double& result, double target_vel, double target_acc, double timestamp)
-    {
-        bool is_available;
-        if (!is_singer_init_[axis])
-        {
-            singer_kf_[axis].x_ << meas, 0, 0;
-            is_available = false;
-            is_singer_init_[axis] = true;
-        }
-        else
-        {
-            Eigen::VectorXd measurement = Eigen::VectorXd(1);
-            measurement << meas;
-            
-            singer_kf_[axis].Predict();
-            singer_kf_[axis].Update(measurement);
-
-            // Eigen::MatrixXd predictState(3, 1);
-			Eigen::VectorXd State(3, 1);
-            State << singer_kf_[axis].x_[0], singer_kf_[axis].x_[1], singer_kf_[axis].x_[2];
-
-            predict_vel_[axis][3] = predict_vel_[axis][2];
-            predict_vel_[axis][2] = predict_vel_[axis][1];
-            predict_vel_[axis][1] = predict_vel_[axis][0];
-            predict_vel_[axis][0] = State[1];
-            
-            predict_acc_[axis][3] = predict_acc_[axis][2];
-            predict_acc_[axis][2] = predict_acc_[axis][1];
-            predict_acc_[axis][1] = predict_acc_[axis][0];
-            predict_acc_[axis][0] = State[2];
-
-            double alpha = singer_param_[axis][0];
-            double dt = singer_param_[axis][8] * singer_param_[axis][4];
-            cout << dt << endl;
-            // dt = timestamp / 1e9;
-            
-            Eigen::MatrixXd F(3, 3);
-            singer_model_[axis].setF(F, dt, alpha);
-
-            Eigen::MatrixXd control(3, 1);
-            singer_model_[axis].setC(control, dt, alpha);
-            
-            VectorXd pred = F * State + control * State[2];
-            result = pred[0];
-            is_available = true;
-        }
-        return is_available;
-    }
-
-    /**
-     * @brief 基于IMM模型的滤波预测函数
-     * 
-     * @param target 目标信息
-     * @param result 预测结果
-     * @param target_v 目标速度
-     * @param ax 目标加速度
-     * @param timestamp 时间提前量
-     * @return PredictStatus 
-     */
-    PredictStatus ArmorPredictor::predictBasedImm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector3d& target_vel, Eigen::Vector3d& target_acc, double timestamp)
-    {
-        PredictStatus is_available;
-        double dt = singer_param_[0][4];   
-        if(!is_imm_init_)
-        {
-            Eigen::VectorXd x(6);
-            x << target.xyz[0], target.xyz[1], target_vel[0], target_vel[1], 0, 0;
-            imm_ = model_generator_.generateIMMModel(x, dt);   
-            is_imm_init_ = true;
-        }
-        else
-        {
-            Eigen::VectorXd measurement(4);
-            measurement << target.xyz[0], target.xyz[1], target_vel[0], target_vel[1];
-            imm_->updateOnce(measurement, dt);
-
-            Eigen::VectorXd State(6);
-            State = imm_->x();
-
-            result[0] = State[0];
-            result[1] = State[1];
-            result[2] = target.xyz[2];
-            is_available.xyz_status[0] = true;
-            is_available.xyz_status[1] = true;
-        }
-        return is_available;
-    }
-
-    /**
-     * @brief 滑窗滤波
-     * 
-     * @param start_idx 滑窗起始位点
-     * @return Eigen::Vector3d 
-     */
-    Eigen::Vector3d ArmorPredictor::shiftWindowFilter(int start_idx)
-    {
-        //计算最大迭代次数
-        auto max_iter = int(history_info_.size() - start_idx) - predict_param_.window_size + 1;
-        Eigen::Vector3d total_sum = {0, 0, 0};
-        if (max_iter == 0 || start_idx < 0)
-            return history_info_.back().xyz;
-        
-        for (int i = 0; i < max_iter; i++)
-        {
-            Eigen::Vector3d sum = {0,0,0};
-            for (int j = 0; j < predict_param_.window_size; j++)
-                sum += history_info_.at(start_idx + i + j).xyz;
-            total_sum += sum / predict_param_.window_size;
-        }
-        return total_sum / max_iter;
-    }
-
-    /**
-     * @brief 粒子滤波预测函数
-     * 
-     * @param target 目标信息
-     * @param result 预测信息
-     * @param time_estimated 延迟时间量
-     * @return PredictStatus 各个轴预测成功与否
-     */
-    PredictStatus ArmorPredictor::predictBasePF(TargetInfo target, Vector3d& result, double time_estimated)
-    {
-        PredictStatus is_available;
-        //采取中心差分法,使用 t, t-1, t-2时刻速度,计算t-1时刻的速度
-        auto target_prev = history_info_.at(history_info_.size() - 3);
-        auto target_next = target;
-        auto v_xyz = (target_next.xyz - target_prev.xyz) / (target_next.timestamp - target_prev.timestamp) * 1e9;
-        auto t = target_next.timestamp - history_info_.at(history_info_.size() - 2).timestamp;
-
-        is_available.xyz_status[0] = pf_v.is_ready;
-        is_available.xyz_status[1] = pf_v.is_ready;
-        // cout<<v_xyz<<endl;
-
-        //Update
-        Eigen::VectorXd measure (2);
-        measure << v_xyz[0], v_xyz[1];
-        pf_v.update(measure);
-
-        //Predict
-        auto result_v = pf_v.predict();
-
-        std::cout << measure << std::endl;
-
-        // cout<<result_v<<endl;
-        //TODO:恢复速度预测
-        // auto predict_x = target.xyz[0];
-        // auto predict_y = target.xyz[1];
-        double predict_x;
-        double predict_y;
-
-        if (history_info_.size() > 6)
-        {
-            predict_x = target.xyz[0] + result_v[0] * (time_estimated + t) / 1e9;
-            predict_y = target.xyz[1] + result_v[1] * (time_estimated + t) / 1e9;
-        }
-        else
-        {
-            predict_x = target.xyz[0];
-            predict_y = target.xyz[1];       
-        }
-
-        result << predict_x, predict_y, target.xyz[2];
-        return is_available;
-    }
-
-    void ArmorPredictor::updateVel(Eigen::Vector3d vel_3d)
-    {
-        // X-AXIS
-        history_vel_[0][3] = history_vel_[0][2];
-        history_vel_[0][2] = history_vel_[0][1];
-        history_vel_[0][1] = history_vel_[0][0];
-        history_vel_[0][0] = vel_3d[0];
-
-        // Y-AXIS
-        history_vel_[1][3] = history_vel_[1][2];
-        history_vel_[1][2] = history_vel_[1][1];
-        history_vel_[1][1] = history_vel_[1][0];
-        history_vel_[1][0] = vel_3d[1];
-
-        // Z-AXIS
-        history_vel_[2][3] = history_vel_[2][2];
-        history_vel_[2][2] = history_vel_[2][1];
-        history_vel_[2][1] = history_vel_[2][0];
-        history_vel_[2][0] = vel_3d[2];
-        return;
-    }
-    
-    void ArmorPredictor::updateAcc(Eigen::Vector3d acc_3d)
-    {
-        // X-AXIS
-        history_acc_[0][3] = history_acc_[0][2];
-        history_acc_[0][2] = history_acc_[0][1];
-        history_acc_[0][1] = history_acc_[0][0];
-        history_acc_[0][0] = acc_3d[0];
-
-        // Y-AXIS
-        history_acc_[1][3] = history_acc_[1][2];
-        history_acc_[1][2] = history_acc_[1][1];
-        history_acc_[1][1] = history_acc_[1][0];
-        history_acc_[1][0] = acc_3d[1];
-
-        // Z-AXIS
-        history_acc_[2][3] = history_acc_[2][2];
-        history_acc_[2][2] = history_acc_[2][1];
-        history_acc_[2][1] = history_acc_[2][0];
-        history_acc_[2][0] = acc_3d[2];
-        return;
-    }
-
-    /**
      * @brief Draw curve.
     */
     void ArmorPredictor::curveDrawer(int axis, cv::Mat& src, double* params, cv::Point2i start_pos)
@@ -1136,7 +1206,7 @@ namespace armor_processor
             float k1 = 50;
             if (!src.empty())
             {
-                string axis_str = (axis == 0 && start_pos.x == 260) ? "X_AXIS" : (((axis == 3 && start_pos.x == 260)) ? "Y_AXIS" : "");
+                string axis_str = (axis == 0 && start_pos.x == 260) ? "X_AXIS" : (((axis == 1 && start_pos.x == 260)) ? "Y_AXIS" : (((axis == 3 && start_pos.x == 260)) ? "Z_AXIS" : ""));
                 cv::putText(src, axis_str, cv::Point(1, start_pos.y * (axis + 1) - 5), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 125));
                 cv::line(src, cv::Point(start_pos.x - 240, start_pos.y * (axis + 1)), cv::Point(start_pos.x, start_pos.y * (axis + 1)), cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
                 cv::line(src, cv::Point(start_pos.x - 240, start_pos.y * (axis + 1) + mean_v * k1), cv::Point(start_pos.x, start_pos.y * (axis + 1) + mean_v * k1), cv::Scalar(255, 255, 0), 1, cv::LINE_AA);

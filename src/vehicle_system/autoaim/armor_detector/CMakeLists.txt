@@ -34,6 +34,7 @@ find_package(OpenVINO REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED COMPONENTS EigenSparse)
 find_package(yaml-cpp REQUIRED)
+find_package(angles REQUIRED)
 # custom package
 find_package(global_user REQUIRED)
 find_package(global_interface REQUIRED)
@@ -56,6 +57,7 @@ set(dependencies
   OpenVINO
   Ceres
   Eigen3
+  angles
   cv_bridge
   yaml-cpp 
   global_interface
@@ -100,7 +102,7 @@ target_link_libraries(armor_detector_node
   ${OpenCV_LIBRARIES}
   openvino::runtime 
   ${Eigen3_LIBRARIES}
-  yaml-cpp 
+  yaml-cpp
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME}

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-03-26 19:51:16
+ * @LastEditTime: 2023-04-05 13:34:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -36,7 +36,6 @@ namespace armor_detector
                 detector_->data_save_ << fixed;
             }
             detector_->is_init_ = true;
-        
         }
         
         // 同步通信/异步通信
@@ -101,9 +100,9 @@ namespace armor_detector
             img_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this, camera_topic, rmw_qos);
 
             // Create synchronous timer.
-            my_sync_policy_.setInterMessageLowerBound(0, rclcpp::Duration(0, 3e6));
-            my_sync_policy_.setInterMessageLowerBound(1, rclcpp::Duration(0, 3e6));
-            my_sync_policy_.setMaxIntervalDuration(rclcpp::Duration(0, 1e7));
+            my_sync_policy_.setInterMessageLowerBound(0, rclcpp::Duration(0, 1e7));
+            my_sync_policy_.setInterMessageLowerBound(1, rclcpp::Duration(0, 1e7));
+            my_sync_policy_.setMaxIntervalDuration(rclcpp::Duration(0, 3e7));
             // sync_ = std::make_shared<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, SerialMsg>>(*img_msg_sync_sub_, *serial_msg_sync_sub_, 0.005);
             sync_ = std::make_shared<message_filters::Synchronizer<MySyncPolicy>>(MySyncPolicy(my_sync_policy_), *img_msg_sync_sub_, *serial_msg_sync_sub_);
 
@@ -139,8 +138,8 @@ namespace armor_detector
         rclcpp::Time now = this->get_clock()->now();
         double dura = (now.nanoseconds() - time.nanoseconds()) / 1e6;
         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "delay:%.2fms", dura);
-        if ((dura) > 5.0)
-            return;
+        // if ((dura) > 20.0)
+        //     return;
         TaskData src;
         // Convert the image to opencv format.
         // cv_bridge::CvImagePtr cv_ptr;
@@ -161,18 +160,18 @@ namespace armor_detector
             return;
         }
         
-        RCLCPP_WARN(this->get_logger(), "mode:%d", src.mode);
-        CarHPMsg car_hp_msg;
+        // RCLCPP_WARN(this->get_logger(), "mode:%d", src.mode);
+        ObjHPMsg obj_hp_msg;
         if (src.mode == SENTRY_NORMAL)
         {
-            auto dt = (this->get_clock()->now() - car_hp_msg_.header.stamp).nanoseconds() / 1e6;
-            if (dt > 500)
-            {
-                RCLCPP_WARN(this->get_logger(), "Car hp msg is timeout: %.2fms...", dt);
-                car_hp_msg_mutex_.lock();
-                car_hp_msg = car_hp_msg_;
-                car_hp_msg_mutex_.unlock();
-            }
+            // auto dt = (this->get_clock()->now() - obj_hp_msg_.header.stamp).nanoseconds() / 1e6;
+            // if (dt > 500)
+            // {
+                // RCLCPP_WARN(this->get_logger(), "obj hp msg is timeout: %.2fms...", dt);
+                obj_hp_msg_mutex_.lock();
+                obj_hp_msg = obj_hp_msg_;
+                obj_hp_msg_mutex_.unlock();
+            // }
         }
 
         AutoaimMsg target_info;
@@ -189,7 +188,7 @@ namespace armor_detector
             {   // Target spinning detector. 
                 if (src.mode == SENTRY_NORMAL)
                 {
-                    if (!detector_->gyro_detector(src, target_info, car_hp_msg))
+                    if (!detector_->gyro_detector(src, target_info, obj_hp_msg))
                     {
                         RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "[SENTRY MODE]: Not spinning...");
                     }
@@ -228,7 +227,7 @@ namespace armor_detector
         }
     }
 
-    void DetectorNode::detect(TaskData& src, rclcpp::Time start)
+    void DetectorNode::detect(TaskData& src, rclcpp::Time stamp)
     {
         serial_msg_mutex_.lock();
         if (debug_.using_imu)
@@ -249,7 +248,8 @@ namespace armor_detector
                 src.quat.x() = serial_msg_.imu.orientation.x;
                 src.quat.y() = serial_msg_.imu.orientation.y;
                 src.quat.z() = serial_msg_.imu.orientation.z;
-                detector_->debug_params_.using_imu = true;
+                // detector_->debug_params_.using_imu = true;
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "bulletSpd:%.2f", src.bullet_speed);
             // }
         }
         serial_msg_mutex_.unlock(); 
@@ -266,7 +266,7 @@ namespace armor_detector
             global_interface::msg::DetectionArray detection_array;
             detection_array.header = img_header_;
             detection_array.header.frame_id = detection_array.header.frame_id + "_frame";
-            for (auto armor : detector_->armors_)
+            for (auto armor : detector_->new_armors_)
             {
                 global_interface::msg::Detection detection;
                 detection.header = img_header_;
@@ -294,22 +294,39 @@ namespace armor_detector
                 rmat_imu = src.quat.toRotationMatrix();
                 Eigen::Vector3d armor_3d_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
                 tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_imu);
-                RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 200, "target info: %lf %lf %lf", target_info.aiming_point_world.x, target_info.aiming_point_world.y, target_info.aiming_point_world.z);
+                // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "target info_cam: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
+                // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "target info_world: %lf %lf %lf", target_info.aiming_point_world.x, target_info.aiming_point_world.y, target_info.aiming_point_world.z);
             }
-            // else
-            // {
-            //     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "Spinning detector failed...");
-            // }
+        }
+
+        if (is_target_lost)
+        {
+            target_info.aiming_point_cam.x = 0;
+            target_info.aiming_point_cam.y = 0;
+            target_info.aiming_point_cam.z = 0;
+            target_info.aiming_point_world.x = 0;
+            target_info.aiming_point_world.y = 0;
+            target_info.aiming_point_world.z = 0;
         }
         // else
         // {
-        //     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "armors detector failed...");
+        //     Eigen::Vector3d rpy_raw = {0, 0, 0};
+        //     Eigen::AngleAxisd rollAngle(Eigen::AngleAxisd(rpy_raw[2], Eigen::Vector3d::UnitX()));
+        //     Eigen::AngleAxisd pitchAngle(Eigen::AngleAxisd(rpy_raw[1], Eigen::Vector3d::UnitY()));
+        //     Eigen::AngleAxisd yawAngle(Eigen::AngleAxisd(rpy_raw[0], Eigen::Vector3d::UnitZ()));
+        //     Eigen::Matrix3d rmat = yawAngle * pitchAngle * rollAngle;
         // }
+
         param_mutex_.unlock();
         target_info.is_target_lost = is_target_lost;
-        target_info.header.frame_id = "camera_link";
-        target_info.header.stamp = start;
-        target_info.timestamp = src.timestamp;
+        target_info.header.frame_id = "gimbal_link";
+        target_info.header.stamp = stamp;
+        target_info.timestamp = stamp.nanoseconds();
+        // RCLCPP_INFO(this->get_logger(), "timestamp:%.8f", target_info.timestamp / 1e9);
+
+        // if (target_info.spinning_switched)
+            // cout << "spinning_switched" << endl;
+
         armor_info_pub_->publish(std::move(target_info));
         
         debug_.show_img = this->get_parameter("show_img").as_bool();
@@ -326,12 +343,12 @@ namespace armor_detector
         }
     }
 
-    void DetectorNode::carHPMsgCallback(const CarHPMsg& car_hp_msg)
+    void DetectorNode::objHPMsgCallback(const ObjHPMsg& obj_hp_msg)
     {
-        car_hp_msg_mutex_.lock();
-        car_hp_msg_ = car_hp_msg;
-        car_hp_msg_.header.stamp = this->get_clock()->now();
-        car_hp_msg_mutex_.unlock();
+        obj_hp_msg_mutex_.lock();
+        obj_hp_msg_ = obj_hp_msg;
+        obj_hp_msg_.header.stamp = this->get_clock()->now();
+        obj_hp_msg_mutex_.unlock();
         return;
     }
 
@@ -368,13 +385,16 @@ namespace armor_detector
         rclcpp::Time now = this->get_clock()->now();
         double dura = (now.nanoseconds() - time.nanoseconds()) / 1e6;
         // RCLCPP_WARN(this->get_logger(), "delay:%.2fms", dura);
-        if ((dura) > 10.0)
+        if ((dura) > 20.0)
             return;
 
         TaskData src;
-        src.timestamp = img_info->header.stamp.nanosec;
+        rclcpp::Time stamp = img_info->header.stamp;
+        src.timestamp = stamp.nanoseconds();
         src.img = cv_bridge::toCvShare(img_info, "bgr8")->image;
         // img.copyTo(src.img);
+        // RCLCPP_INFO(this->get_logger(), "src_timestamp:%.8f", src.timestamp / 1e9);
+        
         if (debug_.show_img)
         {
             char ch[25];
@@ -384,7 +404,7 @@ namespace armor_detector
         }
 
         //目标检测接口函数
-        detect(src, img_info->header.stamp);
+        detect(src, stamp);
     }
 
     /**
@@ -428,6 +448,8 @@ namespace armor_detector
         this->declare_parameter<double>("armor_roi_expand_ratio_width", 1.1);
         this->declare_parameter<double>("armor_roi_expand_ratio_height", 1.5);
         this->declare_parameter<double>("armor_conf_high_thres", 0.82);
+        this->declare_parameter<double>("yaw_angle_offset", 0.0);
+        this->declare_parameter<double>("pitch_angle_offset", 0.0);
         
         //TODO:Set by your own path.
         this->declare_parameter("camera_name", "KE0200110075"); //相机型号
@@ -461,7 +483,11 @@ namespace armor_detector
         //Update param from param server.
         updateParam();
 
-        return std::make_unique<Detector>(path_params_, detector_params_, debug_, gyro_params_);
+        Eigen::Vector2d angle_offset = {0.0, 0.0};
+        angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
+        angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
+
+        return std::make_unique<Detector>(path_params_, detector_params_, debug_, gyro_params_, angle_offset);
     }
 
     /**
