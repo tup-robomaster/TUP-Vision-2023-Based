@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-05 03:04:50
+ * @LastEditTime: 2023-04-05 13:34:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -308,6 +308,15 @@ namespace armor_detector
             target_info.aiming_point_world.y = 0;
             target_info.aiming_point_world.z = 0;
         }
+        // else
+        // {
+        //     Eigen::Vector3d rpy_raw = {0, 0, 0};
+        //     Eigen::AngleAxisd rollAngle(Eigen::AngleAxisd(rpy_raw[2], Eigen::Vector3d::UnitX()));
+        //     Eigen::AngleAxisd pitchAngle(Eigen::AngleAxisd(rpy_raw[1], Eigen::Vector3d::UnitY()));
+        //     Eigen::AngleAxisd yawAngle(Eigen::AngleAxisd(rpy_raw[0], Eigen::Vector3d::UnitZ()));
+        //     Eigen::Matrix3d rmat = yawAngle * pitchAngle * rollAngle;
+        // }
+
         param_mutex_.unlock();
         target_info.is_target_lost = is_target_lost;
         target_info.header.frame_id = "gimbal_link";

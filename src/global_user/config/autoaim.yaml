@@ -86,6 +86,9 @@
     pitch_angle_offset: -2.45
     max_offset_value: 0.45
     reserve_factor: 200.0 #储备系数(>=1)
+    rotation_yaw: 0.0
+    rotation_pitch: 0.0
+    rotation_roll: 0.0
 
   # Debug params.
     debug: true
