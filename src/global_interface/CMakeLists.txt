@@ -44,6 +44,12 @@ if(BUILD_TESTING)
   # the following line skips cpplint (only works in a git repo)
   # uncomment the line when this package is not in a git repo
   #set(ament_cmake_cpplint_FOUND TRUE)
+  
+  # msg消息 是ROS topic通讯节点间传递的内容。
+  #std消息属于基本数据类型消息，和python类似，描述的是数字，字符串，布尔类型等, geometry空间数据描述, sensor传感器消息
+  #.msg文件就是自定义的消息文件，用来描述消息格式
+  
+
   ament_lint_auto_find_test_dependencies()
 endif()
   

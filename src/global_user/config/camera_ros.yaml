@@ -43,7 +43,7 @@
     fps: 30
     debug: true
     using_shared_memory: false
-    using_video: true
+    using_video: false
     # video_path: "/recorder/video/gyro_video.webm"
     # video_path: "/recorder/video/gyro_transition_fusion.webm"
     # video_path: "/recorder/video/buff.webm"

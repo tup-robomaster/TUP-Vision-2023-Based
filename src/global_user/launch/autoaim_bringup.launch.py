@@ -34,7 +34,7 @@ def generate_launch_description():
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='daheng',
+        default_value='usb',
         description='hik daheng mvs usb'
     )
 
@@ -50,6 +50,8 @@ def generate_launch_description():
         description='debug armor prediction.'
     )
     
+
+ #   选取的文件夹不存在,报文件未找到的错误提示
     with open(camera_param_file, 'r') as f:
         usb_cam_params = yaml.safe_load(f)['/usb_cam_driver']['ros__parameters']
     with open(camera_param_file, 'r') as f:
