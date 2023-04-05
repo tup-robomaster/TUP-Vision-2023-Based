@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-04 18:16:52
+ * @LastEditTime: 2023-04-05 03:04:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -227,7 +227,7 @@ namespace armor_detector
         }
     }
 
-    void DetectorNode::detect(TaskData& src, rclcpp::Time start)
+    void DetectorNode::detect(TaskData& src, rclcpp::Time stamp)
     {
         serial_msg_mutex_.lock();
         if (debug_.using_imu)
@@ -311,8 +311,10 @@ namespace armor_detector
         param_mutex_.unlock();
         target_info.is_target_lost = is_target_lost;
         target_info.header.frame_id = "gimbal_link";
-        target_info.header.stamp = start;
-        target_info.timestamp = src.timestamp;
+        target_info.header.stamp = stamp;
+        target_info.timestamp = stamp.nanoseconds();
+        // RCLCPP_INFO(this->get_logger(), "timestamp:%.8f", target_info.timestamp / 1e9);
+
         // if (target_info.spinning_switched)
             // cout << "spinning_switched" << endl;
 
@@ -382,6 +384,7 @@ namespace armor_detector
         src.timestamp = stamp.nanoseconds();
         src.img = cv_bridge::toCvShare(img_info, "bgr8")->image;
         // img.copyTo(src.img);
+        // RCLCPP_INFO(this->get_logger(), "src_timestamp:%.8f", src.timestamp / 1e9);
         
         if (debug_.show_img)
         {
@@ -392,7 +395,7 @@ namespace armor_detector
         }
 
         //目标检测接口函数
-        detect(src, img_info->header.stamp);
+        detect(src, stamp);
     }
 
     /**

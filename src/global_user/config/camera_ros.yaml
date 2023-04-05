@@ -40,12 +40,12 @@
     frame_id: usb_cam
     image_width: 1280
     image_height: 800
-    fps: 30
+    fps: 60
     debug: true
     using_shared_memory: false
     using_video: true
-    # video_path: "/recorder/video/gyro_video.webm"
-    video_path: "/recorder/video/gyro_transition_fusion.webm"
+    video_path: "/recorder/video/gyro_video.webm"
+    # video_path: "/recorder/video/gyro_transition_fusion.webm"
     # video_path: "/recorder/video/buff.webm"
     # video_path: "/recorder/video/2022-06-23_19_36_54(1).avi"
     # video_path: "/recorder/video/new_buff.mp4"

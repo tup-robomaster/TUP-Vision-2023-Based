@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-04 18:31:53
+ * @LastEditTime: 2023-04-05 04:14:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -157,12 +157,14 @@ namespace armor_processor
     {
         auto t1 = steady_clock_.now();
 
+        rclcpp::Time stamp = target_msg.header.stamp;
+        int64_t dt = stamp.nanoseconds();
         Eigen::Vector3d xyz = {target_msg.aiming_point_world.x, target_msg.aiming_point_world.y, target_msg.aiming_point_world.z};
         TargetInfo target = 
         {
             std::move(xyz),
             xyz.norm(),
-            target_msg.timestamp,
+            dt,
             target_msg.period,
             target_msg.target_switched,
             target_msg.is_spinning,
@@ -173,6 +175,7 @@ namespace armor_processor
             (OutpostStatus)(target_msg.is_controlled),
             predict_param_.system_model
         };
+        // RCLCPP_INFO(logger_, "src_timestamp:%.8f", dt / 1e9);
 
         if(target.is_outpost_mode || target.is_spinning)
         {
@@ -280,11 +283,13 @@ namespace armor_processor
         int64_t delta_time_estimate = (int64_t)((last_dist / predict_param_.bullet_speed) * 1e9) + (int64_t)(predict_param_.shoot_delay * 1e6);
         int64_t time_estimate = delta_time_estimate + history_info_.back().timestamp;
         delay_time = delta_time_estimate;
-        
+        // cout << "delay_time:" << delta_time_estimate / 1e9 << " dt:" << time_estimate / 1e9 << endl;
+
         if ((int)history_info_.size() < predict_param_.min_fitting_lens)
         {
             if(!fitting_disabled_ && is_predicted_ && (int)history_info_.size() > 0)
             {
+                // cout << "is_pred..." << endl;
                 int64_t last_to_now_timestamp = history_info_.back().timestamp - last_start_timestamp_;
                 int64_t tt = time_estimate - last_start_timestamp_;
                 double last_pred_x = fitting_params_[0] * (last_to_now_timestamp / 1e9) + fitting_params_[1];
@@ -434,11 +439,13 @@ namespace armor_processor
             {   
                 RCLCPP_INFO(logger_, "STILL_SPINNING");
                 is_fitting_available = coupleFittingPredict(true, target, result_fitting, time_estimate);  
+                is_fitting_available.xyz_status[0] = predictBasedSinger(0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
             }
             else if (target.is_spinning && (!target.spinning_status) == MOVEMENT_SPINNING)
             {
                 RCLCPP_INFO(logger_, "MOVEMENT_SPINNING");
                 is_fitting_available = coupleFittingPredict(false, target, result_fitting, time_estimate);  
+                is_fitting_available.xyz_status[0] = predictBasedSinger(0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
             }
 
             result[0] = is_fitting_available.xyz_status[0] ? result_fitting[0] : target.xyz[0];
@@ -593,7 +600,8 @@ namespace armor_processor
          * @brief 车辆小陀螺运动轨迹拟合(已知量：角速度&陀螺半径）
          * 若目标仅处于原地小陀螺状态，则剔除掉模型中的横移项，直接给平动项乘以系数0。
          */
-        
+        // cout << "fitting..." << endl;
+
         auto time_start = steady_clock_.now();
 
         double params[5] = {fitting_params_[0], fitting_params_[1], fitting_params_[2], fitting_params_[3], fitting_params_[4]};
@@ -656,7 +664,7 @@ namespace armor_processor
         
         auto time_now = steady_clock_.now();
         auto dt = (time_now - time_start).nanoseconds();
-        RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 100, "Fitting_time: %.2fms x_cost:%.2f x_rmse:%.2f k:%.2f b:%.2f", (dt / 1e6), x_cost, x_rmse, params[0], params[1]);
+        RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "Fitting_time: %.2fms x_cost:%.2f x_rmse:%.2f k:%.2f b:%.2f", (dt / 1e6), x_cost, x_rmse, params[0], params[1]);
 
         double x_pred = 0.0;
         int64_t start_point = history_info_.front().timestamp;            
@@ -771,149 +779,11 @@ namespace armor_processor
         //     history_delta_x_pred_.pop_front();
         //     history_delta_x_pred_.push_back(delta_x_to_pred);
         // }
-        
+        // cout << "x_pred:" << x_pred << endl;
         result = {target.xyz[0], x_pred, target.xyz[2]}; 
         return is_available;
     }
 
-    /**
-     * @brief 计算RMSE指标
-     * 
-     * @param params 参数首地址指针
-     * @return RMSE值 
-     */
-    double ArmorPredictor::evalRMSE(double* params)
-    {
-        double rmse_sum = 0;
-        double rmse = 0;
-        double pred = 0;
-        double measure = 0;
-        for (auto& target_info : history_info_)
-        {
-            auto t = (double)(target_info.timestamp) / 1e9;
-            pred = params[0] * t + params[1]; //f(t)=kt+b
-            measure = target_info.xyz[1];
-        }
-        rmse = sqrt(rmse_sum / history_info_.size());
-        return rmse;
-    }
-
-    /**
-     * @brief 前哨站旋转预测函数
-     * 
-     * @param is_controlled 我方是否处于控制区，此时前哨站转速减半
-     * @param target 目标信息
-     * @param result 预测结果
-     * @param time_estimated 时间延迟量
-     * @return PredictStatus 
-     */
-    PredictStatus ArmorPredictor::spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int64_t time_estimated)
-    {  
-        /**
-         * @brief 前哨站旋转装甲运动预测（已知量：旋转半径&转速），考虑我方占领控制区旋转装甲板转速减半，应加入条件判断。
-         * 
-         */
-        //轨迹拟合
-        auto time_start = steady_clock_.now();
-        double x0, y0, theta;
-
-        ceres::Problem problem;
-        ceres::Solver::Options options;
-        ceres::Solver::Summary summary;
-
-        options.max_num_iterations = 20;
-        options.linear_solver_type = ceres::DENSE_QR;
-        options.minimizer_progress_to_stdout = false;
-
-        Eigen::Vector3d xyz_sum = {0, 0, 0};
-        if(!is_controlled)
-        {
-            for(auto& target_info : history_info_)
-            {   
-                xyz_sum += target_info.xyz;
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1>
-                    (
-                        new CurveFittingCost(0, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e9, 1)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &x0,
-                    &y0,
-                    &theta
-                );
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1>
-                    (
-                        new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e9, 1)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &x0,
-                    &y0,
-                    &theta
-                );
-            }
-        }
-        else
-        {
-            for(auto& target_info : history_info_)
-            {   
-                xyz_sum += target_info.xyz;
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1>
-                    (
-                        new CurveFittingCost(0, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e9, 0.5)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &x0,
-                    &y0,
-                    &theta
-                );
-                problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1>
-                    (
-                        new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e9, 0.5)
-                    ),
-                    new ceres::CauchyLoss(0.5),
-                    &x0,
-                    &y0,
-                    &theta
-                );
-            }
-        }
-        auto xyz_ave = (xyz_sum / history_info_.size());
-
-        problem.SetParameterUpperBound(&x0, 0, xyz_ave[0] + 0.6);
-        problem.SetParameterLowerBound(&x0, 0, xyz_ave[0] - 0.6);
-        problem.SetParameterUpperBound(&y0, 0, xyz_ave[1] + 0.6);
-        problem.SetParameterLowerBound(&y0, 0, xyz_ave[1] - 0.6);
-        problem.SetParameterUpperBound(&theta, 0, M_PI / 2);
-        problem.SetParameterLowerBound(&theta, 0, -M_PI / 2);
-
-        ceres::Solve(options, &problem, &summary);
-
-        auto time_now = steady_clock_.now();
-        auto dt_ns = (time_now - time_start).nanoseconds();
-        std::cout << "fitting_time:" << (dt_ns / 1e9) << "s" << std::endl;
-
-        PredictStatus is_available;
-        // auto rmse = evalRMSE()
-        is_available.xyz_status[0] = (summary.final_cost <= predict_param_.max_cost);
-        is_available.xyz_status[1] = (summary.final_cost <= predict_param_.max_cost);
-        double x_pred, y_pred;
-        if(!is_controlled)
-        {
-            x_pred = x0 + 0.2765 * ceres::cos(0.8 * M_PI * (time_estimated / 1e3) + theta);
-            y_pred = y0 + 0.2765 * ceres::sin(0.8 * M_PI * (time_estimated / 1e3) + theta);
-        }
-        else
-        {
-            x_pred = x0 + 0.2765 * ceres::cos(0.4 * M_PI * (time_estimated / 1e3) + theta);
-            y_pred = y0 + 0.2765 * ceres::sin(0.4 * M_PI * (time_estimated / 1e3) + theta);
-        }
-
-        result = {x_pred, y_pred, history_info_.end()->xyz[2]};
-        return is_available;
-    }
 
     /**
      * @brief 基于CS模型的卡尔曼滤波初始化
@@ -1181,6 +1051,145 @@ namespace armor_processor
         history_acc_[2][1] = history_acc_[2][0];
         history_acc_[2][0] = acc_3d[2] > 5.0 ? 0.0 : acc_3d[2];
         return;
+    }
+
+    /**
+     * @brief 计算RMSE指标
+     * 
+     * @param params 参数首地址指针
+     * @return RMSE值 
+     */
+    double ArmorPredictor::evalRMSE(double* params)
+    {
+        double rmse_sum = 0;
+        double rmse = 0;
+        double pred = 0;
+        double measure = 0;
+        for (auto& target_info : history_info_)
+        {
+            auto t = (double)(target_info.timestamp) / 1e9;
+            pred = params[0] * t + params[1]; //f(t)=kt+b
+            measure = target_info.xyz[1];
+        }
+        rmse = sqrt(rmse_sum / history_info_.size());
+        return rmse;
+    }
+
+    /**
+     * @brief 前哨站旋转预测函数
+     * 
+     * @param is_controlled 我方是否处于控制区，此时前哨站转速减半
+     * @param target 目标信息
+     * @param result 预测结果
+     * @param time_estimated 时间延迟量
+     * @return PredictStatus 
+     */
+    PredictStatus ArmorPredictor::spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int64_t time_estimated)
+    {  
+        /**
+         * @brief 前哨站旋转装甲运动预测（已知量：旋转半径&转速），考虑我方占领控制区旋转装甲板转速减半，应加入条件判断。
+         * 
+         */
+        //轨迹拟合
+        auto time_start = steady_clock_.now();
+        double x0, y0, theta;
+
+        ceres::Problem problem;
+        ceres::Solver::Options options;
+        ceres::Solver::Summary summary;
+
+        options.max_num_iterations = 20;
+        options.linear_solver_type = ceres::DENSE_QR;
+        options.minimizer_progress_to_stdout = false;
+
+        Eigen::Vector3d xyz_sum = {0, 0, 0};
+        if(!is_controlled)
+        {
+            for(auto& target_info : history_info_)
+            {   
+                xyz_sum += target_info.xyz;
+                problem.AddResidualBlock(
+                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1>
+                    (
+                        new CurveFittingCost(0, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e9, 1)
+                    ),
+                    new ceres::CauchyLoss(0.5),
+                    &x0,
+                    &y0,
+                    &theta
+                );
+                problem.AddResidualBlock(
+                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1>
+                    (
+                        new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e9, 1)
+                    ),
+                    new ceres::CauchyLoss(0.5),
+                    &x0,
+                    &y0,
+                    &theta
+                );
+            }
+        }
+        else
+        {
+            for(auto& target_info : history_info_)
+            {   
+                xyz_sum += target_info.xyz;
+                problem.AddResidualBlock(
+                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1>
+                    (
+                        new CurveFittingCost(0, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e9, 0.5)
+                    ),
+                    new ceres::CauchyLoss(0.5),
+                    &x0,
+                    &y0,
+                    &theta
+                );
+                problem.AddResidualBlock(
+                    new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1, 1>
+                    (
+                        new CurveFittingCost(1, target_info.xyz[0], target_info.xyz[1], target_info.timestamp / 1e9, 0.5)
+                    ),
+                    new ceres::CauchyLoss(0.5),
+                    &x0,
+                    &y0,
+                    &theta
+                );
+            }
+        }
+        auto xyz_ave = (xyz_sum / history_info_.size());
+
+        problem.SetParameterUpperBound(&x0, 0, xyz_ave[0] + 0.6);
+        problem.SetParameterLowerBound(&x0, 0, xyz_ave[0] - 0.6);
+        problem.SetParameterUpperBound(&y0, 0, xyz_ave[1] + 0.6);
+        problem.SetParameterLowerBound(&y0, 0, xyz_ave[1] - 0.6);
+        problem.SetParameterUpperBound(&theta, 0, M_PI / 2);
+        problem.SetParameterLowerBound(&theta, 0, -M_PI / 2);
+
+        ceres::Solve(options, &problem, &summary);
+
+        auto time_now = steady_clock_.now();
+        auto dt_ns = (time_now - time_start).nanoseconds();
+        RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "fitting_time:%.2fs", (dt_ns / 1e9));
+
+        PredictStatus is_available;
+        // auto rmse = evalRMSE()
+        is_available.xyz_status[0] = (summary.final_cost <= predict_param_.max_cost);
+        is_available.xyz_status[1] = (summary.final_cost <= predict_param_.max_cost);
+        double x_pred, y_pred;
+        if(!is_controlled)
+        {
+            x_pred = x0 + 0.2765 * ceres::cos(0.8 * M_PI * (time_estimated / 1e3) + theta);
+            y_pred = y0 + 0.2765 * ceres::sin(0.8 * M_PI * (time_estimated / 1e3) + theta);
+        }
+        else
+        {
+            x_pred = x0 + 0.2765 * ceres::cos(0.4 * M_PI * (time_estimated / 1e3) + theta);
+            y_pred = y0 + 0.2765 * ceres::sin(0.4 * M_PI * (time_estimated / 1e3) + theta);
+        }
+
+        result = {x_pred, y_pred, history_info_.end()->xyz[2]};
+        return is_available;
     }
 
     /**

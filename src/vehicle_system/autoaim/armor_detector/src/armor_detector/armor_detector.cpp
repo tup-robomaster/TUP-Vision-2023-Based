@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-04 17:50:55
+ * @LastEditTime: 2023-04-05 12:50:53
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -158,14 +158,15 @@ namespace armor_detector
         //生成装甲板对象
         for (auto object : objects_)
         {
+            //TODO:加入紫色装甲板限制通过条件
             if (detector_params_.color == RED)
             {
-                if (object.color != 1)
+                if (object.color == BLUE)
                     continue;
             }
-            else
+            else if (detector_params_.color == BLUE)
             {
-                if (object.color != 0)
+                if (object.color == RED)
                     continue;
             }
    
@@ -208,7 +209,7 @@ namespace armor_detector
                         RCLCPP_WARN_THROTTLE(
                             logger_, 
                             steady_clock_, 
-                            200, 
+                            500, 
                             "[IGNORE]:armor_key:%s armor_conf:%.2f", 
                             armor.key.c_str(), 
                             armor.conf
@@ -376,6 +377,7 @@ namespace armor_detector
         string vehicle_key;
         int idx = target_id_;
         target_id_ = -1; //置零，确保哨兵发送的目标ID信息是在更新
+        //TODO:考虑灰色装甲板
         if (detector_params_.color == BLUE)
         {
             vehicle_key = "B" + to_string(idx);
@@ -465,7 +467,7 @@ namespace armor_detector
             double period = 0.0;
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
-                RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "dt:%.8f src.dt:%.8f", ((*iter).second.now / 1e9), (src.timestamp / 1e9));
+                // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "dt:%.8f src.dt:%.8f", ((*iter).second.now / 1e9), (src.timestamp / 1e9));
                 if (((*iter).second.now / 1e9) == (src.timestamp / 1e9))
                 {
                     final_armors.emplace_back((*iter).second.new_armor);
