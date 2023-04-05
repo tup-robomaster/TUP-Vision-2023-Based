@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-04-04 16:28:29
+ * @LastEditTime: 2023-04-05 14:57:48
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -24,6 +24,7 @@ namespace armor_detector
         this->gyro_params_.anti_spin_max_r_multiple = 3;
         last_timestamp_ = 0.0;
         max_hop_period_ = 3000.0;
+        is_dead_= false;
         // normal_gyro_status_counter_ = 0;
         // switch_gyro_status_counter_ = 0;
         // last_yaw_diff_ = 0.0;
@@ -45,6 +46,7 @@ namespace armor_detector
         this->gyro_params_.anti_spin_max_r_multiple = gyro_params.anti_spin_max_r_multiple;
         last_timestamp_ = 0.0;
         max_hop_period_ = 3000.0;
+        is_dead_= false;
         // normal_gyro_status_counter_ = 0;
         // switch_gyro_status_counter_ = 0;
         // last_yaw_diff_ = 0.0;
@@ -144,6 +146,7 @@ namespace armor_detector
                 if (dead_buffer_cnt >= gyro_params_.max_dead_buffer)
                 {
                     RCLCPP_INFO(logger_, "dead buffer cnt: %d", dead_buffer_cnt);
+                    is_dead_ = true;
                     continue;
                 }
 

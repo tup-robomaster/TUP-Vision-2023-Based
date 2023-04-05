@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-15 11:25:33
- * @LastEditTime: 2023-04-01 23:13:59
+ * @LastEditTime: 2023-04-05 14:57:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/spinning_detector/spinning_detector.hpp
  */
 #ifndef SPINNING_DETECTOR_HPP_
@@ -37,6 +37,7 @@ namespace armor_detector
         bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, int64_t now);
         bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, std::map<std::string, int>& new_armors_cnt_map, int64_t now);
         
+        bool is_dead_;
         double max_hop_period_;
         int xyz_axis_[3] = {1, 2, 0};
         double last_timestamp_;

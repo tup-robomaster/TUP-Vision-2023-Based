@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-04 23:39:14
+ * @LastEditTime: 2023-04-05 15:02:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -160,12 +160,12 @@ namespace armor_detector
         {
             if (detector_params_.color == RED)
             {
-                if (object.color != 1)
+                if (object.color == BLUE || object.color == PURPLE)
                     continue;
             }
             else
             {
-                if (object.color != 0)
+                if (object.color == RED || object.color == PURPLE)
                     continue;
             }
    
@@ -764,10 +764,20 @@ namespace armor_detector
         target_info.is_target_lost = false;
         // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
 
-        if (target.color == 2)
-            dead_buffer_cnt_++;
-        else
+        if (spinning_detector_.is_dead_)
+        {
             dead_buffer_cnt_ = 0;
+            spinning_detector_.is_dead_ = false;
+        }
+
+        if (target.color == 2)
+        {
+            dead_buffer_cnt_++;
+        }
+        else
+        {
+            dead_buffer_cnt_ = 0;
+        }
 
         //获取装甲板中心与装甲板面积以下一次ROI截取使用
         // last_roi_center_ = Point2i(512,640);
