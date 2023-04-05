@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-04 17:50:55
+ * @LastEditTime: 2023-04-04 23:39:14
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -814,7 +814,6 @@ namespace armor_detector
         double dr_crop_ns = (time_crop_ - time_start_).nanoseconds();
         double dr_infer_ns = (time_infer_ - time_crop_).nanoseconds();
         double dr_full_ns = (time_predict - time_start_).nanoseconds();
-
         if(debug_params_.show_fps)
         {
             char ch[10];

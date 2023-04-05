@@ -59,10 +59,10 @@
     save_dataset: false
   
   # Debug params.
-    debug: true
+    debug: false
     using_imu: true
     show_img: true
-    show_fps: true
+    show_fps: false
     using_roi: false
     detect_red: true
     auto_label: false
@@ -80,7 +80,7 @@
     max_cost: 10
     max_v: 8
     min_fitting_lens: 10
-    shoot_delay: 300
+    shoot_delay: 800
     window_size: 3
     yaw_angle_offset: 0.5
     pitch_angle_offset: -2.45
@@ -88,7 +88,7 @@
     reserve_factor: 200.0 #储备系数(>=1)
 
   # Debug params.
-    debug: true
+    debug: false
     using_imu: true
     show_img: false
     draw_predict: false
@@ -135,9 +135,9 @@
     # singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.165, 1.95, 1.0, 1.0, 0.1] 
     # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.20, 1.2, 1.0, 1.0, 0.1]
 
-    singer_model_x_axis: [5.0, 10.0, 0.1, 0.8, 5.00, 0.005, 1.0, 1.0, 1.0] 
-    singer_model_y_axis: [10.00, 10.0, 0.1, 0.8, 5.00, 0.01, 1.0, 1.0, 7.0] 
-    singer_model_z_axis: [10.00, 10.0, 0.1, 0.8, 5.00, 0.01, 1.0, 1.0, 7.0]
+    singer_model_x_axis: [20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0, 1.0] 
+    singer_model_y_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0] 
+    singer_model_z_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0]
 
     # singer_model_x_axis: [1.0, 10.0, 0.1, 0.8, 5.00, 0.1, 1.0, 1.0, 1.0] 
     # singer_model_y_axis: [5.0, 10.0, 0.1, 0.8, 16.00, 0.001, 1.0, 0.2, 4.0] 
