@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-05 13:08:46
+ * @LastEditTime: 2023-04-05 21:53:33
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -481,7 +481,55 @@ namespace armor_detector
                         w = (angle / dt);
                         period = ((2 * CV_PI) / w / 4.0);
                         new_period_deq_.emplace_back(period);
-                        RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "Rotation period:%lfs", period);
+
+                        double relative_angle_sum = 0.0;
+                        int64_t dt_sum = 0;
+                        cv::Point3d circle_center_sum = {0, 0, 0};
+                        cv::Point3d circle_center_ave = {0, 0, 0};
+                        for (int ii = 0; ii < (int)(*iter).second.history_info_.size() - 1; ii++)
+                        {
+                            auto relative_rmat = (*iter).second.history_info_[ii].rmat.transpose() * (*iter).second.history_info_[ii+1].rmat;
+                            auto relative_angle_axisd = Eigen::AngleAxisd(relative_rmat);
+                            auto relative_angle = relative_angle_axisd.angle(); 
+                            relative_angle_sum += relative_angle;  
+
+                            Eigen::Vector3d point3d_last = (*iter).second.history_info_[ii+1].armor3d_world;
+                            Eigen::Vector3d point3d_now = (*iter).second.history_info_.front().armor3d_world;
+                            double x_pos = (point3d_now[1] + point3d_last[1]) / 2.0 + ((point3d_now[0] - point3d_last[0]) / (2 * tan(relative_angle_sum)));
+                            double x_neg = (point3d_now[1] + point3d_last[1]) / 2.0 - ((point3d_now[0] - point3d_last[0]) / (2 * tan(relative_angle_sum)));
+                            double y_pos = (point3d_now[0] + point3d_last[0]) / 2.0 + ((point3d_now[1] - point3d_last[1]) / (2 * tan(relative_angle_sum)));
+                            double y_neg = (point3d_now[0] + point3d_last[0]) / 2.0 - ((point3d_now[1] - point3d_last[1]) / (2 * tan(relative_angle_sum)));
+                            circle_center_sum.y += (y_pos < y_neg) ? y_pos : y_neg;
+                            circle_center_sum.x += (y_pos < y_neg) ? x_pos : x_neg;
+                            circle_center_sum.z += (point3d_now[2] + point3d_last[2]) / 2.0;
+                        }
+                        // RCLCPP_WARN_THROTTLE(
+                        //     logger_, 
+                        //     steady_clock_, 
+                        //     10, 
+                        //     "Relative angle: %.2f",
+                        //     angle * (180 / CV_PI)
+                        // );
+
+                        circle_center_ave = circle_center_sum / ((int)(*iter).second.history_info_.size() - 1);
+                        (*iter).second.rotation_center = {circle_center_ave.x, circle_center_ave.y, circle_center_ave.z};
+
+                        Eigen::Vector3d euler = rotationMatrixToEulerAngles((*iter).second.new_armor.rmat);
+                        RCLCPP_WARN_THROTTLE(
+                            logger_, 
+                            steady_clock_, 
+                            10, 
+                            "Relative angle sum:%.2f size:%d Rotation period:%.2fs circle_center_ave:(%.3f, %.3f %.3f)\n rAngle:{%.2f %.2f %.2f}",
+                            relative_angle_sum,
+                            (int)(*iter).second.history_info_.size() - 1,
+                            period,
+                            circle_center_ave.x,
+                            circle_center_ave.y,
+                            circle_center_ave.z,
+                            euler[0] * (180 / CV_PI),
+                            euler[1] * (180 / CV_PI),
+                            euler[2] * (180 / CV_PI)
+                        );
                     }
                 }
                 else
@@ -698,6 +746,10 @@ namespace armor_detector
                 target_info.spinning_switched = true;
             else
                 target_info.spinning_switched = false;
+            
+            // auto angle_axisd = Eigen::AngleAxisd(target.rmat);
+            // double angle = angle_axisd.angle();
+            // RCLCPP_INFO(logger_, "rotate angle:%lf", angle * (180 / CV_PI));
         }
         else
         {
@@ -782,6 +834,16 @@ namespace armor_detector
         is_last_target_exists_ = true;
         last_armors_ = new_armors_;
 
+        Eigen::Vector3d euler = rotationMatrixToEulerAngles(target.rmat);
+        RCLCPP_WARN_THROTTLE(
+            logger_, 
+            steady_clock_, 
+            10, 
+            "rAngle:{%.2f %.2f %.2f}",
+            euler[0] * (180 / CV_PI),
+            euler[1] * (180 / CV_PI),
+            euler[2] * (180 / CV_PI)
+        );
 
         if(debug_params_.show_aim_cross)
         {
@@ -1112,12 +1174,12 @@ namespace armor_detector
                 return armor.id;
             }
             else if ((armor.id == last_armor_.id && abs(armor.area - last_armor_.area) / (float)armor.area < 0.40 && abs(now_ - last_timestamp_) / 1e6 <= 100)
-            && !(16.0 <= abs(rrangle) <= 74.0))
+            && !(abs(rrangle) >= 16.0 && abs(rrangle) <= 74.0))
             {
                 is_last_id_exists = true;
                 target_id = armor.id;
             }
-            else if (13.0 <= abs(rrangle) <= 77.0)
+            else if (abs(rrangle) >= 13.0 && abs(rrangle) <= 77.0)
             {
                 continue;
             }

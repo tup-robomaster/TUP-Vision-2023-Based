@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-04-04 17:01:28
+ * @LastEditTime: 2023-04-05 21:45:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_tracker/armor_tracker.hpp
  */
 #ifndef ARMOR_TRACKER_HPP_
@@ -53,7 +53,7 @@ namespace armor_detector
         int64_t now = 0.0;                       //本次装甲板时间戳
         int history_type_sum;                   //历史次数之和
         int selected_cnt = 0;                   //该Tracker被选为目标tracker次数和
-        const int max_history_len = 4;          //历史信息队列最大长度
+        const int max_history_len = 10;          //历史信息队列最大长度
         double hit_score;                       //该tracker可能作为目标的分数,由装甲板旋转角度,距离,面积大小决定
         double velocity;
         double radius;
@@ -62,6 +62,7 @@ namespace armor_detector
         double last_yaw_diff_;
         double last_pitch_diff_;
         std::deque<Armor> history_info_;    //目标队列
+        Eigen::Vector3d rotation_center;
         
         // int64_t hop_timestamp_;
         // SpinHeading spin_status_;
