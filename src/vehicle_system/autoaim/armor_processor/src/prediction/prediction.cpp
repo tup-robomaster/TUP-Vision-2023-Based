@@ -395,15 +395,15 @@ namespace armor_processor
                     xyz_future[2] = std::async(std::launch::async, [&](){
                         is_singer_available.xyz_status[2] = predictBasedSinger(2, target.xyz[2], result_singer[2], target_vel[2], target_acc[2], delta_time_estimate);});
                 }
-                if (debug_param_.x_axis_filter && xyz_future[0].wait_for(1ms) == std::future_status::timeout)
+                if (debug_param_.x_axis_filter && xyz_future[0].wait_for(2ms) == std::future_status::timeout)
                 {
                     RCLCPP_WARN(logger_, "X_AXIS prediction timeout...");
                 }
-                if (debug_param_.y_axis_filter && xyz_future[1].wait_for(1ms) == std::future_status::timeout)
+                if (debug_param_.y_axis_filter && xyz_future[1].wait_for(2ms) == std::future_status::timeout)
                 {
                     RCLCPP_WARN(logger_, "Y_AXIS prediction timeout...");
                 }
-                if (debug_param_.z_axis_filter && xyz_future[2].wait_for(1ms) == std::future_status::timeout)
+                if (debug_param_.z_axis_filter && xyz_future[2].wait_for(2ms) == std::future_status::timeout)
                 {
                     RCLCPP_WARN(logger_, "Z_AXIS prediction timeout...");
                 }

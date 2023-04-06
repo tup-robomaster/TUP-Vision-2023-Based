@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-05 14:05:35
+ * @LastEditTime: 2023-04-05 19:45:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -233,7 +233,7 @@ namespace armor_processor
                 {
                     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Auto shooting...");
                     aiming_point_world = std::make_unique<Eigen::Vector3d>(post_process_info.pred_3d_pos);
-                    *aiming_point_world = rmat.transpose() * (*aiming_point_world);
+                    // *aiming_point_world = rmat.transpose() * (*aiming_point_world);
                     aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
                 }
             }
@@ -248,7 +248,7 @@ namespace armor_processor
                 {
                     aiming_point_world = std::move(processor_->predictor(target, sleep_time));
                 }
-                *aiming_point_world = rmat.transpose() * (*aiming_point_world);
+                // *aiming_point_world = rmat.transpose() * (*aiming_point_world);
                 aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
             }
             angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
@@ -267,7 +267,7 @@ namespace armor_processor
             //     }
             // }
 
-            if (abs(tracking_angle[0]) < 0.25 && abs(tracking_angle[1]) < 0.25)
+            if (abs(tracking_angle[0]) < 10.50 && abs(tracking_angle[1]) < 10.50)
             {
                 is_pred_ = true;
                 is_aimed_ = true;

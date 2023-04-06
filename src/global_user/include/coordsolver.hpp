@@ -79,10 +79,10 @@ namespace coordsolver
 
         YAML::Node param_node;
 
-        // double bullet_speed = 28;            
-        double bullet_speed = 16;            //TODO:弹速可变
-        // const double k = 0.01903;                //25°C,1atm,小弹丸
-        const double k = 0.00556;                //25°C,1atm,大弹丸
+        double bullet_speed = 28.0;            
+        // double bullet_speed = 16;            //TODO:弹速可变
+        const double k = 0.01903;                //25°C,1atm,小弹丸
+        // const double k = 0.00556;                //25°C,1atm,大弹丸
         // const double k = 0.00530;                //25°C,1atm,发光大弹丸
         const double g = 9.781;
 

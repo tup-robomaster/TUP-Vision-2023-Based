@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-05 15:11:27
+ * @LastEditTime: 2023-04-05 19:24:17
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -26,6 +26,7 @@ namespace armor_detector
         is_init_ = false;
         last_period_ = 0;
         last_last_status_ = last_status_ = cur_status_ = NONE;
+        dead_buffer_cnt_ = 0;
 
         is_save_data_ = debug_params_.save_data; //save distance error data
         save_dataset_ = debug_params_.save_dataset;
@@ -332,15 +333,6 @@ namespace armor_detector
      */
     bool Detector::gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp)
     {
-        //Create ArmorTracker for new armors 
-        spinning_detector_.createArmorTracker(trackers_map_, new_armors_, new_armors_cnt_map_, now_, dead_buffer_cnt_);
-        
-        //Detect armors status
-        spinning_detector_.isSpinning(trackers_map_, new_armors_cnt_map_, now_);
-
-        //Update spinning score
-        // spinning_detector_.updateSpinScore();
-
         //Choose target vehicle
         //此处首先根据哨兵发来的ID指令进行目标车辆追踪
         int target_id = -1;
@@ -356,6 +348,16 @@ namespace armor_detector
         {
             target_id = chooseTargetID(src);
         }
+
+        //Create ArmorTracker for new armors 
+        spinning_detector_.createArmorTracker(trackers_map_, new_armors_, new_armors_cnt_map_, now_, dead_buffer_cnt_);
+        
+        //Detect armors status
+        spinning_detector_.isSpinning(trackers_map_, new_armors_cnt_map_, now_);
+
+        //Update spinning score
+        // spinning_detector_.updateSpinScore();
+
         // cout << "armor_size:" << (int)new_armors_.size() << endl;
 
         //未检索到有效车辆ID，直接退出
@@ -420,7 +422,7 @@ namespace armor_detector
             target_info.is_target_lost = true;
             lost_cnt_++;
             is_last_target_exists_ = false;
-            RCLCPP_WARN(logger_, "No available tracker exists!");
+            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "No available tracker exists!");
             return false;
         }
 
@@ -454,6 +456,7 @@ namespace armor_detector
                 target_info.is_spinning = false;
             }
         }
+        spin_status = UNKNOWN;
 
         ///----------------------------------反陀螺击打---------------------------------------
         target_info.is_spinning = false;
@@ -684,7 +687,7 @@ namespace armor_detector
                 lost_cnt_++;
                 is_last_target_exists_ = false;
                 // target = final_armors.front();
-                // cout << "died zone..." << endl;
+                cout << "armor size:" << (int)final_armors.size() << endl;
                 RCLCPP_ERROR(logger_, "Error in dead zone...");
                 return false;
             }
@@ -769,18 +772,20 @@ namespace armor_detector
         if (spinning_detector_.is_dead_)
         {
             dead_buffer_cnt_ = 0;
+            cout << "dead:" << dead_buffer_cnt_ << endl; 
             spinning_detector_.is_dead_ = false;
         }
 
         if (target.color == 2)
         {
+            cout << "dead_buffer_cnt:" << dead_buffer_cnt_ << endl; 
             dead_buffer_cnt_++;
         }
         else
         {
             dead_buffer_cnt_ = 0;
         }
-
+        // cout << 1 << endl;
         //获取装甲板中心与装甲板面积以下一次ROI截取使用
         // last_roi_center_ = Point2i(512,640);
         // prev_timestamp_ = now_;
@@ -791,7 +796,6 @@ namespace armor_detector
         last_aiming_point_ = target.armor3d_cam;
         is_last_target_exists_ = true;
         last_armors_ = new_armors_;
-
 
         if(debug_params_.show_aim_cross)
         {
@@ -1078,7 +1082,7 @@ namespace armor_detector
         // if (last_target_idx != -1 && abs(trackers[last_target_idx]->hit_score - max_score) / max_score < 0.1)
         //     target_idx = last_target_idx;
         if (last_target_idx != -1)
-            target_id_ = last_target_idx;
+            target_idx = last_target_idx;
         return trackers[target_idx];
     }   
 
@@ -1105,7 +1109,7 @@ namespace armor_detector
         float min_rrangle = 1e2;
         float max_rrangle = 0.0;
         double min_3d_dist = 1e2;
-        for (auto armor : new_armors_)
+        for (auto& armor : new_armors_)
         {   
             // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "armor_area:%d", armor.area);
             // double dist_2d = abs((src.img.size().width / 2.0) - armor.center2d.x);
@@ -1120,9 +1124,14 @@ namespace armor_detector
             {
                 return armor.id;
             }
-            else if ((armor.id == last_armor_.id && abs(armor.area - last_armor_.area) / (float)armor.area < 0.40 && abs(now_ - last_timestamp_) / 1e6 <= 100)
+            else if ((armor.id == last_armor_.id 
+            || last_armor_.roi.contains(armor.center2d)
+            )
+            && abs(armor.area - last_armor_.area) / (float)armor.area < 0.40
+            && abs(now_ - last_timestamp_) / 1e6 <= 100
             && !(16.0 <= abs(rrangle) <= 74.0))
             {
+                armor.id = last_armor_.id;
                 is_last_id_exists = true;
                 target_id = armor.id;
             }

@@ -56,9 +56,6 @@ namespace armor_detector
         RED,
         GRAY,
         PURPLE
-        RED,
-        GRAY,
-        PURPLE
     };
 
     struct GyroParam

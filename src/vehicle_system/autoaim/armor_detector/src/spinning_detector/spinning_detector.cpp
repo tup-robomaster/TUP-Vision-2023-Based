@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-04-05 15:12:57
+ * @LastEditTime: 2023-04-05 16:14:07
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -143,6 +143,7 @@ namespace armor_detector
             string tracker_key;
             if ((*armor).color == 2)
             {   
+                cout << "gray_armor" << endl;
                 if (dead_buffer_cnt >= gyro_params_.max_dead_buffer)
                 {
                     RCLCPP_INFO(logger_, "dead buffer cnt: %d", dead_buffer_cnt);
