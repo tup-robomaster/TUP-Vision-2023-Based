@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-09 22:50:31
- * @LastEditTime: 2023-04-02 05:18:17
+ * @LastEditTime: 2023-04-05 13:45:49
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -93,6 +93,9 @@ namespace armor_processor
         SystemModel system_model;
         double reserve_factor;
         double max_offset_value;
+        double rotation_yaw;
+        double rotation_pitch;
+        double rotation_roll;
         
         PredictParam()
         {
@@ -106,6 +109,9 @@ namespace armor_processor
             system_model = CSMODEL;   
             reserve_factor = 15.0;
             max_offset_value = 0.25;
+            rotation_yaw = 0.0;
+            rotation_pitch = 0.0;
+            rotation_roll = 0.0;
         }
     };
 

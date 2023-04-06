@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-04 16:19:43
+ * @LastEditTime: 2023-04-05 14:05:35
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -150,6 +150,13 @@ namespace armor_processor
         Eigen::Matrix3d rmat_imu;
         Eigen::Quaterniond quat_imu;
 
+        Eigen::Vector3d rpy_raw = {predict_param_.rotation_roll / (CV_PI / 180), predict_param_.rotation_pitch / (CV_PI / 180), predict_param_.rotation_yaw / (CV_PI / 180)};
+        Eigen::AngleAxisd rollAngle(Eigen::AngleAxisd(rpy_raw[0], Eigen::Vector3d::UnitZ()));
+        Eigen::AngleAxisd pitchAngle(Eigen::AngleAxisd(rpy_raw[1], Eigen::Vector3d::UnitY()));
+        Eigen::AngleAxisd yawAngle(Eigen::AngleAxisd(rpy_raw[2], Eigen::Vector3d::UnitX()));
+        Eigen::Matrix3d rmat;
+        rmat = yawAngle * pitchAngle * rollAngle;
+
         cv::Mat dst = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
         if (debug_param_.show_img)
         {
@@ -202,6 +209,12 @@ namespace armor_processor
         }
         else
         {
+            Eigen::Vector3d point_3d = {target.aiming_point_world.x, target.aiming_point_world.y, target.aiming_point_world.z};
+            point_3d = rmat * point_3d;
+            target.aiming_point_world.x = point_3d[0];
+            target.aiming_point_world.y = point_3d[1];
+            target.aiming_point_world.z = point_3d[2];
+
             if(!debug_param_.using_imu)
             {
                 rmat_imu = Eigen::Matrix3d::Identity();
@@ -220,6 +233,7 @@ namespace armor_processor
                 {
                     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Auto shooting...");
                     aiming_point_world = std::make_unique<Eigen::Vector3d>(post_process_info.pred_3d_pos);
+                    *aiming_point_world = rmat.transpose() * (*aiming_point_world);
                     aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
                 }
             }
@@ -234,6 +248,7 @@ namespace armor_processor
                 {
                     aiming_point_world = std::move(processor_->predictor(target, sleep_time));
                 }
+                *aiming_point_world = rmat.transpose() * (*aiming_point_world);
                 aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
             }
             angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
@@ -251,6 +266,7 @@ namespace armor_processor
             //         angle = tracking_angle;
             //     }
             // }
+
             if (abs(tracking_angle[0]) < 0.25 && abs(tracking_angle[1]) < 0.25)
             {
                 is_pred_ = true;
@@ -283,6 +299,9 @@ namespace armor_processor
 
         // angle[0] = (is_aimed_[0]) ? angle[0] : tracking_angle[0];
         // angle[1] = (is_aimed_[1]) ? angle[1] : tracking_angle[1];
+        
+        is_aimed_ = true;
+        is_pred_ = true;
         if (!is_aimed_)
         {
             angle = tracking_angle;
@@ -493,6 +512,9 @@ namespace armor_processor
         this->declare_parameter<double>("pitch_angle_offset", 0.0);
         this->declare_parameter<double>("max_offset_value", 0.25);
         this->declare_parameter<double>("reserve_factor", 15.0);
+        this->declare_parameter<double>("rotation_yaw", 0.0);
+        this->declare_parameter<double>("rotation_pitch", 0.0);
+        this->declare_parameter<double>("rotation_roll", 0.0);
 
         // Declare debug params.
         this->declare_parameter("show_img", false);
@@ -616,6 +638,9 @@ namespace armor_processor
         predict_param_.window_size = this->get_parameter("window_size").as_int();
         predict_param_.max_offset_value = this->get_parameter("max_offset_value").as_double();
         predict_param_.reserve_factor = this->get_parameter("reserve_factor").as_double();
+        predict_param_.rotation_yaw = this->get_parameter("rotation_yaw").as_double();
+        predict_param_.rotation_pitch = this->get_parameter("rotation_pitch").as_double();
+        predict_param_.rotation_roll = this->get_parameter("rotation_roll").as_double();
         
         //Debug param.
         debug_param_.show_img = this->get_parameter("show_img").as_bool();
