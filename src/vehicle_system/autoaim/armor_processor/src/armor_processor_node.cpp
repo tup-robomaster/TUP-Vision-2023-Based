@@ -150,12 +150,12 @@ namespace armor_processor
         Eigen::Matrix3d rmat_imu;
         Eigen::Quaterniond quat_imu;
 
-        Eigen::Vector3d rpy_raw = {predict_param_.rotation_roll / (CV_PI / 180), predict_param_.rotation_pitch / (CV_PI / 180), predict_param_.rotation_yaw / (CV_PI / 180)};
-        Eigen::AngleAxisd rollAngle(Eigen::AngleAxisd(rpy_raw[0], Eigen::Vector3d::UnitZ()));
-        Eigen::AngleAxisd pitchAngle(Eigen::AngleAxisd(rpy_raw[1], Eigen::Vector3d::UnitY()));
-        Eigen::AngleAxisd yawAngle(Eigen::AngleAxisd(rpy_raw[2], Eigen::Vector3d::UnitX()));
-        Eigen::Matrix3d rmat;
-        rmat = yawAngle * pitchAngle * rollAngle;
+        // Eigen::Vector3d rpy_raw = {predict_param_.rotation_roll / (CV_PI / 180), predict_param_.rotation_pitch / (CV_PI / 180), predict_param_.rotation_yaw / (CV_PI / 180)};
+        // Eigen::AngleAxisd rollAngle(Eigen::AngleAxisd(rpy_raw[0], Eigen::Vector3d::UnitZ()));
+        // Eigen::AngleAxisd pitchAngle(Eigen::AngleAxisd(rpy_raw[1], Eigen::Vector3d::UnitY()));
+        // Eigen::AngleAxisd yawAngle(Eigen::AngleAxisd(rpy_raw[2], Eigen::Vector3d::UnitX()));
+        // Eigen::Matrix3d rmat;
+        // rmat = yawAngle * pitchAngle * rollAngle;
 
         cv::Mat dst = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
         if (debug_param_.show_img)
@@ -210,7 +210,7 @@ namespace armor_processor
         else
         {
             Eigen::Vector3d point_3d = {target.aiming_point_world.x, target.aiming_point_world.y, target.aiming_point_world.z};
-            point_3d = rmat * point_3d;
+            // point_3d = rmat * point_3d;
             target.aiming_point_world.x = point_3d[0];
             target.aiming_point_world.y = point_3d[1];
             target.aiming_point_world.z = point_3d[2];
@@ -234,6 +234,7 @@ namespace armor_processor
                     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Auto shooting...");
                     aiming_point_world = std::make_unique<Eigen::Vector3d>(post_process_info.pred_3d_pos);
                     // *aiming_point_world = rmat.transpose() * (*aiming_point_world);
+                    // *aiming_point_world = rmat.transpose() * (*aiming_point_world);
                     aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
                 }
             }
@@ -248,6 +249,7 @@ namespace armor_processor
                 {
                     aiming_point_world = std::move(processor_->predictor(target, sleep_time));
                 }
+                // *aiming_point_world = rmat.transpose() * (*aiming_point_world);
                 // *aiming_point_world = rmat.transpose() * (*aiming_point_world);
                 aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
             }
