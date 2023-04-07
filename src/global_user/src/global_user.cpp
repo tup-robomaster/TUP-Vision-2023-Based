@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 14:01:05
- * @LastEditTime: 2023-04-06 12:22:24
+ * @LastEditTime: 2023-04-06 20:24:00
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/global_user.cpp
  */
 #include "../include/global_user/global_user.hpp"
@@ -221,10 +221,10 @@ namespace global_user
         return tree;
     }
 
-    float calcDistance(cv::Point2f& p1, cv::Point2f& p2)
-    {
-        return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
-    }
+    // float calcDistance(cv::Point2f& p1, cv::Point2f& p2)
+    // {
+    //     return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
+    // }
 
     void videoRecorder(VideoRecordParam& video_param, cv::Mat* src)
     {

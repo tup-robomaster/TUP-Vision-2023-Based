@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-04 19:04:11
- * @LastEditTime: 2023-03-22 15:29:27
+ * @LastEditTime: 2023-04-06 12:33:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/test/main.cpp
  */
 #include <cmath>
@@ -44,7 +44,7 @@ void test_ekf_based_Singer();
 int main(int argc, char** argv)
 {
     argc = 0;
-    argv[0][0] = '';
+    argv[0][0] = ' ';
     test_ekf_based_CTRV();
     // test_ekf_based_Singer();
 
@@ -85,7 +85,7 @@ void test_ekf_based_Singer()
     bool is_init = false;
     float x0 = 2.5;
     float v0 = 0.2;
-    // float a0 = 0.1;
+    float a0 = 0.1;
 
     // float r = 0.25;
     // float x0 = 2.5;

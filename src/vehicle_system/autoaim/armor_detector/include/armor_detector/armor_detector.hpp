@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-04-04 17:36:51
+ * @LastEditTime: 2023-04-06 21:06:29
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
@@ -109,6 +109,10 @@ namespace armor_detector
         deque<double> new_period_deq_;
         double last_ave_period_;
         double cur_ave_period_;
+        vector<Armor> opposite_armors_;
+        cv::Point2d circle_center_ave_;
+        int error_cnt_;
+        vector<Eigen::Vector3d> circle_center_vec_;
 
     public:
         //Debug param.

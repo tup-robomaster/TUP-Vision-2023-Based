@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-04-06 00:01:11
+ * @LastEditTime: 2023-04-07 13:44:48
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_tracker/armor_tracker.hpp
  */
 #ifndef ARMOR_TRACKER_HPP_
@@ -52,13 +52,14 @@ namespace armor_detector
 
     public:
         Armor last_armor;                       //上一次装甲板
-        Armor new_armor;                       //本次装甲板
+        Armor new_armor;                        //本次装甲板
         string key;
-        bool is_initialized;                    //是否完成初始化
+        bool is_initialized;                     //是否完成初始化
         int64_t last_selected_timestamp = 0.0;   //该Tracker上次被选为目标tracker时间戳
         int64_t last_timestamp = 0.0;            //上次装甲板时间戳
         int64_t now = 0.0;                       //本次装甲板时间戳
-        double hit_score;                       //该tracker可能作为目标的分数,由装甲板旋转角度,距离,面积大小决定
+        double hit_score = 0.0;                  //该tracker可能作为目标的分数,由装甲板旋转角度,距离,面积大小决定
+        int selected_cnt_ = 0;                   //该Tracker被选为目标tracker次数和
 
         double last_yaw_diff_;
         double last_pitch_diff_;
@@ -71,7 +72,6 @@ namespace armor_detector
         
         // double velocity;
         // int history_type_sum;                   //历史次数之和
-        // int selected_cnt = 0;                   //该Tracker被选为目标tracker次数和
         // int64_t hop_timestamp_;
         // SpinHeading spin_status_;
         // int flag_;

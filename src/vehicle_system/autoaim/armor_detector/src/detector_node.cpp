@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-05 13:34:52
+ * @LastEditTime: 2023-04-06 17:59:44
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -470,6 +470,7 @@ namespace armor_detector
         this->declare_parameter("show_all_armors", false);
         this->declare_parameter("save_data", false);
         this->declare_parameter("save_dataset", false);
+        this->declare_parameter("show_spinning_img", false);
         
         //Gyro params.
         this->declare_parameter<int>("max_dead_buffer", 2) ;
@@ -527,6 +528,7 @@ namespace armor_detector
         debug_.show_all_armors = this->get_parameter("show_all_armors").as_bool();
         debug_.save_data = this->get_parameter("save_data").as_bool();
         debug_.save_dataset = this->get_parameter("save_dataset").as_bool();
+        debug_.show_spinning_img = this->get_parameter("show_spinning_img").as_bool();
 
         gyro_params_.anti_spin_judge_high_thres = this->get_parameter("anti_spin_judge_high_thres").as_double();
         gyro_params_.anti_spin_judge_low_thres = this->get_parameter("anti_spin_judge_low_thres").as_double();

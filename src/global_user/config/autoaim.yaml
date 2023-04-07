@@ -61,16 +61,17 @@
   # Debug params.
     debug: true
     using_imu: false
-    show_img: false
-    show_fps: false
+    show_img: true
+    show_fps: true
     using_roi: false
     detect_red: true
     auto_label: false
     print_letency: false
-    show_aim_cross: false
+    show_aim_cross: true
     sync_transport: false
-    show_all_armors: false
+    show_all_armors: true
     print_target_info: false
+    show_spinning_img: true
 
 /armor_processor:
   ros__parameters:
@@ -93,9 +94,9 @@
   # Debug params.
     debug: true
     using_imu: false
-    show_img: true
+    show_img: false
     draw_predict: false
-    show_predict: true
+    show_predict: false
     sync_transport: false
     print_delay: false
     x_axis_filter: true
@@ -103,7 +104,7 @@
     z_axis_filter: true
     # disable_filter: true
     # disable_fitting: false
-    show_aim_cross: true
+    show_aim_cross: false
     show_fps: false
 
   # Camera params.

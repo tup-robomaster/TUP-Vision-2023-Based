@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-04-05 02:15:02
+ * @LastEditTime: 2023-04-07 13:47:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -528,7 +528,7 @@ namespace armor_detector
                         auto spin_movement = new_armor_center - last_armor_center;
                         auto spin_x_dis = last_tracker->new_armor.armor3d_world[xyz_axis_[0]] - new_tracker->new_armor.armor3d_world[xyz_axis_[0]];
 
-                        spinning_map_.spin_counter_map[cnt.first].flag += (spin_x_dis > 0) ? (-25) : 25; 
+                        spinning_map_.spin_counter_map[cnt.first].flag += (spin_x_dis > 0) ? (-45) : 45; 
                         if (spinning_map_.spin_status_map[cnt.first].spin_state != UNKNOWN
                         && (new_armor_timestamp - spinning_map_.spin_status_map[cnt.first].switch_timestamp) / 1e6 > gyro_params_.switch_max_dt
                         && (last_armor_timestamp - spinning_map_.spin_status_map[cnt.first].switch_timestamp) / 1e6 > gyro_params_.switch_max_dt)
@@ -659,16 +659,16 @@ namespace armor_detector
                     }
                 }
 
-                if (abs(spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter) >= 25
+                if (abs(spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter) >= 45
                 || abs(spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter) >= 6
-                || (spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter >= 15
+                || (spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter >= 25
                 && spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter >= 3))
                 {
                     SpinHeading spin_status = UNKNOWN;
                     int count = spinning_map_.spin_counter_map[tracker.first].flag;
-                    if (count >= 25)
+                    if (count >= 45)
                         spin_status = COUNTER_CLOCKWISE;
-                    else if (count <= -25)
+                    else if (count <= -45)
                         spin_status = COUNTER_CLOCKWISE;
                     // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "flag:%d", count);
                     spinning_map_.spin_status_map[tracker.first].spin_state = spin_status;
