@@ -21,10 +21,12 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Autoaim.msg"
   "msg/Gimbal.msg"
   "msg/Sentry.msg"
-  "msg/CarHP.msg"
+  "msg/ObjHP.msg"
   "msg/CarPos.msg"
   "msg/GameInfo.msg"
   "msg/SpinInfo.msg"
+  "msg/Detection.msg"
+  "msg/DetectionArray.msg"
   # "srv/*.srv"
   # "action/*.action"
   DEPENDENCIES

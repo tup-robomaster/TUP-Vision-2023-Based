@@ -49,10 +49,18 @@ namespace serialport
     {
         int bytes;
         char *name = ttyname(serial_data_.fd);
-        if (name == NULL) RCLCPP_WARN(logger_, "tty is null...");
+        if (name == NULL)
+        {
+            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "tty is null...");
+            serial_data_.is_initialized = false;
+            return false;
+        } 
         int result = ioctl(serial_data_.fd, FIONREAD, &bytes);
         if (result == -1)
+        {
+            serial_data_.is_initialized = false;
             return false;
+        }
         if (bytes == 0)
         {
             return false;
@@ -65,6 +73,7 @@ namespace serialport
             && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3)
             && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
         {
+            // cout << 1 << endl;
             return true;
         }
 
@@ -78,7 +87,7 @@ namespace serialport
     void SerialPort::sendData(int bytes_num)
     {
         auto write_stauts = write(serial_data_.fd, Tdata, bytes_num);
-        cout << "Sending msg!!!" << endl;
+        RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "Sending msg...");
         return;
     }
 

@@ -22,25 +22,20 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rclpy REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(message_filters REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_sensor_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(cv_bridge REQUIRED)
-# find_package(fmt REQUIRED)
-find_package(glog REQUIRED)
 find_package(global_interface REQUIRED)
 find_package(global_user REQUIRED)
-#find_package(filter REQUIRED)
+find_package(filter REQUIRED)
 
 include_directories(include 
   ${OpenCV_INCLUDE_DIRS}
@@ -52,22 +47,15 @@ set(dependencies
   rclcpp_components
   OpenCV
   geometry_msgs
-  tf2_geometry_msgs
-  tf2_ros
   Ceres 
   Eigen3 
-  rclpy 
-  tf2 
-  tf2_sensor_msgs
   message_filters
   cv_bridge
   image_transport
   sensor_msgs
-  
   global_user
   global_interface
-  #filter
-  glog
+  filter
 )
   
 include_directories(include)
@@ -76,7 +64,6 @@ add_library(${PROJECT_NAME} SHARED
   # src/buff_processor/buff_processor.cpp
   # src/buff_processor_node.cpp
   test/src/predictor/predictor.cpp
-  src/predictor/particle_filter.cpp
   test/src/buff_processor/buff_processor.cpp
   test/src/buff_processor_node.cpp
 )
@@ -91,7 +78,6 @@ target_link_libraries(${PROJECT_NAME}
   yaml-cpp 
   ceres
   lapack
-  glog
 )
   
 rclcpp_components_register_nodes(${PROJECT_NAME}

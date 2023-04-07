@@ -24,24 +24,12 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(tf2_ros REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(rclpy REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(laser_geometry REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(map_msgs REQUIRED)
-find_package(pluginlib REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_sensor_msgs REQUIRED)
-find_package(visualization_msgs REQUIRED)
-find_package(angles REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(yaml-cpp REQUIRED)
-find_package(fmt REQUIRED)
-find_package(InferenceEngine REQUIRED)
 find_package(OpenCV 4 REQUIRED)
 find_package(Ceres REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -64,18 +52,11 @@ set(dependencies
   rclcpp_components
   OpenCV
   geometry_msgs
-  tf2_geometry_msgs
-  tf2_ros
   Ceres 
   Eigen3 
-  InferenceEngine 
-  rclpy 
-  tf2 
-  tf2_sensor_msgs
   message_filters
   image_transport
   cv_bridge
-  
   global_user
   global_interface
   filter

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-02-24 20:18:35
+ * @LastEditTime: 2023-03-20 10:06:49
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -36,11 +36,14 @@ namespace buff_detector
 
         // QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(5);
-        qos.best_effort();
+        qos.keep_last(1);
+        // qos.best_effort();
         qos.reliable();
         qos.durability();
         qos.durability_volatile();
+
+        rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
+        rmw_qos.depth = 1;
 
         // buff info pub.
         buff_info_pub_ = this->create_publisher<BuffMsg>("/buff_detector/buff_msg", qos);
@@ -58,13 +61,13 @@ namespace buff_detector
 
         this->declare_parameter<int>("camera_type", DaHeng);
         int camera_type = this->get_parameter("camera_type").as_int();
-        std::string transport = this->declare_parameter("subscribe_compressed", false) ? "compressed" : "raw";
+        std::string transport = "raw";
         
         image_size_ = image_info_.image_size_map[camera_type];
         // image sub.
         std::string camera_topic = image_info_.camera_topic_map[camera_type];
         img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
-            std::bind(&BuffDetectorNode::imageCallback, this, _1), transport));
+            std::bind(&BuffDetectorNode::imageCallback, this, _1), transport, rmw_qos));
 
         bool debug = false;
         this->declare_parameter<bool>("debug", true);
@@ -206,13 +209,20 @@ namespace buff_detector
         this->declare_parameter<double>("no_crop_thres", 2e-3);
 
         this->declare_parameter<std::string>("camera_name", "KE0200110075");
-        this->declare_parameter<std::string>("camera_param_path", "src/global_user/config/camera.yaml");
-        this->declare_parameter<std::string>("network_path", "src/vehicle_system/buff/model/buff.xml");
-        this->declare_parameter<std::string>("path_prefix", "src/vehicle_system/buff/dataset/");
-        this->get_parameter("camera_name", this->path_param_.camera_name);
-        this->get_parameter("camera_param_path", this->path_param_.camera_param_path);
-        this->get_parameter("network_path", this->path_param_.network_path);
-        this->get_parameter("path_prefix", this->path_param_.path_prefix);
+        this->declare_parameter<std::string>("camera_param_path", "/config/camera.yaml");
+        this->declare_parameter<std::string>("network_path", "/model/buff.xml");
+        this->declare_parameter<std::string>("path_prefix", "/recorder/buff_dataset/");
+        
+        string pkg_share_pth[3] = 
+        {
+            get_package_share_directory("global_user"), 
+            get_package_share_directory("buff_detector"), 
+            get_package_share_directory("camera_driver")
+        };
+        this->path_param_.camera_name = this->get_parameter("camera_name").as_string();
+        this->path_param_.camera_param_path = pkg_share_pth[0] + this->get_parameter("camera_param_path").as_string();
+        this->path_param_.network_path = pkg_share_pth[1] + this->get_parameter("network_path").as_string();
+        this->path_param_.path_prefix = pkg_share_pth[2] + this->get_parameter("path_prefix").as_string();
 
         this->declare_parameter<int>("debug_mode", 3);
         this->declare_parameter<bool>("assist_label", false);

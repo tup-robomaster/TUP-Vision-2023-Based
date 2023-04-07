@@ -2,7 +2,7 @@
 # Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-27 01:40:28
-LastEditTime: 2023-02-10 01:35:46
+LastEditTime: 2023-03-19 21:35:28
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/buff_bringup.launch.py
 '''
 import os
@@ -28,6 +28,7 @@ def generate_launch_description():
     
     camera_type = LaunchConfiguration('camera_type')
     use_serial = LaunchConfiguration('using_imu')
+    debug_pred = LaunchConfiguration("debug_pred")
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
@@ -39,6 +40,12 @@ def generate_launch_description():
         name='using_imu',
         default_value='False',
         description='debug without serial port.'
+    )
+    
+    declare_debug_pred = DeclareLaunchArgument(
+        name='debug_pred',
+        default_value='False',
+        description='debug armor prediction.'
     )
     
     with open(camera_param_file, 'r') as f:
@@ -58,6 +65,7 @@ def generate_launch_description():
     return LaunchDescription([
         declare_camera_type,
         declare_use_serial,
+        declare_debug_pred,
 
         Node(
             package='serialport',
@@ -66,14 +74,50 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             parameters=[{
-                'using_imu':LaunchConfiguration('using_imu'),
-                'debug_without_com': 'false'
+                'using_port': True,
+                'tracking_target': False,
+                'print_serial_info': False,
+                'print_referee_info': False
             }],
-            condition=IfCondition(PythonExpression([LaunchConfiguration('using_imu'), "== 'True'"]))
+            condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
+        ),
+        
+        ComposableNodeContainer(
+            name='serial_processor_container',
+            package='rclcpp_components',
+            executable='component_container',
+            namespace='',
+            output='screen',
+            condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'True'"])),
+            composable_node_descriptions=[
+                ComposableNode(
+                    package='serialport',
+                    plugin='serialport::SerialPortNode',
+                    name='serialport',
+                    parameters=[{
+                        'using_port': True,
+                        'tracking_target': True,
+                        'print_serial_info': False,
+                        'print_referee_info': False            
+                    }],
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                ),
+                ComposableNode(
+                    package='buff_processor',
+                    plugin='buff_processor::BuffDetectorNode',
+                    name='buff_processor',
+                    parameters=[buff_processor_params], 
+                    extra_arguments=[{
+                        'use_intra_process_comms':True
+                    }]
+                ),
+            ]
         ),
 
         ComposableNodeContainer(
-            name='buff_container',
+            name='buff_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -112,7 +156,7 @@ def generate_launch_description():
         ),
 
         ComposableNodeContainer(
-            name='armor_detector_container',
+            name='buff_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -136,12 +180,22 @@ def generate_launch_description():
                     extra_arguments=[{
                         'use_intra_process_comms':True
                     }]
-                )
+                ),
+                # ComposableNode(
+                #     package='buff_processor',
+                #     plugin='buff_processor::BuffProcessorNode',
+                #     name='buff_processor',
+                #     namespace='',
+                #     parameters=[buff_processor_params],
+                #     extra_arguments=[{
+                #         'use_intra_process_comms':True
+                #     }]
+                # )
             ],
         ),
 
         ComposableNodeContainer(
-            name='armor_detector_container',
+            name='buff_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -166,11 +220,21 @@ def generate_launch_description():
                         'use_intra_process_comms':True
                     }]
                 ),
+                # ComposableNode(
+                #     package='buff_processor',
+                #     plugin='buff_processor::BuffProcessorNode',
+                #     name='buff_processor',
+                #     namespace='',
+                #     parameters=[buff_processor_params],
+                #     extra_arguments=[{
+                #         'use_intra_process_comms':True
+                #     }]
+                # )
             ],
         ),
 
         ComposableNodeContainer(
-            name='armor_detector_container',
+            name='buff_detector_container',
             namespace='',
             output='screen',
             package='rclcpp_components',
@@ -195,6 +259,16 @@ def generate_launch_description():
                         'use_intra_process_comms':True
                     }]
                 ),
+                # ComposableNode(
+                #     package='buff_processor',
+                #     plugin='buff_processor::BuffProcessorNode',
+                #     name='buff_processor',
+                #     namespace='',
+                #     parameters=[buff_processor_params],
+                #     extra_arguments=[{
+                #         'use_intra_process_comms':True
+                #     }]
+                # )
             ],
         ),
 
@@ -203,6 +277,7 @@ def generate_launch_description():
             executable='buff_processor_node',
             output='screen',
             emulate_tty=True,
-            parameters=[buff_processor_params]
+            parameters=[buff_processor_params],
+            condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
         )
     ])

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-02-09 16:49:33
+ * @LastEditTime: 2023-03-10 13:45:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -138,7 +138,7 @@ namespace buff_detector
             cv::Point2f center_r;
             for(int ii = 0; ii < 5; ii++)
             {
-                if(ii == 2)
+                if(ii == 0)
                     center_r = fan.apex2d[ii];
                 else
                     points_rect.push_back(fan.apex2d[ii]);
@@ -197,6 +197,7 @@ namespace buff_detector
             fans_.push_back(fan);
         }
         std::cout << std::endl;
+        
         // 维护Tracker队列，删除过旧的Tracker
         if (trackers_.size() != 0)
         {

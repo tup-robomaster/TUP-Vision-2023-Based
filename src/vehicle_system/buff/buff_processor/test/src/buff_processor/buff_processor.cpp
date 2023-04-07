@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:47:32
- * @LastEditTime: 2023-02-09 23:59:02
+ * @LastEditTime: 2023-03-20 16:21:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor/buff_processor.cpp
  */
 #include "../../include/buff_processor/buff_processor.hpp"
@@ -66,21 +66,21 @@ namespace buff_processor
         // mutex_.lock();
         int local_mode = buff_predictor_.mode;
         buff_predictor_.last_mode = local_mode;
-        if(buff_msg.mode == 3)
+        if (buff_msg.mode == 3)
             buff_predictor_.mode = 0;
-        else if(buff_msg.mode == 4)
+        else if (buff_msg.mode == 4)
             buff_predictor_.mode = 1;
         // mutex_.unlock();
         
-        if(buff_msg.mode == 3 || buff_msg.mode == 4)
+        if (buff_msg.mode == 3 || buff_msg.mode == 4)
         {   // 进入能量机关预测模式
             double theta_offset = 0.0;
             Eigen::Vector3d r_center = {buff_msg.r_center.x, buff_msg.r_center.y, buff_msg.r_center.z};
             Eigen::Vector3d armor_center = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
-            if(!buff_predictor_.predict(buff_msg, armor_center.norm(), theta_offset))
+            if (!buff_predictor_.predict(buff_msg, armor_center.norm(), theta_offset))
             {
                 Eigen::Vector3d armor3d_world = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
-                if(debug_param_.using_imu)
+                if (debug_param_.using_imu)
                 {
                     Eigen::Quaterniond imu_quat = {buff_msg.quat_imu.w, buff_msg.quat_imu.x, buff_msg.quat_imu.y, buff_msg.quat_imu.z};
                     rmat_imu_ = imu_quat.toRotationMatrix();
@@ -110,13 +110,13 @@ namespace buff_processor
                 RCLCPP_INFO(logger_, "Angle offset: %lf", theta_offset);
                 
                 // 计算击打点世界坐标
-                Eigen::Vector3d hit_point_world = {sin(theta_offset) * this->predictor_param_.fan_length, (cos(theta_offset) - 1) * this->predictor_param_.fan_length, 0};
+                Eigen::Vector3d hit_point_world = {-sin(theta_offset) * this->predictor_param_.fan_length, (cos(theta_offset) - 1) * this->predictor_param_.fan_length, 0};
                 // RCLCPP_INFO(logger_, "hit_point_world: %lf %lf %lf", hit_point_world[0], hit_point_world[1], hit_point_world[2]);
 
                 Eigen::Vector3d armor3d_world = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
                 Eigen::Quaterniond quat = {buff_msg.quat_cam.w, buff_msg.quat_cam.x, buff_msg.quat_cam.y, buff_msg.quat_cam.z};
                 Eigen::Matrix3d rmat = quat.toRotationMatrix();
-                if(debug_param_.using_imu)
+                if (debug_param_.using_imu)
                 {
                     Eigen::Quaterniond imu_quat = {buff_msg.quat_imu.w, buff_msg.quat_imu.x, buff_msg.quat_imu.y, buff_msg.quat_imu.z};
                     rmat_imu_ = imu_quat.toRotationMatrix();
@@ -126,6 +126,7 @@ namespace buff_processor
 
                 hit_point_world = rmat * hit_point_world + armor3d_world;
                 // RCLCPP_INFO(logger_, "hit_point_world: %lf %lf %lf", (rmat * hit_point_world)[0], (rmat * hit_point_world)[1], (rmat * hit_point_world)[2]);
+                // RCLCPP_INFO(logger_, "armor3d_world: %lf %lf %lf", armor3d_world[0], armor3d_world[1], armor3d_world[2]);
                 // RCLCPP_INFO(logger_, "hit_point: %lf %lf %lf", hit_point_world[0], hit_point_world[1], hit_point_world[2]);
 
                 // 转换到相机系
