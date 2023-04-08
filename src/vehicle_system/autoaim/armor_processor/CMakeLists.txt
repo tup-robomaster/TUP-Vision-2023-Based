@@ -27,43 +27,32 @@ find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(message_filters REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(tf2_ros REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(tf2 REQUIRED)
 find_package(angles REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
-
-# find_package(lapack REQUIRED)
-
+find_package(rclcpp_components REQUIRED)
 find_package(global_interface REQUIRED)
 find_package(global_user REQUIRED)
-
+find_package(yaml-cpp REQUIRED)
+# find_package(lapack REQUIRED)
 # find_package(glog REQUIRED)
 # find_package(fmt REQUIRED)
-find_package(yaml-cpp REQUIRED)
 
 set(dependencies 
   rclcpp
   rclpy 
   message_filters
-  tf2_geometry_msgs
-  tf2_ros
-  tf2
   angles
-  rclcpp_lifecycle
   Eigen3
   Ceres
   image_transport
   sensor_msgs
   cv_bridge
   yaml-cpp
-  # lapack 
-
+  rclcpp_components
   global_interface
   global_user
 )
@@ -88,10 +77,10 @@ ament_target_dependencies(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-  ceres.so
-  glog.so 
-  yaml-cpp.so
-  # lapack.so 
+  ceres
+  glog 
+  yaml-cpp
+  # lapack 
 )
 
 add_executable(${PROJECT_NAME}_node
@@ -101,10 +90,10 @@ add_executable(${PROJECT_NAME}_node
 # target_link_libraries(${PROJECT_NAME}
 #   ${dependencies}
 #   ceres.a
-#   fmt.so 
-#   ceres.so
-#   yaml-cpp.so
-#   lapack.so 
+#   fmt 
+#   ceres
+#   yaml-cpp
+#   lapack 
 # )
 
 # ament_target_dependencies(${PROJECT_NAME}_node

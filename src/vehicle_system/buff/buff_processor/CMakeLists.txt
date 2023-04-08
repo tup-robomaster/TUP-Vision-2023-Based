@@ -28,8 +28,6 @@ find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(message_filters REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_sensor_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
@@ -52,18 +50,13 @@ set(dependencies
   rclcpp_components
   OpenCV
   geometry_msgs
-  tf2_geometry_msgs
-  tf2_ros
   Ceres 
   Eigen3 
   rclpy 
-  tf2 
-  tf2_sensor_msgs
   message_filters
   cv_bridge
   image_transport
   sensor_msgs
-  
   global_user
   global_interface
   filter
@@ -86,9 +79,9 @@ ament_target_dependencies(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${OpenCV_LIBRARIES}
   ${Eigen3_LIBRARIES}
-  yaml-cpp.so 
-  ceres.so
-  lapack.so
+  yaml-cpp 
+  ceres
+  lapack
 )
   
 rclcpp_components_register_nodes(${PROJECT_NAME}

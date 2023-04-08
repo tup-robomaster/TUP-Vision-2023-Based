@@ -16,8 +16,6 @@
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>message_filters</depend>
-  <depend>tf2</depend>
-  <depend>tf2_sensor_msgs</depend>
   <depend>OpenCV</depend>
   <depend>Eigen3</depend>
   <depend>Ceres</depend>

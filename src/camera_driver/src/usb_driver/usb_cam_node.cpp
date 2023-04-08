@@ -55,6 +55,7 @@ namespace camera_driver
         // sleep(10);
         if(using_video_)
         {
+            cout << video_path_ << endl;
             cap.open(video_path_);
             if(!cap.isOpened())
             {

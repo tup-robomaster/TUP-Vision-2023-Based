@@ -28,8 +28,6 @@ find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -54,17 +52,12 @@ set(dependencies
   OpenCV
   OpenVINO
   geometry_msgs
-  tf2_geometry_msgs
-  tf2_ros
   Ceres 
   Eigen3 
   rclpy 
-  tf2 
-  tf2_sensor_msgs
   message_filters
   image_transport
   cv_bridge
-  
   global_user
   global_interface
   filter
@@ -108,10 +101,10 @@ target_link_libraries(${PROJECT_NAME}_node
   openvino::runtime 
   # ${Eigen3_LIBRARIES}
   
-  yaml-cpp.so 
-  # fmt.so
-  # ceres.so
-  # lapack.so 
+  yaml-cpp 
+  # fmt
+  # ceres
+  # lapack 
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME} 

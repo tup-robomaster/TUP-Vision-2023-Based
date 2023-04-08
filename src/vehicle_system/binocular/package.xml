@@ -13,19 +13,13 @@
   <depend>rclcpp_components</depend>
   <depend>OpenCV</depend>
   <depend>geometry_msgs</depend>
-  <depend>tf2_geometry_msgs</depend>
-  <depend>tf2_ros</depend>
   <depend>std_msgs</depend>
   <depend>rclpy</depend>
   <depend>rclcpp_lifecycle</depend>
-  <depend>laser_geometry</depend>
   <depend>message_filters</depend>
   <depend>sensor_msgs</depend>
-  <depend>tf2</depend>
-  <depend>tf2_sensor_msgs</depend>
   <depend>visualization_msgs</depend>
   <depend>angles</depend>
-  <depend>robot_state_publisher</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

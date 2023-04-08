@@ -26,6 +26,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
+find_package(rclcpp_components REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(image_transport REQUIRED)
@@ -53,6 +54,7 @@ include_directories(
 set(dependencies 
   rclcpp
   rclpy
+  rclcpp_components
   OpenCV 
   message_filters 
   image_transport
@@ -121,8 +123,8 @@ target_link_libraries(armor_detector_node
   openvino::runtime 
   ${Eigen3_LIBRARIES}
 
-  yaml-cpp.so 
-  # fmt.so
+  yaml-cpp 
+  # fmt
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME}

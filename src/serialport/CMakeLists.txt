@@ -20,16 +20,11 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(tf2_ros REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
-find_package(laser_geometry REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(angles REQUIRED)
 find_package(robot_state_publisher REQUIRED)
@@ -65,15 +60,8 @@ set(dependencies
   OpenCV
   global_interface
   global_user
-  tf2_geometry_msgs
-  tf2_ros
-
-  rclcpp_lifecycle 
-  laser_geometry 
   message_filters 
   sensor_msgs 
-  tf2 
-  tf2_sensor_msgs 
   visualization_msgs 
   angles 
   robot_state_publisher 
@@ -84,7 +72,7 @@ ament_target_dependencies(${PROJECT_NAME}
   ${dependencies}
 )
 target_link_libraries(${PROJECT_NAME}
-  yaml-cpp.so
+  yaml-cpp
 )
 
 include_directories(include)
@@ -99,7 +87,7 @@ ament_target_dependencies(${PROJECT_NAME}_node
   ${dependencies}
 )
 target_link_libraries(${PROJECT_NAME}_node 
-  yaml-cpp.so
+  yaml-cpp
 )
 
 # register component nodes

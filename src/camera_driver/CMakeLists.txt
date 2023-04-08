@@ -14,19 +14,13 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(tf2_ros REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
-find_package(laser_geometry REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(angles REQUIRED)
-find_package(robot_state_publisher REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(camera_info_manager REQUIRED)
@@ -34,7 +28,6 @@ find_package(camera_calibration_parsers REQUIRED)
 find_package(fmt REQUIRED)
 find_package(glog REQUIRED)
 find_package(yaml-cpp REQUIRED)
-
 find_package(global_user REQUIRED)
 find_package(global_interface REQUIRED)
 
@@ -47,7 +40,7 @@ include_directories("dependencies/daheng_sdk/include")
     # set(MVS_LIB_DIR "dependencies/hik_sdk/MVS/lib/64")
     # link_directories(${MVS_LIB_DIR})
 #   endif()
-  # set(MVS_LIB_SO "${PROJECT_SOURCE_DIR}/${MVS_LIB_DIR}/libMvCameraControl.so")
+  # set(MVS_LIB_SO "${PROJECT_SOURCE_DIR}/${MVS_LIB_DIR}/libMvCameraControl")
 # endif()
 # elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
 #   target_link_directories(${PROJECT_NAME} PUBLIC hikSDK/MVS/lib/64)
@@ -63,7 +56,7 @@ include_directories(include
 
 link_directories(/opt/MVS/lib/64/)
 
-# set(GXI_LIB_SO usr/lib/libgxiapi.so)
+# set(GXI_LIB_SO usr/lib/libgxiapi)
 
 # add_library(${PROJECT_NAME}
   # include/hik_camera.h
@@ -78,14 +71,11 @@ set(dependencies
   camera_info_manager
   image_transport
   camera_calibration_parsers
-  tf2
   OpenCV
   Eigen3
-
   glog
   fmt 
   yaml-cpp
-
   global_user
   global_interface 
 )
@@ -94,8 +84,8 @@ include_directories(include)
 add_library(${PROJECT_NAME} SHARED
   src/usb_driver/usb_cam.cpp
   src/usb_driver/usb_cam_node.cpp
-  src/hik_driver/hik_camera.cpp
-  src/hik_driver/hik_cam_node.cpp
+  # src/hik_driver/hik_camera.cpp
+  # src/hik_driver/hik_cam_node.cpp
   src/daheng_driver/daheng_camera.cpp
   src/daheng_driver/daheng_cam_node.cpp
 )
@@ -120,12 +110,12 @@ ament_target_dependencies(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-  MvCameraControl
-  MVRender
-  FormatConversion
-  MediaProcess
+  # MvCameraControl
+  # MVRender
+  # FormatConversion
+  # MediaProcess
   gxiapi
-  yaml-cpp.so
+  yaml-cpp
 )
 
 # create ament index resource which references the libraries in the binary dir
@@ -167,11 +157,11 @@ add_executable(usb_cam_driver_node
   src/usb_driver/usb_cam_node_main.cpp
 )
 
-add_executable(hik_cam_driver_node
-  src/hik_driver/hik_camera.cpp
-  src/hik_driver/hik_cam_node.cpp
-  src/hik_driver/hik_cam_node_main.cpp
-)
+# add_executable(hik_cam_driver_node
+#   src/hik_driver/hik_camera.cpp
+#   src/hik_driver/hik_cam_node.cpp
+#   src/hik_driver/hik_cam_node_main.cpp
+# )
 
 add_executable(daheng_cam_driver_node
   src/daheng_driver/daheng_camera.cpp
@@ -192,9 +182,9 @@ ament_target_dependencies(usb_cam_driver_node
   ${dependencies}
 )
 
-ament_target_dependencies(hik_cam_driver_node
-  ${dependencies}  
-)
+# ament_target_dependencies(hik_cam_driver_node
+#   ${dependencies}  
+# )
 
 ament_target_dependencies(daheng_cam_driver_node
   ${dependencies}  
@@ -202,18 +192,21 @@ ament_target_dependencies(daheng_cam_driver_node
 
 target_link_libraries(usb_cam_driver_node
   ${PROJECT_NAME}
-  yaml-cpp.so
+  yaml-cpp
 )
   
-target_link_libraries(hik_cam_driver_node 
-  ${PROJECT_NAME}
-  yaml-cpp.so
-)
+# target_link_libraries(hik_cam_driver_node 
+#   ${PROJECT_NAME}
+#   yaml-cpp
+#   # MvCameraControl
+#   # MVRender
+#   # FormatConversion
+# )
   
 target_link_libraries(daheng_cam_driver_node
   gxiapi
-  # fmt.so
-  yaml-cpp.so
+  # fmt
+  yaml-cpp
 )
     
 rclcpp_components_register_nodes(${PROJECT_NAME} 
@@ -224,13 +217,13 @@ set(node_plugins
   "${node_plugins}camera_driver::usb_cam_node;&<TARGET_FILE:usb_cam_node\n"
 )
   
-rclcpp_components_register_nodes(${PROJECT_NAME} 
-  PLUGIN "camera_driver::HikCamNode"
-  EXECUTABLE hik_cam_driver_node
-)
-set(node_plugins 
-  "${node_plugins}camera_driver::hik_cam_node;$<TARGET_FILE:hik_cam_node>\n"
-)
+# rclcpp_components_register_nodes(${PROJECT_NAME} 
+#   PLUGIN "camera_driver::HikCamNode"
+#   EXECUTABLE hik_cam_driver_node
+# )
+# set(node_plugins 
+#   "${node_plugins}camera_driver::hik_cam_node;$<TARGET_FILE:hik_cam_node>\n"
+# )
   
 rclcpp_components_register_nodes(${PROJECT_NAME}
   PLUGIN "camera_driver::DahengCamNode"
@@ -268,7 +261,7 @@ install(TARGETS
 
 install(TARGETS 
   usb_cam_driver_node 
-  hik_cam_driver_node
+  # hik_cam_driver_node
   daheng_cam_driver_node
   DESTINATION lib/${PROJECT_NAME}
 )
