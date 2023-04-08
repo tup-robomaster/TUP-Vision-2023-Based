@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-03-02 18:08:21
+ * @LastEditTime: 2023-03-02 18:14:41
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -62,7 +62,7 @@ namespace serialport
         //创建发送数据定时器
         // timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
         watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
-        send_timer_ = rclcpp::create_timer(this, this->get_clock(), 50ms, std::bind(&SerialPortNode::sendingData, this));
+        send_timer_ = rclcpp::create_timer(this, this->get_clock(), 30ms, std::bind(&SerialPortNode::sendingData, this));
         
         if (using_port_)
         {   // Use serial port.
