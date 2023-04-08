@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-04-06 21:06:29
+ * @LastEditTime: 2023-04-07 15:35:12
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
@@ -11,6 +11,7 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include "../param_struct/param_struct.hpp"
+#include "../param_struct/curve_fitting.hpp"
 #include "../inference/inference_api2.hpp"
 #include "../armor_tracker/armor_tracker.hpp"
 #include "../spinning_detector/spinning_detector.hpp"

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-07 14:14:55
+ * @LastEditTime: 2023-04-07 15:56:06
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -462,6 +462,8 @@ namespace armor_detector
         target_info.spinning_switched = false;
         opposite_armors_.clear();
         circle_center_vec_.clear();
+        deque<Armor> old_tracker_deque;
+        
         if (spin_status != UNKNOWN)
         {
             //------------------------------估计目标旋转周期-----------------------------------
@@ -487,6 +489,7 @@ namespace armor_detector
 
                         if ((int)(*iter).second.history_info_.size() > 5)
                         {
+                            old_tracker_deque = (*iter).second.history_info_;
                             cv::Point3d circle_center_sum = {0, 0, 0};
                             cv::Point3d circle_center_ave = {0, 0, 0};
                             auto relative_rmat = (*iter).second.history_info_.front().rmat.transpose() * (*iter).second.history_info_.back().rmat;
@@ -516,12 +519,12 @@ namespace armor_detector
                             //     angle * (180 / CV_PI)
                             // );
                             // circle_center_ave = circle_center_sum / ((int)(*iter).second.history_info_.size() - 1);
-                            // cout << "queue_size:" << (*iter).second.history_info_.size() << endl;
+                            cout << "queue_size:" << (*iter).second.history_info_.size() << endl;
                             // circle_center_ave = circle_center_sum / (end - start);
                             // cout << "circle_center_ave:{" << circle_center_ave.x << " " << circle_center_ave.y << " " << circle_center_ave.z << "}" << endl; 
                             
                             circle_center_ave = circle_center_sum;
-                            circle_center_vec_.emplace_back(Eigen::Vector3d{circle_center_ave.x, circle_center_ave.y, circle_center_ave.z});
+                            // circle_center_vec_.emplace_back(Eigen::Vector3d{circle_center_ave.x, circle_center_ave.y, circle_center_ave.z});
 
                             Armor cur_armor = (*iter).second.new_armor;
                             Eigen::Vector3d circle_center_vec = {circle_center_ave.x, circle_center_ave.y, circle_center_ave.z};
@@ -583,11 +586,11 @@ namespace armor_detector
                             // armor.roi = Rect(x, y, bbox.width * detector_params_.armor_roi_expand_ratio_width,
                             //     bbox.height * detector_params_.armor_roi_expand_ratio_height);
                             
-                            cout << "circle_center_ave:" << circle_center_ave.x << " " << circle_center_ave.y << " " << circle_center_ave.z << endl;
-                            cout << "circle_center_vec_cam:" << circle_center_vec_cam[0] << " " << circle_center_vec_cam[1]<< " " << circle_center_vec_cam[2] << endl;
-                            cout << "armor3d_world:" << cur_armor.armor3d_world[0] << " " << cur_armor.armor3d_world[1] << " " << cur_armor.armor3d_world[2] << endl;
-                            cout << "armor_center2d:{" << opposite_armor_center2d.x << ", " << opposite_armor_center2d.y << "}" << endl;
-                            cout << "armor.center2d:" << armor.center2d << endl;
+                            // cout << "circle_center_ave:" << circle_center_ave.x << " " << circle_center_ave.y << " " << circle_center_ave.z << endl;
+                            // cout << "circle_center_vec_cam:" << circle_center_vec_cam[0] << " " << circle_center_vec_cam[1]<< " " << circle_center_vec_cam[2] << endl;
+                            // cout << "armor3d_world:" << cur_armor.armor3d_world[0] << " " << cur_armor.armor3d_world[1] << " " << cur_armor.armor3d_world[2] << endl;
+                            // cout << "armor_center2d:{" << opposite_armor_center2d.x << ", " << opposite_armor_center2d.y << "}" << endl;
+                            // cout << "armor.center2d:" << armor.center2d << endl;
                             // if (debug_params_.show_spinning_img)
                             // {
                             //     char ch[10];
@@ -841,8 +844,32 @@ namespace armor_detector
                 double y_diff = (y_pos < y_neg) ? x_pos : x_neg;
                 double z_diff = (point3d_now[2] + point3d_last[2]) / 2.0;
 
+                double circle2d[2] = {x_diff, y_diff};
+                for (int ii = 0; ii < old_tracker_deque.size() - 1; ii++)
+                {
+                    auto rrmat = old_tracker_deque.front().rmat.transpose() * old_tracker_deque[ii + 1].rmat;
+                    auto rangle_axisd = Eigen::AngleAxisd(relative_rmat);
+                    auto rangle = relative_angle_axisd.angle(); 
+
+                    ceres::Problem problem;
+                    ceres::Solver::Options options;
+                    ceres::Solver::Summary summary;
+
+                    options.max_num_iterations = 20;
+                    options.linear_solver_type = ceres::DENSE_QR;
+                    options.minimizer_progress_to_stdout = false;
+
+                    problem.AddResidualBlock(
+                        new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 1, 1>
+                        (
+                            new CurveFittingCost(old_tracker_deque.front().armor3d_world, old_tracker_deque[ii+1].armor3d_world, rangle)
+                        ),
+                        new ceres::CauchyLoss(0.5),
+                        circle2d
+                    );
+                }
                 // cout << "circle_center_ave:{" << x_diff << " " << y_diff << " " << z_diff << "}" << endl; 
-                // circle_center_vec_.emplace_back(Eigen::Vector3d{x_diff, y_diff, z_diff});
+                circle_center_vec_.emplace_back(Eigen::Vector3d{circle2d[0], circle2d[1], z_diff});
             }
             else
             {
@@ -886,9 +913,35 @@ namespace armor_detector
 
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
-                // final_armors.emplace_back((*iter).second.new_armor);
+                final_armors.emplace_back((*iter).second.new_armor);
                 final_trackers.emplace_back(&(*iter).second);
             }
+
+            if (final_armors.size() == 2)
+            {   
+                Armor back_armor = final_armors[0];
+                Armor front_armor = final_armors[1];
+                auto relative_rmat = back_armor.rmat.transpose() * front_armor.rmat;
+                auto relative_angle_axisd = Eigen::AngleAxisd(relative_rmat);
+                auto relative_angle = relative_angle_axisd.angle(); 
+                // relative_angle_sum += relative_angle;  
+                // cout << "rAngle:" << relative_angle << endl;
+
+                Eigen::Vector3d point3d_last = back_armor.armor3d_world;
+                Eigen::Vector3d point3d_now = front_armor.armor3d_world;
+                double x_pos = (point3d_now[1] + point3d_last[1]) / 2.0 - ((point3d_now[0] - point3d_last[0]) / (2 * tan(relative_angle)));
+                double x_neg = (point3d_now[1] + point3d_last[1]) / 2.0 + ((point3d_now[0] - point3d_last[0]) / (2 * tan(relative_angle)));
+                double y_pos = (point3d_now[0] + point3d_last[0]) / 2.0 + ((point3d_now[1] - point3d_last[1]) / (2 * tan(relative_angle)));
+                double y_neg = (point3d_now[0] + point3d_last[0]) / 2.0 - ((point3d_now[1] - point3d_last[1]) / (2 * tan(relative_angle)));
+                
+                double x_diff = (y_pos < y_neg) ? y_pos : y_neg;
+                double y_diff = (y_pos < y_neg) ? x_pos : x_neg;
+                double z_diff = (point3d_now[2] + point3d_last[2]) / 2.0;
+
+                // cout << "circle_center_ave:{" << x_diff << " " << y_diff << " " << z_diff << "}" << endl; 
+                circle_center_vec_.emplace_back(Eigen::Vector3d{x_diff, y_diff, z_diff});
+            }
+
             //进行目标选择
             auto tracker = chooseTargetTracker(src, final_trackers);
             tracker->last_selected_timestamp = now_;
@@ -959,16 +1012,16 @@ namespace armor_detector
         is_last_target_exists_ = true;
         last_armors_ = new_armors_;
 
-        Eigen::Vector3d euler = rotationMatrixToEulerAngles(target.rmat);
-        RCLCPP_WARN_THROTTLE(
-            logger_, 
-            steady_clock_, 
-            10, 
-            "rAngle:{%.2f %.2f %.2f}",
-            euler[0] * (180 / CV_PI),
-            euler[1] * (180 / CV_PI),
-            euler[2] * (180 / CV_PI)
-        );
+        // Eigen::Vector3d euler = rotationMatrixToEulerAngles(target.rmat);
+        // RCLCPP_WARN_THROTTLE(
+        //     logger_, 
+        //     steady_clock_, 
+        //     10, 
+        //     "rAngle:{%.2f %.2f %.2f}",
+        //     euler[0] * (180 / CV_PI),
+        //     euler[1] * (180 / CV_PI),
+        //     euler[2] * (180 / CV_PI)
+        // );
 
         if(debug_params_.show_aim_cross)
         {
@@ -990,7 +1043,7 @@ namespace armor_detector
             line(src.img, cv::Point2f(armor_center.x - 25, armor_center.y), cv::Point2f(armor_center.x + 25, armor_center.y), {0, 0, 255}, 1);
             line(src.img, cv::Point2f(armor_center.x, armor_center.y - 30), cv::Point2f(armor_center.x, armor_center.y + 30), {0, 0, 255}, 1);
 
-            if (debug_params_.show_spinning_img && opposite_armors_.size() != 0)
+            if (debug_params_.show_spinning_img && circle_center_vec_.size() != 0)
             {
                 // vector<double> circle_center_norm_diff;
                 // Eigen::Vector3d circle_center_sum = {0.0, 0.0, 0.0};
@@ -1029,30 +1082,30 @@ namespace armor_detector
                 //     }
                 // }
 
-                cv::Point2d circle_center2d_sum = {0, 0};
-                cv::Point2d circle_center2d_ave = {0, 0};
-                for (auto& armor : opposite_armors_)
-                {
-                    cout << 1 << endl;
-                    circle_center2d_sum += armor.center2d;
-                    char ch[10];
-                    sprintf(ch, "%.3f", armor.conf);
-                    std::string conf_str = ch;
-                    putText(src.img, conf_str, armor.apex2d[3], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
+                // cv::Point2d circle_center2d_sum = {0, 0};
+                // cv::Point2d circle_center2d_ave = {0, 0};
+                // for (auto& armor : opposite_armors_)
+                // {
+                //     cout << 1 << endl;
+                //     circle_center2d_sum += armor.center2d;
+                //     char ch[10];
+                //     sprintf(ch, "%.3f", armor.conf);
+                //     std::string conf_str = ch;
+                //     putText(src.img, conf_str, armor.apex2d[3], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
 
-                    std::string id_str = to_string(armor.id);
-                    if (armor.color == 0)
-                        putText(src.img, "B" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 0}, 2);
-                    if (armor.color == 1)
-                        putText(src.img, "R" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 0, 255}, 2);
-                    if (armor.color == 2)
-                        putText(src.img, "N" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 255, 255}, 2);
-                    if (armor.color == 3)
-                        putText(src.img, "P" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 255}, 2);
-                    for(int i = 0; i < 4; i++)
-                        line(src.img, armor.apex2d[i % 4], armor.apex2d[(i + 1) % 4], {0,255,0}, 1);
-                    rectangle(src.img, armor.roi, {255, 0, 255}, 1);
-                }
+                //     std::string id_str = to_string(armor.id);
+                //     if (armor.color == 0)
+                //         putText(src.img, "B" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 0}, 2);
+                //     if (armor.color == 1)
+                //         putText(src.img, "R" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 0, 255}, 2);
+                //     if (armor.color == 2)
+                //         putText(src.img, "N" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 255, 255}, 2);
+                //     if (armor.color == 3)
+                //         putText(src.img, "P" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 255}, 2);
+                //     for(int i = 0; i < 4; i++)
+                //         line(src.img, armor.apex2d[i % 4], armor.apex2d[(i + 1) % 4], {0,255,0}, 1);
+                //     rectangle(src.img, armor.roi, {255, 0, 255}, 1);
+                // }
 
                 // Eigen::Vector3d temp_center;
                 // cv::Point2d temp_center2d;
@@ -1130,23 +1183,23 @@ namespace armor_detector
         // cout << "armor_size:" << (int)new_armors_.size() << endl;
         for (auto armor : new_armors_)
         {
-            // char ch[10];
-            // sprintf(ch, "%.3f", armor.conf);
-            // std::string conf_str = ch;
-            // putText(src.img, conf_str, armor.apex2d[3], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
+            char ch[10];
+            sprintf(ch, "%.3f", armor.conf);
+            std::string conf_str = ch;
+            putText(src.img, conf_str, armor.apex2d[3], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
 
-            // std::string id_str = to_string(armor.id);
-            // if (armor.color == 0)
-            //     putText(src.img, "B" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 0}, 2);
-            // if (armor.color == 1)
-            //     putText(src.img, "R" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 0, 255}, 2);
-            // if (armor.color == 2)
-            //     putText(src.img, "N" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 255, 255}, 2);
-            // if (armor.color == 3)
-            //     putText(src.img, "P" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 255}, 2);
-            // for(int i = 0; i < 4; i++)
-            //     line(src.img, armor.apex2d[i % 4], armor.apex2d[(i + 1) % 4], {0,255,0}, 1);
-            // rectangle(src.img, armor.roi, {255, 0, 255}, 1);
+            std::string id_str = to_string(armor.id);
+            if (armor.color == 0)
+                putText(src.img, "B" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 0}, 2);
+            if (armor.color == 1)
+                putText(src.img, "R" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 0, 255}, 2);
+            if (armor.color == 2)
+                putText(src.img, "N" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 255, 255}, 2);
+            if (armor.color == 3)
+                putText(src.img, "P" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 255}, 2);
+            for(int i = 0; i < 4; i++)
+                line(src.img, armor.apex2d[i % 4], armor.apex2d[(i + 1) % 4], {0,255,0}, 1);
+            rectangle(src.img, armor.roi, {255, 0, 255}, 1);
 
             // auto armor_center = coordsolver_.reproject(armor.armor3d_cam);
             // circle(src.img, armor.center2d, 8, {255, 255, 0}, -1);
