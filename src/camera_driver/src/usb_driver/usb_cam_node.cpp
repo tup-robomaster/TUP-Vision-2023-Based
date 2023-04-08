@@ -52,6 +52,9 @@ namespace camera_driver
         this->declare_parameter<std::string>("video_path", " ");
         video_path_ = this->get_parameter("video_path").as_string();
         
+        cap.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_width);
+        cap.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_height);
+
         // sleep(10);
         if(using_video_)
         {
@@ -71,8 +74,6 @@ namespace camera_driver
             }
         }
 
-        cap.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_width);
-        cap.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_height);
 
         last_frame_ = this->get_clock()->now();
 

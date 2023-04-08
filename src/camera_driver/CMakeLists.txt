@@ -54,7 +54,7 @@ include_directories(include
   ${EIGEN3_INCLUDE_DIRS}
 )
 
-link_directories(/opt/MVS/lib/64/)
+link_directories(/opt/MvCamCtrlSDK/lib/64/)
 
 # set(GXI_LIB_SO usr/lib/libgxiapi)
 
@@ -84,8 +84,8 @@ include_directories(include)
 add_library(${PROJECT_NAME} SHARED
   src/usb_driver/usb_cam.cpp
   src/usb_driver/usb_cam_node.cpp
-  # src/hik_driver/hik_camera.cpp
-  # src/hik_driver/hik_cam_node.cpp
+  src/hik_driver/hik_camera.cpp
+  src/hik_driver/hik_cam_node.cpp
   src/daheng_driver/daheng_camera.cpp
   src/daheng_driver/daheng_cam_node.cpp
 )
@@ -110,10 +110,10 @@ ament_target_dependencies(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-  # MvCameraControl
-  # MVRender
-  # FormatConversion
-  # MediaProcess
+  MvCameraControl
+  MVRender
+  FormatConversion
+  MediaProcess
   gxiapi
   yaml-cpp
 )
@@ -157,11 +157,11 @@ add_executable(usb_cam_driver_node
   src/usb_driver/usb_cam_node_main.cpp
 )
 
-# add_executable(hik_cam_driver_node
-#   src/hik_driver/hik_camera.cpp
-#   src/hik_driver/hik_cam_node.cpp
-#   src/hik_driver/hik_cam_node_main.cpp
-# )
+add_executable(hik_cam_driver_node
+  src/hik_driver/hik_camera.cpp
+  src/hik_driver/hik_cam_node.cpp
+  src/hik_driver/hik_cam_node_main.cpp
+)
 
 add_executable(daheng_cam_driver_node
   src/daheng_driver/daheng_camera.cpp
@@ -182,9 +182,9 @@ ament_target_dependencies(usb_cam_driver_node
   ${dependencies}
 )
 
-# ament_target_dependencies(hik_cam_driver_node
-#   ${dependencies}  
-# )
+ament_target_dependencies(hik_cam_driver_node
+  ${dependencies}  
+)
 
 ament_target_dependencies(daheng_cam_driver_node
   ${dependencies}  
@@ -195,13 +195,10 @@ target_link_libraries(usb_cam_driver_node
   yaml-cpp
 )
   
-# target_link_libraries(hik_cam_driver_node 
-#   ${PROJECT_NAME}
-#   yaml-cpp
-#   # MvCameraControl
-#   # MVRender
-#   # FormatConversion
-# )
+target_link_libraries(hik_cam_driver_node 
+  ${PROJECT_NAME}
+  yaml-cpp
+)
   
 target_link_libraries(daheng_cam_driver_node
   gxiapi
@@ -261,7 +258,7 @@ install(TARGETS
 
 install(TARGETS 
   usb_cam_driver_node 
-  # hik_cam_driver_node
+  hik_cam_driver_node
   daheng_cam_driver_node
   DESTINATION lib/${PROJECT_NAME}
 )
