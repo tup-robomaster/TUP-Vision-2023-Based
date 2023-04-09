@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-09 20:32:41
+ * @LastEditTime: 2023-04-09 21:24:37
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -302,17 +302,17 @@ namespace armor_processor
                 double to_pred_timestamp = (time_estimate - last_start_timestamp_) / 1e9;
                 // cout << "scale:" << to_now_scale << " " << to_pred_scale << endl;
 
-                // if (to_now_timestamp > target_period_)
-                // {
-                //     int to_now_scale = to_now_timestamp / target_period_;
-                //     to_now_timestamp -= (to_now_scale - 1) * target_period_;   
-                // }
+                if (to_now_timestamp > target_period_)
+                {
+                    int to_now_scale = to_now_timestamp / target_period_;
+                    to_now_timestamp -= (to_now_scale - 1) * target_period_;   
+                }
 
-                // if (to_pred_timestamp > target_period_)
-                // {
-                //     int to_pred_scale = to_pred_timestamp / target_period_;
-                //     to_pred_timestamp -= (to_pred_scale - 1) * target_period_;
-                // }
+                if (to_pred_timestamp > target_period_)
+                {
+                    int to_pred_scale = to_pred_timestamp / target_period_;
+                    to_pred_timestamp -= (to_pred_scale - 1) * target_period_;
+                }
 
                 // to_pred_timestamp = (to_pred_timestamp > to_now_timestamp) ? to_pred_timestamp : 0;
                 // double last_pred_x = fitting_params_[1]; 
@@ -424,7 +424,7 @@ namespace armor_processor
                 {
                     RCLCPP_WARN(logger_, "Filter _X_AXIS prediction timeout...");
                 }
-                if (debug_param_.y_axis_filter && xyz_future[1].wait_for(2ms) == std::future_status::timeout)
+                if (debug_param_.y_axis_filter && xyz_future[1].wait_for(5ms) == std::future_status::timeout)
                 {
                     RCLCPP_WARN(logger_, "Filter Y_AXIS prediction timeout...");
                 }
@@ -462,6 +462,7 @@ namespace armor_processor
             // 反陀螺模式
             if (target.is_spinning)
             {
+                // is_fitting_available = coupleFittingPredict(true, target, result_fitting, time_estimate);  
                 std::future<void> xyz_future[3];
                 if (debug_param_.x_axis_filter)
                 {
@@ -473,7 +474,9 @@ namespace armor_processor
                 if (debug_param_.y_axis_filter)
                 {
                     xyz_future[1] = std::async(std::launch::async, [&](){
-                        is_fitting_available = coupleFittingPredict(true, target, result_fitting, time_estimate);}
+                            is_fitting_available = coupleFittingPredict(true, target, result_fitting, time_estimate);
+                            // is_fitting_available.xyz_status[1] = predictBasedSinger(1, target.xyz[1], result_fitting[1], target_vel[1], target_acc[1], delta_time_estimate);
+                        }
                     );
                 }
                 if (debug_param_.z_axis_filter)
@@ -486,7 +489,7 @@ namespace armor_processor
                 {
                     RCLCPP_WARN(logger_, "Fitting X_AXIS prediction timeout...");
                 }
-                if (debug_param_.y_axis_filter && xyz_future[1].wait_for(2ms) == std::future_status::timeout)
+                if (debug_param_.y_axis_filter && xyz_future[1].wait_for(6ms) == std::future_status::timeout)
                 {
                     RCLCPP_WARN(logger_, "Fitting Y_AXIS prediction timeout...");
                 }
@@ -692,6 +695,7 @@ namespace armor_processor
         cout << "now_dt:" << now_dt << " pred_dt:" << pred_dt << endl;
         
         PredictStatus is_available;
+        is_params_confirmed_ = false;
         if (!is_params_confirmed_)
         {
             double params[5] = {fitting_params_[0], fitting_params_[1], fitting_params_[2], fitting_params_[3], fitting_params_[4]};
@@ -721,11 +725,11 @@ namespace armor_processor
                 );
             }
             
-            problem.SetParameterUpperBound(&params[0], 0, 2.0);
-            problem.SetParameterLowerBound(&params[0], 0, -2.0);
+            // problem.SetParameterUpperBound(&params[0], 0, 2.0);
+            // problem.SetParameterLowerBound(&params[0], 0, -2.0);
 
-            problem.SetParameterUpperBound(&params[1], 0, target.xyz[1] + 5.0);
-            problem.SetParameterLowerBound(&params[1], 0, target.xyz[1] - 5.0);
+            // problem.SetParameterUpperBound(&params[1], 0, target.xyz[1] + 5.0);
+            // problem.SetParameterLowerBound(&params[1], 0, target.xyz[1] - 5.0);
             
             // problem.SetParameterUpperBound(&params[2], 0, 100);
             // problem.SetParameterLowerBound(&params[2], 0, 0.1);
@@ -752,6 +756,7 @@ namespace armor_processor
             auto dt = (time_now - time_start).nanoseconds();
             RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "Fitting_time: %.2fms x_cost:%.2f x_rmse:%.2f k:%.2f b:%.2f", (dt / 1e6), x_cost, x_rmse, params[0], params[1]);
 
+            cout << "is_available:" << is_available.xyz_status[1] << endl;
             // if (now_dt > target_period_)
             // {
             //     int to_now_scale = now_dt / target_period_;
@@ -759,111 +764,111 @@ namespace armor_processor
             // }
             // x_to_now = params[0] * now_dt + params[1];
 
-            // if (pred_dt > target_period_)
-            // {
-            //     int to_pred_scale = pred_dt / target_period_;
-            //     // pred_dt -= (to_pred_scale - 1) * target_period_;
-            //     pred_dt -= target_period_;
-            // }
-            // x_pred = params[0] * pred_dt + params[1];
+            if (pred_dt > target_period_)
+            {
+                int to_pred_scale = pred_dt / target_period_;
+                pred_dt -= (to_pred_scale) * target_period_;
+                // pred_dt -= target_period_;
+            }
+            x_pred = params[0] * pred_dt + params[1];
             
             // double y_diff = x_to_now - target.xyz[1];
             // x_pred -= y_diff;
-            if (pred_dt <= target_period_)
-            {
-                // x_pred = params[0] * pred_dt + x0; // x(t)=k(t+dt)+x0
-                x_pred = params[0] * pred_dt + params[1]; // x(t)=k(t+dt)+d
-            }
-            else
-            {
-                int to_pred_scale = pred_dt / target_period_;
-                pred_dt -= to_pred_scale * target_period_;
+            // if (pred_dt <= target_period_)
+            // {
+            //     // x_pred = params[0] * pred_dt + x0; // x(t)=k(t+dt)+x0
+            //     x_pred = params[0] * pred_dt + params[1]; // x(t)=k(t+dt)+d
+            // }
+            // else
+            // {
+            //     // int to_pred_scale = pred_dt / target_period_;
+            //     // pred_dt -= to_pred_scale * target_period_;
                 
-                // cout << "pre_dt:" << pred_dt << " scale:" << scale << endl;
-                if (history_origin_info_.size() == 2)
-                {
-                    // double last_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 2) - history_origin_info_.at(history_origin_info_.size() - 3);
-                    double cur_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 1).y - history_origin_info_.at(history_origin_info_.size() - 2).y;
-                    // double cur_delta_y0 = history_origin_info_.at(history_origin_info_.size() - 1).x - history_origin_info_.at(history_origin_info_.size() - 2).x;
-                    // double delta_ave = (last_delta_x0 + cur_delta_x0) / 2.0;
+            //     // cout << "pre_dt:" << pred_dt << " scale:" << scale << endl;
+            //     if (history_origin_info_.size() == 2)
+            //     {
+            //         // double last_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 2) - history_origin_info_.at(history_origin_info_.size() - 3);
+            //         double cur_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 1).y - history_origin_info_.at(history_origin_info_.size() - 2).y;
+            //         // double cur_delta_y0 = history_origin_info_.at(history_origin_info_.size() - 1).x - history_origin_info_.at(history_origin_info_.size() - 2).x;
+            //         // double delta_ave = (last_delta_x0 + cur_delta_x0) / 2.0;
                     
-                    // double x_pred_sum = 0;
-                    // double ave_x_pred = 0;
-                    // if(history_delta_x_pred_.size() != 0)
-                    // {
-                    //     for(auto& delta_x_pred : history_delta_x_pred_)
-                    //         x_pred_sum += delta_x_pred;
-                    //     ave_x_pred = x_pred_sum / history_delta_x_pred_.size();
-                    // }
+            //         // double x_pred_sum = 0;
+            //         // double ave_x_pred = 0;
+            //         // if(history_delta_x_pred_.size() != 0)
+            //         // {
+            //         //     for(auto& delta_x_pred : history_delta_x_pred_)
+            //         //         x_pred_sum += delta_x_pred;
+            //         //     ave_x_pred = x_pred_sum / history_delta_x_pred_.size();
+            //         // }
                     
-                    if (!is_still_spinning)
-                    {
-                        x_pred = params[0] * pred_dt + params[1] - cur_delta_x0; // x(t)=k(t+dt-T)+d
-                    }
-                    else
-                    {
-                        x_pred = params[0] * pred_dt + params[1]; // x(t)=k(t+dt-T)+d
-                    }
+            //         if (!is_still_spinning)
+            //         {
+            //             x_pred = params[0] * pred_dt + params[1] - cur_delta_x0; // x(t)=k(t+dt-T)+d
+            //         }
+            //         else
+            //         {
+            //             x_pred = params[0] * pred_dt + params[1]; // x(t)=k(t+dt-T)+d
+            //         }
 
-                    //若误差过大，则根据历史位点的中值进行枪管角度调整
-                    //判断误差的方法是判断预测点是否还在目标小陀螺的范围内，超出边界点的坐标即认为预测失败
-                    double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
-                    if ((target.is_clockwise && (x_pred > x_origin * 0.95))
-                    || (!target.is_clockwise && (x_pred < x_origin * 0.95)))
-                    {
-                        x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
-                    }
-                }
-                else
-                {
-                    if (is_still_spinning)
-                    {
-                        x_pred = params[0] * pred_dt + params[1]; // x(t)=k(t+dt-T)+d
-                        if (history_origin_info_.size() != 0)
-                        {
-                            double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
-                            if ((target.is_clockwise && (x_pred > x_origin * 1.05))
-                            || (!target.is_clockwise && (x_pred < x_origin * 1.05)))
-                            {
-                                x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
-                            }
-                        }
-                    }
-                    else
-                    {
-                        x_pred = history_info_.at(history_info_.size() - 1).xyz[1];
-                    }
-                }
+            //         //若误差过大，则根据历史位点的中值进行枪管角度调整
+            //         //判断误差的方法是判断预测点是否还在目标小陀螺的范围内，超出边界点的坐标即认为预测失败
+            //         double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
+            //         if ((target.is_clockwise && (x_pred > x_origin * 0.95))
+            //         || (!target.is_clockwise && (x_pred < x_origin * 0.95)))
+            //         {
+            //             x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
+            //         }
+            //     }
+            //     else
+            //     {
+            //         if (is_still_spinning)
+            //         {
+            //             x_pred = params[0] * pred_dt + params[1]; // x(t)=k(t+dt-T)+d
+            //             if (history_origin_info_.size() != 0)
+            //             {
+            //                 double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
+            //                 if ((target.is_clockwise && (x_pred > x_origin * 1.05))
+            //                 || (!target.is_clockwise && (x_pred < x_origin * 1.05)))
+            //                 {
+            //                     x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
+            //                 }
+            //             }
+            //         }
+            //         else
+            //         {
+            //             x_pred = history_info_.at(history_info_.size() - 1).xyz[1];
+            //         }
+            //     }
 
-                // double tt = (time_estimated - start_point) / 1e3 - target_period_;
-                // if (history_info_.size() > 6)
-                // {
-                //     int flag = -1;
-                //     std::cout << "delta_t:" << tt << std::endl;
-                //     for(int ii = 0; ii < history_info_.size(); ii++)
-                //     {
-                //         if(history_info_[ii].timestamp > (start_point + tt))
-                //         {   
-                //             flag = ii;
-                //             break;
-                //         }
-                //         else
-                //             continue;
-                //     }
-                //     std::cout << "id:" << flag << std::endl;
-                //     x_pred = history_info_.at(flag).xyz[0];
+            //     // double tt = (time_estimated - start_point) / 1e3 - target_period_;
+            //     // if (history_info_.size() > 6)
+            //     // {
+            //     //     int flag = -1;
+            //     //     std::cout << "delta_t:" << tt << std::endl;
+            //     //     for(int ii = 0; ii < history_info_.size(); ii++)
+            //     //     {
+            //     //         if(history_info_[ii].timestamp > (start_point + tt))
+            //     //         {   
+            //     //             flag = ii;
+            //     //             break;
+            //     //         }
+            //     //         else
+            //     //             continue;
+            //     //     }
+            //     //     std::cout << "id:" << flag << std::endl;
+            //     //     x_pred = history_info_.at(flag).xyz[0];
 
-                //     x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
-                // }
-                // else
-                // {
-                //     x_pred = params[0] * ((target.timestamp - st) / 1e3 - target_period_) + x0; // x(t)=k(t+dt-T)+x0
-                //     x_pred = params[0] * ((target.timestamp - st) / 1e3 - target_period_) + params[1]; // x(t)=k(t+dt-T)+d
-                //     x_pred = target.xyz[0];
-                //     x_pred = history_info_.at(3).xyz[0];
-                // }
-                //     x_pred = history_info_.at(history_info_.size() - 1).xyz[0];
-            }
+            //     //     x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
+            //     // }
+            //     // else
+            //     // {
+            //     //     x_pred = params[0] * ((target.timestamp - st) / 1e3 - target_period_) + x0; // x(t)=k(t+dt-T)+x0
+            //     //     x_pred = params[0] * ((target.timestamp - st) / 1e3 - target_period_) + params[1]; // x(t)=k(t+dt-T)+d
+            //     //     x_pred = target.xyz[0];
+            //     //     x_pred = history_info_.at(3).xyz[0];
+            //     // }
+            //     //     x_pred = history_info_.at(history_info_.size() - 1).xyz[0];
+            // }
 
             std::memcpy(fitting_params_, params, sizeof(fitting_params_));
 
@@ -965,7 +970,7 @@ namespace armor_processor
             double alpha = singer_param_[axis][0];
             double dt = singer_param_[axis][8] * singer_param_[axis][4];
             // dt = timestamp / 1e9;
-            dt = timestamp / 1e9 * 60;
+            dt = timestamp / 1e9 * 250;
             // cout << dt << endl;
             // cout << dt << " " << timestamp / 1e9 << endl;
             
