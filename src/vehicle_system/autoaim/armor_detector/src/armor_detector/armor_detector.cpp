@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-08 23:02:15
+ * @LastEditTime: 2023-04-09 23:43:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -313,7 +313,6 @@ namespace armor_detector
      */
     bool Detector::gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info)
     {
-
         //Create ArmorTracker for new armors 
         spinning_detector_.createArmorTracker(trackers_map, armors, new_armors_cnt_map, timestamp, dead_buffer_cnt);
 
