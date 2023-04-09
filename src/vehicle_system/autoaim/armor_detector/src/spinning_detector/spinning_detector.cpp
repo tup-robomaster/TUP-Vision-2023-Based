@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-04-05 02:15:02
+ * @LastEditTime: 2023-04-09 18:06:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -24,6 +24,7 @@ namespace armor_detector
         this->gyro_params_.anti_spin_max_r_multiple = 3;
         last_timestamp_ = 0.0;
         max_hop_period_ = 3000.0;
+        is_dead_= false;
         // normal_gyro_status_counter_ = 0;
         // switch_gyro_status_counter_ = 0;
         // last_yaw_diff_ = 0.0;
@@ -45,6 +46,7 @@ namespace armor_detector
         this->gyro_params_.anti_spin_max_r_multiple = gyro_params.anti_spin_max_r_multiple;
         last_timestamp_ = 0.0;
         max_hop_period_ = 3000.0;
+        is_dead_= false;
         // normal_gyro_status_counter_ = 0;
         // switch_gyro_status_counter_ = 0;
         // last_yaw_diff_ = 0.0;
@@ -141,9 +143,11 @@ namespace armor_detector
             string tracker_key;
             if ((*armor).color == 2)
             {   
+                cout << "gray_armor" << endl;
                 if (dead_buffer_cnt >= gyro_params_.max_dead_buffer)
                 {
                     RCLCPP_INFO(logger_, "dead buffer cnt: %d", dead_buffer_cnt);
+                    is_dead_ = true;
                     continue;
                 }
 
@@ -282,8 +286,11 @@ namespace armor_detector
                 }
 
                 //判断当前tracker是否存在当前帧的装甲板目标
-                if (tracker.second.now == now && tracker.second.last_timestamp == last_timestamp_)
+                if ((tracker.second.now / 1e9) == (now / 1e9) && (tracker.second.last_timestamp / 1e9) == (last_timestamp_ / 1e9))
                 {
+                    Eigen::Matrix3d relative_rmat = tracker.second.last_armor.rmat.transpose() * tracker.second.new_armor.rmat;
+                    Eigen::AngleAxisd axisd_angle = Eigen::AngleAxisd(relative_rmat);
+                    double relative_angle = axisd_angle.angle();
                     if (spinning_map_.spin_status_map[tracker.first].switch_timestamp != 0)
                     {
                         // cout << "armor hop..." << endl;
@@ -291,60 +298,58 @@ namespace armor_detector
                         // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "dt:%.2fms", dt);
                         if (dt < max_hop_period_)
                         {   //当前帧与装甲板切换帧的时间戳差值小于最大跳变周期
-                            double now_yaw_angle = atan2(tracker.second.new_armor.armor3d_world[xyz_axis_[0]], tracker.second.new_armor.armor3d_world[xyz_axis_[2]]);
-                            double now_pitch_angle = atan2(tracker.second.new_armor.armor3d_world[xyz_axis_[1]], tracker.second.new_armor.armor3d_world[xyz_axis_[2]]);
-                            double yaw_diff = angles::shortest_angular_distance(tracker.second.last_yaw_diff_, now_yaw_angle);
-                            double pitch_diff = angles::shortest_angular_distance(tracker.second.last_pitch_diff_, now_pitch_angle);
-                            if (yaw_diff > 0)
+                            if (relative_angle > 0)
                             {
                                 ++spinning_map_.spin_counter_map[tracker.first].flag;
                             }
-                            else if (yaw_diff < 0)
+                            else if (relative_angle < 0)
                             {
                                 --spinning_map_.spin_counter_map[tracker.first].flag;
                             }
+                            tracker.second.relative_angle = relative_angle;
 
-                            tracker.second.last_yaw_diff_ = now_yaw_angle;
-                            tracker.second.last_pitch_diff_ = now_pitch_angle;
-
-                            // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, 
-                            //     "yaw_angle:%.2f pitch_angle:%.2f yaw_diff:%.2f pitch_diff:%.2f",
-                            //     now_yaw_angle * (180 / CV_PI), now_pitch_angle * (180 / CV_PI), yaw_diff * (180 / CV_PI), pitch_diff * (180 / CV_PI));
+                            RCLCPP_WARN_THROTTLE(
+                                logger_, 
+                                steady_clock_, 
+                                500, 
+                                "relative_angle:%.2f",
+                                relative_angle * (180 / CV_PI)
+                            );
 
                             // SpinHeading spin_status = tracker.second.spin_status_;
                             SpinHeading spin_status = spinning_map_.spin_status_map[tracker.first].spin_state;
                             if (tracker.second.last_armor.armor3d_world.norm() < gyro_params_.max_conf_dis)
                             {
-                                if (spin_status == CLOCKWISE && yaw_diff < 0)
+                                if (spin_status == CLOCKWISE && relative_angle < 0)
                                 {
-                                    if (abs(yaw_diff) >= gyro_params_.max_yaw_hop_angle && pitch_diff >= gyro_params_.max_pitch_hop_angle)
+                                    if (abs(relative_angle) >= gyro_params_.max_rotation_angle)
                                     {   //对目标进行陀螺计数
                                         ++spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter;
                                     }
-                                    else if (abs(yaw_diff) < gyro_params_.max_yaw_hop_angle * 0.2 && pitch_diff < gyro_params_.max_pitch_hop_angle * 0.2)
+                                    else if (abs(relative_angle) <= gyro_params_.min_rotation_angle)
                                     {
                                         --spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter;
                                     }
                                 }
-                                else if (spin_status == COUNTER_CLOCKWISE && yaw_diff > 0)
+                                else if (spin_status == COUNTER_CLOCKWISE && relative_angle > 0)
                                 {
-                                    if (yaw_diff >= gyro_params_.max_yaw_hop_angle && pitch_diff >= gyro_params_.max_pitch_hop_angle)
+                                    if (relative_angle >= gyro_params_.max_rotation_angle)
                                     {
                                         ++spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter;
                                     }
-                                    else if (yaw_diff < gyro_params_.max_yaw_hop_angle * 0.2 && pitch_diff > gyro_params_.max_pitch_hop_angle * 0.2)
+                                    else if (relative_angle <= gyro_params_.min_rotation_angle)
                                     {
                                         --spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter;
                                     }
                                 }
                                 else if (spin_status == UNKNOWN)
                                 {
-                                    if (abs(yaw_diff) >= gyro_params_.max_yaw_hop_angle && pitch_diff >= gyro_params_.max_pitch_hop_angle)
+                                    if (abs(relative_angle) >= gyro_params_.max_rotation_angle)
                                     {
-                                        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "Spin state:{UNKNOWN} yaw_diff:%.2f max_yaw_hop:%.2f", abs(yaw_diff) * (180 / M_PI), gyro_params_.max_yaw_hop_angle);
+                                        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "Spin state:{UNKNOWN} yaw_diff:%.2f max_yaw_hop:%.2f", abs(yaw_diff) * (180 / M_PI), gyro_params_.max_rotation_angle);
                                         ++spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter;
                                     }
-                                    else if (abs(yaw_diff) < gyro_params_.max_yaw_hop_angle * 0.2 && pitch_diff < gyro_params_.max_pitch_hop_angle * 0.2)
+                                    else if (abs(relative_angle) <= gyro_params_.min_rotation_angle)
                                     {
                                         --spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter;
                                     }
@@ -356,36 +361,36 @@ namespace armor_detector
                             }
                             else
                             {   //目标距离较远
-                                if (spin_status == CLOCKWISE && yaw_diff < 0)
+                                if (spin_status == CLOCKWISE && relative_angle < 0)
                                 {
-                                    if (abs(yaw_diff) > gyro_params_.max_yaw_hop_angle)
+                                    if (abs(relative_angle) >= gyro_params_.max_rotation_angle)
                                     {   //对目标进行陀螺计数
                                         ++spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter;
                                     }
-                                    else if (abs(yaw_diff) < gyro_params_.max_yaw_hop_angle * 0.2)
+                                    else if (abs(relative_angle) <= gyro_params_.min_rotation_angle)
                                     {
                                         --spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter;
                                     }
                                 }
-                                else if (spin_status == COUNTER_CLOCKWISE && yaw_diff > 0)
+                                else if (spin_status == COUNTER_CLOCKWISE && relative_angle > 0)
                                 {
-                                    if (yaw_diff > gyro_params_.max_yaw_hop_angle)
+                                    if (relative_angle >= gyro_params_.max_rotation_angle)
                                     {
                                         ++spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter;
                                     }
-                                    else if (yaw_diff < gyro_params_.max_yaw_hop_angle * 0.2)
+                                    else if (relative_angle <= gyro_params_.min_rotation_angle)
                                     {
                                         --spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter;
                                     }
                                 }
                                 else if (spin_status == UNKNOWN)
                                 {
-                                    if (abs(yaw_diff) > gyro_params_.max_yaw_hop_angle)
+                                    if (abs(relative_angle) >= gyro_params_.max_rotation_angle)
                                     {
-                                        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "Spin state:{UNKNOWN} yaw_diff:%.2f max_yaw_hop:%.2f", abs(yaw_diff) * (180 / M_PI), gyro_params_.max_yaw_hop_angle * (180 / M_PI));
+                                        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "Spin state:{UNKNOWN} yaw_diff:%.2f max_yaw_hop:%.2f", abs(yaw_diff) * (180 / M_PI), gyro_params_.max_rotation_angle * (180 / M_PI));
                                         ++spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter;
                                     }
-                                    else if (abs(yaw_diff) < gyro_params_.max_yaw_hop_angle * 0.2)
+                                    else if (abs(relative_angle) <= gyro_params_.min_rotation_angle)
                                     {
                                         --spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter;
                                     }
@@ -398,65 +403,30 @@ namespace armor_detector
                         }
                         else
                         {   //当前帧与装甲板切换帧的时间戳差值大于最大跳变周期，此时认为目标退出陀螺状态
-                            double now_yaw_angle = atan2(tracker.second.last_armor.armor3d_world[xyz_axis_[0]], tracker.second.last_armor.armor3d_world[xyz_axis_[2]]);
-                            double now_pitch_angle = atan2(tracker.second.last_armor.armor3d_world[xyz_axis_[1]], tracker.second.last_armor.armor3d_world[xyz_axis_[2]]);
-                            tracker.second.last_yaw_diff_ = now_yaw_angle;
-                            tracker.second.last_pitch_diff_ = now_pitch_angle;
-                            // tracker.second.spin_status_ = UNKNOWN;
-                            // tracker.second.hop_timestamp_ = 0.0;
-                            // tracker.second.normal_gyro_status_counter_ = 0;
-                            // tracker.second.switch_gyro_status_counter_ = 0;
-                            // tracker.second.flag_ = 0;
+                            tracker.second.relative_angle = relative_angle;
                             spinning_map_.spin_status_map[tracker.first].switch_timestamp = 0;
                             spinning_map_.spin_status_map[tracker.first].spin_state = UNKNOWN;
                             spinning_map_.spin_counter_map[tracker.first].flag = 0;
                             spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter = 0;
                             spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter = 0;
 
-                            // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, 
-                            //     "yaw_angle:%.2f pitch_angle:%.2f",
-                            //     now_yaw_angle * (180 / CV_PI), now_pitch_angle * (180 / CV_PI));
+                            RCLCPP_WARN_THROTTLE(
+                                logger_, 
+                                steady_clock_, 
+                                500, 
+                                "relative_angle:%.2f",
+                                relative_angle * (180 / CV_PI)
+                            );
                         }
                     }
                     else
                     {   //追踪期间目标未发生装甲板切换，此时先不进入陀螺识别
                         // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "[Spinning]: No hop...");
- 
-                        double now_yaw_angle = atan2(tracker.second.last_armor.armor3d_world[xyz_axis_[0]], tracker.second.last_armor.armor3d_world[xyz_axis_[2]]);
-                        double now_pitch_angle = atan2(tracker.second.last_armor.armor3d_world[xyz_axis_[1]], tracker.second.last_armor.armor3d_world[xyz_axis_[2]]);
-                        tracker.second.last_yaw_diff_ = now_yaw_angle;
-                        tracker.second.last_pitch_diff_ = now_pitch_angle;
                     }  
                 }
-                else if (tracker.second.now == now)
-                {
-                    double now_yaw_angle = atan2(tracker.second.last_armor.armor3d_world[xyz_axis_[0]], tracker.second.last_armor.armor3d_world[xyz_axis_[2]]);
-                    double now_pitch_angle = atan2(tracker.second.last_armor.armor3d_world[xyz_axis_[1]], tracker.second.last_armor.armor3d_world[xyz_axis_[2]]);
-                    tracker.second.last_yaw_diff_ = now_yaw_angle;
-                    tracker.second.last_pitch_diff_ = now_pitch_angle;
-                }
             }
-            else
-            {   //对目标tracker进行初始化
-                if (tracker.second.now == now)
-                {
-                    double now_yaw_angle = atan2(tracker.second.new_armor.armor3d_world[xyz_axis_[0]], tracker.second.new_armor.armor3d_world[xyz_axis_[2]]);
-                    double now_pitch_angle = atan2(tracker.second.new_armor.armor3d_world[xyz_axis_[1]], tracker.second.new_armor.armor3d_world[xyz_axis_[2]]);
-                    tracker.second.last_yaw_diff_ = now_yaw_angle;
-                    tracker.second.last_pitch_diff_ = now_pitch_angle;
-                    // tracker.second.hop_timestamp_ = 0.0;
-                    // tracker.second.normal_gyro_status_counter_ = 0;
-                    // tracker.second.switch_gyro_status_counter_ = 0;
-                    // tracker.second.flag_ = 0;
-                    // spinning_map_.spin_counter_map[tracker.first].flag = 0;
-                    // spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter = 0;
-                    // spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter = 0;
-                }
-            }
-
             // RCLCPP_INFO(logger_, "normal_status_counter:%d switch_status_counter:%d", 
             //     spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter, spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter);
-            
             // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 100, "normal_status_counter:%d switch_status_counter:%d", 
             //     spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter, spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter);
         }
@@ -646,22 +616,21 @@ namespace armor_detector
         {
             for (auto & tracker : spinning_map_.spin_status_map)
             {
-                if (tracker.second.switch_timestamp != 0)
-                {
-                    double dt = (now - tracker.second.switch_timestamp) / 1e6;
-                    if (dt > max_hop_period_)
-                    {
-                        spinning_map_.spin_counter_map[tracker.first].flag = 0;
-                        spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter = 0;   
-                        spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter = 0;   
-                        spinning_map_.spin_status_map[tracker.first].switch_timestamp = 0;
-                        spinning_map_.spin_status_map[tracker.first].spin_state = UNKNOWN;
-                    }
-                }
+                // if (tracker.second.switch_timestamp != 0)
+                // {
+                //     double dt = (now - tracker.second.switch_timestamp) / 1e6;
+                //     if (dt > max_hop_period_)
+                //     {
+                //         spinning_map_.spin_counter_map[tracker.first].flag = 0;
+                //         spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter = 0;   
+                //         spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter = 0;   
+                //         spinning_map_.spin_status_map[tracker.first].switch_timestamp = 0;
+                //         spinning_map_.spin_status_map[tracker.first].spin_state = UNKNOWN;
+                //     }
+                // }
 
                 if (abs(spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter) >= 25
-                || abs(spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter) >= 6
-                || (spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter >= 15
+                || (spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter >= 10
                 && spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter >= 3))
                 {
                     SpinHeading spin_status = UNKNOWN;

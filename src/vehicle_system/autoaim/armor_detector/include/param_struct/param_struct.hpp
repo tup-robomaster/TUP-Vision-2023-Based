@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-04-06 01:12:14
+ * @LastEditTime: 2023-04-09 22:01:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -80,8 +80,8 @@ namespace armor_detector
         double delta_y_3d_low_thresh;
         double delta_y_3d_lower_thresh;
 
-        double max_yaw_hop_angle;
-        double max_pitch_hop_angle;
+        double max_rotation_angle;
+        double min_rotation_angle;
         double max_hop_period;
         double max_conf_dis;
         GyroParam()
@@ -98,9 +98,9 @@ namespace armor_detector
             delta_y_3d_low_thresh = 0.10;
             delta_y_3d_lower_thresh = 0.05;
 
-            max_yaw_hop_angle = 0.75 * (M_PI / 180);
-            max_pitch_hop_angle = 0.35 * (M_PI / 180);
-            max_hop_period = 1.0;
+            max_rotation_angle = 10.0 * (M_PI / 180);
+            min_rotation_angle = 3.0 * (M_PI / 180);
+            max_hop_period = 3.0;
             max_conf_dis = 3.5;
         }
     };

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-04-02 05:27:20
+ * @LastEditTime: 2023-04-09 19:20:53
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -70,6 +70,8 @@ namespace armor_processor
         int64_t last_start_timestamp_;
         double last_end_x_;
         bool is_predicted_;
+        double target_period_;
+        bool is_params_confirmed_;
         TargetInfo final_target_;  //最终击打目标信息
         // TargetInfo last_pf_target_; //最后一次粒子滤波后的位置结果
 

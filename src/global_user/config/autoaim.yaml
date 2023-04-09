@@ -12,16 +12,16 @@
                 # blue: false
     no_crop_ratio: 0.002
     full_crop_ratio: 0.0001
-    armor_roi_expand_ratio_width: 1.1
-    armor_roi_expand_ratio_height: 1.5
-    armor_conf_high_thres: 0.89
-    yaw_angle_offset: 0.5
-    pitch_angle_offset: -2.45
+    armor_roi_expand_ratio_width: 1.2
+    armor_roi_expand_ratio_height: 1.8
+    armor_conf_high_thres: 0.82
+    yaw_angle_offset: -0.5
+    pitch_angle_offset: 0.5
 
   # Spinning params.
     max_cost: 500
     shoot_delay: 50
-    bullet_speed: 15.5
+    bullet_speed: 28.0
     max_dead_buffer: 10
     max_delta_dist: 0.5
     min_fitting_lens: 10
@@ -75,17 +75,17 @@
 /armor_processor:
   ros__parameters:
   # Predict params.
-    bullet_speed: 15.5
+    bullet_speed: 28.0
     max_time_delta: 1000
     max_cost: 10
     max_v: 8
     min_fitting_lens: 3
-    shoot_delay: 500
+    shoot_delay: 10
     window_size: 3
-    yaw_angle_offset: 0.5
-    pitch_angle_offset: -2.45
+    yaw_angle_offset: -0.5
+    pitch_angle_offset: 0.5
     max_offset_value: 0.45
-    reserve_factor: 200.0 #储备系数(>=1)
+    reserve_factor: 500.0 #储备系数(>=1)
     rotation_yaw: 0.0
     rotation_pitch: 0.0
     rotation_roll: 0.0
@@ -138,9 +138,9 @@
     # singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.165, 1.95, 1.0, 1.0, 0.1] 
     # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.20, 1.2, 1.0, 1.0, 0.1]
 
-    singer_model_x_axis: [5.0, 10.0, 0.1, 0.8, 5.00, 0.005, 1.0, 1.0, 1.0] 
-    singer_model_y_axis: [10.00, 10.0, 0.1, 0.8, 5.00, 0.01, 1.0, 1.0, 7.0] 
-    singer_model_z_axis: [10.00, 10.0, 0.1, 0.8, 5.00, 0.01, 1.0, 1.0, 7.0]
+    singer_model_x_axis: [20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0, 1.0] 
+    singer_model_y_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0] 
+    singer_model_z_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0]
 
     # singer_model_x_axis: [1.0, 10.0, 0.1, 0.8, 5.00, 0.1, 1.0, 1.0, 1.0] 
     # singer_model_y_axis: [5.0, 10.0, 0.1, 0.8, 16.00, 0.001, 1.0, 0.2, 4.0] 

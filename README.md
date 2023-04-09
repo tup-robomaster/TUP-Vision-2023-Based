@@ -81,3 +81,7 @@ Issue:https://github.com/ros2/ros2/issues/1163
 4.Error:
     
     编译时出现死机情况加入参数--parallel-workers threads_num(>=1)
+
+## 弹丸命中率测试
+### Date:2023-04-06 
+    步兵射击机动状态下的英雄，55发中50。
