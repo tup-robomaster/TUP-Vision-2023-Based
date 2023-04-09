@@ -51,19 +51,6 @@ namespace armor_detector
         bool calcTargetScore();
 
     public:
-        ArmorTracker();
-        ArmorTracker(Armor src, int64_t src_timestamp);
-        bool update(Armor new_armor, int64_t new_timestamp);
-        bool calcTargetScore();
-
-    public:
-        ArmorTracker();
-        ArmorTracker(Armor src, int64_t src_timestamp);
-        
-        bool update(Armor new_armor, int64_t new_timestamp);
-        bool calcTargetScore();
-
-    public:
         string key;
         bool is_initialized;                    //是否完成初始化
         double hit_score;                       //该tracker可能作为目标的分数,由装甲板旋转角度,距离,面积大小决定
