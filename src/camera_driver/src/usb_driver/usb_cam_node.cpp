@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2023-04-05 02:00:50
+ * @LastEditTime: 2023-04-09 19:42:47
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -229,8 +229,8 @@ namespace camera_driver
             cv::waitKey(2000);
         }
 
-        if(using_video_)
-            usleep(5000);
+        // if(using_video_)
+        //     usleep(5000);
     }
 
     bool UsbCamNode::setParam(rclcpp::Parameter param)

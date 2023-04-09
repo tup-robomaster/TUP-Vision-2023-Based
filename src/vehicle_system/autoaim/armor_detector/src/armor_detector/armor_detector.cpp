@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-05 21:53:33
+ * @LastEditTime: 2023-04-09 17:46:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -456,7 +456,6 @@ namespace armor_detector
                 target_info.is_spinning = false;
             }
         }
-        spin_status = UNKNOWN;
 
         ///----------------------------------反陀螺击打---------------------------------------
         target_info.is_spinning = false;
@@ -640,7 +639,7 @@ namespace armor_detector
                     {
                         double ave_per = (per_sum / idx);
                         target_info.period = ave_per;
-                        RCLCPP_WARN(logger_, "ave_per:%lfs", ave_per);
+                        RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "ave_per:%lfs", ave_per);
                     }
                     else
                         target_info.period = period;
@@ -670,13 +669,13 @@ namespace armor_detector
                 {
                     target_info.is_spinning = true;
                     target_info.is_still_spinning = false;
-                    RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 40, "[SPINNING]: Movement Spinning...");
+                    RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "[SPINNING]: Movement Spinning...");
                 } 
                 else if(ave_x_3d < spinning_detector_.gyro_params_.delta_x_3d_low_thresh)
                 {
                     target_info.is_spinning = true;
                     target_info.is_still_spinning = true;
-                    RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 40, "[SPINNING]: Still Spinning...");
+                    RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "[SPINNING]: Still Spinning...");
                 }
                 else
                 {
@@ -735,8 +734,7 @@ namespace armor_detector
                 lost_cnt_++;
                 is_last_target_exists_ = false;
                 // target = final_armors.front();
-                cout << "armor size:" << (int)final_armors.size() << endl;
-                RCLCPP_ERROR(logger_, "Error in dead zone...");
+                RCLCPP_ERROR(logger_, "Error in dead zone: armor size:%d", (int)final_armors.size());
                 return false;
             }
 
@@ -824,19 +822,20 @@ namespace armor_detector
         if (spinning_detector_.is_dead_)
         {
             dead_buffer_cnt_ = 0;
-            cout << "dead:" << dead_buffer_cnt_ << endl; 
+            RCLCPP_WARN(logger_, "dead_buffer_cnt: %d", dead_buffer_cnt_);
             spinning_detector_.is_dead_ = false;
         }
 
         if (target.color == 2)
         {
-            cout << "dead_buffer_cnt:" << dead_buffer_cnt_ << endl; 
+            RCLCPP_WARN(logger_, "dead_buffer_cnt: %d", dead_buffer_cnt_);
             dead_buffer_cnt_++;
         }
         else
         {
             dead_buffer_cnt_ = 0;
         }
+
         // cout << 1 << endl;
         //获取装甲板中心与装甲板面积以下一次ROI截取使用
         // last_roi_center_ = Point2i(512,640);
@@ -849,16 +848,16 @@ namespace armor_detector
         is_last_target_exists_ = true;
         last_armors_ = new_armors_;
 
-        Eigen::Vector3d euler = rotationMatrixToEulerAngles(target.rmat);
-        RCLCPP_WARN_THROTTLE(
-            logger_, 
-            steady_clock_, 
-            10, 
-            "rAngle:{%.2f %.2f %.2f}",
-            euler[0] * (180 / CV_PI),
-            euler[1] * (180 / CV_PI),
-            euler[2] * (180 / CV_PI)
-        );
+        // Eigen::Vector3d euler = rotationMatrixToEulerAngles(target.rmat);
+        // RCLCPP_WARN_THROTTLE(
+        //     logger_, 
+        //     steady_clock_, 
+        //     10, 
+        //     "rAngle:{%.2f %.2f %.2f}",
+        //     euler[0] * (180 / CV_PI),
+        //     euler[1] * (180 / CV_PI),
+        //     euler[2] * (180 / CV_PI)
+        // );
 
         if(debug_params_.show_aim_cross)
         {
