@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-05 21:53:33
+ * @LastEditTime: 2023-04-06 01:18:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -512,24 +512,78 @@ namespace armor_detector
                         // );
 
                         circle_center_ave = circle_center_sum / ((int)(*iter).second.history_info_.size() - 1);
-                        (*iter).second.rotation_center = {circle_center_ave.x, circle_center_ave.y, circle_center_ave.z};
 
-                        Eigen::Vector3d euler = rotationMatrixToEulerAngles((*iter).second.new_armor.rmat);
-                        RCLCPP_WARN_THROTTLE(
-                            logger_, 
-                            steady_clock_, 
-                            10, 
-                            "Relative angle sum:%.2f size:%d Rotation period:%.2fs circle_center_ave:(%.3f, %.3f %.3f)\n rAngle:{%.2f %.2f %.2f}",
-                            relative_angle_sum,
-                            (int)(*iter).second.history_info_.size() - 1,
-                            period,
-                            circle_center_ave.x,
-                            circle_center_ave.y,
-                            circle_center_ave.z,
-                            euler[0] * (180 / CV_PI),
-                            euler[1] * (180 / CV_PI),
-                            euler[2] * (180 / CV_PI)
-                        );
+                        Armor cur_armor = (*iter).second.new_armor;
+                        Eigen::Vector3d cur_euler = rotationMatrixToEulerAngles(cur_armor.rmat);
+                        Eigen::Vector3d opposite_euler = {cur_euler[0], cur_euler[1], cur_euler[2] + CV_PI};
+                        Eigen::Vector3d opposite_armor3d_world = {2 * circle_center_ave.x - cur_armor.armor3d_world[1], 2 * circle_center_ave.y - cur_armor.armor3d_world[0], circle_center_ave.z};
+                        Eigen::Vector3d opposite_armor3d_cam = coordsolver_.worldToCam(opposite_armor3d_world, rmat_imu_);
+                        cv::Point2f opposite_armor_center2d = coordsolver_.reproject(opposite_armor3d_cam);
+                        cv::Point2f circle_center2d = {(opposite_armor_center2d.x + cur_armor.center2d.x) / 2.0, (opposite_armor_center2d.y + cur_armor.center2d.y) / 2.0};
+                        cv::Point2f reproject_circle_center2d = coordsolver_.reproject(circle_center_ave);
+                        cv::Point2f opposite_armor2d_apex[4] = 
+                        {
+                            cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[2], 2 * circle_center2d.y - cur_armor.apex2d[2]),
+                            cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[3], 2 * circle_center2d.y - cur_armor.apex2d[3]),
+                            cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[0], 2 * circle_center2d.y - cur_armor.apex2d[0]),
+                            cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[1], 2 * circle_center2d.y - cur_armor.apex2d[1])
+                        };
+                        std::vector<Point2f> points_pic(opposite_armor2d_apex, opposite_armor2d_apex + 4);
+                        RotatedRect opposite_rrect = minAreaRect(points_pic); 
+                        cv::Rect bbox = opposite_rrect.boundingRect();
+                        double x = bbox.x - 0.5 * bbox.width * (detector_params_.armor_roi_expand_ratio_width - 1);
+                        double y = bbox.y - 0.5 * bbox.height * (detector_params_.armor_roi_expand_ratio_height - 1);
+                        (*iter).second.opposite_armor_ = cur_armor;
+                        (*iter).second.opposite_armor_.armor3d_world = opposite_armor3d_world;
+                        (*iter).second.opposite_armor_.armor3d_cam = opposite_armor3d_cam;
+                        (*iter).second.rotation_center = {circle_center_ave.x, circle_center_ave.y, circle_center_ave.z};
+                        (*iter).second.opposite_armor_.euler = opposite_euler;
+                        (*iter).second.opposite_armor_.rmat = eulerToRotationMatrix(opposite_euler);
+                        (*iter).second.opposite_armor_.center2d = opposite_armor_center2d;
+                        (*iter).second.opposite_armor_.apex2d = opposite_armor2d_apex;
+                        (*iter).second.opposite_armor_.rrect = opposite_rrect;
+                        (*iter).second.opposite_armor_.rect = bbox;
+                        (*iter).second.opposite_armor_.roi = Rect(x, y, bbox.width * detector_params_.armor_roi_expand_ratio_width,
+                            bbox.height * detector_params_.armor_roi_expand_ratio_height);
+                        (*iter).second.is_spinning_ = true;
+                        
+                        Armor armor = (*iter).second.opposite_armor_;
+                        if (detector_params_.show_spinning_img)
+                        {
+                            char ch[10];
+                            sprintf(ch, "%.3f", armor.conf);
+                            std::string conf_str = ch;
+                            putText(src.img, conf_str, armor.apex2d[3], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
+
+                            std::string id_str = to_string(armor.id);
+                            if (armor.color == 0)
+                                putText(src.img, "B" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 0}, 2);
+                            if (armor.color == 1)
+                                putText(src.img, "R" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 0, 255}, 2);
+                            if (armor.color == 2)
+                                putText(src.img, "N" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 255, 255}, 2);
+                            if (armor.color == 3)
+                                putText(src.img, "P" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 255}, 2);
+                            for(int i = 0; i < 4; i++)
+                                line(src.img, armor.apex2d[i % 4], armor.apex2d[(i + 1) % 4], {0,255,0}, 1);
+                            rectangle(src.img, armor.roi, {255, 0, 255}, 1);
+                        }
+                        // Eigen::Vector3d euler = rotationMatrixToEulerAngles((*iter).second.new_armor.rmat);
+                        // RCLCPP_WARN_THROTTLE(
+                        //     logger_, 
+                        //     steady_clock_, 
+                        //     10, 
+                        //     "Relative angle sum:%.2f size:%d Rotation period:%.2fs circle_center_ave:(%.3f, %.3f %.3f)\n rAngle:{%.2f %.2f %.2f}",
+                        //     relative_angle_sum,
+                        //     (int)(*iter).second.history_info_.size() - 1,
+                        //     period,
+                        //     circle_center_ave.x,
+                        //     circle_center_ave.y,
+                        //     circle_center_ave.z,
+                        //     euler[0] * (180 / CV_PI),
+                        //     euler[1] * (180 / CV_PI),
+                        //     euler[2] * (180 / CV_PI)
+                        // );
                     }
                 }
                 else

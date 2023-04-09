@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-04-05 12:43:20
+ * @LastEditTime: 2023-04-06 01:12:14
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -220,6 +220,7 @@ namespace armor_detector
         bool print_target_info;
         bool save_data;
         bool save_dataset;
+        bool show_spinning_img;
 
         DebugParam()
         {
@@ -235,6 +236,7 @@ namespace armor_detector
             print_target_info = true; 
             save_data = false;
             save_dataset = false;
+            show_spinning_img = false;
         }
     };
     
