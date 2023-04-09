@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-02-10 00:37:42
+ * @LastEditTime: 2023-04-09 00:23:43
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -30,15 +30,15 @@ namespace armor_processor
 
     ArmorPredictor::~ArmorPredictor(){}
 
-    ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, const vector<double>& singer_param, 
+    ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, const vector<double>* singer_param, 
         const PathParam& path_param, const DebugParam& debug_param)
-    : predict_param_(predict_param), singer_param_(singer_param), filter_param_path_(path_param.filter_path), debug_param_(debug_param),
+    : predict_param_(predict_param), filter_param_path_(path_param.filter_path), debug_param_(debug_param),
     logger_(rclcpp::get_logger("armor_prediction"))
     {
         // config_ = YAML::LoadFile(coord_file);
         // pf_pos.initParam(config_, "pos");
         // pf_v.initParam(config_, "v");
-
+        singer_param_ = singer_param[0];
         // KF initialized.
         kalman_filter_.Init(3, 1, 1);
 
@@ -100,6 +100,8 @@ namespace armor_processor
             CSMODEL
         };
 
+        RCLCPP_WARN(logger_, "dt:%.8f", target_msg.period);
+
         if(target.is_sentry_mode || target.is_spinning)
         {
             fitting_disabled_ = false;
@@ -112,6 +114,9 @@ namespace armor_processor
             filter_disabled_ = false;
             std::cout << "Maneuvering..." << std::endl;
         }
+
+        // filter_disabled_ = true;
+        // fitting_disabled_ = false;
 
         // -----------------对位置进行粒子滤波,以降低测距噪声影响-------------------------------------
         // Eigen::VectorXd measure (2);
@@ -206,12 +211,24 @@ namespace armor_processor
                 {
                     if(history_info_.size() != 0)
                     {
-                        double last_to_now_timestamp = history_info_.back().timestamp - last_start_timestamp_;
-                        double tt = time_estimate - last_start_timestamp_;
-                        
+                        int last_to_now_timestamp = history_info_.back().timestamp - last_start_timestamp_;
+                        int tt = time_estimate - last_start_timestamp_;
+                        // cout << "now:" << history_info_.back().timestamp / 1e9 << " last_start:" << last_start_timestamp_ /1e9 << endl;
+                        // if (target.period != 0.0)
+                        // {
+                        //     if ((last_to_now_timestamp / 1e9) > target.period)
+                        //     {
+                        //         last_to_now_timestamp = (last_to_now_timestamp % ((int)(target.period * 1e9) + (int)(target.period * 1e9)));
+                        //     }
+                        //     if ((tt / 1e9) > target.period)
+                        //     {
+                        //         tt = (tt % ((int)(target.period * 1e9) + (int)(target.period * 1e9)));
+                        //     }
+                        // }
                         double last_pred_x = fitting_params_[0] * (last_to_now_timestamp / 1e9) + fitting_params_[1];
                     
-                        double delta_y = last_pred_x - target.xyz[0]; 
+                        double delta_y = last_pred_x - target.xyz[1]; 
+                        cout << "last_now:" << (last_to_now_timestamp) / 1e9 << " pred_dt:" << (tt) / 1e9 << " period:" << target.period << endl;
                         // double tt = time_estimate / 1e3;
                         // result[0] = fitting_params_[0] * (delta_time_estimate * history_info_.size() / 1e3) + history_info_.front().xyz[0]; // x(t)=kt+x0
                         result[0] = target.xyz[0]; // x(t)=kt+d
@@ -655,7 +672,7 @@ namespace armor_processor
          * @brief 车辆小陀螺运动轨迹拟合(已知量：角速度&陀螺半径）
          * 若目标仅处于原地小陀螺状态，则剔除掉模型中的横移项，直接给平动项乘以系数0。
          */
-        
+        cout << "target_per:" << target.period << endl;
         auto time_start = steady_clock_.now();
 
         double params[5] = {fitting_params_[0], fitting_params_[1],
@@ -672,7 +689,7 @@ namespace armor_processor
         options.minimizer_progress_to_stdout = false;
         
         double x0 = history_info_.front().xyz[1];
-        int st = history_info_.begin()->timestamp;
+        double st = history_info_.begin()->timestamp;
         last_start_timestamp_ = st;
 
         // y-axis
@@ -800,6 +817,12 @@ namespace armor_processor
         }
         else
         {
+            double t = (time_estimated - st) / 1e9 - target.period;
+            if (target.period != 0.0)
+            {
+                t = (double)((int)((time_estimated - st)) % (int)(target.period * 1e9)) / 1e9;
+            }
+
             if(history_origin_info_.size() == 2)
             {
                 // double last_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 2) - history_origin_info_.at(history_origin_info_.size() - 3);
@@ -818,7 +841,7 @@ namespace armor_processor
                 
                 if(!is_still_spinning)
                 {
-                    x_pred = params[0] * ((time_estimated - st) / 1e9 - target.period) + params[1] - cur_delta_x0; // x(t)=k(t+dt-T)+d
+                    x_pred = params[0] * t + params[1] - cur_delta_x0; // x(t)=k(t+dt-T)+d
                     // y_pred = params_y[2] * pow(params_y[0], 2) * pow(((time_estimated - st) / 1e3 - target.period), 2)
                     //         + ((2.0 * (params_y[0] * params_y[2] * params_y[1]))
                     //         + (params_y[0] * params_y[3])) * ((time_estimated - st) / 1e3 - target.period)
@@ -836,7 +859,7 @@ namespace armor_processor
                 }
                 else
                 {
-                    x_pred = params[0] * ((time_estimated - st) / 1e9 - target.period) + params[1]; // x(t)=k(t+dt-T)+d
+                    x_pred = params[0] * t + params[1]; // x(t)=k(t+dt-T)+d
                     // y_pred = params_y[2] * pow(params_y[0], 2) * pow(((time_estimated - st) / 1e3 - target.period), 2)
                     //         + ((2.0 * (params_y[0] * params_y[2] * params_y[1]))
                     //         + (params_y[0] * params_y[3])) * ((time_estimated - st) / 1e3 - target.period)
@@ -868,9 +891,9 @@ namespace armor_processor
                 }
                 else
                 {
-                    if(x_pred < x_origin * 0.95)
+                    if(x_pred < x_origin * 1.05)
                         x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
-                    if(y_pred < y_origin * 0.95)
+                    if(y_pred < y_origin * 1.05)
                         y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
                 }
             }
@@ -878,7 +901,7 @@ namespace armor_processor
             {
                 if(is_still_spinning)
                 {
-                    x_pred = params[0] * ((time_estimated - st) / 1e9 - target.period) + params[1]; // x(t)=k(t+dt-T)+d
+                    x_pred = params[0] * t + params[1]; // x(t)=k(t+dt-T)+d
                     // y_pred = params_y[2] * pow(params_y[0], 2) * pow(((time_estimated - st) / 1e3 - target.period), 2)
                     //         + ((2.0 * (params_y[0] * params_y[2] * params_y[1]))
                     //         + (params_y[0] * params_y[3])) * ((time_estimated - st) / 1e3 - target.period)
@@ -899,9 +922,9 @@ namespace armor_processor
                         double y_origin = history_origin_info_.at(history_origin_info_.size() - 1).x;
                         if(target.is_clockwise)
                         {
-                            if(x_pred > x_origin * 1.05)
+                            if(x_pred > x_origin * 0.95)
                                 x_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[1];
-                            if(y_pred > y_origin * 1.05)
+                            if(y_pred > y_origin * 0.95)
                                 y_pred = history_info_.at((int)(history_info_.size() / 2)).xyz[0];
                         }
                         else
@@ -979,7 +1002,8 @@ namespace armor_processor
         // result = {x_pred, target.xyz[1], target.xyz[2]}; //camera frame
         result = {target.xyz[0], x_pred, target.xyz[2]}; 
         // result = {target.xyz[0], target.xyz[1], y_pred}; //camera frame
-        
+        cout << "x_pred:" << x_pred << endl;
+
         return is_available;
     }
 

@@ -54,7 +54,7 @@ include_directories(include
   ${EIGEN3_INCLUDE_DIRS}
 )
 
-link_directories(/opt/MvCamCtrlSDK/lib/64/)
+link_directories(/opt/MVS/lib/64/)
 
 # set(GXI_LIB_SO usr/lib/libgxiapi)
 
@@ -266,6 +266,7 @@ install(TARGETS
 install(DIRECTORY 
   launch
   config
+  recorder
   DESTINATION share/${PROJECT_NAME}
 )
 

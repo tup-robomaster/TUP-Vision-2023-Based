@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-02-09 22:51:38
+ * @LastEditTime: 2023-04-08 23:02:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -414,6 +414,7 @@ namespace armor_detector
             {
                 if ((*iter).second.last_timestamp == src.timestamp)
                 {
+                    cout << "xxxx" << endl;
                     final_armors.push_back((*iter).second.last_armor);
                     final_trackers.push_back(&(*iter).second);
                     if((*iter).second.is_initialized)
@@ -665,7 +666,8 @@ namespace armor_detector
         target_info.aiming_point_cam.y = target.armor3d_cam[1];
         target_info.aiming_point_cam.z = target.armor3d_cam[2];
         // RCLCPP_INFO(logger_, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
-
+        // cout << "target_info.period:" << target_info.period << endl;
+        
         if (target.color == 2)
             dead_buffer_cnt++;
         else

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-02-09 17:29:38
+ * @LastEditTime: 2023-03-28 18:32:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -41,6 +41,9 @@ namespace buff_processor
         qos.durability();
         // qos.transient_local();
         qos.durability_volatile();
+        
+        rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
+        rmw_qos.depth = 1;
 
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/buff_processor/gimbal_info", qos);
@@ -68,12 +71,12 @@ namespace buff_processor
         {
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffProcessorNode::paramsCallback, this, _1));
 
-            sleep(5);
+            sleep(2);
             image_size_ = image_info_.image_size_map[camera_type];
             // image sub.
             std::string camera_topic = image_info_.camera_topic_map[camera_type];
             img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic, 
-                std::bind(&BuffProcessorNode::imageCallback, this, _1), transport_type));
+                std::bind(&BuffProcessorNode::imageCallback, this, _1), transport_type, rmw_qos));
         }
     }
 
@@ -95,7 +98,7 @@ namespace buff_processor
     void BuffProcessorNode::targetPredictorCallback(const BuffMsg& target_info)
     {
         TargetInfo predict_info;
-        if(buff_processor_->predictorThread(target_info, predict_info))
+        if (buff_processor_->predictorThread(target_info, predict_info))
         {
             RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "predict...");
             GimbalMsg gimbal_msg;
@@ -109,19 +112,19 @@ namespace buff_processor
             gimbal_info_pub_->publish(std::move(gimbal_msg));
 
             debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
-            if(debug_param_.show_predict)
+            if (debug_param_.show_predict)
             {
                 BuffMsg predict_msg;
                 predict_msg.header.frame_id = "camera_link";
                 predict_msg.header.stamp = target_info.header.stamp;
-                predict_msg.header.stamp.nanosec += (60 * 1e6);
+                predict_msg.header.stamp.nanosec += (500 * 1e6);
                 // predict_msg.predict_point.x = predict_info.hit_point_cam[0];
                 // predict_msg.predict_point.y = predict_info.hit_point_cam[1];
                 // predict_msg.predict_point.z = predict_info.hit_point_cam[2];
                 predict_msg.predict_point.x = predict_info.hit_point_world[0];
                 predict_msg.predict_point.y = predict_info.hit_point_world[1];
                 predict_msg.predict_point.z = predict_info.hit_point_world[2];
-            
+                // cout << 1 << endl;
                 predict_info_pub_->publish(std::move(predict_msg));
             }
 

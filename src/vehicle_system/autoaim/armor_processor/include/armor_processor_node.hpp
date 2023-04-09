@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-02-09 16:12:02
+ * @LastEditTime: 2023-04-08 20:02:17
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -19,6 +19,7 @@
 #include <image_transport/publisher.hpp>
 #include <image_transport/subscriber_filter.hpp>
 #include <cv_bridge/cv_bridge.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 //std
 #include <mutex>
@@ -32,6 +33,7 @@
 
 using namespace global_user;
 using namespace coordsolver;
+using namespace ament_index_cpp;
 namespace armor_processor
 {
     class ArmorProcessorNode : public rclcpp::Node 
@@ -63,7 +65,9 @@ namespace armor_processor
     protected:
         ImageSize image_size_;
         ImageInfo image_info_;
-
+        mutex image_mutex_;
+        cv::Mat src_;
+        
         // Image callback.
         void imageProcessor(cv::Mat& img);
         void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);

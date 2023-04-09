@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-02-09 21:21:31
+ * @LastEditTime: 2023-04-08 23:05:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -48,6 +48,9 @@ namespace armor_detector
         // qos.transient_local();
         qos.durability_volatile();
         
+        rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
+        rmw_qos.depth = 1;
+
         // target info pub.
         armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_info", qos);
 
@@ -96,7 +99,7 @@ namespace armor_detector
             // image sub.
             std::string camera_topic = image_info_.camera_topic_map[camera_type];
             img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
-                std::bind(&DetectorNode::imageCallback, this, _1), transport_type));
+                std::bind(&DetectorNode::imageCallback, this, _1), transport_type, rmw_qos));
         }
 
         bool debug = false;
@@ -175,8 +178,10 @@ namespace armor_detector
         param_mutex_.lock();
         target_info.is_target_lost = is_target_lost;
         
+        // cout << "target_info.period:" << target_info.period << endl;
+
         // Publish target's information containing 3d point and timestamp.
-        armor_info_pub_->publish(std::move(target_info));
+        armor_info_pub_->publish(target_info);
         
         debug_.show_img = this->get_parameter("show_img").as_bool();
         if(debug_.show_img)
@@ -287,12 +292,14 @@ namespace armor_detector
         this->declare_parameter<double>("armor_roi_expand_ratio_width", 1.1);
         this->declare_parameter<double>("armor_roi_expand_ratio_height", 1.5);
         this->declare_parameter<double>("armor_conf_high_thres", 0.82);
+        this->declare_parameter<double>("yaw_angle_offset", 0.0);
+        this->declare_parameter<double>("pitch_angle_offset", 0.0);
         
         //TODO:Set by your own path.
         this->declare_parameter("camera_name", "KE0200110075"); //相机型号
-        this->declare_parameter("camera_param_path", "src/global_user/config/camera.yaml");
-        this->declare_parameter("network_path", "src/vehicle_system/autoaim/armor_detector/model/opt-0527-002.xml");
-        this->declare_parameter("save_path", "src/data/old_infer1_2.txt");
+        this->declare_parameter("camera_param_path", "/config/camera.yaml");
+        this->declare_parameter("network_path", "/model/opt-0527-002.xml");
+        this->declare_parameter("save_path", "/data/info.txt");
         
         //Debug.
         this->declare_parameter("debug_without_com", true);
@@ -308,14 +315,6 @@ namespace armor_detector
         this->declare_parameter("save_data", false);
         this->declare_parameter("save_dataset", false);
         
-        double max_delta_t;      //tracker未更新的时间上限，过久则删除
-        double switch_max_dt;    //目标陀螺状态未更新的时间上限，过久则删除
-        double hero_danger_zone; //英雄危险距离
-
-        double anti_spin_judge_high_thres; //大于该阈值认为该车已开启陀螺
-        double anti_spin_judge_low_thres;  //小于该阈值认为该车已关闭陀螺
-        double anti_spin_max_r_multiple;
-
         //Gyro params.
         this->declare_parameter<int>("max_dead_buffer", 2) ;
         this->declare_parameter<int>("max_delta_t", 100);
@@ -324,7 +323,6 @@ namespace armor_detector
         this->declare_parameter<double>("anti_spin_judge_high_thres", 2e4);
         this->declare_parameter<double>("anti_spin_judge_low_thres", 2e3);
         this->declare_parameter<double>("anti_spin_max_r_multiple", 4.5);
-        
         //Update param from param server.
         updateParam();
 
@@ -378,10 +376,15 @@ namespace armor_detector
         gyro_params_.max_delta_t = this->get_parameter("max_delta_t").as_int();
         gyro_params_.switch_max_dt = this->get_parameter("switch_max_dt").as_double();
 
+        string pkg_share_directory[2] = 
+        {
+            {get_package_share_directory("global_user")}, 
+            {get_package_share_directory("armor_detector")}
+        };
         path_params_.camera_name = this->get_parameter("camera_name").as_string();
-        path_params_.camera_param_path = this->get_parameter("camera_param_path").as_string();
-        path_params_.network_path = this->get_parameter("network_path").as_string();
-        path_params_.save_path = this->get_parameter("save_path").as_string();
+        path_params_.camera_param_path = pkg_share_directory[0] + this->get_parameter("camera_param_path").as_string();
+        path_params_.network_path = pkg_share_directory[1] + this->get_parameter("network_path").as_string();
+        path_params_.save_path = pkg_share_directory[0] + this->get_parameter("save_path").as_string();
 
         return true;
     }

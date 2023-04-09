@@ -1,6 +1,6 @@
 /hik_cam_driver:
   ros__parameters:
-    hik_cam_id: 0
+    cam_id: 0
     frame_id: hik_cam
     image_width: 1440
     image_height: 1080
@@ -13,19 +13,18 @@
     balance_g: 1024
     balance_r: 2022
     debug: true
-    using_shared_memory: false
     save_video: false
 
 /daheng_cam_driver:
   ros__parameters:
-    daheng_cam_id: 1
+    cam_id: 1
     frame_id: daheng_cam
     image_width: 1280
     image_height: 1024
     width_scale: 1
     height_scale: 1
-    exposure_time: 8000
-    exposure_gain: 14
+    exposure_time: 4200
+    exposure_gain: 15
     exposure_gain_b: 0
     exposure_gain_g: 0
     exposure_gain_r: 0
@@ -33,28 +32,31 @@
     balance_g: 1.0
     balance_r: 1.548
     debug: true
-    using_shared_memory: false
     save_video: false
     
 /usb_cam_driver:
   ros__parameters:
-    camera_id: 0
+    cam_id: 0
     frame_id: usb_cam
-    image_width: 480
-    image_height: 480
-    fps: 30
+    image_width: 1280
+    image_height: 800
+    fps: 60
     debug: true
     using_shared_memory: false
     using_video: true
-    video_path: "src/camera_driver/recorder/video/gyro_video.webm"
-    # video_path: "src/camera_driver/recorder/video/gyro_transition_fusion.mp4"
-    # video_path: "src/camera_driver/recorder/video/buff.webm"
-    # video_path: src/camera_driver/recorder/video/2022-06-23_19_36_54(1).avi
+    video_path: "/recorder/video/gyro_video.webm"
+    # video_path: "/recorder/video/gyro_transition_fusion.mp4"
+    # video_path: "/recorder/video/buff.webm"
+    # video_path: "/recorder/video/2022-06-23_19_36_54(1).avi"
+    # video_path: "/recorder/video/new_buff.mp4"
+    # video_path: "/recorder/video/new_buff1.mp4"
+    # video_path: "/recorder/video/new_buff2.avi"
+    # video_path: "/recorder/video/new_buff3.avi"
     save_video: false
 
 /mvs_cam_driver:
   ros__parameters:
-    mvs_cam_id: 0
+    cam_id: 0
     frame_id: mvs_cam
   
 /serialport:

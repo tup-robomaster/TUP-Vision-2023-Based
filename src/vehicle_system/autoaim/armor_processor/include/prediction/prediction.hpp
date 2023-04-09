@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-02-10 00:33:30
+ * @LastEditTime: 2023-04-08 20:11:23
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -143,21 +143,22 @@ namespace armor_processor
         bool disable_filter;
         bool disable_fitting;
         bool draw_predict;
-
         bool using_imu;
         bool show_predict;
-
+        bool show_aim_cross;
         bool show_transformed_info;
+        bool show_img;
 
         DebugParam()
         {
             disable_filter = false;
             disable_fitting = false;
             draw_predict = true;
-
+            show_aim_cross = true;
             using_imu = false;
             show_predict = false;
             show_transformed_info = true;
+            show_img = true;
         }
     };
 
@@ -288,7 +289,7 @@ namespace armor_processor
     public:
         ArmorPredictor();
         ~ArmorPredictor();
-        ArmorPredictor(const PredictParam& predict_param, const vector<double>& singer_param, 
+        ArmorPredictor(const PredictParam& predict_param, const vector<double>* singer_param, 
             const PathParam& path_param, const DebugParam& debug_param);
     
     private:

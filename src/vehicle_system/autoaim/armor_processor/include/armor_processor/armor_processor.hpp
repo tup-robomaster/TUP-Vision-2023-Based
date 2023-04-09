@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-17 00:27:33
- * @LastEditTime: 2023-02-09 15:43:44
+ * @LastEditTime: 2023-04-08 20:05:24
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor/armor_processor.hpp
  */
 #ifndef ARMOR_PRECESSOR_HPP_
@@ -23,7 +23,7 @@ namespace armor_processor
 
     public:
         Processor();
-        Processor(const PredictParam& predict_param, const vector<double>& singer_model_param, const PathParam& path_param, const DebugParam& debug_param);
+        Processor(const PredictParam& predict_param, const vector<double>* singer_model_param, const PathParam& path_param, const DebugParam& debug_param);
         ~Processor();
 
         //预测(接收armor_detector节点发布的目标信息进行预测)

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2023-02-02 15:10:09
+ * @LastEditTime: 2023-04-08 22:59:04
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -58,7 +58,11 @@ namespace camera_driver
         // sleep(10);
         if(using_video_)
         {
-            cout << video_path_ << endl;
+            // cout << video_path_ << endl;
+            string pkg_share_pth = get_package_share_directory("camera_driver");
+            // this->declare_parameter<std::string>("video_path", " ");
+            video_path_ = pkg_share_pth + this->get_parameter("video_path").as_string();
+
             cap.open(video_path_);
             if(!cap.isOpened())
             {
@@ -272,8 +276,8 @@ namespace camera_driver
                 cv::waitKey(2000);
             }
 
-            if(using_video_)
-                usleep(10000);
+            // if(using_video_)
+            //     usleep(10000);
         }
     }
 
