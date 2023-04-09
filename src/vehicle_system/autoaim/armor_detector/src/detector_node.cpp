@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-08 23:05:08
+ * @LastEditTime: 2023-04-10 02:22:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -52,7 +52,7 @@ namespace armor_detector
         rmw_qos.depth = 1;
 
         // target info pub.
-        armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_info", qos);
+        armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_detector/armor_msg", qos);
 
         if(debug_.using_imu)
         {
@@ -175,7 +175,7 @@ namespace armor_detector
                 RCLCPP_INFO(this->get_logger(), "target info: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
             }
         }
-        param_mutex_.lock();
+        param_mutex_.unlock();
         target_info.is_target_lost = is_target_lost;
         
         // cout << "target_info.period:" << target_info.period << endl;

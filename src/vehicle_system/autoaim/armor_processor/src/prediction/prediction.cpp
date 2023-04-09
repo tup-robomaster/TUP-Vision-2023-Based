@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-09 00:23:43
+ * @LastEditTime: 2023-04-10 02:45:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -100,21 +100,22 @@ namespace armor_processor
             CSMODEL
         };
 
-        RCLCPP_WARN(logger_, "dt:%.8f", target_msg.period);
+        // RCLCPP_WARN(logger_, "dt:%.8f", target_msg.period);
 
         if(target.is_sentry_mode || target.is_spinning)
         {
             fitting_disabled_ = false;
             filter_disabled_ = true;
-            std::cout << "Spinning..." << std::endl;
+            // std::cout << "Spinning..." << std::endl;
         }
         else
         {
             fitting_disabled_ = true;
             filter_disabled_ = false;
-            std::cout << "Maneuvering..." << std::endl;
+            // std::cout << "Maneuvering..." << std::endl;
         }
-
+        // filter_disabled_ = true;
+        
         // filter_disabled_ = true;
         // fitting_disabled_ = false;
 
@@ -300,8 +301,8 @@ namespace armor_processor
             history_acc_[1] = history_acc_[0];
             history_acc_[0] = target_acc[1];
 
-            RCLCPP_INFO(logger_, "target_vel: x:%lf y:%lf", target_vel[0], target_vel[1]);
-            RCLCPP_INFO(logger_, "target_acc: x:%lf y:%lf", target_acc[0], target_acc[1]);
+            // RCLCPP_INFO(logger_, "target_vel: x:%lf y:%lf", target_vel[0], target_vel[1]);
+            // RCLCPP_INFO(logger_, "target_acc: x:%lf y:%lf", target_acc[0], target_acc[1]);
         }
 
         // if(is_v_filter_ready)
@@ -439,22 +440,26 @@ namespace armor_processor
             result = target.xyz;
         }
 
-        if(!filter_disabled_)
+        if (!filter_disabled_)
         {
-            double error = calcError();
-            if(error > 0.10)
-            {
-                ++error_cnt_;
-            }
-            if(error_cnt_ > 5 || error > 0.20)
-            {
-                RCLCPP_WARN(logger_, "Prediction failed!");
-                error_cnt_ = 0;
-                is_ekf_init = false;
-                is_imm_init = false;
-                result = target.xyz;
-            }
+            result = target.xyz;
         }
+        // if(!filter_disabled_)
+        // {
+        //     double error = calcError();
+        //     if(error > 0.10)
+        //     {
+        //         ++error_cnt_;
+        //     }
+        //     if(error_cnt_ > 5 || error > 0.20)
+        //     {
+        //         RCLCPP_WARN(logger_, "Prediction failed!");
+        //         error_cnt_ = 0;
+        //         is_ekf_init = false;
+        //         is_imm_init = false;
+        //         result = target.xyz;
+        //     }
+        // }
         
         auto t2 = steady_clock_.now();
         double dr_ns = (t2 - t1).nanoseconds();

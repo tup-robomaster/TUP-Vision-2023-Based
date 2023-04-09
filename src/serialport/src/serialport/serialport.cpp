@@ -12,14 +12,14 @@ namespace serialport
     *@param  portchar 类型  char* 串口路径
     */
 
-    SerialPort::SerialPort(const string ID, const int BAUD, bool debug_without_com)
-    : debug_without_com_(debug_without_com), logger_(rclcpp::get_logger("serial_port"))
+    SerialPort::SerialPort(const string ID, const int BAUD, bool using_port)
+    : using_port_(using_port), logger_(rclcpp::get_logger("serial_port"))
     {
         serial_data_.is_initialized = false;
         serial_data_.baud = BAUD;
         serial_id_ = ID;
 
-        if(this->debug_without_com_) //无串口调试
+        if(!this->using_port_) //无串口调试
         {
             RCLCPP_WARN(logger_, "Debug without com...");
             withoutSerialPort();
@@ -49,23 +49,35 @@ namespace serialport
     {
         int bytes;
         char *name = ttyname(serial_data_.fd);
-        if (name == NULL) RCLCPP_WARN(logger_, "tty is null...");
+        if (name == NULL)
+        {
+            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "tty is null...");
+            serial_data_.is_initialized = false;
+            return false;
+        } 
         int result = ioctl(serial_data_.fd, FIONREAD, &bytes);
         if (result == -1)
+        {
+            serial_data_.is_initialized = false;
             return false;
+        }
         if (bytes == 0)
+        {
             return false;
+        }
         
         bytes = read(serial_data_.fd, serial_data_.rdata, (size_t)(lens));
-        RCLCPP_INFO(logger_, "Read byte num:%d", bytes);
         timestamp_ = this->steady_clock_.now();
 
-        if (serial_data_.rdata[0] == 0xA5 &&
-            crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3) &&
-            crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
+        if ((serial_data_.rdata[0] == 0xA5 || serial_data_.rdata[0] == 0xB5 || serial_data_.rdata[0] == 0xC5)
+            && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3)
+            && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
+        {
+            // cout << 1 << endl;
             return true;
-        else
-            return false;
+        }
+
+        return false;
     }
 
     /**
@@ -75,6 +87,7 @@ namespace serialport
     void SerialPort::sendData(int bytes_num)
     {
         auto write_stauts = write(serial_data_.fd, Tdata, bytes_num);
+        RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "Sending msg...");
         return;
     }
 
@@ -89,7 +102,7 @@ namespace serialport
         serial_data_.device = setDeviceByID(listPorts());
         const string alias = "/dev/" + serial_data_.device.alias;
 
-        if(alias.length() - 4 == 0)
+        if (alias.length() - 4 == 0)
             return false;
 
         close(serial_data_.last_fd);
@@ -108,7 +121,7 @@ namespace serialport
 
         RCLCPP_INFO(logger_, "Openning %s...", alias.c_str());
         setBrate();
-        if(!setBit())
+        if (!setBit())
         {
             RCLCPP_WARN(logger_, "Set Parity Error.");
             exit(0);
@@ -158,6 +171,7 @@ namespace serialport
                     dev.alias = port_dir + to_string(i);
                     dev.path = tty_dir_path;
                     devices.push_back(dev);
+                    // cout << dev.id << endl;
                 }
             } 
         }
@@ -179,7 +193,7 @@ namespace serialport
             string config_type = text.substr(0,equal_idx);
             string config_info = text.substr(equal_idx + 1);
 
-            if(config_type == "PRODUCT")
+            if (config_type == "PRODUCT")
             {
                 dev.id = config_info;
             }
@@ -195,6 +209,7 @@ namespace serialport
     {
         for (auto dev : devices)
         {
+            // cout << dev.id << endl;
             if (dev.id == serial_id_)
                 return dev;
         }

@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-02-09 00:25:47
+ * @LastEditTime: 2023-04-10 02:07:12
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -50,6 +50,21 @@ namespace global_user
      * @brief Global variables and funcs.
      * 
      */
+
+    /**
+     * @brief 模式选择（取消视觉，自瞄，英雄吊射，小符，大符，哨兵）
+     * 
+     */
+    enum MODE
+    {
+        CLOSE_VISION,
+        AUTOAIM,
+        HERO_SLING,
+        SMALL_BUFF,
+        BIG_BUFF,
+        OUTPOST_ROTATION_MODE,
+        SENTRY_NORMAL
+    };
 
     struct ImageSize
     {

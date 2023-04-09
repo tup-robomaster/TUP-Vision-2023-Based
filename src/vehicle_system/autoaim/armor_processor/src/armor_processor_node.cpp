@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-08 23:11:06
+ * @LastEditTime: 2023-04-10 02:37:01
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -37,12 +37,15 @@ namespace armor_processor
         rmw_qos.depth = 1;
 
         // 发布云台转动信息（pitch、yaw角度）
-        gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_info", qos);
-        tracking_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/tracking_info", qos);
+        gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", qos);
+        tracking_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/tracking_msg", qos);
 
         // 订阅目标装甲板信息
-        target_info_sub_ = this->create_subscription<AutoaimMsg>("/armor_info", qos,
-            std::bind(&ArmorProcessorNode::targetMsgCallback, this, _1));
+        target_info_sub_ = this->create_subscription<AutoaimMsg>(
+            "/armor_detector/armor_msg",
+            qos,
+            std::bind(&ArmorProcessorNode::targetMsgCallback, this, _1)
+        );   
 
         // 是否使用共享内存
         this->declare_parameter<bool>("using_shared_memory", false);
@@ -62,7 +65,7 @@ namespace armor_processor
             RCLCPP_INFO(this->get_logger(), "debug...");
             
             // Prediction info pub.
-            predict_info_pub_ = this->create_publisher<AutoaimMsg>("/autoaim/predict_info", qos);
+            predict_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_processor/predict_msg", qos);
 
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, _1));
@@ -165,9 +168,10 @@ namespace armor_processor
         GimbalMsg gimbal_info;
         gimbal_info.header.frame_id = "barrel_link";
         gimbal_info.header.stamp = target_info.header.stamp;
-        gimbal_info.pitch = angle[0];
-        gimbal_info.yaw = angle[1];
+        gimbal_info.pitch = abs(angle[1]) >= 45.0 ? 0.0 : angle[1];
+        gimbal_info.yaw = abs(angle[0]) >= 45.0 ? 0.0 : angle[0];
         gimbal_info.distance = aiming_point_cam.norm();
+        gimbal_info.is_target = !target.is_target_lost;
         gimbal_info.is_switched = target_info.target_switched;
         gimbal_info.is_spinning = target_info.is_spinning;
         gimbal_info_pub_->publish(std::move(gimbal_info));
@@ -179,9 +183,10 @@ namespace armor_processor
                 GimbalMsg tracking_info;
                 tracking_info.header.frame_id = "barrel_link1";
                 tracking_info.header.stamp = target_info.header.stamp;
-                tracking_info.pitch = tracking_angle[0];
-                tracking_info.yaw = tracking_angle[1];
+                tracking_info.pitch =  abs(tracking_angle[1]) >= 45.0 ? 0.0 : tracking_angle[1];
+                tracking_info.yaw = abs(tracking_angle[0]) >= 45.0 ? 0.0 : tracking_angle[0];
                 tracking_info.distance = tracking_point_cam.norm();
+                tracking_info.is_target = !target.is_target_lost;
                 tracking_info.is_switched = target_info.target_switched;
                 tracking_info.is_spinning = target_info.is_spinning;
                 gimbal_info_pub_->publish(std::move(tracking_info));

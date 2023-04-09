@@ -5,7 +5,7 @@
     max_lost_cnt: 5
     max_armors_cnt: 8
     max_v: 8
-    max_delta_t: 100
+    max_delta_t: 30
     no_crop_thres: 0.01
     hero_danger_zone: 4
     color: true # red: true
@@ -41,8 +41,8 @@
 
   # Camera config params.
     # camera_name: "00J90630561" 
-    camera_name: "KE0200110075" #FIXME:根据相机序列号修改
-    camera_type: 3
+    camera_name: "KE0200110073" #FIXME:根据相机序列号修改
+    camera_type: 0
     camera_param_path: "/config/camera.yaml"
 
   # Network model path.
@@ -60,7 +60,7 @@
   
   # Debug params.
     debug: true
-    using_imu: false
+    using_imu: true
     show_img: false
     show_fps: false
     using_roi: false
@@ -80,7 +80,7 @@
     max_cost: 10
     max_v: 8
     min_fitting_lens: 3
-    shoot_delay: 740
+    shoot_delay: 10
     window_size: 3
     yaw_angle_offset: 0.5
     pitch_angle_offset: -2.45
@@ -92,24 +92,24 @@
 
   # Debug params.
     debug: true
-    using_imu: false
-    show_img: true
+    using_imu: true
+    show_img: false
     draw_predict: false
-    show_predict: true
+    show_predict: false
     sync_transport: false
     print_delay: false
-    x_axis_filter: true
-    y_axis_filter: true
-    z_axis_filter: true
+    x_axis_filter: false
+    y_axis_filter: false
+    z_axis_filter: false
     # disable_filter: true
     # disable_fitting: false
-    show_aim_cross: true
+    show_aim_cross: false
     show_fps: false
 
   # Camera params.
-    camera_type: 3 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110075" #FIXME:根据相机序列号修改
+    coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
     coord_param_path: "/config/camera.yaml"
     
   # Filter params.

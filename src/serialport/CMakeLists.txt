@@ -2,37 +2,34 @@ cmake_minimum_required(VERSION 3.8)
 project(serialport)
 
 ## Use C++14
-set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 14)
 # SET(CMAKE_BUILD_TYPE "Debug")  
 # SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb")
 # SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
 
-# ## By adding -Wall and -Werror, the compiler does not ignore warnings anymore,
-# ## enforcing cleaner code.
+# By adding -Wall and -Werror, the compiler does not ignore warnings anymore, enforcing cleaner code.
 # add_definitions(-Wall -Werror)
 
-# ## Export compile commands for clangd
+# Export compile commands for clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclpy REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(rclpy REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
 find_package(message_filters REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(visualization_msgs REQUIRED)
-find_package(angles REQUIRED)
 find_package(robot_state_publisher REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(global_interface REQUIRED)
 find_package(global_user REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(Ceres REQUIRED COMPONENTS EigenSparse)
 
 include_directories(
   include
@@ -49,9 +46,6 @@ add_library(${PROJECT_NAME} SHARED
   src/${PROJECT_NAME}_node.cpp
 )
   
-# target_compile_definitions(${PROJECT_NAME}
-# PRIVATE "COMPOSITION_BUILDING_DLL")
-
 set(dependencies 
   rclcpp
   rclcpp_components
@@ -61,11 +55,10 @@ set(dependencies
   global_interface
   global_user
   message_filters 
-  sensor_msgs 
-  visualization_msgs 
-  angles 
   robot_state_publisher 
   yaml-cpp
+  Eigen3
+  Ceres
 )
 
 ament_target_dependencies(${PROJECT_NAME}
@@ -75,14 +68,12 @@ target_link_libraries(${PROJECT_NAME}
   yaml-cpp
 )
 
-include_directories(include)
 add_executable(${PROJECT_NAME}_node
   src/${PROJECT_NAME}/crc_check.cpp
   src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
   src/data_processor/data_transform.cpp
   src/${PROJECT_NAME}_node.cpp
 )
-
 ament_target_dependencies(${PROJECT_NAME}_node 
   ${dependencies}
 )
@@ -92,16 +83,9 @@ target_link_libraries(${PROJECT_NAME}_node
 
 # register component nodes
 rclcpp_components_register_nodes(${PROJECT_NAME} 
-  PLUGIN "serialport::serial_driver"
+  PLUGIN "serialport::SerialPortNode"
   EXECUTABLE ${PROJECT_NAME}_node  
 )
-
-# set(node_plugins "${node_plugins}serialport::serial_driver;$<TARGET_FILE:serialport>\n")
-
-# Install executable nodes
-# install(TARGETS ${PROJECT_NAME}
-#   DESTINATION lib/${PROJECT_NAME}
-# )
 
 # Install libraries
 install(TARGETS ${PROJECT_NAME}
@@ -112,6 +96,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
+# Install executable nodes
 install(TARGETS
   ${PROJECT_NAME}_node
   DESTINATION lib/${PROJECT_NAME}
@@ -141,30 +126,3 @@ if(BUILD_TESTING)
 endif()
 
 ament_package()
-
-# cmake_minimum_required (VERSION 3.5)
-# project(serialport)
-
-# find_package (ament_cmake_auto REQUIRED) 
-# ament_auto_find_build_dependencies ()
-
-# ament_auto_add_library ( ${PROJECT_NAME} SHARED 
-#   include/serialport/serialport.hpp
-#   include/serialport/crc_check.h 
-#   include/serialport/packet.h 
-#   include/serialport/serialport_node.hpp
-#   src/serialport/serialport.cpp 
-#   src/serialport/crc_check.cpp 
-#   src/serialport/serialport_node.cpp 
-# )
-
-# rclcpp_components_register_node(${PROJECT_NAME}
-#   PLUGIN serialport::serial_driver
-#   EXECUTABLE ${PROJECT_NAME}_node
-# )
-
-# ament_auto_package(
-#   INSTALL_TO_SHARE
-#   # config
-#   # launch
-# )
