@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-10 02:37:01
+ * @LastEditTime: 2023-04-10 12:44:51
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -102,7 +102,6 @@ namespace armor_processor
         if(this->read_memory_thread_.joinable())
             this->read_memory_thread_.join();
     }
-
 
     /**
      * @brief 目标回调函数

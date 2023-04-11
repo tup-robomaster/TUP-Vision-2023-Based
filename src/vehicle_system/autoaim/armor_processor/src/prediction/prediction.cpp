@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-10 02:45:50
+ * @LastEditTime: 2023-04-10 13:26:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -827,12 +827,12 @@ namespace armor_processor
             {
                 t = (double)((int)((time_estimated - st)) % (int)(target.period * 1e9)) / 1e9;
             }
-
+            cout << "pred_dt:" << t << endl;
             if(history_origin_info_.size() == 2)
             {
                 // double last_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 2) - history_origin_info_.at(history_origin_info_.size() - 3);
-                double cur_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 1).y - history_origin_info_.at(history_origin_info_.size() - 2).y;
-                double cur_delta_y0 = history_origin_info_.at(history_origin_info_.size() - 1).x - history_origin_info_.at(history_origin_info_.size() - 2).x;
+                double cur_delta_x0 = history_origin_info_.at(history_origin_info_.size() - 1).x - history_origin_info_.at(history_origin_info_.size() - 2).x;
+                double cur_delta_y0 = history_origin_info_.at(history_origin_info_.size() - 1).y - history_origin_info_.at(history_origin_info_.size() - 2).y;
                 // double delta_ave = (last_delta_x0 + cur_delta_x0) / 2.0;
                 
                 // double x_pred_sum = 0;
@@ -881,8 +881,8 @@ namespace armor_processor
                     y_pred = (1.0 / ((time_estimated - target.period * 1e9))) + params_y[4];
                 }
 
-                double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
-                double y_origin = history_origin_info_.at(history_origin_info_.size() - 1).x;
+                double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).x;
+                double y_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
                 
                 //若误差过大，则根据历史位点的中值进行枪管角度调整
                 //判断误差的方法是判断预测点是否还在目标小陀螺的范围内，超出边界点的坐标即认为预测失败
@@ -923,8 +923,8 @@ namespace armor_processor
                         
                     if(history_origin_info_.size() != 0)
                     {
-                        double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
-                        double y_origin = history_origin_info_.at(history_origin_info_.size() - 1).x;
+                        double x_origin = history_origin_info_.at(history_origin_info_.size() - 1).x;
+                        double y_origin = history_origin_info_.at(history_origin_info_.size() - 1).y;
                         if(target.is_clockwise)
                         {
                             if(x_pred > x_origin * 0.95)
