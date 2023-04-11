@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-09 22:02:25
+ * @LastEditTime: 2023-04-11 15:52:17
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -484,27 +484,27 @@ namespace armor_detector
                         period = ((2 * CV_PI) / w / 4.0);
                         new_period_deq_.emplace_back(period);
 
-                        double relative_angle_sum = 0.0;
-                        int64_t dt_sum = 0;
-                        cv::Point3d circle_center_sum = {0, 0, 0};
-                        cv::Point3d circle_center_ave = {0, 0, 0};
-                        for (int ii = 0; ii < (int)(*iter).second.history_info_.size() - 1; ii++)
-                        {
-                            auto relative_rmat = (*iter).second.history_info_[ii].rmat.transpose() * (*iter).second.history_info_[ii+1].rmat;
-                            auto relative_angle_axisd = Eigen::AngleAxisd(relative_rmat);
-                            auto relative_angle = relative_angle_axisd.angle(); 
-                            relative_angle_sum += relative_angle;  
+                        // double relative_angle_sum = 0.0;
+                        // int64_t dt_sum = 0;
+                        // cv::Point3d circle_center_sum = {0, 0, 0};
+                        // cv::Point3d circle_center_ave = {0, 0, 0};
+                        // for (int ii = 0; ii < (int)(*iter).second.history_info_.size() - 1; ii++)
+                        // {
+                        //     auto relative_rmat = (*iter).second.history_info_[ii].rmat.transpose() * (*iter).second.history_info_[ii+1].rmat;
+                        //     auto relative_angle_axisd = Eigen::AngleAxisd(relative_rmat);
+                        //     auto relative_angle = relative_angle_axisd.angle(); 
+                        //     relative_angle_sum += relative_angle;  
 
-                            Eigen::Vector3d point3d_last = (*iter).second.history_info_[ii+1].armor3d_world;
-                            Eigen::Vector3d point3d_now = (*iter).second.history_info_.front().armor3d_world;
-                            double x_pos = (point3d_now[1] + point3d_last[1]) / 2.0 + ((point3d_now[0] - point3d_last[0]) / (2 * tan(relative_angle_sum)));
-                            double x_neg = (point3d_now[1] + point3d_last[1]) / 2.0 - ((point3d_now[0] - point3d_last[0]) / (2 * tan(relative_angle_sum)));
-                            double y_pos = (point3d_now[0] + point3d_last[0]) / 2.0 + ((point3d_now[1] - point3d_last[1]) / (2 * tan(relative_angle_sum)));
-                            double y_neg = (point3d_now[0] + point3d_last[0]) / 2.0 - ((point3d_now[1] - point3d_last[1]) / (2 * tan(relative_angle_sum)));
-                            circle_center_sum.y += (y_pos < y_neg) ? y_pos : y_neg;
-                            circle_center_sum.x += (y_pos < y_neg) ? x_pos : x_neg;
-                            circle_center_sum.z += (point3d_now[2] + point3d_last[2]) / 2.0;
-                        }
+                        //     Eigen::Vector3d point3d_last = (*iter).second.history_info_[ii+1].armor3d_world;
+                        //     Eigen::Vector3d point3d_now = (*iter).second.history_info_.front().armor3d_world;
+                        //     double x_pos = (point3d_now[1] + point3d_last[1]) / 2.0 + ((point3d_now[0] - point3d_last[0]) / (2 * tan(relative_angle_sum)));
+                        //     double x_neg = (point3d_now[1] + point3d_last[1]) / 2.0 - ((point3d_now[0] - point3d_last[0]) / (2 * tan(relative_angle_sum)));
+                        //     double y_pos = (point3d_now[0] + point3d_last[0]) / 2.0 + ((point3d_now[1] - point3d_last[1]) / (2 * tan(relative_angle_sum)));
+                        //     double y_neg = (point3d_now[0] + point3d_last[0]) / 2.0 - ((point3d_now[1] - point3d_last[1]) / (2 * tan(relative_angle_sum)));
+                        //     circle_center_sum.y += (y_pos < y_neg) ? y_pos : y_neg;
+                        //     circle_center_sum.x += (y_pos < y_neg) ? x_pos : x_neg;
+                        //     circle_center_sum.z += (point3d_now[2] + point3d_last[2]) / 2.0;
+                        // }
                         // RCLCPP_WARN_THROTTLE(
                         //     logger_, 
                         //     steady_clock_, 
@@ -513,32 +513,32 @@ namespace armor_detector
                         //     angle * (180 / CV_PI)
                         // );
 
-                        circle_center_ave = circle_center_sum / ((int)(*iter).second.history_info_.size() - 1);
+                        // circle_center_ave = circle_center_sum / ((int)(*iter).second.history_info_.size() - 1);
 
-                        Armor cur_armor = (*iter).second.new_armor;
-                        Eigen::Vector3d cur_euler = rotationMatrixToEulerAngles(cur_armor.rmat);
-                        Eigen::Vector3d opposite_euler = {cur_euler[0], cur_euler[1], cur_euler[2] + CV_PI};
-                        Eigen::Vector3d opposite_armor3d_world = {2 * circle_center_ave.x - cur_armor.armor3d_world[1], 2 * circle_center_ave.y - cur_armor.armor3d_world[0], circle_center_ave.z};
-                        Eigen::Vector3d opposite_armor3d_cam = coordsolver_.worldToCam(opposite_armor3d_world, rmat_imu_);
-                        cv::Point2f opposite_armor_center2d = coordsolver_.reproject(opposite_armor3d_cam);
-                        cv::Point2f circle_center2d = {(opposite_armor_center2d.x + cur_armor.center2d.x) / 2.0, (opposite_armor_center2d.y + cur_armor.center2d.y) / 2.0};
-                        cv::Point2f reproject_circle_center2d = coordsolver_.reproject(circle_center_ave);
-                        cv::Point2f opposite_armor2d_apex[4] = 
-                        {
-                            cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[2], 2 * circle_center2d.y - cur_armor.apex2d[2]),
-                            cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[3], 2 * circle_center2d.y - cur_armor.apex2d[3]),
-                            cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[0], 2 * circle_center2d.y - cur_armor.apex2d[0]),
-                            cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[1], 2 * circle_center2d.y - cur_armor.apex2d[1])
-                        };
-                        std::vector<Point2f> points_pic(opposite_armor2d_apex, opposite_armor2d_apex + 4);
-                        RotatedRect opposite_rrect = minAreaRect(points_pic); 
-                        cv::Rect bbox = opposite_rrect.boundingRect();
-                        double x = bbox.x - 0.5 * bbox.width * (detector_params_.armor_roi_expand_ratio_width - 1);
-                        double y = bbox.y - 0.5 * bbox.height * (detector_params_.armor_roi_expand_ratio_height - 1);
-                        (*iter).second.opposite_armor_ = cur_armor;
-                        (*iter).second.opposite_armor_.armor3d_world = opposite_armor3d_world;
-                        (*iter).second.opposite_armor_.armor3d_cam = opposite_armor3d_cam;
-                        (*iter).second.rotation_center = {circle_center_ave.x, circle_center_ave.y, circle_center_ave.z};
+                        // Armor cur_armor = (*iter).second.new_armor;
+                        // Eigen::Vector3d cur_euler = rotationMatrixToEulerAngles(cur_armor.rmat);
+                        // Eigen::Vector3d opposite_euler = {cur_euler[0], cur_euler[1], cur_euler[2] + CV_PI};
+                        // Eigen::Vector3d opposite_armor3d_world = {2 * circle_center_ave.x - cur_armor.armor3d_world[1], 2 * circle_center_ave.y - cur_armor.armor3d_world[0], circle_center_ave.z};
+                        // Eigen::Vector3d opposite_armor3d_cam = coordsolver_.worldToCam(opposite_armor3d_world, rmat_imu_);
+                        // cv::Point2f opposite_armor_center2d = coordsolver_.reproject(opposite_armor3d_cam);
+                        // cv::Point2f circle_center2d = {(opposite_armor_center2d.x + cur_armor.center2d.x) / 2.0, (opposite_armor_center2d.y + cur_armor.center2d.y) / 2.0};
+                        // cv::Point2f reproject_circle_center2d = coordsolver_.reproject(circle_center_ave);
+                        // cv::Point2f opposite_armor2d_apex[4] = 
+                        // {
+                        //     cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[2].x, 2 * circle_center2d.y - cur_armor.apex2d[2].x),
+                        //     cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[3].x, 2 * circle_center2d.y - cur_armor.apex2d[3].x),
+                        //     cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[0].x, 2 * circle_center2d.y - cur_armor.apex2d[0].x),
+                        //     cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[1].x, 2 * circle_center2d.y - cur_armor.apex2d[1].x)
+                        // };
+                        // std::vector<Point2f> points_pic(opposite_armor2d_apex, opposite_armor2d_apex + 4);
+                        // RotatedRect opposite_rrect = minAreaRect(points_pic); 
+                        // cv::Rect bbox = opposite_rrect.boundingRect();
+                        // double x = bbox.x - 0.5 * bbox.width * (detector_params_.armor_roi_expand_ratio_width - 1);
+                        // double y = bbox.y - 0.5 * bbox.height * (detector_params_.armor_roi_expand_ratio_height - 1);
+                        // (*iter).second.opposite_armor_ = cur_armor;
+                        // (*iter).second.opposite_armor_.armor3d_world = opposite_armor3d_world;
+                        // (*iter).second.opposite_armor_.armor3d_cam = opposite_armor3d_cam;
+                        // (*iter).second.rotation_center = {circle_center_ave.x, circle_center_ave.y, circle_center_ave.z};
 
                         // Eigen::Vector3d euler = rotationMatrixToEulerAngles((*iter).second.new_armor.rmat);
                         // RCLCPP_WARN_THROTTLE(

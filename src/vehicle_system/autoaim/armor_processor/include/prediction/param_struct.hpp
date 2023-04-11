@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-09 22:50:31
- * @LastEditTime: 2023-04-05 13:45:49
+ * @LastEditTime: 2023-04-11 21:22:28
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -96,6 +96,7 @@ namespace armor_processor
         double rotation_yaw;
         double rotation_pitch;
         double rotation_roll;
+        Eigen::Vector2d angle_offset;
         
         PredictParam()
         {
@@ -112,6 +113,7 @@ namespace armor_processor
             rotation_yaw = 0.0;
             rotation_pitch = 0.0;
             rotation_roll = 0.0;
+            angle_offset = {0.0, 0.0};
         }
     };
 

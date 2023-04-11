@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-09 19:45:11
+ * @LastEditTime: 2023-04-11 21:35:07
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -15,23 +15,12 @@ namespace armor_processor
     {
         RCLCPP_INFO(this->get_logger(), "Starting processor node...");
         
-        flag_ = false;
         processor_ = initArmorProcessor();
         if (!processor_->is_init_)
         {
-            RCLCPP_INFO(this->get_logger(), "Loading param...");
-
-            // Eigen::Vector2d angle_offset = {0.0, 0.0};
-            // angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
-            // angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
-            
-            processor_->loadParam(path_param_.filter_path);
+            RCLCPP_INFO_ONCE(this->get_logger(), "Loading param...");
+            // processor_->loadParam(path_param_.filter_path);
             processor_->init(path_param_.coord_path, path_param_.coord_name);
-            // processor_->is_init_ = true;
-            // if (!updateAngleOffset())
-            // {
-            //     RCLCPP_WARN(this->get_logger(), "Warning while update angle offset param...");
-            // }
         }
 
         // QoS
@@ -88,7 +77,7 @@ namespace armor_processor
                 }
                 else
                 {
-                    RCLCPP_WARN(this->get_logger(), "Img subscribing...");
+                    RCLCPP_WARN_ONCE(this->get_logger(), "Img subscribing...");
                     // 图像的传输方式
                     std::string transport = "raw";
                     // image sub.
@@ -109,7 +98,7 @@ namespace armor_processor
     {
         rclcpp::Time last = img_msg->header.stamp;
         rclcpp::Time now = this->get_clock()->now();
-        RCLCPP_WARN(this->get_logger(), "Delay:%.2fms", (now.nanoseconds() - last.nanoseconds()) / 1e6);
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Delay:%.2fms", (now.nanoseconds() - last.nanoseconds()) / 1e6);
 
         cv::Mat src = cv_bridge::toCvShare(img_msg, "bgr8")->image;
         if (!processTargetMsg(*target_msg, &src))
@@ -172,15 +161,14 @@ namespace armor_processor
         if (target.spinning_switched)
         {
             processor_->error_cnt_ = 0;
-            processor_->is_singer_init_[0] = false;
-            processor_->is_singer_init_[1] = false;
-            processor_->is_singer_init_[2] = false;
+            processor_->is_singer_init_[0][0] = false;
+            processor_->is_singer_init_[0][1] = false;
+            processor_->is_singer_init_[0][2] = false;
+            processor_->is_singer_init_[1][0] = false;
+            processor_->is_singer_init_[1][1] = false;
+            processor_->is_singer_init_[1][2] = false;
             processor_->is_imm_init_ = false;
             is_aimed_ = false;
-            pred_angle_[0][0] = 0.0;
-            pred_angle_[0][1] = 0.0;
-            pred_angle_[1][0] = 0.0;
-            pred_angle_[1][1] = 0.0;
             is_pred_failed_ = false;
             count_ = 0;
             is_pred_ = false;
@@ -189,23 +177,17 @@ namespace armor_processor
         if (target.is_target_lost)
         {
             processor_->error_cnt_ = 0;
-            processor_->is_singer_init_[0] = false;
-            processor_->is_singer_init_[1] = false;
-            processor_->is_singer_init_[2] = false;
+            processor_->is_singer_init_[0][0] = false;
+            processor_->is_singer_init_[0][1] = false;
+            processor_->is_singer_init_[0][2] = false;
+            processor_->is_singer_init_[1][0] = false;
+            processor_->is_singer_init_[1][1] = false;
+            processor_->is_singer_init_[1][2] = false;
             processor_->is_imm_init_ = false;
             is_aimed_ = false;
-            pred_angle_[0][0] = 0.0;
-            pred_angle_[0][1] = 0.0;
-            pred_angle_[1][0] = 0.0;
-            pred_angle_[1][1] = 0.0;
             is_pred_failed_ = false;
             count_ = 0;
             is_pred_ = false;
-
-            // is_aimed_[0] = false;
-            // is_aimed_[1] = false;
-            // tracking_point_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
-            // angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
         }
         else
         {
@@ -257,19 +239,7 @@ namespace armor_processor
             tracking_point_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
             tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
             
-            // is_aimed_[0] = abs(tracking_angle[0] < 0.05 && abs(angle[0]) < 20.0) ? true : false;
-            // is_aimed_[1] = abs(tracking_angle[1] < 0.05 && abs(angle[1]) < 20.0) ? true : false;
-            // angle[0] = (abs(angle[0]) < 0.25) ? tracking_angle[0] : angle[0];
-            // angle[1] = (abs(angle[1]) < 0.25) ? tracking_angle[1] : angle[1];
-            // if (is_aimed_)
-            // {
-            //     if (abs(tracking_angle[0]) < 0.5 && abs(tracking_angle[1]) < 0.5)
-            //     {
-            //         angle = tracking_angle;
-            //     }
-            // }
-
-            if (abs(tracking_angle[0]) < 10.50 && abs(tracking_angle[1]) < 10.50)
+            if (abs(tracking_angle[0]) < 3.50 && abs(tracking_angle[1]) < 3.50)
             {
                 is_pred_ = true;
                 is_aimed_ = true;
@@ -281,29 +251,13 @@ namespace armor_processor
                 is_aimed_ = false;
             } 
 
-            // else if (abs(angle[0]) < 0.50 && abs(angle[1] < 0.50))
-            // {
-            //     is_aimed_ = false;
-            // }
-            // if (is_aimed_)
-            // {
-            //     if (abs(angle[0]) < 0.50 && abs(angle[1]) < 0.50)
-            //     {
-            //         angle = tracking_angle;
-            //     }
-            // }
-
-            // std::cout << "tracking_point_cam: x:" << tracking_point_cam[0] << " y:" << tracking_point_cam[1] << " z:" << tracking_point_cam[2] << std::endl;
-            // std::cout << "predict_cam: x:" << aiming_point_cam[0] << " y:" << aiming_point_cam[1] << " z:" << aiming_point_cam[2] << std::endl;
-            // cout << "angle:" << angle[0] << " " << angle[1] << " tracking_angle:" << tracking_angle[0] << " " << tracking_angle[1] << endl; 
+            RCLCPP_INFO_EXPRESSION(this->get_logger(), debug_param_.show_predict && debug_param_.print_delay, "tracking_point_cam:[%.3f %.3f %.3f]", 
+                tracking_point_cam[0], tracking_point_cam[1], tracking_point_cam[2]);
+            RCLCPP_INFO_EXPRESSION(this->get_logger(), debug_param_.show_predict && debug_param_.print_delay, "predict_point_cam:[%.3f %.3f %.3f]", 
+                aiming_point_cam[0], aiming_point_cam[1], aiming_point_cam[2]);
         }
         param_mutex_.unlock();
 
-        // angle[0] = (is_aimed_[0]) ? angle[0] : tracking_angle[0];
-        // angle[1] = (is_aimed_[1]) ? angle[1] : tracking_angle[1];
-        
-        is_aimed_ = true;
-        is_pred_ = true;
         if (!is_aimed_)
         {
             angle = tracking_angle;
@@ -311,64 +265,7 @@ namespace armor_processor
         }
         else
         {
-            pred_angle_[0][0] = pred_angle_[0][1];
-            pred_angle_[1][0] = pred_angle_[1][1];
-            pred_angle_[0][1] = angle[0];
-            pred_angle_[1][1] = angle[1];
-
-            // if (pred_angle_[0][1] / pred_angle_[0][0] < 0)
-            // {
-            //     count_++;
-            //     is_pred_ = true;
-            // }
-
-            // if (count_ > 2)
-            // {
-            //     if (abs(angle[0]) < 1.0 || abs(angle[1]) < 1.0)
-            //     {
-            //         angle = tracking_angle;
-            //         is_pred_ = false;
-            //     }
-            //     else
-            //     {
-            //         count_ = 0;
-                    is_pred_ = true;
-            //     }
-            // }
-            // if (is_pred_failed_ && count_ > 2)
-            // {
-            //     if ((abs(tracking_angle[0]) > 0.25 || abs(tracking_angle[1]) > 0.25))
-            //     {
-            //         angle = tracking_angle;
-            //         is_pred_failed_ = true;
-            //         is_pred_ = false;
-            //         if (abs(angle[0]) > 2.0 || abs(angle[1]) > 2.0)
-            //         {
-            //             count_ = 0;
-            //             is_pred_failed_ = false;
-            //             is_pred_ = true;
-            //         }
-            //     }
-            //     // count_++;
-            // }
-            // else
-            // {
-            //     is_pred_ = true;
-            //     is_pred_failed_ = false;
-            //     // count_ = 0;
-            //     if (pred_angle_[0][1] / pred_angle_[0][0] < 0)
-            //     {
-            //         count_++;
-            //         angle = tracking_angle;
-            //         is_pred_failed_ = true;
-            //         is_pred_ = false;
-            //         // is_aimed_ = false;
-            //     }
-            // }
-            // if (pred_angle_[1][1] / pred_angle_[1][0] < 0)
-            // {
-            //     angle[1] = tracking_angle[1];
-            // }
+            is_pred_ = true;
         }
         
         // Gimbal info pub.
@@ -416,7 +313,6 @@ namespace armor_processor
             {
                 AutoaimMsg predict_info;
                 predict_info.header.frame_id = "camera_link";
-
                 predict_info.header.stamp = target_info.header.stamp;
                 predict_info.header.stamp.nanosec += sleep_time;
                 predict_info.aiming_point_world.x = (*aiming_point_world)[0];
@@ -427,10 +323,10 @@ namespace armor_processor
                 predict_info.aiming_point_cam.z = aiming_point_cam[2];
                 predict_info.period = target_info.period;
                 predict_info_pub_->publish(std::move(predict_info));
-                // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 20, "target info: %lf %lf %lf", (*aiming_point_world)[0], (*aiming_point_world)[1], (*aiming_point_world)[2]);
+                RCLCPP_INFO_EXPRESSION(this->get_logger(), debug_param_.show_predict && debug_param_.print_delay, "aiming_point_world:[%.3f %.3f %.3f]",
+                    (*aiming_point_world)[0], (*aiming_point_world)[1], (*aiming_point_world)[2]);
             }
         }
-        // cout << "is_pred:" << is_pred_ << endl;
 
         if (debug_param_.show_img && !dst.empty()) 
         {
@@ -564,8 +460,11 @@ namespace armor_processor
         this->declare_parameter("measure_noise", measure_noise_params);
         measure_noise_params = this->get_parameter("measure_noise").as_double_array();
 
-        vector<double> singer_model_params[3] = 
+        vector<double> singer_model_params[6] = 
         {
+            {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0}, 
+            {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0},
+            {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0},
             {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0}, 
             {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0},
             {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0}
@@ -573,13 +472,17 @@ namespace armor_processor
         this->declare_parameter("singer_model_x_axis", singer_model_params[0]);
         this->declare_parameter("singer_model_y_axis", singer_model_params[1]);
         this->declare_parameter("singer_model_z_axis", singer_model_params[2]);
+        this->declare_parameter("gyro_singer_model_x_axis", singer_model_params[3]);
+        this->declare_parameter("gyro_singer_model_y_axis", singer_model_params[4]);
+        this->declare_parameter("gyro_singer_model_z_axis", singer_model_params[5]);
         
         singer_model_params[0] = this->get_parameter("singer_model_x_axis").as_double_array();
         singer_model_params[1] = this->get_parameter("singer_model_y_axis").as_double_array();
         singer_model_params[2] = this->get_parameter("singer_model_z_axis").as_double_array();
+        singer_model_params[3] = this->get_parameter("gyro_singer_model_x_axis").as_double_array();
+        singer_model_params[4] = this->get_parameter("gyro_singer_model_y_axis").as_double_array();
+        singer_model_params[5] = this->get_parameter("gyro_singer_model_z_axis").as_double_array();
 
-        // cout << "singer_param:" <<  singer_model_params[0][0] << " " << singer_model_params[0][1] << " " << singer_model_params[0][2] << " " <<  singer_model_params[0][3]
-        //     << " " <<  singer_model_params[0][4] << " " <<  singer_model_params[0][5] << " " <<  singer_model_params[0][6] << " " <<  singer_model_params[0][7] << endl;
         predict_param_.filter_model_param.imm_model_trans_prob_params = imm_model_trans_prob_params;
         predict_param_.filter_model_param.imm_model_prob_params = imm_model_prob_params;
         predict_param_.filter_model_param.process_noise_params = process_noise_params;
@@ -599,6 +502,7 @@ namespace armor_processor
         result.successful = false;
         result.reason = "debug";
         result.successful = updateParam();
+        result.successful = updateAngleOffset();
         
         param_mutex_.lock();
         processor_->predict_param_ = this->predict_param_;
@@ -609,17 +513,10 @@ namespace armor_processor
 
     bool ArmorProcessorNode::updateAngleOffset()
     {
-        if (processor_->is_init_)
-        {
-            Eigen::Vector2d angle_offset = {0.0, 0.0};
-            angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
-            angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
-            processor_->coordsolver_.setStaticAngleOffset(angle_offset);
-        }
-        else
-        {
-            return false;
-        }
+        Eigen::Vector2d angle_offset = {0.0, 0.0};
+        angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
+        angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
+        processor_->coordsolver_.setStaticAngleOffset(angle_offset);
         return true;
     }
 
@@ -643,7 +540,9 @@ namespace armor_processor
         predict_param_.rotation_yaw = this->get_parameter("rotation_yaw").as_double();
         predict_param_.rotation_pitch = this->get_parameter("rotation_pitch").as_double();
         predict_param_.rotation_roll = this->get_parameter("rotation_roll").as_double();
-        
+        predict_param_.angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
+        predict_param_.angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
+
         //Debug param.
         debug_param_.show_img = this->get_parameter("show_img").as_bool();
         debug_param_.using_imu = this->get_parameter("using_imu").as_bool();
@@ -657,17 +556,6 @@ namespace armor_processor
         debug_param_.disable_fitting = this->get_parameter("disable_fitting").as_bool();
         debug_param_.show_transformed_info = this->get_parameter("show_transformed_info").as_bool();
         debug_param_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
-
-        // is_aimed_[0] = false;
-        // is_aimed_[1] = false;
-        is_aimed_ = false;
-        pred_angle_[0][0] = 0.0;
-        pred_angle_[0][1] = 0.0;
-        pred_angle_[1][0] = 0.0;
-        pred_angle_[1][1] = 0.0;
-        is_pred_failed_ = false;
-        count_ = 0;
-        is_pred_ = false;
 
         return true;
     }

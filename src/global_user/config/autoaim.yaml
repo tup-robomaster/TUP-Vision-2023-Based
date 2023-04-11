@@ -79,16 +79,16 @@
     max_time_delta: 1000
     max_cost: 10
     max_v: 8
-    min_fitting_lens: 3
+    min_fitting_lens: 5
     shoot_delay: 10
     window_size: 3
     yaw_angle_offset: -0.5
     pitch_angle_offset: 0.5
     max_offset_value: 0.45
     reserve_factor: 500.0 #储备系数(>=1)
-    rotation_yaw: 0.0
-    rotation_pitch: 0.0
-    rotation_roll: 0.0
+    # rotation_yaw: 0.0
+    # rotation_pitch: 0.0
+    # rotation_roll: 0.0
 
   # Debug params.
     debug: true
@@ -101,10 +101,10 @@
     x_axis_filter: true
     y_axis_filter: true
     z_axis_filter: true
-    # disable_filter: true
-    # disable_fitting: false
     show_aim_cross: true
     show_fps: false
+    # disable_filter: true
+    # disable_fitting: false
 
   # Camera params.
     camera_type: 3 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
@@ -141,6 +141,10 @@
     singer_model_x_axis: [20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0, 1.0] 
     singer_model_y_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0] 
     singer_model_z_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0]
+
+    gyro_singer_model_x_axis: [20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0, 1.0]
+    gyro_singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.18, 1.85, 1.0, 1.0, 0.1]
+    gyro_singer_model_z_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0]
 
     # singer_model_x_axis: [1.0, 10.0, 0.1, 0.8, 5.00, 0.1, 1.0, 1.0, 1.0] 
     # singer_model_y_axis: [5.0, 10.0, 0.1, 0.8, 16.00, 0.001, 1.0, 0.2, 4.0] 

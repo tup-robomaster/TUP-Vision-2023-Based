@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-03-21 13:06:09
+ * @LastEditTime: 2023-04-11 21:31:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -15,8 +15,12 @@ namespace armor_processor
         is_init_ = false;
         is_imm_init_ = false;
         // is_ekf_init = false;
-        is_singer_init_[0] = false;
-        is_singer_init_[1] = false;
+        is_singer_init_[0][0] = false;
+        is_singer_init_[0][1] = false;
+        is_singer_init_[0][2] = false;
+        is_singer_init_[1][0] = false;
+        is_singer_init_[1][1] = false;
+        is_singer_init_[1][2] = false;
 
         car_id_map_ = {
             {"B0", 0}, {"B1", 1},
@@ -34,8 +38,12 @@ namespace armor_processor
         is_init_ = false;
         is_imm_init_ = false;
         // is_ekf_init = false;
-        is_singer_init_[0] = false;
-        is_singer_init_[1] = false;
+        is_singer_init_[0][0] = false;
+        is_singer_init_[0][1] = false;
+        is_singer_init_[0][2] = false;
+        is_singer_init_[1][0] = false;
+        is_singer_init_[1][1] = false;
+        is_singer_init_[1][2] = false;
 
         car_id_map_ = {
             {"B0", 0}, {"B1", 1},
@@ -64,6 +72,8 @@ namespace armor_processor
         try
         {
             auto success = coordsolver_.loadParam(coord_path, coord_name);
+            success = coordsolver_.setStaticAngleOffset(predict_param_.angle_offset);
+            is_init_ = true;
         }
         catch(const std::exception& e)
         {
@@ -122,9 +132,12 @@ namespace armor_processor
         if(target.target_switched)
         {
             // is_ekf_init = false;
-            is_singer_init_[0] = false;
-            is_singer_init_[1] = false;
-            is_singer_init_[2] = false;
+            is_singer_init_[0][0] = false;
+            is_singer_init_[0][1] = false;
+            is_singer_init_[0][2] = false;
+            is_singer_init_[1][0] = false;
+            is_singer_init_[1][1] = false;
+            is_singer_init_[1][2] = false;
             is_imm_init_ = false;
         }
 
@@ -146,9 +159,12 @@ namespace armor_processor
         {
             // is_ekf_init = false;
             is_imm_init_ = false;
-            is_singer_init_[0] = false;
-            is_singer_init_[1] = false;
-            is_singer_init_[2] = false;
+            is_singer_init_[0][0] = false;
+            is_singer_init_[0][1] = false;
+            is_singer_init_[0][2] = false;
+            is_singer_init_[1][0] = false;
+            is_singer_init_[1][1] = false;
+            is_singer_init_[1][2] = false;
         }
 
         auto hit_point = predict(target, target.timestamp, sleep_time, &src);
