@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-12 13:30:18
+ * @LastEditTime: 2023-04-12 21:50:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -624,6 +624,13 @@ namespace armor_processor
         singer_kf_[0][axis].F_ = singer_model_[0][axis].F();
         singer_kf_[0][axis].H_ = singer_model_[0][axis].H();
         singer_kf_[0][axis].C_ = singer_model_[0][axis].C();
+        singer_kf_[0][axis].P_ = singer_model_[0][axis].P();
+        singer_kf_[0][axis].Q_ = singer_model_[0][axis].Q();
+        singer_kf_[0][axis].R_ = singer_model_[0][axis].R();
+
+        singer_kf_[1][axis].F_ = singer_model_[1][axis].F();
+        singer_kf_[1][axis].H_ = singer_model_[1][axis].H();
+        singer_kf_[1][axis].C_ = singer_model_[1][axis].C();
         singer_kf_[1][axis].P_ = singer_model_[1][axis].P();
         singer_kf_[1][axis].Q_ = singer_model_[1][axis].Q();
         singer_kf_[1][axis].R_ = singer_model_[1][axis].R();
