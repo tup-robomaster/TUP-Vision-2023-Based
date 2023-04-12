@@ -13,18 +13,7 @@
   <depend>rclcpp_components</depend>
   <depend>OpenCV</depend>
   <depend>geometry_msgs</depend>
-  <depend>fmt</depend>
-  <depend>glog</depend>
   <depend>yaml-cpp</depend>
-
-  <depend>std_msgs</depend>
-  <depend>rclpy</depend>
-  <depend>rclcpp_lifecycle</depend>
-  <depend>message_filters</depend>
-  <depend>sensor_msgs</depend>
-  <depend>visualization_msgs</depend>
-  <depend>angles</depend>
-
   <depend>camera_info_manager</depend>
   <depend>image_transport</depend>
   <depend>camera_calibration_parsers</depend>

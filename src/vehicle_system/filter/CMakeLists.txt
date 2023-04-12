@@ -12,28 +12,19 @@ find_package(rclcpp_components REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(rclpy REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
 find_package(message_filters REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(visualization_msgs REQUIRED)
-find_package(angles REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED COMPONENTS EigenSparse)
-# find_package(matplotlib_cpp REQUIRED)
+find_package(matplotlib_cpp REQUIRED)
 
 set(dependencies
   geometry_msgs
   rclcpp
-  rclcpp_lifecycle
   sensor_msgs
   std_msgs
-  visualization_msgs
-  angles
   OpenCV
   Eigen3
   Ceres
-  # matplotlib_cpp
   global_user
   global_interface
 )
@@ -77,34 +68,34 @@ target_link_libraries(${PROJECT_NAME}
   # ${dependencies}
   ${OpenCV_LIBRARIES}
   yaml-cpp
-  fmt
+  fmt 
   glog
 )
 
-# add_executable(testing 
-#   # test/imm_system_model.hpp
-#   # test/imm.hpp
-#   # test/imm.cpp
-#   test/system_model.cpp 
-#   test/system_model.hpp
-#   test/measurement_model.cpp
-#   test/main.cpp
-# )
+add_executable(testing 
+  # test/imm_system_model.hpp
+  # test/imm.hpp
+  # test/imm.cpp
+  test/system_model.cpp 
+  test/system_model.hpp
+  test/measurement_model.cpp
+  test/main.cpp
+)
 
-# target_link_libraries(testing
-#   ${PROJECT_NAME}
-#   ${Eigen3_LIBRARIES}
-#   ceres
-#   # matplotlib_cpp::matplotlib_cpp
-# )
+target_link_libraries(testing
+  ${PROJECT_NAME}
+  ${Eigen3_LIBRARIES}
+  ceres
+  matplotlib_cpp::matplotlib_cpp
+)
 
-# add_executable(figure
-#   test/figure.cpp
-# )
+add_executable(figure
+  test/figure.cpp
+)
 
-# target_link_libraries(figure
-#   matplotlib_cpp::matplotlib_cpp
-# )
+target_link_libraries(figure
+  matplotlib_cpp::matplotlib_cpp
+)
 
 # add_executable(imm_testing 
 #   test/imm.hpp
@@ -115,7 +106,7 @@ target_link_libraries(${PROJECT_NAME}
 
 # target_link_libraries(imm_testing 
 #   ${PROJECT_NAME}
-#   ceres.so
+#   ceres
 # )
       
 # 添加头文件地址
@@ -138,11 +129,11 @@ install(
   DESTINATION include
 )
 
-# install(TARGETS 
-#   # testing 
-#   # figure
-#   DESTINATION lib/${PROJECT_NAME}
-# )
+install(TARGETS 
+  testing 
+  figure
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 ## TODO:
 # install(DIRECTORY

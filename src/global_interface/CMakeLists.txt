@@ -27,6 +27,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/SpinInfo.msg"
   "msg/Detection.msg"
   "msg/DetectionArray.msg"
+  "msg/Decision.msg"
   # "srv/*.srv"
   # "action/*.action"
   DEPENDENCIES

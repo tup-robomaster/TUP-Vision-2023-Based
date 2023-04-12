@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-04-10 12:59:19
+LastEditTime: 2023-04-12 14:46:11
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -73,11 +73,11 @@ def generate_launch_description():
             package='serialport',
             executable='serialport_node',
             name='serialport',
-            output='screen',
+            output='log', # log/screen/both
             emulate_tty=True,
             parameters=[{
                 'using_port': True,
-                'tracking_target': False,
+                'tracking_target': True,
                 'print_serial_info': False,
                 'print_referee_info': False
             }],
@@ -89,7 +89,7 @@ def generate_launch_description():
             package='rclcpp_components',
             executable='component_container',
             namespace='',
-            output='screen',
+            output='log',
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'True'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -121,7 +121,7 @@ def generate_launch_description():
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
-            output='screen',
+            output='log',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'usb'"])),
@@ -160,7 +160,7 @@ def generate_launch_description():
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
-            output='screen',
+            output='log',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'daheng'"])),
@@ -199,7 +199,7 @@ def generate_launch_description():
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
-            output='screen',
+            output='log',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'hik'"])),
@@ -238,7 +238,7 @@ def generate_launch_description():
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
-            output='screen',
+            output='log',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'mvs'"])),
@@ -278,7 +278,7 @@ def generate_launch_description():
             package='armor_processor',
             executable='armor_processor_node',
             namespace='armor_processor',
-            output='screen',
+            output='log', 
             emulate_tty=True,
             parameters=[armor_processor_params],
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))

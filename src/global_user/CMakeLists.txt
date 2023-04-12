@@ -82,7 +82,7 @@ install(
 install(DIRECTORY
   launch
   config 
-  # data
+  data
   DESTINATION share/${PROJECT_NAME}
 )
 

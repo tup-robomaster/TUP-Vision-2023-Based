@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-03-29 20:18:14
+ * @LastEditTime: 2023-04-12 14:36:36
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -28,6 +28,7 @@
 #include "global_interface/msg/car_pos.hpp"
 #include "global_interface/msg/obj_hp.hpp"
 #include "global_interface/msg/game_info.hpp"
+#include "global_interface/msg/decision.hpp"
 #include "../../global_user/include/coordsolver.hpp"
 
 using namespace global_user;
@@ -42,6 +43,7 @@ namespace serialport
         typedef global_interface::msg::ObjHP ObjHPMsg;
         typedef global_interface::msg::CarPos CarPosMsg;
         typedef global_interface::msg::GameInfo GameMsg;
+        typedef global_interface::msg::Decision DecisionMsg;
 
     public:
         SerialPortNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
@@ -55,7 +57,12 @@ namespace serialport
         void buffMsgCallback(GimbalMsg::SharedPtr msg);
         void sentryNavCallback(geometry_msgs::msg::Twist::SharedPtr msg);
         void serialWatcher();
-    
+
+        // void decisionMsgCallback(DecisionMsg::SharedPtr msg);
+        // rclcpp::Subscription<DecisionMsg>::SharedPtr decision_msg_sub_; 
+        // DecisionMsg decision_msg_;
+        // mutex decision_mutex_;
+
     private:
         int baud_;
         std::string id_;

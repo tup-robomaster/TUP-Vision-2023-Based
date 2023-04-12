@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-04-04 00:01:49
+ * @LastEditTime: 2023-04-12 14:43:10
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -27,10 +27,10 @@ namespace serialport
         // QoS
         rclcpp::QoS qos(0);
         qos.keep_last(1);
-        // qos.best_effort();
         qos.reliable();
         qos.durability();
         qos.deadline();
+        // qos.best_effort();
         // qos.durability_volatile();
    
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
@@ -62,6 +62,13 @@ namespace serialport
             qos,
             std::bind(&SerialPortNode::buffMsgCallback, this, _1)
         );
+
+        // //决策消息订阅
+        // decision_msg_sub_ = this->create_subscription<DecisionMsg>(
+        //     "robot_decision/decision",
+        //     qos,
+        //     std::bind(&SerialPortNode::decisionMsgCallback, this, _1)
+        // );
         
         //创建发送数据定时器
         // timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
@@ -93,6 +100,13 @@ namespace serialport
         // if (receive_thread_.joinable())
         //     receive_thread_.join();
     }
+
+    // void SerialPortNode::decisionMsgCallback(DecisionMsg::SharedPtr msg)
+    // {
+    //     decision_mutex_.lock();
+    //     decision_msg_ = *msg;
+    //     decision_mutex_.unlock();
+    // }
 
     /**
      * @brief 串口监管线程
@@ -270,12 +284,18 @@ namespace serialport
     bool SerialPortNode::sendData(GimbalMsg::SharedPtr target_info)
     {
         int mode = mode_;
+        // if (mode == SENTRY_NORMAL)
+        // {
+        //     decision_mutex_.lock();
+        //     mode = decision_msg_.mode;
+        //     decision_mutex_.unlock();
+        // }
         // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
         if (this->using_port_)
         {   
             VisionAimData vision_data;
             if (mode == AUTOAIM || mode == HERO_SLING || mode == OUTPOST_ROTATION_MODE
-            || mode == SMALL_BUFF || mode == BIG_BUFF)
+            || mode == SMALL_BUFF || mode == BIG_BUFF || mode == SENTRY_NORMAL)
             {
                 // RCLCPP_WARN(this->get_logger(), "Sub autoaim msg!!!");
                 vision_data = 

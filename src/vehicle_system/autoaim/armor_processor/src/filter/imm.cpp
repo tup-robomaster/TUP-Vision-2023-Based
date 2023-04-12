@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 16:30:16
- * @LastEditTime: 2023-02-05 00:55:12
+ * @LastEditTime: 2023-03-17 19:19:24
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/imm.cpp
  */
 #include "../../include/filter/imm.hpp"
@@ -13,7 +13,11 @@ namespace armor_processor
     IMM::~IMM(){}
 
     IMM::IMM(const IMM& imm)
-    {}
+    {
+        this->transfer_prob_ = imm.transfer_prob_;
+        this->model_num_ = imm.model_num_;
+        this->P_ = imm.P_;
+    }
 
     /**
      * @brief 添加运动模型
@@ -96,9 +100,9 @@ namespace armor_processor
         //计算交互后各模型概率
         //step1
         this->c_ = Eigen::VectorXd::Zero(this->model_num_);
-        for(size_t j = 0; j < this->model_num_; j++)
+        for(int j = 0; j < this->model_num_; j++)
         {
-            for(size_t i = 0; i < this->model_num_; i++)
+            for(int i = 0; i < this->model_num_; i++)
             {
                 this->c_(j) += this->transfer_prob_(i, j) * this->model_prob_(i);
             }
@@ -136,7 +140,6 @@ namespace armor_processor
         }
     }
 
-    
     void IMM::updateState()
     {
 
@@ -150,7 +153,7 @@ namespace armor_processor
      */
     void IMM::updateState(const Eigen::VectorXd& z, const double& dt)
     {
-        for(size_t i = 0; i < this->model_num_; i++)
+        for(int i = 0; i < this->model_num_; i++)
         {
             this->models_[i]->Predict(dt);
             // if(z != nullptr)
@@ -166,12 +169,12 @@ namespace armor_processor
     {
         //模型概率更新
         double c_sum = 0;
-        for(size_t i = 0; i < this->model_num_; i++)
+        for(int i = 0; i < this->model_num_; i++)
         {
             c_sum += this->models_[i]->getLikelihoodValue() * this->c_(i);
         }
 
-        for(size_t i = 0; i < this->model_num_; i++)
+        for(int i = 0; i < this->model_num_; i++)
         {
             this->model_prob_(i) = (1 / c_sum) * this->models_[i]->getLikelihoodValue() * this->c_(i);
         }
@@ -185,7 +188,7 @@ namespace armor_processor
     {
         this->x_ = this->X_ * this->model_prob_;
 
-        for(size_t i = 0; i < this->model_num_; i++)
+        for(int i = 0; i < this->model_num_; i++)
         {
             //TODO:
             Eigen::MatrixXd v = this->X_.col(i) - this->x_;
