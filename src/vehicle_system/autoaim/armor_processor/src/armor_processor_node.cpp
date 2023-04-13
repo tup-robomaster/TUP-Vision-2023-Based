@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-11 21:35:07
+ * @LastEditTime: 2023-04-14 03:53:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -502,22 +502,13 @@ namespace armor_processor
         result.successful = false;
         result.reason = "debug";
         result.successful = updateParam();
-        result.successful = updateAngleOffset();
+        result.successful = processor_->coordsolver_.setStaticAngleOffset(predict_param_.angle_offset);
         
         param_mutex_.lock();
         processor_->predict_param_ = this->predict_param_;
         processor_->debug_param_ = this->debug_param_;
         param_mutex_.unlock();
         return result;
-    }
-
-    bool ArmorProcessorNode::updateAngleOffset()
-    {
-        Eigen::Vector2d angle_offset = {0.0, 0.0};
-        angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
-        angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
-        processor_->coordsolver_.setStaticAngleOffset(angle_offset);
-        return true;
     }
 
     /**

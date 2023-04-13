@@ -21,7 +21,7 @@ V3.0
 |    ---    |        ---     |    ---         |
 |global_user|     定义全局接口 |包含通用函数/结构体/枚举类型|
 |global_interface|自定义消息   |全局msg定义|
-|serialport|      串口驱动     |与下位机通信的协议|
+|serialport|      串口驱动     |定义与下位机的通信协议|
 |camera_driver|相机驱动        | 包含大恒/海康/USB相机驱动接口|
 |armor_detector| 装甲板检测节点 | 识别出待打击目标|
 |armor_processor| 装甲板预测节点|对待打击目标进行预测|
@@ -64,12 +64,12 @@ OpenCV  |https://github.com/opencv/opencv/tree/4.2.0 \ https://github.com/opencv
   - 调试的参数主要是CS模型(singer_model)和IMM模型对应的参数(trans_prob_matrix\model_prob_vector\process_noise\measure_noise)。
 - Compile
     
-    colcon build --symlink-install \
-    . install/setup.bash
+        colcon build --symlink-install 
+        . install/setup.bash
 
 - Command
         
-    ros2 launch global_user autoaim_bringup.launch.py
+        ros2 launch global_user autoaim_bringup.launch.py
 
 #### 2.能量机关调试
 - Prepare
@@ -82,17 +82,18 @@ OpenCV  |https://github.com/opencv/opencv/tree/4.2.0 \ https://github.com/opencv
 
 - Compile
     
-    colcon build --symlink-install \
-    . install/setup.bash
+        colcon build --symlink-install 
+        . install/setup.bash
 
 - Command
 
-    ros2 launch global_user buff_bringup.launch.py
+        ros2 launch global_user buff_bringup.launch.py
 
 ## 5.Develop log
 
 | Date |  Issue   |   Debug    |
 | ---  |  ---     | ---   | 
+|2023-04-14|相机驱动节点加入ros2bag录制图像数据和回放数据功能|比赛前须打开此功能。|
 |2023-03-xx| Fixed image transport delay problem.(0.5ms左右)| 将图像订阅者的qos的depth设置为1。|
 |2022-12-11| Update buff node.| |
 |2022-12-01| Merge armor_detector node and armor_processor node to one node.||

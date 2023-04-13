@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-04-12 14:42:38
+ * @LastEditTime: 2023-04-14 02:36:33
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -18,6 +18,9 @@
 #include <camera_info_manager/camera_info_manager.hpp>
 #include <rcl_interfaces/msg/set_parameters_result.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <rosbag2_cpp/writer.hpp>
+#include <rosbag2_cpp/writers/sequential_writer.hpp>
+#include <rosbag2_storage/serialized_bag_message.hpp>
 
 //opencv
 #include <opencv2/opencv.hpp>
@@ -88,11 +91,14 @@ namespace camera_driver
         cv::Mat frame_;
         bool is_cam_open_;
         int camera_type_;
+        string camera_topic_;
 
         // 图像保存
         bool save_video_;
         bool show_img_;
-        VideoRecordParam video_record_param_;
+        bool using_ros2bag_;
+        int frame_cnt_;
+        std::unique_ptr<rosbag2_cpp::writers::SequentialWriter> writer_;
 
         void decisionMsgCallback(DecisionMsg::SharedPtr msg);
         rclcpp::Subscription<DecisionMsg>::SharedPtr decision_msg_sub_; 
@@ -120,14 +126,6 @@ namespace camera_driver
             RCLCPP_ERROR(this->get_logger(), "Error while initializing camera: %s", e.what());
         }
 
-        if(save_video_)
-        {   // Video save.
-            videoRecorder(video_record_param_);
-            RCLCPP_INFO(this->get_logger(), "Saving video...");
-        }
-        else
-            RCLCPP_INFO(this->get_logger(), "No save video...");
-
         //QoS    
         rclcpp::QoS qos(0);
         qos.keep_last(1);
@@ -148,10 +146,41 @@ namespace camera_driver
         string transport_type = "raw";
     
         image_size_ = image_info_.image_size_map[camera_type_];
-        string camera_topic = image_info_.camera_topic_map[camera_type_];
+        camera_topic_ = image_info_.camera_topic_map[camera_type_];
+        
+        if(save_video_)
+        {   // Video save.
+            RCLCPP_WARN_ONCE(this->get_logger(), "Saving video...");
+            time_t tmpcal_ptr;
+            tm *tmp_ptr = nullptr;
+            tmpcal_ptr = time(nullptr);
+            tmp_ptr = localtime(&tmpcal_ptr);
+            char now[64];
+            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", tmp_ptr);  // 以时间为名字
+            std::string now_string(now);
+            string pkg_path = get_package_share_directory("camera_driver");
+            string save_path = this->declare_parameter("save_path", "/recorder/video/gyro_video.webm");
+            std::string path = pkg_path + save_path + now_string;
+
+            writer_ = std::make_unique<rosbag2_cpp::writers::SequentialWriter>();
+            rosbag2_storage::StorageOptions storage_options({path, "sqlite3"});
+            rosbag2_cpp::ConverterOptions converter_options({
+                rmw_get_serialization_format(),
+                rmw_get_serialization_format()
+            });
+            writer_->open(storage_options, converter_options);
+            writer_->create_topic({
+                camera_topic_,
+                "sensor_msgs::msg::Image",
+                rmw_get_serialization_format(),
+                ""
+            });
+        }
+        else
+            RCLCPP_WARN_ONCE(this->get_logger(), "No save video...");
 
         // Create img publisher.
-        this->camera_pub_ = image_transport::create_camera_publisher(this, camera_topic, rmw_qos);
+        this->camera_pub_ = image_transport::create_camera_publisher(this, camera_topic_, rmw_qos);
 
         // Open camera.
         if(!cam_driver_->open())
@@ -159,7 +188,7 @@ namespace camera_driver
         else
             is_cam_open_ = true;
 
-        image_msg_.header.frame_id = camera_topic;
+        image_msg_.header.frame_id = camera_topic_;
         image_msg_.encoding = "bgr8";
         img_callback_timer_ = this->create_wall_timer(1ms, std::bind(&CameraBaseNode::imageCallback, this));
         camera_watcher_timer_ = rclcpp::create_timer(this, this->get_clock(), 100ms, std::bind(&CameraBaseNode::cameraWatcher, this));
@@ -235,14 +264,15 @@ namespace camera_driver
             }
         }
 
-        if (!cam_driver_->get_frame(frame_, image_msg_))
+        if (!cam_driver_->getImage(frame_, image_msg_))
         {
             RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
             is_cam_open_ = false;
             return;
         }
 
-        image_msg_.header.stamp = this->get_clock()->now();
+        rclcpp::Time now = this->get_clock()->now();
+        image_msg_.header.stamp = now;
         camera_info_msg_.header = image_msg_.header;
         image_msg_.width = this->image_size_.width;
         image_msg_.height = this->image_size_.height;
@@ -250,13 +280,36 @@ namespace camera_driver
             
         if (save_video_)
         {   // Video recorder.
-            videoRecorder(video_record_param_, &frame_);
+            ++frame_cnt_;
+            if (frame_cnt_ % 4 == 0)
+            {
+                sensor_msgs::msg::Image image_msg = image_msg_;
+                auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
+                auto serialized_msg = rclcpp::SerializedMessage();
+                serializer.serialize_message(&image_msg, &serialized_msg);
+                auto bag_msg = std::make_shared<rosbag2_storage::SerializedBagMessage>();
+                bag_msg->serialized_data = std::shared_ptr<rcutils_uint8_array_t>(
+                    new rcutils_uint8_array_t,
+                    [this](rcutils_uint8_array_t* msg)
+                    {
+                        if (rcutils_uint8_array_fini(msg) != RCUTILS_RET_OK)
+                        {
+                            RCLCPP_ERROR(this->get_logger(), "RCUTILS_RET_INVALID_ARGUMENT OR RCUTILS_RET_ERROR");
+                        }
+                        delete msg;
+                    }
+                );
+                *bag_msg->serialized_data = serialized_msg.release_rcl_serialized_message();
+                bag_msg->topic_name = camera_topic_;
+                bag_msg->time_stamp = now.nanoseconds();
+                writer_->write(bag_msg);
+            }
         }
         if (show_img_)
-            {
-                cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
-                cv::imshow("frame", frame_);
-                cv::waitKey(1);
+        {
+            cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
+            cv::imshow("frame", frame_);
+            cv::waitKey(1);
         }
     }
 

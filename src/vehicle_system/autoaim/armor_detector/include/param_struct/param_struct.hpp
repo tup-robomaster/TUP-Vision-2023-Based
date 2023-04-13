@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-04-09 22:01:39
+ * @LastEditTime: 2023-04-14 03:36:47
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -185,8 +185,10 @@ namespace armor_detector
         double armor_roi_expand_ratio_width;
         double armor_roi_expand_ratio_height;
         double armor_conf_high_thres;
-
+        
         Color color;
+        Eigen::Vector2d angle_offset;
+
         DetectorParam()
         {
             color = RED;
@@ -203,6 +205,8 @@ namespace armor_detector
             armor_roi_expand_ratio_width = 1.1;
             armor_roi_expand_ratio_height = 1.5;
             armor_conf_high_thres = 0.82;
+
+            angle_offset = {0.0, 0.0};
         }
     };
 

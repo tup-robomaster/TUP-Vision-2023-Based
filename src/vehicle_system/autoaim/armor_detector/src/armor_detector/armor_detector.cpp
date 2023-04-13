@@ -254,8 +254,8 @@ namespace armor_detector
             }
 
             // 单目PnP
-            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
-            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
+            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
+            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
             // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
             
             //防止装甲板类型出错导致解算问题，首先尝试切换装甲板类型，若仍无效则直接跳过该装甲板

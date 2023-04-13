@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-12 16:21:57
+ * @LastEditTime: 2023-04-14 03:47:26
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -419,6 +419,7 @@ namespace armor_detector
         result.successful = false;
         result.reason = "debug";
         result.successful = updateParam();
+        result.successful = detector_->coordsolver_.setStaticAngleOffset(detector_params_.angle_offset);
         
         param_mutex_.lock();
         detector_->detector_params_ = this->detector_params_;
@@ -486,6 +487,7 @@ namespace armor_detector
         Eigen::Vector2d angle_offset = {0.0, 0.0};
         angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
         angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
+        RCLCPP_WARN(this->get_logger(), "angle_offset:[%.3f, %.3f]", angle_offset[0], angle_offset[1]);
 
         return std::make_unique<Detector>(path_params_, detector_params_, debug_, gyro_params_, angle_offset);
     }
@@ -514,6 +516,8 @@ namespace armor_detector
         detector_params_.armor_roi_expand_ratio_width = this->get_parameter("armor_roi_expand_ratio_width").as_double();
         detector_params_.armor_roi_expand_ratio_height = this->get_parameter("armor_roi_expand_ratio_height").as_double();
         detector_params_.armor_conf_high_thres = this->get_parameter("armor_conf_high_thres").as_double();
+        detector_params_.angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
+        detector_params_.angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
 
         debug_.detect_red = this->get_parameter("detect_red").as_bool();
         debug_.debug_without_com  = this->get_parameter("debug_without_com").as_bool();

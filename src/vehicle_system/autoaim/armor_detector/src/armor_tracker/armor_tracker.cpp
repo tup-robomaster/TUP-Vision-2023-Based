@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-04-09 16:45:17
+ * @LastEditTime: 2023-04-14 02:25:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_tracker/armor_tracker.cpp
  */
 #include "../../include/armor_tracker/armor_tracker.hpp"
@@ -66,7 +66,7 @@ namespace armor_detector
      */
     bool ArmorTracker::update(Armor new_add_armor, int64_t new_timestamp)
     {
-        if (history_info_.size() <= max_history_len)
+        if ((int)history_info_.size() <= max_history_len)
         {   // 若历史队列装甲板信息小于给定阈值，直接将当前目标信息放入队列
             history_info_.push_back(new_add_armor);
         }
@@ -83,7 +83,6 @@ namespace armor_detector
 
         this->calcTargetScore();  //计算装甲板分数，作为打击目标切换判据，防止随意切换造成云台乱抖
         this->is_initialized = true;
-        // cout << "update_dt:" << new_timestamp / 1e6 << endl;
         return true;
     }
 

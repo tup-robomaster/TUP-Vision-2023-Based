@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-04-12 14:46:11
+LastEditTime: 2023-04-13 18:42:40
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -14,6 +14,7 @@ from launch.substitutions import PythonExpression
 from launch_ros.descriptions import ComposableNode
 from launch.substitutions import ThisLaunchFileDir
 from launch.actions import IncludeLaunchDescription
+from launch.actions import ExecuteProcess
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node, ComposableNodeContainer
 from ament_index_python.packages import get_package_share_directory
@@ -31,6 +32,7 @@ def generate_launch_description():
     camera_type = LaunchConfiguration('camera_type')
     use_serial = LaunchConfiguration('using_imu')
     debug_pred = LaunchConfiguration("debug_pred")
+    # record_topic_args = LaunchConfiguration("record_topic")
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
@@ -49,6 +51,12 @@ def generate_launch_description():
         default_value='False',
         description='debug armor prediction.'
     )
+
+    # declare_record_topic = DeclareLaunchArgument(
+    #     name='record_topic',
+    #     default_value='/daheng_img',
+    #     description='hik daheng mvs usb'
+    # )
     
     with open(camera_param_file, 'r') as f:
         usb_cam_params = yaml.safe_load(f)['/usb_cam_driver']['ros__parameters']
@@ -68,6 +76,12 @@ def generate_launch_description():
         declare_camera_type,
         declare_use_serial,
         declare_debug_pred,
+        # declare_record_topic,
+
+        # ExecuteProcess(
+        #     cmd=['ros2', 'bag', 'record', record_topic_args],
+        #     output='screen',
+        # ),
 
         Node(
             package='serialport',
@@ -121,7 +135,7 @@ def generate_launch_description():
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
-            output='log',
+            output='screen',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'usb'"])),
