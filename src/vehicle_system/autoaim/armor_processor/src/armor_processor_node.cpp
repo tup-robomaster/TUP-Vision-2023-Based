@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-14 03:53:25
+ * @LastEditTime: 2023-04-14 14:36:22
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -210,10 +210,10 @@ namespace armor_processor
             param_mutex_.lock();
             if (target_info.mode == SENTRY_NORMAL)
             {
-                RCLCPP_INFO(this->get_logger(), "Sentry mode...");
+                RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sentry mode...");
                 if(processor_->autoShootingLogic(target, post_process_info))
                 {
-                    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Auto shooting...");
+                    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Auto shooting...");
                     aiming_point_world = std::make_unique<Eigen::Vector3d>(post_process_info.pred_3d_pos);
                     // *aiming_point_world = rmat.transpose() * (*aiming_point_world);
                     // *aiming_point_world = rmat.transpose() * (*aiming_point_world);
@@ -285,6 +285,7 @@ namespace armor_processor
         gimbal_info.is_switched = target_info.target_switched;
         gimbal_info.is_spinning = target_info.is_spinning;
         gimbal_info.is_spinning_switched = target_info.spinning_switched;
+        gimbal_info.is_shooting = (post_process_info.find_target && post_process_info.is_shooting);
         gimbal_info.is_prediction = is_pred_; 
         gimbal_info_pub_->publish(std::move(gimbal_info));
 
@@ -307,6 +308,7 @@ namespace armor_processor
             tracking_info.is_switched = target_info.target_switched;
             tracking_info.is_spinning = target_info.is_spinning;
             tracking_info.is_spinning_switched = target_info.spinning_switched;
+            tracking_info.is_shooting = (post_process_info.find_target && post_process_info.is_shooting);
             tracking_info.is_prediction = is_pred_;
             tracking_info_pub_->publish(std::move(tracking_info));
             if (!target.is_target_lost)

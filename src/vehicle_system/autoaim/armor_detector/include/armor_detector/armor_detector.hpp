@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-04-04 17:36:51
+ * @LastEditTime: 2023-04-14 13:35:28
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
@@ -20,6 +20,7 @@
 #include "global_interface/msg/detection_array.hpp"
 #include "global_interface/msg/autoaim.hpp"
 #include "global_interface/msg/obj_hp.hpp"
+#include "global_interface/msg/decision.hpp"
 
 using namespace global_user;
 using namespace coordsolver;
@@ -29,6 +30,7 @@ namespace armor_detector
     class Detector
     {
         typedef global_interface::msg::ObjHP ObjHPMsg;
+        typedef global_interface::msg::Decision DecisionMsg;
 
     public:
         Detector(const PathParam& path_params, const DetectorParam& detector_params, const DebugParam& debug_params,
@@ -37,12 +39,12 @@ namespace armor_detector
 
         // void run();
         bool armor_detect(TaskData &src, bool& is_target_lost);
-        bool gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp = ObjHPMsg());
+        bool gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp = ObjHPMsg(), DecisionMsg decision_msg = DecisionMsg());
 
         Point2i cropImageByROI(Mat &img);
         ArmorTracker* chooseTargetTracker(TaskData& src, vector<ArmorTracker*> trackers);
         int chooseTargetID(TaskData& src);
-        int chooseTargetID(TaskData& src, std::vector<Armor>& armors, ObjHPMsg hp = ObjHPMsg());
+        int chooseTargetID(TaskData& src, std::vector<Armor>& armors, ObjHPMsg hp = ObjHPMsg(), DecisionMsg decision_msg = DecisionMsg());
         void showArmors(TaskData& src);
         bool normlizeAngle();
 

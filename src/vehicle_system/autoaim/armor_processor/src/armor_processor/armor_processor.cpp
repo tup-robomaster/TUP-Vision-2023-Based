@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-04-11 21:31:50
+ * @LastEditTime: 2023-04-14 14:09:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -91,32 +91,48 @@ namespace armor_processor
      */
     bool Processor::autoShootingLogic(AutoaimMsg& armor, PostProcessInfo& post_process_info)
     {
-        post_process_info = postProcess(armor);
+        // post_process_info = postProcess(armor);
     
-        // 如果当前目标血量偏低直接发弹
-        if (armor.hp <= 75)
+        // // 如果当前目标血量偏低直接发弹
+        // if (armor.hp <= 75)
+        // {
+        //     post_process_info.find_target = true;
+        //     post_process_info.is_shooting = true;
+        //     post_process_info.switch_target = false;    
+        // } 
+        // else if (post_process_info.track_3d_pos.norm() <= 4.5 && post_process_info.hp <= 200)
+        // {
+        //     post_process_info.find_target = true;
+        //     post_process_info.is_shooting = true;
+        //     post_process_info.switch_target = false;
+        // }
+        // else if (post_process_info.track_3d_pos.norm() <= 2.5 && post_process_info.hp <= 500)
+        // {
+        //     post_process_info.find_target = true;
+        //     post_process_info.is_shooting = true;
+        //     post_process_info.switch_target = false;
+        // }
+        // else
+        // {
+        //     return false;
+        // }
+        PostProcessInfo post_info = PostProcessInfo();
+        double sleep_time = 0.0;
+        post_info.track_3d_pos = {armor.aiming_point_world.x, armor.aiming_point_world.y, armor.aiming_point_world.z};
+        post_info.pred_3d_pos = *(predictor(armor, sleep_time));
+        if (post_process_info.track_3d_pos.norm() <= 4.5)
         {
-            post_process_info.find_target = true;
-            post_process_info.is_shooting = true;
-            post_process_info.switch_target = false;    
-        } 
-        else if (post_process_info.track_3d_pos.norm() <= 4.5 && post_process_info.hp <= 200)
-        {
-            post_process_info.find_target = true;
-            post_process_info.is_shooting = true;
-            post_process_info.switch_target = false;
-        }
-        else if (post_process_info.track_3d_pos.norm() <= 2.5 && post_process_info.hp <= 500)
-        {
-            post_process_info.find_target = true;
-            post_process_info.is_shooting = true;
-            post_process_info.switch_target = false;
+            post_info.find_target = true;
+            post_info.is_shooting = true;
+            post_info.switch_target = false;
         }
         else
         {
-            return false;
+            post_info.find_target = true;
+            post_info.is_shooting = false;
+            post_info.switch_target = true;
         }
-        
+
         return true;
     }
 

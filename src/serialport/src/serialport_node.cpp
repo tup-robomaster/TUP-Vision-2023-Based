@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-04-12 14:43:10
+ * @LastEditTime: 2023-04-14 14:36:59
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -101,12 +101,13 @@ namespace serialport
         //     receive_thread_.join();
     }
 
-    // void SerialPortNode::decisionMsgCallback(DecisionMsg::SharedPtr msg)
-    // {
-    //     decision_mutex_.lock();
-    //     decision_msg_ = *msg;
-    //     decision_mutex_.unlock();
-    // }
+    void SerialPortNode::decisionMsgCallback(DecisionMsg::SharedPtr msg)
+    {
+        decision_mutex_.lock();
+        decision_msg_ = *msg;
+        decision_msg_.header.stamp = this->get_clock()->now();
+        decision_mutex_.unlock();
+    }
 
     /**
      * @brief 串口监管线程
@@ -307,6 +308,7 @@ namespace serialport
                     (target_info->is_switched || target_info->is_spinning_switched), 
                     target_info->is_target, 
                     target_info->is_spinning, 
+                    target_info->is_shooting,
                     target_info->is_prediction,
                     {target_info->meas_point_cam.x, target_info->meas_point_cam.y, target_info->meas_point_cam.z},
                     {target_info->pred_point_cam.x, target_info->pred_point_cam.y, target_info->pred_point_cam.z}
@@ -344,9 +346,14 @@ namespace serialport
      */
     void SerialPortNode::armorMsgCallback(GimbalMsg::SharedPtr target_info) 
     {
-        if (!sendData(target_info))
-        {   // Debug without com.
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub autoaim msg...");
+        int mode = mode_;
+        if ((mode == SENTRY_NORMAL && decision_msg_.decision_id == AUTOAIM)
+        || (mode == AUTOAIM || mode == HERO_SLING))
+        {
+            if (!sendData(target_info))
+            {   // Debug without com.
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub autoaim msg...");
+            }
         }
         return;
     }
@@ -358,8 +365,12 @@ namespace serialport
      */
     void SerialPortNode::buffMsgCallback(GimbalMsg::SharedPtr target_info) 
     {
-        if (!sendData(target_info))
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
+        int mode = mode_;
+        if (mode == SMALL_BUFF || mode == BIG_BUFF)
+        {
+            if (!sendData(target_info))
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
+        }
         return;
     }
 

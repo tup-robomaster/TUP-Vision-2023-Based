@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-04-12 14:36:36
+ * @LastEditTime: 2023-04-14 14:15:41
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -30,6 +30,7 @@
 #include "global_interface/msg/game_info.hpp"
 #include "global_interface/msg/decision.hpp"
 #include "../../global_user/include/coordsolver.hpp"
+#include "global_interface/msg/decision.hpp"
 
 using namespace global_user;
 using namespace coordsolver;
@@ -58,10 +59,10 @@ namespace serialport
         void sentryNavCallback(geometry_msgs::msg::Twist::SharedPtr msg);
         void serialWatcher();
 
-        // void decisionMsgCallback(DecisionMsg::SharedPtr msg);
-        // rclcpp::Subscription<DecisionMsg>::SharedPtr decision_msg_sub_; 
-        // DecisionMsg decision_msg_;
-        // mutex decision_mutex_;
+        void decisionMsgCallback(DecisionMsg::SharedPtr msg);
+        rclcpp::Subscription<DecisionMsg>::SharedPtr decision_msg_sub_; 
+        DecisionMsg decision_msg_;
+        mutex decision_mutex_;
 
     private:
         int baud_;
