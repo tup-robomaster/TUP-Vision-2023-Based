@@ -36,6 +36,14 @@ include_directories(
 )
 
 link_directories(/opt/MVS/lib/64/)
+
+# set(GXI_LIB_SO usr/lib/libgxiapi)
+
+# add_library(${PROJECT_NAME}
+  # include/hik_camera.h
+  # src/hik_camera.cpp
+# )
+
 set(dependencies 
   rclcpp
   rclcpp_components
@@ -73,7 +81,7 @@ target_link_libraries(${PROJECT_NAME}
   FormatConversion
   MediaProcess
   gxiapi
-  yaml-cpp.so
+  yaml-cpp
 )
 
 add_executable(usb_cam_driver_node src/usb_driver/usb_cam_node_main.cpp)

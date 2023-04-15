@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-03-17 19:55:31
+ * @LastEditTime: 2023-04-15 20:09:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -387,7 +387,7 @@ namespace buff_detector
             // "AUTO:GPU,CPU", 
             // ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
             // ov::hint::inference_precision(ov::element::u8)
-            );
+        );
 
         // compiled_model.set_property(ov::device::priorities("GPU"));
 

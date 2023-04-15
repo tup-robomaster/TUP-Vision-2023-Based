@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-14 14:36:22
+ * @LastEditTime: 2023-04-15 20:07:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -133,6 +133,7 @@ namespace armor_processor
         Eigen::Vector2d angle = {0.0, 0.0};
         std::unique_ptr<Eigen::Vector3d> aiming_point_world;
         Eigen::Vector3d aiming_point_cam = {0.0, 0.0, 0.0};
+        Eigen::Vector3d pred_point_world = {0.0, 0.0, 0.0};
         Eigen::Vector3d tracking_point_cam = {0.0, 0.0, 0.0};
         Eigen::Vector2d tracking_angle = {0.0, 0.0};
         PostProcessInfo post_process_info;
@@ -323,6 +324,9 @@ namespace armor_processor
                 predict_info.aiming_point_cam.x = aiming_point_cam[0];
                 predict_info.aiming_point_cam.y = aiming_point_cam[1];
                 predict_info.aiming_point_cam.z = aiming_point_cam[2];
+                predict_info.aiming_point_world.x = pred_point_world[0];
+                predict_info.aiming_point_world.y = pred_point_world[1];
+                predict_info.aiming_point_world.z = pred_point_world[2];
                 predict_info.period = target_info.period;
                 predict_info_pub_->publish(std::move(predict_info));
                 RCLCPP_INFO_EXPRESSION(this->get_logger(), debug_param_.show_predict && debug_param_.print_delay, "aiming_point_world:[%.3f %.3f %.3f]",
@@ -349,6 +353,20 @@ namespace armor_processor
                     // cv::line(dst, cv::Point2f(armor_center.x, armor_center.y - 35), cv::Point2f(armor_center.x, armor_center.y + 35), {0, 0, 255}, 1);
                     // cv::line(dst, cv::Point2f(point_2d.x, point_2d.y), cv::Point2f(armor_center.x, armor_center.y), {255, 0, 125}, 1);
                 }
+                // for(int i = 0; i < 4; i++)
+                //     cv::line(dst, apex2d[i % 4], apex2d[(i + 1) % 4], {0, 125, 255}, 1);
+                // auto point_pred = predict_point_;
+                cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
+                cv::circle(dst, point_2d, 14, {255, 0, 125}, 2);
+            }
+
+            // predict_point_ = aiming_point_cam;
+            // flag_ = true;
+            // debug_mutex_.unlock();
+            if(debug_param_.show_aim_cross)
+            {
+                line(dst, cv::Point2f(dst.size().width / 2, 0), cv::Point2f(dst.size().width / 2, dst.size().height), {0, 255, 0}, 1);
+                line(dst, cv::Point2f(0, dst.size().height / 2), cv::Point2f(dst.size().width, dst.size().height / 2), {0, 255, 0}, 1);
             }
             if (debug_param_.show_aim_cross)
             {

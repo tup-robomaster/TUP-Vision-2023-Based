@@ -15,8 +15,8 @@
     armor_roi_expand_ratio_width: 1.2
     armor_roi_expand_ratio_height: 1.8
     armor_conf_high_thres: 0.82
-    yaw_angle_offset: -0.5
-    pitch_angle_offset: 0.5
+    yaw_angle_offset: 1.0
+    pitch_angle_offset: 0.0
 
   # Spinning params.
     max_cost: 500
@@ -42,7 +42,7 @@
   # Camera config params.
     # camera_name: "00J90630561" 
     camera_name: "KE0200110075" #FIXME:根据相机序列号修改
-    camera_type: 3
+    camera_type: 0
     camera_param_path: "/config/camera.yaml"
 
   # Network model path.
@@ -60,16 +60,16 @@
   
   # Debug params.
     debug: true
-    using_imu: false
-    show_img: false
-    show_fps: false
+    using_imu: true
+    show_img: true
+    show_fps: true
     using_roi: false
     detect_red: true
     auto_label: false
     print_letency: false
-    show_aim_cross: false
+    show_aim_cross: true
     sync_transport: false
-    show_all_armors: false
+    show_all_armors: true
     print_target_info: false
 
 /armor_processor:
@@ -82,8 +82,8 @@
     min_fitting_lens: 5
     shoot_delay: 170
     window_size: 3
-    yaw_angle_offset: -0.5
-    pitch_angle_offset: 0.5
+    yaw_angle_offset: 1.0
+    pitch_angle_offset: 0.0
     max_offset_value: 0.45
     reserve_factor: 500.0 #储备系数(>=1)
     # rotation_yaw: 0.0
@@ -92,22 +92,22 @@
 
   # Debug params.
     debug: true
-    using_imu: false
-    show_img: true
+    using_imu: true
+    show_img: false
     draw_predict: false
-    show_predict: true
+    show_predict: false
     sync_transport: false
     print_delay: false
     x_axis_filter: true
     y_axis_filter: true
     z_axis_filter: true
-    show_aim_cross: true
+    show_aim_cross: false
     show_fps: false
     # disable_filter: true
     # disable_fitting: false
 
   # Camera params.
-    camera_type: 3 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
     coord_param_name: "KE0200110075" #FIXME:根据相机序列号修改
     coord_param_path: "/config/camera.yaml"

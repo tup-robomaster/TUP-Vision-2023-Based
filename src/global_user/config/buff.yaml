@@ -8,7 +8,7 @@
     no_crop_thres: 0.002
 
   # Paths.
-    camera_type: 3
+    camera_type: 0
     # network_path: "/model/buff.xml"
     # network_path: "/model/yolox.xml"
     network_path: "/model/yolox-03-17.xml"

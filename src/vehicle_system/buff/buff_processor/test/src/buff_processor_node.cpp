@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-03-20 21:29:58
+ * @LastEditTime: 2023-04-15 19:58:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -40,8 +40,8 @@ namespace buff_processor
         qos.durability();
         // qos.best_effort();
         // qos.transient_local();
-        // qos.durability_volatile();
-
+        qos.durability_volatile();
+        
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
 
@@ -70,6 +70,13 @@ namespace buff_processor
         if(debug)
         {
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffProcessorNode::paramsCallback, this, _1));
+
+            sleep(2);
+            image_size_ = image_info_.image_size_map[camera_type];
+            // image sub.
+            std::string camera_topic = image_info_.camera_topic_map[camera_type];
+            img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic, 
+                std::bind(&BuffProcessorNode::imageCallback, this, _1), transport_type, rmw_qos));
             if(debug_param_.show_predict)
             {
                 // sleep(5);
@@ -140,7 +147,7 @@ namespace buff_processor
                 predict_msg.predict_point.x = predict_info.hit_point_world[0];
                 predict_msg.predict_point.y = predict_info.hit_point_world[1];
                 predict_msg.predict_point.z = predict_info.hit_point_world[2];
-            
+                // cout << 1 << endl;
                 predict_info_pub_->publish(std::move(predict_msg));
             }
 
