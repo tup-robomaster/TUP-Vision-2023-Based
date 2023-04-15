@@ -296,7 +296,7 @@ namespace armor_detector
             }
 
             //更新陀螺分数
-            // spinning_detector_.updateSpinScore();
+            spinning_detector_.updateSpinScore();
 
             is_target_lost = true;
             lost_cnt_++;
@@ -356,7 +356,7 @@ namespace armor_detector
         spinning_detector_.isSpinning(trackers_map_, new_armors_cnt_map_, now_);
 
         //Update spinning score
-        // spinning_detector_.updateSpinScore();
+        spinning_detector_.updateSpinScore();
 
         // cout << "armor_size:" << (int)new_armors_.size() << endl;
 
@@ -444,7 +444,8 @@ namespace armor_detector
         }
         else
         {   //若确定打击车辆的陀螺状态
-            spin_status = spinning_detector_.spinning_map_.spin_status_map[target_key].spin_state;
+            // spin_status = spinning_detector_.spinning_map_.spin_status_map[target_key].spin_state;
+            spin_status = spinning_detector_.spinning_map_.spin_status_map[target_key];
             if (spin_status != UNKNOWN)
             {
                 is_target_spinning = true;

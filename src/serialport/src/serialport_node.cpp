@@ -62,13 +62,17 @@ namespace serialport
             qos,
             std::bind(&SerialPortNode::buffMsgCallback, this, _1)
         );
-
+        rclcpp::QoS qos_decision(0);
+        qos_decision.keep_last(20);
+        qos_decision.best_effort();
+        qos_decision.durability();
+        qos_decision.durability_volatile();
         // //决策消息订阅
-        // decision_msg_sub_ = this->create_subscription<DecisionMsg>(
-        //     "robot_decision/decision",
-        //     qos,
-        //     std::bind(&SerialPortNode::decisionMsgCallback, this, _1)
-        // );
+        decision_msg_sub_ = this->create_subscription<DecisionMsg>(
+            "robot_decision/decision",
+            qos_decision,
+            std::bind(&SerialPortNode::decisionMsgCallback, this, _1)
+        );
         
         //创建发送数据定时器
         // timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
@@ -103,10 +107,15 @@ namespace serialport
 
     void SerialPortNode::decisionMsgCallback(DecisionMsg::SharedPtr msg)
     {
-        decision_mutex_.lock();
+        // decision_mutex_.lock();
         decision_msg_ = *msg;
-        decision_msg_.header.stamp = this->get_clock()->now();
-        decision_mutex_.unlock();
+        VisionDecisionData vision_data;
+        vision_data.mode = msg->mode;
+        RCLCPP_INFO(this->get_logger(), "MOD:%d",vision_data.mode);
+        vision_data.theta_gimbal = msg->theta;
+        data_transform_->transformData(vision_data.mode, vision_data, serial_port_->Tdata);
+        serial_port_->sendData();
+        // decision_mutex_.unlock();
     }
 
     /**
@@ -259,16 +268,16 @@ namespace serialport
                 rclcpp::Time now = this->get_clock()->now();
                 car_pos_msg.header.frame_id = "";
                 car_pos_msg.header.stamp = now;
-                car_pos_pub_->publish(move(car_pos_msg));
+                // car_pos_pub_->publish(move(car_pos_msg));
                 
                 obj_hp_msg.header.frame_id = "";
                 obj_hp_msg.header.stamp = now;
-                obj_hp_pub_->publish(move(obj_hp_msg));
+                // obj_hp_pub_->publish(move(obj_hp_msg));
 
                 game_msg.header.frame_id = "";
                 game_msg.header.stamp = now;
                 game_msg.timestamp = timestamp;
-                game_msg_pub_->publish(move(game_msg));
+                // game_msg_pub_->publish(move(game_msg));
 
                 vehicle_pos_info.clear();
             }
@@ -391,7 +400,7 @@ namespace serialport
             vision_data.linear_velocity[2] = msg->linear.z;
             vision_data.angular_velocity[0] = msg->angular.x;
             vision_data.angular_velocity[1] = msg->angular.y;
-            vision_data.angular_velocity[2] = msg->angular.z * 0.003;
+            vision_data.angular_velocity[2] = msg->angular.z * 0.0015;
             //根据不同mode进行对应的数据转换
             data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
             //数据发送

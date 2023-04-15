@@ -378,6 +378,7 @@ namespace armor_detector
     void DetectorNode::sensorMsgCallback(const SerialMsg& serial_msg)
     {
         serial_msg_mutex_.lock();
+        RCLCPP_WARN_THROTTLE(get_logger(), *this->get_clock(), 500, "Sub imu msg...");
         serial_msg_.imu.header.stamp = this->get_clock()->now();
         if(serial_msg.bullet_speed > 10)
             serial_msg_.bullet_speed = serial_msg.bullet_speed;

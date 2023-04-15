@@ -81,8 +81,8 @@ namespace serialport
         trans_data[0] = 0xC5;
         trans_data[1] = mode;
         crc_check_.Append_CRC8_Check_Sum(trans_data, 3);
-        float theta[] = {vision_data.theta_gimbal,vision_data.theta_chassis};
-        float2UcharRawArray(theta, 2, &trans_data[3]);
+        float theta[] = {vision_data.theta_gimbal};
+        float2UcharRawArray(theta, 1, &trans_data[3]);
         crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
     }
 

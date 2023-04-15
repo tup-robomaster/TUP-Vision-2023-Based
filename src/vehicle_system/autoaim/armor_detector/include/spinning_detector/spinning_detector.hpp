@@ -31,7 +31,7 @@ namespace armor_detector
         SpinningDetector(Color color, GyroParam gyro_params);
         ~SpinningDetector();
 
-        // bool updateSpinScore();int64_t
+        bool updateSpinScore();
         void createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map,
             std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int64_t timestamp, int dead_buffer_cnt);
         bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, int64_t now);
