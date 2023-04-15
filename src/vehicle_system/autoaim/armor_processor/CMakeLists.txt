@@ -7,10 +7,10 @@ endif()
 
 # set(CMAKE_CXX_STANDARD 17)
 #default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-endif()
+# if(NOT CMAKE_CXX_STANDARD)
+#   set(CMAKE_CXX_STANDARD 14)
+#   set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# endif()
 
 # set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17 -Os -pthread -g")
@@ -31,9 +31,9 @@ find_package(Ceres REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(yaml-cpp REQUIRED)
 find_package(global_interface REQUIRED)
 find_package(global_user REQUIRED)
-find_package(yaml-cpp REQUIRED)
 
 set(dependencies 
   rclcpp
@@ -66,20 +66,28 @@ add_library(${PROJECT_NAME} SHARED
   src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
   src/${PROJECT_NAME}_node.cpp  
 )
-ament_target_dependencies(${PROJECT_NAME} ${dependencies})
+ament_target_dependencies(${PROJECT_NAME} 
+  ${dependencies} 
+)
 target_link_libraries(${PROJECT_NAME}
   ceres
   glog 
-  yaml-cpp
+  yaml-cpp.a
 )
 
-add_executable(${PROJECT_NAME}_node src/${PROJECT_NAME}_node.cpp)
-ament_target_dependencies(${PROJECT_NAME}_node ${dependencies})
-target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME})
+add_executable(${PROJECT_NAME}_node 
+  src/${PROJECT_NAME}_node.cpp
+)
+ament_target_dependencies(${PROJECT_NAME}_node 
+  ${dependencies} 
+)
+target_link_libraries(${PROJECT_NAME}_node 
+  ${PROJECT_NAME} 
+)
 
 rclcpp_components_register_nodes(${PROJECT_NAME} 
   PLUGIN "armor_processor::ArmorProcessorNode"
-  # EXECUTABLE ${PROJECT_NAME}_node 
+  EXECUTABLE ${PROJECT_NAME}_node 
 )
 
 install(TARGETS 

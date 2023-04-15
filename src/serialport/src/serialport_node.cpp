@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-04-04 00:01:49
+ * @LastEditTime: 2023-04-14 14:36:59
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -27,10 +27,10 @@ namespace serialport
         // QoS
         rclcpp::QoS qos(0);
         qos.keep_last(1);
-        // qos.best_effort();
         qos.reliable();
         qos.durability();
         qos.deadline();
+        // qos.best_effort();
         // qos.durability_volatile();
    
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
@@ -62,6 +62,13 @@ namespace serialport
             qos,
             std::bind(&SerialPortNode::buffMsgCallback, this, _1)
         );
+
+        // //决策消息订阅
+        // decision_msg_sub_ = this->create_subscription<DecisionMsg>(
+        //     "robot_decision/decision",
+        //     qos,
+        //     std::bind(&SerialPortNode::decisionMsgCallback, this, _1)
+        // );
         
         //创建发送数据定时器
         // timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
@@ -92,6 +99,14 @@ namespace serialport
     {
         // if (receive_thread_.joinable())
         //     receive_thread_.join();
+    }
+
+    void SerialPortNode::decisionMsgCallback(DecisionMsg::SharedPtr msg)
+    {
+        decision_mutex_.lock();
+        decision_msg_ = *msg;
+        decision_msg_.header.stamp = this->get_clock()->now();
+        decision_mutex_.unlock();
     }
 
     /**
@@ -270,12 +285,18 @@ namespace serialport
     bool SerialPortNode::sendData(GimbalMsg::SharedPtr target_info)
     {
         int mode = mode_;
+        // if (mode == SENTRY_NORMAL)
+        // {
+        //     decision_mutex_.lock();
+        //     mode = decision_msg_.mode;
+        //     decision_mutex_.unlock();
+        // }
         // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
         if (this->using_port_)
         {   
             VisionAimData vision_data;
             if (mode == AUTOAIM || mode == HERO_SLING || mode == OUTPOST_ROTATION_MODE
-            || mode == SMALL_BUFF || mode == BIG_BUFF)
+            || mode == SMALL_BUFF || mode == BIG_BUFF || mode == SENTRY_NORMAL)
             {
                 // RCLCPP_WARN(this->get_logger(), "Sub autoaim msg!!!");
                 vision_data = 
@@ -287,6 +308,7 @@ namespace serialport
                     (target_info->is_switched || target_info->is_spinning_switched), 
                     target_info->is_target, 
                     target_info->is_spinning, 
+                    target_info->is_shooting,
                     target_info->is_prediction,
                     {target_info->meas_point_cam.x, target_info->meas_point_cam.y, target_info->meas_point_cam.z},
                     {target_info->pred_point_cam.x, target_info->pred_point_cam.y, target_info->pred_point_cam.z}
@@ -324,9 +346,14 @@ namespace serialport
      */
     void SerialPortNode::armorMsgCallback(GimbalMsg::SharedPtr target_info) 
     {
-        if (!sendData(target_info))
-        {   // Debug without com.
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub autoaim msg...");
+        int mode = mode_;
+        if ((mode == SENTRY_NORMAL && decision_msg_.decision_id == AUTOAIM)
+        || (mode == AUTOAIM || mode == HERO_SLING))
+        {
+            if (!sendData(target_info))
+            {   // Debug without com.
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub autoaim msg...");
+            }
         }
         return;
     }
@@ -338,8 +365,12 @@ namespace serialport
      */
     void SerialPortNode::buffMsgCallback(GimbalMsg::SharedPtr target_info) 
     {
-        if (!sendData(target_info))
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
+        int mode = mode_;
+        if (mode == SMALL_BUFF || mode == BIG_BUFF)
+        {
+            if (!sendData(target_info))
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
+        }
         return;
     }
 

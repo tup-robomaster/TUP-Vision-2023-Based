@@ -73,11 +73,12 @@ add_library(${PROJECT_NAME} SHARED
 )
   
 ament_target_dependencies(${PROJECT_NAME}
-  ${dependencies}  
+  ${dependencies} 
 )
 
 target_link_libraries(${PROJECT_NAME}
   openvino::runtime 
+  yaml-cpp
 )
 
 target_compile_definitions(${PROJECT_NAME}

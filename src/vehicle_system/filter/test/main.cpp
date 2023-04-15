@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-04 19:04:11
- * @LastEditTime: 2023-04-06 12:33:02
+ * @LastEditTime: 2022-11-14 21:56:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/test/main.cpp
  */
 #include <cmath>
@@ -43,8 +43,6 @@ void test_ekf_based_Singer();
 
 int main(int argc, char** argv)
 {
-    argc = 0;
-    argv[0][0] = ' ';
     test_ekf_based_CTRV();
     // test_ekf_based_Singer();
 
@@ -80,19 +78,19 @@ void test_ekf_based_Singer()
     std::vector<double> X_true(100), V_true(100), A_true(100);
 
     T system_noise = 0.1;
-    // T pos_noise = 0.025;
+    T pos_noise = 0.025;
 
     bool is_init = false;
     float x0 = 2.5;
     float v0 = 0.2;
     float a0 = 0.1;
 
-    // float r = 0.25;
+    float r = 0.25;
     // float x0 = 2.5;
     // float y0 = 2.5;
-    // float v = 0.8;
-    // float theta = 0.4;
-    // float w = 3.0;
+    float v = 0.8;
+    float theta = 0.4;
+    float w = 3.0;
 
     x.x() = x0;
     x.v() = v0;
@@ -125,7 +123,7 @@ void test_ekf_based_Singer()
 
         x.x() += system_noise * noise(generator);
 
-        // auto x_pred = predictor.predict(singer, u, t);
+        auto x_pred = predictor.predict(singer, u, t);
         auto x_ekf = ekf.predict(singer, u, t);
 
         //更新
@@ -187,7 +185,7 @@ void test_ekf_based_CTRV()
     filter::ExtendKalmanFilter<State> ekf;
 
     T system_noise = 0.1;
-    // T pos_noise = 0.025;
+    T pos_noise = 0.025;
 
     std::vector<double>X_pred(100), Y_pred(100), V_pred(100), Theta_pred(100), W_pred(100);
     std::vector<double>X_ekf(100), Y_ekf(100), V_ekf(100), Theta_ekf(100), W_ekf(100);
@@ -195,7 +193,7 @@ void test_ekf_based_CTRV()
     std::vector<double>Pred_X(100), Pred_Y(100);
     
     //simulate
-    // float r = 0.25;
+    float r = 0.25;
     float x0 = 2.5;
     float y0 = 2.5;
     float v = 0.8;
@@ -238,7 +236,7 @@ void test_ekf_based_CTRV()
         }
 
         //仿真系统
-        // auto x_pre = x;
+        auto x_pre = x;
         auto x_model = sys_model.f(x, u, t);
 
         x.x() += system_noise * noise(generator);

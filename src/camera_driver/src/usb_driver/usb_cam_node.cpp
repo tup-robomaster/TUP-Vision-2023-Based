@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2023-04-07 13:42:37
+ * @LastEditTime: 2023-04-14 02:56:29
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 namespace camera_driver
 {
     UsbCamNode::UsbCamNode(const rclcpp::NodeOptions& option)
-    : Node("usb_driver", option), is_filpped(false)
+    : Node("usb_driver", option), is_filpped_(false)
     {
         RCLCPP_INFO(this->get_logger(), "Camera driver node...");
         
@@ -25,13 +25,6 @@ namespace camera_driver
             RCLCPP_ERROR(this->get_logger(), "Error while initializing camera: %s", e.what());
         }        
         
-        this->declare_parameter<bool>("save_video", false);
-        save_video_ = this->get_parameter("save_video").as_bool();
-        if(save_video_)
-        {   // Video save.
-            videoRecorder(video_record_param_);
-        }
-
         rclcpp::QoS qos(0);
         qos.keep_last(1);
         qos.reliable();
@@ -43,13 +36,17 @@ namespace camera_driver
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
 
-        frame_pub = this->create_publisher<sensor_msgs::msg::Image>("usb_img", qos);
+        image_msg_pub_ = this->create_publisher<sensor_msgs::msg::Image>("usb_img", qos);
         
         // rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_sensor_data;
         // camera_info_pub = image_transport::create_camera_publisher(this, "image");
 
         // auto camera_calibr_file = this->declare_parameter("camera_calibration_file", "file://config/camera.yaml");
         // cam_info_manager->loadCameraInfo(camera_calibr_file);
+        
+        this->declare_parameter<bool>("save_video", false);
+        save_video_ = this->get_parameter("save_video").as_bool();
+        
         this->declare_parameter<bool>("using_video", true);
         using_video_ = this->get_parameter("using_video").as_bool();
 
@@ -59,27 +56,44 @@ namespace camera_driver
             string pkg_share_pth = get_package_share_directory("camera_driver");
             this->declare_parameter<std::string>("video_path", " ");
             video_path_ = pkg_share_pth + this->get_parameter("video_path").as_string();
+            RCLCPP_WARN_ONCE(this->get_logger(), "Video path:%s", video_path_.c_str());
 
-            cap.open(video_path_);
-            cout << "Video_path:" << video_path_ << endl;
-            if(!cap.isOpened())
+            this->declare_parameter<bool>("using_ros2bag", false);
+            using_ros2bag_ = this->get_parameter("using_ros2bag").as_bool();
+            if (using_ros2bag_)
             {
-                RCLCPP_ERROR(this->get_logger(), "Open camera failed!");
+                rosbag2_storage::StorageOptions storage_options({video_path_, "sqlite3"});
+                rosbag2_cpp::ConverterOptions converter_options(
+                    {
+                        rmw_get_serialization_format(),
+                        rmw_get_serialization_format()      
+                    }
+                );
+                reader_ = std::make_unique<rosbag2_cpp::readers::SequentialReader>();
+                reader_->open(storage_options, converter_options);
+            }
+            else
+            {
+                cap_.open(video_path_);
+                if(!cap_.isOpened())
+                {
+                    RCLCPP_ERROR(this->get_logger(), "Open camera failed!");
+                }
             }
         }
         else
         {
-            cap.open(usb_cam_params_.camera_id);
-            if(cap.isOpened())
+            cap_.open(usb_cam_params_.camera_id);
+            if(cap_.isOpened())
             {
                 RCLCPP_INFO(this->get_logger(), "Open camera success!");
             }
         }
 
-        cap.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_width);
-        cap.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_height);
+        cap_.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_width);
+        cap_.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_height);
 
-        last_frame_ = this->get_clock()->now();
+        // last_time_ = this->get_clock()->now();
         img_pub_timer_ = this->create_wall_timer(1ms, std::bind(&UsbCamNode::image_callback, this));
 
         bool debug_;
@@ -106,6 +120,37 @@ namespace camera_driver
 
             // param_cb_handle_ = param_subscriber_->add_parameter_callback("ParamCallback", cb);
         }
+        
+        if(save_video_)
+        {   // Video save.
+            RCLCPP_INFO(this->get_logger(), "Saving video...");
+            time_t tmpcal_ptr;
+            tm *tmp_ptr = nullptr;
+            tmpcal_ptr = time(nullptr);
+            tmp_ptr = localtime(&tmpcal_ptr);
+            char now[64];
+            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", tmp_ptr);  // 以时间为名字
+            std::string now_string(now);
+            string pkg_path = get_package_share_directory("camera_driver");
+            string save_path = this->declare_parameter("save_path", "/recorder/video/gyro_video.webm");
+            std::string path = pkg_path + save_path + now_string;
+
+            writer_ = std::make_unique<rosbag2_cpp::writers::SequentialWriter>();
+            rosbag2_storage::StorageOptions storage_options({path, "sqlite3"});
+            rosbag2_cpp::ConverterOptions converter_options({
+                rmw_get_serialization_format(),
+                rmw_get_serialization_format()
+            });
+            writer_->open(storage_options, converter_options);
+            writer_->create_topic({
+                "usb_img",
+                "sensor_msgs::msg::Image",
+                rmw_get_serialization_format(),
+                ""
+            });
+        }
+        else
+            RCLCPP_WARN_ONCE(this->get_logger(), "Not save video...");
     }
 
     UsbCamNode::~UsbCamNode()
@@ -164,73 +209,117 @@ namespace camera_driver
 
     void UsbCamNode::image_callback()
     {
-        cap >> frame;
-        auto now = this->get_clock()->now();
-        auto dt = (now.nanoseconds() - last_frame_.nanoseconds()) / 1e9;
-        if(!frame.empty() && dt > (1 / usb_cam_params_.fps))
+        sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>();
+        if (using_ros2bag_)
         {
-            last_frame_ = now;
-            if(frame.rows != usb_cam_params_.image_width || frame.cols != usb_cam_params_.image_height)
-            { 
-                cv::resize(frame, frame, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
-                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Resize frame...");
+            if (reader_->has_next())
+            {
+                // sensor_msgs::msg::Image image_msg;
+                auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
+                std::shared_ptr<rosbag2_storage::SerializedBagMessage> image_serialized_bag_msg = reader_->read_next();
+                auto serialized_msg = rclcpp::SerializedMessage(*image_serialized_bag_msg->serialized_data);
+                serializer.deserialize_message(&serialized_msg, &image_msg_);
+                // frame = cv_bridge::toCvCopy(image_msg, "bgr8")->image;
+                msg = std::make_unique<sensor_msgs::msg::Image>(image_msg_);
             }
-            // if(!is_filpped)
-            // {
-            //     RCLCPP_INFO(this->get_logger(), "is_filpped...");
-            //     image_msg = convert_frame_to_message(frame);
-            //     RCLCPP_INFO(this->get_logger(), "convert success...");
-            // }
-            // else
-            // {
-            //     //flip the image
-            //     // cv::filp(frame, filpped_frame, 1);
-            //     image_msg = convert_frame_to_message(frame);
-            // }
+            else
+            {
+                return;
+            }
+        }
+        else
+        {
+            cap_ >> frame_;
+            auto now = this->get_clock()->now();
+            auto dt = (now.nanoseconds() - last_time_.nanoseconds()) / 1e9;
+            if(!frame_.empty() && dt > (1 / usb_cam_params_.fps))
+            {
+                last_time_ = now;
+                if(frame_.rows != usb_cam_params_.image_width || frame_.cols != usb_cam_params_.image_height)
+                { 
+                    cv::resize(frame_, frame_, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
+                    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Resize frame...");
+                }
+                // if(!is_filpped)
+                // {
+                //     RCLCPP_INFO(this->get_logger(), "is_filpped...");
+                //     image_msg = convert_frame_to_message(frame);
+                //     RCLCPP_INFO(this->get_logger(), "convert success...");
+                // }
+                // else
+                // {
+                //     //flip the image
+                //     // cv::filp(frame, filpped_frame, 1);
+                //     image_msg = convert_frame_to_message(frame);
+                // }
 
-            // Put the message into a queue to be processed by the middleware.
-            // This call is non-blocking.
-            // RCLCPP_INFO(this->get_logger(), "get info...");
-            // sensor_msgs::msg::CameraInfo::SharedPtr camera_info_msg(
-            //     new sensor_msgs::msg::CameraInfo(cam_info_manager->getCameraInfo()));
-            // image_msg->header.stamp = timestamp;
-            // image_msg->header.frame_id = frame_id;
-            // camera_info_msg->header.stamp = timestamp;
-            // camera_info_msg->header.frame_id = frame_id;
-
-            sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>();
-            rclcpp::Time now = this->get_clock()->now();
-            msg->header.frame_id = usb_cam_params_.frame_id;
-            msg->header.stamp = now;
-            msg->encoding = "bgr8";
-            msg->width = frame.cols;
-            msg->height = frame.rows;
-            msg->step = static_cast<sensor_msgs::msg::Image::_step_type>(frame.step);
-            msg->is_bigendian = false;
-            msg->data.assign(frame.datastart, frame.dataend);
-            // RCLCPP_WARN(this->get_logger(), "now:%.12f", now.nanoseconds() / 1e9);
-            // cout << "now:" << now.nanoseconds() / 1e12 << endl;
-
-            // camera_info_pub.publish(image_msg, camera_info_msg);
-            frame_pub->publish(std::move(msg));
+                // Put the message into a queue to be processed by the middleware.
+                // This call is non-blocking.
+                // RCLCPP_INFO(this->get_logger(), "get info...");
+                // sensor_msgs::msg::CameraInfo::SharedPtr camera_info_msg(
+                //     new sensor_msgs::msg::CameraInfo(cam_info_manager->getCameraInfo()));
+                // image_msg->header.stamp = timestamp;
+                // image_msg->header.frame_id = frame_id;
+                // camera_info_msg->header.stamp = timestamp;
+                // camera_info_msg->header.frame_id = frame_id;
+                msg->width = frame_.cols;
+                msg->height = frame_.rows;
+                msg->step = static_cast<sensor_msgs::msg::Image::_step_type>(frame_.step);
+                msg->is_bigendian = false;
+                msg->data.assign(frame_.datastart, frame_.dataend);
+                save_video_ = this->get_parameter("save_video").as_bool();
+                if (save_video_)
+                {   // Video recorder.
+                    ++frame_cnt_;
+                    if (frame_cnt_ % 4 == 0)
+                    {
+                        sensor_msgs::msg::Image image_msg = *msg;
+                        auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
+                        auto serialized_msg = rclcpp::SerializedMessage();
+                        serializer.serialize_message(&image_msg, &serialized_msg);
+                        auto bag_msg = std::make_shared<rosbag2_storage::SerializedBagMessage>();
+                        bag_msg->serialized_data = std::shared_ptr<rcutils_uint8_array_t>(
+                            new rcutils_uint8_array_t,
+                            [this](rcutils_uint8_array_t* msg)
+                            {
+                                if (rcutils_uint8_array_fini(msg) != RCUTILS_RET_OK)
+                                {
+                                    RCLCPP_ERROR(this->get_logger(), "RCUTILS_RET_INVALID_ARGUMENT OR RCUTILS_RET_ERROR");
+                                }
+                                delete msg;
+                            }
+                        );
+                        *bag_msg->serialized_data = serialized_msg.release_rcl_serialized_message();
+                        bag_msg->topic_name = "usb_img";
+                        bag_msg->time_stamp = now.nanoseconds();
+                        writer_->write(bag_msg);
+                    }
+                }
+            }
+            else
+            {
+                return;
+            }
         }
 
-        save_video_ = this->get_parameter("save_video").as_bool();
-        if(save_video_)
-        {   // Video recorder.
-            videoRecorder(video_record_param_, &frame);
-        }
+        rclcpp::Time now = this->get_clock()->now();
+        msg->header.frame_id = usb_cam_params_.frame_id;
+        msg->header.stamp = now;
+        msg->encoding = "bgr8";
+        
+        // camera_info_pub.publish(image_msg, camera_info_msg);
+        image_msg_pub_->publish(std::move(msg));
 
         bool show_img = this->get_parameter("show_img").as_bool();
         if(show_img)
         {
             cv::namedWindow("raw_image", cv::WINDOW_AUTOSIZE);
-            cv::imshow("raw_image", frame);
+            cv::imshow("raw_image", frame_);
             cv::waitKey(2000);
         }
 
         // if(using_video_)
-        //     usleep(1000);
+        //     usleep(5000);
     }
 
     bool UsbCamNode::setParam(rclcpp::Parameter param)

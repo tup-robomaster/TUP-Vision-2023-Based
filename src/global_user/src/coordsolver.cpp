@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-04-05 16:36:22
+ * @LastEditTime: 2023-04-14 03:45:58
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -26,8 +26,6 @@ namespace coordsolver
         //     RCLCPP_ERROR(logger_, "Error while loading coord params...");
         // }
         angle_offset = static_angle_offset;
-
-        // cout << "3:" << angle_offset[0] << " " << angle_offset[1] << endl;
     }
 
     /**
@@ -38,12 +36,6 @@ namespace coordsolver
     {   
     }
 
-    bool CoordSolver::setStaticAngleOffset(const Eigen::Vector2d& static_angle_offset)
-    {
-        angle_offset = static_angle_offset;
-        // cout << "2:" << angle_offset[0] << " " << angle_offset[1] << endl;
-        return true;
-    }
 
     /**
      * @brief 加载CoordSolver参数
@@ -117,7 +109,6 @@ namespace coordsolver
         std::vector<cv::Point3d> points_world;
 
         //长度为4进入装甲板模式
-
         //大于长宽比阈值使用大装甲板世界坐标
         if (type == BIG)
         {
@@ -424,7 +415,13 @@ namespace coordsolver
         bullet_speed = speed;
         return true;
     }
-
+    
+    bool CoordSolver::setStaticAngleOffset(const Eigen::Vector2d& static_angle_offset)
+    {
+        angle_offset = static_angle_offset;
+        RCLCPP_WARN(logger_, "angle_offset:[%.3f %.3f]", angle_offset[0], angle_offset[1]);
+        return true;
+    }
 } // namespace coordsolver
 
 

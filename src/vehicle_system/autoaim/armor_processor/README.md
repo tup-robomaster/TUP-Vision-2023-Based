@@ -1,6 +1,6 @@
 # armor_processor
 
-## Update log
+## 1.Update log
 ### Date:2023-04-02 滤波收敛判据
 #### 传统基于单步量测的新息序列不等式
 $$
@@ -273,13 +273,12 @@ $$
         方程组中r为小陀螺旋转半径，w为旋转角速度，V为横移速度,θ为目标相对于自己的横移方位角。
         此运动模型假设目标一边小陀螺转动，一边进行横向移动，用于移动目标的反陀螺。
 
-## Debug log
-### Date:2022-11-18 预测部分实现动态配置调试，代码略显冗余，但后续方便调试。
 
-### Date:2022-11-17 预测部分加入基于Singer模型的扩展卡尔曼滤波，算法将持续优化，后续会添加CS模型。
-
-### Date:2022-11-05 Debug processor node.
-
-### Date:2022-11-01 运动模型待调试
-
-### Date:2022-10-26 Lapack library needs to be linked manually.  
+## 2.Debug log
+|      Date      |    Description | 
+|      ---       |     ---        |
+|2022-11-18      | 预测部分实现动态配置调试，代码略显冗余，但后续方便调试。|
+|2022-11-17| 预测部分加入基于Singer模型的扩展卡尔曼滤波，算法将持续优化，后续会添加CS模型。|
+|2022-11-05| Debug processor node.|
+|2022-11-01| 运动模型待调试。|
+|2022-10-26| Lapack library needs to be linked manually.|  

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-04-04 00:07:48
+ * @LastEditTime: 2023-04-14 02:25:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_tracker/armor_tracker.cpp
  */
 #include "../../include/armor_tracker/armor_tracker.hpp"
@@ -11,16 +11,18 @@ namespace armor_detector
 {
     ArmorTracker::ArmorTracker()
     {
+        // this->last_yaw_diff_ = 0.0;
+        // this->last_pitch_diff_ = 0.0;
+        // this->hop_timestamp_ = 0.0;
         // normal_gyro_status_counter_ = 0;
         // switch_gyro_status_counter_ = 0;
         // spin_status_ = UNKNOWN;
         // flag_ = 0;
 
+        relative_angle = 0.0;
         this->now = 0;
         this->last_timestamp = 0;
-        this->last_yaw_diff_ = 0.0;
-        this->last_pitch_diff_ = 0.0;
-        // this->hop_timestamp_ = 0.0;
+        this->last_selected_timestamp = 0;
     }
 
     /**
@@ -33,22 +35,24 @@ namespace armor_detector
     {
         this->key = armor.key;
         this->last_timestamp = 0;
+        this->last_selected_timestamp = 0;
         this->now = now_timestamp;
         this->last_armor = Armor();
         this->new_armor = armor;
-        this->hit_score = 0;
+        this->hit_score = 0.0;
+        this->relative_angle = 0.0;
         this->history_info_.push_back(armor);
         this->calcTargetScore();
+        
+        this->is_initialized = false;
         
         // normal_gyro_status_counter_ = 0;
         // switch_gyro_status_counter_ = 0;
         // spin_status_ = UNKNOWN;
         // flag_ = 0;
-        this->last_yaw_diff_ = 0.0;
-        this->last_pitch_diff_ = 0.0;
+        // this->last_yaw_diff_ = 0.0;
+        // this->last_pitch_diff_ = 0.0;
         // this->hop_timestamp_ = 0.0;
-        this->is_initialized = false;
-
         // cout << "init_dt:" << now_timestamp / 1e6 << endl;
     }
 
@@ -79,7 +83,6 @@ namespace armor_detector
 
         this->calcTargetScore();  //计算装甲板分数，作为打击目标切换判据，防止随意切换造成云台乱抖
         this->is_initialized = true;
-        // cout << "update_dt:" << new_timestamp / 1e6 << endl;
         return true;
     }
 

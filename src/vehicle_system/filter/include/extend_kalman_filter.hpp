@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-03 15:51:26
- * @LastEditTime: 2023-03-22 15:31:07
+ * @LastEditTime: 2022-11-14 21:51:40
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/extend_kalman_filter.hpp
  */
 #ifndef EXTEND_KALMAN_FILTER_HPP_
@@ -91,7 +91,7 @@ namespace filter
             m.updateJacobians(x);
 
             //测量值与预测值之间的残差
-            // auto v = z - m.H * this->getState();
+            auto v = z - m.H * this->getState();
             // std::cout << v.size() << std::endl;
             
             //计算卡尔曼增益
