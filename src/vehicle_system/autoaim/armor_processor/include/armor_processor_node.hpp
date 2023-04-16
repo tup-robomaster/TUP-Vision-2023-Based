@@ -64,6 +64,7 @@ namespace armor_processor
         mutex debug_mutex_;
         mutex image_mutex_;
         atomic<bool> image_flag_ = false;
+        atomic<bool> flag_ = false;
         bool is_aimed_ = false;
         bool is_pred_ = false;
         
@@ -86,7 +87,8 @@ namespace armor_processor
     protected:
         ImageSize image_size_;
         ImageInfo image_info_;
-
+        cv::Mat src_;
+        
         // Image callback.
         void imageProcessor(cv::Mat& img);
         void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);

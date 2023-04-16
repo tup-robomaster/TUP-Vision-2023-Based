@@ -36,6 +36,14 @@ include_directories(
 )
 
 link_directories(/opt/MVS/lib/64/)
+
+# set(GXI_LIB_SO usr/lib/libgxiapi)
+
+# add_library(${PROJECT_NAME}
+  # include/hik_camera.h
+  # src/hik_camera.cpp
+# )
+
 set(dependencies 
   rclcpp
   rclcpp_components

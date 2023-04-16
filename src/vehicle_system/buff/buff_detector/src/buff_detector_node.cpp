@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-03-20 10:06:49
+ * @LastEditTime: 2023-03-28 18:29:49
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -45,6 +45,9 @@ namespace buff_detector
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
 
+        rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
+        rmw_qos.depth = 1;
+
         // buff info pub.
         buff_info_pub_ = this->create_publisher<BuffMsg>("/buff_detector/buff_msg", qos);
 
@@ -67,6 +70,7 @@ namespace buff_detector
         // image sub.
         std::string camera_topic = image_info_.camera_topic_map[camera_type];
         img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
+            std::bind(&BuffDetectorNode::imageCallback, this, _1), transport, rmw_qos));
             std::bind(&BuffDetectorNode::imageCallback, this, _1), transport, rmw_qos));
 
         bool debug = false;
@@ -154,7 +158,7 @@ namespace buff_detector
         {
             param_mutex_.unlock();
             buff_msg.header.frame_id = "gimbal_link";
-            buff_msg.header.stamp = this->get_clock()->now();
+            buff_msg.header.stamp = img_info->header.stamp;
             buff_msg.r_center.x = target_info.r_center[0];
             buff_msg.r_center.y = target_info.r_center[1];
             buff_msg.r_center.z = target_info.r_center[2];

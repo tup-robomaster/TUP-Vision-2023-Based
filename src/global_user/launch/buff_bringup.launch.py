@@ -2,7 +2,7 @@
 # Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-27 01:40:28
-LastEditTime: 2023-04-14 18:08:04
+LastEditTime: 2023-04-16 13:32:13
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/buff_bringup.launch.py
 '''
 import os
@@ -73,6 +73,7 @@ def generate_launch_description():
             name='serialport',
             output='log',
             emulate_tty=True,
+            respawn=True,
             parameters=[{
                 'using_port': True,
                 'tracking_target': False,
@@ -90,6 +91,7 @@ def generate_launch_description():
             executable='component_container',
             namespace='',
             output='log',
+            respawn=True,
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'True'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -126,6 +128,7 @@ def generate_launch_description():
             output='log',
             package='rclcpp_components',
             executable='component_container',
+            respawn=True,
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'usb'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -167,6 +170,7 @@ def generate_launch_description():
             output='log',
             package='rclcpp_components',
             executable='component_container',
+            respawn=True,
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'daheng'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -208,6 +212,7 @@ def generate_launch_description():
             output='log',
             package='rclcpp_components',
             executable='component_container',
+            respawn=True,
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'hik'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -249,6 +254,7 @@ def generate_launch_description():
             output='log',
             package='rclcpp_components',
             executable='component_container',
+            respawn=True,
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'mvs'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -289,6 +295,7 @@ def generate_launch_description():
             executable='buff_processor_node',
             output='log',
             emulate_tty=True,
+            respawn=True,
             parameters=[buff_processor_params],
             respawn=True,
             respawn_delay=4,

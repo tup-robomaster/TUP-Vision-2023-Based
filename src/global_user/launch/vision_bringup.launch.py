@@ -23,13 +23,13 @@ def generate_launch_description():
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='usb',
+        default_value='daheng',
         description='hik daheng mvs usb'
     )
 
     declare_use_serial = DeclareLaunchArgument(
         name='using_imu',
-        default_value='False',
+        default_value='True',
         description='debug without serial port.'
     )
     
@@ -72,6 +72,7 @@ def generate_launch_description():
             name='serialport',
             output='log', # log/screen/both
             emulate_tty=True,
+            respawn=True,
             parameters=[{
                 'using_port': True,
                 'tracking_target': True,
@@ -89,6 +90,7 @@ def generate_launch_description():
             executable='component_container',
             namespace='',
             output='log',
+            respawn=True,
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'True'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -134,6 +136,7 @@ def generate_launch_description():
             output='log',
             package='rclcpp_components',
             executable='component_container',
+            respawn=True,
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'usb'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -174,6 +177,7 @@ def generate_launch_description():
             output='log',
             package='rclcpp_components',
             executable='component_container',
+            respawn=True,
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'daheng'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -214,6 +218,7 @@ def generate_launch_description():
             output='log',
             package='rclcpp_components',
             executable='component_container',
+            respawn=True,
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'hik'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -254,6 +259,7 @@ def generate_launch_description():
             output='log',
             package='rclcpp_components',
             executable='component_container',
+            respawn=True,
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'mvs'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -295,7 +301,6 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[armor_processor_params],
             respawn=True,
-            respawn_delay=4,
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
         ),
 
