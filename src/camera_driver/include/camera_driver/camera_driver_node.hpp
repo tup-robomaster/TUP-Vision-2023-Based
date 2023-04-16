@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-04-14 02:36:33
+ * @LastEditTime: 2023-04-16 13:19:06
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -281,7 +281,7 @@ namespace camera_driver
         if (save_video_)
         {   // Video recorder.
             ++frame_cnt_;
-            if (frame_cnt_ % 4 == 0)
+            if (frame_cnt_ % 100 == 0)
             {
                 sensor_msgs::msg::Image image_msg = image_msg_;
                 auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
@@ -294,7 +294,7 @@ namespace camera_driver
                     {
                         if (rcutils_uint8_array_fini(msg) != RCUTILS_RET_OK)
                         {
-                            RCLCPP_ERROR(this->get_logger(), "RCUTILS_RET_INVALID_ARGUMENT OR RCUTILS_RET_ERROR");
+                            RCLCPP_ERROR(this->get_logger(), "[Record video] RCUTILS_RET_INVALID_ARGUMENT OR RCUTILS_RET_ERROR");
                         }
                         delete msg;
                     }
@@ -302,7 +302,10 @@ namespace camera_driver
                 *bag_msg->serialized_data = serialized_msg.release_rcl_serialized_message();
                 bag_msg->topic_name = camera_topic_;
                 bag_msg->time_stamp = now.nanoseconds();
-                writer_->write(bag_msg);
+                auto async_future = std::async(std::launch::async, [&](){
+                    writer_->write(bag_msg);
+                });
+                async_future.wait_for(2ms);
             }
         }
         if (show_img_)
