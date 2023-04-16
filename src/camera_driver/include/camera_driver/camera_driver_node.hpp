@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-04-14 02:36:33
+ * @LastEditTime: 2023-04-16 18:11:16
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -281,7 +281,7 @@ namespace camera_driver
         if (save_video_)
         {   // Video recorder.
             ++frame_cnt_;
-            if (frame_cnt_ % 4 == 0)
+            if (frame_cnt_ % 50 == 0)
             {
                 sensor_msgs::msg::Image image_msg = image_msg_;
                 auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();

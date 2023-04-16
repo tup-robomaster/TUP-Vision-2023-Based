@@ -80,7 +80,7 @@
     max_cost: 10
     max_v: 8
     min_fitting_lens: 5
-    shoot_delay: 170
+    shoot_delay: 470
     window_size: 3
     yaw_angle_offset: -0.5
     pitch_angle_offset: 0.5

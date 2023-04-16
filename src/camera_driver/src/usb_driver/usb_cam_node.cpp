@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2023-04-14 02:56:29
+ * @LastEditTime: 2023-04-16 18:10:53
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -132,8 +132,8 @@ namespace camera_driver
             strftime(now, 64, "%Y-%m-%d_%H_%M_%S", tmp_ptr);  // 以时间为名字
             std::string now_string(now);
             string pkg_path = get_package_share_directory("camera_driver");
-            string save_path = this->declare_parameter("save_path", "/recorder/video/gyro_video.webm");
-            std::string path = pkg_path + save_path + now_string;
+            std::string path = pkg_path + save_path_ + now_string;
+            RCLCPP_WARN_ONCE(this->get_logger(), "Save path:%s", path.c_str());
 
             writer_ = std::make_unique<rosbag2_cpp::writers::SequentialWriter>();
             rosbag2_storage::StorageOptions storage_options({path, "sqlite3"});
@@ -271,7 +271,7 @@ namespace camera_driver
                 if (save_video_)
                 {   // Video recorder.
                     ++frame_cnt_;
-                    if (frame_cnt_ % 4 == 0)
+                    if (frame_cnt_ % 50 == 0)
                     {
                         sensor_msgs::msg::Image image_msg = *msg;
                         auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
@@ -374,6 +374,9 @@ namespace camera_driver
         usb_cam_params_.image_width = this->get_parameter("image_width").as_int();
         usb_cam_params_.image_height = this->get_parameter("image_height").as_int();
         usb_cam_params_.fps = this->get_parameter("fps").as_int();
+
+        this->declare_parameter<string>("save_path", "/recorder/video/");
+        save_path_ = this->get_parameter("save_path").as_string();
 
         return std::make_unique<UsbCam>(usb_cam_params_);
     }

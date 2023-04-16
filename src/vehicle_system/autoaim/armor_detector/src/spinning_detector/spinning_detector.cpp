@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-04-12 21:44:24
+ * @LastEditTime: 2023-04-16 19:13:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -480,7 +480,7 @@ namespace armor_detector
                         last_armor_center = last_tracker->new_armor.center2d.x;
                         last_armor_timestamp = last_tracker->now;
                         auto spin_movement = new_armor_center - last_armor_center;
-                        auto spin_x_dis = last_tracker->new_armor.armor3d_world[xyz_axis_[0]] - new_tracker->new_armor.armor3d_world[xyz_axis_[0]];
+                        auto spin_x_dis = last_tracker->new_armor.armor3d_world[1] - new_tracker->new_armor.armor3d_world[1];
 
                         spinning_map_.spin_counter_map[cnt.first].flag += (spin_x_dis > 0) ? (-25) : 25; 
                         if (spinning_map_.spin_status_map[cnt.first].spin_state != UNKNOWN
@@ -530,10 +530,10 @@ namespace armor_detector
                                 GyroInfo gyro_info;
                                 gyro_info.last_rmat = last_tracker->last_armor.rmat;
                                 gyro_info.new_rmat = new_tracker->last_armor.rmat;
-                                gyro_info.new_x_font = last_tracker->last_armor.armor3d_world[xyz_axis_[0]];
-                                gyro_info.new_x_back = new_tracker->last_armor.armor3d_world[xyz_axis_[0]];
-                                gyro_info.new_y_font = last_tracker->last_armor.armor3d_world[xyz_axis_[2]];
-                                gyro_info.new_y_back = new_tracker->last_armor.armor3d_world[xyz_axis_[2]]; 
+                                gyro_info.new_x_font = last_tracker->last_armor.armor3d_world[1];
+                                gyro_info.new_x_back = new_tracker->last_armor.armor3d_world[1];
+                                gyro_info.new_y_font = last_tracker->last_armor.armor3d_world[0];
+                                gyro_info.new_y_back = new_tracker->last_armor.armor3d_world[0]; 
                                 gyro_info.new_timestamp = new_armor_timestamp;
                                 gyro_info.last_x_back = 0;
                                 gyro_info.last_x_back = 0;
@@ -551,10 +551,10 @@ namespace armor_detector
                                 (*candidate).second.last_y_back = (*candidate).second.new_y_back;
                                 (*candidate).second.last_timestamp = (*candidate).second.new_timestamp;
 
-                                (*candidate).second.new_x_font = last_tracker->last_armor.armor3d_world[xyz_axis_[0]];
-                                (*candidate).second.new_x_back = new_tracker->last_armor.armor3d_world[xyz_axis_[0]];
-                                (*candidate).second.new_y_font = last_tracker->last_armor.armor3d_world[xyz_axis_[2]];
-                                (*candidate).second.new_y_back = new_tracker->last_armor.armor3d_world[xyz_axis_[2]];
+                                (*candidate).second.new_x_font = last_tracker->last_armor.armor3d_world[1];
+                                (*candidate).second.new_x_back = new_tracker->last_armor.armor3d_world[1];
+                                (*candidate).second.new_y_font = last_tracker->last_armor.armor3d_world[0];
+                                (*candidate).second.new_y_back = new_tracker->last_armor.armor3d_world[0];
                                 (*candidate).second.new_timestamp = new_armor_timestamp;
 
                                 (*candidate).second.last_rmat = last_tracker->last_armor.rmat;

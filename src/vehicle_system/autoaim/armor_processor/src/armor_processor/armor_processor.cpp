@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-04-15 22:57:22
+ * @LastEditTime: 2023-04-16 19:02:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -187,6 +187,14 @@ namespace armor_processor
         {
             if(!target.is_target_switched && armor_predictor_.predictor_state_ == LOSTING)
             {   //当目标丢失后又出现时直接预测
+                for (int ii = 0; ii < 3; ii++)
+                {
+                    Eigen::Vector3d pred_state = armor_predictor_.singer_kf_[target.is_spinning][ii].x();
+                    if (abs(target.xyz[ii] - pred_state[0]) > 0.2)
+                    {
+                        armor_predictor_.singer_kf_[target.is_spinning][ii].x_ << target.xyz[ii], pred_state[1], pred_state[2];   
+                    }
+                }
                 armor_predictor_.predictor_state_ = PREDICTING;
             }
             else if (target.is_target_switched || armor_predictor_.predictor_state_ == LOST)
@@ -198,7 +206,7 @@ namespace armor_processor
             else if (target.is_spinning && target.is_spinning_switched)
             {
                 //更新预测器（位置&速度继承）
-                armor_predictor_.updatePredictor();
+                armor_predictor_.updatePredictor(target.is_spinning, target);
                 armor_predictor_.predictor_state_ = PREDICTING;
             }
         }
