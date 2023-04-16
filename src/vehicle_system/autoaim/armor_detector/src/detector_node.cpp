@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-15 19:53:54
+ * @LastEditTime: 2023-04-16 15:24:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -229,30 +229,33 @@ namespace armor_detector
 
     void DetectorNode::detect(TaskData& src, rclcpp::Time stamp)
     {
-        serial_msg_mutex_.lock();
         if (debug_.using_imu)
         {
-            auto dt = (this->get_clock()->now() - serial_msg_.imu.header.stamp).nanoseconds() / 1e6;
+            serial_msg_mutex_.lock();
+            SerialMsg serial_msg = serial_msg_;
+            serial_msg_mutex_.unlock(); 
+
+            rclcpp::Time now = this->get_clock()->now();
+            auto dt = (now - serial_msg.imu.header.stamp).nanoseconds() / 1e6;
             putText(src.img, "IMU_DELAY:" + to_string(dt) + "ms", cv::Point2i(50, 80), cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
             // if(dt > 50)
             // {
-            //     src.mode = serial_msg_.mode;
-            //     src.bullet_speed = serial_msg_.bullet_speed;
+            //     src.mode = serial_msg.mode;
+            //     src.bullet_speed = serial_msg.bullet_speed;
             //     detector_->debug_params_.using_imu = false;
             // }
             // else
             // {
-                src.bullet_speed = serial_msg_.bullet_speed;
-                src.mode = serial_msg_.mode;
-                src.quat.w() = serial_msg_.imu.orientation.w;
-                src.quat.x() = serial_msg_.imu.orientation.x;
-                src.quat.y() = serial_msg_.imu.orientation.y;
-                src.quat.z() = serial_msg_.imu.orientation.z;
+                src.bullet_speed = serial_msg.bullet_speed;
+                src.mode = serial_msg.mode;
+                src.quat.w() = serial_msg.imu.orientation.w;
+                src.quat.x() = serial_msg.imu.orientation.x;
+                src.quat.y() = serial_msg.imu.orientation.y;
+                src.quat.z() = serial_msg.imu.orientation.z;
                 // detector_->debug_params_.using_imu = true;
-                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "bulletSpd:%.2f", src.bullet_speed);
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "imu_delay:%.2fms bullet_spd:%.2f", dt, src.bullet_speed);
             // }
         }
-        serial_msg_mutex_.unlock(); 
         
         // RCLCPP_WARN(this->get_logger(), "mode:%d", src.mode);
 
@@ -356,16 +359,16 @@ namespace armor_detector
     void DetectorNode::decisionMsgCallback(const DecisionMsg& decision_msg)
     {
         decision_msg_mutex_.lock();
+        // decision_msg_.header.stamp = this->get_clock()->now();
         decision_msg_ = decision_msg;
-        decision_msg_.header.stamp = this->get_clock()->now();
         decision_msg_mutex_.unlock();
     }
 
     void DetectorNode::objHPMsgCallback(const ObjHPMsg& obj_hp_msg)
     {
         obj_hp_msg_mutex_.lock();
+        // obj_hp_msg_.header.stamp = this->get_clock()->now();
         obj_hp_msg_ = obj_hp_msg;
-        obj_hp_msg_.header.stamp = this->get_clock()->now();
         obj_hp_msg_mutex_.unlock();
         return;
     }
@@ -378,13 +381,17 @@ namespace armor_detector
     void DetectorNode::sensorMsgCallback(const SerialMsg& serial_msg)
     {
         serial_msg_mutex_.lock();
-        serial_msg_.imu.header.stamp = this->get_clock()->now();
-        if(serial_msg.bullet_speed > 10)
-            serial_msg_.bullet_speed = serial_msg.bullet_speed;
-        if(serial_msg.mode == AUTOAIM || serial_msg.mode == HERO_SLING || serial_msg.mode == SENTRY_NORMAL)
-            serial_msg_.mode = serial_msg.mode;
-        serial_msg_.imu = serial_msg.imu;
+        // serial_msg_.imu.header.stamp = this->get_clock()->now();
+        // if(serial_msg.bullet_speed > 10)
+        //     serial_msg_.bullet_speed = serial_msg.bullet_speed;
+        // if(serial_msg.mode == AUTOAIM || serial_msg.mode == HERO_SLING || serial_msg.mode == SENTRY_NORMAL)
+        //     serial_msg_.mode = serial_msg.mode;
+        // serial_msg_.imu = serial_msg.imu;
+        serial_msg_ = serial_msg;
         serial_msg_mutex_.unlock();
+
+        rclcpp::Time now = this->get_clock()->now();
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "imu_trans_delay:%.2fms", ((now - serial_msg.header.stamp).nanoseconds() / 1e6));
         return;
     }
 
