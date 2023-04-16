@@ -73,7 +73,7 @@ target_link_libraries(${PROJECT_NAME}
   FormatConversion
   MediaProcess
   gxiapi
-  yaml-cpp.so
+  yaml-cpp
 )
 
 add_executable(usb_cam_driver_node src/usb_driver/usb_cam_node_main.cpp)

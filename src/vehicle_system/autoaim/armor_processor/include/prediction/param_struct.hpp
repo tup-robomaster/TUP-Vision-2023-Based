@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-09 22:50:31
- * @LastEditTime: 2023-04-11 21:22:28
+ * @LastEditTime: 2023-04-15 11:55:48
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -48,9 +48,10 @@ namespace armor_processor
         double dist;
         int64_t timestamp;
         double period;
+        bool is_target_lost;
         bool is_target_switched;
         bool is_spinning;
-        bool spinning_switched;
+        bool is_spinning_switched;
         bool is_clockwise;
         bool is_outpost_mode;
         SpinningStatus spinning_status;
@@ -68,6 +69,18 @@ namespace armor_processor
             xyz_status[1] = false;
             xyz_status[2] = false;
         }
+    };
+
+    /**
+     * @brief 预测器状态
+     * 
+     */
+    enum PredictorState
+    {
+        TRACKING,   //追踪
+        PREDICTING, //预测
+        LOSTING,    //丢失预测中
+        LOST        //丢失
     };
 
     struct FilterModelParam
