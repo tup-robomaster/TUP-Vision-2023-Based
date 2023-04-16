@@ -41,7 +41,7 @@
 
   # Camera config params.
     # camera_name: "00J90630561" 
-    camera_name: "KE0200110073" #FIXME:根据相机序列号修改
+    camera_name: "KE0200110075" #FIXME:根据相机序列号修改
     camera_type: 0
     camera_param_path: "/config/camera.yaml"
 
@@ -60,7 +60,7 @@
   
   # Debug params.
     debug: true
-    using_imu: true
+    using_imu: false
     show_img: true
     show_fps: true
     using_roi: false
@@ -80,7 +80,7 @@
     max_cost: 10
     max_v: 8
     min_fitting_lens: 5
-    shoot_delay: 170
+    shoot_delay: 670
     window_size: 3
     yaw_angle_offset: -0.5
     pitch_angle_offset: 0.5
@@ -92,7 +92,7 @@
 
   # Debug params.
     debug: true
-    using_imu: true
+    using_imu: false
     show_img: false
     draw_predict: false
     show_predict: false
@@ -109,7 +109,7 @@
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
+    coord_param_name: "KE0200110075" #FIXME:根据相机序列号修改
     coord_param_path: "/config/camera.yaml"
     
   # Filter params.

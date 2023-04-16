@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2023-04-16 13:18:30
+ * @LastEditTime: 2023-04-16 14:41:57
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -50,6 +50,39 @@ namespace camera_driver
         this->declare_parameter<bool>("using_video", true);
         using_video_ = this->get_parameter("using_video").as_bool();
 
+        if(save_video_)
+        {   // Video save.
+            RCLCPP_INFO(this->get_logger(), "Saving video...");
+            time_t tmpcal_ptr;
+            tm *tmp_ptr = nullptr;
+            tmpcal_ptr = time(nullptr);
+            tmp_ptr = localtime(&tmpcal_ptr);
+            char now[64];
+            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", tmp_ptr);  // 以时间为名字
+            std::string now_string(now);
+            std::string pkg_path = get_package_share_directory("camera_driver");
+            this->declare_parameter<string>("save_path", "/recorder/video/");
+            std::string save_path = this->get_parameter("save_path").as_string();
+            std::string path = pkg_path + save_path + now_string;
+
+            RCLCPP_WARN_ONCE(this->get_logger(), "Save path:%s", path.c_str());
+            writer_ = std::make_unique<rosbag2_cpp::writers::SequentialWriter>();
+            rosbag2_storage::StorageOptions storage_options({path, "sqlite3"});
+            rosbag2_cpp::ConverterOptions converter_options({
+                rmw_get_serialization_format(),
+                rmw_get_serialization_format()
+            });
+            writer_->open(storage_options, converter_options);
+            writer_->create_topic({
+                "usb_img",
+                "sensor_msgs::msg::Image",
+                rmw_get_serialization_format(),
+                ""
+            });
+        }
+        else
+            RCLCPP_WARN_ONCE(this->get_logger(), "Not save video...");
+
         // sleep(10);
         if(using_video_)
         {
@@ -89,6 +122,7 @@ namespace camera_driver
                 RCLCPP_INFO(this->get_logger(), "Open camera success!");
             }
         }
+        
 
         cap_.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_width);
         cap_.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_height);
@@ -121,36 +155,6 @@ namespace camera_driver
             // param_cb_handle_ = param_subscriber_->add_parameter_callback("ParamCallback", cb);
         }
         
-        if(save_video_)
-        {   // Video save.
-            RCLCPP_INFO(this->get_logger(), "Saving video...");
-            time_t tmpcal_ptr;
-            tm *tmp_ptr = nullptr;
-            tmpcal_ptr = time(nullptr);
-            tmp_ptr = localtime(&tmpcal_ptr);
-            char now[64];
-            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", tmp_ptr);  // 以时间为名字
-            std::string now_string(now);
-            string pkg_path = get_package_share_directory("camera_driver");
-            string save_path = this->declare_parameter("save_path", "/recorder/video/gyro_video.webm");
-            std::string path = pkg_path + save_path + now_string;
-
-            writer_ = std::make_unique<rosbag2_cpp::writers::SequentialWriter>();
-            rosbag2_storage::StorageOptions storage_options({path, "sqlite3"});
-            rosbag2_cpp::ConverterOptions converter_options({
-                rmw_get_serialization_format(),
-                rmw_get_serialization_format()
-            });
-            writer_->open(storage_options, converter_options);
-            writer_->create_topic({
-                "usb_img",
-                "sensor_msgs::msg::Image",
-                rmw_get_serialization_format(),
-                ""
-            });
-        }
-        else
-            RCLCPP_WARN_ONCE(this->get_logger(), "Not save video...");
     }
 
     UsbCamNode::~UsbCamNode()

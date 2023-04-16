@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-04-16 12:04:12
+ * @LastEditTime: 2023-04-16 13:39:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -102,7 +102,7 @@ namespace armor_detector
                 (*score).second = 0.997 * (*score).second - 1 * abs((*score).second) / (*score).second;
             }
             
-            RCLCPP_INFO_THROTTLE(logger_, "Score: %lf", (*score).second);
+            RCLCPP_INFO(logger_, "Score: %lf", (*score).second);
             // 当小于该值时移除该元素
             if (abs((*score).second) < 3 || isnan((*score).second))
             {
@@ -571,18 +571,18 @@ namespace armor_detector
                             // last_tracker->hop_timestamp_ = now;
                             // ++new_tracker->switch_gyro_status_counter_;
 
-                            // if (spinning_map_.spin_score_map.count(cnt.first) == 0)
-                            // {   //若无该元素则插入新元素，为车辆的陀螺分数赋初值
-                            //     spinning_map_.spin_score_map[cnt.first] = 1000 * spin_movement / abs(spin_movement);
-                            // }
-                            // else if (spin_movement * spinning_map_.spin_score_map[cnt.first] < 0)
-                            // {   //若已有该元素且目前旋转方向与记录不同,则对目前车辆的陀螺分数进行减半惩罚
-                            //     spinning_map_.spin_score_map[cnt.first] *= 0.5;
-                            // }
-                            // else
-                            // {   //若目前旋转方向与记录同向，并且已有该元素则更新元素
-                            //     spinning_map_.spin_score_map[cnt.first] = gyro_params_.anti_spin_max_r_multiple * spinning_map_.spin_score_map[cnt.first];
-                            // }
+                            if (spinning_map_.spin_score_map.count(cnt.first) == 0)
+                            {   //若无该元素则插入新元素，为车辆的陀螺分数赋初值
+                                spinning_map_.spin_score_map[cnt.first] = 1000 * spin_movement / abs(spin_movement);
+                            }
+                            else if (spin_movement * spinning_map_.spin_score_map[cnt.first] < 0)
+                            {   //若已有该元素且目前旋转方向与记录不同,则对目前车辆的陀螺分数进行减半惩罚
+                                spinning_map_.spin_score_map[cnt.first] *= 0.5;
+                            }
+                            else
+                            {   //若目前旋转方向与记录同向，并且已有该元素则更新元素
+                                spinning_map_.spin_score_map[cnt.first] = gyro_params_.anti_spin_max_r_multiple * spinning_map_.spin_score_map[cnt.first];
+                            }
                         }
                         // else
                         // {

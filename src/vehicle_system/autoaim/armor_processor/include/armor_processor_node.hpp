@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-04-15 23:06:36
+ * @LastEditTime: 2023-04-16 13:35:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -87,7 +87,6 @@ namespace armor_processor
     protected:
         ImageSize image_size_;
         ImageInfo image_info_;
-        cv::Mat src_;
         
         // Image callback.
         void imageProcessor(cv::Mat& img);
