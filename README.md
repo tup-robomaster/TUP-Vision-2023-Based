@@ -70,6 +70,14 @@ OpenCV  |https://github.com/opencv/opencv/tree/4.2.0 \ https://github.com/opencv
 - Command
         
         ros2 launch global_user autoaim_bringup.launch.py
+- Startup
+
+  - Step1:设置shell脚本权限
+        
+        sudo chmod 777 your_shell_script_path
+  - Step2:配置程序启动首选项
+
+        gnome-terminal -- your_shell_script_path
 
 #### 2.能量机关调试
 - Prepare

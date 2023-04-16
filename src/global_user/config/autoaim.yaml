@@ -15,8 +15,8 @@
     armor_roi_expand_ratio_width: 1.2
     armor_roi_expand_ratio_height: 1.8
     armor_conf_high_thres: 0.82
-    yaw_angle_offset: 1.0
-    pitch_angle_offset: 0.0
+    yaw_angle_offset: -0.5
+    pitch_angle_offset: 0.5
 
   # Spinning params.
     max_cost: 500
@@ -41,7 +41,7 @@
 
   # Camera config params.
     # camera_name: "00J90630561" 
-    camera_name: "KE0200110075" #FIXME:根据相机序列号修改
+    camera_name: "KE0200110073" #FIXME:根据相机序列号修改
     camera_type: 0
     camera_param_path: "/config/camera.yaml"
 
@@ -82,8 +82,8 @@
     min_fitting_lens: 5
     shoot_delay: 170
     window_size: 3
-    yaw_angle_offset: 1.0
-    pitch_angle_offset: 0.0
+    yaw_angle_offset: -0.5
+    pitch_angle_offset: 0.5
     max_offset_value: 0.45
     reserve_factor: 500.0 #储备系数(>=1)
     # rotation_yaw: 0.0
@@ -109,7 +109,7 @@
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110075" #FIXME:根据相机序列号修改
+    coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
     coord_param_path: "/config/camera.yaml"
     
   # Filter params.
