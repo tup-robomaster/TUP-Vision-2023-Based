@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-04-14 13:35:28
+ * @LastEditTime: 2023-04-16 21:55:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
@@ -46,7 +46,7 @@ namespace armor_detector
         int chooseTargetID(TaskData& src);
         int chooseTargetID(TaskData& src, std::vector<Armor>& armors, ObjHPMsg hp = ObjHPMsg(), DecisionMsg decision_msg = DecisionMsg());
         void showArmors(TaskData& src);
-        bool normlizeAngle();
+        // bool normlizeAngle();
 
     public:
         CoordSolver coordsolver_;
@@ -115,7 +115,6 @@ namespace armor_detector
     public:
         //Debug param.
         DebugParam debug_params_;
-        PathParam path_params_;
         DetectorParam detector_params_;
 
         rclcpp::Logger logger_;

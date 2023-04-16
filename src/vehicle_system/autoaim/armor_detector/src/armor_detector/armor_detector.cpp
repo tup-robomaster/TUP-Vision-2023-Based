@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-14 13:45:40
+ * @LastEditTime: 2023-04-16 21:52:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -12,8 +12,8 @@ namespace armor_detector
 {
     Detector::Detector(const PathParam& path_param, const DetectorParam& detector_params,
     const DebugParam& debug_params, const GyroParam& gyro_params, const Eigen::Vector2d& angle_offset) 
-    : spinning_detector_(detector_params_.color, gyro_params), coordsolver_(angle_offset),
-    detector_params_(detector_params), path_params_(path_param), debug_params_(debug_params),
+    : spinning_detector_(detector_params_.color, gyro_params), detector_params_(detector_params),
+    coordsolver_(angle_offset), debug_params_(debug_params),
     logger_(rclcpp::get_logger("armor_detector"))
     {
         //初始化clear
@@ -63,20 +63,6 @@ namespace armor_detector
         last_timestamp_ = now_;
         now_ = src.timestamp;
         auto input = src.img;
-
-        // cout << "timestamp:" << now_ / 1e6 << endl;
-        // RCLCPP_WARN(logger_, "now:%.8f", now_ / 1e9);
-        // if(!is_init_)
-        // {
-        //     armor_detector_.initModel(path_params_.network_path);
-        //     coordsolver_.loadParam(path_params_.camera_param_path, path_params_.camera_name);
-        //     if(is_save_data_)
-        //     {
-        //         data_save_.open(path_params_.save_path, ios::out | ios::trunc);
-        //         data_save_ << fixed;
-        //     }
-        //     is_init_ = true;
-        // }
         
         if (!debug_params_.debug_without_com)
         {   //有串口
@@ -296,7 +282,7 @@ namespace armor_detector
             }
 
             //更新陀螺分数
-            // spinning_detector_.updateSpinScore();
+            spinning_detector_.updateSpinScore();
 
             is_target_lost = true;
             lost_cnt_++;
@@ -356,7 +342,7 @@ namespace armor_detector
         spinning_detector_.isSpinning(trackers_map_, new_armors_cnt_map_, now_);
 
         //Update spinning score
-        // spinning_detector_.updateSpinScore();
+        spinning_detector_.updateSpinScore();
 
         // cout << "armor_size:" << (int)new_armors_.size() << endl;
 
@@ -444,7 +430,8 @@ namespace armor_detector
         }
         else
         {   //若确定打击车辆的陀螺状态
-            spin_status = spinning_detector_.spinning_map_.spin_status_map[target_key].spin_state;
+            // spin_status = spinning_detector_.spinning_map_.spin_status_map[target_key].spin_state;
+            spin_status = spinning_detector_.spinning_map_.spin_status_map[target_key];
             if (spin_status != UNKNOWN)
             {
                 is_target_spinning = true;
