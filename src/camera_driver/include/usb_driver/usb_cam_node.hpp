@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:40
- * @LastEditTime: 2023-04-08 22:57:26
+ * @LastEditTime: 2023-04-01 12:03:38
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/usb_driver/usb_cam_node.hpp
  */
 #ifndef USB_CAM_NODE_HPP_
@@ -49,8 +49,10 @@ namespace camera_driver
         cv::VideoCapture cap;    
         bool is_filpped;
 
+        // rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
+
         // std::unique_ptr<usb_cam> usb_cam_;
-        rclcpp::TimerBase::SharedPtr timer;
+        rclcpp::TimerBase::SharedPtr img_pub_timer_;
         rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr frame_pub;
 
         rclcpp::Time last_frame_;
@@ -80,11 +82,6 @@ namespace camera_driver
         bool setParam(rclcpp::Parameter param);
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
-    
-    protected:
-        bool using_shared_memory_;   //图像数据内存共享
-        SharedMemoryParam shared_memory_param_;   
-        std::thread memory_write_thread_;
     }; // UsbCamNode
 } //namespace camera_driver
 

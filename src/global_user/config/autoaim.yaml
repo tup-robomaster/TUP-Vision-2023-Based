@@ -5,15 +5,15 @@
     max_lost_cnt: 5
     max_armors_cnt: 8
     max_v: 8
-    max_delta_t: 30
+    max_delta_t: 100
     no_crop_thres: 0.01
     hero_danger_zone: 4
     color: true # red: true
                 # blue: false
     no_crop_ratio: 0.002
     full_crop_ratio: 0.0001
-    armor_roi_expand_ratio_width: 1.1
-    armor_roi_expand_ratio_height: 1.5
+    armor_roi_expand_ratio_width: 1.2
+    armor_roi_expand_ratio_height: 1.8
     armor_conf_high_thres: 0.82
     yaw_angle_offset: 0.5
     pitch_angle_offset: -2.45
@@ -21,8 +21,8 @@
   # Spinning params.
     max_cost: 500
     shoot_delay: 50
-    bullet_speed: 15.5
-    max_dead_buffer: 8
+    bullet_speed: 16.0
+    max_dead_buffer: 10
     max_delta_dist: 0.5
     min_fitting_lens: 10
     switch_max_dt: 2000.0
@@ -60,7 +60,7 @@
   
   # Debug params.
     debug: true
-    using_imu: true
+    using_imu: false
     show_img: false
     show_fps: false
     using_roi: false
@@ -75,12 +75,12 @@
 /armor_processor:
   ros__parameters:
   # Predict params.
-    bullet_speed: 15.5
+    bullet_speed: 16.0
     max_time_delta: 1000
     max_cost: 10
     max_v: 8
-    min_fitting_lens: 3
-    shoot_delay: 10
+    min_fitting_lens: 4
+    shoot_delay: 1
     window_size: 3
     yaw_angle_offset: 0.5
     pitch_angle_offset: -2.45
@@ -92,18 +92,18 @@
 
   # Debug params.
     debug: true
-    using_imu: true
-    show_img: false
+    using_imu: false
+    show_img: true
     draw_predict: false
-    show_predict: false
+    show_predict: true
     sync_transport: false
     print_delay: false
-    x_axis_filter: false
-    y_axis_filter: false
-    z_axis_filter: false
+    x_axis_filter: true
+    y_axis_filter: true
+    z_axis_filter: true
     # disable_filter: true
     # disable_fitting: false
-    show_aim_cross: false
+    show_aim_cross: true
     show_fps: false
 
   # Camera params.
@@ -139,7 +139,7 @@
     # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.20, 1.2, 1.0, 1.0, 0.1]
 
     singer_model_x_axis: [20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0, 1.0] 
-    singer_model_y_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0] 
+    singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.18, 1.85, 1.0, 1.0, 0.1] 
     singer_model_z_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0]
 
     # singer_model_x_axis: [1.0, 10.0, 0.1, 0.8, 5.00, 0.1, 1.0, 1.0, 1.0] 

@@ -11,23 +11,14 @@
 
   <depend>rclcpp</depend>
   <depend>rclpy</depend>
+  <depend>rclcpp_components</depend>
   <depend>OpenCV</depend>
   <depend>message_filters</depend>
-  <depend>tf2_geometry_msgs</depend>
-  <depend>tf2_ros</depend>
   <depend>Eigen</depend>
   <depend>Ceres</depend>
-  <depend>rclcpp_lifecycle</depend>
-  <depend>tf2</depend>
-  <depend>angles</depend>
   <depend>global_interface</depend>
   <depend>global_user</depend>
-  <!-- <depend>lapack</depend> -->
-
-  <!-- <depend>fmt</depend> -->
-  <!-- <depend>glog</depend> -->
   <depend>yaml-cpp</depend>
-
   <depend>image_transport</depend>
   <depend>sensor_msgs</depend>
   <depend>cv_bridge</depend>

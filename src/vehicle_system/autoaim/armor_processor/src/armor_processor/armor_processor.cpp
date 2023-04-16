@@ -2,25 +2,48 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-04-08 20:05:33
+ * @LastEditTime: 2023-03-21 13:06:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
 
 namespace armor_processor
 {
-    Processor::Processor(const PredictParam& predict_param, const vector<double>* singer_model_param, const PathParam& path_param, const DebugParam& debug_param)
+    Processor::Processor(const PredictParam& predict_param, vector<double>* singer_model_param, const PathParam& path_param, const DebugParam& debug_param)
     : ArmorPredictor(predict_param, singer_model_param, path_param, debug_param), path_param_(path_param)
     {
-        is_init = false;
-        is_imm_init = false;
-        is_ekf_init = false;
+        is_init_ = false;
+        is_imm_init_ = false;
+        // is_ekf_init = false;
+        is_singer_init_[0] = false;
+        is_singer_init_[1] = false;
+
+        car_id_map_ = {
+            {"B0", 0}, {"B1", 1},
+            {"B2", 2}, {"B3", 3},
+            {"B4", 4}, {"R0", 5},
+            {"R1", 6}, {"R2", 7},
+            {"R3", 8}, {"R4", 9} 
+        };
         // init(path_param.coord_path, path_param.coord_name);
     }
     
     Processor::Processor()
     : ArmorPredictor()
     {
+        is_init_ = false;
+        is_imm_init_ = false;
+        // is_ekf_init = false;
+        is_singer_init_[0] = false;
+        is_singer_init_[1] = false;
+
+        car_id_map_ = {
+            {"B0", 0}, {"B1", 1},
+            {"B2", 2}, {"B3", 3},
+            {"B4", 4}, {"R0", 5},
+            {"R1", 6}, {"R2", 7},
+            {"R3", 8}, {"R4", 9} 
+        };
         // PathParam path;
         // init(path.coord_path, path.coord_name);
     }
@@ -44,8 +67,47 @@ namespace armor_processor
         }
         catch(const std::exception& e)
         {
-            std::cerr << e.what() << '\n';
+            RCLCPP_ERROR(logger_, "Error while initializing: %s", e.what());
         }
+    }
+
+    /**
+     * @brief 自动发弹逻辑函数
+     * 
+     * @param armor 目标装甲信息
+     * @param hp 车辆血量信息
+     * @return true 
+     * @return false 
+     */
+    bool Processor::autoShootingLogic(AutoaimMsg& armor, PostProcessInfo& post_process_info)
+    {
+        post_process_info = postProcess(armor);
+    
+        // 如果当前目标血量偏低直接发弹
+        if (armor.hp <= 75)
+        {
+            post_process_info.find_target = true;
+            post_process_info.is_shooting = true;
+            post_process_info.switch_target = false;    
+        } 
+        else if (post_process_info.track_3d_pos.norm() <= 4.5 && post_process_info.hp <= 200)
+        {
+            post_process_info.find_target = true;
+            post_process_info.is_shooting = true;
+            post_process_info.switch_target = false;
+        }
+        else if (post_process_info.track_3d_pos.norm() <= 2.5 && post_process_info.hp <= 500)
+        {
+            post_process_info.find_target = true;
+            post_process_info.is_shooting = true;
+            post_process_info.switch_target = false;
+        }
+        else
+        {
+            return false;
+        }
+        
+        return true;
     }
 
     /**
@@ -59,9 +121,11 @@ namespace armor_processor
     {
         if(target.target_switched)
         {
-            is_ekf_init = false;
-            is_imm_init = false;
-            // reInitialize();
+            // is_ekf_init = false;
+            is_singer_init_[0] = false;
+            is_singer_init_[1] = false;
+            is_singer_init_[2] = false;
+            is_imm_init_ = false;
         }
 
         auto hit_point = predict(target, target.timestamp, sleep_time);
@@ -80,9 +144,11 @@ namespace armor_processor
     {
         if(target.target_switched)
         {
-            is_ekf_init = false;
-            is_imm_init = false;
-            // reInitialize();
+            // is_ekf_init = false;
+            is_imm_init_ = false;
+            is_singer_init_[0] = false;
+            is_singer_init_[1] = false;
+            is_singer_init_[2] = false;
         }
 
         auto hit_point = predict(target, target.timestamp, sleep_time, &src);

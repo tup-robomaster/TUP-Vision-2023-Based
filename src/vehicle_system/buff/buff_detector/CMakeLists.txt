@@ -35,7 +35,6 @@ find_package(OpenVINO REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
 find_package(yaml-cpp REQUIRED)
-# find_package(fmt REQUIRED)
 find_package(filter REQUIRED)
 find_package(global_user REQUIRED)
 find_package(global_interface REQUIRED)
@@ -63,7 +62,6 @@ set(dependencies
   filter
 )
 
-include_directories(include)
 add_library(${PROJECT_NAME} SHARED
   src/fan_tracker/fan_tracker.cpp
   src/inference/inference_api2.cpp
@@ -72,11 +70,9 @@ add_library(${PROJECT_NAME} SHARED
   # src/buff_detector/buff_detector.cpp
   # src/buff_detector_node.cpp
 )
-
 ament_target_dependencies(${PROJECT_NAME}
   ${dependencies}
 )
-
 target_link_libraries(${PROJECT_NAME}
   openvino::runtime
 )
@@ -89,22 +85,12 @@ add_executable(${PROJECT_NAME}_node
   test/src/buff_detector/buff_detector.cpp
   test/src/buff_detector_node.cpp
 )
-
 ament_target_dependencies(${PROJECT_NAME}_node 
   ${dependencies}
 )
-
 target_link_libraries(${PROJECT_NAME}_node 
-  # ${PROJECT_NAME}
-  # ${OpenCV_LIBRARIES}
-  # ${InferenceEngine_LIBRARIES}
   openvino::runtime 
-  # ${Eigen3_LIBRARIES}
-  
   yaml-cpp 
-  # fmt
-  # ceres
-  # lapack 
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME} 
@@ -127,6 +113,7 @@ install(TARGETS
 
 install(DIRECTORY 
   launch
+  model
   DESTINATION share/${PROJECT_NAME}
 )
 

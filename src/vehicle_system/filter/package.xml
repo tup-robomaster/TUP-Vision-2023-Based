@@ -14,13 +14,8 @@
   <depend>OpenCV</depend>
   <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>
-  <depend>rclpy</depend>
-  <depend>rclcpp_lifecycle</depend>
   <depend>message_filters</depend>
   <depend>sensor_msgs</depend>
-  <depend>visualization_msgs</depend>
-  <depend>angles</depend>
-  <depend>matplotlib_cpp</depend>
   <depend>global_user</depend>
   <depend>global_interface</depend>
 

@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:13
- * @LastEditTime: 2023-04-10 02:17:09
+ * @LastEditTime: 2023-04-10 20:06:37
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/coordsolver.hpp
  */
 
@@ -42,8 +42,11 @@ namespace coordsolver
     {
     public:
         CoordSolver();
+        CoordSolver(const Eigen::Vector2d& static_angle_offset);
         ~CoordSolver();
+        
         bool loadParam(std::string coord_path, std::string param_name);
+        bool setStaticAngleOffset(const Eigen::Vector2d& static_angle_offset);
 
         double dynamicCalcPitchOffset(Eigen::Vector3d &xyz);
         
@@ -76,7 +79,7 @@ namespace coordsolver
 
         YAML::Node param_node;
 
-        // double bullet_speed = 28;            
+        // double bullet_speed = 28.0;            
         double bullet_speed = 16;            //TODO:弹速可变
         // const double k = 0.01903;                //25°C,1atm,小弹丸
         const double k = 0.00556;                //25°C,1atm,大弹丸

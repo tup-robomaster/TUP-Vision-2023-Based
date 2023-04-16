@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2023-02-05 00:55:28
+ * @LastEditTime: 2023-04-02 05:05:32
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/kalman_filter.cpp
  */
 #include "../../include/filter/kalman_filter.hpp"
@@ -85,7 +85,6 @@ namespace armor_processor
     void KalmanFilter::Update(const VectorXd& z)
     {
         MatrixXd z_pred = H_ * x_;
-
         MatrixXd y = z - z_pred;
         
         //卡尔曼增益
