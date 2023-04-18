@@ -101,14 +101,14 @@ namespace camera_driver
         /**
          * @brief 外部调用接口
         */
-        if(StartDevice(cam_param_.cam_id) == -1)
+        if(startDevice(cam_param_.cam_id) == -1)
         {
             RCLCPP_ERROR(logger_, "Start device failed...");
             return false;
         }
         
         // 设置分辨率
-        if(!SetResolution(cam_param_.width_scale, cam_param_.height_scale))
+        if(!setResolution(cam_param_.width_scale, cam_param_.height_scale))
         {
             RCLCPP_ERROR(logger_, "Set resolution failed...");
             return false;
@@ -118,32 +118,31 @@ namespace camera_driver
         // UpdateTimestampOffset(time_start);
 
         // 开始采集帧
-        if(!SetStreamOn())
+        if(!setStreamOn())
         {
             RCLCPP_ERROR(logger_, "Set stream on failed...");
             return false;
         }
 
         // 设置曝光事件
-        if(!SetExposureTime(cam_param_.exposure_time))
+        if(!setExposureTime(cam_param_.exposure_time))
         {
             RCLCPP_WARN(logger_, "Set exposure time failed...");
             return false;
         }
 
         // 设置1
-        if(!SetGAIN(3, cam_param_.exposure_gain))
+        if(!setGain(3, cam_param_.exposure_gain))
         {
             RCLCPP_WARN(logger_, "Set gain failed...");
             return false;
         }
         
         // 是否启用自动白平衡7
-        // Set_BALANCE_AUTO(0);
         // manual白平衡 BGR->012
-        Set_BALANCE(0, cam_param_.balance_b);
-        Set_BALANCE(1, cam_param_.balance_g);
-        Set_BALANCE(2, cam_param_.balance_r);
+        setBalance(0, cam_param_.balance_b);
+        setBalance(1, cam_param_.balance_g);
+        setBalance(2, cam_param_.balance_r);
 
         return true;
     }
@@ -153,7 +152,7 @@ namespace camera_driver
      * @param serial_number为要打开设备的序列号
      * @return 返回检测到的连接相机个数
      */
-    int DaHengCam::StartDevice(int serial_number)
+    int DaHengCam::startDevice(int serial_number)
     {
         uint32_t nDeviceNum = 0;
         GX_OPEN_PARAM stOpenParam;
@@ -217,7 +216,7 @@ namespace camera_driver
      * @brief DaHengCam::SetStreamOn 设置设备开始采集，设置分辨率应在采集图像之前
      * @return bool 返回是否设置成功
      */
-    bool DaHengCam::SetStreamOn()
+    bool DaHengCam::setStreamOn()
     {
         // 设 置 采 集 buffer 个 数
         status = GXSetAcqusitionBufferNumber(hDevice, 2);
@@ -288,7 +287,7 @@ namespace camera_driver
      * @param Src 引入方式传递
      * @return bool 返回是否成功
      */
-    bool DaHengCam::UpdateTimestampOffset(std::chrono::_V2::steady_clock::time_point time_start)
+    bool DaHengCam::updateTimestampOffset(std::chrono::_V2::steady_clock::time_point time_start)
     {
         //清空缓冲队列
         int64_t nPayLoadSize = 0;
@@ -312,7 +311,7 @@ namespace camera_driver
                 auto time_cam_end = std::chrono::steady_clock::now();
                 lastImgTimestamp = stFrameData.nTimestamp;
                 int program_timestamp = (int)std::chrono::duration<double,std::milli>(time_cam_end - time_start).count();
-                int cam_timestamp = Get_TIMESTAMP();
+                int cam_timestamp = getTimestamp();
                 timestamp_offset = cam_timestamp - program_timestamp;
                 return true;
             }
@@ -325,7 +324,7 @@ namespace camera_driver
      * @param Src 引入方式传递
      * @return bool 返回是否成功
      */
-    bool DaHengCam::get_frame(cv::Mat &Src, sensor_msgs::msg::Image& image_msg)
+    bool DaHengCam::getImage(cv::Mat &Src, sensor_msgs::msg::Image& image_msg)
     {
         //调 用 GXDQBuf 取 一 帧 图 像
         status = GXDQBuf(hDevice, &pFrameBuffer, 1000);
@@ -414,7 +413,7 @@ namespace camera_driver
      * @param height_scale  高比例
      * @return bool 返回是否成功
      */
-    bool DaHengCam::SetResolution(int width_scale, int height_scale)
+    bool DaHengCam::setResolution(int width_scale, int height_scale)
     {
         //配 置 一 个 2x2 的 Binning 和 2x2 的 Decimation
         GX_STATUS status = GX_STATUS_SUCCESS;
@@ -449,7 +448,7 @@ namespace camera_driver
      * @param ExposureTime  具体曝光值
      * @return bool 返回是否设置成功
      */
-    bool DaHengCam::SetExposureTime(int ExposureTime)
+    bool DaHengCam::setExposureTime(int ExposureTime)
     {
         //设 置  曝 光 值
         status = GXSetFloat(hDevice, GX_FLOAT_EXPOSURE_TIME, ExposureTime);
@@ -471,7 +470,7 @@ namespace camera_driver
      * @param ExpGain   具体增益值 范围0-16
      * @return
      */
-    bool DaHengCam::SetGAIN(int value, int ExpGain)
+    bool DaHengCam::setGain(int value, int ExpGain)
     {
         if (value == 0)
         {
@@ -502,7 +501,7 @@ namespace camera_driver
      * @brief DaHengCam::Set_BALANCE_AUTO 枚举变量为0是表示关闭，1为开启，具体请查询SDK手册,具有记忆功能
      * @return bool 返回是否设置成功
      */
-    bool DaHengCam::Set_BALANCE_AUTO(int value)
+    bool DaHengCam::setBalanceAuto(int value)
     {
         //设 置 连 续 自 动 白 平 衡
         status = GXSetEnum(hDevice, GX_ENUM_BALANCE_WHITE_AUTO, value);
@@ -522,7 +521,7 @@ namespace camera_driver
      * @brief DaHengCam::Color_Correct 0是表示关闭，1为开启，具体请查询SDK手册,bu具有记忆功能
      * @return bool 返回是否设置成功
      */
-    bool DaHengCam::Color_Correct(bool value)
+    bool DaHengCam::colorCorrect(bool value)
     {
         if(value)
         {
@@ -557,7 +556,7 @@ namespace camera_driver
      * @param value_number 平衡系数
      * @return
      */
-    bool DaHengCam::Set_BALANCE(int value, float value_number)
+    bool DaHengCam::setBalance(int value, float value_number)
     {
         status = GXSetEnum(hDevice, GX_ENUM_BALANCE_WHITE_AUTO, GX_BALANCE_WHITE_AUTO_OFF);
         if (value == 0)
@@ -592,7 +591,7 @@ namespace camera_driver
      * @param value_number 平衡系数
      * @return
      */
-    bool DaHengCam::Set_Gamma(bool set_status,double dGammaParam)
+    bool DaHengCam::setGamma(bool set_status,double dGammaParam)
     {
         set_contrast = set_status;
         if(set_status)
@@ -650,7 +649,7 @@ namespace camera_driver
      * @param value_number 平衡系数
      * @return
      */
-    bool DaHengCam::Set_Contrast(bool set_status,int dContrastParam)
+    bool DaHengCam::setContrast(bool set_status,int dContrastParam)
     {
         set_contrast = set_status;
         if(set_status)
@@ -672,7 +671,7 @@ namespace camera_driver
      * @param value_number 平衡系数
      * @return
      */
-    bool DaHengCam::Set_Saturation(bool set_status,int dSaturationParam)
+    bool DaHengCam::setSaturation(bool set_status,int dSaturationParam)
     {
         set_saturation = set_status;
         if(set_status)
@@ -693,12 +692,10 @@ namespace camera_driver
      *                  还有问题没解决，可能是不支持此功能
      * @return _time 单位ms
      */
-    int DaHengCam::Get_TIMESTAMP()
+    int DaHengCam::getTimestamp()
     {
         //更新频率为125000000Hz
         int _time = ((double)lastImgTimestamp / (1.25 * 1e6)) - timestamp_offset;
         return _time;
     }
-
-
-}
+} //camera_driver

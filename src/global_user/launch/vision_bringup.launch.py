@@ -70,13 +70,17 @@ def generate_launch_description():
             package='serialport',
             executable='serialport_node',
             name='serialport',
-            output='screen',
+            output='log', # log/screen/both
             emulate_tty=True,
             parameters=[{
-                'using_imu':LaunchConfiguration('using_imu'),
-                'debug_without_com': 'false'
+                'using_port': True,
+                'tracking_target': True,
+                'print_serial_info': False,
+                'print_referee_info': False
             }],
-            condition=IfCondition(PythonExpression([LaunchConfiguration('using_imu'), "== 'True'"]))
+            respawn=True,
+            respawn_delay=4,
+            condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
         ),
         
         ComposableNodeContainer(
@@ -84,7 +88,7 @@ def generate_launch_description():
             package='rclcpp_components',
             executable='component_container',
             namespace='',
-            output='screen',
+            output='log',
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'True'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -119,13 +123,15 @@ def generate_launch_description():
                         'use_intra_process_comms':True
                     }]
                 ),
-            ]
+            ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         ComposableNodeContainer(
             name='usb_detector_container',
             namespace='',
-            output='screen',
+            output='log',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'usb'"])),
@@ -158,11 +164,14 @@ def generate_launch_description():
                     }]
                 )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
+
         ComposableNodeContainer(
             name='daheng_detector_container',
             namespace='',
-            output='screen',
+            output='log',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'daheng'"])),
@@ -195,11 +204,14 @@ def generate_launch_description():
                     }]
                 )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
+
         ComposableNodeContainer(
             name='hik_detector_container',
             namespace='',
-            output='screen',
+            output='log',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'hik'"])),
@@ -232,11 +244,14 @@ def generate_launch_description():
                     }]
                 )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
+
         ComposableNodeContainer(
             name='mvs_detector_container',
             namespace='',
-            output='screen',
+            output='log',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'mvs'"])),
@@ -269,21 +284,29 @@ def generate_launch_description():
                     }]
                 )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
+        
         Node(
             package='armor_processor',
             executable='armor_processor_node',
-            output='screen',
+            output='log',
             emulate_tty=True,
             parameters=[armor_processor_params],
+            respawn=True,
+            respawn_delay=4,
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
         ),
+
         Node(
             package='buff_processor',
             executable='buff_processor_node',
-            output='screen',
+            output='log',
             emulate_tty=True,
             parameters=[buff_processor_params],
+            respawn=True,
+            respawn_delay=4,
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
         )
     ])

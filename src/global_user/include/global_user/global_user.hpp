@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-03-18 13:44:05
+ * @LastEditTime: 2023-04-14 03:19:54
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -44,6 +44,7 @@
 #define MVS_IMAGE_HEIGHT 1024
 
 using namespace std;
+using namespace Eigen;
 namespace global_user
 {   
     /**
@@ -173,7 +174,7 @@ namespace global_user
         TaskData()
         {
             mode = 1;
-            bullet_speed = 28.0;
+            bullet_speed = 16.0;
             timestamp = 0;
         }
     };
@@ -272,11 +273,19 @@ namespace global_user
     Eigen::Matrix3d eulerToRotationMatrix(Eigen::Vector3d &theta);
     float calcDistance(cv::Point2f& p1, cv::Point2f& p2);
 
-    void videoRecorder(VideoRecordParam& video_param, cv::Mat* src = nullptr);  
     bool setSharedMemory(SharedMemoryParam& shared_memory_param, int id, int image_width = 1280, int image_height = 1024);
     bool getSharedMemory(SharedMemoryParam& shared_memory_param, int id);
     bool destorySharedMemory(SharedMemoryParam& shared_memory_param);
     bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_name, int64_t &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size);
+
+    bool isPnpSolverValidation(Eigen::Vector3d& point3d);
+    bool isAngleSolverValidataion(Eigen::Vector2d& angle2d);
+    void drawAimCrossCurve(cv::Mat& src);
+
+    // bool checkDivergence(const MatrixXd& residual, const MatrixXd& S, double threshold);
+    // bool checkDivergence(double residual, double threshold, vector<double>& variances, int window_size);
+    // bool checkDivergence(const MatrixXd& F, const MatrixXd& P, const MatrixXd& H, const MatrixXd& R);
+    bool checkDivergence(const MatrixXd& statePre, const MatrixXd& stateCovPre, const MatrixXd& H, const MatrixXd& R, const VectorXd& measurement);
 } // namespace global_user
 
 #endif

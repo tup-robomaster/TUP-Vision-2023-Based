@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 01:45:19
- * @LastEditTime: 2023-03-13 21:56:49
+ * @LastEditTime: 2023-04-14 14:37:59
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/data_processor/data_transform.hpp
  */
 #ifndef DATA_TRANSFORM_HPP_
@@ -36,17 +36,6 @@ namespace serialport
      * @brief 模式选择（取消视觉，自瞄，英雄吊射，小符，大符，哨兵, 前哨站旋转模式）
      * 
      */
-    // enum MODE
-    // {
-    //     CLOSE_VISION,
-    //     AUTOAIM,
-    //     HERO_SLING,
-    //     SMALL_BUFF,
-    //     BIG_BUFF,
-    //     SENTRY_NORMAL,
-    //     OUTPOST_ROTATION_MODE
-    // };
-
     typedef struct VisionAimData
     {
         double timestamp;
@@ -56,7 +45,10 @@ namespace serialport
         int isSwitched;                   //目标是否发生切换
         int isFindTarget;                 //当识别的图片范围内有目标且电控发来的信号不为0x00（关闭视觉）置为1，否则置0
         int isSpinning;                   //目标是否处于陀螺状态
-        int ismiddle;                     //设置1表示目标进入了可以开火的范围，设置0则表示目标尚未进入可开火的范围，默认置0
+        int isShooting;
+        int isPrediction;                     //设置1表示目标进入了可以开火的范围，设置0则表示目标尚未进入可开火的范围，默认置0
+        Eigen::Vector3d meas_tracking_point;
+        Eigen::Vector3d pred_aiming_point;
     } VisionAimData;
 
     typedef struct VisionNavData
@@ -88,6 +80,8 @@ namespace serialport
         void getPosInfo(uchar flag, uchar* raw_data, vector<float>& pos);
         void getHPInfo(uchar flag, uchar* raw_data, vector<ushort>& hp);
         void getGameInfo(uchar flag, uchar* raw_data, ushort& timestamp);
+        void getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle);
+        void getPitchAngle(uchar flag, uchar* raw_data, float& pitch_angle);
 
         int mode_;     
         rclcpp::Logger logger_;  

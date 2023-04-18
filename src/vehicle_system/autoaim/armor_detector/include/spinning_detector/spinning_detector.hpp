@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-15 11:25:33
- * @LastEditTime: 2023-03-10 15:56:18
+ * @LastEditTime: 2023-04-16 21:48:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/spinning_detector/spinning_detector.hpp
  */
 #ifndef SPINNING_DETECTOR_HPP_
@@ -23,6 +23,7 @@ namespace armor_detector
         Color detect_color;
         Armor last_armor;
         rclcpp::Logger logger_;
+        rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         DetectorInfo detector_info_;
 
     public:
@@ -31,9 +32,14 @@ namespace armor_detector
         ~SpinningDetector();
 
         bool updateSpinScore();
-        void createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map, std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, double timestamp, int dead_buffer_cnt);
-        bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, std::map<std::string, int>& new_armors_cnt_map, double timestamp);
+        void createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map,
+            std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int64_t timestamp, int dead_buffer_cnt);
+        bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, int64_t now);
+        bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, std::map<std::string, int>& new_armors_cnt_map, int64_t now);
         
+        bool is_dead_;
+        double max_hop_period_;
+        double last_timestamp_;
         GyroParam gyro_params_;
         SpinningMap spinning_map_;
     };

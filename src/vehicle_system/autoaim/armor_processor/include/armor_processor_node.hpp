@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-03-27 12:50:23
+ * @LastEditTime: 2023-04-19 04:24:07
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -33,7 +33,7 @@
 #include "global_interface/msg/autoaim.hpp"
 #include "global_interface/msg/gimbal.hpp"
 #include "global_interface/msg/car_pos.hpp"
-#include "global_interface/msg/car_hp.hpp"
+#include "global_interface/msg/obj_hp.hpp"
 #include "global_interface/msg/game_info.hpp"
 
 using namespace global_user;
@@ -46,7 +46,7 @@ namespace armor_processor
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
         typedef global_interface::msg::Gimbal GimbalMsg;
-        typedef global_interface::msg::CarHP CarHPMsg;
+        typedef global_interface::msg::ObjHP ObjHPMsg;
         typedef global_interface::msg::CarPos CarPosMsg;
         typedef global_interface::msg::GameInfo GameMsg;
         typedef sync_policies::ApproximateTime<sensor_msgs::msg::Image, AutoaimMsg> MySyncPolicy;
@@ -60,11 +60,13 @@ namespace armor_processor
         void targetMsgCallback(const AutoaimMsg& target_info);
         bool processTargetMsg(const AutoaimMsg& target_info, cv::Mat* src = nullptr);
 
+        cv::Mat src_;
         mutex debug_mutex_;
         mutex image_mutex_;
-        atomic<bool> flag_;
-        cv::Point2f apex2d[4];
-        cv::Mat src_;
+        atomic<bool> image_flag_ = false;
+        bool is_aimed_ = false;
+        bool is_pred_ = false;
+        map<int, string> state_map_;
         
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;

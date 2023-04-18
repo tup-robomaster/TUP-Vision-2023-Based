@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-03-10 15:56:09
+ * @LastEditTime: 2023-04-16 21:48:46
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -17,6 +17,9 @@
 #include <future>
 #include <vector>
 
+//angle
+#include <angles/angles.h>
+
 //eigen
 #include <Eigen/Core>
 
@@ -24,15 +27,35 @@ namespace armor_detector
 {
     enum SpinHeading
     {
-        UNKNOWN, 
+        UNKNOWN,
         CLOCKWISE, 
         COUNTER_CLOCKWISE
     };
 
+    struct SpinState
+    {
+        int64_t switch_timestamp;
+        SpinHeading spin_state;
+        SpinState()
+        {
+            switch_timestamp = 0;
+            spin_state = UNKNOWN;
+        }
+    };
+
+    enum SwitchStatus
+    {
+        NONE,
+        SINGER,
+        DOUBLE
+    };
+    
     enum Color 
     {
         BLUE,
-        RED
+        RED,
+        GRAY,
+        PURPLE
     };
 
     struct GyroParam
@@ -56,10 +79,15 @@ namespace armor_detector
         double delta_y_3d_higher_thresh;
         double delta_y_3d_low_thresh;
         double delta_y_3d_lower_thresh;
+
+        double max_rotation_angle;
+        double min_rotation_angle;
+        double max_hop_period;
+        double max_conf_dis;
         GyroParam()
         {
             max_delta_t = 100;
-            switch_max_dt = 10000.0;
+            switch_max_dt = 2000.0;
             delta_x_3d_high_thresh = 0.18;
             delta_x_3d_higher_thresh = 0.25;
             delta_x_3d_low_thresh = 0.10;
@@ -69,6 +97,11 @@ namespace armor_detector
             delta_y_3d_higher_thresh = 0.25;
             delta_y_3d_low_thresh = 0.10;
             delta_y_3d_lower_thresh = 0.05;
+
+            max_rotation_angle = 10.0 * (M_PI / 180);
+            min_rotation_angle = 3.0 * (M_PI / 180);
+            max_hop_period = 3.0;
+            max_conf_dis = 3.5;
         }
     };
 
@@ -108,10 +141,26 @@ namespace armor_detector
         double new_add_tracker_timestamp;
     };
 
+    struct SpinCounter
+    {
+        int flag;
+        int normal_gyro_status_counter;
+        int switch_gyro_status_counter;
+        SpinCounter()
+        {
+            normal_gyro_status_counter = 0;
+            switch_gyro_status_counter = 0;
+            flag = 0;
+        }
+    };
+
     struct SpinningMap
     {
-        std::map<std::string, SpinHeading> spin_status_map; //反小陀螺，记录该车小陀螺状态
+        // std::map<std::string, SpinState> spin_status_map; //反小陀螺，记录该车小陀螺状态
+        // std::map<std::string, SpinCounter> spin_counter_map; //记录装甲板旋转帧数，大于0为逆时针旋转，小于0为顺时针
         std::map<std::string, double> spin_score_map;       //反小陀螺，记录各装甲板小陀螺可能性分数，大于0为逆时针旋转，小于0为顺时针旋转
+        std::map<std::string, SpinHeading> spin_status_map;
+
         std::multimap<std::string, TimeInfo> spinning_time_map;
         std::multimap<std::string, GyroInfo> spinning_x_map;
     };
@@ -137,8 +186,10 @@ namespace armor_detector
         double armor_roi_expand_ratio_width;
         double armor_roi_expand_ratio_height;
         double armor_conf_high_thres;
-
+        
         Color color;
+        Eigen::Vector2d angle_offset;
+
         DetectorParam()
         {
             color = RED;
@@ -155,6 +206,8 @@ namespace armor_detector
             armor_roi_expand_ratio_width = 1.1;
             armor_roi_expand_ratio_height = 1.5;
             armor_conf_high_thres = 0.82;
+
+            angle_offset = {0.0, 0.0};
         }
     };
 
@@ -172,6 +225,7 @@ namespace armor_detector
         bool print_target_info;
         bool save_data;
         bool save_dataset;
+        bool show_spinning_img;
 
         DebugParam()
         {
@@ -187,6 +241,7 @@ namespace armor_detector
             print_target_info = true; 
             save_data = false;
             save_dataset = false;
+            show_spinning_img = false;
         }
     };
     
@@ -198,12 +253,6 @@ namespace armor_detector
         std::string save_path;
     };
 
-    enum SwitchStatus
-    {
-        NONE,
-        SINGER,
-        DOUBLE
-    };
 } //namespace armor_detector
 
 #endif

@@ -5,4 +5,8 @@ float32 distance
 bool is_switched
 bool is_target
 bool is_spinning
-bool is_middle
+bool is_spinning_switched
+bool is_shooting
+bool is_prediction
+geometry_msgs/Point meas_point_cam
+geometry_msgs/Point pred_point_cam
