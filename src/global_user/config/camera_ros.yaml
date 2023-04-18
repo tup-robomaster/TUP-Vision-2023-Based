@@ -46,8 +46,8 @@
     image_height: 800
     fps: 60
     debug: true
-    using_video: true
-    using_ros2bag: true
+    using_video: false
+    using_ros2bag: false
     # video_path: "/recorder/video/gyro_video.webm"
     # video_path: "/recorder/video/gyro_transition_fusion.webm"
     # video_path: "/recorder/video/buff.webm"
