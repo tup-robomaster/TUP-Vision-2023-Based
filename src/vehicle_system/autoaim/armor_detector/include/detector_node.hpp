@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2023-04-14 13:19:36
+ * @LastEditTime: 2023-04-19 04:59:35
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -19,6 +19,7 @@
 #include <message_filters/sync_policies/approximate_time.h>
 #include <image_transport/image_transport.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <visualization_msgs/msg/marker.hpp>
 
 //custom message
 #include "global_interface/msg/gimbal.hpp" 
@@ -89,6 +90,10 @@ namespace armor_detector
         MySyncPolicy my_sync_policy_;
         std::shared_ptr<Synchronizer<MySyncPolicy>> sync_;
         void syncCallback(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg, const SerialMsg::ConstSharedPtr& serial_msg);
+
+        //visualization_msgs
+        bool is_visual_msgs_;
+        rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
 
     public:
         Mutex param_mutex_;

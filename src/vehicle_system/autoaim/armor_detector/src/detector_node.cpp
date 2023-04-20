@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-16 15:24:57
+ * @LastEditTime: 2023-04-19 05:07:47
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -125,6 +125,13 @@ namespace armor_detector
             RCLCPP_WARN_ONCE(this->get_logger(), "debug...");
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&DetectorNode::paramsCallback, this, _1));
+
+            this->declare_parameter<bool>("visual_msgs", false);
+            is_visual_msgs_ = this->get_parameter("visual_msgs").as_bool();
+            if (is_visual_msgs_)
+            {
+                marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("visualization_maker", 1);
+            }
         }
     }
 
@@ -337,6 +344,55 @@ namespace armor_detector
         target_info.header.stamp = stamp;
         target_info.timestamp = stamp.nanoseconds();
         // RCLCPP_INFO(this->get_logger(), "timestamp:%.8f", target_info.timestamp / 1e9);
+
+        if (is_visual_msgs_)
+        {
+            uint32_t shape = visualization_msgs::msg::Marker::SPHERE;
+            visualization_msgs::msg::Marker marker;
+            // Set the frame ID and timestamp.
+            marker.header.frame_id = "/camera_frame";
+            marker.header.stamp = this->get_clock()->now();
+
+            // Set the namespace and id for this marker. This serves to create a unique ID
+            // Any marker sent with the same namespace and id will overwrite the old one
+            marker.ns = "basic_shapes";
+            marker.id = 0;
+
+            // Set the marker type
+            // Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
+            marker.type = shape;            
+
+            // Set the marker action
+            // Options are ADD, DELETE, and DELETEALL
+            marker.action = visualization_msgs::msg::Marker::ADD;
+
+            // Set the pose of the marker
+            // This is a full 6DOF pose relative to the frame/time specified in the header
+            marker.pose.position.x = target_info.aiming_point_cam.x;
+            marker.pose.position.y = target_info.aiming_point_cam.y;
+            marker.pose.position.z = target_info.aiming_point_cam.z;
+            marker.pose.orientation.x = 0.0;
+            marker.pose.orientation.y = 0.0;
+            marker.pose.orientation.z = 0.0;
+            marker.pose.orientation.w = 1.0;
+
+            // Set the scale of the marker -- 1x1x1 here means 1m on a side
+            marker.scale.x = 0.1;
+            marker.scale.y = 0.1;
+            marker.scale.z = 0.1;
+
+            // Set the color -- be sure to set alpha to something non-zero!
+            marker.color.r = 0.0f;
+            marker.color.g = 1.0f;
+            marker.color.b = 0.0f;
+            marker.color.a = 1.0;
+
+            // Set the lifetime of the marker -- 0 indicates forever
+            marker.lifetime = rclcpp::Duration::from_nanoseconds(1e6 * 5);
+
+            // Publish the marker
+            marker_pub->publish(marker);
+        }
 
         // if (target_info.spinning_switched)
             // cout << "spinning_switched" << endl;
