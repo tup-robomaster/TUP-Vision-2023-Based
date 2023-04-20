@@ -56,7 +56,7 @@
     # video_path: "/recorder/video/new_buff1.mp4"
     # video_path: "/recorder/video/new_buff2.avi"
     # video_path: "/recorder/video/new_buff3.avi"
-    video_path: "/recorder/video/2023-04-14_01_39_37/2023-04-14_01_39_37_0.db3"
+    # video_path: "/recorder/video/2023-04-14_01_39_37/2023-04-14_01_39_37_0.db3"
     save_video: false
     save_path: "/recorder/video/"
     using_port: false

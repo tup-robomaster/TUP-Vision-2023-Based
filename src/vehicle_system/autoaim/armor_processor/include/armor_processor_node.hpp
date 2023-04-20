@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-04-15 20:05:55
+ * @LastEditTime: 2023-04-16 13:35:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -60,13 +60,13 @@ namespace armor_processor
         void targetMsgCallback(const AutoaimMsg& target_info);
         bool processTargetMsg(const AutoaimMsg& target_info, cv::Mat* src = nullptr);
 
+        cv::Mat src_;
         mutex debug_mutex_;
         mutex image_mutex_;
+        atomic<bool> image_flag_ = false;
         atomic<bool> flag_ = false;
         bool is_aimed_ = false;
         bool is_pred_ = false;
-        bool is_pred_failed_ = false;
-        int count_ = 0;
         
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
@@ -87,7 +87,6 @@ namespace armor_processor
     protected:
         ImageSize image_size_;
         ImageInfo image_info_;
-        cv::Mat src_;
         
         // Image callback.
         void imageProcessor(cv::Mat& img);

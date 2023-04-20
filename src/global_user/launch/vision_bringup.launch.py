@@ -79,6 +79,8 @@ def generate_launch_description():
                 'print_serial_info': False,
                 'print_referee_info': False
             }],
+            respawn=True,
+            respawn_delay=4,
             condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
         ),
         
@@ -123,7 +125,9 @@ def generate_launch_description():
                         'use_intra_process_comms':True
                     }]
                 ),
-            ]
+            ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         ComposableNodeContainer(
@@ -163,6 +167,8 @@ def generate_launch_description():
                     }]
                 )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         ComposableNodeContainer(
@@ -202,6 +208,8 @@ def generate_launch_description():
                     }]
                 )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         ComposableNodeContainer(
@@ -241,6 +249,8 @@ def generate_launch_description():
                     }]
                 )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         ComposableNodeContainer(
@@ -280,6 +290,8 @@ def generate_launch_description():
                     }]
                 )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
         
         Node(
@@ -298,6 +310,8 @@ def generate_launch_description():
             output='log',
             emulate_tty=True,
             parameters=[buff_processor_params],
+            respawn=True,
+            respawn_delay=4,
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
         )
     ])

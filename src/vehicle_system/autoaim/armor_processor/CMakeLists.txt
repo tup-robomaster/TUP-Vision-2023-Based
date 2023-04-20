@@ -72,7 +72,7 @@ ament_target_dependencies(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ceres
   glog 
-  yaml-cpp
+  yaml-cpp.a
 )
 
 add_executable(${PROJECT_NAME}_node 

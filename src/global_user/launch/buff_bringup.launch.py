@@ -2,7 +2,7 @@
 # Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-27 01:40:28
-LastEditTime: 2023-04-15 21:09:25
+LastEditTime: 2023-04-16 13:32:13
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/buff_bringup.launch.py
 '''
 import os
@@ -80,6 +80,8 @@ def generate_launch_description():
                 'print_serial_info': False,
                 'print_referee_info': False
             }],
+            respawn=True,
+            respawn_delay=4,
             condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
         ),
         
@@ -115,7 +117,9 @@ def generate_launch_description():
                         'use_intra_process_comms':True
                     }]
                 ),
-            ]
+            ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         ComposableNodeContainer(
@@ -156,6 +160,8 @@ def generate_launch_description():
                 #     }]
                 # )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         ComposableNodeContainer(
@@ -196,6 +202,8 @@ def generate_launch_description():
                 #     }]
                 # )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         ComposableNodeContainer(
@@ -236,6 +244,8 @@ def generate_launch_description():
                 #     }]
                 # )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         ComposableNodeContainer(
@@ -276,6 +286,8 @@ def generate_launch_description():
                 #     }]
                 # )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         Node(
@@ -285,6 +297,8 @@ def generate_launch_description():
             emulate_tty=True,
             respawn=True,
             parameters=[buff_processor_params],
+            respawn=True,
+            respawn_delay=4,
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
         )
     ])
