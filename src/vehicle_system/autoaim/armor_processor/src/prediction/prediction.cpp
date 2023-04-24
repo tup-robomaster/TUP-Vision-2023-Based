@@ -160,38 +160,48 @@ namespace armor_processor
 
         Eigen::Vector3d result = {0.0, 0.0, 0.0};
         result = target.xyz;
-
+        
         // auto d_xyz = target.xyz - final_target_.xyz;
+        // auto delta_t = timestamp - final_target_.timestamp;
+        // int64_t time_estimate = delta_time_estimate + history_info_.back().timestamp;
         int64_t delta_time_estimate = 0;
-        if ((int)history_info_.size() > 0)
+        int64_t spin_dt = 0;
+        if (target.is_target_lost)
         {
-            // auto delta_t = timestamp - final_target_.timestamp;
-            // int64_t time_estimate = delta_time_estimate + history_info_.back().timestamp;
-
-            double last_dist = history_info_.back().dist;
-            delta_time_estimate = (int64_t)((last_dist / predict_param_.bullet_speed) * 1e9) + (int64_t)(predict_param_.shoot_delay * 1e6);
-            delay_time = delta_time_estimate;
-            final_target_ = target;
-        }
-        else
-        {
-            if((int)history_info_.size() > 100)
+            if ((int)history_info_.size() > 0)
             {
-                history_info_.pop_front();
-                history_info_.push_back(target);
+                if((int)history_info_.size() > 100)
+                {
+                    history_info_.pop_front();
+                    history_info_.push_back(target);
+                }
+                else
+                {
+                    history_info_.push_back(target);
+                }
+
+                double last_dist = history_info_.back().dist;
+                delta_time_estimate = (int64_t)((last_dist / predict_param_.bullet_speed) * 1e9) + (int64_t)(predict_param_.shoot_delay * 1e6);
+                delay_time = delta_time_estimate;
+                spin_dt = (int64_t)((last_dist / predict_param_.bullet_speed) * 1e9) + (int64_t)(predict_param_.spin_shoot_delay * 1e6);
+                if (filter_disabled_ && !fitting_disabled_)
+                {
+                    delta_time_estimate = spin_dt;
+                }
+                final_target_ = target;
             }
             else
             {
                 history_info_.push_back(target);
+                return result;
             }
-            return result;
         }
-        
+            
         bool is_target_lost = target.is_target_lost;
         bool is_spinning = target.is_spinning;
         if (predictor_state_ == PREDICTING)
         {   //预测器处于预测击打阶段
-            syncPrediction(!filter_disabled_, is_target_lost, is_spinning, target.xyz, delta_time_estimate, result);
+            asyncPrediction(!filter_disabled_, is_target_lost, is_spinning, target.xyz, delta_time_estimate, result);
             TargetInfo target_pred;
             target_pred.xyz = result;
             target_pred.timestamp = timestamp;
@@ -200,7 +210,7 @@ namespace armor_processor
         }
         else if (predictor_state_ == LOSTING)
         {
-            syncPrediction(!filter_disabled_, is_target_lost, is_spinning, target.xyz, delta_time_estimate, result);
+            asyncPrediction(!filter_disabled_, is_target_lost, is_spinning, target.xyz, delta_time_estimate, result);
             TargetInfo target_losting_pred;
             target_losting_pred.xyz = result;
             target_losting_pred.timestamp = timestamp;
@@ -212,7 +222,7 @@ namespace armor_processor
             final_target_ = target;
             result = target.xyz;
             // RCLCPP_INFO(logger_, "333");
-            return result;
+            // return result;
         }
 
         // if (fitting_disabled_ && filter_disabled_)
@@ -230,10 +240,12 @@ namespace armor_processor
         }
         final_target_.xyz = result;
 
+        // string pred_state = (predictor_state_ == TRACKING) ? "TRACKING" : ((predictor_state_ == PREDICTING) ? "PREDICTION": ((predictor_state_ == LOSTING) ? "LOSTING" : "LOST"));
+        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 40, "Predictor_State:%s", pred_state.c_str());
         return result;
     }
 
-    bool ArmorPredictor::syncPrediction(bool is_filtering, bool is_target_lost, bool is_spinning, Eigen::Vector3d meas, int64_t dt, Eigen::Vector3d& result)
+    bool ArmorPredictor::asyncPrediction(bool is_filtering, bool is_target_lost, bool is_spinning, Eigen::Vector3d meas, int64_t dt, Eigen::Vector3d& result)
     {
         PredictStatus is_singer_available;
         PredictStatus is_fitting_available;

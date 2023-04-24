@@ -183,29 +183,35 @@ namespace armor_processor
                 lost_cnt_ = 0;
             }
         }
-        else
+
+        if (target.is_target_switched || armor_predictor_.predictor_state_ == LOST)
         {
-            if(!target.is_target_switched && armor_predictor_.predictor_state_ == LOSTING)
-            {   //当目标丢失后又出现时直接预测
-                armor_predictor_.predictor_state_ = PREDICTING;
-            }
-            else if (target.is_target_switched || armor_predictor_.predictor_state_ == LOST)
-            {
-                //重置预测器
-                armor_predictor_.resetPredictor();
-                armor_predictor_.predictor_state_ = PREDICTING;
-            }
-            else if (target.is_spinning && target.is_spinning_switched)
-            {
-                //更新预测器（位置&速度继承）
-                armor_predictor_.updatePredictor();
-                armor_predictor_.predictor_state_ = PREDICTING;
-            }
+            //重置预测器
+            armor_predictor_.resetPredictor();
+            armor_predictor_.predictor_state_ = PREDICTING;
+        }
+        else if (target.is_spinning && target.is_spinning_switched)
+        {
+            //更新预测器（位置&速度继承）
+            armor_predictor_.updatePredictor();
+            armor_predictor_.predictor_state_ = PREDICTING;
         }
 
         if (armor_predictor_.predictor_state_ != LOST)
         {
             pred_result = armor_predictor_.predict(target, target.timestamp, sleep_time);
+            // if(!target.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
+            // {   //当目标丢失后又出现时直接预测
+            //     for (int ii = 0; ii < 3; ii++)
+            //     {
+            //         Eigen::Vector3d state = armor_predictor_.singer_kf_[target.is_spinning][ii].x();
+            //         if (abs(state[0] - target.xyz[ii]) > 0.2)
+            //         {
+            //             armor_predictor_.is_singer_init_[ii] = false;
+            //         }
+            //     }
+            //     armor_predictor_.predictor_state_ = PREDICTING;
+            // }
             is_success = true;
         }
 

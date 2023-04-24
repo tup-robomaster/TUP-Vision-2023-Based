@@ -93,7 +93,7 @@ namespace armor_detector
 
         //visualization_msgs
         bool is_visual_msgs_;
-        rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+        // rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
 
     public:
         Mutex param_mutex_;

@@ -130,7 +130,7 @@ namespace buff_detector
                 buff_msg.quat_imu.x = q.x();
                 buff_msg.quat_imu.y = q.y();
                 buff_msg.quat_imu.z = q.z();
-                RCLCPP_WARN(this->get_logger(), "latency: %lf", dt);
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "latency: %lf", dt);
             }
             else
             {
@@ -150,7 +150,7 @@ namespace buff_detector
         {
             //debug
             buff_msg.mode = this->get_parameter("debug_mode").as_int(); //小符
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000, "debug mode is: %d", (int)buff_msg.mode);
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "debug mode is: %d", (int)buff_msg.mode);
         }
 
         param_mutex_.lock();
