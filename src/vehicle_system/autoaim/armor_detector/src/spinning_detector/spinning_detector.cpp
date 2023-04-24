@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-04-16 13:39:10
+ * @LastEditTime: 2023-04-20 22:40:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -141,19 +141,19 @@ namespace armor_detector
         {
             //当装甲板颜色为灰色且当前dead_buffer小于max_dead_buffer
             string tracker_key;
-            if ((*armor).color == 2)
+            if ((*armor).color == GRAY_SMALL || (*armor).color == GRAY_BIG)
             {   
-                RCLCPP_WARN(logger_, "Gray armor...");
+                RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 50, "Gray armor...");
                 if (dead_buffer_cnt >= gyro_params_.max_dead_buffer)
                 {
-                    RCLCPP_WARN(logger_, "dead buffer cnt: %d", dead_buffer_cnt);
+                    RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 50, "dead buffer cnt: %d", dead_buffer_cnt);
                     is_dead_ = true;
                     continue;
                 }
 
-                if (detect_color == RED)
+                if (detect_color_ == 1)
                     tracker_key = "R" + to_string((*armor).id);
-                if (detect_color == BLUE)
+                if (detect_color_ == 0)
                     tracker_key = "B" + to_string((*armor).id);
             }
             else

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-04-15 19:54:17
+ * @LastEditTime: 2023-04-20 22:13:16
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -12,7 +12,7 @@
 static constexpr int INPUT_W = 416;    // Width of input
 static constexpr int INPUT_H = 416;    // Height of input
 static constexpr int NUM_CLASSES = 8;  // Number of classes
-static constexpr int NUM_COLORS = 4;   // Number of color
+static constexpr int NUM_COLORS = 8;   // Number of color
 static constexpr int TOPK = 128;       // TopK
 static constexpr float NMS_THRESH = 0.3;
 static constexpr float BBOX_CONF_THRESH = 0.75;
@@ -331,7 +331,7 @@ namespace armor_detector
 
         std::cout << "Start initialize model..." << std::endl;
         // Setting Configuration Values
-        core.set_property("GPU", ov::enable_profiling(true));
+        core.set_property("CPU", ov::enable_profiling(true));
 
         //Step 1.Create openvino runtime core
         model = core.read_model(path);

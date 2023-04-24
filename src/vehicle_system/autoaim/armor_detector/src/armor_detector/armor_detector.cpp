@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-16 12:02:38
+ * @LastEditTime: 2023-04-20 22:39:37
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -162,12 +162,12 @@ namespace armor_detector
             //TODO:加入紫色装甲板限制通过条件
             if (detector_params_.color == RED)
             {
-                if (object.color == BLUE || object.color == PURPLE)
+                if (object.color == BLUE_SMALL || object.color == BLUE_BIG || object.color == PURPLE_SMALL || object.color == PURPLE_BIG)
                     continue;
             }
             else if (detector_params_.color == BLUE)
             {
-                if (object.color == RED || object.color == PURPLE)
+                if (object.color == RED_SMALL || object.color == RED_BIG || object.color == PURPLE_SMALL || object.color == PURPLE_BIG)
                     continue;
             }
    
@@ -175,22 +175,56 @@ namespace armor_detector
             armor.id = object.cls;
             armor.color = object.color;
             armor.conf = object.prob;
-            if (object.color == 0)
+            TargetType target_type = SMALL;
+            if (object.color == BLUE_SMALL)
+            {
+                target_type = SMALL;
                 armor.key = "B" + to_string(object.cls);
-            else if (object.color == 1)
-                armor.key = "R" + to_string(object.cls);
-            else if (object.color == 2)
+            }
+            else if (object.color == BLUE_BIG)
+            {
+                target_type = BIG;
+                armor.key = "B" + to_string(object.cls);
+            }
+            else if (object.color == GRAY_SMALL)
+            {
+                target_type = SMALL;
                 armor.key = "N" + to_string(object.cls);
-            else if (object.color == 3)
+            }
+            else if (object.color == GRAY_BIG)
+            {
+                target_type = BIG;
+                armor.key = "N" + to_string(object.cls);
+            }
+            else if (object.color == RED_SMALL)
+            {
+                target_type = SMALL;
+                armor.key = "R" + to_string(object.cls);
+            }     
+            else if (object.color == RED_BIG)
+            {
+                target_type = BIG;
+                armor.key = "R" + to_string(object.cls);
+            }   
+            else if (object.color == PURPLE_SMALL)
+            {
+                target_type = SMALL;
                 armor.key = "P" + to_string(object.cls);
+            }
+            else if (object.color == PURPLE_BIG)
+            {
+                target_type = BIG;
+                armor.key = "P" + to_string(object.cls);
+            }
             
             memcpy(armor.apex2d, object.apex, 4 * sizeof(cv::Point2f));
             for(int i = 0; i < 4; i++)
-                armor.apex2d[i] += Point2f((float)roi_offset_.x,(float)roi_offset_.y);
+                armor.apex2d[i] += Point2f((float)roi_offset_.x, (float)roi_offset_.y);
             Point2f apex_sum;
             for(auto apex : armor.apex2d)
-                apex_sum +=apex;
+                apex_sum += apex;
             armor.center2d = apex_sum / 4.f;
+
             //若装甲板置信度小于高阈值，需要相同位置存在过装甲板才放行
             if (armor.conf < this->detector_params_.armor_conf_high_thres)
             {
@@ -241,17 +275,17 @@ namespace armor_detector
             //进行PnP，目标较少时采取迭代法，较多时采用IPPE
             int pnp_method = ((int)objects_.size() <= 2) ? SOLVEPNP_ITERATIVE : SOLVEPNP_IPPE;
 
-            TargetType target_type = SMALL;
             //计算长宽比,确定装甲板类型
-            auto apex_wh_ratio = max(points_pic_rrect.size.height, points_pic_rrect.size.width) / min(points_pic_rrect.size.height, points_pic_rrect.size.width);
-            if (object.cls == 1 || object.cls == 0 || apex_wh_ratio > detector_params_.armor_type_wh_thres)
-            {   //若大于长宽阈值或为哨兵、英雄装甲板
-                target_type = BIG;
-            }
-            else if (object.cls == 2 || object.cls == 3 || object.cls == 4 || object.cls == 5 || object.cls == 6)
-            {   //FIXME：若存在平衡步兵需要对此处步兵装甲板类型进行修改
-                target_type = SMALL;
-            }
+            // auto apex_wh_ratio = max(points_pic_rrect.size.height, points_pic_rrect.size.width) / min(points_pic_rrect.size.height, points_pic_rrect.size.width);
+            // if (object.cls == 1 || object.cls == 0 || apex_wh_ratio > detector_params_.armor_type_wh_thres)
+            // {   //若大于长宽阈值或为哨兵、英雄装甲板
+            //     target_type = BIG;
+            // }
+            // else if (object.cls == 2 || object.cls == 3 || object.cls == 4 || object.cls == 5 || object.cls == 6)
+            // {   //FIXME：若存在平衡步兵需要对此处步兵装甲板类型进行修改
+            //     target_type = SMALL;
+            // }
+            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 50, "target_type:%s", to_string(target_type));
 
             // 单目PnP
             auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
@@ -380,12 +414,12 @@ namespace armor_detector
         // int idx = target_id_;
         // target_id_ = -1; //置零，确保哨兵发送的目标ID信息是在更新
         //TODO:考虑灰色装甲板
-        if (detector_params_.color == BLUE)
+        if (detector_params_.color == 0)
         {
             // vehicle_key = "B" + to_string(idx);
             target_key = "B" + to_string(target_id);
         }
-        else if (detector_params_.color == RED)
+        else if (detector_params_.color == 1)
         {
             // vehicle_key = "R" + to_string(idx);
             target_key = "R" + to_string(target_id);
