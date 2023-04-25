@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-25 19:38:01
+ * @LastEditTime: 2023-04-25 21:18:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -131,13 +131,16 @@ namespace armor_processor
         double sleep_time = 0.0;
         AutoaimMsg target = std::move(target_info);
         Eigen::Vector2d angle = {0.0, 0.0};
-        Eigen::Vector3d aiming_point_world;
+        Eigen::Vector3d vehicle_center3d_world = {0.0, 0.0, 0.0};
+        Eigen::Vector3d vehicle_center3d_cam = {0.0, 0.0, 0.0};
+        Eigen::Vector3d aiming_point_world = {0.0, 0.0, 0.0};
         Eigen::Vector3d aiming_point_cam = {0.0, 0.0, 0.0};
         Eigen::Vector3d tracking_point_cam = {0.0, 0.0, 0.0};
         Eigen::Vector2d tracking_angle = {0.0, 0.0};
-        PostProcessInfo post_process_info;
         Eigen::Matrix3d rmat_imu;
         Eigen::Quaterniond quat_imu;
+        bool is_shooting = false;
+        // PostProcessInfo post_process_info;
 
         cv::Mat dst = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
         if (debug_param_.show_img)
@@ -154,12 +157,14 @@ namespace armor_processor
         if (target.is_target_lost && processor_->is_last_exists_)
         {   //目标丢失且上帧存在，预测器进入丢失预测状态
             processor_->armor_predictor_.predictor_state_ = LOSTING;
+            is_shooting = false;
         }
 
         if (target.is_target_lost && processor_->armor_predictor_.predictor_state_ == LOST)
         {   //目标丢失且预测器处于丢失状态则退出预测状态
             is_aimed_ = false;
             is_pred_ = false;
+            is_shooting = false;
         }
         else
         {
@@ -167,7 +172,6 @@ namespace armor_processor
             {   //更新弹速
                 processor_->coordsolver_.setBulletSpeed(target_info.bullet_speed);
             }
-
             if(!debug_param_.using_imu)
             {
                 rmat_imu = Eigen::Matrix3d::Identity();
@@ -183,23 +187,25 @@ namespace armor_processor
             {
                 aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
                 angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
-                // tracking_point_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
-                tracking_point_cam = {0, 0, 0};
-
+                tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
                 tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
-            
+
+                Eigen::VectorXd state = processor_->armor_predictor_.uniform_ekf_.x();
+                vehicle_center3d_world = {state(0), state(1), state(2)};
+                vehicle_center3d_cam = processor_->coordsolver_.worldToCam(vehicle_center3d_world, rmat_imu);
+
                 if (abs(tracking_angle[0]) < 3.50 && abs(tracking_angle[1]) < 3.50)
                 {
                     is_pred_ = true;
                     is_aimed_ = true;
+                    is_shooting = true;
                 }
-            
                 if (abs(angle[0]) > 45.0 || abs(angle[1]) > 45.0)
                 {
                     is_pred_ = false;
                     is_aimed_ = false;
+                    is_shooting = false;
                 } 
-
             }
             param_mutex_.unlock();
         }
@@ -208,10 +214,12 @@ namespace armor_processor
         {
             angle = tracking_angle;
             is_pred_ = false;
+            is_shooting = false;
         }
         else
         {
             is_pred_ = true;
+            is_shooting = true;
         }
         
         // Gimbal info pub.
@@ -227,11 +235,11 @@ namespace armor_processor
         gimbal_info.meas_point_cam.y = tracking_point_cam[1];
         gimbal_info.meas_point_cam.z = tracking_point_cam[2];
         gimbal_info.distance = aiming_point_cam.norm();
-        gimbal_info.is_target = target_info.mode == SENTRY_NORMAL ? post_process_info.find_target : !target_info.is_target_lost;
+        gimbal_info.is_target = !target_info.is_target_lost;
         gimbal_info.is_switched = target_info.target_switched;
         gimbal_info.is_spinning = target_info.is_spinning;
         gimbal_info.is_spinning_switched = target_info.spinning_switched;
-        gimbal_info.is_shooting = (post_process_info.find_target && post_process_info.is_shooting);
+        gimbal_info.is_shooting = is_shooting;
         gimbal_info.is_prediction = is_pred_; 
         gimbal_info_pub_->publish(std::move(gimbal_info));
 
@@ -274,13 +282,14 @@ namespace armor_processor
             tracking_info.pred_point_cam.y = aiming_point_cam[1];
             tracking_info.pred_point_cam.z = aiming_point_cam[2];
             tracking_info.distance = tracking_point_cam.norm();
-            tracking_info.is_target = target_info.mode == SENTRY_NORMAL ? post_process_info.find_target : !target_info.is_target_lost;
+            tracking_info.is_target = !target_info.is_target_lost;
             tracking_info.is_switched = target_info.target_switched;
             tracking_info.is_spinning = target_info.is_spinning;
             tracking_info.is_spinning_switched = target_info.spinning_switched;
-            tracking_info.is_shooting = (post_process_info.find_target && post_process_info.is_shooting);
+            tracking_info.is_shooting = is_shooting;
             tracking_info.is_prediction = is_pred_;
             tracking_info_pub_->publish(std::move(tracking_info));
+            
             if (!target.is_target_lost)
             {
                 AutoaimMsg predict_info;
@@ -327,6 +336,9 @@ namespace armor_processor
                     cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
                     cv::Point2f armor_center = processor_->coordsolver_.reproject(tracking_point_cam);
                     cv::circle(dst, point_2d, 14, {255, 0, 125}, 2);
+
+                    cv::Point2f vehicle_center2d = processor_->coordsolver_.reproject(vehicle_center3d_cam);
+                    cv::circle(dst, vehicle_center2d, 11, {255, 255, 0}, -1);
                     // putText(dst, state_map_[(int)(processor_->armor_predictor_.predictor_state_)], point_2d, cv::FONT_HERSHEY_SIMPLEX, 1, {125, 0, 255}, 1);
                     // cv::line(dst, cv::Point2f(point_2d.x - 30, point_2d.y), cv::Point2f(point_2d.x + 30, point_2d.y), {0, 0, 255}, 1);
                     // cv::line(dst, cv::Point2f(point_2d.x, point_2d.y - 35), cv::Point2f(point_2d.x, point_2d.y + 35), {0, 0, 255}, 1);
