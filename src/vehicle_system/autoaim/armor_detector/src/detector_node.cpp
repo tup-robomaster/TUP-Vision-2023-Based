@@ -213,7 +213,7 @@ namespace armor_detector
         target_info.header.frame_id = "gimbal_link";
         target_info.header.stamp = img_msg->header.stamp;
         target_info.mode = src.mode;
-        target_info.timestamp = src.timestamp;
+        // target_info.timestamp = src.timestamp;
         target_info.quat_imu = serial_msg->imu.orientation;
         target_info.is_target_lost = is_target_lost;
         armor_info_pub_->publish(std::move(target_info));
@@ -295,22 +295,22 @@ namespace armor_detector
                 }
             }
 
-            rmat_imu = src.quat.toRotationMatrix();
-            Eigen::Vector3d armor_3d_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
-            tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_imu);
+            // rmat_imu = src.quat.toRotationMatrix();
+            // Eigen::Vector3d armor_3d_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
+            // tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_imu);
             // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "target info_cam: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
             // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "target info_world: %lf %lf %lf", target_info.aiming_point_world.x, target_info.aiming_point_world.y, target_info.aiming_point_world.z);
         }
 
-        if (is_target_lost)
-        {
-            target_info.aiming_point_cam.x = 0;
-            target_info.aiming_point_cam.y = 0;
-            target_info.aiming_point_cam.z = 0;
-            target_info.aiming_point_world.x = 0;
-            target_info.aiming_point_world.y = 0;
-            target_info.aiming_point_world.z = 0;
-        }
+        // if (is_target_lost)
+        // {
+        //     target_info.aiming_point_cam.x = 0;
+        //     target_info.aiming_point_cam.y = 0;
+        //     target_info.aiming_point_cam.z = 0;
+        //     target_info.aiming_point_world.x = 0;
+        //     target_info.aiming_point_world.y = 0;
+        //     target_info.aiming_point_world.z = 0;
+        // }
         // else
         // {
         //     Eigen::Vector3d rpy_raw = {0, 0, 0};
@@ -332,7 +332,7 @@ namespace armor_detector
         target_info.is_target_lost = is_target_lost;
         target_info.header.frame_id = "gimbal_link";
         target_info.header.stamp = stamp;
-        target_info.timestamp = stamp.nanoseconds();
+        // target_info.timestamp = stamp.nanoseconds();
         // RCLCPP_INFO(this->get_logger(), "timestamp:%.8f", target_info.timestamp / 1e9);
 
         // if (target_info.spinning_switched)

@@ -260,7 +260,7 @@ namespace armor_detector
             armor.euler = pnp_result.euler;
             armor.rmat = pnp_result.rmat;
             armor.area = object.area;
-            armor.rangle = pnp_result.rangle;
+            armor.rangle = pnp_result.axis_angle;
             new_armors_.emplace_back(armor);
 
             // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 250, "armor_area:%d", armor.area);
@@ -400,12 +400,12 @@ namespace armor_detector
                 showArmors(src);
             }
 
-            target_info.aiming_point_cam.x = 0;
-            target_info.aiming_point_cam.y = 0;
-            target_info.aiming_point_cam.z = 0;
-            target_info.aiming_point_world.x = 0;
-            target_info.aiming_point_world.y = 0;
-            target_info.aiming_point_world.z = 0;
+            // target_info.aiming_point_cam.x = 0;
+            // target_info.aiming_point_cam.y = 0;
+            // target_info.aiming_point_cam.z = 0;
+            // target_info.aiming_point_world.x = 0;
+            // target_info.aiming_point_world.y = 0;
+            // target_info.aiming_point_world.z = 0;
             target_info.is_target_lost = true;
             lost_cnt_++;
             is_last_target_exists_ = false;
@@ -650,11 +650,11 @@ namespace armor_detector
                     if(idx != 0)
                     {
                         double ave_per = (per_sum / idx);
-                        target_info.period = ave_per;
+                        target_info.spinning_period = ave_per;
                         RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "ave_per:%lfs", ave_per);
                     }
                     else
-                        target_info.period = period;
+                        target_info.spinning_period = period;
                 }
 
                 double delta_x_back = abs((*candidate).second.new_x_back - (*candidate).second.last_x_back);
@@ -816,8 +816,8 @@ namespace armor_detector
             armor_msg.key = target.key;
             for (int ii = 0; ii < 4; ii++)
             {
-                armor_msg.point2d.x = target.apex2d[ii].x; 
-                armor_msg.point2d.y = target.apex2d[ii].y; 
+                armor_msg.point2d[ii].x = target.apex2d[ii].x; 
+                armor_msg.point2d[ii].y = target.apex2d[ii].y; 
             }
             armor_msg.point3d_cam.x = target.armor3d_cam[0];
             armor_msg.point3d_cam.y = target.armor3d_cam[1];
@@ -889,7 +889,7 @@ namespace armor_detector
         // target_info.aiming_point_cam.x = target.armor3d_cam[0];
         // target_info.aiming_point_cam.y = target.armor3d_cam[1];
         // target_info.aiming_point_cam.z = target.armor3d_cam[2];
-        target_info.timestamp = now_;
+        // target_info.timestamp = now_;
         target_info.is_target_lost = false;
         // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
 
