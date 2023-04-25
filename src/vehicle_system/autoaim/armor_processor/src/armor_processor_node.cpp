@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-19 04:24:56
+ * @LastEditTime: 2023-04-25 19:38:01
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -38,7 +38,7 @@ namespace armor_processor
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", qos);
         tracking_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/tracking_msg", qos);
-        joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
+        // joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
 
         this->declare_parameter<bool>("sync_transport", false);
         sync_transport_ = this->get_parameter("sync_transport").as_bool();
@@ -151,13 +151,23 @@ namespace armor_processor
             image_mutex_.unlock();
         }
 
-        if (target.target_switched && processor_->armor_predictor_.predictor_state_ == LOST)
-        {
+        if (target.is_target_lost && processor_->is_last_exists_)
+        {   //目标丢失且上帧存在，预测器进入丢失预测状态
+            processor_->armor_predictor_.predictor_state_ = LOSTING;
+        }
+
+        if (target.is_target_lost && processor_->armor_predictor_.predictor_state_ == LOST)
+        {   //目标丢失且预测器处于丢失状态则退出预测状态
             is_aimed_ = false;
             is_pred_ = false;
         }
         else
         {
+            if (target_info.bullet_speed > 10.0)
+            {   //更新弹速
+                processor_->coordsolver_.setBulletSpeed(target_info.bullet_speed);
+            }
+
             if(!debug_param_.using_imu)
             {
                 rmat_imu = Eigen::Matrix3d::Identity();
@@ -173,7 +183,9 @@ namespace armor_processor
             {
                 aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
                 angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
-                tracking_point_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
+                // tracking_point_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
+                tracking_point_cam = {0, 0, 0};
+
                 tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
             
                 if (abs(tracking_angle[0]) < 3.50 && abs(tracking_angle[1]) < 3.50)
@@ -223,30 +235,30 @@ namespace armor_processor
         gimbal_info.is_prediction = is_pred_; 
         gimbal_info_pub_->publish(std::move(gimbal_info));
 
-        sensor_msgs::msg::JointState gimbal_yaw_joint_states;
-        gimbal_yaw_joint_states.header.frame_id = "yaw";
-        gimbal_yaw_joint_states.name.emplace_back("yaw_joint");
-        gimbal_yaw_joint_states.position.emplace_back(gimbal_info.yaw * CV_PI / 180);
+        // sensor_msgs::msg::JointState gimbal_yaw_joint_states;
+        // gimbal_yaw_joint_states.header.frame_id = "yaw";
+        // gimbal_yaw_joint_states.name.emplace_back("yaw_joint");
+        // gimbal_yaw_joint_states.position.emplace_back(gimbal_info.yaw * CV_PI / 180);
         
-        sensor_msgs::msg::JointState gimbal_pitch_joint_states;
-        gimbal_pitch_joint_states.header.frame_id = "pitch";
-        gimbal_pitch_joint_states.name.emplace_back("pitch_joint");
-        gimbal_pitch_joint_states.position.emplace_back(gimbal_info.pitch * CV_PI / 180);
+        // sensor_msgs::msg::JointState gimbal_pitch_joint_states;
+        // gimbal_pitch_joint_states.header.frame_id = "pitch";
+        // gimbal_pitch_joint_states.name.emplace_back("pitch_joint");
+        // gimbal_pitch_joint_states.position.emplace_back(gimbal_info.pitch * CV_PI / 180);
 
-        sensor_msgs::msg::JointState shooter_yaw_joint_states;
-        shooter_yaw_joint_states.header.frame_id = "trigger";
-        shooter_yaw_joint_states.name.emplace_back("trigger_joint");
-        shooter_yaw_joint_states.position.emplace_back(gimbal_info.yaw * CV_PI / 180);
+        // sensor_msgs::msg::JointState shooter_yaw_joint_states;
+        // shooter_yaw_joint_states.header.frame_id = "trigger";
+        // shooter_yaw_joint_states.name.emplace_back("trigger_joint");
+        // shooter_yaw_joint_states.position.emplace_back(gimbal_info.yaw * CV_PI / 180);
 
-        sensor_msgs::msg::JointState shooter_cover_joint_states;
-        shooter_cover_joint_states.header.frame_id = "cover";
-        shooter_cover_joint_states.name.emplace_back("cover_joint");
-        shooter_cover_joint_states.position.emplace_back(gimbal_info.pitch * CV_PI / 180);
+        // sensor_msgs::msg::JointState shooter_cover_joint_states;
+        // shooter_cover_joint_states.header.frame_id = "cover";
+        // shooter_cover_joint_states.name.emplace_back("cover_joint");
+        // shooter_cover_joint_states.position.emplace_back(gimbal_info.pitch * CV_PI / 180);
 
-        joint_state_pub_->publish(gimbal_yaw_joint_states);
-        joint_state_pub_->publish(gimbal_pitch_joint_states);
-        joint_state_pub_->publish(shooter_cover_joint_states);
-        joint_state_pub_->publish(shooter_yaw_joint_states);
+        // joint_state_pub_->publish(gimbal_yaw_joint_states);
+        // joint_state_pub_->publish(gimbal_pitch_joint_states);
+        // joint_state_pub_->publish(shooter_cover_joint_states);
+        // joint_state_pub_->publish(shooter_yaw_joint_states);
 
         if (this->debug_)
         {
@@ -275,13 +287,13 @@ namespace armor_processor
                 predict_info.header.frame_id = "camera_link";
                 predict_info.header.stamp = target_info.header.stamp;
                 predict_info.header.stamp.nanosec += sleep_time;
-                predict_info.aiming_point_world.x = (aiming_point_world)[0];
-                predict_info.aiming_point_world.y = (aiming_point_world)[1];
-                predict_info.aiming_point_world.z = (aiming_point_world)[2];
-                predict_info.aiming_point_cam.x = aiming_point_cam[0];
-                predict_info.aiming_point_cam.y = aiming_point_cam[1];
-                predict_info.aiming_point_cam.z = aiming_point_cam[2];
-                predict_info.period = target_info.period;
+                // predict_info.aiming_point_world.x = (aiming_point_world)[0];
+                // predict_info.aiming_point_world.y = (aiming_point_world)[1];
+                // predict_info.aiming_point_world.z = (aiming_point_world)[2];
+                // predict_info.aiming_point_cam.x = aiming_point_cam[0];
+                // predict_info.aiming_point_cam.y = aiming_point_cam[1];
+                // predict_info.aiming_point_cam.z = aiming_point_cam[2];
+                // predict_info.period = target_info.period;
                 predict_info_pub_->publish(std::move(predict_info));
                 RCLCPP_INFO_EXPRESSION(
                     this->get_logger(), 
@@ -293,6 +305,15 @@ namespace armor_processor
             }
         }
 
+        if (!(target.is_target_lost))
+        {
+            processor_->is_last_exists_ = true;
+        }
+        else
+        {
+            processor_->is_last_exists_ = false;
+        }
+
         if (debug_param_.show_img && !dst.empty()) 
         {
             if (!target.is_target_lost)
@@ -300,9 +321,9 @@ namespace armor_processor
                 if (this->debug_param_.show_predict)
                 {
                     // Draw target 2d rectangle.
-                    for(int i = 0; i < 4; i++)
-                        cv::line(dst, cv::Point2f(target_info.point2d[i % 4].x, target_info.point2d[i % 4].y),
-                            cv::Point2f(target_info.point2d[(i + 1) % 4].x, target_info.point2d[(i + 1) % 4].y), {125, 0, 255}, 1);
+                    // for(int i = 0; i < 4; i++)
+                    //     cv::line(dst, cv::Point2f(target_info.point2d[i % 4].x, target_info.point2d[i % 4].y),
+                    //         cv::Point2f(target_info.point2d[(i + 1) % 4].x, target_info.point2d[(i + 1) % 4].y), {125, 0, 255}, 1);
                     cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
                     cv::Point2f armor_center = processor_->coordsolver_.reproject(tracking_point_cam);
                     cv::circle(dst, point_2d, 14, {255, 0, 125}, 2);
@@ -459,11 +480,21 @@ namespace armor_processor
         singer_model_params[4] = this->get_parameter("gyro_singer_model_y_axis").as_double_array();
         singer_model_params[5] = this->get_parameter("gyro_singer_model_z_axis").as_double_array();
 
+        vector<double> uniform_ekf_params[2] = 
+        {
+            {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+            {1.0, 1.0, 1.0, 1.0}
+        };
+        this->declare_parameter("uniform_ekf_process_noise_param", uniform_ekf_params[0]);
+        this->declare_parameter("uniform_ekf_measure_noise_param", uniform_ekf_params[1]);
+        uniform_ekf_params[0] = this->get_parameter("uniform_ekf_process_noise_param").as_double_array();
+        uniform_ekf_params[1] = this->get_parameter("uniform_ekf_measure_noise_param").as_double_array();
+
         predict_param_.filter_model_param.imm_model_trans_prob_params = imm_model_trans_prob_params;
         predict_param_.filter_model_param.imm_model_prob_params = imm_model_prob_params;
         predict_param_.filter_model_param.process_noise_params = process_noise_params;
         predict_param_.filter_model_param.measure_noise_params = measure_noise_params;
-        return std::make_unique<Processor>(predict_param_, singer_model_params, debug_param_);
+        return std::make_unique<Processor>(predict_param_, singer_model_params, uniform_ekf_params, debug_param_);
     }
 
     /**

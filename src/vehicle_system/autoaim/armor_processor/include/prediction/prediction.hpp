@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-04-16 18:35:13
+ * @LastEditTime: 2023-04-25 20:03:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -35,19 +35,22 @@ namespace armor_processor
 {
     class ArmorPredictor
     {
+        typedef global_interface::msg::Armor ArmorMsg;
         typedef global_interface::msg::Autoaim AutoaimMsg;
         
     public:
         ArmorPredictor();
         ~ArmorPredictor();
-        ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, const DebugParam& debug_param);
+        // ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, const DebugParam& debug_param);
 
+        void initPredictor(const vector<double>* uniform_param);
         bool resetPredictor();
-        bool updatePredictor(bool is_spinning, TargetInfo target);
-        Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
-        bool syncPrediction(bool is_filtering, bool is_target_lost, bool is_spinning, Eigen::Vector3d meas, int64_t timestamp, Eigen::Vector3d& result);
+        bool updatePredictor(Eigen::VectorXd meas);
+        bool predict(TargetInfo target, double bullet_speed, double dt, double& delay_time, Eigen::Vector3d& pred_point3d, cv::Mat* src = nullptr);
+        
+        // Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
+        // bool asyncPrediction(bool is_filtering, bool is_target_lost, bool is_spinning, Eigen::Vector3d meas, int64_t timestamp, Eigen::Vector3d& result);
         // PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
-        PredictorState predictor_state_ = LOST;
 
     public:
         PredictParam predict_param_;  //滤波先验参数/模型先验参数/调试参数
@@ -72,11 +75,18 @@ namespace armor_processor
         double predict_acc_[2][3][4] = {{{0}}};
     
     public:
+        // ekf
+        bool is_ekf_init_;
+        UniformModel uniform_ekf_;
+        PredictorState predictor_state_ = LOST;
+
+    public:
         // 卡尔曼滤波
         bool is_singer_init_[2][3];
         vector<double> singer_param_[2][3]; //cs模型参数 
         SingerModel singer_model_[2][3];
         KalmanFilter singer_kf_[2][3];
+        
     private:
         void kfInit();                      // 滤波参数初始化（矩阵维度、初始值）
         void kfInit(int axis);              // 滤波参数初始化（矩阵维度、初始值）
@@ -89,9 +99,9 @@ namespace armor_processor
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         rclcpp::Logger logger_;
         TargetInfo final_target_;  //最终击打目标信息
-        double target_period_ = 0.0;
         int lost_cnt_ = 0;
-        
+        double delay_time_ = 200;
+        // double target_period_ = 0.0;
         // int error_cnt_ = 0;
         // double cur_pred_error_;
     
@@ -105,11 +115,16 @@ namespace armor_processor
         // PredictStatus predictBasedSinger(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, int64_t timestamp);
         bool predictBasedSinger(bool is_target_lost, bool is_spinning, int axis, double measurement, double& result, double target_vel, double target_acc, int64_t timestamp);
 
+        // Uniform Model.
+        bool predictBasedUniformModel(bool is_target_lost, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result);
+        
         // 前哨站旋转装甲板曲线拟合预测函数    
         PredictStatus spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int64_t timestamp);
         
         // 滑窗滤波
         Eigen::Vector3d shiftWindowFilter(int start_idx);
+
+        Eigen::Vector2d calcCircleCenter(Eigen::VectorXd meas);
 
         // 粒子滤波
         // PredictStatus predictBasePF(TargetInfo target, Vector3d& result, int64_t timestamp);

@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:13
- * @LastEditTime: 2023-04-14 03:46:55
+ * @LastEditTime: 2023-04-25 19:31:34
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/coordsolver.hpp
  */
 
@@ -36,6 +36,7 @@ namespace coordsolver
         Eigen::Vector3d R_world;
         Eigen::Vector3d euler;
         Eigen::Matrix3d rmat;
+        double axis_angle;
     };
 
     class CoordSolver
@@ -57,6 +58,7 @@ namespace coordsolver
         Eigen::Vector3d staticCoordOffset(Eigen::Vector3d &xyz);
         Eigen::Vector2d staticAngleOffset(Eigen::Vector2d &angle);
         Eigen::Vector2d getAngle(Eigen::Vector3d &xyz_cam, Eigen::Matrix3d &rmat);
+        double getBulletSpeed();
 
         inline double calcYaw(Eigen::Vector3d &xyz);
         inline double calcPitch(Eigen::Vector3d &xyz);

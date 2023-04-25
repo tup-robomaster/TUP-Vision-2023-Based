@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-14 13:58:46
+ * @LastEditTime: 2023-04-25 20:17:22
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -378,12 +378,14 @@ namespace armor_detector
     void DetectorNode::sensorMsgCallback(const SerialMsg& serial_msg)
     {
         serial_msg_mutex_.lock();
-        serial_msg_.imu.header.stamp = this->get_clock()->now();
-        if(serial_msg.bullet_speed > 10)
-            serial_msg_.bullet_speed = serial_msg.bullet_speed;
-        if(serial_msg.mode == AUTOAIM || serial_msg.mode == HERO_SLING || serial_msg.mode == SENTRY_NORMAL)
-            serial_msg_.mode = serial_msg.mode;
-        serial_msg_.imu = serial_msg.imu;
+        // serial_msg_.imu.header.stamp = this->get_clock()->now();
+        // if(serial_msg.bullet_speed > 10)
+        //     serial_msg_.bullet_speed = serial_msg.bullet_speed;
+        // if(serial_msg.mode == AUTOAIM || serial_msg.mode == HERO_SLING || serial_msg.mode == SENTRY_NORMAL)
+        //     serial_msg_.mode = serial_msg.mode;
+        // serial_msg_.imu = serial_msg.imu;
+        serial_msg_ = serial_msg;
+        serial_msg_.header.stamp = this->get_clock()->now();
         serial_msg_mutex_.unlock();
         return;
     }

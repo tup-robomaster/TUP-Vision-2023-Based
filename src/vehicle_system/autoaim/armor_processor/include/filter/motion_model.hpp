@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 12:13:56
- * @LastEditTime: 2022-12-22 19:04:31
+ * @LastEditTime: 2023-04-25 18:26:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/motion_model.hpp
  */
 #include "./kalman_filter.hpp"
@@ -46,6 +46,23 @@ namespace armor_processor
         ~CT();
         void init(const Eigen::VectorXd& x, const double& dt);
         virtual CT* Clone() { return new CT(*this); }
+    };
+
+    class UniformModel : public KalmanFilter
+    {
+    private:
+        void updatePrediction();
+        void updateMeasurement();
+        virtual UniformModel* Clone() { return new UniformModel(*this); } 
+
+    public:
+        UniformModel();
+        UniformModel(const KFParam kf_param);
+        ~UniformModel();
+
+        double radius_ = 0.25;
+        void init(const Eigen::VectorXd& x, const double& dt);
+        void setF(Eigen::MatrixXd& Ft, const double& dt);
     };
 } // armor_processor
 

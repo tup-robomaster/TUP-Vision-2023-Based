@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-04-19 04:24:07
+ * @LastEditTime: 2023-04-25 16:07:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -63,15 +63,15 @@ namespace armor_processor
         cv::Mat src_;
         mutex debug_mutex_;
         mutex image_mutex_;
-        atomic<bool> image_flag_ = false;
         bool is_aimed_ = false;
         bool is_pred_ = false;
         map<int, string> state_map_;
+        atomic<bool> image_flag_ = false;
         
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
         rclcpp::Publisher<AutoaimMsg>::SharedPtr predict_info_pub_;
-        rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
+        // rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
         
         // message_filter
         MySyncPolicy my_sync_policy_;

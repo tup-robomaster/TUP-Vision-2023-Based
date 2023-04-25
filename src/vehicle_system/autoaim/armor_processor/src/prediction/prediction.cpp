@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-16 18:36:51
+ * @LastEditTime: 2023-04-25 20:10:37
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -13,337 +13,350 @@ namespace armor_processor
     : logger_(rclcpp::get_logger("armor_prediction"))
     {
         // KF initialized.
-        singer_kf_[0][0].Init(3, 1, 1);
-        singer_kf_[0][1].Init(3, 1, 1);
-        singer_kf_[0][2].Init(3, 1, 1);
-        singer_kf_[1][0].Init(3, 1, 1);
-        singer_kf_[1][1].Init(3, 1, 1);
-        singer_kf_[1][2].Init(3, 1, 1);
-        singer_model_[0][0] = SingerModel(3, 1, 1);
-        singer_model_[0][1] = SingerModel(3, 1, 1);
-        singer_model_[0][2] = SingerModel(3, 1, 1);
-        singer_model_[1][0] = SingerModel(3, 1, 1);
-        singer_model_[1][1] = SingerModel(3, 1, 1);
-        singer_model_[1][2] = SingerModel(3, 1, 1);
+        // singer_kf_[0][0].Init(3, 1, 1);
+        // singer_kf_[0][1].Init(3, 1, 1);
+        // singer_kf_[0][2].Init(3, 1, 1);
+        // singer_kf_[1][0].Init(3, 1, 1);
+        // singer_kf_[1][1].Init(3, 1, 1);
+        // singer_kf_[1][2].Init(3, 1, 1);
+        // singer_model_[0][0] = SingerModel(3, 1, 1);
+        // singer_model_[0][1] = SingerModel(3, 1, 1);
+        // singer_model_[0][2] = SingerModel(3, 1, 1);
+        // singer_model_[1][0] = SingerModel(3, 1, 1);
+        // singer_model_[1][1] = SingerModel(3, 1, 1);
+        // singer_model_[1][2] = SingerModel(3, 1, 1);
 
         // 初始化滤波器参数
-        kfInit();
+        // kfInit();
 
+        // 初始化
+        // uniform_ekf_.init();
         // 初始化滤波器状态
-        resetPredictor();
+        // resetPredictor();
     }
 
     ArmorPredictor::~ArmorPredictor(){}
 
-    ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, const DebugParam& debug_param)
-    : predict_param_(predict_param), debug_param_(debug_param),
-    logger_(rclcpp::get_logger("armor_prediction"))
-    {
-        // KF initialized.
-        singer_kf_[0][0].Init(3, 1, 1);
-        singer_kf_[0][1].Init(3, 1, 1);
-        singer_kf_[0][2].Init(3, 1, 1);
-        singer_kf_[1][0].Init(3, 1, 1);
-        singer_kf_[1][1].Init(3, 1, 1);
-        singer_kf_[1][2].Init(3, 1, 1);
-
-        singer_param_[0][0] = singer_param[0];
-        singer_param_[0][1] = singer_param[1];
-        singer_param_[0][2] = singer_param[2];
-        singer_model_[0][0] = SingerModel(singer_param_[0][0], 3, 1, 1);
-        singer_model_[0][1] = SingerModel(singer_param_[0][1], 3, 1, 1);
-        singer_model_[0][2] = SingerModel(singer_param_[0][2], 3, 1, 1);
-        
-        singer_param_[1][0] = singer_param[3];
-        singer_param_[1][1] = singer_param[4];
-        singer_param_[1][2] = singer_param[5];
-        singer_model_[1][0] = SingerModel(singer_param_[1][0], 3, 1, 1);
-        singer_model_[1][1] = SingerModel(singer_param_[1][1], 3, 1, 1);
-        singer_model_[1][2] = SingerModel(singer_param_[1][2], 3, 1, 1);
-
-        // 初始化滤波器参数
-        kfInit();
-
-        // 初始化滤波器状态
-        resetPredictor();
-    }
-
-    // PostProcessInfo&& ArmorPredictor::postProcess(AutoaimMsg& target_msg)
+    // ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, const DebugParam& debug_param)
+    // : predict_param_(predict_param), debug_param_(debug_param), uniform_ekf_(predict_param_.kf_param)
+    // logger_(rclcpp::get_logger("armor_prediction"))
     // {
-    //     PostProcessInfo post_process_info;
-    //     double delay_time = 0.0;
-    //     post_process_info.track_3d_pos = {target_msg.aiming_point_world.x, target_msg.aiming_point_world.y, target_msg.aiming_point_world.z};
-    //     bool is_spinning = target_msg.is_spinning;
+    //     // KF initialized.
+    //     singer_kf_[0][0].Init(3, 1, 1);
+    //     singer_kf_[0][1].Init(3, 1, 1);
+    //     singer_kf_[0][2].Init(3, 1, 1);
+    //     singer_kf_[1][0].Init(3, 1, 1);
+    //     singer_kf_[1][1].Init(3, 1, 1);
+    //     singer_kf_[1][2].Init(3, 1, 1);
+
+    //     singer_param_[0][0] = singer_param[0];
+    //     singer_param_[0][1] = singer_param[1];
+    //     singer_param_[0][2] = singer_param[2];
+    //     singer_model_[0][0] = SingerModel(singer_param_[0][0], 3, 1, 1);
+    //     singer_model_[0][1] = SingerModel(singer_param_[0][1], 3, 1, 1);
+    //     singer_model_[0][2] = SingerModel(singer_param_[0][2], 3, 1, 1);
         
-    //     post_process_info.pred_3d_pos = predict(target_msg, target_msg.timestamp, delay_time);
-    //     // 1.根据目标速度判定是否击打或切换目标
-    //     if ((history_vel_[is_spinning][1][0] > 2.0 || history_vel_[is_spinning][1][0] > 2.0) && (predict_vel_[is_spinning][1][0] > 2.0 || predict_vel_[is_spinning][1][0] > 2.0)
-    //         && (history_vel_[is_spinning][0][0] > 2.0 || history_vel_[is_spinning][0][0] > 2.0) && (predict_vel_[is_spinning][0][0] > 2.0 || predict_vel_[is_spinning][0][0] > 2.0))
-    //     {
-    //         post_process_info.switch_target = true;
-    //         post_process_info.is_shooting = false;
-    //     }
-    //     else if ((history_vel_[is_spinning][1][0] > 0.8 || history_vel_[is_spinning][1][0] > 0.8) && (predict_vel_[is_spinning][1][0] > 0.8 || history_vel_[is_spinning][1][0] > 0.8)
-    //         && (history_vel_[is_spinning][0][0] > 0.8 || history_vel_[is_spinning][0][0] > 0.8) && (predict_vel_[is_spinning][0][0] > 0.8 || history_vel_[is_spinning][0][0] > 0.8))
-    //     {
-    //         post_process_info.switch_target = false;
-    //         post_process_info.is_shooting = false;
-    //     }
-    //     else
-    //     {
-    //         // 2.根据目标的预测误差进行判断
-    //         if (!filter_disabled_ && cur_pred_error_ != 0.0)
-    //         {
-    //             if(cur_pred_error_ > 0.2)
-    //             {
-    //                 post_process_info.switch_target = true;
-    //                 post_process_info.is_shooting = false;
-    //             }
-    //             if(cur_pred_error_ > 0.1 && 
-    //                 ((is_singer_init_[is_spinning][0] && is_singer_init_[is_spinning][1] && is_singer_init_[is_spinning][2]) || is_imm_init_))
-    //             {
-    //                 post_process_info.is_shooting = false;
-    //                 post_process_info.switch_target = false;
-    //             }
-    //         }
+    //     singer_param_[1][0] = singer_param[3];
+    //     singer_param_[1][1] = singer_param[4];
+    //     singer_param_[1][2] = singer_param[5];
+    //     singer_model_[1][0] = SingerModel(singer_param_[1][0], 3, 1, 1);
+    //     singer_model_[1][1] = SingerModel(singer_param_[1][1], 3, 1, 1);
+    //     singer_model_[1][2] = SingerModel(singer_param_[1][2], 3, 1, 1);
 
-    //         // 3.根据目标的预测位置信息
-    //         double meas_y = post_process_info.track_3d_pos[0] + history_vel_[is_spinning][0][0] * delay_time / 1e9 + 0.5 * history_acc_[is_spinning][0][0] * pow(delay_time / 1e9, 2);
-    //         double pred_y = post_process_info.track_3d_pos[0] + predict_vel_[is_spinning][0][0] * delay_time / 1e9 + 0.5 * predict_acc_[is_spinning][0][0] * pow(delay_time / 1e9, 2);
-    //         double meas_x = post_process_info.track_3d_pos[1] + history_vel_[is_spinning][1][0] * delay_time / 1e9 + 0.5 * history_acc_[is_spinning][1][0] * pow(delay_time / 1e9, 2);
-    //         double pred_x = post_process_info.track_3d_pos[1] + predict_vel_[is_spinning][1][0] * delay_time / 1e9 + 0.5 * predict_acc_[is_spinning][1][0] * pow(delay_time / 1e9, 2);
-            
-    //         double error = sqrt(pow(post_process_info.pred_3d_pos[1] - meas_x, 2) + pow(post_process_info.pred_3d_pos[1] - pred_x, 2)) / 2.0;
-    //         if(post_process_info.pred_3d_pos[0] > 4.5 && error > 0.15)
-    //         {
-    //             post_process_info.is_shooting = false;
-    //             post_process_info.switch_target = true;
-    //         }
-    //     }
+    //     // 初始化滤波器参数
+    //     kfInit();
 
-    //     return std::move(post_process_info);
+    //     // 初始化
+    //     uniform_ekf_.init();
+
+    //     // 初始化滤波器状态
+    //     resetPredictor();
     // }
+
+    void ArmorPredictor::initPredictor(const vector<double>* uniform_param)
+    {
+        // singer_param_ = singer_param;
+        uniform_ekf_.kf_param_.process_noise_params = uniform_param[0];
+        uniform_ekf_.kf_param_.measure_noise_params = uniform_param[1];
+    }
 
     bool ArmorPredictor::resetPredictor()
     {
-        is_init_ = false;
-        is_imm_init_ = false;
-        is_singer_init_[0][0] = false;
-        is_singer_init_[0][1] = false;
-        is_singer_init_[0][2] = false;
-        is_singer_init_[1][0] = false;
-        is_singer_init_[1][1] = false;
-        is_singer_init_[1][2] = false;
-        filter_disabled_ = false;
-        fitting_disabled_ = false;
-        history_info_.clear();
-        history_pred_.clear();
-        history_losting_pred_.clear();
+        // is_init_ = false;
+        // is_imm_init_ = false;
+        // is_singer_init_[0][0] = false;
+        // is_singer_init_[0][1] = false;
+        // is_singer_init_[0][2] = false;
+        // is_singer_init_[1][0] = false;
+        // is_singer_init_[1][1] = false;
+        // is_singer_init_[1][2] = false;
+        // filter_disabled_ = false;
+        // fitting_disabled_ = false;
+        // history_info_.clear();
+        // history_pred_.clear();
+        // history_losting_pred_.clear();
+        is_ekf_init_ = false;
 
         return true;
     }
 
-    bool ArmorPredictor::updatePredictor(bool is_spinning, TargetInfo target)
+    bool ArmorPredictor::updatePredictor(Eigen::VectorXd meas)
     {
-        for (int ii = 0; ii < 3; ii++)
+        uniform_ekf_.x_(4) = meas(3);
+        Eigen::Vector2d circle_center = calcCircleCenter(meas);
+        uniform_ekf_.x_(0) = circle_center(0);
+        uniform_ekf_.x_(1) = circle_center(1);
+        uniform_ekf_.x_(2) = meas(2);
+        return true;
+    }
+
+    bool ArmorPredictor::predict(TargetInfo target, double bullet_speed, double dt, double& delay_time, Eigen::Vector3d& pred_point3d, cv::Mat* src)
+    {
+        double pred_dt = target.dist / bullet_speed + delay_time_;
+        Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
+        if (!predictBasedUniformModel(target.is_target_lost, meas, dt, pred_dt, target.period, pred_point3d))
         {
-            Eigen::Vector3d state = singer_kf_[is_spinning][ii].x();
-            singer_kf_[is_spinning][ii].x_ << target.xyz[ii], state[1], state[2];
+            pred_point3d = target.xyz;
+            return false;
         }
         return true;
     }
 
-    /**
-     * @brief 对目标位置进行预测
-     * 
-     * @param target_msg 目标message
-     * @param timestamp 本帧对应的时间戳
-     * @param delay_time 休眠时间，对应于预测延迟量 
-     * @param src 图像数据
-     * @return Eigen::Vector3d 
-     */
-    Eigen::Vector3d ArmorPredictor::predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src)
+    bool ArmorPredictor::predictBasedUniformModel(bool is_target_lost, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result)
     {
-        auto t1 = steady_clock_.now();
-
-        Eigen::Vector3d result = {0.0, 0.0, 0.0};
-        result = target.xyz;
-
-        // auto d_xyz = target.xyz - final_target_.xyz;
-        int64_t delta_time_estimate = 0;
-        if ((int)history_info_.size() > 0)
+        bool is_pred_success = false;
+        if (!is_ekf_init_)
         {
-            // auto delta_t = timestamp - final_target_.timestamp;
-            // int64_t time_estimate = delta_time_estimate + history_info_.back().timestamp;
-
-            double last_dist = history_info_.back().dist;
-            delta_time_estimate = (int64_t)((last_dist / predict_param_.bullet_speed) * 1e9) + (int64_t)(predict_param_.shoot_delay * 1e6);
-            delay_time = delta_time_estimate;
-            final_target_ = target;
+            Eigen::Vector2d circle_center = calcCircleCenter(meas);
+            uniform_ekf_.x_ << circle_center(0), circle_center(1), meas(2), uniform_ekf_.radius_, meas(3), 0, 0, 0, 0, 0, 0;
+            is_ekf_init_ = true;
+            is_pred_success = false;
+            result = {meas(0), meas(1), meas(2)};
+        }
+        else if (is_target_lost && predictor_state_ == LOSTING)
+        {   //预测
+            uniform_ekf_.Predict(dt);
+            Eigen::VectorXd state = uniform_ekf_.x();
+            Eigen::Vector3d circle_center = {state(0), state(1), state(2)};
+            double radius = state(3);
+            double rangle = state(4);
+            result = {circle_center(0) + radius * sin(rangle), circle_center(1) + radius * cos(rangle), circle_center(2)};
+            is_pred_success = true;
         }
         else
-        {
-            if((int)history_info_.size() > 100)
-            {
-                history_info_.pop_front();
-                history_info_.push_back(target);
-            }
-            else
-            {
-                history_info_.push_back(target);
-            }
-            return result;
+        {   //预测+更新
+            uniform_ekf_.Predict(dt);
+            uniform_ekf_.Update(meas);
+            Eigen::VectorXd state = uniform_ekf_.x();
+            Eigen::MatrixXd F(11, 11);
+            uniform_ekf_.setF(F, pred_dt);
+            Eigen::VectorXd pred = F * state;
+            Eigen::Vector3d circle_center = {pred(0), pred(1), pred(2)};
+            double radius = pred(3);
+            double rangle = pred(4);
+            double pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
+            result = {circle_center(0) + radius * sin(pred_rangle), circle_center(1) + radius * cos(pred_rangle), circle_center(2)};
+            is_pred_success = true;
         }
+        return is_pred_success;
+    }
+
+    Eigen::Vector2d ArmorPredictor::calcCircleCenter(Eigen::VectorXd meas)
+    {
+        return Eigen::Vector2d{meas(0) - uniform_ekf_.radius_ * sin(meas(3)), meas(1) - uniform_ekf_.radius_ * cos(meas(3))};
+    }
+
+    // /**
+    //  * @brief 对目标位置进行预测
+    //  * 
+    //  * @param target_msg 目标message
+    //  * @param timestamp 本帧对应的时间戳
+    //  * @param delay_time 休眠时间，对应于预测延迟量 
+    //  * @param src 图像数据
+    //  * @return Eigen::Vector3d 
+    //  */
+    // Eigen::Vector3d ArmorPredictor::predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src)
+    // {
+    //     auto t1 = steady_clock_.now();
+
+    //     Eigen::Vector3d result = {0.0, 0.0, 0.0};
+    //     result = target.xyz;
+
+    //     // auto d_xyz = target.xyz - final_target_.xyz;
+    //     int64_t delta_time_estimate = 0;
+    //     if ((int)history_info_.size() > 0)
+    //     {
+    //         // auto delta_t = timestamp - final_target_.timestamp;
+    //         // int64_t time_estimate = delta_time_estimate + history_info_.back().timestamp;
+
+    //         double last_dist = history_info_.back().dist;
+    //         delta_time_estimate = (int64_t)((last_dist / predict_param_.bullet_speed) * 1e9) + (int64_t)(predict_param_.shoot_delay * 1e6);
+    //         delay_time = delta_time_estimate;
+    //         final_target_ = target;
+    //     }
+    //     else
+    //     {
+    //         if((int)history_info_.size() > 100)
+    //         {
+    //             history_info_.pop_front();
+    //             history_info_.push_back(target);
+    //         }
+    //         else
+    //         {
+    //             history_info_.push_back(target);
+    //         }
+    //         return result;
+    //     }
         
-        bool is_target_lost = target.is_target_lost;
-        bool is_spinning = target.is_spinning;
-        if (predictor_state_ == PREDICTING)
-        {   //预测器处于预测击打阶段
-            syncPrediction(!filter_disabled_, is_target_lost, is_spinning, target.xyz, delta_time_estimate, result);
-            TargetInfo target_pred;
-            target_pred.xyz = result;
-            target_pred.timestamp = timestamp;
+    //     bool is_target_lost = target.is_target_lost;
+    //     bool is_spinning = target.is_spinning;
+    //     if (predictor_state_ == PREDICTING)
+    //     {   //预测器处于预测击打阶段
+    //         asyncPrediction(!filter_disabled_, is_target_lost, is_spinning, target.xyz, delta_time_estimate, result);
+    //         TargetInfo target_pred;
+    //         target_pred.xyz = result;
+    //         target_pred.timestamp = timestamp;
 
-            if ((int)history_pred_.size() > 100)
-            {
-                history_pred_.pop_front();
-                history_pred_.push_back(target_pred);
-            }
-            else
-            {
-                history_pred_.push_back(target_pred);
-            }
-            // RCLCPP_INFO(logger_, "111");
-        }
-        else if (predictor_state_ == LOSTING)
-        {
-            syncPrediction(!filter_disabled_, is_target_lost, is_spinning, target.xyz, delta_time_estimate, result);
-            TargetInfo target_losting_pred;
-            target_losting_pred.xyz = result;
-            target_losting_pred.timestamp = timestamp;
-            if ((int)history_pred_.size() > 100)
-            {
-                history_losting_pred_.pop_front();
-                history_losting_pred_.push_back(target_losting_pred);
-            }
-            else
-            {
-                history_losting_pred_.push_back(target_losting_pred);
-            }
-            // RCLCPP_INFO(logger_, "222");
-        }
-        if (predictor_state_ == TRACKING)
-        {   //预测器当前处于跟踪阶段
-            final_target_ = target;
-            result = target.xyz;
-            // RCLCPP_INFO(logger_, "333");
-            return result;
-        }
+    //         if ((int)history_pred_.size() > 100)
+    //         {
+    //             history_pred_.pop_front();
+    //             history_pred_.push_back(target_pred);
+    //         }
+    //         else
+    //         {
+    //             history_pred_.push_back(target_pred);
+    //         }
+    //         // RCLCPP_INFO(logger_, "111");
+    //     }
+    //     else if (predictor_state_ == LOSTING)
+    //     {
+    //         asyncPrediction(!filter_disabled_, is_target_lost, is_spinning, target.xyz, delta_time_estimate, result);
+    //         TargetInfo target_losting_pred;
+    //         target_losting_pred.xyz = result;
+    //         target_losting_pred.timestamp = timestamp;
+    //         if ((int)history_pred_.size() > 100)
+    //         {
+    //             history_losting_pred_.pop_front();
+    //             history_losting_pred_.push_back(target_losting_pred);
+    //         }
+    //         else
+    //         {
+    //             history_losting_pred_.push_back(target_losting_pred);
+    //         }
+    //         // RCLCPP_INFO(logger_, "222");
+    //     }
+    //     if (predictor_state_ == TRACKING)
+    //     {   //预测器当前处于跟踪阶段
+    //         final_target_ = target;
+    //         result = target.xyz;
+    //         // RCLCPP_INFO(logger_, "333");
+    //         return result;
+    //     }
 
-        // if (fitting_disabled_ && filter_disabled_)
-        // {   //滤波和拟合均失效，使用当前目标位置信息
-        //     result = Vector3d{target.xyz[0], target.xyz[1], target.xyz[2]};
-        // }
+    //     // if (fitting_disabled_ && filter_disabled_)
+    //     // {   //滤波和拟合均失效，使用当前目标位置信息
+    //     //     result = Vector3d{target.xyz[0], target.xyz[1], target.xyz[2]};
+    //     // }
 
-        auto t2 = steady_clock_.now();
-        double dr_ns = (t2 - t1).nanoseconds();
-        if (debug_param_.print_delay)
-        {
-            RCLCPP_INFO(logger_, "target: x:%lf y:%lf z:%lf", target.xyz[0], target.xyz[1], target.xyz[2]);
-            RCLCPP_INFO(logger_, "Predict time:%lfms", (dr_ns / 1e6));
-            RCLCPP_INFO(logger_, "predict: x:%lf y:%lf z:%lf", result[0], result[1], result[2]);
-        }
-        final_target_.xyz = result;
+    //     auto t2 = steady_clock_.now();
+    //     double dr_ns = (t2 - t1).nanoseconds();
+    //     if (debug_param_.print_delay)
+    //     {
+    //         RCLCPP_INFO(logger_, "target: x:%lf y:%lf z:%lf", target.xyz[0], target.xyz[1], target.xyz[2]);
+    //         RCLCPP_INFO(logger_, "Predict time:%lfms", (dr_ns / 1e6));
+    //         RCLCPP_INFO(logger_, "predict: x:%lf y:%lf z:%lf", result[0], result[1], result[2]);
+    //     }
+    //     final_target_.xyz = result;
 
-        return result;
-    }
+    //     return result;
+    // }
 
-    bool ArmorPredictor::syncPrediction(bool is_filtering, bool is_target_lost, bool is_spinning, Eigen::Vector3d meas, int64_t dt, Eigen::Vector3d& result)
-    {
-        PredictStatus is_singer_available;
-        PredictStatus is_fitting_available;
-        if (is_filtering)
-        {   // 目标机动预测
-            // 基于CS模型的卡尔曼滤波
-            RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "CS model is predicting...");
-            std::future<void> xyz_future[3];
-            // is_ekf_available = predictBasedSinger(target, result_ekf, target_vel, target_acc, delta_time_estimate);
-            if (debug_param_.x_axis_filter)
-            {
-                // is_singer_available.xyz_status[0] = predictBasedSinger(0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
-                xyz_future[0] = std::async(std::launch::async, [&](){
-                    is_singer_available.xyz_status[0] = predictBasedSinger(is_target_lost, is_spinning, 0, meas[0], result[0], 0.0, 0.0, dt);});
-            }
-            if (debug_param_.y_axis_filter)
-            {
-                // is_singer_available.xyz_status[1] = predictBasedSinger(1, target.xyz[1], result_singer[1], target_vel[1], target_acc[1], delta_time_estimate);
-                xyz_future[1] = std::async(std::launch::async, [&](){
-                    is_singer_available.xyz_status[1] = predictBasedSinger(is_target_lost, is_spinning, 1, meas[1], result[1], 0.0, 0.0, dt);});
-            }
-            if (debug_param_.z_axis_filter)
-            {
-                // is_singer_available.xyz_status[2] = predictBasedSinger(2, target.xyz[2], result_singer[2], target_vel[2], target_acc[2], delta_time_estimate);
-                xyz_future[2] = std::async(std::launch::async, [&](){
-                    is_singer_available.xyz_status[2] = predictBasedSinger(is_target_lost, is_spinning, 2, meas[2], result[2], 0.0, 0.0, dt);});
-            }
-            if (debug_param_.x_axis_filter && xyz_future[0].wait_for(8ms) == std::future_status::timeout)
-            {
-                RCLCPP_WARN(logger_, "Filter _X_AXIS prediction timeout...");
-            }
-            if (debug_param_.y_axis_filter && xyz_future[1].wait_for(8ms) == std::future_status::timeout)
-            {
-                RCLCPP_WARN(logger_, "Filter Y_AXIS prediction timeout...");
-            }
-            if (debug_param_.z_axis_filter && xyz_future[2].wait_for(8ms) == std::future_status::timeout)
-            {
-                RCLCPP_WARN(logger_, "Filter Z_AXIS prediction timeout...");
-            }
-        }
-        else
-        {   
-            // 反陀螺模式
-            if (is_spinning)
-            {
-                // is_fitting_available = coupleFittingPredict(true, target, result_fitting, time_estimate);  
-                std::future<void> xyz_future[3];
-                if (debug_param_.x_axis_filter)
-                {
-                    // is_singer_available.xyz_status[0] = predictBasedSinger(0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
-                    xyz_future[0] = std::async(std::launch::async, [&](){
-                        is_fitting_available.xyz_status[0] = predictBasedSinger(is_target_lost, is_spinning, 0, meas[0], result[0], 0.0, 0.0, dt);}
-                    );
-                }
-                if (debug_param_.y_axis_filter)
-                {
-                    xyz_future[1] = std::async(std::launch::async, [&](){
-                            // is_fitting_available = coupleFittingPredict(true, target, result_fitting, time_estimate);
-                            is_fitting_available.xyz_status[1] = predictBasedSinger(is_target_lost, is_spinning, 1, meas[1], result[1], 0.0, 0.0, dt);
-                        }
-                    );
-                }
-                if (debug_param_.z_axis_filter)
-                {
-                    xyz_future[2] = std::async(std::launch::async, [&](){
-                        is_fitting_available.xyz_status[2] = predictBasedSinger(is_target_lost, is_spinning, 2, meas[2], result[2], 0.0, 0.0, dt);}
-                    );
-                }
+    // bool ArmorPredictor::asyncPrediction(bool is_filtering, bool is_target_lost, bool is_spinning, Eigen::Vector3d meas, int64_t dt, Eigen::Vector3d& result)
+    // {
+    //     PredictStatus is_singer_available;
+    //     PredictStatus is_fitting_available;
+    //     if (is_filtering)
+    //     {   // 目标机动预测
+    //         // 基于CS模型的卡尔曼滤波
+    //         RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "CS model is predicting...");
+    //         std::future<void> xyz_future[3];
+    //         // is_ekf_available = predictBasedSinger(target, result_ekf, target_vel, target_acc, delta_time_estimate);
+    //         if (debug_param_.x_axis_filter)
+    //         {
+    //             // is_singer_available.xyz_status[0] = predictBasedSinger(0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
+    //             xyz_future[0] = std::async(std::launch::async, [&](){
+    //                 is_singer_available.xyz_status[0] = predictBasedSinger(is_target_lost, is_spinning, 0, meas[0], result[0], 0.0, 0.0, dt);});
+    //         }
+    //         if (debug_param_.y_axis_filter)
+    //         {
+    //             // is_singer_available.xyz_status[1] = predictBasedSinger(1, target.xyz[1], result_singer[1], target_vel[1], target_acc[1], delta_time_estimate);
+    //             xyz_future[1] = std::async(std::launch::async, [&](){
+    //                 is_singer_available.xyz_status[1] = predictBasedSinger(is_target_lost, is_spinning, 1, meas[1], result[1], 0.0, 0.0, dt);});
+    //         }
+    //         if (debug_param_.z_axis_filter)
+    //         {
+    //             // is_singer_available.xyz_status[2] = predictBasedSinger(2, target.xyz[2], result_singer[2], target_vel[2], target_acc[2], delta_time_estimate);
+    //             xyz_future[2] = std::async(std::launch::async, [&](){
+    //                 is_singer_available.xyz_status[2] = predictBasedSinger(is_target_lost, is_spinning, 2, meas[2], result[2], 0.0, 0.0, dt);});
+    //         }
+    //         if (debug_param_.x_axis_filter && xyz_future[0].wait_for(8ms) == std::future_status::timeout)
+    //         {
+    //             RCLCPP_WARN(logger_, "Filter _X_AXIS prediction timeout...");
+    //         }
+    //         if (debug_param_.y_axis_filter && xyz_future[1].wait_for(8ms) == std::future_status::timeout)
+    //         {
+    //             RCLCPP_WARN(logger_, "Filter Y_AXIS prediction timeout...");
+    //         }
+    //         if (debug_param_.z_axis_filter && xyz_future[2].wait_for(8ms) == std::future_status::timeout)
+    //         {
+    //             RCLCPP_WARN(logger_, "Filter Z_AXIS prediction timeout...");
+    //         }
+    //     }
+    //     else
+    //     {   
+    //         // 反陀螺模式
+    //         if (is_spinning)
+    //         {
+    //             // is_fitting_available = coupleFittingPredict(true, target, result_fitting, time_estimate);  
+    //             std::future<void> xyz_future[3];
+    //             if (debug_param_.x_axis_filter)
+    //             {
+    //                 // is_singer_available.xyz_status[0] = predictBasedSinger(0, target.xyz[0], result_singer[0], target_vel[0], target_acc[0], delta_time_estimate);
+    //                 xyz_future[0] = std::async(std::launch::async, [&](){
+    //                     is_fitting_available.xyz_status[0] = predictBasedSinger(is_target_lost, is_spinning, 0, meas[0], result[0], 0.0, 0.0, dt);}
+    //                 );
+    //             }
+    //             if (debug_param_.y_axis_filter)
+    //             {
+    //                 xyz_future[1] = std::async(std::launch::async, [&](){
+    //                         // is_fitting_available = coupleFittingPredict(true, target, result_fitting, time_estimate);
+    //                         is_fitting_available.xyz_status[1] = predictBasedSinger(is_target_lost, is_spinning, 1, meas[1], result[1], 0.0, 0.0, dt);
+    //                     }
+    //                 );
+    //             }
+    //             if (debug_param_.z_axis_filter)
+    //             {
+    //                 xyz_future[2] = std::async(std::launch::async, [&](){
+    //                     is_fitting_available.xyz_status[2] = predictBasedSinger(is_target_lost, is_spinning, 2, meas[2], result[2], 0.0, 0.0, dt);}
+    //                 );
+    //             }
 
-                if (debug_param_.x_axis_filter && xyz_future[0].wait_for(8ms) == std::future_status::timeout)
-                {
-                    RCLCPP_WARN(logger_, "Fitting X_AXIS prediction timeout...");
-                }
-                if (debug_param_.y_axis_filter && xyz_future[1].wait_for(8ms) == std::future_status::timeout)
-                {
-                    RCLCPP_WARN(logger_, "Fitting Y_AXIS prediction timeout...");
-                }
-                if (debug_param_.z_axis_filter && xyz_future[2].wait_for(8ms) == std::future_status::timeout)
-                {
-                    RCLCPP_WARN(logger_, "Fitting Z_AXIS prediction timeout...");
-                }
-            }
-        }
-        return true;
-    }
+    //             if (debug_param_.x_axis_filter && xyz_future[0].wait_for(8ms) == std::future_status::timeout)
+    //             {
+    //                 RCLCPP_WARN(logger_, "Fitting X_AXIS prediction timeout...");
+    //             }
+    //             if (debug_param_.y_axis_filter && xyz_future[1].wait_for(8ms) == std::future_status::timeout)
+    //             {
+    //                 RCLCPP_WARN(logger_, "Fitting Y_AXIS prediction timeout...");
+    //             }
+    //             if (debug_param_.z_axis_filter && xyz_future[2].wait_for(8ms) == std::future_status::timeout)
+    //             {
+    //                 RCLCPP_WARN(logger_, "Fitting Z_AXIS prediction timeout...");
+    //             }
+    //         }
+    //     }
+    //     return true;
+    // }
 
     /**
      * @brief 计算滤波预测值与测量值的误差，判断滤波是否发散

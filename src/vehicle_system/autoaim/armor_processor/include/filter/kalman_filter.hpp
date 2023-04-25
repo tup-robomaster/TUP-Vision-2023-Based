@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:00:19
- * @LastEditTime: 2023-02-01 22:14:23
+ * @LastEditTime: 2023-04-25 18:02:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/kalman_filter.hpp
  */
 #ifndef KALMAN_FILTER_HPP_
@@ -103,6 +103,7 @@ namespace armor_processor
             Eigen::VectorXd x() const { return this->x_; };
             Eigen::MatrixXd P() const { return this->P_; };
             Eigen::MatrixXd S() const { return this->S_; };
+            Eigen::MatrixXd F() const { return this->F_; };
             // Eigen::VectorXd* x() { return &this->x_; };
             // Eigen::MatrixXd* P() { return &this->P_; };
             void setStateCoveriance(const Eigen::MatrixXd& P) 
@@ -151,7 +152,7 @@ namespace armor_processor
         
         public:
             double likelihood_; //似然值
-            double dt; //时间量
+            double dt_; //时间量
         
         public:
             // double r1_, r2_, r3_, r4_;

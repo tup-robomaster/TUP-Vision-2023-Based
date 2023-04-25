@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-09 22:50:31
- * @LastEditTime: 2023-04-15 11:55:48
+ * @LastEditTime: 2023-04-25 20:06:47
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -23,13 +23,6 @@
 using namespace std;
 namespace armor_processor
 {
-    typedef enum OutpostStatus
-    {
-        NORMAL,     // 常速旋转
-        CONTROLLED, // 速度减半
-        STILL       // 静止
-    } OutpostStatus;
-
     typedef enum SpinningStatus
     {
         STILL_SPINNING,
@@ -45,8 +38,9 @@ namespace armor_processor
     struct TargetInfo
     {
         Eigen::Vector3d xyz;
+        double rangle;
         double dist;
-        int64_t timestamp;
+        double timestamp;
         double period;
         bool is_target_lost;
         bool is_target_switched;
@@ -55,7 +49,6 @@ namespace armor_processor
         bool is_clockwise;
         bool is_outpost_mode;
         SpinningStatus spinning_status;
-        OutpostStatus outpost_status;
         SystemModel system_model;
     };
 

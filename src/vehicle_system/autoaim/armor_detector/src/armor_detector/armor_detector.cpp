@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-16 21:52:50
+ * @LastEditTime: 2023-04-25 20:21:42
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -240,7 +240,7 @@ namespace armor_detector
             }
 
             // 单目PnP
-            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
+            PnPInfo pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
             // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
             // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
             
@@ -260,6 +260,7 @@ namespace armor_detector
             armor.euler = pnp_result.euler;
             armor.rmat = pnp_result.rmat;
             armor.area = object.area;
+            armor.rangle = pnp_result.rangle;
             new_armors_.emplace_back(armor);
 
             // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 250, "armor_area:%d", armor.area);
@@ -349,12 +350,12 @@ namespace armor_detector
         //未检索到有效车辆ID，直接退出
         if(target_id == -1)
         {
-            target_info.aiming_point_cam.x = 0;
-            target_info.aiming_point_cam.y = 0;
-            target_info.aiming_point_cam.z = 0;
-            target_info.aiming_point_world.x = 0;
-            target_info.aiming_point_world.y = 0;
-            target_info.aiming_point_world.z = 0;
+            // target_info.aiming_point_cam.x = 0;
+            // target_info.aiming_point_cam.y = 0;
+            // target_info.aiming_point_cam.z = 0;
+            // target_info.aiming_point_world.x = 0;
+            // target_info.aiming_point_world.y = 0;
+            // target_info.aiming_point_world.z = 0;
             target_info.is_target_lost = true;
             target_info.target_switched = true;
             target_info.is_spinning = false;
@@ -553,12 +554,12 @@ namespace armor_detector
 
             if ((int)final_armors.size() == 0)
             {
-                target_info.aiming_point_cam.x = 0;
-                target_info.aiming_point_cam.y = 0;
-                target_info.aiming_point_cam.z = 0;
-                target_info.aiming_point_world.x = 0;
-                target_info.aiming_point_world.y = 0;
-                target_info.aiming_point_world.z = 0;
+                // target_info.aiming_point_cam.x = 0;
+                // target_info.aiming_point_cam.y = 0;
+                // target_info.aiming_point_cam.z = 0;
+                // target_info.aiming_point_world.x = 0;
+                // target_info.aiming_point_world.y = 0;
+                // target_info.aiming_point_world.z = 0;
                 target_info.is_target_lost = true;
                 lost_cnt_++;
                 is_last_target_exists_ = false;
@@ -708,11 +709,11 @@ namespace armor_detector
                 last_status_ = cur_status_;
                 cur_status_ = SINGER;
 
+                final_armors[0].is_front = true;
                 target = final_armors.at(0);
             }
-            //若存在两块装甲板
             else if (final_armors.size() == 2)
-            {   
+            {   //若存在两块装甲板
                 last_last_status_ = last_status_;
                 last_status_ = cur_status_;
                 cur_status_ = DOUBLE;
@@ -725,22 +726,24 @@ namespace armor_detector
                 if (spin_status == CLOCKWISE)
                 {       
                     target_info.clockwise = CLOCKWISE;
+                    final_armors[1].is_front = true;
                     target = final_armors.at(1);
                 }
                 else if (spin_status == COUNTER_CLOCKWISE)
                 {   // 若逆时针旋转选取左侧装甲板更新
                     target_info.clockwise = false;
+                    final_armors[0].is_front = true;
                     target = final_armors.at(0);
                 }   
             }
             else
             {
-                target_info.aiming_point_cam.x = 0;
-                target_info.aiming_point_cam.y = 0;
-                target_info.aiming_point_cam.z = 0;
-                target_info.aiming_point_world.x = 0;
-                target_info.aiming_point_world.y = 0;
-                target_info.aiming_point_world.z = 0;
+                // target_info.aiming_point_cam.x = 0;
+                // target_info.aiming_point_cam.y = 0;
+                // target_info.aiming_point_cam.z = 0;
+                // target_info.aiming_point_world.x = 0;
+                // target_info.aiming_point_world.y = 0;
+                // target_info.aiming_point_world.z = 0;
                 target_info.is_target_lost = true;
                 lost_cnt_++;
                 is_last_target_exists_ = false;
@@ -773,7 +776,7 @@ namespace armor_detector
 
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
-                // final_armors.emplace_back((*iter).second.new_armor);
+                final_armors.emplace_back((*iter).second.new_armor);
                 final_trackers.emplace_back(&(*iter).second);
             }
             //进行目标选择
@@ -806,26 +809,86 @@ namespace armor_detector
             // cout << "x_dis:" << x_2d_dis << endl;
         }
 
+        if ((int)final_armors.size() > 0)
+        {
+            target_info.armors.clear();
+            ArmorMsg armor_msg;
+            armor_msg.key = target.key;
+            for (int ii = 0; ii < 4; ii++)
+            {
+                armor_msg.point2d.x = target.apex2d[ii].x; 
+                armor_msg.point2d.y = target.apex2d[ii].y; 
+            }
+            armor_msg.point3d_cam.x = target.armor3d_cam[0];
+            armor_msg.point3d_cam.y = target.armor3d_cam[1];
+            armor_msg.point3d_cam.z = target.armor3d_cam[2];
+            armor_msg.point3d_world.x = target.armor3d_world[0];
+            armor_msg.point3d_world.y = target.armor3d_world[1];
+            armor_msg.point3d_world.z = target.armor3d_world[2];
+            armor_msg.is_last_exists = false;
+            for (auto last_armor : last_armors_)
+            {
+                if (last_armor.id == target.id && last_armor.roi.contains(target.center2d))
+                {
+                    armor_msg.is_last_exists = true;
+                }
+            }
+            armor_msg.is_front = target.is_front;
+            target_info.armors.emplace_back(armor_msg);
+
+            // for (auto armor : final_armors)
+            // {
+            //     armor_msg.key = armor.key;
+            //     for (int ii = 0; ii < 4; ii++)
+            //     {
+            //         armor_msg.point2d.x = armor.apex2d[ii].x; 
+            //         armor_msg.point2d.y = armor.apex2d[ii].y; 
+            //     }
+            //     armor_msg.point3d_cam.x = armor.armor3d_cam[0];
+            //     armor_msg.point3d_cam.y = armor.armor3d_cam[1];
+            //     armor_msg.point3d_cam.z = armor.armor3d_cam[2];
+            //     armor_msg.point3d_world.x = armor.armor3d_world[0];
+            //     armor_msg.point3d_world.y = armor.armor3d_world[1];
+            //     armor_msg.point3d_world.z = armor.armor3d_world[2];
+            //     armor_msg.is_last_exists = false;
+            //     for (auto last_armor : last_armors_)
+            //     {
+            //         if (last_armor.id == armor.id && last_armor.roi.contains(armor.center2d))
+            //         {
+            //             armor_msg.is_last_exists = true;
+            //         }
+            //     }
+            //     armor_msg.is_front = armor.is_front;
+            //     // target_info.armors.emplace_back(armor_msg);
+            // }
+
+        }
+        else
+        {
+            target_info.is_target_lost = true;
+            return false;
+        }
+
         if(last_status_ == SINGER && cur_status_ == DOUBLE)
             target_info.spinning_switched = true;
         
         int target_hp = car_id_map_[target.key];
-        target_info.key = target.key;
-        target_info.hp = target_hp;
-        target_info.point2d[0].x = target.apex2d[0].x;
-        target_info.point2d[0].y = target.apex2d[0].y;
-        target_info.point2d[1].x = target.apex2d[1].x;
-        target_info.point2d[1].y = target.apex2d[1].y;
-        target_info.point2d[2].x = target.apex2d[2].x;
-        target_info.point2d[2].y = target.apex2d[2].y;
-        target_info.point2d[3].x = target.apex2d[3].x;
-        target_info.point2d[3].y = target.apex2d[3].y;
-        target_info.aiming_point_world.x = target.armor3d_world[0];
-        target_info.aiming_point_world.y = target.armor3d_world[1];
-        target_info.aiming_point_world.z = target.armor3d_world[2];
-        target_info.aiming_point_cam.x = target.armor3d_cam[0];
-        target_info.aiming_point_cam.y = target.armor3d_cam[1];
-        target_info.aiming_point_cam.z = target.armor3d_cam[2];
+        target_info.vehicle_id = target.key;
+        target_info.vehicle_hp = target_hp;
+        // target_info.point2d[0].x = target.apex2d[0].x;
+        // target_info.point2d[0].y = target.apex2d[0].y;
+        // target_info.point2d[1].x = target.apex2d[1].x;
+        // target_info.point2d[1].y = target.apex2d[1].y;
+        // target_info.point2d[2].x = target.apex2d[2].x;
+        // target_info.point2d[2].y = target.apex2d[2].y;
+        // target_info.point2d[3].x = target.apex2d[3].x;
+        // target_info.point2d[3].y = target.apex2d[3].y;
+        // target_info.aiming_point_world.x = target.armor3d_world[0];
+        // target_info.aiming_point_world.y = target.armor3d_world[1];
+        // target_info.aiming_point_world.z = target.armor3d_world[2];
+        // target_info.aiming_point_cam.x = target.armor3d_cam[0];
+        // target_info.aiming_point_cam.y = target.armor3d_cam[1];
+        // target_info.aiming_point_cam.z = target.armor3d_cam[2];
         target_info.timestamp = now_;
         target_info.is_target_lost = false;
         // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
