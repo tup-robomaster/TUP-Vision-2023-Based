@@ -73,7 +73,7 @@ namespace armor_processor
             // predict_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_processor/predict_msg", qos);
             
             // marker pub
-            marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("visualization_marker", 1);
+            marker_array_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/visualization_marker_array", 1);
             shape_ = visualization_msgs::msg::Marker::SPHERE;
 
             if (debug_param_.show_img)
@@ -314,26 +314,32 @@ namespace armor_processor
                 if (show_marker_)
                 {
                     rclcpp::Time now = this->get_clock()->now();
+
+                    visualization_msgs::msg::MarkerArray marker_array;
+                    visualization_msgs::msg::Marker marker;
+                    int marker_id = 0;
+                    
+                    // Set the frame ID and timestamp.
+                    marker.header.frame_id = "/gimbal_frame";
+                    marker.header.stamp = now;
+
+                    // Set the namespace and id for this marker.  This serves to create a unique ID
+                    // Any marker sent with the same namespace and id will overwrite the old one
+                    marker.ns = "basic_shapes";
+
+                    // Set the marker type.  
+                    // Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
+                    marker.type = shape_;
+
+                    // Set the marker action.
+                    // Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
+                    marker.action = visualization_msgs::msg::Marker::ADD;
+
+                    marker.lifetime = rclcpp::Duration::from_nanoseconds((rcl_duration_value_t)1e8);
+                        
                     for (auto armor_point3d : armor_point3d_vec)
                     {
-                        visualization_msgs::msg::Marker marker;
-                        // Set the frame ID and timestamp.
-                        marker.header.frame_id = "/gimbal_frame";
-                        marker.header.stamp = now;
-
-                        // Set the namespace and id for this marker.  This serves to create a unique ID
-                        // Any marker sent with the same namespace and id will overwrite the old one
-                        marker.ns = "basic_shapes";
-                        marker.id = 0;
-
-                        // Set the marker type.  
-                        // Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
-                        marker.type = shape_;
-
-                        // Set the marker action.
-                        // Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
-                        marker.action = visualization_msgs::msg::Marker::ADD;
-
+                        marker.id = marker_id;
                         // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
                         marker.pose.position.x = armor_point3d(0);
                         marker.pose.position.y = armor_point3d(1);
@@ -353,21 +359,21 @@ namespace armor_processor
                         marker.color.g = 1.0f;
                         marker.color.b = 0.0f;
                         marker.color.a = 1.0;
-                        
-                        marker.lifetime = rclcpp::Duration::from_nanoseconds((rcl_duration_value_t)1e7);
 
-                        // Publish the marker
-                        while ((int)marker_pub_->get_subscription_count() < 1)
-                        {
-                            if (!rclcpp::ok())
-                            {
-                                return 0;
-                            }
-                            RCLCPP_WARN(this->get_logger(), "Please create a subscriber to the marker");
-                            sleep(1);
-                        }
-                        marker_pub_->publish(marker);
+                        // while ((int)marker_array_pub_->get_subscription_count() < 1)
+                        // {
+                        //     if (!rclcpp::ok())
+                        //     {
+                        //         return 0;
+                        //     }
+                        //     RCLCPP_WARN(this->get_logger(), "Please create a subscriber to the marker");
+                        //     sleep(1);
+                        // }
+                        marker_array.markers.emplace_back(marker);                     
+                        ++marker_id;
                     }
+                    // Publish the marker_array
+                    marker_array_pub_->publish(marker_array);
                 }
                 // AutoaimMsg predict_info;
                 // predict_info.header.frame_id = "camera_link";

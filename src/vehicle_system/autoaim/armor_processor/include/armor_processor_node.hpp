@@ -84,7 +84,7 @@ namespace armor_processor
         bool sync_transport_ = false;
 
         // visualization_msgs::Marker
-        rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+        rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_pub_;
         uint64 shape_ = visualization_msgs::msg::Marker::SPHERE;
         bool show_marker_ = false;
 

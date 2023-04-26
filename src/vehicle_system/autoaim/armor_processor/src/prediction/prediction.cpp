@@ -150,12 +150,12 @@ namespace armor_processor
             Eigen::Vector3d circle_center = {state(0), state(1), state(2)};
             double radius = state(3);
             double rangle = state(4);
-            result = {circle_center(0) - radius * sin(rangle), circle_center(1) - radius * cos(rangle), circle_center(2)};
+            result = {circle_center(0) + radius * sin(rangle), circle_center(1) + radius * cos(rangle), circle_center(2)};
             
             Eigen::Vector3d armor_point3d = {0.0, 0.0, 0.0};
             for (int ii = 1; ii <= 3; ii++)
             {
-                armor_point3d = {circle_center(0) - radius * sin(rangle + CV_PI / 4 * ii), circle_center(1) - radius * cos(rangle + CV_PI / 4 * ii), circle_center(2)};
+                armor_point3d = {circle_center(0) + radius * sin(rangle + CV_PI / 4 * ii), circle_center(1) + radius * cos(rangle + CV_PI / 4 * ii), circle_center(2)};
                 armor_point3d_vec.emplace_back(armor_point3d);
             }
             
@@ -174,12 +174,12 @@ namespace armor_processor
             double rangle = pred(4);
             
             double pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
-            result = {circle_center(0) - radius * sin(pred_rangle), circle_center(1) - radius * cos(pred_rangle), circle_center(2)};
+            result = {circle_center(0) + radius * sin(pred_rangle), circle_center(1) + radius * cos(pred_rangle), circle_center(2)};
             
             Eigen::Vector3d armor_point3d = {0.0, 0.0, 0.0};
             for (int ii = 1; ii <= 3; ii++)
             {
-                armor_point3d = {circle_center(0) - radius * sin(rangle + CV_PI / 4 * ii), circle_center(1) - radius * cos(rangle + CV_PI / 4 * ii), circle_center(2)};
+                armor_point3d = {circle_center(0) + radius * sin(rangle + CV_PI / 4 * ii), circle_center(1) + radius * cos(rangle + CV_PI / 4 * ii), circle_center(2)};
                 armor_point3d_vec.emplace_back(armor_point3d);
             }
 
@@ -190,7 +190,7 @@ namespace armor_processor
 
     Eigen::Vector2d ArmorPredictor::calcCircleCenter(Eigen::VectorXd meas)
     {
-        return Eigen::Vector2d{meas(0) - uniform_ekf_.radius_ * sin(meas(3)), meas(1) - uniform_ekf_.radius_ * cos(meas(3))};
+        return Eigen::Vector2d{meas(0) + uniform_ekf_.radius_ * sin(meas(3)), meas(1) + uniform_ekf_.radius_ * cos(meas(3))};
     }
 
     // /**
