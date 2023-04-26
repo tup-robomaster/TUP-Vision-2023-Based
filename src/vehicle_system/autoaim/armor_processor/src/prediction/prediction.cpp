@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-26 18:31:34
+ * @LastEditTime: 2023-04-26 22:08:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -12,95 +12,27 @@ namespace armor_processor
     ArmorPredictor::ArmorPredictor()
     : logger_(rclcpp::get_logger("armor_prediction"))
     {
-        // KF initialized.
-        // singer_kf_[0][0].Init(3, 1, 1);
-        // singer_kf_[0][1].Init(3, 1, 1);
-        // singer_kf_[0][2].Init(3, 1, 1);
-        // singer_kf_[1][0].Init(3, 1, 1);
-        // singer_kf_[1][1].Init(3, 1, 1);
-        // singer_kf_[1][2].Init(3, 1, 1);
-        // singer_model_[0][0] = SingerModel(3, 1, 1);
-        // singer_model_[0][1] = SingerModel(3, 1, 1);
-        // singer_model_[0][2] = SingerModel(3, 1, 1);
-        // singer_model_[1][0] = SingerModel(3, 1, 1);
-        // singer_model_[1][1] = SingerModel(3, 1, 1);
-        // singer_model_[1][2] = SingerModel(3, 1, 1);
-
-        // 初始化滤波器参数
-        // kfInit();
-
-        // 初始化
-        // uniform_ekf_.init();
-        // 初始化滤波器状态
-        // resetPredictor();
+        resetPredictor();
     }
 
-    ArmorPredictor::~ArmorPredictor(){}
-
-    // ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, const DebugParam& debug_param)
-    // : predict_param_(predict_param), debug_param_(debug_param), uniform_ekf_(predict_param_.kf_param)
-    // logger_(rclcpp::get_logger("armor_prediction"))
-    // {
-    //     // KF initialized.
-    //     singer_kf_[0][0].Init(3, 1, 1);
-    //     singer_kf_[0][1].Init(3, 1, 1);
-    //     singer_kf_[0][2].Init(3, 1, 1);
-    //     singer_kf_[1][0].Init(3, 1, 1);
-    //     singer_kf_[1][1].Init(3, 1, 1);
-    //     singer_kf_[1][2].Init(3, 1, 1);
-
-    //     singer_param_[0][0] = singer_param[0];
-    //     singer_param_[0][1] = singer_param[1];
-    //     singer_param_[0][2] = singer_param[2];
-    //     singer_model_[0][0] = SingerModel(singer_param_[0][0], 3, 1, 1);
-    //     singer_model_[0][1] = SingerModel(singer_param_[0][1], 3, 1, 1);
-    //     singer_model_[0][2] = SingerModel(singer_param_[0][2], 3, 1, 1);
-        
-    //     singer_param_[1][0] = singer_param[3];
-    //     singer_param_[1][1] = singer_param[4];
-    //     singer_param_[1][2] = singer_param[5];
-    //     singer_model_[1][0] = SingerModel(singer_param_[1][0], 3, 1, 1);
-    //     singer_model_[1][1] = SingerModel(singer_param_[1][1], 3, 1, 1);
-    //     singer_model_[1][2] = SingerModel(singer_param_[1][2], 3, 1, 1);
-
-    //     // 初始化滤波器参数
-    //     kfInit();
-
-    //     // 初始化
-    //     uniform_ekf_.init();
-
-    //     // 初始化滤波器状态
-    //     resetPredictor();
-    // }
+    ArmorPredictor::~ArmorPredictor()
+    {
+        resetPredictor();
+    }
 
     void ArmorPredictor::initPredictor(const vector<double>* uniform_param)
     {
-        // singer_param_ = singer_param;
         uniform_ekf_.kf_param_.process_noise_params = uniform_param[0];
         uniform_ekf_.kf_param_.measure_noise_params = uniform_param[1];
-        RCLCPP_INFO_ONCE(logger_, "uniform_process_noise_param:[%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f]", 
-            uniform_param[0][0], uniform_param[0][1], uniform_param[0][2], uniform_param[0][3], uniform_param[0][4], uniform_param[0][5],
-            uniform_param[0][6], uniform_param[0][7], uniform_param[0][8], uniform_param[0][9], uniform_param[0][10]);
+        uniform_ekf_.kf_param_.singer_params = uniform_param[2];
+        RCLCPP_INFO_ONCE(logger_, "uniform_process_noise_param:[%.2f %.2f]", uniform_param[0][0], uniform_param[0][1]);
         RCLCPP_INFO_ONCE(logger_, "uniform_meas_noise_param:[%.2f %.2f %.2f %.2f]", uniform_param[1][0], uniform_param[1][1], uniform_param[1][2], uniform_param[1][3]);
+        RCLCPP_INFO_ONCE(logger_, "uniform_singer_param:[%.2f %.2f %.2f %.2f %.2f]", uniform_param[2][0], uniform_param[2][1], uniform_param[2][2], uniform_param[2][3], uniform_param[2][4]);
     }
 
     bool ArmorPredictor::resetPredictor()
     {
-        // is_init_ = false;
-        // is_imm_init_ = false;
-        // is_singer_init_[0][0] = false;
-        // is_singer_init_[0][1] = false;
-        // is_singer_init_[0][2] = false;
-        // is_singer_init_[1][0] = false;
-        // is_singer_init_[1][1] = false;
-        // is_singer_init_[1][2] = false;
-        // filter_disabled_ = false;
-        // fitting_disabled_ = false;
-        // history_info_.clear();
-        // history_pred_.clear();
-        // history_losting_pred_.clear();
         is_ekf_init_ = false;
-
         return true;
     }
 
@@ -114,7 +46,7 @@ namespace armor_processor
         return true;
     }
 
-    bool ArmorPredictor::predict(TargetInfo target, double bullet_speed, double dt, double& delay_time, Eigen::Vector3d& pred_point3d, vector<Eigen::Vector3d>& armor_point3d_vec, cv::Mat* src)
+    bool ArmorPredictor::predict(TargetInfo target, double bullet_speed, double dt, double& delay_time, Eigen::Vector3d& pred_point3d, vector<Eigen::Vector4d>& armor3d_vec, cv::Mat* src)
     {
         double pred_dt = target.dist / bullet_speed + delay_time_;
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
@@ -123,7 +55,7 @@ namespace armor_processor
         {
             target.period = 1e19;
         }
-        if (!predictBasedUniformModel(target.is_target_lost, meas, dt, pred_dt, target.period, pred_point3d, armor_point3d_vec))
+        if (!predictBasedUniformModel(target.is_target_lost, meas, dt, pred_dt, target.period, pred_point3d, armor3d_vec))
         {
             // cout << 6 << endl;
             pred_point3d = target.xyz;
@@ -132,7 +64,7 @@ namespace armor_processor
         return true;
     }
 
-    bool ArmorPredictor::predictBasedUniformModel(bool is_target_lost, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector3d>& armor_point3d_vec)
+    bool ArmorPredictor::predictBasedUniformModel(bool is_target_lost, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector4d>& armor3d_vec)
     {
         bool is_pred_success = false;
         if (!is_ekf_init_)
@@ -152,11 +84,11 @@ namespace armor_processor
             double rangle = state(4);
             result = {circle_center(0) + radius * sin(rangle), circle_center(1) + radius * cos(rangle), circle_center(2)};
             
-            Eigen::Vector3d armor_point3d = {0.0, 0.0, 0.0};
+            Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
             for (int ii = 0; ii < 4; ii++)
             {
-                armor_point3d = {circle_center(0) + radius * sin(rangle + CV_PI / 4 * ii), circle_center(1) + radius * cos(rangle + CV_PI / 4 * ii), circle_center(2)};
-                armor_point3d_vec.emplace_back(armor_point3d);
+                armor3d = {circle_center(0) + radius * sin(rangle + CV_PI / 4 * ii), circle_center(1) + radius * cos(rangle + CV_PI / 4 * ii), circle_center(2), (rangle + CV_PI / 4 * ii)};
+                armor3d_vec.emplace_back(armor3d);
             }
             
             is_pred_success = true;
@@ -176,11 +108,11 @@ namespace armor_processor
             double pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
             result = {circle_center(0) + radius * sin(pred_rangle), circle_center(1) + radius * cos(pred_rangle), circle_center(2)};
             
-            Eigen::Vector3d armor_point3d = {0.0, 0.0, 0.0};
+            Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
             for (int ii = 0; ii < 4; ii++)
             {
-                armor_point3d = {circle_center(0) + radius * sin(rangle + CV_PI / 4 * ii), circle_center(1) + radius * cos(rangle + CV_PI / 4 * ii), circle_center(2)};
-                armor_point3d_vec.emplace_back(armor_point3d);
+                armor3d = {circle_center(0) + radius * sin(rangle + CV_PI / 4 * ii), circle_center(1) + radius * cos(rangle + CV_PI / 4 * ii), circle_center(2), (rangle + CV_PI / 4 * ii)};
+                armor3d_vec.emplace_back(armor3d);
             }
 
             is_pred_success = true;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-04-26 14:57:30
+ * @LastEditTime: 2023-04-27 00:01:47
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -23,6 +23,8 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 //std
 #include <mutex>
@@ -73,7 +75,7 @@ namespace armor_processor
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
         rclcpp::Publisher<AutoaimMsg>::SharedPtr predict_info_pub_;
-        // rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
+        rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
         
         // message_filter
         MySyncPolicy my_sync_policy_;
@@ -85,7 +87,7 @@ namespace armor_processor
 
         // visualization_msgs::Marker
         rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_pub_;
-        uint64 shape_ = visualization_msgs::msg::Marker::SPHERE;
+        uint64 shape_ = visualization_msgs::msg::Marker::ARROW;
         bool show_marker_ = false;
 
     private:

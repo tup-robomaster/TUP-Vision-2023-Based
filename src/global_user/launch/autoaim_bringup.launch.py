@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-04-15 21:57:44
+LastEditTime: 2023-04-26 23:57:49
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -19,6 +19,7 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node, ComposableNodeContainer
 from ament_index_python.packages import get_package_share_directory
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import Command
 
 def generate_launch_description():
     # autoaim_param_file = os.path.join(get_package_share_directory('global_user'), 'config/autoaim.yaml')
@@ -57,6 +58,11 @@ def generate_launch_description():
     #     default_value='/daheng_img',
     #     description='hik daheng mvs usb'
     # )
+
+    robot_description = Command([
+        'xacro ', 
+        os.path.join(get_package_share_directory('robot_description'), 'urdf', 'my_robot/gimbal') + '.urdf.xacro',
+    ])
     
     with open(camera_param_file, 'r') as f:
         usb_cam_params = yaml.safe_load(f)['/usb_cam_driver']['ros__parameters']
@@ -82,6 +88,26 @@ def generate_launch_description():
         #     cmd=['ros2', 'bag', 'record', record_topic_args],
         #     output='screen',
         # ),
+
+        Node(
+            package='robot_state_publisher',
+            executable='robot_state_publisher',
+            name='robot_state_publisher',
+            output='screen',  
+            parameters=[
+                {
+                    'use_sim_time': False,
+                    'robot_description': robot_description
+                }
+            ]
+        ),
+
+        Node(
+            package='joint_state_publisher',
+            executable='joint_state_publisher',
+            name='joint_state_publisher',
+            output='screen'
+        ),
 
         Node(
             package='serialport',

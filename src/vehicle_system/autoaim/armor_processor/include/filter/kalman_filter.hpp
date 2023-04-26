@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:00:19
- * @LastEditTime: 2023-04-25 18:02:50
+ * @LastEditTime: 2023-04-26 21:14:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/kalman_filter.hpp
  */
 #ifndef KALMAN_FILTER_HPP_
@@ -20,6 +20,7 @@ namespace armor_processor
     {
         vector<double> process_noise_params;
         vector<double> measure_noise_params;
+        vector<double> singer_params;
     };
 
     class KalmanFilter
@@ -63,7 +64,6 @@ namespace armor_processor
              */
             void Init(Eigen::MatrixXd& x_in, Eigen::MatrixXd& P_in, Eigen::MatrixXd& F_in,
             Eigen::MatrixXd& H_in, Eigen::MatrixXd& R_in, Eigen::MatrixXd& Q_in, Eigen::MatrixXd& J_in);
-
             
             /**
              * @brief 预测状态向量和协方差矩阵

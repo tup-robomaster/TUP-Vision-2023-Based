@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-26 18:29:27
+ * @LastEditTime: 2023-04-27 00:24:44
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -47,7 +47,7 @@ namespace armor_processor
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", qos);
         tracking_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/tracking_msg", qos);
-        // joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
+        joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
 
         this->declare_parameter<bool>("sync_transport", false);
         sync_transport_ = this->get_parameter("sync_transport").as_bool();
@@ -146,16 +146,16 @@ namespace armor_processor
         double sleep_time = 0.0;
         AutoaimMsg target = std::move(target_info);
         Eigen::Vector2d angle = {0.0, 0.0};
-        Eigen::Vector3d vehicle_center3d_world = {0.0, 0.0, 0.0};
-        Eigen::Vector3d vehicle_center3d_cam = {0.0, 0.0, 0.0};
+        Eigen::Vector2d tracking_angle = {0.0, 0.0};
         Eigen::Vector3d aiming_point_world = {0.0, 0.0, 0.0};
         Eigen::Vector3d aiming_point_cam = {0.0, 0.0, 0.0};
         Eigen::Vector3d tracking_point_cam = {0.0, 0.0, 0.0};
-        Eigen::Vector2d tracking_angle = {0.0, 0.0};
         Eigen::Matrix3d rmat_imu;
         Eigen::Quaterniond quat_imu;
         bool is_shooting = false;
-        vector<Eigen::Vector3d> armor_point3d_vec;
+        vector<Eigen::Vector4d> armor3d_vec;
+        Eigen::Vector3d vehicle_center3d_cam = {0.0, 0.0, 0.0};
+        Eigen::Vector4d vehicle_center3d_world = {0.0, 0.0, 0.0, 0.0};
         // PostProcessInfo post_process_info;
 
         cv::Mat dst = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
@@ -200,7 +200,7 @@ namespace armor_processor
             
             param_mutex_.lock();
             // cout << 1 << endl;
-            if (processor_->predictor(target, aiming_point_world, armor_point3d_vec, sleep_time))
+            if (processor_->predictor(target, aiming_point_world, armor3d_vec, sleep_time))
             {
                 // cout << 2 << endl;
                 aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
@@ -209,9 +209,9 @@ namespace armor_processor
                 tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
 
                 Eigen::VectorXd state = processor_->armor_predictor_.uniform_ekf_.x();
-                vehicle_center3d_world = {state(0), state(1), state(2)};
-                vehicle_center3d_cam = processor_->coordsolver_.worldToCam(vehicle_center3d_world, rmat_imu);
-                armor_point3d_vec.emplace_back(vehicle_center3d_world);
+                vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
+                vehicle_center3d_cam = processor_->coordsolver_.worldToCam({vehicle_center3d_world(0), vehicle_center3d_world(1), vehicle_center3d_world(2)}, rmat_imu);
+                armor3d_vec.emplace_back(vehicle_center3d_world);
 
                 if (abs(tracking_angle[0]) < 3.50 && abs(tracking_angle[1]) < 3.50)
                 {
@@ -262,31 +262,15 @@ namespace armor_processor
         gimbal_info.is_prediction = is_pred_; 
         gimbal_info_pub_->publish(std::move(gimbal_info));
 
-        // sensor_msgs::msg::JointState gimbal_yaw_joint_states;
-        // gimbal_yaw_joint_states.header.frame_id = "yaw";
-        // gimbal_yaw_joint_states.name.emplace_back("yaw_joint");
-        // gimbal_yaw_joint_states.position.emplace_back(gimbal_info.yaw * CV_PI / 180);
+        // publish gimbal joint states.
+        sensor_msgs::msg::JointState gimbal_joint_states;
+        gimbal_joint_states.header.frame_id = "camera_link";
+        gimbal_joint_states.name.emplace_back("base_to_camera_yaw_joint");
+        gimbal_joint_states.position.emplace_back(gimbal_info.yaw * CV_PI / 180);
+        gimbal_joint_states.name.emplace_back("base_to_camera_pitch_joint");
+        gimbal_joint_states.position.emplace_back(gimbal_info.pitch * CV_PI / 180);
+        joint_state_pub_->publish(gimbal_joint_states);
         
-        // sensor_msgs::msg::JointState gimbal_pitch_joint_states;
-        // gimbal_pitch_joint_states.header.frame_id = "pitch";
-        // gimbal_pitch_joint_states.name.emplace_back("pitch_joint");
-        // gimbal_pitch_joint_states.position.emplace_back(gimbal_info.pitch * CV_PI / 180);
-
-        // sensor_msgs::msg::JointState shooter_yaw_joint_states;
-        // shooter_yaw_joint_states.header.frame_id = "trigger";
-        // shooter_yaw_joint_states.name.emplace_back("trigger_joint");
-        // shooter_yaw_joint_states.position.emplace_back(gimbal_info.yaw * CV_PI / 180);
-
-        // sensor_msgs::msg::JointState shooter_cover_joint_states;
-        // shooter_cover_joint_states.header.frame_id = "cover";
-        // shooter_cover_joint_states.name.emplace_back("cover_joint");
-        // shooter_cover_joint_states.position.emplace_back(gimbal_info.pitch * CV_PI / 180);
-
-        // joint_state_pub_->publish(gimbal_yaw_joint_states);
-        // joint_state_pub_->publish(gimbal_pitch_joint_states);
-        // joint_state_pub_->publish(shooter_cover_joint_states);
-        // joint_state_pub_->publish(shooter_yaw_joint_states);
-
         if (this->debug_)
         {
             GimbalMsg tracking_info;
@@ -320,7 +304,7 @@ namespace armor_processor
                     int marker_id = 0;
                     
                     // Set the frame ID and timestamp.
-                    marker.header.frame_id = "/gimbal_frame";
+                    marker.header.frame_id = "base_link";
                     marker.header.stamp = now;
 
                     // Set the namespace and id for this marker.  This serves to create a unique ID
@@ -337,22 +321,25 @@ namespace armor_processor
 
                     marker.lifetime = rclcpp::Duration::from_nanoseconds((rcl_duration_value_t)1e8);
                         
-                    for (auto armor_point3d : armor_point3d_vec)
+                    for (auto armor3d : armor3d_vec)
                     {
                         marker.id = marker_id;
+                        
+                        tf2::Quaternion q;
+                        q.setRPY(0, 0, armor3d(3));
                         // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-                        marker.pose.position.x = armor_point3d(0);
-                        marker.pose.position.y = armor_point3d(1);
-                        marker.pose.position.z = armor_point3d(2);
-                        marker.pose.orientation.x = 0.0;
-                        marker.pose.orientation.y = 0.0;
-                        marker.pose.orientation.z = 0.0;
-                        marker.pose.orientation.w = 1.0;
+                        marker.pose.position.x = armor3d(0);
+                        marker.pose.position.y = armor3d(1);
+                        marker.pose.position.z = armor3d(2);
+                        marker.pose.orientation.x = q.x();
+                        marker.pose.orientation.y = q.y();
+                        marker.pose.orientation.z = q.z();
+                        marker.pose.orientation.w = q.w();
 
                         // Set the scale of the marker -- 1x1x1 here means 1m on a side
                         marker.scale.x = 0.05;
                         marker.scale.y = 0.05;
-                        marker.scale.z = 0.05;
+                        marker.scale.z = armor3d(2);
 
                         // Set the color -- be sure to set alpha to something non-zero!
                         marker.color.r = 0.0f;
@@ -421,9 +408,9 @@ namespace armor_processor
                     }
 
                     cv::Point2f point_2d = {0, 0};
-                    for (auto armor_point3d_world : armor_point3d_vec)
+                    for (auto armor_point3d_world : armor3d_vec)
                     {
-                        Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam(armor_point3d_world, rmat_imu);
+                        Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
                         point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
                         cv::circle(dst, point_2d, 10, {255, 255, 0}, -1);
                     }
@@ -473,14 +460,10 @@ namespace armor_processor
     {
         if (!img_msg)
             return;
-        // rclcpp::Time last = img_msg->header.stamp;
-        // rclcpp::Time now = this->get_clock()->now();
-        // RCLCPP_WARN_THROTTLE(this->get_logger(), 
-        //     *this->get_clock(), 
-        //     500, 
-        //     "Delay:%.2fms", 
-        //     (now.nanoseconds() - last.nanoseconds()) / 1e6
-        // );
+        rclcpp::Time last = img_msg->header.stamp;
+        rclcpp::Time now = this->get_clock()->now();
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Delay:%.2fms", (now.nanoseconds() - last.nanoseconds()) / 1e6);
+        
         image_mutex_.lock();
         src_ = cv_bridge::toCvShare(img_msg, "bgr8")->image;
         image_flag_ = true;
@@ -564,44 +547,25 @@ namespace armor_processor
         this->declare_parameter("measure_noise", measure_noise_params);
         measure_noise_params = this->get_parameter("measure_noise").as_double_array();
 
-        vector<double> singer_model_params[6] = 
+        vector<double> uniform_ekf_params[3] = 
         {
-            {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0}, 
-            {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0},
-            {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0},
-            {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0}, 
-            {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0},
-            {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0}
+            {1.0, 1.0},
+            {1.0, 1.0, 1.0, 1.0},
+            {8.00, 10.0, 0.1, 0.8, 0.0030}
         };
-        this->declare_parameter("singer_model_x_axis", singer_model_params[0]);
-        this->declare_parameter("singer_model_y_axis", singer_model_params[1]);
-        this->declare_parameter("singer_model_z_axis", singer_model_params[2]);
-        this->declare_parameter("gyro_singer_model_x_axis", singer_model_params[3]);
-        this->declare_parameter("gyro_singer_model_y_axis", singer_model_params[4]);
-        this->declare_parameter("gyro_singer_model_z_axis", singer_model_params[5]);
         
-        singer_model_params[0] = this->get_parameter("singer_model_x_axis").as_double_array();
-        singer_model_params[1] = this->get_parameter("singer_model_y_axis").as_double_array();
-        singer_model_params[2] = this->get_parameter("singer_model_z_axis").as_double_array();
-        singer_model_params[3] = this->get_parameter("gyro_singer_model_x_axis").as_double_array();
-        singer_model_params[4] = this->get_parameter("gyro_singer_model_y_axis").as_double_array();
-        singer_model_params[5] = this->get_parameter("gyro_singer_model_z_axis").as_double_array();
-
-        vector<double> uniform_ekf_params[2] = 
-        {
-            {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-            {1.0, 1.0, 1.0, 1.0}
-        };
         this->declare_parameter("uniform_ekf_process_noise_param", uniform_ekf_params[0]);
         this->declare_parameter("uniform_ekf_measure_noise_param", uniform_ekf_params[1]);
+        this->declare_parameter("uniform_ekf_singer_param", uniform_ekf_params[2]);
         uniform_ekf_params[0] = this->get_parameter("uniform_ekf_process_noise_param").as_double_array();
         uniform_ekf_params[1] = this->get_parameter("uniform_ekf_measure_noise_param").as_double_array();
+        uniform_ekf_params[2] = this->get_parameter("uniform_ekf_singer_param").as_double_array();
 
         predict_param_.filter_model_param.imm_model_trans_prob_params = imm_model_trans_prob_params;
         predict_param_.filter_model_param.imm_model_prob_params = imm_model_prob_params;
         predict_param_.filter_model_param.process_noise_params = process_noise_params;
         predict_param_.filter_model_param.measure_noise_params = measure_noise_params;
-        return std::make_unique<Processor>(predict_param_, singer_model_params, uniform_ekf_params, debug_param_);
+        return std::make_unique<Processor>(predict_param_, uniform_ekf_params, debug_param_);
     }
 
     /**

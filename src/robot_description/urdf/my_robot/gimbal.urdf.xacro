@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:macro name="gimbal" params="camera_type">
+        <link name="base_link">
+            <visual>
+                <geometry>
+                    <sphere radius="1.0"/>
+                </geometry>
+                <material name="blue"/>
+                <origin rpy="0 0 0" xyz="0 0 0"/>
+            </visual>
+        </link>
+
+        <link name="imu_link">
+            <visual>
+                <geometry>
+                    <sphere radius="1.0"/>
+                </geometry>
+                <material name="black"/>
+            </visual>
+        </link>
+        <joint name="base_to_imu" type="fixed">
+            <parent link="base_link"/>
+            <child link="imu_link"/>
+            <origin rpy="0 0 0" xyz="0 0 -0.02"/>
+        </joint>
+
+        <link name="camera_link">
+            <visual>
+                <geometry>
+                    <sphere radius="1.0">
+                </geometry>
+                <material name="blue"/>
+            </visual>
+        </link>
+        <joint name="imu_to_camera" type="fixed">
+            <parent link="imu_link"/>
+            <child link="camera_link"/>
+            <origin rpy="-0.2453373 -1.5249719 1.408214" xyz="-0.07705601 -0.00966292 0.01103587"/>
+        </joint>
+        <joint name="base_to_camera_yaw_joint" type="revolute">
+            <parent link="base_link"/>
+            <child link="camera_link"/>
+            <origin rpy="-0.2453373 -1.5249719 1.408214" xyz="-0.07705601 -0.00966292 -0.00896413"/>
+        </joint>
+        <joint name="base_to_camera_yaw_joint" type="revolute">
+            <parent link="base_link"/>
+            <child link="camera_link"/>
+            <origin rpy="-0.2453373 -1.5249719 1.408214" xyz="-0.07705601 -0.00966292 -0.00896413"/>
+        </joint>
+    </xacro::macro>
+</robot>

@@ -116,45 +116,13 @@
   # Filter params.
     filter_param_path: "/config/filter_param.yaml"
 
-  # Singer model(--->CS Model).
-    # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 dt:采样时间间隔 
-    #  sigma:机动加速度标准差 p:过程协方差系数 r:观测协方差系数 coeff:预测提前量系数)
-    # singer_model_x_axis: [1.05, 5.0, 0.2, 0.2, 0.275, 1.05, 1.0, 1.0, 2.0] 
-    # singer_model_y_axis: [1.18, 5.0, 0.2, 0.2, 0.190, 1.15, 1.0, 1.0, 0.1] 
-    # singer_model_z_axis: [1.25, 5.0, 0.1, 0.9, 0.200, 1.2, 1.0, 1.0, 0.1]
-
-    # singer_model_x_axis: [1.0, 10.0, 0.1, 0.8, 0.30, 2.50, 0.25, 1.0, 0.1] 
-    # singer_model_y_axis: [1.18, 10.0, 0.1, 0.8, 0.18, 0.5, 1.0, 1.0, 5.0] 
-    # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.170, 0.5, 1.0, 1.0, 5.0]
-
-    # singer_model_x_axis: [1.00, 10.0, 0.1, 0.8, 0.24, 2.60, 1.0, 1.0, 0.1] 
-    # singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.18, 1.85, 1.0, 1.0, 0.1] 
-    # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.20, 1.2, 1.0, 1.0, 0.1]
-
-    # singer_model_x_axis: [1.00, 10.0, 0.1, 0.8, 0.22, 2.80, 1.0, 1.0, 0.1] 
-    # singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.17, 1.90, 1.0, 1.0, 0.1] 
-    # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.20, 1.2, 1.0, 1.0, 0.1]
-
-    # singer_model_x_axis: [1.00, 10.0, 0.1, 0.8, 0.215, 2.85, 1.0, 1.0, 0.1] 
-    # singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.165, 1.95, 1.0, 1.0, 0.1] 
-    # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.20, 1.2, 1.0, 1.0, 0.1]
-
-    singer_model_x_axis: [20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0, 1.0] 
-    singer_model_y_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0] 
-    singer_model_z_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0]
-
-    gyro_singer_model_x_axis: [20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0, 1.0]
-    gyro_singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.18, 1.85, 1.0, 1.0, 0.1]
-    gyro_singer_model_z_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0]
-
-    # singer_model_x_axis: [1.0, 10.0, 0.1, 0.8, 5.00, 0.1, 1.0, 1.0, 1.0] 
-    # singer_model_y_axis: [5.0, 10.0, 0.1, 0.8, 16.00, 0.001, 1.0, 0.2, 4.0] 
-    # singer_model_z_axis: [5.0, 10.0, 0.1, 0.8, 16.00, 0.0008, 1.0, 0.2, 4.0]
-
-    uniform_ekf_process_noise_param: [0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001]
+    uniform_ekf_process_noise_param: [0.001, 0.001]
     uniform_ekf_measure_noise_param: [0.001, 0.001, 0.001, 0.001]
+    # Singer model.  
+    # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 sigma:机动加速度标准差)
+    uniform_ekf_singer_param: [8.00, 10.0, 0.1, 0.8, 0.0030]
 
-  # IMM model.
+    # IMM model.
     #状态转移概率
     trans_prob_matrix: [0.6, 0.3, 0.05, 0.05, #row prob sum = 1
                         0.5, 0.4, 0.05, 0.05,

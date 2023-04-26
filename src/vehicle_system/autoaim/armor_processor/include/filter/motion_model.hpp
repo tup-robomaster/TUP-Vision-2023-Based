@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 12:13:56
- * @LastEditTime: 2023-04-25 18:26:41
+ * @LastEditTime: 2023-04-26 21:28:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/motion_model.hpp
  */
 #include "./kalman_filter.hpp"
@@ -65,8 +65,7 @@ namespace armor_processor
         void setF(Eigen::MatrixXd& Ft, const double& dt);
 
     public:
-        vector<double> singer_param_;
-        
+        // vector<double> singer_param_;
         double radius_ = 0.25;
         double rangle_ = 0.0;
     };

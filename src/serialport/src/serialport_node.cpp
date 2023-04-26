@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-04-14 14:36:59
+ * @LastEditTime: 2023-04-27 00:05:43
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"

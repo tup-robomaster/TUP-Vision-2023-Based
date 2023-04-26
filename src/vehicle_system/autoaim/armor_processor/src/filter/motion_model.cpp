@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 12:36:22
- * @LastEditTime: 2023-04-25 18:26:53
+ * @LastEditTime: 2023-04-26 21:35:00
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/motion_model.cpp
  */
 #include "../../include/filter/motion_model.hpp"
@@ -254,15 +254,14 @@ namespace armor_processor
     UniformModel::UniformModel(const KFParam kf_param)
     {
         kf_param_ = kf_param;
-        singer_param_ = {8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0};
     }
 
     UniformModel::UniformModel()
     {
         radius_ = 0.25;
+        kf_param_.process_noise_params = {1.0, 1.0};
         kf_param_.measure_noise_params = {1.0, 1.0, 1.0, 1.0};
-        kf_param_.process_noise_params = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-        singer_param_ = {8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0};
+        kf_param_.singer_params = {8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0};
     }
 
     UniformModel::~UniformModel()
@@ -274,8 +273,8 @@ namespace armor_processor
     {
         assert(x.size() == 11);
 
-        double alpha = singer_param_[0];
-        double sigma = singer_param_[5];
+        double alpha = kf_param_.singer_params[0];
+        double sigma = kf_param_.singer_params[5];
 
         this->x_ = x;
         this->dt_ = dt;
@@ -328,11 +327,7 @@ namespace armor_processor
                        0,    0,    0, r[3];
 
         this->Q_.setIdentity(11, 11);
-        double q[11] = {
-            this->kf_param_.process_noise_params[0],  this->kf_param_.process_noise_params[1], this->kf_param_.process_noise_params[2],
-            this->kf_param_.process_noise_params[3],  this->kf_param_.process_noise_params[4], this->kf_param_.process_noise_params[5],
-            this->kf_param_.process_noise_params[6],  this->kf_param_.process_noise_params[7], this->kf_param_.process_noise_params[8],
-            this->kf_param_.process_noise_params[9], this->kf_param_.process_noise_params[10]};
+        double q[2] = {this->kf_param_.process_noise_params[0], this->kf_param_.process_noise_params[1]};
         double q11 = 1 / (2 * pow(alpha, 5)) * (1 - exp(-2 * alpha * dt) + 2 * alpha * dt + 2 * pow(alpha * dt, 3) / 3 - 2 * pow(alpha * dt, 2) - 4 * alpha * dt * exp(-alpha * dt));
         double q12 = 1 / (2 * pow(alpha, 4)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt) + 2 * alpha * dt * exp(-alpha * dt) - 2 * alpha * dt + pow(alpha * dt, 2));
         double q13 = 1 / (2 * pow(alpha, 3)) * (1 - exp(-2 * alpha * dt) - 2 * alpha * dt * exp(-alpha * dt));
@@ -342,8 +337,8 @@ namespace armor_processor
         this->Q_ << 2 * pow(sigma, 2) * alpha * q11,                               0,                               0,    0,    0,    2 * pow(sigma, 2) * alpha * q12,                                  0,                                  0,    2 * pow(sigma, 2) * alpha* q13,                                 0,                                  0,    
                                                   0, 2 * pow(sigma, 2) * alpha * q11,                               0,    0,    0,                                  0,    2 * pow(sigma, 2) * alpha * q12,                                  0,                                 0,    2 * pow(sigma, 2) * alpha* q13,                                  0,    
                                                   0,                               0, 2 * pow(sigma, 2) * alpha * q11,    0,    0,                                  0,                                  0,    2 * pow(sigma, 2) * alpha * q12,                                 0,                                 0,     2 * pow(sigma, 2) * alpha* q13,   
-                                                  0,                               0,                               0, q[3],    0,                                  0,                                  0,                                  0,                                 0,                                 0,                                  0,   
-                                                  0,                               0,                               0,    0, q[4],                                  0,                                  0,                                  0,                                 0,                                 0,                                  0,   
+                                                  0,                               0,                               0, q[0],    0,                                  0,                                  0,                                  0,                                 0,                                 0,                                  0,   
+                                                  0,                               0,                               0,    0, q[1],                                  0,                                  0,                                  0,                                 0,                                 0,                                  0,   
                     2 * pow(sigma, 2) * alpha * q12,                               0,                               0,    0,    0,    2 * pow(sigma, 2) * alpha * q22,                                  0,                                  0,    2 * pow(sigma, 2) * alpha* q23,                                 0,                                  0,   
                                                   0, 2 * pow(sigma, 2) * alpha * q12,                               0,    0,    0,                                  0,    2 * pow(sigma, 2) * alpha * q22,                                  0,                                 0,    2 * pow(sigma, 2) * alpha* q23,                                  0,   
                                                   0,                               0, 2 * pow(sigma, 2) * alpha * q12,    0,    0,                                  0,                                  0,    2 * pow(sigma, 2) * alpha * q22,                                 0,                                 0,     2 * pow(sigma, 2) * alpha* q23,  
@@ -354,8 +349,8 @@ namespace armor_processor
 
     void UniformModel::setF(Eigen::MatrixXd& Ft, const double& dt)
     {
-        double alpha = singer_param_[0];
-        double sigma = singer_param_[5];
+        double alpha = kf_param_.singer_params[0];
+        double sigma = kf_param_.singer_params[5];
         /*
               Xc--Yc--Zc--r--theta--vx--vy--vz------------------------ax-------------------------------------------------------------------------------ay---------------------------------------------------az
         */
