@@ -6,6 +6,7 @@
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/motion_model.hpp
  */
 #include "./kalman_filter.hpp"
+#include "../prediction/param_struct.hpp"
 
 namespace armor_processor
 {
@@ -59,11 +60,15 @@ namespace armor_processor
         UniformModel();
         UniformModel(const KFParam kf_param);
         ~UniformModel();
-
-        double radius_ = 0.25;
-        double rangle_ = 0.0;
+        
         void init(const Eigen::VectorXd& x, const double& dt);
         void setF(Eigen::MatrixXd& Ft, const double& dt);
+
+    public:
+        vector<double> singer_param_;
+        
+        double radius_ = 0.25;
+        double rangle_ = 0.0;
     };
 } // armor_processor
 

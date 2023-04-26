@@ -69,7 +69,7 @@ namespace armor_processor
         double sigma = singer_param_[5];
         Q_ << 2 * pow(sigma, 2) * alpha * q11, 2 * pow(sigma, 2) * alpha * q12, 2 * pow(sigma, 2) * alpha* q13,
             2 * pow(sigma, 2) * alpha* q12, 2 * pow(sigma, 2) * alpha* q22, 2 * pow(sigma, 2) * alpha* q23,
-            2 * pow(sigma, 2) * alpha* q13, 2 * pow(sigma, 2) * alpha* q23, 2 * pow(sigma, 2) * alpha* q33;
+            2 * pow(sigma, 2) * alpha* q13, 2 * pow(sigma, 2) * alpha * q23, 2 * pow(sigma, 2) * alpha * q33;
         double meaCov = singer_param_[7];
         R_ << meaCov;
     }

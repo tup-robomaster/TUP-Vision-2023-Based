@@ -150,14 +150,13 @@ namespace armor_processor
             Eigen::Vector3d circle_center = {state(0), state(1), state(2)};
             double radius = state(3);
             double rangle = state(4);
-            result = {circle_center(0) + radius * sin(rangle), circle_center(1) + radius * cos(rangle), circle_center(2)};
+            result = {circle_center(0) + radius * sin(rangle), circle_center(1) - radius * cos(rangle), circle_center(2)};
             is_pred_success = true;
         }
         else
         {   //预测+更新
             uniform_ekf_.Predict(dt);
             uniform_ekf_.Update(meas, meas(3));
-
             Eigen::VectorXd state = uniform_ekf_.x();
             Eigen::MatrixXd F(11, 11);
             uniform_ekf_.setF(F, pred_dt);
@@ -166,7 +165,7 @@ namespace armor_processor
             double radius = pred(3);
             double rangle = pred(4);
             double pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
-            result = {circle_center(0) + radius * sin(pred_rangle), circle_center(1) + radius * cos(pred_rangle), circle_center(2)};
+            result = {circle_center(0) + radius * sin(pred_rangle), circle_center(1) - radius * cos(pred_rangle), circle_center(2)};
             is_pred_success = true;
         }
         return is_pred_success;
@@ -174,7 +173,7 @@ namespace armor_processor
 
     Eigen::Vector2d ArmorPredictor::calcCircleCenter(Eigen::VectorXd meas)
     {
-        return Eigen::Vector2d{meas(0) - uniform_ekf_.radius_ * sin(meas(3)), meas(1) - uniform_ekf_.radius_ * cos(meas(3))};
+        return Eigen::Vector2d{meas(0) - uniform_ekf_.radius_ * sin(meas(3)), meas(1) + uniform_ekf_.radius_ * cos(meas(3))};
     }
 
     // /**
