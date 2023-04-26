@@ -78,6 +78,10 @@ namespace armor_processor
         // singer_param_ = singer_param;
         uniform_ekf_.kf_param_.process_noise_params = uniform_param[0];
         uniform_ekf_.kf_param_.measure_noise_params = uniform_param[1];
+        RCLCPP_INFO_ONCE(logger_, "uniform_process_noise_param:[%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f]", 
+            uniform_param[0][0], uniform_param[0][1], uniform_param[0][2], uniform_param[0][3], uniform_param[0][4], uniform_param[0][5],
+            uniform_param[0][6], uniform_param[0][7], uniform_param[0][8], uniform_param[0][9], uniform_param[0][10]);
+        RCLCPP_INFO_ONCE(logger_, "uniform_meas_noise_param:[%.2f %.2f %.2f %.2f]", uniform_param[1][0], uniform_param[1][1], uniform_param[1][2], uniform_param[1][3]);
     }
 
     bool ArmorPredictor::resetPredictor()
@@ -114,8 +118,14 @@ namespace armor_processor
     {
         double pred_dt = target.dist / bullet_speed + delay_time_;
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
+        // cout << 5 << endl;
+        if (!target.is_spinning)
+        {
+            target.period = 1e19;
+        }
         if (!predictBasedUniformModel(target.is_target_lost, meas, dt, pred_dt, target.period, pred_point3d))
         {
+            // cout << 6 << endl;
             pred_point3d = target.xyz;
             return false;
         }
@@ -146,7 +156,8 @@ namespace armor_processor
         else
         {   //预测+更新
             uniform_ekf_.Predict(dt);
-            uniform_ekf_.Update(meas);
+            uniform_ekf_.Update(meas, meas(3));
+
             Eigen::VectorXd state = uniform_ekf_.x();
             Eigen::MatrixXd F(11, 11);
             uniform_ekf_.setF(F, pred_dt);

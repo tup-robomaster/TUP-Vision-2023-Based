@@ -87,7 +87,7 @@ def generate_launch_description():
             package='serialport',
             executable='serialport_node',
             name='serialport',
-            output='log', # log/screen/both
+            output='screen', # log/screen/both
             emulate_tty=True,
             parameters=[{
                 'using_port': True,
@@ -96,7 +96,7 @@ def generate_launch_description():
                 'print_referee_info': False
             }],
             respawn=True,
-            respawn_delay=4,
+            respawn_delay=1,
             condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
         ),
         
@@ -105,7 +105,7 @@ def generate_launch_description():
             package='rclcpp_components',
             executable='component_container',
             namespace='',
-            output='log',
+            output='screen',
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'True'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -133,7 +133,7 @@ def generate_launch_description():
                 ),
             ],
             respawn=True,
-            respawn_delay=4,
+            respawn_delay=1,
         ),
         
         ComposableNodeContainer(
@@ -174,7 +174,7 @@ def generate_launch_description():
                 # ),  
             ],
             respawn=True,
-            respawn_delay=4,
+            respawn_delay=1,
         ),
         
         ComposableNodeContainer(
@@ -215,13 +215,13 @@ def generate_launch_description():
                 # ),  
             ],
             respawn=True,
-            respawn_delay=4,
+            respawn_delay=1,
         ),
 
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
-            output='log',
+            output='screen',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'hik'"])),
@@ -256,13 +256,13 @@ def generate_launch_description():
                 # ),  
             ],
             respawn=True,
-            respawn_delay=4,
+            respawn_delay=1,
         ),
 
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
-            output='log',
+            output='screen',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'mvs'"])),
@@ -297,18 +297,18 @@ def generate_launch_description():
                 # ),  
             ],
             respawn=True,
-            respawn_delay=4,
+            respawn_delay=1,
         ),
 
         Node(
             package='armor_processor',
             executable='armor_processor_node',
             namespace='armor_processor',
-            output='log', 
+            output='screen', 
             emulate_tty=True,
             parameters=[armor_processor_params],
             respawn=True,
-            respawn_delay=4,
+            respawn_delay=1,
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
         ),
     ])

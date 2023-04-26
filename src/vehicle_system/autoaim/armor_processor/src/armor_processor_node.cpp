@@ -15,13 +15,22 @@ namespace armor_processor
     {
         RCLCPP_INFO(this->get_logger(), "Starting processor node...");
         
-        processor_ = initArmorProcessor();
-        if (!processor_->is_param_initialized_)
+        // cout << 3 << endl;
+        try
         {
-            RCLCPP_INFO_ONCE(this->get_logger(), "Loading param...");
-            // processor_->loadParam(path_param_.filter_path);
-            processor_->init(path_param_.coord_path, path_param_.coord_name);
+            processor_ = initArmorProcessor();
+            if (!processor_->is_param_initialized_)
+            {
+                RCLCPP_INFO_ONCE(this->get_logger(), "Loading param...");
+                // processor_->loadParam(path_param_.filter_path);
+                processor_->init(path_param_.coord_path, path_param_.coord_name);
+            }
         }
+        catch(const std::exception& e)
+        {
+            RCLCPP_FATAL(this->get_logger(), "Fatal while initializing armor processor: %s", e.what());
+        }
+        // cout << 4 << endl;
 
         // QoS
         rclcpp::QoS qos(0);
@@ -183,8 +192,11 @@ namespace armor_processor
             }
             
             param_mutex_.lock();
+            // cout << 1 << endl;
             if (processor_->predictor(target, aiming_point_world, sleep_time))
             {
+                // cout << 2 << endl;
+
                 aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
                 angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
                 tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
@@ -295,7 +307,7 @@ namespace armor_processor
                 AutoaimMsg predict_info;
                 predict_info.header.frame_id = "camera_link";
                 predict_info.header.stamp = target_info.header.stamp;
-                predict_info.header.stamp.nanosec += sleep_time;
+                // predict_info.header.stamp.nanosec += sleep_time;
                 // predict_info.aiming_point_world.x = (aiming_point_world)[0];
                 // predict_info.aiming_point_world.y = (aiming_point_world)[1];
                 // predict_info.aiming_point_world.z = (aiming_point_world)[2];
@@ -330,9 +342,12 @@ namespace armor_processor
                 if (this->debug_param_.show_predict)
                 {
                     // Draw target 2d rectangle.
-                    // for(int i = 0; i < 4; i++)
-                    //     cv::line(dst, cv::Point2f(target_info.point2d[i % 4].x, target_info.point2d[i % 4].y),
-                    //         cv::Point2f(target_info.point2d[(i + 1) % 4].x, target_info.point2d[(i + 1) % 4].y), {125, 0, 255}, 1);
+                    for (auto armor : target_info.armors)
+                    {
+                        for(int i = 0; i < 4; i++)
+                            cv::line(dst, cv::Point2f(armor.point2d[i % 4].x, armor.point2d[i % 4].y),
+                                cv::Point2f(armor.point2d[(i + 1) % 4].x, armor.point2d[(i + 1) % 4].y), {125, 0, 255}, 1);
+                    }
                     cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
                     cv::Point2f armor_center = processor_->coordsolver_.reproject(tracking_point_cam);
                     cv::circle(dst, point_2d, 14, {255, 0, 125}, 2);

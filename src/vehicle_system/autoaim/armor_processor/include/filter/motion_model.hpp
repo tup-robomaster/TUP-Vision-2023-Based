@@ -61,6 +61,7 @@ namespace armor_processor
         ~UniformModel();
 
         double radius_ = 0.25;
+        double rangle_ = 0.0;
         void init(const Eigen::VectorXd& x, const double& dt);
         void setF(Eigen::MatrixXd& Ft, const double& dt);
     };

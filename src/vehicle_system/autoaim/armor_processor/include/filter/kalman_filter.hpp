@@ -80,6 +80,7 @@ namespace armor_processor
              */
             void Update(const Eigen::VectorXd& z);
             void Update(const Eigen::VectorXd& z, int mp);
+            void Update(const Eigen::VectorXd& z, double rangle);
             void updateOnce(const double& dt, const Eigen::VectorXd* z);
 
             /**

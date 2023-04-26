@@ -101,6 +101,15 @@ namespace armor_processor
         P_ = (I - K * H_) * P_;
     }
 
+    void KalmanFilter::Update(const Eigen::VectorXd& z, double rangle)
+    {
+        this->H_ << 1, 0, 0, -sin(rangle), 0, 0, 0, 0, 0, 0, 0, 
+                    0, 1, 0,  cos(rangle), 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 1,            0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0,            0, 1, 0, 0, 0, 0, 0, 0;
+        Update(z);
+    }
+
     /**
      * @brief 卡尔曼滤波更新步骤
      * 此处应用于IMM模型，需要计算模型似然值

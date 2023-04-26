@@ -150,8 +150,8 @@
     # singer_model_y_axis: [5.0, 10.0, 0.1, 0.8, 16.00, 0.001, 1.0, 0.2, 4.0] 
     # singer_model_z_axis: [5.0, 10.0, 0.1, 0.8, 16.00, 0.0008, 1.0, 0.2, 4.0]
 
-    uniform_ekf_process_noise_param: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    uniform_ekf_measure_noise_param: [1.0, 1.0, 1.0, 1.0]
+    uniform_ekf_process_noise_param: [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+    uniform_ekf_measure_noise_param: [0.01, 0.01, 0.01, 0.01]
 
   # IMM model.
     #状态转移概率

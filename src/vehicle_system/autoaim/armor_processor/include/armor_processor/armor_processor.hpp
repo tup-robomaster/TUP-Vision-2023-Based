@@ -57,6 +57,7 @@ namespace armor_processor
         PredictParam predict_param_;
         DebugParam debug_param_;
         rclcpp::Logger logger_;
+        rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
     };
 } //namespace armor_processor
 
