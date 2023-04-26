@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-25 21:18:25
+ * @LastEditTime: 2023-04-26 15:10:44
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -68,8 +68,14 @@ namespace armor_processor
         if(debug_)
         {
             RCLCPP_INFO(this->get_logger(), "debug...");
+            
             // Prediction info pub.
-            predict_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_processor/predict_msg", qos);
+            // predict_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_processor/predict_msg", qos);
+            
+            // marker pub
+            marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("visualization_marker", 1);
+            shape_ = visualization_msgs::msg::Marker::SPHERE;
+
             if (debug_param_.show_img)
             {
                 image_size_ = image_info_.image_size_map[camera_type];
@@ -149,6 +155,7 @@ namespace armor_processor
         Eigen::Matrix3d rmat_imu;
         Eigen::Quaterniond quat_imu;
         bool is_shooting = false;
+        vector<Eigen::Vector3d> armor_point3d_vec;
         // PostProcessInfo post_process_info;
 
         cv::Mat dst = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
@@ -193,10 +200,9 @@ namespace armor_processor
             
             param_mutex_.lock();
             // cout << 1 << endl;
-            if (processor_->predictor(target, aiming_point_world, sleep_time))
+            if (processor_->predictor(target, aiming_point_world, armor_point3d_vec, sleep_time))
             {
                 // cout << 2 << endl;
-
                 aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
                 angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
                 tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
@@ -205,6 +211,7 @@ namespace armor_processor
                 Eigen::VectorXd state = processor_->armor_predictor_.uniform_ekf_.x();
                 vehicle_center3d_world = {state(0), state(1), state(2)};
                 vehicle_center3d_cam = processor_->coordsolver_.worldToCam(vehicle_center3d_world, rmat_imu);
+                armor_point3d_vec.emplace_back(vehicle_center3d_world);
 
                 if (abs(tracking_angle[0]) < 3.50 && abs(tracking_angle[1]) < 3.50)
                 {
@@ -304,25 +311,83 @@ namespace armor_processor
             
             if (!target.is_target_lost)
             {
-                AutoaimMsg predict_info;
-                predict_info.header.frame_id = "camera_link";
-                predict_info.header.stamp = target_info.header.stamp;
-                // predict_info.header.stamp.nanosec += sleep_time;
-                // predict_info.aiming_point_world.x = (aiming_point_world)[0];
-                // predict_info.aiming_point_world.y = (aiming_point_world)[1];
-                // predict_info.aiming_point_world.z = (aiming_point_world)[2];
-                // predict_info.aiming_point_cam.x = aiming_point_cam[0];
-                // predict_info.aiming_point_cam.y = aiming_point_cam[1];
-                // predict_info.aiming_point_cam.z = aiming_point_cam[2];
-                // predict_info.period = target_info.period;
-                predict_info_pub_->publish(std::move(predict_info));
-                RCLCPP_INFO_EXPRESSION(
-                    this->get_logger(), 
-                    debug_param_.show_predict && debug_param_.print_delay, 
-                    "tracking_point_world:[%.3f %.3f %.3f] aiming_point_world:[%.3f %.3f %.3f]",
-                    tracking_point_cam[0], tracking_point_cam[1], tracking_point_cam[2],
-                    aiming_point_cam[0], aiming_point_cam[1], aiming_point_cam[2]
-                );
+                if (show_marker_)
+                {
+                    rclcpp::Time now = this->get_clock()->now();
+                    for (auto armor_point3d : armor_point3d_vec)
+                    {
+                        visualization_msgs::msg::Marker marker;
+                        // Set the frame ID and timestamp.
+                        marker.header.frame_id = "/gimbal_frame";
+                        marker.header.stamp = now;
+
+                        // Set the namespace and id for this marker.  This serves to create a unique ID
+                        // Any marker sent with the same namespace and id will overwrite the old one
+                        marker.ns = "basic_shapes";
+                        marker.id = 0;
+
+                        // Set the marker type.  
+                        // Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
+                        marker.type = shape_;
+
+                        // Set the marker action.
+                        // Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
+                        marker.action = visualization_msgs::msg::Marker::ADD;
+
+                        // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+                        marker.pose.position.x = armor_point3d(0);
+                        marker.pose.position.y = armor_point3d(1);
+                        marker.pose.position.z = armor_point3d(2);
+                        marker.pose.orientation.x = 0.0;
+                        marker.pose.orientation.y = 0.0;
+                        marker.pose.orientation.z = 0.0;
+                        marker.pose.orientation.w = 1.0;
+
+                        // Set the scale of the marker -- 1x1x1 here means 1m on a side
+                        marker.scale.x = 0.05;
+                        marker.scale.y = 0.05;
+                        marker.scale.z = 0.05;
+
+                        // Set the color -- be sure to set alpha to something non-zero!
+                        marker.color.r = 0.0f;
+                        marker.color.g = 1.0f;
+                        marker.color.b = 0.0f;
+                        marker.color.a = 1.0;
+                        
+                        marker.lifetime = rclcpp::Duration::from_nanoseconds((rcl_duration_value_t)1e7);
+
+                        // Publish the marker
+                        while ((int)marker_pub_->get_subscription_count() < 1)
+                        {
+                            if (!rclcpp::ok())
+                            {
+                                return 0;
+                            }
+                            RCLCPP_WARN(this->get_logger(), "Please create a subscriber to the marker");
+                            sleep(1);
+                        }
+                        marker_pub_->publish(marker);
+                    }
+                }
+                // AutoaimMsg predict_info;
+                // predict_info.header.frame_id = "camera_link";
+                // predict_info.header.stamp = target_info.header.stamp;
+                // // predict_info.header.stamp.nanosec += sleep_time;
+                // // predict_info.aiming_point_world.x = (aiming_point_world)[0];
+                // // predict_info.aiming_point_world.y = (aiming_point_world)[1];
+                // // predict_info.aiming_point_world.z = (aiming_point_world)[2];
+                // // predict_info.aiming_point_cam.x = aiming_point_cam[0];
+                // // predict_info.aiming_point_cam.y = aiming_point_cam[1];
+                // // predict_info.aiming_point_cam.z = aiming_point_cam[2];
+                // // predict_info.period = target_info.period;
+                // predict_info_pub_->publish(std::move(predict_info));
+                // RCLCPP_INFO_EXPRESSION(
+                //     this->get_logger(), 
+                //     debug_param_.show_predict && debug_param_.print_delay, 
+                //     "tracking_point_world:[%.3f %.3f %.3f] aiming_point_world:[%.3f %.3f %.3f]",
+                //     tracking_point_cam[0], tracking_point_cam[1], tracking_point_cam[2],
+                //     aiming_point_cam[0], aiming_point_cam[1], aiming_point_cam[2]
+                // );
             }
         }
 
@@ -349,7 +414,7 @@ namespace armor_processor
                                 cv::Point2f(armor.point2d[(i + 1) % 4].x, armor.point2d[(i + 1) % 4].y), {125, 0, 255}, 1);
                     }
                     cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
-                    cv::Point2f armor_center = processor_->coordsolver_.reproject(tracking_point_cam);
+                    // cv::Point2f armor_center = processor_->coordsolver_.reproject(tracking_point_cam);
                     cv::circle(dst, point_2d, 14, {255, 0, 125}, 2);
 
                     cv::Point2f vehicle_center2d = processor_->coordsolver_.reproject(vehicle_center3d_cam);
@@ -390,7 +455,7 @@ namespace armor_processor
      * 
      * @param img_info 图像数据信息
      */
-    void ArmorProcessorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
+    void ArmorProcessorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg)
     {
         if (!img_msg)
             return;
@@ -451,6 +516,7 @@ namespace armor_processor
         this->declare_parameter("disable_fitting", true);
         this->declare_parameter("show_transformed_info", false);
         this->declare_parameter("show_aim_cross", true);
+        this->declare_parameter("show_marker", false);
 
         // Declare path params.
         this->declare_parameter<std::string>("filter_param_path", "/config/filter_param.yaml");
@@ -581,6 +647,7 @@ namespace armor_processor
         debug_param_.disable_fitting = this->get_parameter("disable_fitting").as_bool();
         debug_param_.show_transformed_info = this->get_parameter("show_transformed_info").as_bool();
         debug_param_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
+        show_marker_ = this->get_parameter("show_marker").as_bool();
 
         return true;
     }

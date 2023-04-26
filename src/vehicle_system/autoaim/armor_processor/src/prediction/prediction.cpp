@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-25 20:10:37
+ * @LastEditTime: 2023-04-26 14:15:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -114,7 +114,7 @@ namespace armor_processor
         return true;
     }
 
-    bool ArmorPredictor::predict(TargetInfo target, double bullet_speed, double dt, double& delay_time, Eigen::Vector3d& pred_point3d, cv::Mat* src)
+    bool ArmorPredictor::predict(TargetInfo target, double bullet_speed, double dt, double& delay_time, Eigen::Vector3d& pred_point3d, vector<Eigen::Vector3d>& armor_point3d_vec, cv::Mat* src)
     {
         double pred_dt = target.dist / bullet_speed + delay_time_;
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
@@ -123,7 +123,7 @@ namespace armor_processor
         {
             target.period = 1e19;
         }
-        if (!predictBasedUniformModel(target.is_target_lost, meas, dt, pred_dt, target.period, pred_point3d))
+        if (!predictBasedUniformModel(target.is_target_lost, meas, dt, pred_dt, target.period, pred_point3d, armor_point3d_vec))
         {
             // cout << 6 << endl;
             pred_point3d = target.xyz;
@@ -132,7 +132,7 @@ namespace armor_processor
         return true;
     }
 
-    bool ArmorPredictor::predictBasedUniformModel(bool is_target_lost, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result)
+    bool ArmorPredictor::predictBasedUniformModel(bool is_target_lost, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector3d>& armor_point3d_vec)
     {
         bool is_pred_success = false;
         if (!is_ekf_init_)
@@ -150,7 +150,15 @@ namespace armor_processor
             Eigen::Vector3d circle_center = {state(0), state(1), state(2)};
             double radius = state(3);
             double rangle = state(4);
-            result = {circle_center(0) + radius * sin(rangle), circle_center(1) - radius * cos(rangle), circle_center(2)};
+            result = {circle_center(0) - radius * sin(rangle), circle_center(1) - radius * cos(rangle), circle_center(2)};
+            
+            Eigen::Vector3d armor_point3d = {0.0, 0.0, 0.0};
+            for (int ii = 1; ii <= 3; ii++)
+            {
+                armor_point3d = {circle_center(0) - radius * sin(rangle + CV_PI / 4 * ii), circle_center(1) - radius * cos(rangle + CV_PI / 4 * ii), circle_center(2)};
+                armor_point3d_vec.emplace_back(armor_point3d);
+            }
+            
             is_pred_success = true;
         }
         else
@@ -164,8 +172,17 @@ namespace armor_processor
             Eigen::Vector3d circle_center = {pred(0), pred(1), pred(2)};
             double radius = pred(3);
             double rangle = pred(4);
+            
             double pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
-            result = {circle_center(0) + radius * sin(pred_rangle), circle_center(1) - radius * cos(pred_rangle), circle_center(2)};
+            result = {circle_center(0) - radius * sin(pred_rangle), circle_center(1) - radius * cos(pred_rangle), circle_center(2)};
+            
+            Eigen::Vector3d armor_point3d = {0.0, 0.0, 0.0};
+            for (int ii = 1; ii <= 3; ii++)
+            {
+                armor_point3d = {circle_center(0) - radius * sin(rangle + CV_PI / 4 * ii), circle_center(1) - radius * cos(rangle + CV_PI / 4 * ii), circle_center(2)};
+                armor_point3d_vec.emplace_back(armor_point3d);
+            }
+
             is_pred_success = true;
         }
         return is_pred_success;
@@ -173,7 +190,7 @@ namespace armor_processor
 
     Eigen::Vector2d ArmorPredictor::calcCircleCenter(Eigen::VectorXd meas)
     {
-        return Eigen::Vector2d{meas(0) - uniform_ekf_.radius_ * sin(meas(3)), meas(1) + uniform_ekf_.radius_ * cos(meas(3))};
+        return Eigen::Vector2d{meas(0) - uniform_ekf_.radius_ * sin(meas(3)), meas(1) - uniform_ekf_.radius_ * cos(meas(3))};
     }
 
     // /**

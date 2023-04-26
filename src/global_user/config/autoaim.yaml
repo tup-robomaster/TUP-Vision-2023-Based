@@ -103,6 +103,7 @@
     z_axis_filter: true
     show_aim_cross: true
     show_fps: false
+    show_marker: true
     # disable_filter: true
     # disable_fitting: false
 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-04-25 16:07:10
+ * @LastEditTime: 2023-04-26 14:57:30
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -21,6 +21,8 @@
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 //std
 #include <mutex>
@@ -80,6 +82,11 @@ namespace armor_processor
         std::shared_ptr<message_filters::Synchronizer<MySyncPolicy>> sync_;
         void syncCallback(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg, const AutoaimMsg::ConstSharedPtr& target_msg);
         bool sync_transport_ = false;
+
+        // visualization_msgs::Marker
+        rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+        uint64 shape_ = visualization_msgs::msg::Marker::SPHERE;
+        bool show_marker_ = false;
 
     private:
         std::unique_ptr<Processor> processor_;
