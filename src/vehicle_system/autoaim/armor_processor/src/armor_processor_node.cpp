@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-26 15:10:44
+ * @LastEditTime: 2023-04-26 18:29:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -419,12 +419,20 @@ namespace armor_processor
                             cv::line(dst, cv::Point2f(armor.point2d[i % 4].x, armor.point2d[i % 4].y),
                                 cv::Point2f(armor.point2d[(i + 1) % 4].x, armor.point2d[(i + 1) % 4].y), {125, 0, 255}, 1);
                     }
-                    cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
-                    // cv::Point2f armor_center = processor_->coordsolver_.reproject(tracking_point_cam);
+
+                    cv::Point2f point_2d = {0, 0};
+                    for (auto armor_point3d_world : armor_point3d_vec)
+                    {
+                        Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam(armor_point3d_world, rmat_imu);
+                        point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                        cv::circle(dst, point_2d, 10, {255, 255, 0}, -1);
+                    }
+                    point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
                     cv::circle(dst, point_2d, 14, {255, 0, 125}, 2);
 
-                    cv::Point2f vehicle_center2d = processor_->coordsolver_.reproject(vehicle_center3d_cam);
-                    cv::circle(dst, vehicle_center2d, 11, {255, 255, 0}, -1);
+                    // cv::Point2f vehicle_center2d = processor_->coordsolver_.reproject(vehicle_center3d_cam);
+                    // cv::circle(dst, vehicle_center2d, 11, {255, 255, 0}, -1);
+                    // cv::Point2f armor_center = processor_->coordsolver_.reproject(tracking_point_cam);
                     // putText(dst, state_map_[(int)(processor_->armor_predictor_.predictor_state_)], point_2d, cv::FONT_HERSHEY_SIMPLEX, 1, {125, 0, 255}, 1);
                     // cv::line(dst, cv::Point2f(point_2d.x - 30, point_2d.y), cv::Point2f(point_2d.x + 30, point_2d.y), {0, 0, 255}, 1);
                     // cv::line(dst, cv::Point2f(point_2d.x, point_2d.y - 35), cv::Point2f(point_2d.x, point_2d.y + 35), {0, 0, 255}, 1);

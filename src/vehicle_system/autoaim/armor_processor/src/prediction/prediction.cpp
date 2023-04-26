@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-26 14:15:34
+ * @LastEditTime: 2023-04-26 18:31:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -153,7 +153,7 @@ namespace armor_processor
             result = {circle_center(0) + radius * sin(rangle), circle_center(1) + radius * cos(rangle), circle_center(2)};
             
             Eigen::Vector3d armor_point3d = {0.0, 0.0, 0.0};
-            for (int ii = 1; ii <= 3; ii++)
+            for (int ii = 0; ii < 4; ii++)
             {
                 armor_point3d = {circle_center(0) + radius * sin(rangle + CV_PI / 4 * ii), circle_center(1) + radius * cos(rangle + CV_PI / 4 * ii), circle_center(2)};
                 armor_point3d_vec.emplace_back(armor_point3d);
@@ -177,7 +177,7 @@ namespace armor_processor
             result = {circle_center(0) + radius * sin(pred_rangle), circle_center(1) + radius * cos(pred_rangle), circle_center(2)};
             
             Eigen::Vector3d armor_point3d = {0.0, 0.0, 0.0};
-            for (int ii = 1; ii <= 3; ii++)
+            for (int ii = 0; ii < 4; ii++)
             {
                 armor_point3d = {circle_center(0) + radius * sin(rangle + CV_PI / 4 * ii), circle_center(1) + radius * cos(rangle + CV_PI / 4 * ii), circle_center(2)};
                 armor_point3d_vec.emplace_back(armor_point3d);
