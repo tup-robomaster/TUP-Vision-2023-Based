@@ -29,6 +29,7 @@ def generate_launch_description():
     
     camera_param_file = os.path.join(get_package_share_directory('global_user'), 'config/camera_ros.yaml')
     autoaim_param_file = os.path.join(get_package_share_directory('global_user'), 'config/autoaim.yaml')
+    rviz2_config_path = os.path.join(get_package_share_directory('robot_description'), 'launch/view_model.rviz')
     
     camera_type = LaunchConfiguration('camera_type')
     use_serial = LaunchConfiguration('using_imu')
@@ -107,6 +108,14 @@ def generate_launch_description():
             executable='joint_state_publisher',
             name='joint_state_publisher',
             output='screen'
+        ),
+        
+        Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            output='screen',
+            arguments=['-d', rviz2_config_path]
         ),
 
         Node(
