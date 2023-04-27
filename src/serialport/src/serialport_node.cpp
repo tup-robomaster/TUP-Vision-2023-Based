@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-04-27 00:05:43
+ * @LastEditTime: 2023-04-27 20:52:55
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -73,6 +73,10 @@ namespace serialport
         //创建发送数据定时器
         // timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
         // send_timer_ = rclcpp::create_timer(this, this->get_clock(), 30ms, std::bind(&SerialPortNode::sendingData, this));
+
+        // tf2
+        // Initialize the transform broadcaster
+        tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
         if (using_port_)
         {   // Use serial port.
@@ -213,7 +217,31 @@ namespace serialport
                 serial_msg.imu.linear_acceleration.x = acc[0];
                 serial_msg.imu.linear_acceleration.y = acc[1];
                 serial_msg.imu.linear_acceleration.z = acc[2];
+                
+                geometry_msgs::msg::TransformStamped t;
+
+                // Read message content and assign it to corresponding tf variables
+                t.header.stamp = this->get_clock()->now();
+                t.header.frame_id = "base_link";
+                t.child_frame_id = "imu_link";
+
+                // Translation
+                t.transform.translation.x = 0.0;
+                t.transform.translation.y = 0.0;
+                t.transform.translation.z = -0.02;
+
+                // Rotation
+                t.transform.rotation.x = serial_msg.imu.orientation.x;
+                t.transform.rotation.y = serial_msg.imu.orientation.y;
+                t.transform.rotation.z = serial_msg.imu.orientation.z;
+                t.transform.rotation.w = serial_msg.imu.orientation.w;
+
+                // Send the transformation
+                tf_broadcaster_->sendTransform(t);
+
+                // Pub serial msg
                 serial_msg_pub_->publish(std::move(serial_msg));
+
                 // RCLCPP_WARN(this->get_logger(), "serial_msg_pub:%.3fs", now.nanoseconds() / 1e9);
 
                 sensor_msgs::msg::JointState joint_state;

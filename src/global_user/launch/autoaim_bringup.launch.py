@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-04-26 23:57:49
+LastEditTime: 2023-04-27 21:07:59
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -88,6 +88,13 @@ def generate_launch_description():
         #     cmd=['ros2', 'bag', 'record', record_topic_args],
         #     output='screen',
         # ),
+
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            output='screen',
+            arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373', '-1.5249719', '1.408214', 'imu_link', 'camera_link']
+        ),
 
         Node(
             package='robot_state_publisher',

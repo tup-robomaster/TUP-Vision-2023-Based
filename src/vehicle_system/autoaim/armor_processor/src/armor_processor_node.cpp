@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-27 00:24:44
+ * @LastEditTime: 2023-04-27 21:24:23
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -264,7 +264,7 @@ namespace armor_processor
 
         // publish gimbal joint states.
         sensor_msgs::msg::JointState gimbal_joint_states;
-        gimbal_joint_states.header.frame_id = "camera_link";
+        gimbal_joint_states.header.frame_id = "base_link";
         gimbal_joint_states.name.emplace_back("base_to_camera_yaw_joint");
         gimbal_joint_states.position.emplace_back(gimbal_info.yaw * CV_PI / 180);
         gimbal_joint_states.name.emplace_back("base_to_camera_pitch_joint");

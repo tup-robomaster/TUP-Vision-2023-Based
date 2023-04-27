@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-25 20:17:22
+ * @LastEditTime: 2023-04-27 21:17:29
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -81,6 +81,10 @@ namespace armor_detector
                 );
             }
         }
+
+        // tf2
+        // Initialize the transform broadcaster
+        // tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
          
         // CameraType camera_type;
         this->declare_parameter<int>("camera_type", DaHeng);
@@ -329,6 +333,17 @@ namespace armor_detector
             target_info.quat_imu.y = src.quat.y();
             target_info.quat_imu.z = src.quat.z();
         }
+
+        // if (!is_target_lost)
+        // {
+        //     geometry_msgs::msg::TransformStamped t;
+
+        //     // Read message content and assign it to corresponding tf variables
+        //     t.header.stamp = this->get_clock()->now();
+        //     t.header.frame_id = "camera_link";
+        //     t.child_frame_id = "";           
+        // }
+
         target_info.is_target_lost = is_target_lost;
         target_info.header.frame_id = "gimbal_link";
         target_info.header.stamp = stamp;
