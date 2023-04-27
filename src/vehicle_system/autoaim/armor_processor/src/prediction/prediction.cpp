@@ -39,9 +39,9 @@ namespace armor_processor
     bool ArmorPredictor::updatePredictor(Eigen::VectorXd meas)
     {
         uniform_ekf_.x_(4) = meas(3);
-        Eigen::Vector2d circle_center = calcCircleCenter(meas);
-        uniform_ekf_.x_(0) = circle_center(0);
-        uniform_ekf_.x_(1) = circle_center(1);
+        // Eigen::Vector2d circle_center = calcCircleCenter(meas);
+        // uniform_ekf_.x_(0) = circle_center(0);
+        // uniform_ekf_.x_(1) = circle_center(1);
         uniform_ekf_.x_(2) = meas(2);
         return true;
     }
@@ -78,16 +78,19 @@ namespace armor_processor
         else if (is_target_lost && predictor_state_ == LOSTING)
         {   //预测
             uniform_ekf_.Predict(dt);
+            // uniform_ekf_.x_(3) = 0.15;
             Eigen::VectorXd state = uniform_ekf_.x();
             Eigen::Vector3d circle_center = {state(0), state(1), state(2)};
-            double radius = state(3);
+            double radius = state(3) = 0.15;
             double rangle = state(4);
-            result = {circle_center(0) + radius * sin(rangle), circle_center(1) + radius * cos(rangle), circle_center(2)};
+            
+            double pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
+            result = {circle_center(0) + radius * sin(pred_rangle), circle_center(1) + radius * cos(pred_rangle), circle_center(2)};
             
             Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
             for (int ii = 0; ii < 4; ii++)
             {
-                armor3d = {circle_center(0) + radius * sin(rangle + CV_PI / 4 * ii), circle_center(1) + radius * cos(rangle + CV_PI / 4 * ii), circle_center(2), (rangle + CV_PI / 4 * ii)};
+                armor3d = {circle_center(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), circle_center(1) + radius * cos(pred_rangle + CV_PI / 2 * ii), circle_center(2), (pred_rangle + CV_PI / 2 * ii)};
                 armor3d_vec.emplace_back(armor3d);
             }
             
@@ -97,12 +100,13 @@ namespace armor_processor
         {   //预测+更新
             uniform_ekf_.Predict(dt);
             uniform_ekf_.Update(meas, meas(3));
+            // uniform_ekf_.x_(3) = 0.15;
             Eigen::VectorXd state = uniform_ekf_.x();
             Eigen::MatrixXd F(11, 11);
             uniform_ekf_.setF(F, pred_dt);
             Eigen::VectorXd pred = F * state;
             Eigen::Vector3d circle_center = {pred(0), pred(1), pred(2)};
-            double radius = pred(3);
+            double radius = pred(3) = 0.15;
             double rangle = pred(4);
             
             double pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
@@ -111,7 +115,7 @@ namespace armor_processor
             Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
             for (int ii = 0; ii < 4; ii++)
             {
-                armor3d = {circle_center(0) + radius * sin(rangle + CV_PI / 4 * ii), circle_center(1) + radius * cos(rangle + CV_PI / 4 * ii), circle_center(2), (rangle + CV_PI / 4 * ii)};
+                armor3d = {circle_center(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), circle_center(1) + radius * cos(pred_rangle + CV_PI / 2 * ii), circle_center(2), (pred_rangle + CV_PI / 2 * ii)};
                 armor3d_vec.emplace_back(armor3d);
             }
 

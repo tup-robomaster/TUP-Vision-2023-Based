@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="my_robot">
+<robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
     <xacro:macro name="gimbal" params="camera_type">
         <link name="base_link">
             <visual>
+                <origin rpy="0 0 0" xyz="0 0 0"/>
                 <geometry>
                     <sphere radius="1.0"/>
                 </geometry>
                 <material name="blue"/>
-                <origin rpy="0 0 0" xyz="0 0 0"/>
             </visual>
         </link>
 
         <link name="imu_link">
             <visual>
+                <origin rpy="0 0 0" xyz="0 0 -0.02"/>
                 <geometry>
                     <sphere radius="1.0"/>
                 </geometry>
@@ -28,6 +29,7 @@
 
         <link name="camera_link">
             <visual>
+                <origin rpy="-0.2453373 -1.5249719 1.408214" xyz="-0.07705601 -0.00966292 0.01103587"/>
                 <geometry>
                     <sphere radius="1.0"/>
                 </geometry>

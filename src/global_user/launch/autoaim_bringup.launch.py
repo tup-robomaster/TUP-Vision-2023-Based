@@ -29,7 +29,8 @@ def generate_launch_description():
     
     camera_param_file = os.path.join(get_package_share_directory('global_user'), 'config/camera_ros.yaml')
     autoaim_param_file = os.path.join(get_package_share_directory('global_user'), 'config/autoaim.yaml')
-    rviz2_config_path = os.path.join(get_package_share_directory('robot_description'), 'launch/view_model.rviz')
+    # rviz2_config_path = os.path.join(get_package_share_directory('robot_description'), 'launch/view_model.rviz')
+    # urdf_model_path = os.path.join(get_package_share_directory('robot_description'), 'urdf', 'my_robot/gimbal') + '.urdf.xacro'
     
     camera_type = LaunchConfiguration('camera_type')
     use_serial = LaunchConfiguration('using_imu')
@@ -38,13 +39,13 @@ def generate_launch_description():
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='usb',
+        default_value='daheng',
         description='hik daheng mvs usb'
     )
 
     declare_use_serial = DeclareLaunchArgument(
         name='using_imu',
-        default_value='False',
+        default_value='True',
         description='debug without serial port.'
     )
     
@@ -60,10 +61,10 @@ def generate_launch_description():
     #     description='hik daheng mvs usb'
     # )
 
-    robot_description = Command([
-        'xacro ', 
-        os.path.join(get_package_share_directory('robot_description'), 'urdf', 'my_robot/gimbal') + '.urdf.xacro',
-    ])
+    # robot_description = Command([
+    #     'xacro ', 
+    #     os.path.join(get_package_share_directory('robot_description'), 'urdf', 'my_robot/gimbal.urdf.xacro'),
+    # ])
     
     with open(camera_param_file, 'r') as f:
         usb_cam_params = yaml.safe_load(f)['/usb_cam_driver']['ros__parameters']
@@ -89,42 +90,7 @@ def generate_launch_description():
         #     cmd=['ros2', 'bag', 'record', record_topic_args],
         #     output='screen',
         # ),
-
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            output='screen',
-            arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373', '-1.5249719', '1.408214', 'imu_link', 'camera_link']
-        ),
-
-        Node(
-            package='robot_state_publisher',
-            executable='robot_state_publisher',
-            name='robot_state_publisher',
-            output='screen',  
-            parameters=[
-                {
-                    'use_sim_time': False,
-                    'robot_description': robot_description
-                }
-            ]
-        ),
-
-        Node(
-            package='joint_state_publisher',
-            executable='joint_state_publisher',
-            name='joint_state_publisher',
-            output='screen'
-        ),
         
-        Node(
-            package='rviz2',
-            executable='rviz2',
-            name='rviz2',
-            output='screen',
-            arguments=['-d', rviz2_config_path]
-        ),
-
         Node(
             package='serialport',
             executable='serialport_node',
@@ -142,6 +108,42 @@ def generate_launch_description():
             condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
         ),
         
+        # Node(
+        #     package='robot_state_publisher',
+        #     executable='robot_state_publisher',
+        #     name='robot_state_publisher',
+        #     output='screen',  
+        #     parameters=[
+        #         {
+        #             'use_sim_time': False,
+        #             'robot_description': robot_description
+        #         }
+        #     ],
+        #     # arguments=[urdf_model_path]
+        # ),
+        
+        # Node(
+        #     package='joint_state_publisher',
+        #     executable='joint_state_publisher',
+        #     name='joint_state_publisher',
+        #     output='screen'
+        # ),
+        
+        # Node(
+        #     package='rviz2',
+        #     executable='rviz2',
+        #     name='rviz2',
+        #     output='screen',
+        #     # arguments=['-d', rviz2_config_path]
+        # ),
+
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            output='screen',
+            arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373', '-1.5249719', '1.408214', 'imu_link', 'camera_link']
+        ),
+
         ComposableNodeContainer(
             name='serial_processor_container',
             package='rclcpp_components',
