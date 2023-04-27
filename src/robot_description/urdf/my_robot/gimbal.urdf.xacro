@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="my_robot">
     <xacro:macro name="gimbal" params="camera_type">
         <link name="base_link">
             <visual>
@@ -29,7 +29,7 @@
         <link name="camera_link">
             <visual>
                 <geometry>
-                    <sphere radius="1.0">
+                    <sphere radius="1.0"/>
                 </geometry>
                 <material name="blue"/>
             </visual>
@@ -49,5 +49,5 @@
             <child link="camera_link"/>
             <origin rpy="-0.2453373 -1.5249719 1.408214" xyz="-0.07705601 -0.00966292 -0.00896413"/>
         </joint>
-    </xacro::macro>
+    </xacro:macro>
 </robot>
