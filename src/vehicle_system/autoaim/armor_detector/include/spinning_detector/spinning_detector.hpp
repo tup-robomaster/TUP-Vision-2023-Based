@@ -2,6 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-15 11:25:33
+ * @LastEditTime: 2023-04-16 13:38:09
  * @LastEditTime: 2023-04-05 14:57:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/spinning_detector/spinning_detector.hpp
  */
@@ -10,6 +11,7 @@
 
 #include "../../global_user/include/global_user/global_user.hpp"
 #include "../armor_tracker/armor_tracker.hpp"
+#include "../param_struct/param_struct.hpp"
 #include "../param_struct/param_struct.hpp"
 
 //ros
@@ -24,6 +26,7 @@ namespace armor_detector
         Armor last_armor;
         rclcpp::Logger logger_;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
+        rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         DetectorInfo detector_info_;
 
     public:
@@ -31,12 +34,21 @@ namespace armor_detector
         SpinningDetector(Color color, GyroParam gyro_params);
         ~SpinningDetector();
 
+        bool updateSpinScore();
+        void createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map,
+            std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int64_t timestamp, int dead_buffer_cnt);
+        bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, int64_t now);
+        bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, std::map<std::string, int>& new_armors_cnt_map, int64_t now);
         // bool updateSpinScore();int64_t
         void createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map,
             std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int64_t timestamp, int dead_buffer_cnt);
         bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, int64_t now);
         bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, std::map<std::string, int>& new_armors_cnt_map, int64_t now);
         
+        bool is_dead_;
+        double max_hop_period_;
+        int xyz_axis_[3] = {1, 2, 0};
+        double last_timestamp_;
         bool is_dead_;
         double max_hop_period_;
         int xyz_axis_[3] = {1, 2, 0};

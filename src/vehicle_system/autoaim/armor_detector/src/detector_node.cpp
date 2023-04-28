@@ -2,16 +2,18 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-05 13:34:52
+ * @LastEditTime: 2023-04-16 15:24:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
 
 using namespace message_filters;
+using namespace message_filters;
 using namespace std::placeholders;
 namespace armor_detector
 {
     DetectorNode::DetectorNode(const rclcpp::NodeOptions& options)
+    : Node("armor_detector", options), my_sync_policy_(MySyncPolicy(3))
     : Node("armor_detector", options), my_sync_policy_(MySyncPolicy(3))
     {
         RCLCPP_WARN(this->get_logger(), "Starting detector node...");
@@ -25,6 +27,7 @@ namespace armor_detector
             RCLCPP_FATAL(this->get_logger(), "Fatal while initializing detector class: %s", e.what());
         }
 
+        if (!detector_->is_init_)
         if (!detector_->is_init_)
         {
             RCLCPP_INFO(this->get_logger(), "Initializing network model...");
@@ -41,13 +44,25 @@ namespace armor_detector
         // 同步通信/异步通信
         this->declare_parameter<bool>("sync_transport", false);
         bool sync_transport = this->get_parameter("sync_transport").as_bool();
+        
+        // 同步通信/异步通信
+        this->declare_parameter<bool>("sync_transport", false);
+        bool sync_transport = this->get_parameter("sync_transport").as_bool();
 
+        // QoS    
         // QoS    
         rclcpp::QoS qos(0);
         qos.keep_last(1);
+        qos.keep_last(1);
         qos.reliable();
         qos.transient_local();
+        qos.transient_local();
         qos.durability_volatile();
+        // qos.lifespan();
+        // qos.deadline();
+        // qos.best_effort();
+        // qos.durability();
+
         // qos.lifespan();
         // qos.deadline();
         // qos.best_effort();
@@ -61,8 +76,15 @@ namespace armor_detector
         // Create an image transport object.
         // auto it = image_transport::ImageTransport();
 
+        time_start_ = detector_->steady_clock_.now();
+
+        // Create an image transport object.
+        // auto it = image_transport::ImageTransport();
+
         // target info pub.
         armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_detector/armor_msg", qos);
+        detections_pub_ = this->create_publisher<global_interface::msg::DetectionArray>("/armor_detector/detections", qos);
+        if (debug_.using_imu)
         detections_pub_ = this->create_publisher<global_interface::msg::DetectionArray>("/armor_detector/detections", qos);
         if (debug_.using_imu)
         {
@@ -80,12 +102,27 @@ namespace armor_detector
                     std::bind(&DetectorNode::sensorMsgCallback, this, _1)
                 );
             }
+
+            if (!sync_transport)
+            {
+                // Imu msg sub.
+                serial_msg_sub_ = this->create_subscription<SerialMsg>("/serial_msg",
+                    qos,
+                    std::bind(&DetectorNode::sensorMsgCallback, this, _1)
+                );
+            }
         }
          
         // CameraType camera_type;
         this->declare_parameter<int>("camera_type", DaHeng);
         int camera_type = this->get_parameter("camera_type").as_int();
         // Subscriptions transport type.
+        std::string transport_type = "raw";
+        // Image size.
+        image_size_ = image_info_.image_size_map[camera_type];
+        // image sub.
+        std::string camera_topic = image_info_.camera_topic_map[camera_type];
+        if (sync_transport)
         std::string transport_type = "raw";
         // Image size.
         image_size_ = image_info_.image_size_map[camera_type];
@@ -108,7 +145,23 @@ namespace armor_detector
 
             // Register a callback function to process.
             sync_->registerCallback(std::bind(&DetectorNode::syncCallback, this, _1, _2));
+            // Create serial msg subscriber.
+            serial_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<SerialMsg>>(this, "/serial_msg", rmw_qos);
 
+            // Create image subscriber.
+            img_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this, camera_topic, rmw_qos);
+
+            // Create synchronous timer.
+            my_sync_policy_.setInterMessageLowerBound(0, rclcpp::Duration(0, 1e7));
+            my_sync_policy_.setInterMessageLowerBound(1, rclcpp::Duration(0, 1e7));
+            my_sync_policy_.setMaxIntervalDuration(rclcpp::Duration(0, 3e7));
+            // sync_ = std::make_shared<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, SerialMsg>>(*img_msg_sync_sub_, *serial_msg_sync_sub_, 0.005);
+            sync_ = std::make_shared<message_filters::Synchronizer<MySyncPolicy>>(MySyncPolicy(my_sync_policy_), *img_msg_sync_sub_, *serial_msg_sync_sub_);
+
+            // Register a callback function to process.
+            sync_->registerCallback(std::bind(&DetectorNode::syncCallback, this, _1, _2));
+
+            RCLCPP_WARN(this->get_logger(), "Synchronously...");
             RCLCPP_WARN(this->get_logger(), "Synchronously...");
         }
         else
@@ -121,8 +174,9 @@ namespace armor_detector
         this->declare_parameter<bool>("debug", true);
         this->get_parameter("debug", debug);
         if (debug)
+        if (debug)
         {
-            RCLCPP_INFO(this->get_logger(), "debug...");
+            RCLCPP_WARN_ONCE(this->get_logger(), "debug...");
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&DetectorNode::paramsCallback, this, _1));
         }
@@ -285,10 +339,11 @@ namespace armor_detector
                 // if(debug_.using_imu && detector_->debug_params_.using_imu)
                 if (debug_.using_imu)
                 {
-                    target_info.quat_imu.w = src.quat.w();
-                    target_info.quat_imu.x = src.quat.x();
-                    target_info.quat_imu.y = src.quat.y();
-                    target_info.quat_imu.z = src.quat.z();
+                    if (!detector_->gyro_detector(src, target_info))
+                    {
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Not spinning...");
+                    }
+                    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Spinning detecting...");
                 }
 
                 rmat_imu = src.quat.toRotationMatrix();
@@ -297,6 +352,11 @@ namespace armor_detector
                 // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "target info_cam: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
                 // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "target info_world: %lf %lf %lf", target_info.aiming_point_world.x, target_info.aiming_point_world.y, target_info.aiming_point_world.z);
             }
+            param_mutex_.unlock();
+        }
+        catch(const std::exception& e)
+        {
+            RCLCPP_ERROR(this->get_logger(), "Detector node errror: %s", e.what());
         }
 
         if (is_target_lost)
@@ -396,12 +456,26 @@ namespace armor_detector
         // RCLCPP_INFO(this->get_logger(), "src_timestamp:%.8f", src.timestamp / 1e9);
         
         if (debug_.show_img)
+        rclcpp::Time stamp = img_info->header.stamp;
+        src.timestamp = stamp.nanoseconds();
+        src.img = cv_bridge::toCvShare(img_info, "bgr8")->image;
+        // img.copyTo(src.img);
+        // RCLCPP_INFO(this->get_logger(), "src_timestamp:%.8f", src.timestamp / 1e9);
+        
+        if (debug_.show_img)
         {
             char ch[25];
             sprintf(ch, "img_trans_delay:%.2fms", dura);
             std::string delay_str = ch;
             putText(src.img, delay_str, {src.img.size().width / 5 - 40, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 125, 255});
+            char ch[25];
+            sprintf(ch, "img_trans_delay:%.2fms", dura);
+            std::string delay_str = ch;
+            putText(src.img, delay_str, {src.img.size().width / 5 - 40, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 125, 255});
         }
+
+        //目标检测接口函数
+        detect(src, stamp);
 
         //目标检测接口函数
         detect(src, stamp);
@@ -419,6 +493,7 @@ namespace armor_detector
         result.successful = false;
         result.reason = "debug";
         result.successful = updateParam();
+        result.successful = detector_->coordsolver_.setStaticAngleOffset(detector_params_.angle_offset);
         
         param_mutex_.lock();
         detector_->detector_params_ = this->detector_params_;
@@ -480,6 +555,7 @@ namespace armor_detector
         this->declare_parameter<double>("anti_spin_judge_low_thres", 2e3);
         this->declare_parameter<double>("anti_spin_max_r_multiple", 4.5);
         
+        
         //Update param from param server.
         updateParam();
 
@@ -514,6 +590,8 @@ namespace armor_detector
         detector_params_.armor_roi_expand_ratio_width = this->get_parameter("armor_roi_expand_ratio_width").as_double();
         detector_params_.armor_roi_expand_ratio_height = this->get_parameter("armor_roi_expand_ratio_height").as_double();
         detector_params_.armor_conf_high_thres = this->get_parameter("armor_conf_high_thres").as_double();
+        detector_params_.angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
+        detector_params_.angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
 
         debug_.detect_red = this->get_parameter("detect_red").as_bool();
         debug_.debug_without_com  = this->get_parameter("debug_without_com").as_bool();

@@ -45,6 +45,9 @@ namespace buff_detector
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
 
+        rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
+        rmw_qos.depth = 1;
+
         // buff info pub.
         buff_info_pub_ = this->create_publisher<BuffMsg>("/buff_detector/buff_msg", qos);
 
@@ -67,6 +70,7 @@ namespace buff_detector
         // image sub.
         std::string camera_topic = image_info_.camera_topic_map[camera_type];
         img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
+            std::bind(&BuffDetectorNode::imageCallback, this, _1), transport, rmw_qos));
             std::bind(&BuffDetectorNode::imageCallback, this, _1), transport, rmw_qos));
 
         bool debug = false;

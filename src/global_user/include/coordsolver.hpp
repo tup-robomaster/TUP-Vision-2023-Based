@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:13
- * @LastEditTime: 2023-04-10 20:06:37
+ * @LastEditTime: 2023-04-16 22:55:42
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/coordsolver.hpp
  */
 
@@ -43,7 +43,9 @@ namespace coordsolver
     public:
         CoordSolver();
         CoordSolver(const Eigen::Vector2d& static_angle_offset);
+        CoordSolver(const Eigen::Vector2d& static_angle_offset);
         ~CoordSolver();
+        
         
         bool loadParam(std::string coord_path, std::string param_name);
         bool setStaticAngleOffset(const Eigen::Vector2d& static_angle_offset);
@@ -65,6 +67,9 @@ namespace coordsolver
         bool setBulletSpeed(double speed);
         cv::Point2f reproject(Eigen::Vector3d &xyz);
         cv::Point2f getHeading(Eigen::Vector3d &xyz_cam);
+
+        bool setStaticAngleOffset(const Eigen::Vector2d& static_angle_offset);
+        
     private:
         int max_iter;
         float stop_error;
@@ -72,8 +77,8 @@ namespace coordsolver
         cv::Mat intrinsic;
         cv::Mat dis_coeff;
         Eigen::Vector3d xyz_offset;
-        Eigen::Vector3d t_iw;
         Eigen::Vector2d angle_offset;
+        Eigen::Vector3d t_iw;
         Eigen::Matrix4d transform_ic;
         Eigen::Matrix4d transform_ci;
 

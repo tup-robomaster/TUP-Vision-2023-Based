@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-04-04 15:36:15
+ * @LastEditTime: 2023-04-16 22:56:33
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -45,6 +45,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace Eigen;
 namespace global_user
 {   
     /**
@@ -53,7 +54,46 @@ namespace global_user
      */
 
     struct CameraParam
+    struct CameraParam
     {
+        int fps;
+        int cam_id;
+        int image_width;
+        int image_height;
+        int width_scale;
+        int height_scale;
+        int exposure_time;
+        double exposure_gain;
+        bool auto_balance;
+        double exposure_gain_b;
+        double exposure_gain_g;
+        double exposure_gain_r;
+        double balance_b;
+        double balance_g;
+        double balance_r;
+        bool using_video;
+        string video_path;
+
+        CameraParam()
+        {
+            cam_id = 1;
+            image_width = 1280;
+            image_height = 1024;
+            width_scale = 1;
+            height_scale = 1;
+            exposure_time = 3000;
+            exposure_gain = 14;
+            auto_balance = false;
+            exposure_gain_b = 0;
+            exposure_gain_g = 0;
+            exposure_gain_r = 0;
+            balance_b = 1.56;
+            balance_g = 1.0;
+            balance_r = 1.548;
+            fps = 30;
+            using_video = false;
+            video_path = "\0";
+        }
         int fps;
         int cam_id;
         int image_width;
@@ -163,12 +203,35 @@ namespace global_user
         SENTRY_NORMAL
     };
 
+    /**
+     * @brief 模式选择（取消视觉，自瞄，英雄吊射，小符，大符，哨兵）
+     * 
+     */
+    enum MODE
+    {
+        CLOSE_VISION,
+        AUTOAIM,
+        HERO_SLING,
+        SMALL_BUFF,
+        BIG_BUFF,
+        OUTPOST_ROTATION_MODE,
+        SENTRY_NORMAL
+    };
+
     struct TaskData
     {
         int mode;
         double bullet_speed;
         cv::Mat img;
         Eigen::Quaterniond quat;
+        int64_t timestamp; 
+        
+        TaskData()
+        {
+            mode = 1;
+            bullet_speed = 16.0;
+            timestamp = 0;
+        }
         int64_t timestamp; 
         
         TaskData()
@@ -273,10 +336,19 @@ namespace global_user
     Eigen::Matrix3d eulerToRotationMatrix(Eigen::Vector3d &theta);
     float calcDistance(cv::Point2f& p1, cv::Point2f& p2);
 
-    void videoRecorder(VideoRecordParam& video_param, cv::Mat* src = nullptr);  
     bool setSharedMemory(SharedMemoryParam& shared_memory_param, int id, int image_width = 1280, int image_height = 1024);
     bool getSharedMemory(SharedMemoryParam& shared_memory_param, int id);
     bool destorySharedMemory(SharedMemoryParam& shared_memory_param);
+    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_name, int64_t &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size);
+
+    bool isPnpSolverValidation(Eigen::Vector3d& point3d);
+    bool isAngleSolverValidataion(Eigen::Vector2d& angle2d);
+    void drawAimCrossCurve(cv::Mat& src);
+
+    // bool checkDivergence(const MatrixXd& residual, const MatrixXd& S, double threshold);
+    // bool checkDivergence(double residual, double threshold, vector<double>& variances, int window_size);
+    // bool checkDivergence(const MatrixXd& F, const MatrixXd& P, const MatrixXd& H, const MatrixXd& R);
+    bool checkDivergence(const MatrixXd& statePre, const MatrixXd& stateCovPre, const MatrixXd& H, const MatrixXd& R, const VectorXd& measurement);
     bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_name, int64_t &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size);
 
     bool isPnpSolverValidation(Eigen::Vector3d& point3d);

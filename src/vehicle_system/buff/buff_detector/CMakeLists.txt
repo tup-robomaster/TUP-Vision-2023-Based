@@ -90,7 +90,7 @@ ament_target_dependencies(${PROJECT_NAME}_node
 )
 target_link_libraries(${PROJECT_NAME}_node 
   openvino::runtime 
-  yaml-cpp 
+  yaml-cpp
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME} 
@@ -113,6 +113,7 @@ install(TARGETS
 
 install(DIRECTORY 
   launch
+  model
   model
   DESTINATION share/${PROJECT_NAME}
 )

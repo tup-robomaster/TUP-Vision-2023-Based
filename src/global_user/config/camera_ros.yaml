@@ -14,6 +14,8 @@
     balance_r: 2022
     debug: true
     save_video: false
+    save_path: "/recorder/video/"
+    using_port: false
 
 /daheng_cam_driver:
   ros__parameters:
@@ -33,6 +35,8 @@
     balance_r: 1.548
     debug: true
     save_video: false
+    save_path: "/recorder/video/"
+    using_port: false
     
 /usb_cam_driver:
   ros__parameters:
@@ -42,9 +46,10 @@
     image_height: 800
     fps: 60
     debug: true
-    using_shared_memory: false
     using_video: true
+    using_ros2bag: false
     video_path: "/recorder/video/gyro_video.webm"
+    # video_path: "/recorder/video/gyro_transition_fusion.webm"
     # video_path: "/recorder/video/gyro_transition_fusion.webm"
     # video_path: "/recorder/video/buff.webm"
     # video_path: "/recorder/video/2022-06-23_19_36_54(1).avi"
@@ -52,14 +57,21 @@
     # video_path: "/recorder/video/new_buff1.mp4"
     # video_path: "/recorder/video/new_buff2.avi"
     # video_path: "/recorder/video/new_buff3.avi"
+    # video_path: "/recorder/video/2023-04-14_01_39_37/2023-04-14_01_39_37_0.db3"
     save_video: false
+    save_path: "/recorder/video/"
+    using_port: false
 
 /mvs_cam_driver:
   ros__parameters:
     cam_id: 0
     frame_id: mvs_cam
+    using_port: false
+    save_video: false
+    save_path: "/recorder/video/"
   
 /serialport:
   ros__parameters:
     debug_without_com: true
     baud: 115200
+    using_port: false

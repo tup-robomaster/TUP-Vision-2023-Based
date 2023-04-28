@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-04-09 17:15:20
+ * @LastEditTime: 2023-04-16 22:59:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -156,9 +156,10 @@ namespace armor_detector
 
     struct SpinningMap
     {
-        std::map<std::string, SpinState> spin_status_map; //反小陀螺，记录该车小陀螺状态
-        // std::map<std::string, double> spin_score_map;       //反小陀螺，记录各装甲板小陀螺可能性分数，大于0为逆时针旋转，小于0为顺时针旋转
-        std::map<std::string, SpinCounter> spin_counter_map; //记录装甲板旋转帧数，大于0为逆时针旋转，小于0为顺时针
+        // std::map<std::string, SpinState> spin_status_map; //反小陀螺，记录该车小陀螺状态
+        // std::map<std::string, SpinCounter> spin_counter_map; //记录装甲板旋转帧数，大于0为逆时针旋转，小于0为顺时针
+        std::map<std::string, double> spin_score_map;       //反小陀螺，记录各装甲板小陀螺可能性分数，大于0为逆时针旋转，小于0为顺时针旋转
+        std::map<std::string, SpinHeading> spin_status_map;
 
         std::multimap<std::string, TimeInfo> spinning_time_map;
         std::multimap<std::string, GyroInfo> spinning_x_map;
@@ -185,8 +186,10 @@ namespace armor_detector
         double armor_roi_expand_ratio_width;
         double armor_roi_expand_ratio_height;
         double armor_conf_high_thres;
-
+        
         Color color;
+        Eigen::Vector2d angle_offset;
+
         DetectorParam()
         {
             color = RED;
@@ -203,6 +206,8 @@ namespace armor_detector
             armor_roi_expand_ratio_width = 1.1;
             armor_roi_expand_ratio_height = 1.5;
             armor_conf_high_thres = 0.82;
+
+            angle_offset = {0.0, 0.0};
         }
     };
 
@@ -220,6 +225,7 @@ namespace armor_detector
         bool print_target_info;
         bool save_data;
         bool save_dataset;
+        bool show_spinning_img;
 
         DebugParam()
         {
@@ -235,6 +241,7 @@ namespace armor_detector
             print_target_info = true; 
             save_data = false;
             save_dataset = false;
+            show_spinning_img = false;
         }
     };
     

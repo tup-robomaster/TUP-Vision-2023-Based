@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-04-09 16:45:03
+ * @LastEditTime: 2023-04-16 22:59:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_tracker/armor_tracker.hpp
  */
 #ifndef ARMOR_TRACKER_HPP_
@@ -47,7 +47,6 @@ namespace armor_detector
     public:
         ArmorTracker();
         ArmorTracker(Armor src, int64_t src_timestamp);
-        
         bool update(Armor new_armor, int64_t new_timestamp);
         bool calcTargetScore();
 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:40
- * @LastEditTime: 2023-04-01 12:03:38
+ * @LastEditTime: 2023-04-16 22:51:48
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/usb_driver/usb_cam_node.hpp
  */
 #ifndef USB_CAM_NODE_HPP_
@@ -24,6 +24,11 @@
 #include <camera_info_manager/camera_info_manager.hpp>
 #include <rcl_interfaces/msg/set_parameters_result.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <rosbag2_cpp/writer.hpp>
+#include <rosbag2_cpp/writers/sequential_writer.hpp>
+#include <rosbag2_cpp/reader.hpp>
+#include <rosbag2_cpp/readers/sequential_reader.hpp>
+#include <rosbag2_storage/serialized_bag_message.hpp>
 
 #include "./usb_cam.hpp"
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -43,22 +48,21 @@ namespace camera_driver
         ~UsbCamNode();
     
     private:
-        int frame_cnt;
-        cv::Mat frame;
-        cv::Mat filpped_frame;
-        cv::VideoCapture cap;    
-        bool is_filpped;
+        cv::Mat frame_;
+        cv::Mat filpped_frame_;
+        cv::VideoCapture cap_;    
+        bool is_filpped_;
 
         // rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
 
         // std::unique_ptr<usb_cam> usb_cam_;
         rclcpp::TimerBase::SharedPtr img_pub_timer_;
-        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr frame_pub;
+        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_msg_pub_;
 
-        rclcpp::Time last_frame_;
-        std::shared_ptr<camera_info_manager::CameraInfoManager> cam_info_manager;
-        image_transport::CameraPublisher camera_info_pub;
-        std::shared_ptr<sensor_msgs::msg::Image> image_msg;
+        rclcpp::Time last_time_;
+        // std::shared_ptr<camera_info_manager::CameraInfoManager> cam_info_manager_;
+        // image_transport::CameraPublisher camera_info_pub_;
+        // std::shared_ptr<sensor_msgs::msg::Image> image_msg_;
 
     public:
         void image_callback();
@@ -68,7 +72,12 @@ namespace camera_driver
         bool save_video_;
         bool using_video_;
         std::string video_path_;
-        VideoRecordParam video_record_param_;        
+        int frame_cnt_;
+        std::unique_ptr<rosbag2_cpp::writers::SequentialWriter> writer_;
+        std::unique_ptr<rosbag2_cpp::readers::SequentialReader> reader_;
+        bool using_ros2bag_;
+        sensor_msgs::msg::Image image_msg_;
+
         UsbCamParam usb_cam_params_;
         std::unique_ptr<UsbCam> usb_cam_;
         std::unique_ptr<UsbCam> init_usb_cam();

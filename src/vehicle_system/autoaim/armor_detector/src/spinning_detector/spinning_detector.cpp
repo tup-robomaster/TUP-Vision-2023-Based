@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-04-10 17:20:17
+ * @LastEditTime: 2023-04-16 22:48:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -143,7 +143,7 @@ namespace armor_detector
             string tracker_key;
             if ((*armor).color == 2)
             {   
-                cout << "gray_armor" << endl;
+                RCLCPP_WARN(logger_, "Gray armor...");
                 if (dead_buffer_cnt >= gyro_params_.max_dead_buffer)
                 {
                     RCLCPP_INFO(logger_, "dead buffer cnt: %d", dead_buffer_cnt);
@@ -592,13 +592,6 @@ namespace armor_detector
                                 // RCLCPP_INFO(logger_, "last_y_font:%lf last_y_back:%lf new_y_font:%lf new_y_back:%lf", (*candidate).second.last_y_font, (*candidate).second.last_y_back, (*candidate).second.new_y_font, (*candidate).second.new_y_back);
                                 // RCLCPP_INFO(logger_, "now_dt:%lf last_time:%lf", (new_armor_timestamp / 1e9), ((*candidate).second.last_timestamp / 1e9));
                             }
-
-                            spinning_map_.spin_status_map[cnt.first].switch_timestamp = now;
-                            ++spinning_map_.spin_counter_map[cnt.first].switch_gyro_status_counter;
-                            
-                            // new_tracker->hop_timestamp_ = now;
-                            // last_tracker->hop_timestamp_ = now;
-                            // ++new_tracker->switch_gyro_status_counter_;
 
                             // if (spinning_map_.spin_score_map.count(cnt.first) == 0)
                             // {   //若无该元素则插入新元素，为车辆的陀螺分数赋初值

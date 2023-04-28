@@ -5,7 +5,7 @@
     max_lost_cnt: 5
     max_armors_cnt: 8
     max_v: 8
-    max_delta_t: 100
+    max_delta_t: 50
     no_crop_thres: 0.01
     hero_danger_zone: 4
     color: true # red: true
@@ -14,9 +14,11 @@
     full_crop_ratio: 0.0001
     armor_roi_expand_ratio_width: 1.2
     armor_roi_expand_ratio_height: 1.8
+    armor_roi_expand_ratio_width: 1.2
+    armor_roi_expand_ratio_height: 1.8
     armor_conf_high_thres: 0.82
-    yaw_angle_offset: 0.5
-    pitch_angle_offset: -2.45
+    yaw_angle_offset: -0.5
+    pitch_angle_offset: 0.5
 
   # Spinning params.
     max_cost: 500
@@ -41,7 +43,7 @@
 
   # Camera config params.
     # camera_name: "00J90630561" 
-    camera_name: "KE0200110073" #FIXME:根据相机序列号修改
+    camera_name: "KE0200110075" #FIXME:根据相机序列号修改
     camera_type: 0
     camera_param_path: "/config/camera.yaml"
 
@@ -67,9 +69,9 @@
     detect_red: true
     auto_label: false
     print_letency: false
-    show_aim_cross: false
+    show_aim_cross: true
     sync_transport: false
-    show_all_armors: false
+    show_all_armors: true
     print_target_info: false
 
 /armor_processor:
@@ -79,16 +81,16 @@
     max_time_delta: 1000
     max_cost: 10
     max_v: 8
-    min_fitting_lens: 4
-    shoot_delay: 1
+    min_fitting_lens: 5
+    shoot_delay: 670
     window_size: 3
-    yaw_angle_offset: 0.5
-    pitch_angle_offset: -2.45
+    yaw_angle_offset: -0.5
+    pitch_angle_offset: 0.5
     max_offset_value: 0.45
     reserve_factor: 500.0 #储备系数(>=1)
-    rotation_yaw: 0.0
-    rotation_pitch: 0.0
-    rotation_roll: 0.0
+    # rotation_yaw: 0.0
+    # rotation_pitch: 0.0
+    # rotation_roll: 0.0
 
   # Debug params.
     debug: true
@@ -109,7 +111,7 @@
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
+    coord_param_name: "KE0200110075" #FIXME:根据相机序列号修改
     coord_param_path: "/config/camera.yaml"
     
   # Filter params.
@@ -141,6 +143,10 @@
     singer_model_x_axis: [20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0, 1.0] 
     singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.18, 1.85, 1.0, 1.0, 0.1] 
     singer_model_z_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0]
+
+    gyro_singer_model_x_axis: [20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0, 1.0]
+    gyro_singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.18, 1.85, 1.0, 1.0, 0.1]
+    gyro_singer_model_z_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0]
 
     # singer_model_x_axis: [1.0, 10.0, 0.1, 0.8, 5.00, 0.1, 1.0, 1.0, 1.0] 
     # singer_model_y_axis: [5.0, 10.0, 0.1, 0.8, 16.00, 0.001, 1.0, 0.2, 4.0] 
