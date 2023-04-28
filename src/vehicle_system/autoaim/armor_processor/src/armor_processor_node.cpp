@@ -212,6 +212,7 @@ namespace armor_processor
                 vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
                 vehicle_center3d_cam = processor_->coordsolver_.worldToCam({vehicle_center3d_world(0), vehicle_center3d_world(1), vehicle_center3d_world(2)}, rmat_imu);
                 armor3d_vec.emplace_back(vehicle_center3d_world);
+                // cout << "radius:" << state(3) << endl;
 
                 if (abs(tracking_angle[0]) < 3.50 && abs(tracking_angle[1]) < 3.50)
                 {
@@ -319,33 +320,61 @@ namespace armor_processor
                     // Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
                     marker.action = visualization_msgs::msg::Marker::ADD;
 
-                    marker.lifetime = rclcpp::Duration::from_nanoseconds((rcl_duration_value_t)1e8);
-                        
+                    marker.lifetime = rclcpp::Duration::from_nanoseconds((rcl_duration_value_t)5e6);
+                    
                     for (auto armor3d : armor3d_vec)
                     {
                         marker.id = marker_id;
                         
                         tf2::Quaternion q;
-                        q.setRPY(0, 0, armor3d(3));
+                        q.setRPY(CV_PI / 2, -CV_PI / 2, 0);
                         // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
                         marker.pose.position.x = armor3d(0);
                         marker.pose.position.y = armor3d(1);
-                        marker.pose.position.z = armor3d(2);
+                        marker.pose.position.z = 0;
+                        if (marker.id == 4)
+                        {
+                            marker.type = visualization_msgs::msg::Marker::ARROW;
+                            marker.pose.position.z = 0;
+                        }
+                        else
+                        {
+                            marker.type = shape_;
+                        }
                         marker.pose.orientation.x = q.x();
                         marker.pose.orientation.y = q.y();
                         marker.pose.orientation.z = q.z();
                         marker.pose.orientation.w = q.w();
 
                         // Set the scale of the marker -- 1x1x1 here means 1m on a side
-                        marker.scale.x = 0.05;
-                        marker.scale.y = 0.05;
-                        marker.scale.z = armor3d(2);
+                        if (marker.id == 4)
+                        {
+                            marker.scale.x = armor3d(2);
+                            marker.scale.y = 0.025;
+                            marker.scale.z = 0.025;
+                        }
+                        else
+                        {
+                            marker.scale.x = 0.040;
+                            marker.scale.y = 0.040;
+                            marker.scale.z = 0.040;
+                        }
 
                         // Set the color -- be sure to set alpha to something non-zero!
-                        marker.color.r = 0.0f;
-                        marker.color.g = 1.0f;
-                        marker.color.b = 0.0f;
-                        marker.color.a = 1.0;
+                        if (marker.id == 4)
+                        {
+                            marker.color.r = 125.0f;
+                            marker.color.g = 255.0f;
+                            marker.color.b = 0.0f;
+                            marker.color.a = 1.0;
+                        }
+                        else
+                        {
+                            marker.color.r = 255.0f;
+                            marker.color.g = 0.5f;
+                            marker.color.b = 0.5f;
+                            marker.color.a = 1.0;
+                        }
 
                         // while ((int)marker_array_pub_->get_subscription_count() < 1)
                         // {

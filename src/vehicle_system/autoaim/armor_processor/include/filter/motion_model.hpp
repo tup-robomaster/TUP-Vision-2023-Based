@@ -66,7 +66,7 @@ namespace armor_processor
 
     public:
         // vector<double> singer_param_;
-        double radius_ = 0.25;
+        double radius_ = 0.15;
         double rangle_ = 0.0;
     };
 } // armor_processor
