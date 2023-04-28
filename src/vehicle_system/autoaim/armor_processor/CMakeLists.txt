@@ -87,7 +87,7 @@ target_link_libraries(${PROJECT_NAME}_node
 
 rclcpp_components_register_nodes(${PROJECT_NAME} 
   PLUGIN "armor_processor::ArmorProcessorNode"
-  # EXECUTABLE ${PROJECT_NAME}_node 
+  EXECUTABLE ${PROJECT_NAME}_node 
 )
 
 install(TARGETS 

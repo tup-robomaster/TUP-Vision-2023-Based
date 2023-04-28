@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:13
- * @LastEditTime: 2023-04-16 22:55:42
+ * @LastEditTime: 2023-04-20 06:26:50
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/coordsolver.hpp
  */
 
@@ -43,7 +43,6 @@ namespace coordsolver
     public:
         CoordSolver();
         CoordSolver(const Eigen::Vector2d& static_angle_offset);
-        CoordSolver(const Eigen::Vector2d& static_angle_offset);
         ~CoordSolver();
         
         
@@ -68,8 +67,6 @@ namespace coordsolver
         cv::Point2f reproject(Eigen::Vector3d &xyz);
         cv::Point2f getHeading(Eigen::Vector3d &xyz_cam);
 
-        bool setStaticAngleOffset(const Eigen::Vector2d& static_angle_offset);
-        
     private:
         int max_iter;
         float stop_error;
@@ -85,7 +82,7 @@ namespace coordsolver
         YAML::Node param_node;
 
         // double bullet_speed = 28.0;            
-        double bullet_speed = 16;            //TODO:弹速可变
+        double bullet_speed = 10.0;            //TODO:弹速可变
         // const double k = 0.01903;                //25°C,1atm,小弹丸
         const double k = 0.00556;                //25°C,1atm,大弹丸
         // const double k = 0.00530;                //25°C,1atm,发光大弹丸

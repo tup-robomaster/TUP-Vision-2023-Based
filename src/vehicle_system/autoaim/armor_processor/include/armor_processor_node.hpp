@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-04-16 23:03:54
+ * @LastEditTime: 2023-04-16 21:28:47
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -64,9 +64,9 @@ namespace armor_processor
         mutex debug_mutex_;
         mutex image_mutex_;
         atomic<bool> image_flag_ = false;
-        atomic<bool> flag_ = false;
         bool is_aimed_ = false;
         bool is_pred_ = false;
+        map<int, string> state_map_;
         
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
@@ -87,7 +87,7 @@ namespace armor_processor
     protected:
         ImageSize image_size_;
         ImageInfo image_info_;
-        
+
         // Image callback.
         void imageProcessor(cv::Mat& img);
         void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
@@ -102,13 +102,9 @@ namespace armor_processor
         vector<double> singer_param_;
         DebugParam debug_param_;
         PathParam path_param_;
-        double pred_angle_[2][2];
-        bool is_pred_failed_;
-        int count_;
 
     private:
         bool updateParam();
-        bool updateAngleOffset();
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
     };

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-16 23:08:20
+ * @LastEditTime: 2023-04-18 18:30:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -21,11 +21,6 @@ namespace armor_processor
             RCLCPP_INFO_ONCE(this->get_logger(), "Loading param...");
             // processor_->loadParam(path_param_.filter_path);
             processor_->init(path_param_.coord_path, path_param_.coord_name);
-            // processor_->is_init_ = true;
-            // if (!updateAngleOffset())
-            // {
-            //     RCLCPP_WARN(this->get_logger(), "Warning while update angle offset param...");
-            // }
         }
 
         // QoS
@@ -155,7 +150,7 @@ namespace armor_processor
             image_mutex_.unlock();
         }
 
-        if (target.target_switched && processor_->armor_predictor_.predictor_state_ == LOST)
+        if (target.is_target_lost && processor_->armor_predictor_.predictor_state_ == LOST)
         {
             is_aimed_ = false;
             is_pred_ = false;
@@ -252,7 +247,6 @@ namespace armor_processor
             {
                 AutoaimMsg predict_info;
                 predict_info.header.frame_id = "camera_link";
-
                 predict_info.header.stamp = target_info.header.stamp;
                 predict_info.header.stamp.nanosec += sleep_time;
                 predict_info.aiming_point_world.x = (aiming_point_world)[0];
@@ -272,7 +266,6 @@ namespace armor_processor
                 );
             }
         }
-        // cout << "is_pred:" << is_pred_ << endl;
 
         if (debug_param_.show_img && !dst.empty()) 
         {
@@ -287,23 +280,13 @@ namespace armor_processor
                     cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
                     cv::Point2f armor_center = processor_->coordsolver_.reproject(tracking_point_cam);
                     cv::circle(dst, point_2d, 14, {255, 0, 125}, 2);
+                    // putText(dst, state_map_[(int)(processor_->armor_predictor_.predictor_state_)], point_2d, cv::FONT_HERSHEY_SIMPLEX, 1, {125, 0, 255}, 1);
                     // cv::line(dst, cv::Point2f(point_2d.x - 30, point_2d.y), cv::Point2f(point_2d.x + 30, point_2d.y), {0, 0, 255}, 1);
                     // cv::line(dst, cv::Point2f(point_2d.x, point_2d.y - 35), cv::Point2f(point_2d.x, point_2d.y + 35), {0, 0, 255}, 1);
                     // cv::line(dst, cv::Point2f(armor_center.x - 30, armor_center.y), cv::Point2f(armor_center.x + 30, armor_center.y), {0, 0, 255}, 1);
                     // cv::line(dst, cv::Point2f(armor_center.x, armor_center.y - 35), cv::Point2f(armor_center.x, armor_center.y + 35), {0, 0, 255}, 1);
                     // cv::line(dst, cv::Point2f(point_2d.x, point_2d.y), cv::Point2f(armor_center.x, armor_center.y), {255, 0, 125}, 1);
                 }
-                // for(int i = 0; i < 4; i++)
-                //     cv::line(dst, apex2d[i % 4], apex2d[(i + 1) % 4], {0, 125, 255}, 1);
-                // auto point_pred = predict_point_;
-                cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
-                cv::circle(dst, point_2d, 14, {255, 0, 125}, 2);
-            }
-            
-            if (debug_param_.show_aim_cross)
-            {
-                line(dst, cv::Point2f(dst.size().width / 2, 0), cv::Point2f(dst.size().width / 2, dst.size().height), {0, 255, 0}, 1);
-                line(dst, cv::Point2f(0, dst.size().height / 2), cv::Point2f(dst.size().width, dst.size().height / 2), {0, 255, 0}, 1);
             }
             if (debug_param_.show_aim_cross)
             {
@@ -319,9 +302,7 @@ namespace armor_processor
             std::string angle_str1 = ch1;
             putText(dst, angle_str, {dst.size().width / 2 + 5, 30}, cv::FONT_HERSHEY_TRIPLEX, 1, {0, 255, 255});
             putText(dst, angle_str1, {dst.size().width / 2 + 5, 65}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
-            // putText(dst, (is_aimed_[0] ? "pitchState:Predicting" : "pitchState:Tracking"), {5, 80}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
-            // putText(dst, (is_aimed_[1] ? "yawState:Predicting" : "yawState:Tracking"), {5, 130}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
-            putText(dst, (is_pred_ ? "State:Predicting" : "State:Tracking"), {5, 80}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
+            putText(dst, state_map_[(int)(processor_->armor_predictor_.predictor_state_)], {30, 80}, cv::FONT_HERSHEY_TRIPLEX, 1, {0, 125, 255}, 1);
             
             cv::namedWindow("pred", cv::WINDOW_AUTOSIZE);
             cv::imshow("pred", dst);
@@ -360,6 +341,13 @@ namespace armor_processor
      */
     std::unique_ptr<Processor> ArmorProcessorNode::initArmorProcessor()
     {
+        state_map_ =
+        {
+            {0, "State:Tracking"},
+            {1, "State:Predicting"},
+            {2, "State:Losting"},
+            {3, "State:Lost"},
+        };
         // Declare prediction params.
         this->declare_parameter<double>("bullet_speed", 28.0);
         this->declare_parameter<int>("max_time_delta", 1000);
@@ -473,22 +461,6 @@ namespace armor_processor
         return result;
     }
 
-    bool ArmorProcessorNode::updateAngleOffset()
-    {
-        if (processor_->is_init_)
-        {
-            Eigen::Vector2d angle_offset = {0.0, 0.0};
-            angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
-            angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
-            processor_->coordsolver_.setStaticAngleOffset(angle_offset);
-        }
-        else
-        {
-            return false;
-        }
-        return true;
-    }
-
     /**
      * @brief 动态调参
      * 
@@ -525,17 +497,6 @@ namespace armor_processor
         debug_param_.disable_fitting = this->get_parameter("disable_fitting").as_bool();
         debug_param_.show_transformed_info = this->get_parameter("show_transformed_info").as_bool();
         debug_param_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
-
-        // is_aimed_[0] = false;
-        // is_aimed_[1] = false;
-        is_aimed_ = false;
-        pred_angle_[0][0] = 0.0;
-        pred_angle_[0][1] = 0.0;
-        pred_angle_[1][0] = 0.0;
-        pred_angle_[1][1] = 0.0;
-        is_pred_failed_ = false;
-        count_ = 0;
-        is_pred_ = false;
 
         return true;
     }

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-16 23:02:12
+ * @LastEditTime: 2023-04-18 21:27:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -274,6 +274,7 @@ namespace armor_detector
             armor.euler = pnp_result.euler;
             armor.rmat = pnp_result.rmat;
             armor.area = object.area;
+            armor.timestamp = src.timestamp;
             new_armors_.emplace_back(armor);
 
             // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 250, "armor_area:%d", armor.area);
@@ -444,8 +445,8 @@ namespace armor_detector
         }
         else
         {   //若确定打击车辆的陀螺状态
-            // spin_status = spinning_detector_.spinning_map_.spin_status_map[target_key].spin_state;
-            spin_status = spinning_detector_.spinning_map_.spin_status_map[target_key];
+            // spin_status = spinning_detector_.spinning_map_.spin_status_map[target_key];
+            spin_status = spinning_detector_.spinning_map_.spin_status_map[target_key].spin_state;
             if (spin_status != UNKNOWN)
             {
                 is_target_spinning = true;
@@ -768,12 +769,11 @@ namespace armor_detector
             // auto delta_t = now_ - prev_timestamp_;
             // auto delta_dist = (target.armor3d_world - last_armor_.armor3d_world).norm();
             // auto velocity = (delta_dist / delta_t) * 1e9;
-            if ((target.id != last_armor_.id || !last_armor_.roi.contains((target.center2d))) &&
-                !is_last_target_exists_)
+            if (target.id != last_armor_.id || !last_armor_.roi.contains(target.center2d) || !is_last_target_exists_)
                 target_info.spinning_switched = true;
             else
                 target_info.spinning_switched = false;
-            
+
             // auto angle_axisd = Eigen::AngleAxisd(target.rmat);
             // double angle = angle_axisd.angle();
             // RCLCPP_INFO(logger_, "rotate angle:%lf", angle * (180 / CV_PI));
@@ -801,7 +801,7 @@ namespace armor_detector
             // auto delta_t = now_ - prev_timestamp_;
             // auto delta_dist = (target.armor3d_world - last_armor_.armor3d_world).norm();
             // auto velocity = (delta_dist / delta_t) * 1e9;
-            if ((target.id != last_armor_.id || !last_armor_.roi.contains((target.center2d))) && !is_last_target_exists_)
+            if (target.id != last_armor_.id || !last_armor_.roi.contains(target.center2d) || !is_last_target_exists_)
             {
                 is_target_switched_ = true;
                 target_info.target_switched = true;
@@ -824,6 +824,105 @@ namespace armor_detector
         if(last_status_ == SINGER && cur_status_ == DOUBLE)
             target_info.spinning_switched = true;
         
+        // if (spin_status != UNKNOWN)
+        // {
+        //     if (!target_info.spinning_switched)
+        //     {
+        //         spinning_detector_.cur_armors_map_.insert({now_, target});
+        //     }
+        //     else
+        //     {
+        //         spinning_detector_.last_armors_map_.clear();
+        //         spinning_detector_.last_armors_map_.insert(spinning_detector_.cur_armors_map_.begin(), spinning_detector_.cur_armors_map_.end());
+        //         spinning_detector_.cur_armors_map_.insert({now_, target});
+        //     }
+        // }
+        // else
+        // {
+        //     spinning_detector_.last_armors_map_.clear();
+        //     spinning_detector_.cur_armors_map_.clear();
+        // }
+
+        Eigen::Vector3d pred_point3d = {0.0, 0.0, 0.0};
+        vector<cv::Point2f> armor_center2d_vec; 
+        bool is_success = false;
+        if (spin_status != UNKNOWN)
+        {
+            if ((now_ - spinning_detector_.cur_armor_tracker_.now) / 1e6 < spinning_detector_.max_hop_period_)
+            {
+                int index = -1;
+                double min_delta_dist = 1e3;
+                for (int ii = 0; ii < (int)spinning_detector_.cur_armor_tracker_.history_info_.size(); ii++)
+                {
+                    double delta_dist = (target.armor3d_cam - spinning_detector_.cur_armor_tracker_.history_info_[ii].armor3d_cam).norm();
+                    cv::Point2f armor_center2d = coordsolver_.reproject(spinning_detector_.cur_armor_tracker_.history_info_[ii].armor3d_cam);
+                    armor_center2d_vec.push_back(armor_center2d);
+                    if (delta_dist < min_delta_dist)
+                    {
+                        min_delta_dist = delta_dist;
+                        index = ii;
+                    }
+                }
+                if (index != -1)
+                {
+                    int64_t now = spinning_detector_.cur_armor_tracker_.history_info_[index].timestamp;
+                    double dt = (spinning_detector_.cur_armor_tracker_.history_info_.back().timestamp - now) / 1e9;
+                    double period = (spinning_detector_.cur_armor_tracker_.history_info_.back().timestamp - spinning_detector_.cur_armor_tracker_.history_info_.front().timestamp) / 1e9;
+                    
+                    double flight_delay = last_armor_.armor3d_cam.norm() / detector_params_.bullet_speed;
+                    double hit_delay = flight_delay + detector_params_.shoot_delay / 1e3;
+                    double pred_dt = now / 1e9 + hit_delay;
+                    if (pred_dt > dt)
+                    {
+                        int scale = (pred_dt - dt) / period;
+                        pred_dt -= scale * period + spinning_detector_.cur_armor_tracker_.history_info_.front().timestamp / 1e9;
+
+                        for (int ii = 0; ii < spinning_detector_.cur_armor_tracker_.history_info_.size() - 1; ii++)
+                        {
+                            if (pred_dt >= spinning_detector_.cur_armor_tracker_.history_info_[ii].timestamp / 1e9 &&
+                            pred_dt <= spinning_detector_.cur_armor_tracker_.history_info_[ii + 1].timestamp / 1e9)
+                            {
+                                double left_boundary_dt = (pred_dt - spinning_detector_.cur_armor_tracker_.history_info_[ii].timestamp / 1e9); 
+                                double right_boundary_dt = (spinning_detector_.cur_armor_tracker_.history_info_[ii + 1].timestamp / 1e9 - pred_dt);
+                                pred_point3d = right_boundary_dt / (left_boundary_dt + right_boundary_dt) * spinning_detector_.cur_armor_tracker_.history_info_[ii].armor3d_cam +
+                                                left_boundary_dt / (left_boundary_dt + right_boundary_dt) * spinning_detector_.cur_armor_tracker_.history_info_[ii + 1].armor3d_cam;
+                                
+                                is_success = true;
+                                break;
+                            }
+                        }                            
+                    }
+                    else
+                    {
+                        for (int ii = index; ii < (int)spinning_detector_.cur_armor_tracker_.history_info_.size() - 1; ii++)
+                        {
+                            if (pred_dt >= spinning_detector_.cur_armor_tracker_.history_info_[ii].timestamp / 1e9 &&
+                            pred_dt <= spinning_detector_.cur_armor_tracker_.history_info_[ii + 1].timestamp / 1e9)
+                            {
+                                double left_boundary_dt = (pred_dt - spinning_detector_.cur_armor_tracker_.history_info_[ii].timestamp / 1e9); 
+                                double right_boundary_dt = (spinning_detector_.cur_armor_tracker_.history_info_[ii + 1].timestamp / 1e9 - pred_dt);
+                                pred_point3d = right_boundary_dt / (left_boundary_dt + right_boundary_dt) * spinning_detector_.cur_armor_tracker_.history_info_[ii].armor3d_cam +
+                                                left_boundary_dt / (left_boundary_dt + right_boundary_dt) * spinning_detector_.cur_armor_tracker_.history_info_[ii + 1].armor3d_cam;
+                                is_success = true;
+                                break;
+                            }
+                        }  
+                    }
+                    if (is_success)
+                    {
+                        cv::Point2f pred_center2d = coordsolver_.reproject(pred_point3d);
+                        // armor_center2d_vec.push_back(pred_center2d);
+                        for (int ii = 0; ii < (int)armor_center2d_vec.size() - 1; ii++)
+                        {
+                            cv::circle(src.img, armor_center2d_vec[ii], 3, {0, 255, 125}, -1);
+                            cv::line(src.img, armor_center2d_vec[ii], armor_center2d_vec[ii + 1], {255, 0, 125}, 1);
+                        }
+                        cv::circle(src.img, pred_center2d, 5, {125, 0, 255}, -1);
+                    }
+                }
+            }
+        }
+
         int target_hp = car_id_map_[target.key];
         target_info.key = target.key;
         target_info.hp = target_hp;
@@ -843,6 +942,7 @@ namespace armor_detector
         target_info.aiming_point_cam.z = target.armor3d_cam[2];
         target_info.timestamp = now_;
         target_info.is_target_lost = false;
+        // target_info.target_switched = true;
         // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
 
         if (spinning_detector_.is_dead_)

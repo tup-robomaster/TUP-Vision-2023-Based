@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-16 15:24:57
+ * @LastEditTime: 2023-04-18 20:22:48
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -13,7 +13,6 @@ using namespace std::placeholders;
 namespace armor_detector
 {
     DetectorNode::DetectorNode(const rclcpp::NodeOptions& options)
-    : Node("armor_detector", options), my_sync_policy_(MySyncPolicy(3))
     : Node("armor_detector", options), my_sync_policy_(MySyncPolicy(3))
     {
         RCLCPP_WARN(this->get_logger(), "Starting detector node...");
@@ -27,7 +26,6 @@ namespace armor_detector
             RCLCPP_FATAL(this->get_logger(), "Fatal while initializing detector class: %s", e.what());
         }
 
-        if (!detector_->is_init_)
         if (!detector_->is_init_)
         {
             RCLCPP_INFO(this->get_logger(), "Initializing network model...");
@@ -45,24 +43,12 @@ namespace armor_detector
         this->declare_parameter<bool>("sync_transport", false);
         bool sync_transport = this->get_parameter("sync_transport").as_bool();
         
-        // 同步通信/异步通信
-        this->declare_parameter<bool>("sync_transport", false);
-        bool sync_transport = this->get_parameter("sync_transport").as_bool();
-
-        // QoS    
         // QoS    
         rclcpp::QoS qos(0);
         qos.keep_last(1);
-        qos.keep_last(1);
         qos.reliable();
         qos.transient_local();
-        qos.transient_local();
         qos.durability_volatile();
-        // qos.lifespan();
-        // qos.deadline();
-        // qos.best_effort();
-        // qos.durability();
-
         // qos.lifespan();
         // qos.deadline();
         // qos.best_effort();
@@ -76,23 +62,16 @@ namespace armor_detector
         // Create an image transport object.
         // auto it = image_transport::ImageTransport();
 
-        time_start_ = detector_->steady_clock_.now();
-
-        // Create an image transport object.
-        // auto it = image_transport::ImageTransport();
-
         // target info pub.
         armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_detector/armor_msg", qos);
         detections_pub_ = this->create_publisher<global_interface::msg::DetectionArray>("/armor_detector/detections", qos);
         if (debug_.using_imu)
-        detections_pub_ = this->create_publisher<global_interface::msg::DetectionArray>("/armor_detector/detections", qos);
-        if (debug_.using_imu)
         {
             RCLCPP_INFO(this->get_logger(), "Using imu...");
-            serial_msg_.imu.header.frame_id = "imu_link";
-            this->declare_parameter<double>("bullet_speed", 28.0);
-            this->get_parameter("bullet_speed", serial_msg_.bullet_speed);
-            serial_msg_.mode = this->declare_parameter<int>("autoaim_mode", 1);
+            // serial_msg_.imu.header.frame_id = "imu_link";
+            // this->declare_parameter<double>("bullet_speed", 28.0);
+            // this->get_parameter("bullet_speed", serial_msg_.bullet_speed);
+            // serial_msg_.mode = this->declare_parameter<int>("autoaim_mode", 1);
 
             if (!sync_transport)
             {
@@ -123,12 +102,6 @@ namespace armor_detector
         // image sub.
         std::string camera_topic = image_info_.camera_topic_map[camera_type];
         if (sync_transport)
-        std::string transport_type = "raw";
-        // Image size.
-        image_size_ = image_info_.image_size_map[camera_type];
-        // image sub.
-        std::string camera_topic = image_info_.camera_topic_map[camera_type];
-        if (sync_transport)
         {
             // Create serial msg subscriber.
             serial_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<SerialMsg>>(this, "/serial_msg", rmw_qos);
@@ -137,22 +110,6 @@ namespace armor_detector
             img_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this, camera_topic, rmw_qos);
 
             // Create synchronous timer.
-            my_sync_policy_.setInterMessageLowerBound(0, rclcpp::Duration(0, 1e7));
-            my_sync_policy_.setInterMessageLowerBound(1, rclcpp::Duration(0, 1e7));
-            my_sync_policy_.setMaxIntervalDuration(rclcpp::Duration(0, 3e7));
-            // sync_ = std::make_shared<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, SerialMsg>>(*img_msg_sync_sub_, *serial_msg_sync_sub_, 0.005);
-            sync_ = std::make_shared<message_filters::Synchronizer<MySyncPolicy>>(MySyncPolicy(my_sync_policy_), *img_msg_sync_sub_, *serial_msg_sync_sub_);
-
-            // Register a callback function to process.
-            sync_->registerCallback(std::bind(&DetectorNode::syncCallback, this, _1, _2));
-            // Create serial msg subscriber.
-            serial_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<SerialMsg>>(this, "/serial_msg", rmw_qos);
-
-            // Create image subscriber.
-            img_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this, camera_topic, rmw_qos);
-
-            // Create synchronous timer.
-            my_sync_policy_.setInterMessageLowerBound(0, rclcpp::Duration(0, 1e7));
             my_sync_policy_.setInterMessageLowerBound(1, rclcpp::Duration(0, 1e7));
             my_sync_policy_.setMaxIntervalDuration(rclcpp::Duration(0, 3e7));
             // sync_ = std::make_shared<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, SerialMsg>>(*img_msg_sync_sub_, *serial_msg_sync_sub_, 0.005);
@@ -161,7 +118,6 @@ namespace armor_detector
             // Register a callback function to process.
             sync_->registerCallback(std::bind(&DetectorNode::syncCallback, this, _1, _2));
 
-            RCLCPP_WARN(this->get_logger(), "Synchronously...");
             RCLCPP_WARN(this->get_logger(), "Synchronously...");
         }
         else
@@ -173,7 +129,6 @@ namespace armor_detector
         bool debug = false;
         this->declare_parameter<bool>("debug", true);
         this->get_parameter("debug", debug);
-        if (debug)
         if (debug)
         {
             RCLCPP_WARN_ONCE(this->get_logger(), "debug...");
@@ -354,10 +309,6 @@ namespace armor_detector
             }
             param_mutex_.unlock();
         }
-        catch(const std::exception& e)
-        {
-            RCLCPP_ERROR(this->get_logger(), "Detector node errror: %s", e.what());
-        }
 
         if (is_target_lost)
         {
@@ -456,26 +407,12 @@ namespace armor_detector
         // RCLCPP_INFO(this->get_logger(), "src_timestamp:%.8f", src.timestamp / 1e9);
         
         if (debug_.show_img)
-        rclcpp::Time stamp = img_info->header.stamp;
-        src.timestamp = stamp.nanoseconds();
-        src.img = cv_bridge::toCvShare(img_info, "bgr8")->image;
-        // img.copyTo(src.img);
-        // RCLCPP_INFO(this->get_logger(), "src_timestamp:%.8f", src.timestamp / 1e9);
-        
-        if (debug_.show_img)
         {
             char ch[25];
             sprintf(ch, "img_trans_delay:%.2fms", dura);
             std::string delay_str = ch;
             putText(src.img, delay_str, {src.img.size().width / 5 - 40, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 125, 255});
-            char ch[25];
-            sprintf(ch, "img_trans_delay:%.2fms", dura);
-            std::string delay_str = ch;
-            putText(src.img, delay_str, {src.img.size().width / 5 - 40, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 125, 255});
         }
-
-        //目标检测接口函数
-        detect(src, stamp);
 
         //目标检测接口函数
         detect(src, stamp);
@@ -525,6 +462,8 @@ namespace armor_detector
         this->declare_parameter<double>("armor_conf_high_thres", 0.82);
         this->declare_parameter<double>("yaw_angle_offset", 0.0);
         this->declare_parameter<double>("pitch_angle_offset", 0.0);
+        this->declare_parameter<int>("shoot_delay", 200);
+        this->declare_parameter<double>("bullet_speed", 16.0);
         
         //TODO:Set by your own path.
         this->declare_parameter("camera_name", "KE0200110075"); //相机型号
@@ -554,7 +493,6 @@ namespace armor_detector
         this->declare_parameter<double>("anti_spin_judge_high_thres", 2e4);
         this->declare_parameter<double>("anti_spin_judge_low_thres", 2e3);
         this->declare_parameter<double>("anti_spin_max_r_multiple", 4.5);
-        
         
         //Update param from param server.
         updateParam();
@@ -592,6 +530,8 @@ namespace armor_detector
         detector_params_.armor_conf_high_thres = this->get_parameter("armor_conf_high_thres").as_double();
         detector_params_.angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
         detector_params_.angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
+        detector_params_.shoot_delay = this->get_parameter("shoot_delay").as_int();
+        detector_params_.bullet_speed = this->get_parameter("bullet_speed").as_double();
 
         debug_.detect_red = this->get_parameter("detect_red").as_bool();
         debug_.debug_without_com  = this->get_parameter("debug_without_com").as_bool();

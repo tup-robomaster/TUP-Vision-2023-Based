@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-04-14 03:45:58
+ * @LastEditTime: 2023-04-16 23:20:06
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -34,14 +34,6 @@ namespace coordsolver
      */
     CoordSolver::~CoordSolver()
     {   
-    }
-
-
-    bool CoordSolver::setStaticAngleOffset(const Eigen::Vector2d& static_angle_offset)
-    {
-        angle_offset = static_angle_offset;
-        // cout << "2:" << angle_offset[0] << " " << angle_offset[1] << endl;
-        return true;
     }
 
     /**
@@ -149,9 +141,6 @@ namespace coordsolver
                 {0.1125, 0.027, 0},
                 {-0.1125, 0.027, 0},
                 {-0.1125, -0.027, 0}
-                {0.1125, 0.027, 0},
-                {-0.1125, 0.027, 0},
-                {-0.1125, -0.027, 0}
             };
             // points_world = {
             // {-0.1125,0.027,0},
@@ -189,9 +178,6 @@ namespace coordsolver
             // auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
             // double angle = angle_axisd.angle();
             // RCLCPP_INFO(logger_, "rotate angle:%lf", angle * (180 / CV_PI));
-            // auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
-            // double angle = angle_axisd.angle();
-            // RCLCPP_INFO(logger_, "rotate angle:%lf", angle * (180 / CV_PI));
         }
         else
         {
@@ -205,8 +191,6 @@ namespace coordsolver
             result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;
         }
-
-        // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 40, "armor_cam: %.4f %.4f %.4f", result.armor_cam[0], result.armor_cam[1], result.armor_cam[2]);
 
         // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 40, "armor_cam: %.4f %.4f %.4f", result.armor_cam[0], result.armor_cam[1], result.armor_cam[2]);
         return result;

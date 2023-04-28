@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-15 11:25:33
- * @LastEditTime: 2023-04-16 13:38:09
+ * @LastEditTime: 2023-04-18 16:57:43
  * @LastEditTime: 2023-04-05 14:57:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/spinning_detector/spinning_detector.hpp
  */
@@ -22,10 +22,9 @@ namespace armor_detector
     class SpinningDetector
     {
     private:
-        Color detect_color;
-        Armor last_armor;
+        Color detect_color_;
+        Armor last_armor_;
         rclcpp::Logger logger_;
-        rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         DetectorInfo detector_info_;
 
@@ -34,12 +33,7 @@ namespace armor_detector
         SpinningDetector(Color color, GyroParam gyro_params);
         ~SpinningDetector();
 
-        bool updateSpinScore();
-        void createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map,
-            std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int64_t timestamp, int dead_buffer_cnt);
-        bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, int64_t now);
-        bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, std::map<std::string, int>& new_armors_cnt_map, int64_t now);
-        // bool updateSpinScore();int64_t
+        // bool updateSpinScore();
         void createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map,
             std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int64_t timestamp, int dead_buffer_cnt);
         bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, int64_t now);
@@ -47,14 +41,18 @@ namespace armor_detector
         
         bool is_dead_;
         double max_hop_period_;
-        int xyz_axis_[3] = {1, 2, 0};
         double last_timestamp_;
-        bool is_dead_;
-        double max_hop_period_;
-        int xyz_axis_[3] = {1, 2, 0};
-        double last_timestamp_;
+       
         GyroParam gyro_params_;
         SpinningMap spinning_map_;
+
+        //history info
+        ArmorTracker last_armor_tracker_;
+        ArmorTracker cur_armor_tracker_;
+        
+        // queue<Armor> armors_queue_; 
+        // map<int64_t, Armor> last_armors_map_;
+        // map<int64_t, Armor> cur_armors_map_;
     };
 } //namespace detector
 

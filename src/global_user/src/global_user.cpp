@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 14:01:05
- * @LastEditTime: 2023-04-16 22:58:10
+ * @LastEditTime: 2023-04-16 23:17:43
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/global_user.cpp
  */
 #include "../include/global_user/global_user.hpp"
@@ -324,59 +324,10 @@ namespace global_user
         return true;
     }
 
-    bool isPnpSolverValidation(Eigen::Vector3d& point3d)
-    {
-        if (isinf(point3d[0] || isinf(point3d[1]) || isinf(point3d[2])))
-        {
-            return false;
-        }
-        else if (isnan(point3d[0]) || isnan(point3d[1] || isnan(point3d[2])))
-        {
-            return false;
-        }
-        else if (point3d.norm() >= 10.0)
-        {
-            return false;
-        }
-        return true;
-    }
-
-    bool isAngleSolverValidataion(Eigen::Vector2d& angle2d)
-    {
-        if (isinf(angle2d[0] || isinf(angle2d[1])))
-        {
-            return false;
-        }
-        else if (isnan(angle2d[0] || isnan(angle2d[1])))
-        {
-            return false;
-        }
-        else if (abs(angle2d[0]) >= 90.0 || abs(angle2d[1]) >= 90.0)
-        {
-            return false;
-        }
-        return true;
-    }
-
     void drawAimCrossCurve(cv::Mat& src)
     {
         line(src, cv::Point2f(src.size().width / 2, 0), cv::Point2f(src.size().width / 2, src.size().height), {0,255,0}, 1);
         line(src, cv::Point2f(0, src.size().height / 2), cv::Point2f(src.size().width, src.size().height / 2), {0,255,0}, 1);
-    }
-
-    //新息序列不等式
-    bool checkDivergence(const MatrixXd& statePre, const MatrixXd& stateCovPre, const MatrixXd& H, const MatrixXd& R, const VectorXd& measurement)
-    {
-        // 滤波发散判据（传统基于单步量测的新息序列不等式）
-        VectorXd innovationCovPre(1, 1);
-        innovationCovPre << H * stateCovPre * H.transpose() + R; 
-        MatrixXd innovation(1, 1);
-        innovation << measurement - H * statePre;
-        MatrixXd innovationSquare = innovation * innovation.transpose();
-        double traceInnovationCovPre = innovationCovPre.trace();
-
-        return (innovationSquare(0, 0) > 100 * traceInnovationCovPre);
-        return true;
     }
 
     bool isPnpSolverValidation(Eigen::Vector3d& point3d)
@@ -411,12 +362,6 @@ namespace global_user
             return false;
         }
         return true;
-    }
-
-    void drawAimCrossCurve(cv::Mat& src)
-    {
-        line(src, cv::Point2f(src.size().width / 2, 0), cv::Point2f(src.size().width / 2, src.size().height), {0,255,0}, 1);
-        line(src, cv::Point2f(0, src.size().height / 2), cv::Point2f(src.size().width, src.size().height / 2), {0,255,0}, 1);
     }
 
     //新息序列不等式

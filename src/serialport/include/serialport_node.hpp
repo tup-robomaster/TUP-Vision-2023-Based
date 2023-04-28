@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-04-15 20:59:17
+ * @LastEditTime: 2023-04-18 13:16:00
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -82,7 +82,7 @@ namespace serialport
         uchar third_bag_[64];
         std::unique_ptr<std::thread> receive_thread_;
         std::unique_ptr<std::thread> msg_pub_thread_;
-        void pubMessage();
+        // void pubMessage();
         atomic<bool> first_flag_;
         atomic<bool> second_flag_;
         atomic<bool> third_flag_;

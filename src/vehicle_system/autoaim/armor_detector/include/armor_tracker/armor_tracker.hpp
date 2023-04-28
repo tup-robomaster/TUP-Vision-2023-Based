@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-04-16 22:59:03
+ * @LastEditTime: 2023-04-18 20:00:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_tracker/armor_tracker.hpp
  */
 #ifndef ARMOR_TRACKER_HPP_
@@ -40,6 +40,7 @@ namespace armor_detector
         RotatedRect rrect;
         cv::Point2d center2d;
         TargetType type;
+        int64_t timestamp;
     };
 
     class ArmorTracker
@@ -62,7 +63,7 @@ namespace armor_detector
         int64_t last_selected_timestamp = 0.0;   //该Tracker上次被选为目标tracker时间戳
         
         int selected_cnt = 0;                   //该Tracker被选为目标tracker次数和
-        const int max_history_len = 10;          //历史信息队列最大长度
+        int max_history_len = 20;          //历史信息队列最大长度
         int history_type_sum;                   //历史次数之和
         std::deque<Armor> history_info_;    //目标队列
         Eigen::Vector3d rotation_center;

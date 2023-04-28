@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-11 13:18:53
- * @LastEditTime: 2023-04-16 23:09:24
+ * @LastEditTime: 2023-04-14 22:48:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/singer_model.cpp
  */
 #include "../../include/filter/singer_model.hpp"
