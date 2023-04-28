@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2023-04-14 02:56:29
+ * @LastEditTime: 2023-04-16 13:18:30
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -271,7 +271,7 @@ namespace camera_driver
                 if (save_video_)
                 {   // Video recorder.
                     ++frame_cnt_;
-                    if (frame_cnt_ % 4 == 0)
+                    if (frame_cnt_ % 100 == 0)
                     {
                         sensor_msgs::msg::Image image_msg = *msg;
                         auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
@@ -292,7 +292,10 @@ namespace camera_driver
                         *bag_msg->serialized_data = serialized_msg.release_rcl_serialized_message();
                         bag_msg->topic_name = "usb_img";
                         bag_msg->time_stamp = now.nanoseconds();
-                        writer_->write(bag_msg);
+                        auto async_future = std::async(std::launch::async, [&](){
+                            writer_->write(bag_msg);
+                        });
+                        async_future.wait_for(2ms);
                     }
                 }
             }

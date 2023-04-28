@@ -116,21 +116,22 @@ namespace armor_processor
         // {
         //     return false;
         // }
-        PostProcessInfo post_info = PostProcessInfo();
+        // PostProcessInfo post_process_info = PostProcessInfo();
+
         double sleep_time = 0.0;
-        post_info.track_3d_pos = {armor.aiming_point_world.x, armor.aiming_point_world.y, armor.aiming_point_world.z};
-        post_info.pred_3d_pos = *(predictor(armor, sleep_time));
-        if (post_process_info.track_3d_pos.norm() <= 4.5)
+        post_process_info.track_3d_pos = {armor.aiming_point_world.x, armor.aiming_point_world.y, armor.aiming_point_world.z};
+        post_process_info.pred_3d_pos = predictor(armor, sleep_time);
+        if (post_process_info.track_3d_pos.norm() <= 6.0)
         {
-            post_info.find_target = true;
-            post_info.is_shooting = true;
-            post_info.switch_target = false;
+            post_process_info.find_target = true;
+            post_process_info.is_shooting = true;
+            post_process_info.switch_target = false;
         }
         else
         {
-            post_info.find_target = true;
-            post_info.is_shooting = false;
-            post_info.switch_target = true;
+            post_process_info.find_target = true;
+            post_process_info.is_shooting = false;
+            post_process_info.switch_target = true;
         }
 
         return true;
@@ -141,9 +142,9 @@ namespace armor_processor
      * 
      * @param target 目标装甲板message信息
      * @param sleep_time 休眠时间，对应预测延迟时间，用于改变预测点message的时间戳从而方便观察测量值与预测量间的误差
-     * @return std::unique_ptr<Eigen::Vector3d> 
+     * @return Eigen::Vector3d 
      */
-    std::unique_ptr<Eigen::Vector3d> Processor::predictor(AutoaimMsg& target, double& sleep_time)
+    Eigen::Vector3d Processor::predictor(AutoaimMsg& target, double& sleep_time)
     {
         if(target.target_switched)
         {
@@ -158,7 +159,7 @@ namespace armor_processor
         }
 
         auto hit_point = predict(target, target.timestamp, sleep_time);
-        return std::make_unique<Eigen::Vector3d>(hit_point);
+        return hit_point;
     }
     
     /**
@@ -169,7 +170,7 @@ namespace armor_processor
      * @param sleep_time 
      * @return std::unique_ptr<Eigen::Vector3d> 
      */
-    std::unique_ptr<Eigen::Vector3d> Processor::predictor(cv::Mat& src, AutoaimMsg& target, double& sleep_time)
+    Eigen::Vector3d Processor::predictor(cv::Mat& src, AutoaimMsg& target, double& sleep_time)
     {
         if(target.target_switched)
         {
@@ -184,6 +185,6 @@ namespace armor_processor
         }
 
         auto hit_point = predict(target, target.timestamp, sleep_time, &src);
-        return std::make_unique<Eigen::Vector3d>(hit_point);
+        return hit_point;
     }
 } // armor_processor

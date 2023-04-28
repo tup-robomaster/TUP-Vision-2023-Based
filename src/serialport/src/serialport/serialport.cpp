@@ -66,16 +66,58 @@ namespace serialport
             return false;
         }
         
-        bytes = read(serial_data_.fd, serial_data_.rdata, (size_t)(lens));
-        timestamp_ = this->steady_clock_.now();
+        // rclcpp::Time start = steady_clock_.now();
+        bytes = read(serial_data_.fd, serial_data_.rdata1, (size_t)(lens));
+        auto bytes1 = read(serial_data_.fd, serial_data_.rdata2, (size_t)(lens));
+        auto bytes2 = read(serial_data_.fd, serial_data_.rdata3, (size_t)(lens));
+        // bytes = read(serial_data_.fd, serial_data_.rdata, (size_t)(lens));
 
-        if ((serial_data_.rdata[0] == 0xA5 || serial_data_.rdata[0] == 0xB5 || serial_data_.rdata[0] == 0xC5)
-            && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3)
-            && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
-        {
+        tcflush(serial_data_.fd, TCIOFLUSH);//清空缓冲区的内容
+
+        // timestamp_ = this->steady_clock_.now();
+        // rclcpp::Time end = steady_clock_.now();
+        // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "receive_fps:%.2f", 1.0 / (end - start).nanoseconds() * 1e9);
+
+        // if (!((serial_data_.rdata1[0] == 0xA5) 
+        // && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata1, 3) 
+        // && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata1, (uint32_t)(lens)))
+        // )
+        // {
+        //     return false;
+        // }
+
+        // if (!(serial_data_.rdata2[0] == 0xB5 
+        // && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata2, 3)  
+        // && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata2, (uint32_t)(lens))))
+        // {
+        //     return false;
+        // }
+
+        // if (!(serial_data_.rdata3[0] == 0xC5 
+        // && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata3, 3) 
+        // && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata3, (uint32_t)(lens))))
+        // {
+        //     return false;
+        // }
+
+        // if ((serial_data_.rdata[0] == 0xA5 || serial_data_.rdata[0] == 0xB5 || serial_data_.rdata[0] == 0xC5)
+        //     && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3)
+        //     && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
+        // {
             // cout << 1 << endl;
+            // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 20, "flag:%x", serial_data_.rdata[0]);
+            // return true;
+        // }
+
+        if (serial_data_.rdata1[0] == 0xA5 && serial_data_.rdata2[0] == 0xB5 && serial_data_.rdata3[0] == 0xC5)
+        {
+            // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 20, "flag:%x %x %x", serial_data_.rdata1[0], serial_data_.rdata2[0], serial_data_.rdata3[0]);
             return true;
         }
+        // if (serial_data_.rdata1[0])
+        // {
+        //     return true;
+        // }
 
         return false;
     }

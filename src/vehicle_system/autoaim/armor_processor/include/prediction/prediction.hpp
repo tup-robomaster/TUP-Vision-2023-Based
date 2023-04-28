@@ -43,7 +43,7 @@ namespace armor_processor
         ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, 
             const PathParam& path_param, const DebugParam& debug_param);
     
-    private:
+    public:
         std::deque<TargetInfo> history_info_; //历史测量信息
         std::deque<TargetInfo> history_pred_; //历史预测信息
         int history_deque_lens_; //历史队列长度
@@ -106,6 +106,7 @@ namespace armor_processor
         double cur_pred_error_;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         rclcpp::Logger logger_;
+        int count_ = 0;
     
     private:
         // IMM Model.

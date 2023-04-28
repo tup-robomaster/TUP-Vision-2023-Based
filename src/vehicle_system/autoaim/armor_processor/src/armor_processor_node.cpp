@@ -131,7 +131,7 @@ namespace armor_processor
         AutoaimMsg target = std::move(target_info);
         target.timestamp = target.header.stamp.nanosec;
         Eigen::Vector2d angle = {0.0, 0.0};
-        std::unique_ptr<Eigen::Vector3d> aiming_point_world;
+        Eigen::Vector3d aiming_point_world;
         Eigen::Vector3d aiming_point_cam = {0.0, 0.0, 0.0};
         Eigen::Vector3d tracking_point_cam = {0.0, 0.0, 0.0};
         Eigen::Vector2d tracking_angle = {0.0, 0.0};
@@ -147,6 +147,7 @@ namespace armor_processor
         // rmat = yawAngle * pitchAngle * rollAngle;
 
         cv::Mat dst = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
+        bool is_shooting = false;
         if (debug_param_.show_img)
         {
             image_mutex_.lock();
@@ -161,36 +162,141 @@ namespace armor_processor
         if (target.spinning_switched)
         {
             processor_->error_cnt_ = 0;
-            processor_->is_singer_init_[0][0] = false;
-            processor_->is_singer_init_[0][1] = false;
-            processor_->is_singer_init_[0][2] = false;
-            processor_->is_singer_init_[1][0] = false;
-            processor_->is_singer_init_[1][1] = false;
-            processor_->is_singer_init_[1][2] = false;
+            // processor_->is_singer_init_[0][0] = false;
+            // processor_->is_singer_init_[0][1] = false;
+            // processor_->is_singer_init_[0][2] = false;
+            // processor_->is_singer_init_[1][0] = false;
+            // processor_->is_singer_init_[1][1] = false;
+            // processor_->is_singer_init_[1][2] = false;
+            Eigen::Vector3d xyz = {target.aiming_point_world.x, target.aiming_point_world.y, target.aiming_point_world.z};
+            for (int ii = 0; ii < 3; ii++)
+            {
+                Eigen::Vector3d state = processor_->singer_kf_[target.is_spinning][ii].x();
+                processor_->singer_kf_[target.is_spinning][ii].x_ << xyz[ii], state[1], state[2];
+            }
+
             processor_->is_imm_init_ = false;
             is_aimed_ = false;
             is_pred_failed_ = false;
             count_ = 0;
             is_pred_ = false;
+            is_shooting = false;
         }
 
+        // RCLCPP_WARN(this->get_logger(), "111");
         if (target.is_target_lost)
         {
             processor_->error_cnt_ = 0;
-            processor_->is_singer_init_[0][0] = false;
-            processor_->is_singer_init_[0][1] = false;
-            processor_->is_singer_init_[0][2] = false;
-            processor_->is_singer_init_[1][0] = false;
-            processor_->is_singer_init_[1][1] = false;
-            processor_->is_singer_init_[1][2] = false;
-            processor_->is_imm_init_ = false;
-            is_aimed_ = false;
-            is_pred_failed_ = false;
-            count_ = 0;
-            is_pred_ = false;
+            
+            // if (is_last_target_exists_)
+            // {
+            //     is_losting_ = true;
+            //     is_last_target_exists_ = false;
+            // }
+            // Eigen::Vector3d xyz = {target.aiming_point_world.x, target.aiming_point_world.y, target.aiming_point_world.z};
+            // for (int ii = 0; ii < 3; ii++)
+            // {
+            //     Eigen::Vector3d state = processor_->singer_kf_[target.is_spinning][ii].x();
+            //     processor_->singer_kf_[target.is_spinning][ii].x_ << xyz[ii], state[1], state[2];
+            // }
+            
+            // if (lost_cnt_ <= 5 && is_losting_ && processor_->is_singer_init_[0][0]
+            // && processor_->is_singer_init_[0][1] && processor_->is_singer_init_[0][2])
+            // {
+            //     // RCLCPP_WARN(this->get_logger(), "222");
+            //     // Eigen::Vector3d xyz = {0, 0, 0};
+            //     for (int ii = 0; ii < 3; ii++)
+            //     {
+            //         // Eigen::VectorXd measurement = Eigen::VectorXd(1);
+            //         // measurement << processor_->history_info_.back().xyz[ii];
+            //         processor_->singer_kf_[0][ii].Predict();
+            //         // processor_->singer_kf_[0][ii].Update(measurement);
+
+            //         // Eigen::Vector3d state = processor_->singer_kf_[0][ii].x();
+
+            //         // double alpha = processor_->singer_param_[0][ii][0];
+            //         // Eigen::MatrixXd F(3, 3);
+            //         // processor_->singer_model_[0][ii].setF(F, sleep_time / 1e9 * 60, alpha);
+
+            //         // Eigen::MatrixXd control(3, 1);
+            //         // processor_->singer_model_[0][ii].setC(control, sleep_time / 1e9 * 60, alpha);
+
+            //         // if (history_acc_[axis][0] == 0.0)
+            //         //     singer_model_[axis].setQ(target_acc);
+            //         // else
+            //         //     singer_model_[axis].setQ(State[2]);
+
+            //         // VectorXd pred = F * state + control * state[2];
+            //         // xyz[ii] = pred[0];
+            //         // RCLCPP_WARN(this->get_logger(), "333");
+            //     }
+            //     // RCLCPP_WARN(this->get_logger(), "555");
+            //     // aiming_point_world = xyz;
+            //     // aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
+            //     // angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
+            //     post_process_info.find_target = false;
+            //     post_process_info.is_shooting = false;
+            //     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500,  "Losting...");
+
+            //     is_aimed_ = true;
+            //     is_pred_ = true;
+            //     lost_cnt_++;
+            //     // is_losting_ = true;
+            // }
+            // else
+            // {
+                processor_->is_singer_init_[0][0] = false;
+                processor_->is_singer_init_[0][1] = false;
+                processor_->is_singer_init_[0][2] = false;
+                processor_->is_singer_init_[1][0] = false;
+                processor_->is_singer_init_[1][1] = false;
+                processor_->is_singer_init_[1][2] = false;
+                processor_->is_imm_init_ = false;
+                
+                is_aimed_ = false;
+                is_pred_failed_ = false;
+                count_ = 0;
+                is_pred_ = false;
+                lost_cnt_ = 0;
+                is_losting_ = false;
+                is_shooting = false;
+
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "target_lost...");
+            // }
         }
         else
         {
+            // if (is_losting_)
+            // {
+            //     // RCLCPP_WARN(this->get_logger(), "555");
+            //     Eigen::Vector3d xyz = {target.aiming_point_world.x, target.aiming_point_world.y, target.aiming_point_world.z};
+            //     for (int ii = 0; ii < 3; ii++)
+            //     {
+            //         Eigen::Vector3d state = processor_->singer_kf_[0][ii].x();
+            //         if (abs(state[0] - xyz[ii]) > 0.5)
+            //         {
+            //             processor_->is_singer_init_[0][ii] = false;
+            //             processor_->is_singer_init_[0][ii] = false;
+            //             processor_->is_singer_init_[0][ii] = false;
+            //             processor_->is_singer_init_[1][ii] = false;
+            //             processor_->is_singer_init_[1][ii] = false;
+            //             processor_->is_singer_init_[1][ii] = false;
+            //             processor_->is_imm_init_ = false;
+            //             is_aimed_ = false;
+            //             is_pred_failed_ = false;
+            //             count_ = 0;
+            //             is_pred_ = false;
+            //         }   
+            //         // else
+            //         // {
+            //         //     processor_->singer_kf_[0][ii].x_ << xyz[ii], state[1], state[2];
+            //         // }
+            //     }
+            //     is_losting_ = false;
+            //     lost_cnt_ = 0;
+            // }
+            // RCLCPP_WARN(this->get_logger(), "666");
+
             Eigen::Vector3d point_3d = {target.aiming_point_world.x, target.aiming_point_world.y, target.aiming_point_world.z};
             // point_3d = rmat * point_3d;
             target.aiming_point_world.x = point_3d[0];
@@ -207,17 +313,18 @@ namespace armor_processor
                 rmat_imu = quat_imu.toRotationMatrix();
             }
             
+            RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "cur_mode:%d", target_info.mode);
             param_mutex_.lock();
-            if (target_info.mode == SENTRY_NORMAL)
+            if (target_info.mode == SENTRY_AUTOAIM)
             {
                 RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sentry mode...");
                 if(processor_->autoShootingLogic(target, post_process_info))
                 {
                     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Auto shooting...");
-                    aiming_point_world = std::make_unique<Eigen::Vector3d>(post_process_info.pred_3d_pos);
+                    aiming_point_world = post_process_info.pred_3d_pos;
                     // *aiming_point_world = rmat.transpose() * (*aiming_point_world);
                     // *aiming_point_world = rmat.transpose() * (*aiming_point_world);
-                    aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
+                    aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
                 }
             }
             else
@@ -233,7 +340,7 @@ namespace armor_processor
                 }
                 // *aiming_point_world = rmat.transpose() * (*aiming_point_world);
                 // *aiming_point_world = rmat.transpose() * (*aiming_point_world);
-                aiming_point_cam = processor_->coordsolver_.worldToCam(*aiming_point_world, rmat_imu);
+                aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
             }
             angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
             tracking_point_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
@@ -243,12 +350,14 @@ namespace armor_processor
             {
                 is_pred_ = true;
                 is_aimed_ = true;
+                is_shooting = false;
             }
             
             if (abs(angle[0]) > 45.0 || abs(angle[1]) > 45.0)
             {
                 is_pred_ = false;
                 is_aimed_ = false;
+                is_shooting = false;
             } 
 
             RCLCPP_INFO_EXPRESSION(this->get_logger(), debug_param_.show_predict && debug_param_.print_delay, "tracking_point_cam:[%.3f %.3f %.3f]", 
@@ -262,12 +371,25 @@ namespace armor_processor
         {
             angle = tracking_angle;
             is_pred_ = false;
+            is_shooting = false;
         }
         else
         {
             is_pred_ = true;
+            is_shooting = true;
         }
-        
+
+        // if (!target.is_target_lost)
+        // {
+        //     is_last_target_exists_ = true;
+        // }
+
+
+        // if (is_losting_)
+        // {
+        //     target.is_target_lost = false;
+        // }
+
         // Gimbal info pub.
         GimbalMsg gimbal_info;
         gimbal_info.header.frame_id = "barrel_link";
@@ -285,9 +407,10 @@ namespace armor_processor
         gimbal_info.is_switched = target_info.target_switched;
         gimbal_info.is_spinning = target_info.is_spinning;
         gimbal_info.is_spinning_switched = target_info.spinning_switched;
-        gimbal_info.is_shooting = (post_process_info.find_target && post_process_info.is_shooting);
+        gimbal_info.is_shooting = is_shooting;
         gimbal_info.is_prediction = is_pred_; 
         gimbal_info_pub_->publish(std::move(gimbal_info));
+        // RCLCPP_WARN(this->get_logger(), "angle:(%.3f, %3f)", angle[0], angle[1]);
 
         if (this->debug_)
         {
@@ -308,25 +431,27 @@ namespace armor_processor
             tracking_info.is_switched = target_info.target_switched;
             tracking_info.is_spinning = target_info.is_spinning;
             tracking_info.is_spinning_switched = target_info.spinning_switched;
-            tracking_info.is_shooting = (post_process_info.find_target && post_process_info.is_shooting);
+            tracking_info.is_shooting = is_shooting;
             tracking_info.is_prediction = is_pred_;
             tracking_info_pub_->publish(std::move(tracking_info));
+
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 50, "is_shooting:%d", is_shooting);
             if (!target.is_target_lost)
             {
                 AutoaimMsg predict_info;
                 predict_info.header.frame_id = "camera_link";
                 predict_info.header.stamp = target_info.header.stamp;
                 predict_info.header.stamp.nanosec += sleep_time;
-                predict_info.aiming_point_world.x = (*aiming_point_world)[0];
-                predict_info.aiming_point_world.y = (*aiming_point_world)[1];
-                predict_info.aiming_point_world.z = (*aiming_point_world)[2];
+                predict_info.aiming_point_world.x = (aiming_point_world)[0];
+                predict_info.aiming_point_world.y = (aiming_point_world)[1];
+                predict_info.aiming_point_world.z = (aiming_point_world)[2];
                 predict_info.aiming_point_cam.x = aiming_point_cam[0];
                 predict_info.aiming_point_cam.y = aiming_point_cam[1];
                 predict_info.aiming_point_cam.z = aiming_point_cam[2];
                 predict_info.period = target_info.period;
                 predict_info_pub_->publish(std::move(predict_info));
                 RCLCPP_INFO_EXPRESSION(this->get_logger(), debug_param_.show_predict && debug_param_.print_delay, "aiming_point_world:[%.3f %.3f %.3f]",
-                    (*aiming_point_world)[0], (*aiming_point_world)[1], (*aiming_point_world)[2]);
+                    (aiming_point_world)[0], (aiming_point_world)[1], (aiming_point_world)[2]);
             }
         }
 
@@ -358,12 +483,12 @@ namespace armor_processor
 
             char ch[40];
             char ch1[40];
-            sprintf(ch, "Track:pitch:%.2f yaw:%.2f", tracking_angle[1], tracking_angle[0]);
-            sprintf(ch1, "Pred:pitch:%.2f yaw:%.2f", angle[1], angle[0]);
+            sprintf(ch, "Track:pitch:%.3f yaw:%.3f", tracking_angle[1], tracking_angle[0]);
+            sprintf(ch1, "Pred:pitch:%.3f yaw:%.3f", angle[1], angle[0]);
             std::string angle_str = ch;
             std::string angle_str1 = ch1;
-            putText(dst, angle_str, {dst.size().width / 2 + 5, 30}, cv::FONT_HERSHEY_TRIPLEX, 1, {0, 255, 255});
-            putText(dst, angle_str1, {dst.size().width / 2 + 5, 65}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
+            putText(dst, angle_str, {dst.size().width / 2 + 1, 30}, cv::FONT_HERSHEY_TRIPLEX, 1, {0, 255, 255});
+            putText(dst, angle_str1, {dst.size().width / 2 + 1, 65}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
             // putText(dst, (is_aimed_[0] ? "pitchState:Predicting" : "pitchState:Tracking"), {5, 80}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
             // putText(dst, (is_aimed_[1] ? "yawState:Predicting" : "yawState:Tracking"), {5, 130}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
             putText(dst, (is_pred_ ? "State:Predicting" : "State:Tracking"), {5, 80}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});

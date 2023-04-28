@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-04-14 02:36:33
+ * @LastEditTime: 2023-04-16 13:19:06
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -58,7 +58,7 @@ namespace camera_driver
         
         void imageCallback();
         virtual std::unique_ptr<T> initCamDriver();
-        void cameraWatcher();
+        // void cameraWatcher();
 
     public:
         // Update params.
@@ -100,16 +100,16 @@ namespace camera_driver
         int frame_cnt_;
         std::unique_ptr<rosbag2_cpp::writers::SequentialWriter> writer_;
 
-        void decisionMsgCallback(DecisionMsg::SharedPtr msg);
-        rclcpp::Subscription<DecisionMsg>::SharedPtr decision_msg_sub_; 
-        DecisionMsg decision_msg_;
-        mutex decision_mutex_;
+        // void decisionMsgCallback(DecisionMsg::SharedPtr msg);
+        // rclcpp::Subscription<DecisionMsg>::SharedPtr decision_msg_sub_; 
+        // DecisionMsg decision_msg_;
+        // mutex decision_mutex_;
 
-        void serialMsgCallback(SerialMsg::SharedPtr msg);
-        rclcpp::Subscription<SerialMsg>::SharedPtr serial_msg_sub_; 
-        SerialMsg serial_msg_;
-        mutex serial_mutex_;
-        bool use_serial_;
+        // void serialMsgCallback(SerialMsg::SharedPtr msg);
+        // rclcpp::Subscription<SerialMsg>::SharedPtr serial_msg_sub_; 
+        // SerialMsg serial_msg_;
+        // mutex serial_mutex_;
+        // bool use_serial_;
     };
 
     template<class T>
@@ -191,26 +191,26 @@ namespace camera_driver
         image_msg_.header.frame_id = camera_topic_;
         image_msg_.encoding = "bgr8";
         img_callback_timer_ = this->create_wall_timer(1ms, std::bind(&CameraBaseNode::imageCallback, this));
-        camera_watcher_timer_ = rclcpp::create_timer(this, this->get_clock(), 100ms, std::bind(&CameraBaseNode::cameraWatcher, this));
+        // camera_watcher_timer_ = rclcpp::create_timer(this, this->get_clock(), 100ms, std::bind(&CameraBaseNode::cameraWatcher, this));
 
-        this->declare_parameter("using_port", false);
-        use_serial_ = this->get_parameter("using_port").as_bool();
-        if (use_serial_)
-        {
-            //决策消息订阅
-            decision_msg_sub_ = this->create_subscription<DecisionMsg>(
-                "robot_decision/decision",
-                qos,
-                std::bind(&CameraBaseNode::decisionMsgCallback, this, _1)
-            );
+        // this->declare_parameter("using_port", false);
+        // use_serial_ = this->get_parameter("using_port").as_bool();
+        // if (use_serial_)
+        // {
+        //     //决策消息订阅
+        //     decision_msg_sub_ = this->create_subscription<DecisionMsg>(
+        //         "robot_decision/decision",
+        //         qos,
+        //         std::bind(&CameraBaseNode::decisionMsgCallback, this, _1)
+        //     );
 
-            //串口消息订阅
-            serial_msg_sub_ = this->create_subscription<SerialMsg>(
-                "/serial_msg",
-                qos,
-                std::bind(&CameraBaseNode::serialMsgCallback, this, _1)
-            );
-        }
+        //     //串口消息订阅
+        //     serial_msg_sub_ = this->create_subscription<SerialMsg>(
+        //         "/serial_msg",
+        //         qos,
+        //         std::bind(&CameraBaseNode::serialMsgCallback, this, _1)
+        //     );
+        // }
     }
 
     template<class T>
@@ -218,55 +218,58 @@ namespace camera_driver
     {
     }
     
-    template<class T>
-    void CameraBaseNode<T>::decisionMsgCallback(DecisionMsg::SharedPtr msg)
-    {
-        decision_mutex_.lock();
-        decision_msg_ = *msg;
-        decision_mutex_.unlock();
-    }
+    // template<class T>
+    // void CameraBaseNode<T>::decisionMsgCallback(DecisionMsg::SharedPtr msg)
+    // {
+    //     decision_mutex_.lock();
+    //     decision_msg_ = *msg;
+    //     decision_mutex_.unlock();
+    // }
 
-    template<class T>
-    void CameraBaseNode<T>::serialMsgCallback(SerialMsg::SharedPtr msg)
-    {
-        serial_mutex_.lock();
-        serial_msg_ = *msg;
-        serial_mutex_.unlock();
-    }
+    // template<class T>
+    // void CameraBaseNode<T>::serialMsgCallback(SerialMsg::SharedPtr msg)
+    // {
+    //     serial_mutex_.lock();
+    //     serial_msg_ = *msg;
+    //     serial_mutex_.unlock();
+    // }
 
-    template<class T>
-    void CameraBaseNode<T>::cameraWatcher()
-    {
-        if (!is_cam_open_)
-        {
-            // Reopen camera.
-            auto status = cam_driver_->close();
-            status = cam_driver_->init();
-            if (!cam_driver_->open() && !status)
-            {
-                RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Open failed!");
-            }
-            else
-            {
-                is_cam_open_ = true;
-            }
-        }
-    }
+    // template<class T>
+    // void CameraBaseNode<T>::cameraWatcher()
+    // {
+    //     if (!is_cam_open_)
+    //     {
+    //         // Reopen camera.
+    //         auto status = cam_driver_->close();
+    //         status = cam_driver_->init();
+    //         if (!cam_driver_->open() && !status)
+    //         {
+    //             RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Open failed!");
+    //         }
+    //         else
+    //         {
+    //             is_cam_open_ = true;
+    //         }
+    //     }
+    // }
 
     template<class T>
     void CameraBaseNode<T>::imageCallback()
     {
-        if (use_serial_)
-        {
-            if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
-            {
-                return;
-            }
-        }
+        // if (use_serial_)
+        // {
+        //     if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
+        //     {
+        //         return;
+        //     }
+        // }
 
         if (!cam_driver_->getImage(frame_, image_msg_))
         {
             RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
+            exit(0);
+            // int* dead_ptr = nullptr;
+            // cout << *dead_ptr << endl;
             is_cam_open_ = false;
             return;
         }
@@ -281,7 +284,7 @@ namespace camera_driver
         if (save_video_)
         {   // Video recorder.
             ++frame_cnt_;
-            if (frame_cnt_ % 4 == 0)
+            if (frame_cnt_ % 100 == 0)
             {
                 sensor_msgs::msg::Image image_msg = image_msg_;
                 auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
@@ -294,7 +297,7 @@ namespace camera_driver
                     {
                         if (rcutils_uint8_array_fini(msg) != RCUTILS_RET_OK)
                         {
-                            RCLCPP_ERROR(this->get_logger(), "RCUTILS_RET_INVALID_ARGUMENT OR RCUTILS_RET_ERROR");
+                            RCLCPP_ERROR(this->get_logger(), "[Record video] RCUTILS_RET_INVALID_ARGUMENT OR RCUTILS_RET_ERROR");
                         }
                         delete msg;
                     }
@@ -302,7 +305,10 @@ namespace camera_driver
                 *bag_msg->serialized_data = serialized_msg.release_rcl_serialized_message();
                 bag_msg->topic_name = camera_topic_;
                 bag_msg->time_stamp = now.nanoseconds();
-                writer_->write(bag_msg);
+                auto async_future = std::async(std::launch::async, [&](){
+                    writer_->write(bag_msg);
+                });
+                async_future.wait_for(2ms);
             }
         }
         if (show_img_)

@@ -68,7 +68,11 @@ namespace armor_processor
         bool is_pred_ = false;
         bool is_pred_failed_ = false;
         int count_ = 0;
-        
+
+        int lost_cnt_;
+        bool is_losting_ = false;
+        bool is_last_target_exists_ = false;
+
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
         rclcpp::Publisher<AutoaimMsg>::SharedPtr predict_info_pub_;

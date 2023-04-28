@@ -145,6 +145,7 @@ namespace serialport
         vector<float> vehicle_pos_info;
         while (1)
         {
+            rclcpp::Time start = this->get_clock()->now();
             // 若串口离线则跳过数据发送
             if (!serial_port_->serial_data_.is_initialized)
             {
@@ -152,6 +153,8 @@ namespace serialport
                 usleep(1000);
                 continue;
             }
+
+            // usleep(1500);
 
             // 数据读取不成功进行循环
             bool is_receive_data = false; 
@@ -163,32 +166,34 @@ namespace serialport
                 if(!is_receive_data)
                 {
                     RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
-                    usleep(1000);
+                    // usleep(1000);
+                    // continue;
                 }
             }
             
-            uchar flag = serial_port_->serial_data_.rdata[0];
-            uchar mode = serial_port_->serial_data_.rdata[1];
-            mode_ = mode;
             // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
             // RCLCPP_INFO(this->get_logger(), "mode:%d", mode);
             
+            uchar flag = serial_port_->serial_data_.rdata1[0];
             if (flag == 0xA5)
             {
-                // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
+                uchar mode = serial_port_->serial_data_.rdata1[1];
+                mode_ = mode;
+                // RCLCPP_INFO(this->get_logger(),"flag:0xA5");
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "serial_mode:%d", mode);
                 std::vector<float> quat;
                 std::vector<float> gyro;
                 std::vector<float> acc;
                 float bullet_speed;
                 float theta;
                 float pitch;
-                data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata[47], theta);
-                data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata[51], pitch);
+                data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata1[47], theta);
+                data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata1[51], pitch);
                 //Process IMU Datas
-                data_transform_->getQuatData(&serial_port_->serial_data_.rdata[3], quat);
-                data_transform_->getGyroData(&serial_port_->serial_data_.rdata[19], gyro);
-                data_transform_->getAccData(&serial_port_->serial_data_.rdata[31], acc);
-                data_transform_->getBulletSpeed(&serial_port_->serial_data_.rdata[43], bullet_speed);
+                data_transform_->getQuatData(&serial_port_->serial_data_.rdata1[3], quat);
+                data_transform_->getGyroData(&serial_port_->serial_data_.rdata1[19], gyro);
+                data_transform_->getAccData(&serial_port_->serial_data_.rdata1[31], acc);
+                data_transform_->getBulletSpeed(&serial_port_->serial_data_.rdata1[43], bullet_speed);
                 
                 // Gimbal angle
                 // float yaw_angle = 0.0, pitch_angle = 0.0;
@@ -208,7 +213,7 @@ namespace serialport
                 SerialMsg serial_msg;
                 serial_msg.header.frame_id = "serial";
                 serial_msg.header.stamp = now;
-                serial_msg.imu.header.frame_id = "imu_link";
+                serial_msg.imu.header.frame_id = "imu_link1";
                 serial_msg.imu.header.stamp = now;
                 serial_msg.mode = mode;
                 serial_msg.bullet_speed = bullet_speed;
@@ -233,17 +238,24 @@ namespace serialport
                 joint_state.position.push_back(-pitch);
                 joint_state_pub_->publish(joint_state);
             }
-            else if (flag == 0xB5)
+
+            flag = serial_port_->serial_data_.rdata2[0];
+            if (flag == 0xB5)
             {
-                data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
+                // RCLCPP_INFO(this->get_logger(),"flag:0xB5");
+                data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata2[3], vehicle_pos_info);
             }
-            else if (flag == 0xC5)
+
+            flag = serial_port_->serial_data_.rdata3[0];
+            if (flag == 0xC5)
             {
+                // RCLCPP_INFO(this->get_logger(),"flag:0xC5");
                 vector<ushort> hp;
                 ushort timestamp;
-                data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
-                data_transform_->getHPInfo(flag, &serial_port_->serial_data_.rdata[27], hp);
-                data_transform_->getGameInfo(flag, &serial_port_->serial_data_.rdata[47], timestamp);
+                uchar gamestage;
+                data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata3[3], vehicle_pos_info);
+                data_transform_->getHPInfo(flag, &serial_port_->serial_data_.rdata3[27], hp);
+                data_transform_->getGameInfo(flag, &serial_port_->serial_data_.rdata3[47], timestamp, gamestage);
 
                 CarPosMsg car_pos_msg;
                 ObjHPMsg obj_hp_msg;
@@ -258,29 +270,29 @@ namespace serialport
 
                 if (print_referee_info_)
                 {
-                    for(int ii = 0; ii < 20; ii++)
-                        RCLCPP_INFO(this->get_logger(), "Pos:%.2f", vehicle_pos_info[ii]);
-                    for(int ii = 0; ii < 10; ii++)
-                        RCLCPP_INFO(this->get_logger(), "HP:%.2d", hp[ii]);
-                    RCLCPP_INFO(this->get_logger(), "timestamp:%.2d", timestamp);
+                    RCLCPP_INFO(this->get_logger(), "timestamp:%.2d, Stage:%d", timestamp, gamestage);
                 }
 
                 rclcpp::Time now = this->get_clock()->now();
                 car_pos_msg.header.frame_id = "";
                 car_pos_msg.header.stamp = now;
-                // car_pos_pub_->publish(move(car_pos_msg));
+                car_pos_pub_->publish(move(car_pos_msg));
                 
                 obj_hp_msg.header.frame_id = "";
                 obj_hp_msg.header.stamp = now;
-                // obj_hp_pub_->publish(move(obj_hp_msg));
+                obj_hp_pub_->publish(move(obj_hp_msg));
 
                 game_msg.header.frame_id = "";
                 game_msg.header.stamp = now;
                 game_msg.timestamp = timestamp;
-                // game_msg_pub_->publish(move(game_msg));
+                game_msg.game_stage = (int)gamestage;
+                game_msg_pub_->publish(move(game_msg));
 
                 vehicle_pos_info.clear();
             }
+
+            rclcpp::Time end = this->get_clock()->now();
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "receive_delay:%.3fms", (end - start).nanoseconds() / 1e6);
         }
     }
 
@@ -294,18 +306,18 @@ namespace serialport
     bool SerialPortNode::sendData(GimbalMsg::SharedPtr target_info)
     {
         int mode = mode_;
-        // if (mode == SENTRY_NORMAL)
+        // if (mode == SENTRY_AUTOAIM)
         // {
         //     decision_mutex_.lock();
         //     mode = decision_msg_.mode;
         //     decision_mutex_.unlock();
         // }
-        // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Mode:%d", mode);
         if (this->using_port_)
         {   
             VisionAimData vision_data;
             if (mode == AUTOAIM || mode == HERO_SLING || mode == OUTPOST_ROTATION_MODE
-            || mode == SMALL_BUFF || mode == BIG_BUFF || mode == SENTRY_NORMAL)
+            || mode == SMALL_BUFF || mode == BIG_BUFF || mode == SENTRY_AUTOAIM)
             {
                 // RCLCPP_WARN(this->get_logger(), "Sub autoaim msg!!!");
                 vision_data = 
@@ -323,29 +335,24 @@ namespace serialport
                     {target_info->pred_point_cam.x, target_info->pred_point_cam.y, target_info->pred_point_cam.z}
                 };
                 RCLCPP_WARN_EXPRESSION(this->get_logger(), (target_info->is_switched || target_info->is_spinning_switched), "Target switched!!!");
+                
+                //根据不同mode进行对应的数据转换
+                data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
+                // End!
+                rclcpp::Time now = this->get_clock()->now();
+                rclcpp::Time start = target_info->header.stamp;
+                // builtin_interfaces::msg::Time now_timestamp = now;
+                // double dura = (now_timestamp.nanosec - target_info->header.stamp.nanosec) / 1e6;
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "All_delay:%.2fms", (now.nanoseconds() - start.nanoseconds()) / 1e6);
+                //数据发送
+                mutex_.lock();
+                serial_port_->sendData();
+                mutex_.unlock();
+                // flag_ = true;
+                return true;
             }
-            else 
-                return false;
-
-            //根据不同mode进行对应的数据转换
-            data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
-            
-            // End!
-            rclcpp::Time now = this->get_clock()->now();
-            rclcpp::Time start = target_info->header.stamp;
-            // builtin_interfaces::msg::Time now_timestamp = now;
-            // double dura = (now_timestamp.nanosec - target_info->header.stamp.nanosec) / 1e6;
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "All_delay:%.2fms", (now.nanoseconds() - start.nanoseconds()) / 1e6);
-            
-            //数据发送
-            mutex_.lock();
-            serial_port_->sendData();
-            mutex_.unlock();
-            // flag_ = true;
-            return true;
         }
-        else
-            return false;
+        return false;
     }
 
     /**
@@ -355,15 +362,19 @@ namespace serialport
      */
     void SerialPortNode::armorMsgCallback(GimbalMsg::SharedPtr target_info) 
     {
-        int mode = mode_;
-        if ((mode == SENTRY_NORMAL && decision_msg_.decision_id == AUTOAIM)
-        || (mode == AUTOAIM || mode == HERO_SLING))
-        {
+        // int mode = mode_;
+        // if (debug_without_decision_msg_)
+        // {
+        //     decision_msg_.decision_id = SENTRY_AUTOAIM;
+        // }
+        // if ((mode == SENTRY_AUTOAIM && decision_msg_.decision_id == AUTOAIM)
+        // || (mode == AUTOAIM || mode == HERO_SLING))
+        // {
             if (!sendData(target_info))
             {   // Debug without com.
                 RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub autoaim msg...");
             }
-        }
+        // }
         return;
     }
 
@@ -374,12 +385,12 @@ namespace serialport
      */
     void SerialPortNode::buffMsgCallback(GimbalMsg::SharedPtr target_info) 
     {
-        int mode = mode_;
-        if (mode == SMALL_BUFF || mode == BIG_BUFF)
-        {
+        // int mode = mode_;
+        // if (mode == SMALL_BUFF || mode == BIG_BUFF)
+        // {
             if (!sendData(target_info))
                 RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
-        }
+        // }
         return;
     }
 
@@ -494,11 +505,14 @@ namespace serialport
         this->declare_parameter<bool>("tracking_target", false);
         this->get_parameter("tracking_target", tracking_target_);
 
-        this->declare_parameter("print_serial_info", false);
+        this->declare_parameter<bool>("print_serial_info", false);
         this->get_parameter("print_serial_info", this->print_serial_info_);
 
-        this->declare_parameter("print_referee_info", false);
+        this->declare_parameter<bool>("print_referee_info", false);
         this->get_parameter("print_referee_info", this->print_referee_info_);
+
+        this->declare_parameter<bool>("debug_without_decision_msg", true);
+        this->get_parameter("debug_without_decision_msg", this->debug_without_decision_msg_);
 
         return std::make_unique<SerialPort>(id_, baud_, using_port_);
     }

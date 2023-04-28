@@ -74,6 +74,7 @@ namespace serialport
         std::unique_ptr<std::thread> receive_thread_;
         
         mutex mutex_;
+        bool debug_without_decision_msg_;
         bool using_port_;
         bool tracking_target_;
         atomic<int> mode_;

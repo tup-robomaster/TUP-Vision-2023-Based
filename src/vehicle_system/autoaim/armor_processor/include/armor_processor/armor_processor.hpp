@@ -30,8 +30,8 @@ namespace armor_processor
 
         //预测(接收armor_detector节点发布的目标信息进行预测)
         CoordSolver coordsolver_;
-        std::unique_ptr<Eigen::Vector3d> predictor(AutoaimMsg& Autoaim, double& sleep_time);
-        std::unique_ptr<Eigen::Vector3d> predictor(cv::Mat& src, AutoaimMsg& Autoaim, double& sleep_time);
+        Eigen::Vector3d predictor(AutoaimMsg& Autoaim, double& sleep_time);
+        Eigen::Vector3d predictor(cv::Mat& src, AutoaimMsg& Autoaim, double& sleep_time);
         
         void init(std::string coord_path, std::string coord_name);
         bool autoShootingLogic(AutoaimMsg& armor, PostProcessInfo& post_process_info);

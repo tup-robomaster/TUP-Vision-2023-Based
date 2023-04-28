@@ -78,7 +78,7 @@ namespace serialport
         void getThetaAngle(uchar* raw_data, float& theta);
         void getPosInfo(uchar flag, uchar* raw_data, vector<float>& pos);
         void getHPInfo(uchar flag, uchar* raw_data, vector<ushort>& hp);
-        void getGameInfo(uchar flag, uchar* raw_data, ushort& timestamp);
+        void getGameInfo(uchar flag, uchar* raw_data, ushort& timestamp, uchar& gamestage);
         void getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle);
         void getPitchAngle(uchar flag, uchar* raw_data, float& pitch_angle);
 

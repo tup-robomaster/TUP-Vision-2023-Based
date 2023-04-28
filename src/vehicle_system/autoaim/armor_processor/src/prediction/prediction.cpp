@@ -644,6 +644,7 @@ namespace armor_processor
             singer_kf_[is_spinning][axis].x_ << meas, 0, 0;
             is_available = false;
             is_singer_init_[is_spinning][axis] = true;
+            count_ = 0;
         }
         else
         {
@@ -715,6 +716,7 @@ namespace armor_processor
             //     is_singer_init_[axis] = false;
             //     result = meas;
             // }
+            count_++;
             is_available = true;
         }
         return is_available;

@@ -39,15 +39,16 @@ namespace serialport
         trans_data[15] = vision_data.isSwitched;
         trans_data[16] = vision_data.isFindTarget;
         trans_data[17] = vision_data.isSpinning;
-        trans_data[18] = vision_data.isPrediction;
+        trans_data[18] = vision_data.isShooting;
+        trans_data[19] = vision_data.isPrediction;
 
         //目标位置信息
         float float_3d_data[] = {(float)vision_data.meas_tracking_point[0], (float)vision_data.meas_tracking_point[1], (float)vision_data.meas_tracking_point[2],
             (float)vision_data.pred_aiming_point[0], (float)vision_data.pred_aiming_point[1], (float)vision_data.pred_aiming_point[2]};
-        float2UcharRawArray(float_3d_data, 6, &trans_data[19]);
+        float2UcharRawArray(float_3d_data, 6, &trans_data[20]);
         // cout << "x:" << float_3d_data[0] <<  " y:" << float_3d_data[1] << " z:" << float_3d_data[2] << endl;
         
-        trans_data[43] = 0x00;
+        trans_data[44] = 0x00;
         crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
     }
 
@@ -123,10 +124,13 @@ namespace serialport
         return;
     }
 
-    void DataTransform::getGameInfo(uchar flag, uchar* raw_data, ushort& timestamp)
+    void DataTransform::getGameInfo(uchar flag, uchar* raw_data, ushort& timestamp, uchar& gamestate)
     {
         if (flag == 0xC5)
+        {
             timestamp = ucharRaw2Int16(raw_data);
+            gamestate = raw_data[2];
+        }
         return;
     }
     

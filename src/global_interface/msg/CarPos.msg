@@ -1,2 +1,2 @@
 std_msgs/Header header 
-Point2f[10] pos
+Point2f[12] pos

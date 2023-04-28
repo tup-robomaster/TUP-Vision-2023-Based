@@ -114,7 +114,7 @@ namespace armor_detector
         if (debug_params_.using_roi)
         {   //启用roi
             //吊射模式采用固定ROI
-            if (src.mode == 2)
+            if (src.mode == HERO_SLING)
             {
                 input(Range(600,1024),Range(432,848)).copyTo(input);
                 roi_offset_ = Point2f((float)432, (float)600);
@@ -162,12 +162,14 @@ namespace armor_detector
             //TODO:加入紫色装甲板限制通过条件
             if (detector_params_.color == RED)
             {
-                if (object.color == BLUE || object.color == PURPLE)
+                // if (object.color == BLUE || object.color == PURPLE)
+                if (object.color != RED)
                     continue;
             }
             else if (detector_params_.color == BLUE)
             {
-                if (object.color == RED || object.color == PURPLE)
+                if (object.color != BLUE)
+                // if (object.color == RED || object.color == PURPLE)
                     continue;
             }
    
@@ -254,9 +256,9 @@ namespace armor_detector
             }
 
             // 单目PnP
-            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
+            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
             // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
-            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
+            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
             
             //防止装甲板类型出错导致解算问题，首先尝试切换装甲板类型，若仍无效则直接跳过该装甲板
             if (!isPnpSolverValidation(pnp_result.armor_cam))
@@ -336,7 +338,8 @@ namespace armor_detector
         //Choose target vehicle
         //此处首先根据哨兵发来的ID指令进行目标车辆追踪
         int target_id = -1;
-        if (src.mode == SENTRY_NORMAL && decision_msg.decision_id == AUTOAIM)
+        // RCLCPP_WARN(logger_, "mode:%d", src.mode);
+        if (src.mode == SENTRY_AUTOAIM)
         {
             target_id = chooseTargetID(src, new_armors_, hp, decision_msg);
         }
@@ -823,6 +826,23 @@ namespace armor_detector
         if(last_status_ == SINGER && cur_status_ == DOUBLE)
             target_info.spinning_switched = true;
         
+        if (spinning_detector_.is_dead_)
+        {
+            dead_buffer_cnt_ = 0;
+            RCLCPP_WARN(logger_, "dead_buffer_cnt: %d", dead_buffer_cnt_);
+            spinning_detector_.is_dead_ = false;
+        }
+
+        if (target.color == GRAY)
+        {
+            RCLCPP_WARN(logger_, "dead_buffer_cnt: %d", dead_buffer_cnt_);
+            dead_buffer_cnt_++;
+        }
+        else
+        {
+            dead_buffer_cnt_ = 0;
+        }
+        
         int target_hp = car_id_map_[target.key];
         target_info.key = target.key;
         target_info.hp = target_hp;
@@ -844,21 +864,10 @@ namespace armor_detector
         target_info.is_target_lost = false;
         // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
 
-        if (spinning_detector_.is_dead_)
+        if (target.color == GRAY && !is_last_target_exists_)
         {
-            dead_buffer_cnt_ = 0;
-            RCLCPP_WARN(logger_, "dead_buffer_cnt: %d", dead_buffer_cnt_);
-            spinning_detector_.is_dead_ = false;
-        }
-
-        if (target.color == 2)
-        {
-            RCLCPP_WARN(logger_, "dead_buffer_cnt: %d", dead_buffer_cnt_);
-            dead_buffer_cnt_++;
-        }
-        else
-        {
-            dead_buffer_cnt_ = 0;
+            target_info.is_target_lost = true;
+            return false;
         }
 
         // cout << 1 << endl;
@@ -988,12 +997,12 @@ namespace armor_detector
     {
         std::vector<Armor> new_armors;
         cv::Point2d img_center = cv::Point2d(src.img.size().width / 2, src.img.size().height / 2);
-        if (src.mode == SENTRY_NORMAL && decision_msg.mode == AUTOAIM)
+        if (src.mode == SENTRY_AUTOAIM)
         {
             for (auto& armor : armors)
             {
                 int id = car_id_map_[armor.key];
-                if (armor.id == decision_msg.decision_id && armor.armor3d_world.norm() <= detector_params_.fire_zone)
+                if (armor.armor3d_world.norm() <= detector_params_.fire_zone)
                 {
                     return armor.id;
                 }
@@ -1215,13 +1224,13 @@ namespace armor_detector
                 return armor.id;
             }
             else if ((armor.id == last_armor_.id 
-            // || last_armor_.roi.contains(armor.center2d)
+            || last_armor_.roi.contains(armor.center2d)
             )
             && abs(armor.area - last_armor_.area) / (float)armor.area < 0.40
             && abs(now_ - last_timestamp_) / 1e6 <= 100
             && (abs(rrangle) <= 16.0 || abs(rrangle) >= 74.0))
             {
-                // armor.id = last_armor_.id;
+                armor.id = last_armor_.id;
                 is_last_id_exists = true;
                 target_id = armor.id;
                 break;

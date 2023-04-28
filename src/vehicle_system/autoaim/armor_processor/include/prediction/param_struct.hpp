@@ -175,6 +175,17 @@ namespace armor_processor
         Eigen::Vector3d track_3d_pos; //目标当前位置
         Eigen::Vector2d pred_velocity;//目标移动速度，作为是否射击目标依据
         Eigen::Vector2d meas_velocity;
+        PostProcessInfo()
+        {
+            pred_score = 0;
+            find_target = false;
+            is_shooting = false;
+            switch_target = false;
+            pred_3d_pos = {0, 0, 0};
+            track_3d_pos = {0, 0, 0};
+            pred_velocity = {0, 0};
+            meas_velocity = {0, 0};
+        }
     };
 } //namespace armor_processor
 #endif

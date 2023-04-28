@@ -13,7 +13,7 @@
     balance_g: 1024
     balance_r: 2022
     debug: true
-    save_video: false
+    save_video: true
     save_path: "/recorder/video/"
     using_port: false
 
@@ -25,7 +25,7 @@
     image_height: 1024
     width_scale: 1
     height_scale: 1
-    exposure_time: 3500
+    exposure_time: 5200
     exposure_gain: 14
     exposure_gain_b: 0
     exposure_gain_g: 0
@@ -34,7 +34,7 @@
     balance_g: 1.0
     balance_r: 1.548
     debug: true
-    save_video: false
+    save_video: true
     save_path: "/recorder/video/"
     using_port: false
     

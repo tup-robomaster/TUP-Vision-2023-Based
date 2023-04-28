@@ -34,11 +34,11 @@ def generate_launch_description():
     debug_pred = LaunchConfiguration("debug_pred")
     # record_topic_args = LaunchConfiguration("record_topic")
 
-    declare_camera_type = DeclareLaunchArgument(
-        name='camera_type',
-        default_value='daheng',
-        description='hik daheng mvs usb'
-    )
+    # declare_camera_type = DeclareLaunchArgument(
+    #     name='camera_type',
+    #     default_value='daheng',
+    #     description='hik daheng mvs usb'
+    # )
 
     declare_use_serial = DeclareLaunchArgument(
         name='using_imu',
@@ -58,14 +58,14 @@ def generate_launch_description():
     #     description='hik daheng mvs usb'
     # )
     
-    with open(camera_param_file, 'r') as f:
-        usb_cam_params = yaml.safe_load(f)['/usb_cam_driver']['ros__parameters']
-    with open(camera_param_file, 'r') as f:
-        hik_cam_params = yaml.safe_load(f)['/hik_cam_driver']['ros__parameters']
-    with open(camera_param_file, 'r') as f:
-        daheng_cam_params = yaml.safe_load(f)['/daheng_cam_driver']['ros__parameters']
-    with open(camera_param_file, 'r') as f:
-        mvs_cam_params = yaml.safe_load(f)['/mvs_cam_driver']['ros__parameters']
+    # with open(camera_param_file, 'r') as f:
+    #     usb_cam_params = yaml.safe_load(f)['/usb_cam_driver']['ros__parameters']
+    # with open(camera_param_file, 'r') as f:
+    #     hik_cam_params = yaml.safe_load(f)['/hik_cam_driver']['ros__parameters']
+    # with open(camera_param_file, 'r') as f:
+    #     daheng_cam_params = yaml.safe_load(f)['/daheng_cam_driver']['ros__parameters']
+    # with open(camera_param_file, 'r') as f:
+    #     mvs_cam_params = yaml.safe_load(f)['/mvs_cam_driver']['ros__parameters']
 
     with open(autoaim_param_file, 'r') as f:
         armor_detector_params = yaml.safe_load(f)['/armor_detector']['ros__parameters']
@@ -73,7 +73,7 @@ def generate_launch_description():
         armor_processor_params = yaml.safe_load(f)['/armor_processor']['ros__parameters']
     
     return LaunchDescription([
-        declare_camera_type,
+        # declare_camera_type,
         declare_use_serial,
         declare_debug_pred,
         # declare_record_topic,
@@ -83,211 +83,237 @@ def generate_launch_description():
         #     output='screen',
         # ),
 
+        # Node(
+        #     package='camera_driver',
+        #     executable='daheng_cam_driver_node',
+        #     name='daheng_driver',
+        #     output='screen', # log/screen/both
+        #     emulate_tty=True,
+        #     parameters=[daheng_cam_params],
+        #     respawn=True
+        # ),
+
+        # Node(
+        #     package='armor_detector',
+        #     executable='armor_detector_node',
+        #     name='armor_detector',
+        #     output='screen', # log/screen/both
+        #     emulate_tty=True,
+        #     parameters=[armor_detector_params],
+        #     respawn=True
+        # ),
+
         Node(
             package='serialport',
             executable='serialport_node',
             name='serialport',
-            output='log', # log/screen/both
+            output='screen', # log/screen/both
             emulate_tty=True,
             parameters=[{
                 'using_port': True,
-                'tracking_target': True,
+                'tracking_target': False,
                 'print_serial_info': False,
-                'print_referee_info': False
+                'print_referee_info': True  ,
+                "debug_without_decision_msg": True,
             }],
             respawn=True,
             condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
         ),
         
-        ComposableNodeContainer(
-            name='serial_processor_container',
-            package='rclcpp_components',
-            executable='component_container',
-            namespace='',
-            output='log',
-            condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'True'"])),
-            composable_node_descriptions=[
-                ComposableNode(
-                    package='serialport',
-                    plugin='serialport::SerialPortNode',
-                    name='serialport',
-                    parameters=[{
-                        'using_port': True,
-                        'tracking_target': False,
-                        'print_serial_info': False,
-                        'print_referee_info': False            
-                    }],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                ComposableNode(
-                    package='armor_processor',
-                    plugin='armor_processor::ArmorProcessorNode',
-                    name='armor_processor',
-                    parameters=[armor_processor_params], 
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-            ]
-        ),
+        # # ComposableNodeContainer(
+        # #     name='serial_processor_container',
+        # #     package='rclcpp_components',
+        # #     executable='component_container',
+        # #     namespace='',
+        # #     output='log',
+        # #     respawn=True,
+        # #     condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'True'"])),
+        # #     composable_node_descriptions=[
+        # #         ComposableNode(
+        # #             package='serialport',
+        # #             plugin='serialport::SerialPortNode',
+        # #             name='serialport',
+        # #             parameters=[{
+        # #                 'using_port': True,
+        # #                 'tracking_target': False,
+        # #                 'print_serial_info': False,
+        # #                 'print_referee_info': False            
+        # #             }],
+        # #             extra_arguments=[{
+        # #                 'use_intra_process_comms':True
+        # #             }]
+        # #         ),
+        # #         ComposableNode(
+        # #             package='armor_processor',
+        # #             plugin='armor_processor::ArmorProcessorNode',
+        # #             name='armor_processor',
+        # #             parameters=[armor_processor_params], 
+        # #             extra_arguments=[{
+        # #                 'use_intra_process_comms':True
+        # #             }]
+        # #         ),
+        # #     ]
+        # # ),
         
-        ComposableNodeContainer(
-            name='armor_detector_container',
-            namespace='',
-            output='screen',
-            package='rclcpp_components',
-            executable='component_container',
-            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'usb'"])),
-            composable_node_descriptions=[
-                ComposableNode(
-                    package='camera_driver',
-                    plugin='camera_driver::UsbCamNode',
-                    name='usb_driver',
-                    parameters=[usb_cam_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                ComposableNode(
-                    package='armor_detector',
-                    plugin='armor_detector::DetectorNode',
-                    name='armor_detector',
-                    parameters=[armor_detector_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                # ComposableNode(
-                #     package='armor_processor',
-                #     plugin='armor_processor::ArmorProcessorNode',
-                #     name='armor_processor',
-                #     namespace='',
-                #     parameters=[armor_processor_params],
-                #     extra_arguments=[{
-                #         'use_intra_process_comms':True
-                #     }]
-                # ),  
-            ],
-        ),
+        # # ComposableNodeContainer(
+        # #     name='armor_detector_container',
+        # #     namespace='',
+        # #     output='screen',
+        # #     package='rclcpp_components',
+        # #     executable='component_container',
+        # #     respawn=True,
+        # #     condition=IfCondition(PythonExpression(["'", camera_type, "' == 'usb'"])),
+        # #     composable_node_descriptions=[
+        # #         ComposableNode(
+        # #             package='camera_driver',
+        # #             plugin='camera_driver::UsbCamNode',
+        # #             name='usb_driver',
+        # #             parameters=[usb_cam_params],
+        # #             extra_arguments=[{
+        # #                 'use_intra_process_comms':True
+        # #             }]
+        # #         ),
+        # #         ComposableNode(
+        # #             package='armor_detector',
+        # #             plugin='armor_detector::DetectorNode',
+        # #             name='armor_detector',
+        # #             parameters=[armor_detector_params],
+        # #             extra_arguments=[{
+        # #                 'use_intra_process_comms':True
+        # #             }]
+        # #         ),
+        # #         # ComposableNode(
+        # #         #     package='armor_processor',
+        # #         #     plugin='armor_processor::ArmorProcessorNode',
+        # #         #     name='armor_processor',
+        # #         #     namespace='',
+        # #         #     parameters=[armor_processor_params],
+        # #         #     extra_arguments=[{
+        # #         #         'use_intra_process_comms':True
+        # #         #     }]
+        # #         # ),  
+        # #     ],
+        # # ),
         
-        ComposableNodeContainer(
-            name='armor_detector_container',
-            namespace='',
-            output='log',
-            package='rclcpp_components',
-            executable='component_container',
-            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'daheng'"])),
-            composable_node_descriptions=[
-                ComposableNode(
-                    package='camera_driver',
-                    plugin='camera_driver::DahengCamNode',
-                    name='daheng_driver',
-                    parameters=[daheng_cam_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                ComposableNode(
-                    package='armor_detector',
-                    plugin='armor_detector::DetectorNode',
-                    name='armor_detector',
-                    parameters=[armor_detector_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                # ComposableNode(
-                #     package='armor_processor',
-                #     plugin='armor_processor::ArmorProcessorNode',
-                #     name='armor_processor',
-                #     namespace='',
-                #     parameters=[armor_processor_params],
-                #     extra_arguments=[{
-                #         'use_intra_process_comms':True
-                #     }]
-                # ),  
-            ],
-        ),
+        # # ComposableNodeContainer(
+        # #     name='armor_detector_container',
+        # #     namespace='',
+        # #     output='log',
+        # #     package='rclcpp_components',
+        # #     executable='component_container',
+        # #     respawn=True,
+        # #     condition=IfCondition(PythonExpression(["'", camera_type, "' == 'daheng'"])),
+        # #     composable_node_descriptions=[
+        # #         ComposableNode(
+        # #             package='camera_driver',
+        # #             plugin='camera_driver::DahengCamNode',
+        # #             name='daheng_driver',
+        # #             parameters=[daheng_cam_params],
+        # #             extra_arguments=[{
+        # #                 'use_intra_process_comms':True
+        # #             }]
+        # #         ),
+        # #         ComposableNode(
+        # #             package='armor_detector',
+        # #             plugin='armor_detector::DetectorNode',
+        # #             name='armor_detector',
+        # #             parameters=[armor_detector_params],
+        # #             extra_arguments=[{
+        # #                 'use_intra_process_comms':True
+        # #             }]
+        # #         ),
+        # #         # ComposableNode(
+        # #         #     package='armor_processor',
+        # #         #     plugin='armor_processor::ArmorProcessorNode',
+        # #         #     name='armor_processor',
+        # #         #     namespace='',
+        # #         #     parameters=[armor_processor_params],
+        # #         #     extra_arguments=[{
+        # #         #         'use_intra_process_comms':True
+        # #         #     }]
+        # #         # ),  
+        # #     ],
+        # # ),
 
-        ComposableNodeContainer(
-            name='armor_detector_container',
-            namespace='',
-            output='log',
-            package='rclcpp_components',
-            executable='component_container',
-            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'hik'"])),
-            composable_node_descriptions=[
-                ComposableNode(
-                    package='camera_driver',
-                    plugin='camera_driver::HikCamNode',
-                    name='hik_driver',
-                    parameters=[hik_cam_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                ComposableNode(
-                    package='armor_detector',
-                    plugin='armor_detector::DetectorNode',
-                    name='armor_detector',
-                    parameters=[armor_detector_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }],
-                ),
-                # ComposableNode(
-                #     package='armor_processor',
-                #     plugin='armor_processor::ArmorProcessorNode',
-                #     name='armor_processor',
-                #     namespace='',
-                #     parameters=[armor_processor_params],
-                #     extra_arguments=[{
-                #         'use_intra_process_comms':True
-                #     }]
-                # ),  
-            ],
-        ),
+        # # ComposableNodeContainer(
+        # #     name='armor_detector_container',
+        # #     namespace='',
+        # #     output='log',
+        # #     package='rclcpp_components',
+        # #     executable='component_container',
+        # #     respawn=True,
+        # #     condition=IfCondition(PythonExpression(["'", camera_type, "' == 'hik'"])),
+        # #     composable_node_descriptions=[
+        # #         ComposableNode(
+        # #             package='camera_driver',
+        # #             plugin='camera_driver::HikCamNode',
+        # #             name='hik_driver',
+        # #             parameters=[hik_cam_params],
+        # #             extra_arguments=[{
+        # #                 'use_intra_process_comms':True
+        # #             }]
+        # #         ),
+        # #         ComposableNode(
+        # #             package='armor_detector',
+        # #             plugin='armor_detector::DetectorNode',
+        # #             name='armor_detector',
+        # #             parameters=[armor_detector_params],
+        # #             extra_arguments=[{
+        # #                 'use_intra_process_comms':True
+        # #             }],
+        # #         ),
+        # #         # ComposableNode(
+        # #         #     package='armor_processor',
+        # #         #     plugin='armor_processor::ArmorProcessorNode',
+        # #         #     name='armor_processor',
+        # #         #     namespace='',
+        # #         #     parameters=[armor_processor_params],
+        # #         #     extra_arguments=[{
+        # #         #         'use_intra_process_comms':True
+        # #         #     }]
+        # #         # ),  
+        # #     ],
+        # # ),
 
-        ComposableNodeContainer(
-            name='armor_detector_container',
-            namespace='',
-            output='log',
-            package='rclcpp_components',
-            executable='component_container',
-            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'mvs'"])),
-            composable_node_descriptions=[
-                ComposableNode(
-                    package='camera_driver',
-                    plugin='camera_driver::MvsCamNode',
-                    name='mvs_driver',
-                    parameters=[mvs_cam_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                ComposableNode(
-                    package='armor_detector',
-                    plugin='armor_detector::DetectorNode',
-                    name='armor_detector',
-                    parameters=[armor_detector_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                # ComposableNode(
-                #     package='armor_processor',
-                #     plugin='armor_processor::ArmorProcessorNode',
-                #     name='armor_processor',
-                #     namespace='',
-                #     parameters=[armor_processor_params],
-                #     extra_arguments=[{
-                #         'use_intra_process_comms':True
-                #     }]
-                # ),  
-            ],
-        ),
+        # ComposableNodeContainer(
+        #     name='armor_detector_container',
+        #     namespace='',
+        #     output='log',
+        #     package='rclcpp_components',
+        #     executable='component_container',
+        #     respawn=True,
+        #     condition=IfCondition(PythonExpression(["'", camera_type, "' == 'mvs'"])),
+        #     composable_node_descriptions=[
+        #         ComposableNode(
+        #             package='camera_driver',
+        #             plugin='camera_driver::MvsCamNode',
+        #             name='mvs_driver',
+        #             parameters=[mvs_cam_params],
+        #             extra_arguments=[{
+        #                 'use_intra_process_comms':True
+        #             }]
+        #         ),
+        #         ComposableNode(
+        #             package='armor_detector',
+        #             plugin='armor_detector::DetectorNode',
+        #             name='armor_detector',
+        #             parameters=[armor_detector_params],
+        #             extra_arguments=[{
+        #                 'use_intra_process_comms':True
+        #             }]
+        #         ),
+        #         # ComposableNode(
+        #         #     package='armor_processor',
+        #         #     plugin='armor_processor::ArmorProcessorNode',
+        #         #     name='armor_processor',
+        #         #     namespace='',
+        #         #     parameters=[armor_processor_params],
+        #         #     extra_arguments=[{
+        #         #         'use_intra_process_comms':True
+        #         #     }]
+        #         # ),  
+        #     ],
+        # ),
 
         Node(
             package='armor_processor',
@@ -295,6 +321,7 @@ def generate_launch_description():
             namespace='armor_processor',
             output='log', 
             emulate_tty=True,
+            respawn=True,
             parameters=[armor_processor_params],
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
         ),
