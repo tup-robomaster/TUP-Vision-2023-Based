@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 14:30:38
- * @LastEditTime: 2023-02-26 12:45:27
+ * @LastEditTime: 2023-04-14 02:38:20
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_cam_node.cpp
  */
 #include "../../include/hik_driver/hik_cam_node.hpp"
@@ -35,19 +35,19 @@ namespace camera_driver
         switch (param_idx)
         {
         case 0:
-            cam_driver_->set_exposure_time(param.as_double());
+            cam_driver_->setExposureTime(param.as_double());
             break;
         case 1:
-            cam_driver_->set_gain(3, param.as_int());
+            cam_driver_->setGain(3, param.as_int());
             break;
         case 2:
-            cam_driver_->set_balance(0, param.as_int());
+            cam_driver_->setBalance(0, param.as_int());
             break;
         case 3:
-            cam_driver_->set_balance(1, param.as_int());
+            cam_driver_->setBalance(1, param.as_int());
             break;
         case 4:
-            cam_driver_->set_balance(2, param.as_int());
+            cam_driver_->setBalance(2, param.as_int());
             break;
         default:
             break;

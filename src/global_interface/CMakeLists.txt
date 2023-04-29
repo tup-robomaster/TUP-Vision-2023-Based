@@ -18,6 +18,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Point2f.msg"
   "msg/Serial.msg"
   "msg/Buff.msg"
+  "msg/Armor.msg"
   "msg/Autoaim.msg"
   "msg/Gimbal.msg"
   "msg/Sentry.msg"
@@ -27,6 +28,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/SpinInfo.msg"
   "msg/Detection.msg"
   "msg/DetectionArray.msg"
+  "msg/Decision.msg"
   # "srv/*.srv"
   # "action/*.action"
   DEPENDENCIES

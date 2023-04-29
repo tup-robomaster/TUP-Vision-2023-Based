@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-03-29 20:18:14
+ * @LastEditTime: 2023-04-27 20:45:02
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -18,6 +18,9 @@
 #include <std_msgs/msg/float64.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <message_filters/subscriber.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 
 #include "./serialport/serialport.hpp"
 #include "./data_processor/data_transform.hpp"
@@ -28,7 +31,9 @@
 #include "global_interface/msg/car_pos.hpp"
 #include "global_interface/msg/obj_hp.hpp"
 #include "global_interface/msg/game_info.hpp"
+#include "global_interface/msg/decision.hpp"
 #include "../../global_user/include/coordsolver.hpp"
+#include "global_interface/msg/decision.hpp"
 
 using namespace global_user;
 using namespace coordsolver;
@@ -42,6 +47,7 @@ namespace serialport
         typedef global_interface::msg::ObjHP ObjHPMsg;
         typedef global_interface::msg::CarPos CarPosMsg;
         typedef global_interface::msg::GameInfo GameMsg;
+        typedef global_interface::msg::Decision DecisionMsg;
 
     public:
         SerialPortNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
@@ -55,7 +61,12 @@ namespace serialport
         void buffMsgCallback(GimbalMsg::SharedPtr msg);
         void sentryNavCallback(geometry_msgs::msg::Twist::SharedPtr msg);
         void serialWatcher();
-    
+
+        void decisionMsgCallback(DecisionMsg::SharedPtr msg);
+        rclcpp::Subscription<DecisionMsg>::SharedPtr decision_msg_sub_; 
+        DecisionMsg decision_msg_;
+        mutex decision_mutex_;
+
     private:
         int baud_;
         std::string id_;
@@ -76,6 +87,9 @@ namespace serialport
         // rclcpp::TimerBase::SharedPtr receive_timer_;
         queue<VisionAimData> vision_data_queue_;
         // vector<float> vehicle_pos_info;
+
+        //tf2
+        std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
         
     public:
         /**

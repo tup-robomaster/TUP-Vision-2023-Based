@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 14:01:05
- * @LastEditTime: 2023-04-06 20:24:00
+ * @LastEditTime: 2023-04-14 03:18:54
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/global_user.cpp
  */
 #include "../include/global_user/global_user.hpp"
@@ -221,45 +221,11 @@ namespace global_user
         return tree;
     }
 
-    // float calcDistance(cv::Point2f& p1, cv::Point2f& p2)
-    // {
-    //     return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
-    // }
-
-    void videoRecorder(VideoRecordParam& video_param, cv::Mat* src)
+    float calcDistance(cv::Point2f& p1, cv::Point2f& p2)
     {
-        if(video_param.is_initialized)
-        {
-            video_param.frame_cnt = 0;
-            char now[64];
-            std::time_t tt;
-            struct tm *ttime;
-
-            tt = time(nullptr);
-            ttime = localtime(&tt);
-            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", ttime);  // 以时间为名字
-            std::string now_string(now);
-            std::string path(std::string(video_param.save_path + now_string).append(".avi"));
-            video_param.video_recorder = cv::VideoWriter(path, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 30.0, cv::Size(video_param.image_width, video_param.image_height));    // Avi format
-            video_param.is_first_loop = true;
-            video_param.is_initialized = true;
-        }
-        else
-        {
-            video_param.frame_cnt++;
-            if(video_param.frame_cnt % 3 == 0)
-            {
-                video_param.frame_cnt = 0;
-                //异步读写加速,避免阻塞生产者
-                if (video_param.is_first_loop)
-                    video_param.is_first_loop = false;
-                else
-                    video_param.writer.wait();
-                video_param.writer = std::async(std::launch::async, [&](){video_param.video_recorder.write(*src);});
-            }
-        }
+        return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
     }
-    
+
     /**
      * @brief 创建图像数据共享内存空间
      * 

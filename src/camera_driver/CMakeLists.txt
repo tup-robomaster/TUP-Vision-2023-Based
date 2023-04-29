@@ -20,6 +20,8 @@ find_package(sensor_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(camera_info_manager REQUIRED)
+find_package(rosbag2_cpp REQUIRED)
+find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(global_user REQUIRED)
 find_package(global_interface REQUIRED)
@@ -42,6 +44,8 @@ set(dependencies
   camera_info_manager
   image_transport
   camera_calibration_parsers
+  rosbag2_cpp
+  cv_bridge
   OpenCV
   Eigen3
   yaml-cpp
@@ -76,14 +80,12 @@ add_executable(usb_cam_driver_node src/usb_driver/usb_cam_node_main.cpp)
 ament_target_dependencies(usb_cam_driver_node ${dependencies})
 target_link_libraries(usb_cam_driver_node
   ${PROJECT_NAME}
-  yaml-cpp
 )
 
 add_executable(hik_cam_driver_node src/hik_driver/hik_cam_node_main.cpp)
 ament_target_dependencies(hik_cam_driver_node ${dependencies})
 target_link_libraries(hik_cam_driver_node 
   ${PROJECT_NAME}
-  yaml-cpp
 )
 
 add_executable(daheng_cam_driver_node src/daheng_driver/daheng_cam_node_main.cpp)
@@ -91,7 +93,6 @@ ament_target_dependencies(daheng_cam_driver_node ${dependencies})
 target_link_libraries(daheng_cam_driver_node
   ${PROJECT_NAME}
   gxiapi
-  yaml-cpp
 )
     
 rclcpp_components_register_nodes(${PROJECT_NAME} 

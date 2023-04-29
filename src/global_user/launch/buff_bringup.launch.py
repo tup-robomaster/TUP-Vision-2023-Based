@@ -2,7 +2,7 @@
 # Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-27 01:40:28
-LastEditTime: 2023-03-19 21:35:28
+LastEditTime: 2023-04-14 18:08:04
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/buff_bringup.launch.py
 '''
 import os
@@ -71,7 +71,7 @@ def generate_launch_description():
             package='serialport',
             executable='serialport_node',
             name='serialport',
-            output='screen',
+            output='log',
             emulate_tty=True,
             parameters=[{
                 'using_port': True,
@@ -79,6 +79,8 @@ def generate_launch_description():
                 'print_serial_info': False,
                 'print_referee_info': False
             }],
+            respawn=True,
+            respawn_delay=4,
             condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
         ),
         
@@ -87,7 +89,7 @@ def generate_launch_description():
             package='rclcpp_components',
             executable='component_container',
             namespace='',
-            output='screen',
+            output='log',
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'True'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -113,13 +115,15 @@ def generate_launch_description():
                         'use_intra_process_comms':True
                     }]
                 ),
-            ]
+            ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         ComposableNodeContainer(
             name='buff_detector_container',
             namespace='',
-            output='screen',
+            output='log',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'usb'"])),
@@ -153,12 +157,14 @@ def generate_launch_description():
                 #     }]
                 # )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         ComposableNodeContainer(
             name='buff_detector_container',
             namespace='',
-            output='screen',
+            output='log',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'daheng'"])),
@@ -192,12 +198,14 @@ def generate_launch_description():
                 #     }]
                 # )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         ComposableNodeContainer(
             name='buff_detector_container',
             namespace='',
-            output='screen',
+            output='log',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'hik'"])),
@@ -231,12 +239,14 @@ def generate_launch_description():
                 #     }]
                 # )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         ComposableNodeContainer(
             name='buff_detector_container',
             namespace='',
-            output='screen',
+            output='log',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'mvs'"])),
@@ -270,14 +280,18 @@ def generate_launch_description():
                 #     }]
                 # )
             ],
+            respawn=True,
+            respawn_delay=4,
         ),
 
         Node(
             package='buff_processor',
             executable='buff_processor_node',
-            output='screen',
+            output='log',
             emulate_tty=True,
             parameters=[buff_processor_params],
+            respawn=True,
+            respawn_delay=4,
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
         )
     ])

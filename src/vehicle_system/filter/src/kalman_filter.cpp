@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2023-04-06 12:31:11
+ * @LastEditTime: 2022-11-06 15:33:12
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/src/kalman_filter.cpp
  */
 #include "../include/kalman_filter.hpp"
@@ -51,6 +51,7 @@ namespace kalman_filter
     void KalmanFilter::Update(const VectorXd& z)
     {
         VectorXd z_pred = H_ * x_;
+
         VectorXd y = z - z_pred;
         
         //卡尔曼增益
@@ -71,4 +72,6 @@ namespace kalman_filter
     {
         //TODO:
     }
+
+
 } // kalman_filter

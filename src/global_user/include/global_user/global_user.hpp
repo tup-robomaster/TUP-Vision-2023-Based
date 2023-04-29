@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-04-06 20:23:51
+ * @LastEditTime: 2023-04-14 03:19:54
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -271,14 +271,8 @@ namespace global_user
     Eigen::Vector3d calcDeltaEuler(Eigen::Vector3d euler1, Eigen::Vector3d euler2);
     Eigen::AngleAxisd eulerToAngleAxisd(Eigen::Vector3d euler);
     Eigen::Matrix3d eulerToRotationMatrix(Eigen::Vector3d &theta);
+    float calcDistance(cv::Point2f& p1, cv::Point2f& p2);
 
-    template<class T>
-    float calcDistance(T& p1, T& p2)
-    {
-        return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
-    }
-
-    void videoRecorder(VideoRecordParam& video_param, cv::Mat* src = nullptr);  
     bool setSharedMemory(SharedMemoryParam& shared_memory_param, int id, int image_width = 1280, int image_height = 1024);
     bool getSharedMemory(SharedMemoryParam& shared_memory_param, int id);
     bool destorySharedMemory(SharedMemoryParam& shared_memory_param);

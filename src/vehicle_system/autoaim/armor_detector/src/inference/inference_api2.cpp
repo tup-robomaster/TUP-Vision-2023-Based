@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-04-06 12:24:24
+ * @LastEditTime: 2023-04-05 16:02:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -15,7 +15,7 @@ static constexpr int NUM_CLASSES = 8;  // Number of classes
 static constexpr int NUM_COLORS = 4;   // Number of color
 static constexpr int TOPK = 128;       // TopK
 static constexpr float NMS_THRESH = 0.3;
-static constexpr float BBOX_CONF_THRESH = 0.84;
+static constexpr float BBOX_CONF_THRESH = 0.75;
 static constexpr float MERGE_CONF_ERROR = 0.15;
 static constexpr float MERGE_MIN_IOU = 0.9;
 
@@ -450,7 +450,7 @@ namespace armor_detector
             //对候选框预测角点进行平均,降低误差
             if ((*object).pts.size() >= 8)
             {
-                int N = (*object).pts.size();
+                auto N = (*object).pts.size();
                 cv::Point2f pts_final[4];
                 for (int i = 0; i < (int)N; i++)
                 {

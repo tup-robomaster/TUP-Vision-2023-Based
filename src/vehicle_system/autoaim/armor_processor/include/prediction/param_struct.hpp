@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-09 22:50:31
- * @LastEditTime: 2023-04-05 13:45:49
+ * @LastEditTime: 2023-04-25 20:06:47
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -23,13 +23,6 @@
 using namespace std;
 namespace armor_processor
 {
-    typedef enum OutpostStatus
-    {
-        NORMAL,     // 常速旋转
-        CONTROLLED, // 速度减半
-        STILL       // 静止
-    } OutpostStatus;
-
     typedef enum SpinningStatus
     {
         STILL_SPINNING,
@@ -45,16 +38,17 @@ namespace armor_processor
     struct TargetInfo
     {
         Eigen::Vector3d xyz;
+        double rangle;
         double dist;
-        int64_t timestamp;
+        double timestamp;
         double period;
+        bool is_target_lost;
         bool is_target_switched;
         bool is_spinning;
-        bool spinning_switched;
+        bool is_spinning_switched;
         bool is_clockwise;
         bool is_outpost_mode;
         SpinningStatus spinning_status;
-        OutpostStatus outpost_status;
         SystemModel system_model;
     };
 
@@ -68,6 +62,18 @@ namespace armor_processor
             xyz_status[1] = false;
             xyz_status[2] = false;
         }
+    };
+
+    /**
+     * @brief 预测器状态
+     * 
+     */
+    enum PredictorState
+    {
+        TRACKING,   //追踪
+        PREDICTING, //预测
+        LOSTING,    //丢失预测中
+        LOST        //丢失
     };
 
     struct FilterModelParam
@@ -96,6 +102,7 @@ namespace armor_processor
         double rotation_yaw;
         double rotation_pitch;
         double rotation_roll;
+        Eigen::Vector2d angle_offset;
         
         PredictParam()
         {
@@ -112,6 +119,7 @@ namespace armor_processor
             rotation_yaw = 0.0;
             rotation_pitch = 0.0;
             rotation_roll = 0.0;
+            angle_offset = {0.0, 0.0};
         }
     };
 

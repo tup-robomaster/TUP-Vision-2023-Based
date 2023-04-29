@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-04-07 15:35:12
+ * @LastEditTime: 2023-04-28 12:47:51
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
@@ -21,6 +21,7 @@
 #include "global_interface/msg/detection_array.hpp"
 #include "global_interface/msg/autoaim.hpp"
 #include "global_interface/msg/obj_hp.hpp"
+#include "global_interface/msg/decision.hpp"
 
 using namespace global_user;
 using namespace coordsolver;
@@ -29,7 +30,9 @@ namespace armor_detector
 {
     class Detector
     {
+        typedef global_interface::msg::Armor ArmorMsg;
         typedef global_interface::msg::ObjHP ObjHPMsg;
+        typedef global_interface::msg::Decision DecisionMsg;
 
     public:
         Detector(const PathParam& path_params, const DetectorParam& detector_params, const DebugParam& debug_params,
@@ -38,14 +41,14 @@ namespace armor_detector
 
         // void run();
         bool armor_detect(TaskData &src, bool& is_target_lost);
-        bool gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp = ObjHPMsg());
+        bool gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp = ObjHPMsg(), DecisionMsg decision_msg = DecisionMsg());
 
         Point2i cropImageByROI(Mat &img);
         ArmorTracker* chooseTargetTracker(TaskData& src, vector<ArmorTracker*> trackers);
         int chooseTargetID(TaskData& src);
-        int chooseTargetID(TaskData& src, std::vector<Armor>& armors, ObjHPMsg hp = ObjHPMsg());
+        int chooseTargetID(TaskData& src, std::vector<Armor>& armors, ObjHPMsg hp = ObjHPMsg(), DecisionMsg decision_msg = DecisionMsg());
         void showArmors(TaskData& src);
-        bool normlizeAngle();
+        // bool normlizeAngle();
 
     public:
         CoordSolver coordsolver_;
@@ -64,6 +67,7 @@ namespace armor_detector
     private:
         Armor last_armor_;
         std::vector<ArmorObject> objects_;
+        // std::vector<Armor> same_armors_;
 
         std::vector<ArmorTracker> trackers_;
         std::multimap<std::string, ArmorTracker> trackers_map_;
@@ -110,15 +114,10 @@ namespace armor_detector
         deque<double> new_period_deq_;
         double last_ave_period_;
         double cur_ave_period_;
-        vector<Armor> opposite_armors_;
-        cv::Point2d circle_center_ave_;
-        int error_cnt_;
-        vector<Eigen::Vector3d> circle_center_vec_;
 
     public:
         //Debug param.
         DebugParam debug_params_;
-        PathParam path_params_;
         DetectorParam detector_params_;
 
         rclcpp::Logger logger_;
