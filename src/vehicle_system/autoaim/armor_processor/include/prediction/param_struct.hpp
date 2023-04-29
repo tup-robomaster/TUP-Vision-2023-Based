@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-09 22:50:31
- * @LastEditTime: 2023-04-25 20:06:47
+ * @LastEditTime: 2023-04-29 17:49:23
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -20,7 +20,10 @@
 #include <random>
 #include <vector>
 
+#include "../../global_user/include/global_user/global_user.hpp"
+
 using namespace std;
+using namespace global_user;
 namespace armor_processor
 {
     typedef enum SpinningStatus

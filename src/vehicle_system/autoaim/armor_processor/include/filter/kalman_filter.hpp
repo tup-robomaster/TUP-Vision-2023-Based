@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:00:19
- * @LastEditTime: 2023-04-26 21:14:08
+ * @LastEditTime: 2023-04-30 04:05:42
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/kalman_filter.hpp
  */
 #ifndef KALMAN_FILTER_HPP_
@@ -148,12 +148,10 @@ namespace armor_processor
             //测量向量
             Eigen::VectorXd z_;
         
-        private:
-            int cp_; //控制量个数
-        
         public:
             double likelihood_; //似然值
-            double dt_; //时间量
+            double dt_ = 0.015; //时间量
+            int cp_; //控制量个数
         
         public:
             // double r1_, r2_, r3_, r4_;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-28 12:48:45
+ * @LastEditTime: 2023-04-28 20:34:16
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -260,7 +260,7 @@ namespace armor_detector
             armor.euler = pnp_result.euler;
             armor.rmat = pnp_result.rmat;
             armor.area = object.area;
-            armor.rangle = pnp_result.axis_angle;
+            armor.rangle = pnp_result.rangle;
             new_armors_.emplace_back(armor);
 
             // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 250, "armor_area:%d", armor.area);
@@ -469,7 +469,7 @@ namespace armor_detector
                         auto angle_axisd = Eigen::AngleAxisd(rrmat);
                         auto angle = angle_axisd.angle();
                         w = (angle / dt);
-                        period = ((2 * CV_PI) / w / 4.0);
+                        period = ((2 * CV_PI) / w);
                         new_period_deq_.emplace_back(period);
 
                         // double relative_angle_sum = 0.0;
@@ -780,30 +780,30 @@ namespace armor_detector
                 final_trackers.emplace_back(&(*iter).second);
             }
 
-            if (final_armors.size() == 2)
-            {   
-                Armor back_armor = final_armors[0];
-                Armor front_armor = final_armors[1];
-                auto relative_rmat = back_armor.rmat.transpose() * front_armor.rmat;
-                auto relative_angle_axisd = Eigen::AngleAxisd(relative_rmat);
-                auto relative_angle = relative_angle_axisd.angle(); 
-                // relative_angle_sum += relative_angle;  
-                // cout << "rAngle:" << relative_angle << endl;
+            // if (final_armors.size() == 2)
+            // {   
+            //     Armor back_armor = final_armors[0];
+            //     Armor front_armor = final_armors[1];
+            //     auto relative_rmat = back_armor.rmat.transpose() * front_armor.rmat;
+            //     auto relative_angle_axisd = Eigen::AngleAxisd(relative_rmat);
+            //     auto relative_angle = relative_angle_axisd.angle(); 
+            //     // relative_angle_sum += relative_angle;  
+            //     // cout << "rAngle:" << relative_angle << endl;
 
-                Eigen::Vector3d point3d_last = back_armor.armor3d_world;
-                Eigen::Vector3d point3d_now = front_armor.armor3d_world;
-                double x_pos = (point3d_now[1] + point3d_last[1]) / 2.0 - ((point3d_now[0] - point3d_last[0]) / (2 * tan(relative_angle)));
-                double x_neg = (point3d_now[1] + point3d_last[1]) / 2.0 + ((point3d_now[0] - point3d_last[0]) / (2 * tan(relative_angle)));
-                double y_pos = (point3d_now[0] + point3d_last[0]) / 2.0 + ((point3d_now[1] - point3d_last[1]) / (2 * tan(relative_angle)));
-                double y_neg = (point3d_now[0] + point3d_last[0]) / 2.0 - ((point3d_now[1] - point3d_last[1]) / (2 * tan(relative_angle)));
+            //     Eigen::Vector3d point3d_last = back_armor.armor3d_world;
+            //     Eigen::Vector3d point3d_now = front_armor.armor3d_world;
+            //     double x_pos = (point3d_now[1] + point3d_last[1]) / 2.0 - ((point3d_now[0] - point3d_last[0]) / (2 * tan(relative_angle)));
+            //     double x_neg = (point3d_now[1] + point3d_last[1]) / 2.0 + ((point3d_now[0] - point3d_last[0]) / (2 * tan(relative_angle)));
+            //     double y_pos = (point3d_now[0] + point3d_last[0]) / 2.0 + ((point3d_now[1] - point3d_last[1]) / (2 * tan(relative_angle)));
+            //     double y_neg = (point3d_now[0] + point3d_last[0]) / 2.0 - ((point3d_now[1] - point3d_last[1]) / (2 * tan(relative_angle)));
                 
-                double x_diff = (y_pos < y_neg) ? y_pos : y_neg;
-                double y_diff = (y_pos < y_neg) ? x_pos : x_neg;
-                double z_diff = (point3d_now[2] + point3d_last[2]) / 2.0;
+            //     double x_diff = (y_pos < y_neg) ? y_pos : y_neg;
+            //     double y_diff = (y_pos < y_neg) ? x_pos : x_neg;
+            //     double z_diff = (point3d_now[2] + point3d_last[2]) / 2.0;
 
-                // cout << "circle_center_ave:{" << x_diff << " " << y_diff << " " << z_diff << "}" << endl; 
-                circle_center_vec_.emplace_back(Eigen::Vector3d{x_diff, y_diff, z_diff});
-            }
+            //     // cout << "circle_center_ave:{" << x_diff << " " << y_diff << " " << z_diff << "}" << endl; 
+            //     circle_center_vec_.emplace_back(Eigen::Vector3d{x_diff, y_diff, z_diff});
+            // }
 
             //进行目标选择
             auto tracker = chooseTargetTracker(src, final_trackers);
@@ -860,6 +860,10 @@ namespace armor_detector
                 }
             }
             armor_msg.is_front = target.is_front;
+            armor_msg.rangle = target.rangle;
+            // armor_msg.rangle = 0.0;
+            // cout << "armor_rangle:" << armor_msg.rangle << endl;
+
             target_info.armors.emplace_back(armor_msg);
 
             // for (auto armor : final_armors)

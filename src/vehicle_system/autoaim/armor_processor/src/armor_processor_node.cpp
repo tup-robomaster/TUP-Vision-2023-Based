@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-27 21:24:23
+ * @LastEditTime: 2023-04-30 04:08:11
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -47,7 +47,7 @@ namespace armor_processor
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", qos);
         tracking_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/tracking_msg", qos);
-        joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
+        // joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
 
         this->declare_parameter<bool>("sync_transport", false);
         sync_transport_ = this->get_parameter("sync_transport").as_bool();
@@ -209,9 +209,16 @@ namespace armor_processor
                 tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
 
                 Eigen::VectorXd state = processor_->armor_predictor_.uniform_ekf_.x();
-                vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
+                vehicle_center3d_world = {state(0), state(1), target.armors.front().point3d_world.z, 0.0};
                 vehicle_center3d_cam = processor_->coordsolver_.worldToCam({vehicle_center3d_world(0), vehicle_center3d_world(1), vehicle_center3d_world(2)}, rmat_imu);
-                armor3d_vec.emplace_back(vehicle_center3d_world);
+                // cout << "vehicle_center3d_world:" << vehicle_center3d_world(0) << " " << vehicle_center3d_world(1) << " " << vehicle_center3d_world(2) << endl;
+                
+                // vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
+                // armor3d_vec.emplace_back(vehicle_center3d_world);
+                
+                // Eigen::Vector4d pred3d = {aiming_point_world(0), aiming_point_world(1), aiming_point_world(2), 0.0};
+                // armor3d_vec.emplace_back(pred3d);
+                // RCLCPP_WARN(get_logger(), "z_axis:%.3f", state(2));
                 // cout << "radius:" << state(3) << endl;
 
                 if (abs(tracking_angle[0]) < 3.50 && abs(tracking_angle[1]) < 3.50)
@@ -264,13 +271,13 @@ namespace armor_processor
         gimbal_info_pub_->publish(std::move(gimbal_info));
 
         // publish gimbal joint states.
-        sensor_msgs::msg::JointState gimbal_joint_states;
-        gimbal_joint_states.header.frame_id = "base_link";
-        gimbal_joint_states.name.emplace_back("base_to_camera_yaw_joint");
-        gimbal_joint_states.position.emplace_back(gimbal_info.yaw * CV_PI / 180);
-        gimbal_joint_states.name.emplace_back("base_to_camera_pitch_joint");
-        gimbal_joint_states.position.emplace_back(gimbal_info.pitch * CV_PI / 180);
-        joint_state_pub_->publish(gimbal_joint_states);
+        // sensor_msgs::msg::JointState gimbal_joint_states;
+        // gimbal_joint_states.header.frame_id = "base_link";
+        // gimbal_joint_states.name.emplace_back("base_to_camera_yaw_joint");
+        // gimbal_joint_states.position.emplace_back(gimbal_info.yaw * CV_PI / 180);
+        // gimbal_joint_states.name.emplace_back("base_to_camera_pitch_joint");
+        // gimbal_joint_states.position.emplace_back(gimbal_info.pitch * CV_PI / 180);
+        // joint_state_pub_->publish(gimbal_joint_states);
         
         if (this->debug_)
         {
@@ -320,19 +327,20 @@ namespace armor_processor
                     // Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
                     marker.action = visualization_msgs::msg::Marker::ADD;
 
-                    marker.lifetime = rclcpp::Duration::from_nanoseconds((rcl_duration_value_t)5e6);
+                    marker.lifetime = rclcpp::Duration::from_nanoseconds((rcl_duration_value_t)5e3);
                     
                     for (auto armor3d : armor3d_vec)
                     {
                         marker.id = marker_id;
                         
                         tf2::Quaternion q;
-                        q.setRPY(CV_PI / 2, -CV_PI / 2, 0);
+                        q.setRPY(CV_PI, -CV_PI / 2, 0);
                         // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
                         marker.pose.position.x = armor3d(0);
                         marker.pose.position.y = armor3d(1);
                         marker.pose.position.z = 0;
-                        if (marker.id == 4)
+
+                        if (marker.id == 0)
                         {
                             marker.type = visualization_msgs::msg::Marker::ARROW;
                             marker.pose.position.z = 0;
@@ -347,9 +355,10 @@ namespace armor_processor
                         marker.pose.orientation.w = q.w();
 
                         // Set the scale of the marker -- 1x1x1 here means 1m on a side
-                        if (marker.id == 4)
+                        if (marker.id == 0)
                         {
                             marker.scale.x = armor3d(2);
+                            // RCLCPP_WARN(get_logger(), "z_axis:%.3f", armor3d(2));
                             marker.scale.y = 0.025;
                             marker.scale.z = 0.025;
                         }
@@ -361,7 +370,14 @@ namespace armor_processor
                         }
 
                         // Set the color -- be sure to set alpha to something non-zero!
-                        if (marker.id == 4)
+                        if (marker.id == 1)
+                        {
+                            marker.color.r = 255.0f;
+                            marker.color.g = 0.0f;
+                            marker.color.b = 0.0f;
+                            marker.color.a = 1.0;
+                        }
+                        else if (marker.id == 0)
                         {
                             marker.color.r = 125.0f;
                             marker.color.g = 255.0f;
@@ -370,9 +386,9 @@ namespace armor_processor
                         }
                         else
                         {
-                            marker.color.r = 255.0f;
+                            marker.color.r = 0.5f;
                             marker.color.g = 0.5f;
-                            marker.color.b = 0.5f;
+                            marker.color.b = 255.5f;
                             marker.color.a = 1.0;
                         }
 

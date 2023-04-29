@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2023-04-24 19:59:27
+ * @LastEditTime: 2023-04-30 02:21:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/kalman_filter.cpp
  */
 #include "../../include/filter/kalman_filter.hpp"
@@ -103,8 +103,8 @@ namespace armor_processor
 
     void KalmanFilter::Update(const Eigen::VectorXd& z, double rangle)
     {
-        this->H_ << 1, 0, 0, -sin(rangle), 0, 0, 0, 0, 0, 0, 0, 
-                    0, 1, 0,  cos(rangle), 0, 0, 0, 0, 0, 0, 0,
+        this->H_ << 1, 0, 0, -sin(x_(4)), 0, 0, 0, 0, 0, 0, 0, 
+                    0, 1, 0,  cos(x_(4)), 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 1,            0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0,            0, 1, 0, 0, 0, 0, 0, 0;
         Update(z);

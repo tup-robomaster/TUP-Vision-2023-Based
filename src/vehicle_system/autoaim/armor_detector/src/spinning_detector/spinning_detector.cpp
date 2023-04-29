@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-04-16 21:47:14
+ * @LastEditTime: 2023-04-30 03:12:26
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -83,7 +83,7 @@ namespace armor_detector
             else
                 spin_status = spinning_map_.spin_status_map[(*score).first];
             
-            RCLCPP_INFO(logger_, "Spin status: %d", (int)(spin_status));
+            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 250, "Spin status: %d", (int)(spin_status));
             // 若分数过低移且目标陀螺状态已知除此元素
             if (abs((*score).second) <= gyro_params_.anti_spin_judge_low_thres && spin_status != UNKNOWN)
             {
@@ -102,7 +102,7 @@ namespace armor_detector
                 (*score).second = 0.997 * (*score).second - 1 * abs((*score).second) / (*score).second;
             }
             
-            RCLCPP_INFO(logger_, "Score: %lf", (*score).second);
+            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 250, "Score: %lf", (*score).second);
             // 当小于该值时移除该元素
             if (abs((*score).second) < 3 || isnan((*score).second))
             {

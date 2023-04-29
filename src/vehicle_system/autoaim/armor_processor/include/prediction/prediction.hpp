@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-04-26 22:04:55
+ * @LastEditTime: 2023-04-30 02:45:19
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -46,7 +46,7 @@ namespace armor_processor
         void initPredictor(const vector<double>* uniform_param);
         bool resetPredictor();
         bool updatePredictor(Eigen::VectorXd meas);
-        bool predict(TargetInfo target, double bullet_speed, double dt, double& delay_time, Eigen::Vector3d& pred_point3d, vector<Eigen::Vector4d>& armor3d_vec, cv::Mat* src = nullptr);
+        bool predict(TargetInfo target, double dt, double pred_dt, double& delay_time, Eigen::Vector3d& pred_point3d, vector<Eigen::Vector4d>& armor3d_vec, cv::Mat* src = nullptr);
         
         // Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
         // bool asyncPrediction(bool is_filtering, bool is_target_lost, bool is_spinning, Eigen::Vector3d meas, int64_t timestamp, Eigen::Vector3d& result);
@@ -100,7 +100,11 @@ namespace armor_processor
         rclcpp::Logger logger_;
         TargetInfo final_target_;  //最终击打目标信息
         int lost_cnt_ = 0;
-        double delay_time_ = 200;
+        int spin_switch_cnt_ = 0;
+        double cur_rangle_ = 0.0;
+        double last_rangle = 0.0;
+        
+        // double delay_time_ = 200;
         // double target_period_ = 0.0;
         // int error_cnt_ = 0;
         // double cur_pred_error_;
@@ -116,7 +120,7 @@ namespace armor_processor
         bool predictBasedSinger(bool is_target_lost, bool is_spinning, int axis, double measurement, double& result, double target_vel, double target_acc, int64_t timestamp);
 
         // Uniform Model.
-        bool predictBasedUniformModel(bool is_target_lost, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector4d>& armor3d_vec);
+        bool predictBasedUniformModel(bool is_target_lost, SpinHeading spin_state, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector4d>& armor3d_vec);
         
         // 前哨站旋转装甲板曲线拟合预测函数    
         PredictStatus spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int64_t timestamp);
