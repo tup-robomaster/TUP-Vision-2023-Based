@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-25 20:21:42
+ * @LastEditTime: 2023-04-30 01:09:24
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -260,7 +260,7 @@ namespace armor_detector
             armor.euler = pnp_result.euler;
             armor.rmat = pnp_result.rmat;
             armor.area = object.area;
-            armor.rangle = pnp_result.axis_angle;
+            armor.rangle = pnp_result.rangle;
             new_armors_.emplace_back(armor);
 
             // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 250, "armor_area:%d", armor.area);
@@ -834,6 +834,7 @@ namespace armor_detector
                 }
             }
             armor_msg.is_front = target.is_front;
+            armor_msg.rangle = target.rangle;
             target_info.armors.emplace_back(armor_msg);
 
             // for (auto armor : final_armors)

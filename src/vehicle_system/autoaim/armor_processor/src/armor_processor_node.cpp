@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-27 21:24:23
+ * @LastEditTime: 2023-04-30 03:51:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -212,7 +212,7 @@ namespace armor_processor
                 vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
                 vehicle_center3d_cam = processor_->coordsolver_.worldToCam({vehicle_center3d_world(0), vehicle_center3d_world(1), vehicle_center3d_world(2)}, rmat_imu);
                 armor3d_vec.emplace_back(vehicle_center3d_world);
-                // cout << "radius:" << state(3) << endl;
+                // cout << "vehicle_center3d_world:" << vehicle_center3d_world(0) << " " << vehicle_center3d_world(1) << " " << vehicle_center3d_world(2) << endl;
 
                 if (abs(tracking_angle[0]) < 3.50 && abs(tracking_angle[1]) < 3.50)
                 {

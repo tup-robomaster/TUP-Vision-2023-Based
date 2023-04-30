@@ -61,7 +61,7 @@ namespace armor_processor
         UniformModel(const KFParam kf_param);
         ~UniformModel();
         
-        void init(const Eigen::VectorXd& x, const double& dt);
+        void init(const double dt);
         void setF(Eigen::MatrixXd& Ft, const double& dt);
 
     public:

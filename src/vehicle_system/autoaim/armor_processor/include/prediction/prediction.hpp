@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-04-26 22:04:55
+ * @LastEditTime: 2023-04-30 01:30:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -116,7 +116,7 @@ namespace armor_processor
         bool predictBasedSinger(bool is_target_lost, bool is_spinning, int axis, double measurement, double& result, double target_vel, double target_acc, int64_t timestamp);
 
         // Uniform Model.
-        bool predictBasedUniformModel(bool is_target_lost, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector4d>& armor3d_vec);
+        bool predictBasedUniformModel(bool is_target_lost, SpinHeading spin_state, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector4d>& armor3d_vec);
         
         // 前哨站旋转装甲板曲线拟合预测函数    
         PredictStatus spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int64_t timestamp);

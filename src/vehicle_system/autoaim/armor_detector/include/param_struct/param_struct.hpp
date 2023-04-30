@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-04-16 21:48:46
+ * @LastEditTime: 2023-04-30 01:25:24
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -23,14 +23,17 @@
 //eigen
 #include <Eigen/Core>
 
+#include "../../global_user/include/global_user/global_user.hpp"
+
+using namespace global_user;
 namespace armor_detector
 {
-    enum SpinHeading
-    {
-        UNKNOWN,
-        CLOCKWISE, 
-        COUNTER_CLOCKWISE
-    };
+    // enum SpinHeading
+    // {
+    //     UNKNOWN,
+    //     CLOCKWISE, 
+    //     COUNTER_CLOCKWISE
+    // };
 
     struct SpinState
     {

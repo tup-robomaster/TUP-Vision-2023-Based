@@ -41,7 +41,7 @@
 
   # Camera config params.
     # camera_name: "00J90630561" 
-    camera_name: "KE0200110074" #FIXME:根据相机序列号修改
+    camera_name: "KE0200110073" #FIXME:根据相机序列号修改
     camera_type: 0
     camera_param_path: "/config/camera.yaml"
 
@@ -110,17 +110,17 @@
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110074" #FIXME:根据相机序列号修改
+    coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
     coord_param_path: "/config/camera.yaml"
     
   # Filter params.
     filter_param_path: "/config/filter_param.yaml"
 
     uniform_ekf_process_noise_param: [0.1, 0.1]
-    uniform_ekf_measure_noise_param: [10.0, 10.0, 1.0, 10.0]
+    uniform_ekf_measure_noise_param: [10.0, 10.0, 1.0, 1.0]
     # Singer model.  
     # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 sigma:机动加速度标准差)
-    uniform_ekf_singer_param: [2.00, 10.0, 0.1, 0.8, 0.1]
+    uniform_ekf_singer_param: [2.00, 10.0, 0.1, 0.8, 0.001]
 
     # IMM model.
     #状态转移概率

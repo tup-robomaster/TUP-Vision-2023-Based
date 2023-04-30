@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-04-25 19:32:05
+ * @LastEditTime: 2023-04-30 01:07:32
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -173,9 +173,9 @@ namespace coordsolver
             Eigen::Matrix3d rmat_eigen_world = rmat_imu * (transform_ic.block(0, 0, 3, 3) * rmat_eigen);
             result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;
-            auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
-            double angle = angle_axisd.angle();
-            result.axis_angle = angle;
+            // auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
+            // double angle = angle_axisd.angle();
+            result.rangle = result.euler[0];
             // RCLCPP_INFO(logger_, "rotate angle:%lf", angle * (180 / CV_PI));
         }
         else

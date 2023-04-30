@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-04-26 22:04:02
+ * @LastEditTime: 2023-04-30 03:48:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -13,7 +13,8 @@ namespace armor_processor
     : logger_(rclcpp::get_logger("armor_processor")), predict_param_(predict_param), debug_param_(debug_param)  
     {
         //初始化预测器
-        armor_predictor_.uniform_ekf_.Init(11, 4, 1);
+        armor_predictor_.uniform_ekf_.Init(11, 4, 3);
+        // armor_predictor_.uniform_ekf_.init(0.030);
         armor_predictor_.initPredictor(uniform_ekf_param);
         armor_predictor_.resetPredictor();
 

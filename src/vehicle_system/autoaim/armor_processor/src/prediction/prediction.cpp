@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-26 22:08:27
+ * @LastEditTime: 2023-04-30 03:21:23
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -49,13 +49,14 @@ namespace armor_processor
     bool ArmorPredictor::predict(TargetInfo target, double bullet_speed, double dt, double& delay_time, Eigen::Vector3d& pred_point3d, vector<Eigen::Vector4d>& armor3d_vec, cv::Mat* src)
     {
         double pred_dt = target.dist / bullet_speed + delay_time_;
+        // RCLCPP_WARN(logger_, "rangle:%.3f", target.rangle);
+
+        SpinHeading spin_state = target.is_spinning ? (target.is_clockwise ? CLOCKWISE : COUNTER_CLOCKWISE) : UNKNOWN;
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
-        // cout << 5 << endl;
-        if (!target.is_spinning)
-        {
-            target.period = 1e19;
-        }
-        if (!predictBasedUniformModel(target.is_target_lost, meas, dt, pred_dt, target.period, pred_point3d, armor3d_vec))
+        if (target.is_spinning)
+            meas(3) += (spin_state == CLOCKWISE ? (-CV_PI / 2) : (CV_PI / 2));
+        
+        if (!predictBasedUniformModel(target.is_target_lost, spin_state, meas, dt, pred_dt, target.period, pred_point3d, armor3d_vec))
         {
             // cout << 6 << endl;
             pred_point3d = target.xyz;
@@ -64,7 +65,7 @@ namespace armor_processor
         return true;
     }
 
-    bool ArmorPredictor::predictBasedUniformModel(bool is_target_lost, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector4d>& armor3d_vec)
+    bool ArmorPredictor::predictBasedUniformModel(bool is_target_lost, SpinHeading spin_state, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector4d>& armor3d_vec)
     {
         bool is_pred_success = false;
         if (!is_ekf_init_)
@@ -84,7 +85,15 @@ namespace armor_processor
             double radius = state(3) = 0.15;
             double rangle = state(4);
             
-            double pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
+            double pred_rangle = rangle;
+            if (spin_state == CLOCKWISE)
+            {
+                pred_rangle = rangle - (2 * CV_PI / spinning_period) * pred_dt;
+            }
+            else if (spin_state == COUNTER_CLOCKWISE)
+            {
+                pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
+            }
             result = {circle_center(0) + radius * sin(pred_rangle), circle_center(1) + radius * cos(pred_rangle), circle_center(2)};
             
             Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
@@ -108,8 +117,16 @@ namespace armor_processor
             Eigen::Vector3d circle_center = {pred(0), pred(1), pred(2)};
             double radius = pred(3) = 0.15;
             double rangle = pred(4);
-            
-            double pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
+
+            double pred_rangle = rangle;
+            if (spin_state == CLOCKWISE)
+            {
+                pred_rangle = rangle - (2 * CV_PI / spinning_period) * pred_dt;
+            }
+            else if (spin_state == COUNTER_CLOCKWISE)
+            {
+                pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
+            }  
             result = {circle_center(0) + radius * sin(pred_rangle), circle_center(1) + radius * cos(pred_rangle), circle_center(2)};
             
             Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
