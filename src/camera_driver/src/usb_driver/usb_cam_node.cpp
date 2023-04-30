@@ -318,8 +318,8 @@ namespace camera_driver
             cv::waitKey(2000);
         }
 
-        // if(using_video_)
-        //     usleep(5000);
+        if(using_video_)
+            usleep(2000);
     }
 
     bool UsbCamNode::setParam(rclcpp::Parameter param)

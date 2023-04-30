@@ -142,7 +142,12 @@ namespace armor_processor
         {
             Eigen::Vector3d xyz = {armor.point3d_world.x, armor.point3d_world.y, armor.point3d_world.z};
             double pred_dt = xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
-            // RCLCPP_WARN(logger_, "xyz:[%.3f %.3f %.3f]", xyz[0], xyz[1], xyz[2]);
+
+            Eigen::VectorXd state = armor_predictor_.uniform_ekf_.x();
+            Eigen::Vector3d center_xyz = {state(0), state(1), state(2)};
+            // double pred_dt = center_xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
+
+            RCLCPP_WARN(logger_, "xyz:【%.3f %.3f %.3f] center_norm:[%.3f %.3f %.3f]", xyz(0), xyz(1), xyz(2), center_xyz(0), center_xyz(1), center_xyz(2));
             // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "dt:%.3f pred_dt:%.3f armor.rangle:%.3f", dt, pred_dt, armor.rangle);
             TargetInfo target = 
             { 

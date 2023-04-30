@@ -364,9 +364,9 @@ namespace armor_processor
                         }
                         else
                         {
-                            marker.scale.x = 0.040;
-                            marker.scale.y = 0.040;
-                            marker.scale.z = 0.040;
+                            marker.scale.x = 0.060;
+                            marker.scale.y = 0.060;
+                            marker.scale.z = 0.060;
                         }
 
                         // Set the color -- be sure to set alpha to something non-zero!
