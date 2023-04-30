@@ -78,7 +78,7 @@ ament_target_dependencies(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   openvino::runtime 
-  yaml-cpp.so
+  yaml-cpp
 )
 
 target_compile_definitions(${PROJECT_NAME}
@@ -103,7 +103,7 @@ target_link_libraries(armor_detector_node
   ${OpenCV_LIBRARIES}
   openvino::runtime 
   ${Eigen3_LIBRARIES}
-  yaml-cpp.so
+  yaml-cpp
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME}

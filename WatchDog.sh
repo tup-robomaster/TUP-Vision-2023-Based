@@ -3,16 +3,16 @@
  # @Description: This is a ros-based project!
  # @Author: Liu Biao
  # @Date: 2023-01-02 22:20:13
- # @LastEditTime: 2023-04-13 12:21:58
+ # @LastEditTime: 2023-04-16 01:36:43
  # @FigtPath: /TUP-Vision-2023-Based/WatchDog.sh
 ### 
 name=TUP-Vision-2023-Based
 package=global_user
-launch_file=vision_bringup.launch.py
-sec=2 
-cnt=0
+launch_file=autoaim_bringup.launch.py
 
 cd /home/tup/Desktop/$name/
+source /opt/intel/openvino_2022/setupvars.sh
+source /opt/ros/galactic/setup.bash
 colcon build --symlink-install
 source install/setup.bash
 ros2 launch $package $launch_file
@@ -23,16 +23,10 @@ do
 
     if [ $count -gt 4]; then
         echo "The $launch_file is alive!"
-        sleep $sec
     else
         kill $launch_file
         ros2 launch $package $launch_file
-        cnt=cnt+1
-        sleep $sec
-        if [ $cnt -gt 9]; then
-            echo "Reboot!"
-            # reboot
-        fi
     fi
+    sleep 5
 done
 

@@ -2,7 +2,11 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
+<<<<<<< HEAD
  * @LastEditTime: 2023-04-16 13:18:30
+=======
+ * @LastEditTime: 2023-04-16 18:10:53
+>>>>>>> origin/develop
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -132,8 +136,13 @@ namespace camera_driver
             strftime(now, 64, "%Y-%m-%d_%H_%M_%S", tmp_ptr);  // 以时间为名字
             std::string now_string(now);
             string pkg_path = get_package_share_directory("camera_driver");
+<<<<<<< HEAD
             string save_path = this->declare_parameter("save_path", "/recorder/video/gyro_video.webm");
             std::string path = pkg_path + save_path + now_string;
+=======
+            std::string path = pkg_path + save_path_ + now_string;
+            RCLCPP_WARN_ONCE(this->get_logger(), "Save path:%s", path.c_str());
+>>>>>>> origin/develop
 
             writer_ = std::make_unique<rosbag2_cpp::writers::SequentialWriter>();
             rosbag2_storage::StorageOptions storage_options({path, "sqlite3"});
@@ -271,7 +280,11 @@ namespace camera_driver
                 if (save_video_)
                 {   // Video recorder.
                     ++frame_cnt_;
+<<<<<<< HEAD
                     if (frame_cnt_ % 100 == 0)
+=======
+                    if (frame_cnt_ % 50 == 0)
+>>>>>>> origin/develop
                     {
                         sensor_msgs::msg::Image image_msg = *msg;
                         auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
@@ -292,10 +305,14 @@ namespace camera_driver
                         *bag_msg->serialized_data = serialized_msg.release_rcl_serialized_message();
                         bag_msg->topic_name = "usb_img";
                         bag_msg->time_stamp = now.nanoseconds();
+<<<<<<< HEAD
                         auto async_future = std::async(std::launch::async, [&](){
                             writer_->write(bag_msg);
                         });
                         async_future.wait_for(2ms);
+=======
+                        writer_->write(bag_msg);
+>>>>>>> origin/develop
                     }
                 }
             }
@@ -365,6 +382,7 @@ namespace camera_driver
             {"image_height", 1},
             {"fps", 2}
         };
+<<<<<<< HEAD
 
         this->declare_parameter("camera_id", 0);
         this->declare_parameter("frame_id", "usb_camera_link");
@@ -377,6 +395,23 @@ namespace camera_driver
         usb_cam_params_.image_width = this->get_parameter("image_width").as_int();
         usb_cam_params_.image_height = this->get_parameter("image_height").as_int();
         usb_cam_params_.fps = this->get_parameter("fps").as_int();
+=======
+
+        this->declare_parameter("camera_id", 0);
+        this->declare_parameter("frame_id", "usb_camera_link");
+        this->declare_parameter("image_width", 640);
+        this->declare_parameter("image_height", 480);
+        this->declare_parameter("fps", 30);
+        this->declare_parameter<bool>("show_img", false);
+        usb_cam_params_.camera_id = this->get_parameter("camera_id").as_int();
+        usb_cam_params_.frame_id = this->get_parameter("frame_id").as_string();
+        usb_cam_params_.image_width = this->get_parameter("image_width").as_int();
+        usb_cam_params_.image_height = this->get_parameter("image_height").as_int();
+        usb_cam_params_.fps = this->get_parameter("fps").as_int();
+
+        this->declare_parameter<string>("save_path", "/recorder/video/");
+        save_path_ = this->get_parameter("save_path").as_string();
+>>>>>>> origin/develop
 
         return std::make_unique<UsbCam>(usb_cam_params_);
     }

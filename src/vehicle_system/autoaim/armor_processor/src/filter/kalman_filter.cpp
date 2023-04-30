@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2023-04-02 05:05:32
+ * @LastEditTime: 2023-04-24 19:59:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/kalman_filter.cpp
  */
 #include "../../include/filter/kalman_filter.hpp"
@@ -77,7 +77,7 @@ namespace armor_processor
 
     void KalmanFilter::Predict(const double& dt)
     {
-        this->dt = dt;
+        this->dt_ = dt;
         updatePrediction();
         this->P_ = this->F_ * this->P_ * this->F_.transpose() + this->Q_;
     }
@@ -99,6 +99,15 @@ namespace armor_processor
         int x_size = x_.size();
         MatrixXd I = MatrixXd::Identity(x_size, x_size);
         P_ = (I - K * H_) * P_;
+    }
+
+    void KalmanFilter::Update(const Eigen::VectorXd& z, double rangle)
+    {
+        this->H_ << 1, 0, 0, -sin(rangle), 0, 0, 0, 0, 0, 0, 0, 
+                    0, 1, 0,  cos(rangle), 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 1,            0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0,            0, 1, 0, 0, 0, 0, 0, 0;
+        Update(z);
     }
 
     /**

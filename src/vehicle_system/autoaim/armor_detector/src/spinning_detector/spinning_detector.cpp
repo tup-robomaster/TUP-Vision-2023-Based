@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-04-12 21:44:24
+ * @LastEditTime: 2023-04-16 21:47:14
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -141,7 +141,7 @@ namespace armor_detector
         {
             //当装甲板颜色为灰色且当前dead_buffer小于max_dead_buffer
             string tracker_key;
-            if ((*armor).color == GRAY)
+            if ((*armor).color == 2)
             {   
                 RCLCPP_WARN(logger_, "Gray armor...");
                 if (dead_buffer_cnt >= gyro_params_.max_dead_buffer)
@@ -162,7 +162,7 @@ namespace armor_detector
             }
 
             int predictors_with_same_key = trackers_map.count(tracker_key);
-            if (predictors_with_same_key == 0 && (*armor).color != GRAY)
+            if (predictors_with_same_key == 0 && (*armor).color != 2)
             {   // 当不存在该类型装甲板ArmorTracker且该装甲板Tracker类型不为灰色装甲板
                 ArmorTracker tracker((*armor), timestamp);
                 auto target_predictor = trackers_map.insert(make_pair((*armor).key, tracker));
@@ -181,14 +181,14 @@ namespace armor_detector
                 {   // 若当前装甲板与上一次的距离小于阈值，并且当前装甲板的中心在上一次装甲板的roi范围内则视为同一装甲板目标，对此tracker进行更新
                     (*candidate).second.update((*armor), timestamp);
                 }
-                else if ((*armor).color != GRAY)
+                else if ((*armor).color != 2)
                 {   // 若不匹配且不为灰色装甲板则创建新ArmorTracker（不为灰色装甲板分配新的追踪器）
                     ArmorTracker tracker((*armor), timestamp);
                     trackers_map.insert(make_pair((*armor).key, tracker));
                     new_armors_cnt_map[(*armor).key]++;
                 }
             }
-            else if (predictors_with_same_key > 1 && (*armor).color != GRAY)
+            else
             {   //当存在多个该类型装甲板ArmorTracker
                 //1e9无实际意义，仅用于以非零初始化
                 double min_delta_dist = 1e9;
@@ -228,7 +228,10 @@ namespace armor_detector
                 }
             }
         }
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/develop
         if (trackers_map.size() != 0)
         {   //维护预测器Map，删除过久之前的装甲板
             for (auto iter = trackers_map.begin(); iter != trackers_map.end();)
@@ -420,7 +423,7 @@ namespace armor_detector
         //     }
         // }
 
-        last_timestamp_ = now;
+        // last_timestamp_ = now;
         return true;
     }
 
@@ -481,7 +484,7 @@ namespace armor_detector
                         last_armor_center = last_tracker->new_armor.center2d.x;
                         last_armor_timestamp = last_tracker->now;
                         auto spin_movement = new_armor_center - last_armor_center;
-                        auto spin_x_dis = last_tracker->new_armor.armor3d_world[xyz_axis_[0]] - new_tracker->new_armor.armor3d_world[xyz_axis_[0]];
+                        auto spin_x_dis = last_tracker->new_armor.armor3d_world[1] - new_tracker->new_armor.armor3d_world[1];
 
                         // spinning_map_.spin_counter_map[cnt.first].flag += (spin_x_dis > 0) ? (-25) : 25; 
                         // if (spinning_map_.spin_status_map[cnt.first].spin_state != UNKNOWN
@@ -531,10 +534,10 @@ namespace armor_detector
                                 GyroInfo gyro_info;
                                 gyro_info.last_rmat = last_tracker->last_armor.rmat;
                                 gyro_info.new_rmat = new_tracker->last_armor.rmat;
-                                gyro_info.new_x_font = last_tracker->last_armor.armor3d_world[xyz_axis_[0]];
-                                gyro_info.new_x_back = new_tracker->last_armor.armor3d_world[xyz_axis_[0]];
-                                gyro_info.new_y_font = last_tracker->last_armor.armor3d_world[xyz_axis_[2]];
-                                gyro_info.new_y_back = new_tracker->last_armor.armor3d_world[xyz_axis_[2]]; 
+                                gyro_info.new_x_font = last_tracker->last_armor.armor3d_world[1];
+                                gyro_info.new_x_back = new_tracker->last_armor.armor3d_world[1];
+                                gyro_info.new_y_font = last_tracker->last_armor.armor3d_world[0];
+                                gyro_info.new_y_back = new_tracker->last_armor.armor3d_world[0]; 
                                 gyro_info.new_timestamp = new_armor_timestamp;
                                 gyro_info.last_x_back = 0;
                                 gyro_info.last_x_back = 0;
@@ -552,10 +555,10 @@ namespace armor_detector
                                 (*candidate).second.last_y_back = (*candidate).second.new_y_back;
                                 (*candidate).second.last_timestamp = (*candidate).second.new_timestamp;
 
-                                (*candidate).second.new_x_font = last_tracker->last_armor.armor3d_world[xyz_axis_[0]];
-                                (*candidate).second.new_x_back = new_tracker->last_armor.armor3d_world[xyz_axis_[0]];
-                                (*candidate).second.new_y_font = last_tracker->last_armor.armor3d_world[xyz_axis_[2]];
-                                (*candidate).second.new_y_back = new_tracker->last_armor.armor3d_world[xyz_axis_[2]];
+                                (*candidate).second.new_x_font = last_tracker->last_armor.armor3d_world[1];
+                                (*candidate).second.new_x_back = new_tracker->last_armor.armor3d_world[1];
+                                (*candidate).second.new_y_font = last_tracker->last_armor.armor3d_world[0];
+                                (*candidate).second.new_y_back = new_tracker->last_armor.armor3d_world[0];
                                 (*candidate).second.new_timestamp = new_armor_timestamp;
 
                                 (*candidate).second.last_rmat = last_tracker->last_armor.rmat;

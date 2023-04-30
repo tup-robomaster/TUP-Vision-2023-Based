@@ -75,7 +75,11 @@ ament_target_dependencies(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${OpenCV_LIBRARIES}
   ${Eigen3_LIBRARIES}
+<<<<<<< HEAD
   yaml-cpp
+=======
+  yaml-cpp 
+>>>>>>> origin/develop
   ceres
   lapack
 )

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 12:36:22
- * @LastEditTime: 2023-02-05 01:00:12
+ * @LastEditTime: 2023-04-26 21:35:00
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/motion_model.cpp
  */
 #include "../../include/filter/motion_model.hpp"
@@ -22,7 +22,7 @@ namespace armor_processor
      * @brief 初始化CV模型对应的卡尔曼滤波
      * 
      * @param x 状态向量
-     * @param dt 时间量
+     * @param dt_ 时间量
      */
     void CV::init(const Eigen::VectorXd& x, const double& dt)
     {   
@@ -32,6 +32,7 @@ namespace armor_processor
             std::cerr << "[Error]Dismatched between State and CV model!" << std::endl;
             exit(1);
         }
+        this->dt_ = dt;
 
         this->P_.setIdentity();
         this->R_.resize(4, 4);
@@ -60,8 +61,8 @@ namespace armor_processor
         // double vx = this->x_(2);
         // double vy = this->x_(3);
 
-        this->F_ << 1, 0, dt, 0,  0, 0,
-                    0, 1, 0,  dt, 0, 0,
+        this->F_ << 1, 0, dt_, 0,  0, 0,
+                    0, 1, 0,  dt_, 0, 0,
                     0, 0, 1,  0,  0, 0,
                     0, 0, 0,  1,  0, 0,
                     0, 0, 0,  0,  1, 0,
@@ -70,10 +71,10 @@ namespace armor_processor
 
         //计算状态协方差矩阵
         // Eigen::Matrix<double, 6, 2> G;
-        // G << 0.5 * pow(dt, 2),                0,
-        //                     0, 0.5 * pow(dt, 2),
-        //                     dt,               0,
-        //                     0,               dt,
+        // G << 0.5 * pow(dt_, 2),                0,
+        //                     0, 0.5 * pow(dt_, 2),
+        //                     dt_,               0,
+        //                     0,               dt_,
         //                     0,                0,
         //                     0,                0;
         // Eigen::Matrix2d E;
@@ -116,6 +117,7 @@ namespace armor_processor
             exit(1);
         }
         this->x_ = x;
+        this->dt_ = dt;
 
         this->P_.setIdentity();
         this->R_.resize(4, 4);
@@ -137,22 +139,22 @@ namespace armor_processor
 
     void CA::updatePrediction()
     {
-        this->F_ << 1, 0, dt,   0, 0.5 * pow(dt, 2),              0,
-                    0, 1,  0,  dt,                 0, 0.5 * (dt, 2),
-                    0, 0,  1,   0,                dt,             0,
-                    0, 0,  0,   1,                 0,            dt,
+        this->F_ << 1, 0, dt_,   0, 0.5 * pow(dt_, 2),              0,
+                    0, 1,  0,  dt_,                 0, 0.5 * (dt_, 2),
+                    0, 0,  1,   0,                dt_,             0,
+                    0, 0,  0,   1,                 0,            dt_,
                     0, 0,  0,   0,                 1,             0,
                     0, 0,  0,   0,                 0,             1;
         this->x_ = this->F_ * this->x_;
 
         //计算状态协方差矩阵
         // Eigen::Matrix<double, 6, 2> G;
-        // G << 1 / 6.0 * pow(dt, 3),                    0,
-        //                         0, 1 / 6.0 * pow(dt, 3), 
-        //      1 / 2.0 * pow(dt, 2),                    0,
-        //                         0, 1 / 2.0 * pow(dt, 2),
-        //                        dt,                    0, 
-        //                         0,                   dt;
+        // G << 1 / 6.0 * pow(dt_, 3),                    0,
+        //                         0, 1 / 6.0 * pow(dt_, 3), 
+        //      1 / 2.0 * pow(dt_, 2),                    0,
+        //                         0, 1 / 2.0 * pow(dt_, 2),
+        //                        dt_,                    0, 
+        //                         0,                   dt_;
         // Eigen::Matrix2d E;
         // E << 400,   0,
         //        0, 400;
@@ -187,7 +189,12 @@ namespace armor_processor
 
         this->P_.setIdentity(6, 6);
         this->R_.resize(4, 4);
-        double r[] = {kf_param_.measure_noise_params[0], kf_param_.measure_noise_params[1], kf_param_.measure_noise_params[2], kf_param_.measure_noise_params[3]};
+        double r[4] = {
+            kf_param_.measure_noise_params[0], 
+            kf_param_.measure_noise_params[1], 
+            kf_param_.measure_noise_params[2], 
+            kf_param_.measure_noise_params[3]
+        };
         this->R_ << r[0], 0,   0,   0,
                     0,   r[1], 0,   0,
                     0,   0,   r[2], 0,
@@ -204,10 +211,10 @@ namespace armor_processor
 
     void CT::updatePrediction()
     {
-        this->F_ << 1, 0,       sin(w_ * dt) / w_, (cos(w_ * dt) - 1) / w_, 0, 0,
-                    0, 1, (1 - cos(w_ * dt)) / w_,       sin(w_ * dt) / w_, 0, 0,
-                    0, 0,            cos(w_ * dt),           -sin(w_ * dt), 0, 0,
-                    0, 0,            sin(w_ * dt),            cos(w_ * dt), 0, 0,
+        this->F_ << 1, 0,       sin(w_ * dt_) / w_, (cos(w_ * dt_) - 1) / w_, 0, 0,
+                    0, 1, (1 - cos(w_ * dt_)) / w_,       sin(w_ * dt_) / w_, 0, 0,
+                    0, 0,            cos(w_ * dt_),           -sin(w_ * dt_), 0, 0,
+                    0, 0,            sin(w_ * dt_),            cos(w_ * dt_), 0, 0,
                     0, 0,                       0,                       0, 0, 0,
                     0, 0,                       0,                       0, 0, 0;
         this->x_ = this->F_ * this->x_;
@@ -215,10 +222,10 @@ namespace armor_processor
         //计算状态协方差矩阵
         {
             // Eigen::Matrix<double, 6, 2> G;
-            // G << 0.5 * pow(dt, 2),                0,
-            //                     0, 0.5 * pow(dt, 2),
-            //                    dt,                0,
-            //                     0,               dt,
+            // G << 0.5 * pow(dt_, 2),                0,
+            //                     0, 0.5 * pow(dt_, 2),
+            //                    dt_,                0,
+            //                     0,               dt_,
             //                     0,                0,
             //                     0,                0;
             
@@ -240,7 +247,133 @@ namespace armor_processor
     }
 
     void CT::updateMeasurement()
-    {}
+    {
+        
+    }
 
-    
+    UniformModel::UniformModel(const KFParam kf_param)
+    {
+        kf_param_ = kf_param;
+    }
+
+    UniformModel::UniformModel()
+    {
+        radius_ = 0.25;
+        kf_param_.process_noise_params = {1.0, 1.0};
+        kf_param_.measure_noise_params = {1.0, 1.0, 1.0, 1.0};
+        kf_param_.singer_params = {8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0};
+    }
+
+    UniformModel::~UniformModel()
+    {
+
+    }
+
+    void UniformModel::init(const Eigen::VectorXd& x, const double& dt)
+    {
+        assert(x.size() == 11);
+
+        double alpha = kf_param_.singer_params[0];
+        double sigma = kf_param_.singer_params[5];
+
+        this->x_ = x;
+        this->dt_ = dt;
+        this->P_.setIdentity(11, 11);
+        this->F_.resize(11, 11);
+        /*
+                    // Xc--Yc--Zc--r--theta-omega-vx--vy--vz----------------ax---------------ay-----------------az
+                    Xc--Yc--Zc--r--theta--vx--vy--vz------------------------ax-------------------------------------------------------------------------------ay---------------------------------------------------az
+        */
+        this->F_ << 1,  0,  0,  0,  0,    dt,  0,  0, (alpha * dt - 1 + exp(-alpha * dt)) / alpha / alpha,                                                   0,                                                   0,
+                    0,  1,  0,  0,  0,     0, dt,  0,                                                   0, (alpha * dt - 1 + exp(-alpha * dt)) / alpha / alpha,                                                   0,
+                    0,  0,  1,  0,  0,     0,  0, dt,                                                   0,                                                   0, (alpha * dt - 1 + exp(-alpha * dt)) / alpha / alpha,
+                    0,  0,  0,  1,  0,     0,  0,  0,                                                   0,                                                   0,                                                   0,
+                    0,  0,  0,  0,  1,     0,  0,  0,                                                   0,                                                   0,                                                   0,
+                    0,  0,  0,  0,  0,     1,  0,  0,                      (1 - exp(-alpha * dt)) / alpha,                                                   0,                                                   0,
+                    0,  0,  0,  0,  0,     0,  1,  0,                                                   0,                      (1 - exp(-alpha * dt)) / alpha,                                                   0,
+                    0,  0,  0,  0,  0,     0,  0,  1,                                                   0,                                                   0,                      (1 - exp(-alpha * dt)) / alpha,
+                    0,  0,  0,  0,  0,     0,  0,  0,                                    exp(-alpha * dt),                                                   0,                                                   0,
+                    0,  0,  0,  0,  0,     0,  0,  0,                                                   0,                                    exp(-alpha * dt),                                                   0,
+                    0,  0,  0,  0,  0,     0,  0,  0,                                                   0,                                                   0,                                    exp(-alpha * dt);
+        
+        this->C_ << 1 / alpha * (-dt + alpha * dt * dt / 2 + (1 - exp(-alpha * dt) / alpha)),                                                                        0,                                                                        0,
+                                                                                           0, 1 / alpha * (-dt + alpha * dt * dt / 2 + (1 - exp(-alpha * dt) / alpha)),                                                                        0,
+                                                                                           0,                                                                        0, 1 / alpha * (-dt + alpha * dt * dt / 2 + (1 - exp(-alpha * dt) / alpha)),
+                                                                                           0,                                                                        0,                                                                        0,
+                                                                                           0,                                                                        0,                                                                        0,
+                                                         dt - (1 - exp(-alpha * dt) / alpha),                                                                        0,                                                                        0,
+                                                                                           0,                                      dt - (1 - exp(-alpha * dt) / alpha),                                                                        0,
+                                                                                           0,                                                                        0,                                      dt - (1 - exp(-alpha * dt) / alpha),
+                                                                        1 - exp(-alpha * dt),                                                                        0,                                                                        0,
+                                                                                           0,                                                     1 - exp(-alpha * dt),                                                                        0,
+                                                                                           0,                                                                        0,                                                     1 - exp(-alpha * dt);
+        this->z_.resize(4);
+        this->H_.resize(4, 11);
+        this->H_ << 1, 0, 0, -sin(rangle_), 0, 0, 0, 0, 0, 0, 0,
+                    0, 1, 0,  cos(rangle_), 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 1,             0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0,             0, 1, 0, 0, 0, 0, 0, 0;
+
+        this->R_.resize(4, 4);
+        double r[4] = {
+            this->kf_param_.measure_noise_params[0],
+            this->kf_param_.measure_noise_params[1],
+            this->kf_param_.measure_noise_params[2],
+            this->kf_param_.measure_noise_params[3],
+        };
+        this->R_ << r[0],    0,    0,    0,   
+                       0, r[1],    0,    0,    
+                       0,    0, r[2],    0,    
+                       0,    0,    0, r[3];
+
+        this->Q_.setIdentity(11, 11);
+        double q[2] = {this->kf_param_.process_noise_params[0], this->kf_param_.process_noise_params[1]};
+        double q11 = 1 / (2 * pow(alpha, 5)) * (1 - exp(-2 * alpha * dt) + 2 * alpha * dt + 2 * pow(alpha * dt, 3) / 3 - 2 * pow(alpha * dt, 2) - 4 * alpha * dt * exp(-alpha * dt));
+        double q12 = 1 / (2 * pow(alpha, 4)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt) + 2 * alpha * dt * exp(-alpha * dt) - 2 * alpha * dt + pow(alpha * dt, 2));
+        double q13 = 1 / (2 * pow(alpha, 3)) * (1 - exp(-2 * alpha * dt) - 2 * alpha * dt * exp(-alpha * dt));
+        double q22 = 1 / (2 * pow(alpha, 3)) * (4 * exp(-alpha * dt) - 3 - exp(-2 * alpha * dt) + 2 * alpha * dt);
+        double q23 = 1 / (2 * pow(alpha, 2)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt));
+        double q33 = 1 / (2 * alpha) * (1 - exp(-2 * alpha * dt));
+        this->Q_ << 2 * pow(sigma, 2) * alpha * q11,                               0,                               0,    0,    0,    2 * pow(sigma, 2) * alpha * q12,                                  0,                                  0,    2 * pow(sigma, 2) * alpha* q13,                                 0,                                  0,    
+                                                  0, 2 * pow(sigma, 2) * alpha * q11,                               0,    0,    0,                                  0,    2 * pow(sigma, 2) * alpha * q12,                                  0,                                 0,    2 * pow(sigma, 2) * alpha* q13,                                  0,    
+                                                  0,                               0, 2 * pow(sigma, 2) * alpha * q11,    0,    0,                                  0,                                  0,    2 * pow(sigma, 2) * alpha * q12,                                 0,                                 0,     2 * pow(sigma, 2) * alpha* q13,   
+                                                  0,                               0,                               0, q[0],    0,                                  0,                                  0,                                  0,                                 0,                                 0,                                  0,   
+                                                  0,                               0,                               0,    0, q[1],                                  0,                                  0,                                  0,                                 0,                                 0,                                  0,   
+                    2 * pow(sigma, 2) * alpha * q12,                               0,                               0,    0,    0,    2 * pow(sigma, 2) * alpha * q22,                                  0,                                  0,    2 * pow(sigma, 2) * alpha* q23,                                 0,                                  0,   
+                                                  0, 2 * pow(sigma, 2) * alpha * q12,                               0,    0,    0,                                  0,    2 * pow(sigma, 2) * alpha * q22,                                  0,                                 0,    2 * pow(sigma, 2) * alpha* q23,                                  0,   
+                                                  0,                               0, 2 * pow(sigma, 2) * alpha * q12,    0,    0,                                  0,                                  0,    2 * pow(sigma, 2) * alpha * q22,                                 0,                                 0,     2 * pow(sigma, 2) * alpha* q23,  
+                    2 * pow(sigma, 2) * alpha * q13,                               0,                               0,    0,    0,    2 * pow(sigma, 2) * alpha * q23,                                  0,                                  0,   2 * pow(sigma, 2) * alpha * q33,                                 0,                                  0,  
+                                                  0, 2 * pow(sigma, 2) * alpha * q13,                               0,    0,    0,                                  0,    2 * pow(sigma, 2) * alpha * q23,                                  0,                                 0,   2 * pow(sigma, 2) * alpha * q33,                                  0,  
+                                                  0,                               0, 2 * pow(sigma, 2) * alpha * q13,    0,    0,                                  0,                                  0,    2 * pow(sigma, 2) * alpha * q23,                                 0,                                 0,    2 * pow(sigma, 2) * alpha * q33; 
+    }
+
+    void UniformModel::setF(Eigen::MatrixXd& Ft, const double& dt)
+    {
+        double alpha = kf_param_.singer_params[0];
+        double sigma = kf_param_.singer_params[5];
+        /*
+              Xc--Yc--Zc--r--theta--vx--vy--vz------------------------ax-------------------------------------------------------------------------------ay---------------------------------------------------az
+        */
+        Ft << 1,  0,  0,  0,  0,    dt,  0,  0, (alpha * dt - 1 + exp(-alpha * dt)) / alpha / alpha,                                                   0,                                                   0,
+              0,  1,  0,  0,  0,     0, dt,  0,                                                   0, (alpha * dt - 1 + exp(-alpha * dt)) / alpha / alpha,                                                   0,
+              0,  0,  1,  0,  0,     0,  0, dt,                                                   0,                                                   0, (alpha * dt - 1 + exp(-alpha * dt)) / alpha / alpha,
+              0,  0,  0,  1,  0,     0,  0,  0,                                                   0,                                                   0,                                                   0,
+              0,  0,  0,  0,  1,     0,  0,  0,                                                   0,                                                   0,                                                   0,
+              0,  0,  0,  0,  0,     1,  0,  0,                      (1 - exp(-alpha * dt)) / alpha,                                                   0,                                                   0,
+              0,  0,  0,  0,  0,     0,  1,  0,                                                   0,                      (1 - exp(-alpha * dt)) / alpha,                                                   0,
+              0,  0,  0,  0,  0,     0,  0,  1,                                                   0,                                                   0,                      (1 - exp(-alpha * dt)) / alpha,
+              0,  0,  0,  0,  0,     0,  0,  0,                                    exp(-alpha * dt),                                                   0,                                                   0,
+              0,  0,  0,  0,  0,     0,  0,  0,                                                   0,                                    exp(-alpha * dt),                                                   0,
+              0,  0,  0,  0,  0,     0,  0,  0,                                                   0,                                                   0,                                    exp(-alpha * dt);
+    }
+
+    void UniformModel::updatePrediction()
+    {
+        this->x_ = this->F_ * this->x_;
+    }
+
+    void UniformModel::updateMeasurement()
+    {
+        
+    }
 } // armor_processor

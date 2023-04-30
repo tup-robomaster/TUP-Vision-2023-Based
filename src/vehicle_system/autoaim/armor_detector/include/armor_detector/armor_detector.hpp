@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-04-14 13:35:28
+ * @LastEditTime: 2023-04-24 20:42:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
@@ -29,6 +29,7 @@ namespace armor_detector
 {
     class Detector
     {
+        typedef global_interface::msg::Armor ArmorMsg;
         typedef global_interface::msg::ObjHP ObjHPMsg;
         typedef global_interface::msg::Decision DecisionMsg;
 
@@ -46,7 +47,7 @@ namespace armor_detector
         int chooseTargetID(TaskData& src);
         int chooseTargetID(TaskData& src, std::vector<Armor>& armors, ObjHPMsg hp = ObjHPMsg(), DecisionMsg decision_msg = DecisionMsg());
         void showArmors(TaskData& src);
-        bool normlizeAngle();
+        // bool normlizeAngle();
 
     public:
         CoordSolver coordsolver_;
@@ -65,6 +66,7 @@ namespace armor_detector
     private:
         Armor last_armor_;
         std::vector<ArmorObject> objects_;
+        // std::vector<Armor> same_armors_;
 
         std::vector<ArmorTracker> trackers_;
         std::multimap<std::string, ArmorTracker> trackers_map_;
@@ -115,7 +117,6 @@ namespace armor_detector
     public:
         //Debug param.
         DebugParam debug_params_;
-        PathParam path_params_;
         DetectorParam detector_params_;
 
         rclcpp::Logger logger_;

@@ -34,6 +34,9 @@ find_package(cv_bridge REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(global_interface REQUIRED)
 find_package(global_user REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 set(dependencies 
   rclcpp
@@ -48,6 +51,9 @@ set(dependencies
   yaml-cpp
   global_interface
   global_user
+  visualization_msgs
+  tf2_geometry_msgs
+  tf2_ros 
 )
 
 include_directories(

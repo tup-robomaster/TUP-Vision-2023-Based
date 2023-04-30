@@ -60,6 +60,7 @@ namespace serialport
     {
         int mode;               //车辆设定模式
         float theta_gimbal;    //指定云台所需转动的相对角度
+        float theta_chassis;   //指定底盘所需转动的相对角度
     } VisionDecisionData;
 
     class DataTransform

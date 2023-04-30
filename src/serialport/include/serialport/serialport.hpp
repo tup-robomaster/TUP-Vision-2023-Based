@@ -58,10 +58,14 @@ namespace serialport
         int databits;
         int stopbits;
         int parity;
+<<<<<<< HEAD
         uchar rdata[64];
         unsigned char rdata1[64]; // raw_data
         unsigned char rdata2[64]; // raw_data
         unsigned char rdata3[64]; // raw_data
+=======
+        unsigned char rdata[64]; // raw_data
+>>>>>>> origin/develop
     };
 
     /**

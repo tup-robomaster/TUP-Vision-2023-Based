@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:00:19
- * @LastEditTime: 2023-02-01 22:14:23
+ * @LastEditTime: 2023-04-26 21:14:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/kalman_filter.hpp
  */
 #ifndef KALMAN_FILTER_HPP_
@@ -20,6 +20,7 @@ namespace armor_processor
     {
         vector<double> process_noise_params;
         vector<double> measure_noise_params;
+        vector<double> singer_params;
     };
 
     class KalmanFilter
@@ -63,7 +64,6 @@ namespace armor_processor
              */
             void Init(Eigen::MatrixXd& x_in, Eigen::MatrixXd& P_in, Eigen::MatrixXd& F_in,
             Eigen::MatrixXd& H_in, Eigen::MatrixXd& R_in, Eigen::MatrixXd& Q_in, Eigen::MatrixXd& J_in);
-
             
             /**
              * @brief 预测状态向量和协方差矩阵
@@ -80,6 +80,7 @@ namespace armor_processor
              */
             void Update(const Eigen::VectorXd& z);
             void Update(const Eigen::VectorXd& z, int mp);
+            void Update(const Eigen::VectorXd& z, double rangle);
             void updateOnce(const double& dt, const Eigen::VectorXd* z);
 
             /**
@@ -103,6 +104,7 @@ namespace armor_processor
             Eigen::VectorXd x() const { return this->x_; };
             Eigen::MatrixXd P() const { return this->P_; };
             Eigen::MatrixXd S() const { return this->S_; };
+            Eigen::MatrixXd F() const { return this->F_; };
             // Eigen::VectorXd* x() { return &this->x_; };
             // Eigen::MatrixXd* P() { return &this->P_; };
             void setStateCoveriance(const Eigen::MatrixXd& P) 
@@ -151,7 +153,7 @@ namespace armor_processor
         
         public:
             double likelihood_; //似然值
-            double dt; //时间量
+            double dt_; //时间量
         
         public:
             // double r1_, r2_, r3_, r4_;

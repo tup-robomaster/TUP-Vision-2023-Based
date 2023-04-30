@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-09 22:50:31
- * @LastEditTime: 2023-04-11 21:22:28
+ * @LastEditTime: 2023-04-25 20:06:47
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -23,13 +23,6 @@
 using namespace std;
 namespace armor_processor
 {
-    typedef enum OutpostStatus
-    {
-        NORMAL,     // 常速旋转
-        CONTROLLED, // 速度减半
-        STILL       // 静止
-    } OutpostStatus;
-
     typedef enum SpinningStatus
     {
         STILL_SPINNING,
@@ -45,16 +38,17 @@ namespace armor_processor
     struct TargetInfo
     {
         Eigen::Vector3d xyz;
+        double rangle;
         double dist;
-        int64_t timestamp;
+        double timestamp;
         double period;
+        bool is_target_lost;
         bool is_target_switched;
         bool is_spinning;
-        bool spinning_switched;
+        bool is_spinning_switched;
         bool is_clockwise;
         bool is_outpost_mode;
         SpinningStatus spinning_status;
-        OutpostStatus outpost_status;
         SystemModel system_model;
     };
 
@@ -68,6 +62,18 @@ namespace armor_processor
             xyz_status[1] = false;
             xyz_status[2] = false;
         }
+    };
+
+    /**
+     * @brief 预测器状态
+     * 
+     */
+    enum PredictorState
+    {
+        TRACKING,   //追踪
+        PREDICTING, //预测
+        LOSTING,    //丢失预测中
+        LOST        //丢失
     };
 
     struct FilterModelParam
@@ -175,17 +181,6 @@ namespace armor_processor
         Eigen::Vector3d track_3d_pos; //目标当前位置
         Eigen::Vector2d pred_velocity;//目标移动速度，作为是否射击目标依据
         Eigen::Vector2d meas_velocity;
-        PostProcessInfo()
-        {
-            pred_score = 0;
-            find_target = false;
-            is_shooting = false;
-            switch_target = false;
-            pred_3d_pos = {0, 0, 0};
-            track_3d_pos = {0, 0, 0};
-            pred_velocity = {0, 0};
-            meas_velocity = {0, 0};
-        }
     };
 } //namespace armor_processor
 #endif
