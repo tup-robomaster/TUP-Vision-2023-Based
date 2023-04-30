@@ -123,10 +123,10 @@ namespace armor_processor
 
     void KalmanFilter::Update(const Eigen::VectorXd& z, double rangle)
     {
-        this->H_ << 1, 0, 0, -sin(x_(4)), 0, 0, 0, 0,
-                    0, 1, 0, cos(x_(4)) , 0, 0, 0, 0,
-                    0, 0, 1, 0          , 0, 0, 0, 0,
-                    0, 0, 0, 0          , 1, 0, 0, 0;
+        this->H_ << 1, 0, 0, -cos(x_(4) + x_(5) * dt_), x_(3) * sin(x_(4) + x_(5) * dt_) , x_(3) * dt_ * sin(x_(4) + x_(5) * dt_), 0 , 0, 0,
+                    0, 1, 0, -sin(x_(4) + x_(5) * dt_), -x_(3) * cos(x_(4) + x_(5) * dt_), -x_(3) * dt_ * cos(x_(4) + x_(5) * dt_), 0, 0, 0,
+                    0, 0, 1,           0,                   0, 0  , 0, 0, 0,
+                    0, 0, 0,           0,                   1, dt_, 0, 0, 0; 
         Update(z);
         // cout << "z:" << this->x_(2) << endl;
     }

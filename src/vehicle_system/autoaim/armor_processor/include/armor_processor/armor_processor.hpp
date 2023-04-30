@@ -47,6 +47,7 @@ namespace armor_processor
         bool is_param_initialized_ = false;
         rclcpp::Time last_timestamp_;
         // double target_period_ = 0.0;
+        TargetInfo last_target_;
         
         //预测器(每辆车默认分配4个预测器，平衡仅使用2个预测器)
         //目前只分配一个预测器

@@ -170,10 +170,12 @@ namespace armor_processor
             image_mutex_.unlock();
         }
 
+        // cout << "is_target_lost:" << target.is_target_lost << endl;
         if (target.is_target_lost && processor_->is_last_exists_)
         {   //目标丢失且上帧存在，预测器进入丢失预测状态
             processor_->armor_predictor_.predictor_state_ = LOSTING;
             is_shooting = false;
+            processor_->is_last_exists_ = false;
         }
 
         if (target.is_target_lost && processor_->armor_predictor_.predictor_state_ == LOST)
@@ -203,15 +205,24 @@ namespace armor_processor
             if (processor_->predictor(target, aiming_point_world, armor3d_vec, sleep_time))
             {
                 // cout << 2 << endl;
+                // cout << 7 << endl;
+
                 aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
+                // cout << 8 << endl;
+
                 angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
-                tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
-                tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
+                if (!target_info.is_target_lost)
+                {
+                    tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
+                    tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
+                }
+                // cout << 9 << endl;
 
                 Eigen::VectorXd state = processor_->armor_predictor_.uniform_ekf_.x();
-                vehicle_center3d_world = {state(0), state(1), target.armors.front().point3d_world.z, 0.0};
+                vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
                 vehicle_center3d_cam = processor_->coordsolver_.worldToCam({vehicle_center3d_world(0), vehicle_center3d_world(1), vehicle_center3d_world(2)}, rmat_imu);
                 // cout << "vehicle_center3d_world:" << vehicle_center3d_world(0) << " " << vehicle_center3d_world(1) << " " << vehicle_center3d_world(2) << endl;
+                // cout << 10 << endl;
                 
                 // vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
                 // armor3d_vec.emplace_back(vehicle_center3d_world);
@@ -594,7 +605,7 @@ namespace armor_processor
 
         vector<double> uniform_ekf_params[3] = 
         {
-            {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+            {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
             {1.0, 1.0, 1.0, 1.0},
             {8.00, 10.0, 0.1, 0.8, 0.0030}
         };

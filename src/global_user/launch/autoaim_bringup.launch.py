@@ -99,7 +99,6 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[{
                 'using_port': False,
-                'using_port': False,
                 'tracking_target': True,
                 'print_serial_info': False,
                 'print_referee_info': False
