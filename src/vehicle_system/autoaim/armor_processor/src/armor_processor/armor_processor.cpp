@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-04-30 03:48:36
+ * @LastEditTime: 2023-04-30 17:55:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -14,7 +14,6 @@ namespace armor_processor
     {
         //初始化预测器
         armor_predictor_.uniform_ekf_.Init(11, 4, 3);
-        // armor_predictor_.uniform_ekf_.init(0.030);
         armor_predictor_.initPredictor(uniform_ekf_param);
         armor_predictor_.resetPredictor();
 
@@ -39,7 +38,8 @@ namespace armor_processor
         // };
 
         //初始化预测器
-        armor_predictor_.uniform_ekf_.Init(11, 4, 1);
+        armor_predictor_.uniform_ekf_.Init(11, 4, 3);
+        armor_predictor_.uniform_ekf_.init();
         armor_predictor_.resetPredictor();
     }
 
@@ -141,6 +141,14 @@ namespace armor_processor
         for (auto armor : target_msg.armors)
         {
             Eigen::Vector3d xyz = {armor.point3d_world.x, armor.point3d_world.y, armor.point3d_world.z};
+            double pred_dt = xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
+
+            Eigen::VectorXd state = armor_predictor_.uniform_ekf_.x();
+            Eigen::Vector3d center_xyz = {state(0), state(1), state(2)};
+            // double pred_dt = center_xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
+
+            RCLCPP_WARN(logger_, "xyz:【%.3f %.3f %.3f] center_norm:[%.3f %.3f %.3f]", xyz(0), xyz(1), xyz(2), center_xyz(0), center_xyz(1), center_xyz(2));
+            // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "dt:%.3f pred_dt:%.3f armor.rangle:%.3f", dt, pred_dt, armor.rangle);
             TargetInfo target = 
             { 
                 std::move(xyz),
@@ -175,7 +183,7 @@ namespace armor_processor
                 if (lost_cnt_ <= 5)
                 {
                     //进入预测追踪阶段
-                    is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
+                    is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
                     ++lost_cnt_;
                 }
                 else
@@ -188,7 +196,7 @@ namespace armor_processor
             {   //目标丢失后又重新出现
                 // cout << 10 << endl;
                 armor_predictor_.predictor_state_ = PREDICTING;
-                is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
+                is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
                 lost_cnt_ = 0;
             }
             else if (target.is_target_switched && !target.is_target_lost)
@@ -197,22 +205,22 @@ namespace armor_processor
                 if (armor_predictor_.resetPredictor())
                 {
                     RCLCPP_WARN(logger_, "Reset predictor...");
-                    is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
+                    is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
                 }                
             }
             else if (target.is_spinning_switched && !target.is_target_lost)
             {
                 // cout << 11 << endl;
                 // target_period_ = target.period;
-                Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
+                Eigen::Vector4d meas = {target.xyz(1), target.xyz(2), target.xyz(0), target.rangle};
                 // cout << 14 << endl;
                 armor_predictor_.updatePredictor(meas);
                 // cout << 15 << endl;
-                is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
+                is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
             }
             else if (!target.is_target_lost)
             {
-                is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
+                is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
             }
         }
         // cout << 8 << endl;

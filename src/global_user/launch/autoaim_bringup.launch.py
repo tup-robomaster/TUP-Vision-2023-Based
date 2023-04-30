@@ -39,7 +39,7 @@ def generate_launch_description():
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='daheng',
+        default_value='usb',
         description='hik daheng mvs usb'
     )
 
@@ -99,6 +99,7 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[{
                 'using_port': False,
+                'using_port': False,
                 'tracking_target': True,
                 'print_serial_info': False,
                 'print_referee_info': False
@@ -137,6 +138,13 @@ def generate_launch_description():
         #     # arguments=['-d', rviz2_config_path]
         # ),
 
+        # Node(
+        #     package='tf2_ros',
+        #     executable='static_transform_publisher',
+        #     output='screen',
+        #     arguments=['-0.01680645', '0.06407996', '0.04546766', '2.3101486', '-1.5109296', '-2.3492247', 'imu_link', 'camera_link']
+        # ),
+        
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',

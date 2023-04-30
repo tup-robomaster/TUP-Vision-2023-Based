@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 12:13:56
- * @LastEditTime: 2023-04-26 21:28:55
+ * @LastEditTime: 2023-04-30 17:55:11
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/motion_model.hpp
  */
 #include "./kalman_filter.hpp"
@@ -61,8 +61,10 @@ namespace armor_processor
         UniformModel(const KFParam kf_param);
         ~UniformModel();
         
-        void init(const double dt);
-        void setF(Eigen::MatrixXd& Ft, const double& dt);
+        void init();
+        void setKF(double dt);
+        void setF(Eigen::MatrixXd& Ft, const double& pred_dt);
+        void setC(Eigen::MatrixXd& Ct, const double& pred_dt);
 
     public:
         // vector<double> singer_param_;
