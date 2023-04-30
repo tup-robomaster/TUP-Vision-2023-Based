@@ -25,8 +25,7 @@ namespace armor_processor
 
     public:
         Processor();
-<<<<<<< HEAD
-        Processor(const PredictParam& predict_param, vector<double>* singer_model_param, const PathParam& path_param, const DebugParam& debug_param);
+        Processor(const PredictParam& predict_param, std::vector<double>* uniform_ekf_param, const DebugParam& debug_param);
         ~Processor();
 
         // void loadParam(std::string filter_param_path);
@@ -58,7 +57,7 @@ namespace armor_processor
         DebugParam debug_param_;
         rclcpp::Logger logger_;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
->>>>>>> origin/develop
     };
 } //namespace armor_processor
 
+#endif

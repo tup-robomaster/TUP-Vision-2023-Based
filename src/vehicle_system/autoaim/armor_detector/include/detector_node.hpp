@@ -48,10 +48,6 @@ namespace armor_detector
         ~DetectorNode();
         
         void detect(TaskData& src, rclcpp::Time start);
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/develop
     private:
         rclcpp::Time time_start_;
         ImageInfo image_info_;
@@ -59,10 +55,6 @@ namespace armor_detector
         // Pub target armor msg.
         rclcpp::Publisher<AutoaimMsg>::SharedPtr armor_info_pub_;
         rclcpp::Publisher<global_interface::msg::DetectionArray>::SharedPtr detections_pub_;
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/develop
     private:    
         // Params callback.
         bool updateParam();

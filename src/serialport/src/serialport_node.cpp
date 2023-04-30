@@ -242,10 +242,11 @@ namespace serialport
             else if (flag == 0xC5)
             {
                 vector<ushort> hp;
+                uchar gamestage;
                 ushort timestamp;
                 data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
                 data_transform_->getHPInfo(flag, &serial_port_->serial_data_.rdata[27], hp);
-                data_transform_->getGameInfo(flag, &serial_port_->serial_data_.rdata[47], timestamp);
+                data_transform_->getGameInfo(flag, &serial_port_->serial_data_.rdata[47], timestamp, gamestage);
 
                 CarPosMsg car_pos_msg;
                 ObjHPMsg obj_hp_msg;

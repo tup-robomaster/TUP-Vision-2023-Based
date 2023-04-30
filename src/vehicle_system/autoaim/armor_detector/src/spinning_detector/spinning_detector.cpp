@@ -228,10 +228,6 @@ namespace armor_detector
                 }
             }
         }
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/develop
         if (trackers_map.size() != 0)
         {   //维护预测器Map，删除过久之前的装甲板
             for (auto iter = trackers_map.begin(); iter != trackers_map.end();)
