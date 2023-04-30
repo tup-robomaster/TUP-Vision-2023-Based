@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-30 17:55:46
+ * @LastEditTime: 2023-04-30 18:43:53
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -594,7 +594,7 @@ namespace armor_processor
 
         vector<double> uniform_ekf_params[3] = 
         {
-            {1.0, 1.0},
+            {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
             {1.0, 1.0, 1.0, 1.0},
             {8.00, 10.0, 0.1, 0.8, 0.0030}
         };

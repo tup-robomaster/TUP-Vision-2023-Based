@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-04-30 17:52:16
+ * @LastEditTime: 2023-04-30 17:57:35
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -146,13 +146,6 @@ namespace global_user
         SMALL, 
         BIG, 
         BUFF
-    };
-
-    enum SpinHeading
-    {
-        UNKNOWN,
-        CLOCKWISE, 
-        COUNTER_CLOCKWISE
     };
 
     enum SpinHeading

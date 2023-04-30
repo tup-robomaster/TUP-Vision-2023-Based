@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-04-30 17:55:30
+ * @LastEditTime: 2023-04-30 19:34:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -129,6 +129,8 @@ namespace armor_processor
         Eigen::Vector3d shiftWindowFilter(int start_idx);
 
         Eigen::Vector2d calcCircleCenter(Eigen::VectorXd meas);
+
+        double calcCircleRadius(Eigen::Vector3d p1, Eigen::Vector3d p2);
 
         // 粒子滤波
         // PredictStatus predictBasePF(TargetInfo target, Vector3d& result, int64_t timestamp);

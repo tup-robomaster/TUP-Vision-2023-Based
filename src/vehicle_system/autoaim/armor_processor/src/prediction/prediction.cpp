@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-30 17:56:44
+ * @LastEditTime: 2023-04-30 19:38:16
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -26,7 +26,8 @@ namespace armor_processor
         uniform_ekf_.kf_param_.measure_noise_params = uniform_param[1];
         uniform_ekf_.kf_param_.singer_params = uniform_param[2];
         uniform_ekf_.init();
-        RCLCPP_INFO_ONCE(logger_, "uniform_process_noise_param:[%.2f %.2f]", uniform_param[0][0], uniform_param[0][1]);
+        RCLCPP_INFO_ONCE(logger_, "uniform_process_noise_param:[%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f]", uniform_param[0][0], uniform_param[0][1], uniform_param[0][2], uniform_param[0][3],
+            uniform_param[0][4], uniform_param[0][5], uniform_param[0][6], uniform_param[0][7]);
         RCLCPP_INFO_ONCE(logger_, "uniform_meas_noise_param:[%.2f %.2f %.2f %.2f]", uniform_param[1][0], uniform_param[1][1], uniform_param[1][2], uniform_param[1][3]);
         RCLCPP_INFO_ONCE(logger_, "uniform_singer_param:[%.2f %.2f %.2f %.2f %.2f]", uniform_param[2][0], uniform_param[2][1], uniform_param[2][2], uniform_param[2][3], uniform_param[2][4]);
     }
@@ -43,7 +44,7 @@ namespace armor_processor
         // Eigen::Vector2d circle_center = calcCircleCenter(meas);
         // uniform_ekf_.x_(0) = circle_center(0);
         // uniform_ekf_.x_(1) = circle_center(1);
-        uniform_ekf_.x_(2) = meas(2);
+        // uniform_ekf_.x_(2) = meas(2);
         return true;
     }
 
@@ -91,7 +92,7 @@ namespace armor_processor
         if (!is_ekf_init_)
         {
             Eigen::Vector2d circle_center = calcCircleCenter(meas);
-            uniform_ekf_.x_ << circle_center(0), circle_center(1), meas(2), uniform_ekf_.radius_, meas(3), 0, 0, 0, 0, 0, 0;
+            uniform_ekf_.x_ << circle_center(0), circle_center(1), meas(2), uniform_ekf_.radius_, meas(3), 0, 0, 0;
             is_ekf_init_ = true;
             is_pred_success = false;
             result = {meas(0), meas(1), meas(2)};
@@ -145,13 +146,15 @@ namespace armor_processor
             // double radius = 0.15;
             // double rangle = state(4);
 
-            Eigen::MatrixXd F(11, 11);
+            Eigen::MatrixXd F(8, 8);
             uniform_ekf_.setF(F, pred_dt);
-            Eigen::MatrixXd Control(11, 3);
-            uniform_ekf_.setC(Control, pred_dt);    
-            Eigen::MatrixXd acc(3, 1);
-            acc << uniform_ekf_.x_(8), uniform_ekf_.x_(9), uniform_ekf_.x_(10);
-            Eigen::VectorXd pred = F * state + Control * acc;
+            Eigen::VectorXd pred = F * state;
+            // Eigen::MatrixXd Control(11, 3);
+            // uniform_ekf_.setC(Control, pred_dt);    
+            // Eigen::MatrixXd acc(3, 1);
+            // acc << uniform_ekf_.x_(8), uniform_ekf_.x_(9), uniform_ekf_.x_(10);
+            // Eigen::VectorXd pred = F * state + Control * acc;
+
             // pred(2) = meas(2);
             Eigen::Vector3d circle_center = {pred(0), pred(1), pred(2)};
             double radius = 0.15;
@@ -178,8 +181,8 @@ namespace armor_processor
             armor3d_vec.emplace_back(circle_center3d);
             // cout << "meas:" << meas(2) << endl;
             // cout << "pred_angle:" << pred_rangle << " result:" << result[0] << " " << result[1] << " " << result[2] << endl;
-            
-            cout << "radius:" << pred(3) << endl;
+            cout << "pred_radius:" << pred(3) << " calc_radius:"<< calcCircleRadius(circle_center, Eigen::Vector3d{meas(0), meas(1), meas(2)}) << endl;
+
             Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
             for (int ii = 0; ii < 4; ii++)
             {
@@ -196,6 +199,11 @@ namespace armor_processor
     Eigen::Vector2d ArmorPredictor::calcCircleCenter(Eigen::VectorXd meas)
     {
         return Eigen::Vector2d{meas(0) + uniform_ekf_.radius_ * cos(meas(3)), meas(1) + uniform_ekf_.radius_ * sin(meas(3))};
+    }
+
+    double ArmorPredictor::calcCircleRadius(Eigen::Vector3d p1, Eigen::Vector3d p2)
+    {
+        return sqrt(pow(p1(0) - p2(0), 2) + pow(p1(1) - p2(1), 2) + pow(p1(2) - p2(2), 2));
     }
 
     // /**

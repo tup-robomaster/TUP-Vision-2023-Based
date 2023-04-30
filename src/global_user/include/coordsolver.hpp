@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:13
- * @LastEditTime: 2023-04-30 17:52:02
+ * @LastEditTime: 2023-04-30 17:58:02
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/coordsolver.hpp
  */
 
@@ -36,7 +36,6 @@ namespace coordsolver
         Eigen::Vector3d R_world;
         Eigen::Vector3d euler;
         Eigen::Matrix3d rmat;
-        double rangle;
         double rangle;
     };
 
