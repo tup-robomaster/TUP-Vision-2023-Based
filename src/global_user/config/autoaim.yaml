@@ -114,10 +114,10 @@
     
   # Filter params.
     filter_param_path: "/config/filter_param.yaml"
-    #----------------------------------Xc------Yc----Zc-----r-----theta--omega---vx-----vy-----vz
-    uniform_ekf_process_noise_param: [0.001, 0.0005, 10.5, 0.0025, 0.008, 0.001, 0.005, 0.000005,  0.001]
+    #----------------------------------Xc------Yc-----Zc--------r-----theta-----omega-----vx-------vy-----vz
+    uniform_ekf_process_noise_param: [0.001, 0.0001, 0.001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001, 0.005]
     #----------------------------------X--------Y--------Z----theta
-    uniform_ekf_measure_noise_param: [500.0, 100.0, 100.0, 10.0]
+    uniform_ekf_measure_noise_param: [10.0, 1.0, 0.1, 0.1]
     # Singer model.  
     # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 sigma:机动加速度标准差)
     uniform_ekf_singer_param: [2.060, 10.0, 0.1, 0.8, 0.2]

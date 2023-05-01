@@ -90,11 +90,11 @@ namespace armor_processor
     void KalmanFilter::Update(const VectorXd& z)
     {
         MatrixXd z_pred = H_ * x_;
-        // cout << "z_meas:" << z(0) << " " << z(1) << " " << z(2) << " " << z(3) << endl;
-        // cout << "z_pred:" << z_pred(0, 0) << " " << z_pred(1, 0) << " " << z_pred(2, 0) << " " << z_pred(3, 0) << endl;
+        cout << "z_meas:" << z(0) << " " << z(1) << " " << z(2) << " " << z(3) << endl;
+        cout << "z_pred:" << z_pred(0, 0) << " " << z_pred(1, 0) << " " << z_pred(2, 0) << " " << z_pred(3, 0) << endl;
         MatrixXd y = z - z_pred;
 
-        // cout << "y:" << y(0, 0) << " " << y(1, 0) << " " << y(2, 0) << " " << y(3, 0) << endl;
+        cout << "y:" << y(0, 0) << " " << y(1, 0) << " " << y(2, 0) << " " << y(3, 0) << endl;
         
         //卡尔曼增益
         MatrixXd Ht = H_.transpose();
@@ -123,10 +123,10 @@ namespace armor_processor
 
     void KalmanFilter::Update(const Eigen::VectorXd& z, double rangle)
     {
-        this->H_ << 1, 0, 0, -cos(x_(4) + x_(5) * dt_), x_(3) * sin(x_(4) + x_(5) * dt_) , x_(3) * dt_ * sin(x_(4) + x_(5) * dt_), 0 , 0, 0,
-                    0, 1, 0, -sin(x_(4) + x_(5) * dt_), -x_(3) * cos(x_(4) + x_(5) * dt_), -x_(3) * dt_ * cos(x_(4) + x_(5) * dt_), 0, 0, 0,
-                    0, 0, 1,           0,                   0, 0  , 0, 0, 0,
-                    0, 0, 0,           0,                   1, dt_, 0, 0, 0; 
+        this->H_ << 1, 0, 0, -cos(x_(4)), x_(3) * sin(x_(4)) , 0, 0, 0, 0,
+                    0, 1, 0, -sin(x_(4)), -x_(3) * cos(x_(4)), 0, 0, 0, 0,
+                    0, 0, 1,           0,                   0, 0, 0, 0, 0,
+                    0, 0, 0,           0,                   1, 0, 0, 0, 0; 
         Update(z);
         // cout << "z:" << this->x_(2) << endl;
     }
