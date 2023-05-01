@@ -8,8 +8,7 @@
     max_delta_t: 50
     no_crop_thres: 0.01
     hero_danger_zone: 4
-    color: true # red: true
-                # blue: false
+    color: true # red: true / blue: false
     no_crop_ratio: 0.002
     full_crop_ratio: 0.0001
     armor_roi_expand_ratio_width: 1.2
@@ -63,7 +62,7 @@
     show_img: false
     show_fps: false
     using_roi: false
-    detect_red: true
+    detect_red: true # red: true / blue: false
     auto_label: false
     print_letency: false
     show_aim_cross: false
@@ -84,7 +83,7 @@
     yaw_angle_offset: -0.5
     pitch_angle_offset: 0.5
     max_offset_value: 0.45
-    reserve_factor: 500.0 #储备系数(>=1)
+    reserve_factor: 500.0 # 储备系数(>=1)
     # rotation_yaw: 0.0
     # rotation_pitch: 0.0
     # rotation_roll: 0.0
@@ -102,8 +101,6 @@
     z_axis_filter: true
     show_aim_cross: false
     show_fps: false
-    # disable_filter: true
-    # disable_fitting: false
     show_marker: true
 
   # Camera params.
@@ -115,9 +112,9 @@
   # Filter params.
     filter_param_path: "/config/filter_param.yaml"
     #----------------------------------Xc------Yc-----Zc--------r-----theta-----omega-----vx-------vy-----vz
-    uniform_ekf_process_noise_param: [0.001, 0.0001, 0.001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001, 0.005]
+    uniform_ekf_process_noise_param: [0.01, 0.001, 0.01, 0.0001, 0.00001, 0.00001, 0.0001, 0.0001, 0.00001]
     #----------------------------------X--------Y--------Z----theta
-    uniform_ekf_measure_noise_param: [10.0, 1.0, 0.1, 0.1]
+    uniform_ekf_measure_noise_param: [10.0, 10.0, 100.0, 0.1]
     # Singer model.  
     # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 sigma:机动加速度标准差)
     uniform_ekf_singer_param: [2.060, 10.0, 0.1, 0.8, 0.2]

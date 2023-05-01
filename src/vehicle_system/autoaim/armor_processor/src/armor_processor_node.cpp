@@ -184,7 +184,7 @@ namespace armor_processor
             image_mutex_.unlock();
         }
 
-        // cout << "is_target_lost:" << target.is_target_lost << endl;
+        RCLCPP_WARN_EXPRESSION(this->get_logger(), target.is_target_lost, "Target lost...");
         if (target.is_target_lost && processor_->is_last_exists_)
         {   //目标丢失且上帧存在，预测器进入丢失预测状态
             processor_->armor_predictor_.predictor_state_ = LOSTING;
@@ -201,32 +201,22 @@ namespace armor_processor
         else
         {
             param_mutex_.lock();
-            // cout << 1 << endl;
             if (processor_->predictor(target, aiming_point_world, armor3d_vec, sleep_time))
             {
-                // cout << 2 << endl;
-                // cout << 7 << endl;
-
                 aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
-                // cout << 8 << endl;
-
                 angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
                 if (!target_info.is_target_lost)
                 {
                     tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
                     tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
                 }
-                // cout << 9 << endl;
 
-                Eigen::VectorXd state = processor_->armor_predictor_.uniform_ekf_.x();
-                vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
-                vehicle_center3d_cam = processor_->coordsolver_.worldToCam({vehicle_center3d_world(0), vehicle_center3d_world(1), vehicle_center3d_world(2)}, rmat_imu);
+                // Eigen::VectorXd state = processor_->armor_predictor_.uniform_ekf_.x();
+                // vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
+                // vehicle_center3d_cam = processor_->coordsolver_.worldToCam({vehicle_center3d_world(0), vehicle_center3d_world(1), vehicle_center3d_world(2)}, rmat_imu);
                 // cout << "vehicle_center3d_world:" << vehicle_center3d_world(0) << " " << vehicle_center3d_world(1) << " " << vehicle_center3d_world(2) << endl;
-                // cout << 10 << endl;
-                
                 // vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
                 // armor3d_vec.emplace_back(vehicle_center3d_world);
-                
                 // Eigen::Vector4d pred3d = {aiming_point_world(0), aiming_point_world(1), aiming_point_world(2), 0.0};
                 // armor3d_vec.emplace_back(pred3d);
                 // RCLCPP_WARN(get_logger(), "z_axis:%.3f", state(2));
@@ -421,14 +411,14 @@ namespace armor_processor
                 // AutoaimMsg predict_info;
                 // predict_info.header.frame_id = "camera_link";
                 // predict_info.header.stamp = target_info.header.stamp;
-                // // predict_info.header.stamp.nanosec += sleep_time;
-                // // predict_info.aiming_point_world.x = (aiming_point_world)[0];
-                // // predict_info.aiming_point_world.y = (aiming_point_world)[1];
-                // // predict_info.aiming_point_world.z = (aiming_point_world)[2];
-                // // predict_info.aiming_point_cam.x = aiming_point_cam[0];
-                // // predict_info.aiming_point_cam.y = aiming_point_cam[1];
-                // // predict_info.aiming_point_cam.z = aiming_point_cam[2];
-                // // predict_info.period = target_info.period;
+                // predict_info.header.stamp.nanosec += sleep_time;
+                // predict_info.aiming_point_world.x = (aiming_point_world)[0];
+                // predict_info.aiming_point_world.y = (aiming_point_world)[1];
+                // predict_info.aiming_point_world.z = (aiming_point_world)[2];
+                // predict_info.aiming_point_cam.x = aiming_point_cam[0];
+                // predict_info.aiming_point_cam.y = aiming_point_cam[1];
+                // predict_info.aiming_point_cam.z = aiming_point_cam[2];
+                // predict_info.period = target_info.period;
                 // predict_info_pub_->publish(std::move(predict_info));
                 // RCLCPP_INFO_EXPRESSION(
                 //     this->get_logger(), 
