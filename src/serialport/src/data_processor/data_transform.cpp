@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 02:02:10
- * @LastEditTime: 2023-03-01 14:33:37
+ * @LastEditTime: 2023-04-03 19:57:14
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/data_processor/data_transform.cpp
  */
 #include "../../include/data_processor/data_transform.hpp"
@@ -25,33 +25,83 @@ namespace serialport
      * @param vision_data 上位机发送的数据
      * @param trans_data 转化后的数据
      */
-    void DataTransform::transformData(int mode, const VisionData &vision_data, uchar* trans_data)
+    void DataTransform::transformData(int mode, const VisionAimData &vision_data, uchar* trans_data)
     {
         trans_data[0] = 0xA5;
         trans_data[1] = mode;
         crc_check_.Append_CRC8_Check_Sum(trans_data, 3);
-        if (mode == AUTOAIM || mode == HERO_SLING || mode == SMALL_BUFF 
-        || mode == BIG_BUFF || mode == OUTPOST_ROTATION_MODE)
+
+        //云台角度数据
+        float float_data[] = {vision_data.pitch_angle, vision_data.yaw_angle, vision_data.distance};
+        float2UcharRawArray(float_data, 3, &trans_data[3]);
+        
+        //目标状态信息
+        trans_data[15] = vision_data.isSwitched;
+        trans_data[16] = vision_data.isFindTarget;
+        trans_data[17] = vision_data.isSpinning;
+        trans_data[18] = vision_data.isPrediction;
+
+        //目标位置信息
+        float float_3d_data[] = {(float)vision_data.meas_tracking_point[0], (float)vision_data.meas_tracking_point[1], (float)vision_data.meas_tracking_point[2],
+            (float)vision_data.pred_aiming_point[0], (float)vision_data.pred_aiming_point[1], (float)vision_data.pred_aiming_point[2]};
+        float2UcharRawArray(float_3d_data, 6, &trans_data[19]);
+        // cout << "x:" << float_3d_data[0] <<  " y:" << float_3d_data[1] << " z:" << float_3d_data[2] << endl;
+        
+        trans_data[43] = 0x00;
+        crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
+    }
+
+    /**
+     * @brief 数据转化
+     * 
+     * @param mode 模式位
+     * @param vision_data 上位机发送的数据
+     * @param trans_data 转化后的数据
+     */
+    void DataTransform::transformData(int mode, const VisionNavData &vision_data, uchar* trans_data)
+    {
+        trans_data[0] = 0xB5;
+        trans_data[1] = mode;
+        crc_check_.Append_CRC8_Check_Sum(trans_data, 3);
+        float twist[] = {vision_data.linear_velocity[0], vision_data.linear_velocity[1], vision_data.linear_velocity[2],
+            vision_data.angular_velocity[0], vision_data.angular_velocity[1], vision_data.angular_velocity[2]};
+        float2UcharRawArray(twist, 6, &trans_data[3]);
+        crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
+    }
+
+    /**
+     * @brief 数据转化
+     * 
+     * @param mode 模式位
+     * @param vision_data 上位机发送的数据
+     * @param trans_data 转化后的数据
+     */
+    void DataTransform::transformData(int mode, const VisionDecisionData &vision_data, uchar* trans_data)
+    {
+        trans_data[0] = 0xC5;
+        trans_data[1] = mode;
+        crc_check_.Append_CRC8_Check_Sum(trans_data, 3);
+        float theta[] = {vision_data.theta_gimbal,vision_data.theta_chassis};
+        float2UcharRawArray(theta, 2, &trans_data[3]);
+        crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
+    }
+
+    void DataTransform::getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle)
+    {
+        if (flag == 0xA5)
         {
-            float float_data[] = {vision_data.pitch_angle, vision_data.yaw_angle, vision_data.distance};
-            float2UcharRawArray(float_data, 3, &trans_data[3]);
-            trans_data[15] = vision_data.isSwitched;
-            trans_data[16] = vision_data.isFindTarget;
-            trans_data[17] = vision_data.isSpinning;
-            trans_data[18] = vision_data.ismiddle;
-            trans_data[19] = 0x00;
-            crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
+            yaw_angle = ucharRaw2Float(raw_data);
         }
-        else if (mode == SENTRY_MODE)
+        return;
+    }
+
+    void DataTransform::getPitchAngle(uchar flag, uchar* raw_data, float& pitch_angle)
+    {
+        if (flag == 0xA5)
         {
-            float angle_data[] = {vision_data.pitch_angle, vision_data.yaw_angle};
-            float2UcharRawArray(angle_data, 2, &trans_data[3]);
-            float twist[] = {vision_data.linear_velocity[0], vision_data.linear_velocity[1], vision_data.linear_velocity[2],
-                vision_data.angular_velocity[0], vision_data.angular_velocity[1], vision_data.angular_velocity[2]};
-            float2UcharRawArray(twist, 6, &trans_data[11]);
-            trans_data[43] = 0x00;
-            crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
+            pitch_angle = ucharRaw2Float(raw_data);
         }
+        return;
     }
 
     void DataTransform::getPosInfo(uchar flag, uchar* raw_data, vector<float>& pos)

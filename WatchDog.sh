@@ -3,14 +3,16 @@
  # @Description: This is a ros-based project!
  # @Author: Liu Biao
  # @Date: 2023-01-02 22:20:13
- # @LastEditTime: 2023-02-23 16:29:10
+ # @LastEditTime: 2023-04-16 01:36:43
  # @FigtPath: /TUP-Vision-2023-Based/WatchDog.sh
 ### 
 name=TUP-Vision-2023-Based
 package=global_user
-launch_file=vision_bringup.launch.py
+launch_file=autoaim_bringup.launch.py
 
 cd /home/tup/Desktop/$name/
+source /opt/intel/openvino_2022/setupvars.sh
+source /opt/ros/galactic/setup.bash
 colcon build --symlink-install
 source install/setup.bash
 ros2 launch $package $launch_file

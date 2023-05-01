@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-02-26 14:02:55
+ * @LastEditTime: 2023-04-16 18:11:16
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -17,6 +17,10 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <camera_info_manager/camera_info_manager.hpp>
 #include <rcl_interfaces/msg/set_parameters_result.hpp>
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <rosbag2_cpp/writer.hpp>
+#include <rosbag2_cpp/writers/sequential_writer.hpp>
+#include <rosbag2_storage/serialized_bag_message.hpp>
 
 //opencv
 #include <opencv2/opencv.hpp>
@@ -32,23 +36,29 @@
 #include "../hik_driver/hik_camera.hpp"
 #include "../daheng_driver/daheng_camera.hpp"
 #include "../../global_user/include/global_user/global_user.hpp"
+#include "global_interface/msg/decision.hpp"
+#include "global_interface/msg/serial.hpp"
 
-using namespace global_user;
 using namespace std;
+using namespace global_user;
+using namespace ament_index_cpp;
 using std::placeholders::_1;
 namespace camera_driver
 {
     template<class T>
     class CameraBaseNode : public rclcpp::Node
     {
+        typedef global_interface::msg::Decision DecisionMsg;
+        typedef global_interface::msg::Serial SerialMsg;
+
     public:
         // explicit CameraBaseNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         CameraBaseNode(string node_name, const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         ~CameraBaseNode();
         
-        void image_callback();
-        std::unique_ptr<sensor_msgs::msg::Image> convert_frame_to_msg(cv::Mat frame);
-        virtual std::unique_ptr<T> init_cam_driver();
+        void imageCallback();
+        virtual std::unique_ptr<T> initCamDriver();
+        void cameraWatcher();
 
     public:
         // Update params.
@@ -66,35 +76,41 @@ namespace camera_driver
         }
 
     public:
-        string frame_id_;
         ImageInfo image_info_;
         ImageSize image_size_;
         CameraParam camera_params_;
         std::unique_ptr<T> cam_driver_;
-        rclcpp::TimerBase::SharedPtr timer_;
+        rclcpp::TimerBase::SharedPtr camera_watcher_timer_;
+        rclcpp::TimerBase::SharedPtr img_callback_timer_;
         std::map<std::string, int> param_map_;
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
         rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_;
-  
-        // 图像数据内存共享
-        bool using_shared_memory_;   
-        SharedMemoryParam shared_memory_param_;   
-        std::thread memory_write_thread_;
+        image_transport::CameraPublisher camera_pub_;
+        sensor_msgs::msg::CameraInfo camera_info_msg_;
+        sensor_msgs::msg::Image image_msg_;
+        cv::Mat frame_;
+        bool is_cam_open_;
+        int camera_type_;
+        string camera_topic_;
 
         // 图像保存
         bool save_video_;
-        VideoRecordParam video_record_param_;
-    };
+        bool show_img_;
+        bool using_ros2bag_;
+        int frame_cnt_;
+        std::unique_ptr<rosbag2_cpp::writers::SequentialWriter> writer_;
 
-    template<class T>
-    CameraBaseNode<T>::~CameraBaseNode()
-    {
-        if(using_shared_memory_)
-        {
-            if(!destorySharedMemory(shared_memory_param_))
-                RCLCPP_ERROR(this->get_logger(), "Destory shared memory failed...");
-        }
-    }
+        void decisionMsgCallback(DecisionMsg::SharedPtr msg);
+        rclcpp::Subscription<DecisionMsg>::SharedPtr decision_msg_sub_; 
+        DecisionMsg decision_msg_;
+        mutex decision_mutex_;
+
+        void serialMsgCallback(SerialMsg::SharedPtr msg);
+        rclcpp::Subscription<SerialMsg>::SharedPtr serial_msg_sub_; 
+        SerialMsg serial_msg_;
+        mutex serial_mutex_;
+        bool use_serial_;
+    };
 
     template<class T>
     CameraBaseNode<T>::CameraBaseNode(string node_name, const rclcpp::NodeOptions& options)
@@ -103,173 +119,202 @@ namespace camera_driver
         RCLCPP_WARN(this->get_logger(), "Camera driver node...");
         try
         {   // Camera params initialize.
-            cam_driver_ = init_cam_driver();
+            cam_driver_ = initCamDriver();
         }
         catch(const std::exception& e)
         {
             RCLCPP_ERROR(this->get_logger(), "Error while initializing camera: %s", e.what());
         }
 
-        this->declare_parameter<bool>("save_video", false);
-        save_video_ = this->get_parameter("save_video").as_bool();
-        if(save_video_)
-        {   // Video save.
-            videoRecorder(video_record_param_);
-            RCLCPP_INFO(this->get_logger(), "Saving video...");
-        }
-        else
-            RCLCPP_INFO(this->get_logger(), "No save video...");
-
         //QoS    
         rclcpp::QoS qos(0);
         qos.keep_last(1);
         qos.best_effort();
-        qos.reliable();
         qos.durability();
+        // qos.reliable();
         // qos.transient_local();
-        qos.durability_volatile();
-        
+        // qos.durability_volatile();
+
+        rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
+        rmw_qos.depth = 1;
+
         // Camera type.
         this->declare_parameter<int>("camera_type", DaHeng);
-        int camera_type = this->get_parameter("camera_type").as_int();
+        camera_type_ = this->get_parameter("camera_type").as_int();
 
         // Subscriptions transport type.
         string transport_type = "raw";
     
-        image_size_ = image_info_.image_size_map[camera_type];
-        string camera_topic = image_info_.camera_topic_map[camera_type];
+        image_size_ = image_info_.image_size_map[camera_type_];
+        camera_topic_ = image_info_.camera_topic_map[camera_type_];
+        
+        if(save_video_)
+        {   // Video save.
+            RCLCPP_WARN_ONCE(this->get_logger(), "Saving video...");
+            time_t tmpcal_ptr;
+            tm *tmp_ptr = nullptr;
+            tmpcal_ptr = time(nullptr);
+            tmp_ptr = localtime(&tmpcal_ptr);
+            char now[64];
+            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", tmp_ptr);  // 以时间为名字
+            std::string now_string(now);
+            string pkg_path = get_package_share_directory("camera_driver");
+            string save_path = this->declare_parameter("save_path", "/recorder/video/gyro_video.webm");
+            std::string path = pkg_path + save_path + now_string;
+
+            writer_ = std::make_unique<rosbag2_cpp::writers::SequentialWriter>();
+            rosbag2_storage::StorageOptions storage_options({path, "sqlite3"});
+            rosbag2_cpp::ConverterOptions converter_options({
+                rmw_get_serialization_format(),
+                rmw_get_serialization_format()
+            });
+            writer_->open(storage_options, converter_options);
+            writer_->create_topic({
+                camera_topic_,
+                "sensor_msgs::msg::Image",
+                rmw_get_serialization_format(),
+                ""
+            });
+        }
+        else
+            RCLCPP_WARN_ONCE(this->get_logger(), "No save video...");
 
         // Create img publisher.
-        this->image_pub_ = this->create_publisher<sensor_msgs::msg::Image>(camera_topic, qos);
-        
+        this->camera_pub_ = image_transport::create_camera_publisher(this, camera_topic_, rmw_qos);
+
         // Open camera.
         if(!cam_driver_->open())
             RCLCPP_ERROR(this->get_logger(), "Open failed!");
-
-        // Use shared memory.
-        this->declare_parameter("using_shared_memory", false);
-        using_shared_memory_ = this->get_parameter("using_shared_memory").as_bool();
-        if(using_shared_memory_)
-        {
-            try
-            {
-                if(!setSharedMemory(shared_memory_param_, 5, image_size_.width, image_size_.height))
-                    RCLCPP_ERROR(this->get_logger(), "Shared memory init failed...");
-            }
-            catch(const std::exception& e)
-            {
-                RCLCPP_FATAL(this->get_logger(), "Fatal while initializing shared memory...");
-            }
-
-            // 内存写入线程
-            memory_write_thread_ = std::thread(&CameraBaseNode::image_callback, this);        
-            RCLCPP_INFO(this->get_logger(), "Using shared memory...");
-        }
         else
+            is_cam_open_ = true;
+
+        image_msg_.header.frame_id = camera_topic_;
+        image_msg_.encoding = "bgr8";
+        img_callback_timer_ = this->create_wall_timer(1ms, std::bind(&CameraBaseNode::imageCallback, this));
+        camera_watcher_timer_ = rclcpp::create_timer(this, this->get_clock(), 100ms, std::bind(&CameraBaseNode::cameraWatcher, this));
+
+        this->declare_parameter("using_port", false);
+        use_serial_ = this->get_parameter("using_port").as_bool();
+        if (use_serial_)
         {
-            timer_ = this->create_wall_timer(5ms, std::bind(&CameraBaseNode::image_callback, this));
-            RCLCPP_INFO(this->get_logger(), "Using image callback func...");
+            //决策消息订阅
+            decision_msg_sub_ = this->create_subscription<DecisionMsg>(
+                "robot_decision/decision",
+                qos,
+                std::bind(&CameraBaseNode::decisionMsgCallback, this, _1)
+            );
+
+            //串口消息订阅
+            serial_msg_sub_ = this->create_subscription<SerialMsg>(
+                "/serial_msg",
+                qos,
+                std::bind(&CameraBaseNode::serialMsgCallback, this, _1)
+            );
         }
     }
 
     template<class T>
-    void CameraBaseNode<T>::image_callback()
+    CameraBaseNode<T>::~CameraBaseNode()
     {
-        if(using_shared_memory_)
+    }
+    
+    template<class T>
+    void CameraBaseNode<T>::decisionMsgCallback(DecisionMsg::SharedPtr msg)
+    {
+        decision_mutex_.lock();
+        decision_msg_ = *msg;
+        decision_mutex_.unlock();
+    }
+
+    template<class T>
+    void CameraBaseNode<T>::serialMsgCallback(SerialMsg::SharedPtr msg)
+    {
+        serial_mutex_.lock();
+        serial_msg_ = *msg;
+        serial_mutex_.unlock();
+    }
+
+    template<class T>
+    void CameraBaseNode<T>::cameraWatcher()
+    {
+        if (!is_cam_open_)
         {
-            while(1)
+            // Reopen camera.
+            auto status = cam_driver_->close();
+            status = cam_driver_->init();
+            if (!cam_driver_->open() && !status)
             {
-                cv::Mat frame;
-                if(!cam_driver_->get_frame(frame))
-                {
-                    RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
-                    // Reopen camera.
-                    if(!cam_driver_->open())
-                        RCLCPP_ERROR(this->get_logger(), "Open failed!");
-                    sleep(1);
-                    return;
-                }
-
-                if(!frame.empty())
-                    memcpy(shared_memory_param_.shared_memory_ptr, frame.data, this->image_size_.width * this->image_size_.height * 3);
-                else
-                    RCLCPP_ERROR(this->get_logger(), "Frame is empty...");
-
-                save_video_ = this->get_parameter("save_video").as_bool();
-                if(save_video_)
-                {   // Video recorder.
-                    videoRecorder(video_record_param_, &frame);
-                }
-
-                bool show_img = this->get_parameter("show_img").as_bool();
-                if(show_img)
-                {
-                    cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
-                    cv::imshow("frame", frame);
-                    cv::waitKey(1);
-                }
+                RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Open failed!");
+            }
+            else
+            {
+                is_cam_open_ = true;
             }
         }
-        else
+    }
+
+    template<class T>
+    void CameraBaseNode<T>::imageCallback()
+    {
+        if (use_serial_)
         {
-            cv::Mat frame;
-            if(!cam_driver_->get_frame(frame))
+            if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
             {
-                RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
-                // Reopen camera.
-                if(!cam_driver_->open())
-                    RCLCPP_ERROR(this->get_logger(), "Open failed!");
-                sleep(1);
                 return;
             }
-
-            sensor_msgs::msg::Image::UniquePtr msg = convert_frame_to_msg(frame);
-            image_pub_->publish(std::move(msg));
-                
-            save_video_ = this->get_parameter("save_video").as_bool();
-            if(save_video_)
-            {   // Video recorder.
-                videoRecorder(video_record_param_, &frame);
-            }
-            
-            bool show_img = this->get_parameter("show_img").as_bool();
-            if(show_img)
-            {
-                cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
-                cv::imshow("frame", frame);
-                cv::waitKey(1);
-            }
         }
-    }
 
-    template<class T>
-    std::unique_ptr<sensor_msgs::msg::Image> CameraBaseNode<T>::convert_frame_to_msg(cv::Mat frame)
-    {
-        std_msgs::msg::Header header;
-        sensor_msgs::msg::Image ros_image;
-
-        if(frame.size().width != this->image_size_.width || frame.size().height != this->image_size_.height)
+        if (!cam_driver_->getImage(frame_, image_msg_))
         {
-            cv::resize(frame, frame, cv::Size(this->image_size_.width, this->image_size_.height));
-            RCLCPP_WARN(this->get_logger(), "Resize frame: width:%d height:%d", this->image_size_.width, this->image_size_.height);
+            RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
+            is_cam_open_ = false;
+            return;
         }
 
-        ros_image.header.frame_id = this->frame_id_;
-        ros_image.header.stamp = this->get_clock()->now();
-        ros_image.width = this->image_size_.width;
-        ros_image.height = this->image_size_.height;
-        ros_image.encoding = "bgr8";
-        
-        ros_image.step = static_cast<sensor_msgs::msg::Image::_step_type>(frame.step);  
-        ros_image.is_bigendian = false;
-        ros_image.data.assign(frame.datastart, frame.dataend);
-
-        auto msg_ptr = std::make_unique<sensor_msgs::msg::Image>(ros_image);      
-        return msg_ptr;
+        rclcpp::Time now = this->get_clock()->now();
+        image_msg_.header.stamp = now;
+        camera_info_msg_.header = image_msg_.header;
+        image_msg_.width = this->image_size_.width;
+        image_msg_.height = this->image_size_.height;
+        camera_pub_.publish(image_msg_, camera_info_msg_);
+            
+        if (save_video_)
+        {   // Video recorder.
+            ++frame_cnt_;
+            if (frame_cnt_ % 50 == 0)
+            {
+                sensor_msgs::msg::Image image_msg = image_msg_;
+                auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
+                auto serialized_msg = rclcpp::SerializedMessage();
+                serializer.serialize_message(&image_msg, &serialized_msg);
+                auto bag_msg = std::make_shared<rosbag2_storage::SerializedBagMessage>();
+                bag_msg->serialized_data = std::shared_ptr<rcutils_uint8_array_t>(
+                    new rcutils_uint8_array_t,
+                    [this](rcutils_uint8_array_t* msg)
+                    {
+                        if (rcutils_uint8_array_fini(msg) != RCUTILS_RET_OK)
+                        {
+                            RCLCPP_ERROR(this->get_logger(), "RCUTILS_RET_INVALID_ARGUMENT OR RCUTILS_RET_ERROR");
+                        }
+                        delete msg;
+                    }
+                );
+                *bag_msg->serialized_data = serialized_msg.release_rcl_serialized_message();
+                bag_msg->topic_name = camera_topic_;
+                bag_msg->time_stamp = now.nanoseconds();
+                writer_->write(bag_msg);
+            }
+        }
+        if (show_img_)
+        {
+            cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
+            cv::imshow("frame", frame_);
+            cv::waitKey(1);
+        }
     }
 
     template<class T>
-    std::unique_ptr<T> CameraBaseNode<T>::init_cam_driver()
+    std::unique_ptr<T> CameraBaseNode<T>::initCamDriver()
     {
         param_map_ = 
         {
@@ -297,7 +342,8 @@ namespace camera_driver
         this->declare_parameter("show_img", false);
         this->declare_parameter("using_video", false);
         this->declare_parameter("fps", 30);
-        this->declare_parameter("video_path", "\0");
+        this->declare_parameter("video_path", "/config/camera_ros.yaml");
+        this->declare_parameter<bool>("save_video", false);
 
         camera_params_.cam_id = this->get_parameter("cam_id").as_int();
         camera_params_.image_width = this->get_parameter("image_width").as_int();
@@ -315,7 +361,11 @@ namespace camera_driver
         camera_params_.balance_r = this->get_parameter("balance_r").as_double();
         camera_params_.using_video = this->get_parameter("using_video").as_bool();
         camera_params_.fps = this->get_parameter("fps").as_int();
-        camera_params_.video_path = this->get_parameter("video_path").as_string();
+        show_img_ = this->get_parameter("show_img").as_bool();
+        save_video_ = this->get_parameter("save_video").as_bool();
+
+        string pkg_share_pth = get_package_share_directory("global_user");
+        camera_params_.video_path = pkg_share_pth + this->get_parameter("video_path").as_string();
 
         return std::make_unique<T>(camera_params_);
     }

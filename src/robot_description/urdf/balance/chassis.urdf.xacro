@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="$(find robot_description)/urdf/balance/reaction_wheel.urdf.xacro"/>
+    <xacro:include filename="$(find robot_description)/urdf/common/swerve_drive.urdf.xacro"/>
+
+    <!-- https://upload.wikimedia.org/wikipedia/commons/5/52/Wheelbase_and_Track.png -->
+    <xacro:property name="wheel_base" value="0.328"/>
+    <xacro:property name="pivot_offset_z" value="0.12135"/>
+
+    <xacro:macro name="chassis">
+
+        <link name="base_link">
+            <inertial>
+                <mass value="6.453809"/>
+                <origin xyz="-0.013181 0.000104 0.1638"/>
+                <inertia ixx="9.725e-2" ixy="4.574e-5" ixz="7.354e-3" iyy="9.525e-2"
+                         iyz="1.021e-5" izz="1.468e-1"/>
+            </inertial>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://robot_description/meshes/balance/base_link.stl"
+                          scale="0.001 .001 0.001"/>
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://robot_description/meshes/balance/base_link.stl"
+                          scale="0.001 0.001 0.001"/>
+                </geometry>
+            </collision>
+        </link>
+
+
+        <xacro:reaction_wheel connected_to="base_link"
+                              wheel_x_offset="0" wheel_y_offset="0"
+                              wheel_z_offset="0.22" mechanical_reduction="-0.166"/>
+
+        <xacro:swerve_drive prefix="left" connected_to="base_link"
+                            x_offset="0" y_offset="${wheel_base/2}"
+                            z_offset="${pivot_offset_z}"/>
+
+        <xacro:swerve_drive prefix="right" connected_to="base_link"
+                            x_offset="0" y_offset="${-wheel_base/2}"
+                            z_offset="${pivot_offset_z}"/>
+
+        <xacro:swerve_transmission prefix="left" wheel_reduction="13.733" pivot_offset="0"/>
+        <xacro:swerve_transmission prefix="right" wheel_reduction="-13.733" pivot_offset="1.861"/>
+
+
+    </xacro:macro>
+
+</robot>
