@@ -338,6 +338,25 @@ namespace armor_processor
                        0,    0, r[2],    0,    
                        0,    0,    0, r[3];
         this->Q_.setIdentity(9, 9);
+        double q[9] = {this->kf_param_.process_noise_params[0], this->kf_param_.process_noise_params[1], this->kf_param_.process_noise_params[2],
+            this->kf_param_.process_noise_params[3], this->kf_param_.process_noise_params[4], this->kf_param_.process_noise_params[5],
+            this->kf_param_.process_noise_params[6], this->kf_param_.process_noise_params[7], this->kf_param_.process_noise_params[8]
+        };
+        // double q11 = 1 / (2 * pow(alpha, 5)) * (1 - exp(-2 * alpha * dt) + 2 * alpha * dt + 2 * pow(alpha * dt, 3) / 3 - 2 * pow(alpha * dt, 2) - 4 * alpha * dt * exp(-alpha * dt));
+        // double q12 = 1 / (2 * pow(alpha, 4)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt) + 2 * alpha * dt * exp(-alpha * dt) - 2 * alpha * dt + pow(alpha * dt, 2));
+        // double q13 = 1 / (2 * pow(alpha, 3)) * (1 - exp(-2 * alpha * dt) - 2 * alpha * dt * exp(-alpha * dt));
+        // double q22 = 1 / (2 * pow(alpha, 3)) * (4 * exp(-alpha * dt) - 3 - exp(-2 * alpha * dt) + 2 * alpha * dt);
+        // double q23 = 1 / (2 * pow(alpha, 2)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt));
+        // double q33 = 1 / (2 * alpha) * (1 - exp(-2 * alpha * dt));
+        this->Q_ << q[0], 0   , 0   , 0   , 0   , 0   , 0   , 0   , 0   ,  
+                    0   , q[1], 0   , 0   , 0   , 0   , 0   , 0   , 0   ,    
+                    0   , 0   , q[2], 0   , 0   , 0   , 0   , 0   , 0   ,  
+                    0   , 0   , 0   , q[3], 0   , 0   , 0   , 0   , 0   , 
+                    0   , 0   , 0   , 0   , q[4], 0   , 0   , 0   , 0   , 
+                    0   , 0   , 0   , 0   , 0   , q[5], 0   , 0   , 0   , 
+                    0   , 0   , 0   , 0   , 0   , 0   , q[6], 0   , 0   ,  
+                    0   , 0   , 0   , 0   , 0   , 0   , 0   , q[7], 0   ,
+                    0   , 0   , 0   , 0   , 0   , 0   , 0   , 0   , q[8];
         setKF(this->dt_);
     }
 
@@ -417,26 +436,7 @@ namespace armor_processor
                     0,  0,  0,  0,  0,     0,     0,  1,  0,
                     0,  0,  0,  0,  0,     0,     0,  0,  1;
 
-        double q[9] = {this->kf_param_.process_noise_params[0], this->kf_param_.process_noise_params[1], this->kf_param_.process_noise_params[2],
-            this->kf_param_.process_noise_params[3], this->kf_param_.process_noise_params[4], this->kf_param_.process_noise_params[5],
-            this->kf_param_.process_noise_params[6], this->kf_param_.process_noise_params[7], this->kf_param_.process_noise_params[8]
-        };
 
-        // double q11 = 1 / (2 * pow(alpha, 5)) * (1 - exp(-2 * alpha * dt) + 2 * alpha * dt + 2 * pow(alpha * dt, 3) / 3 - 2 * pow(alpha * dt, 2) - 4 * alpha * dt * exp(-alpha * dt));
-        // double q12 = 1 / (2 * pow(alpha, 4)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt) + 2 * alpha * dt * exp(-alpha * dt) - 2 * alpha * dt + pow(alpha * dt, 2));
-        // double q13 = 1 / (2 * pow(alpha, 3)) * (1 - exp(-2 * alpha * dt) - 2 * alpha * dt * exp(-alpha * dt));
-        // double q22 = 1 / (2 * pow(alpha, 3)) * (4 * exp(-alpha * dt) - 3 - exp(-2 * alpha * dt) + 2 * alpha * dt);
-        // double q23 = 1 / (2 * pow(alpha, 2)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt));
-        // double q33 = 1 / (2 * alpha) * (1 - exp(-2 * alpha * dt));
-        this->Q_ << q[0], 0   , 0   , 0   , 0   , 0   , 0   , 0   , 0   ,  
-                    0   , q[1], 0   , 0   , 0   , 0   , 0   , 0   , 0   ,    
-                    0   , 0   , q[2], 0   , 0   , 0   , 0   , 0   , 0   ,  
-                    0   , 0   , 0   , q[3], 0   , 0   , 0   , 0   , 0   , 
-                    0   , 0   , 0   , 0   , q[4], 0   , 0   , 0   , 0   , 
-                    0   , 0   , 0   , 0   , 0   , q[5], 0   , 0   , 0   , 
-                    0   , 0   , 0   , 0   , 0   , 0   , q[6], 0   , 0   ,  
-                    0   , 0   , 0   , 0   , 0   , 0   , 0   , q[7], 0   ,
-                    0   , 0   , 0   , 0   , 0   , 0   , 0   , 0   , q[8];
         
         // this->H_ << 1, 0, 0, -sin(rangle_), 0, 0, 0, 0, 0, 0, 0,
         //             0, 1, 0,  cos(rangle_), 0, 0, 0, 0, 0, 0, 0,
@@ -464,7 +464,7 @@ namespace armor_processor
     //           0,  0,  0,  0,  0,     0,  0,  0,                                                   0,                                                   0,                                                   0;
     // }
 
-    void UniformModel::setF(Eigen::MatrixXd& Ft, const double& dt)
+    void UniformModel::setF(Eigen::MatrixXd& Ft, double dt)
     {
         double alpha = kf_param_.singer_params[0];
         double sigma = kf_param_.singer_params[5];

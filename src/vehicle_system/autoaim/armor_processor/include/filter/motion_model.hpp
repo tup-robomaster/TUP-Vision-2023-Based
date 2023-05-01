@@ -63,8 +63,8 @@ namespace armor_processor
         
         void init();
         void setKF(double dt);
-        void setF(Eigen::MatrixXd& Ft, const double& pred_dt);
-        void setC(Eigen::MatrixXd& Ct, const double& pred_dt);
+        void setF(Eigen::MatrixXd& Ft, double pred_dt);
+        // void setC(Eigen::MatrixXd& Ct, double pred_dt);
 
     public:
         // vector<double> singer_param_;
