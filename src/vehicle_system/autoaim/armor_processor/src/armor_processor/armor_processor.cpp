@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-04-26 22:04:02
+ * @LastEditTime: 2023-04-30 19:19:01
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -13,7 +13,8 @@ namespace armor_processor
     : logger_(rclcpp::get_logger("armor_processor")), predict_param_(predict_param), debug_param_(debug_param)  
     {
         //初始化预测器
-        armor_predictor_.uniform_ekf_.Init(11, 4, 1);
+        armor_predictor_.uniform_ekf_.Init(9, 4, 3);
+        // armor_predictor_.uniform_ekf_.Init(11, 4, 3);
         armor_predictor_.initPredictor(uniform_ekf_param);
         armor_predictor_.resetPredictor();
 
@@ -38,7 +39,9 @@ namespace armor_processor
         // };
 
         //初始化预测器
-        armor_predictor_.uniform_ekf_.Init(11, 4, 1);
+        // armor_predictor_.uniform_ekf_.Init(11, 4, 3);
+        armor_predictor_.uniform_ekf_.Init(9, 4, 3);
+        armor_predictor_.uniform_ekf_.init();
         armor_predictor_.resetPredictor();
     }
 
@@ -135,11 +138,54 @@ namespace armor_processor
         rclcpp::Time stamp = target_msg.header.stamp;
         double dt = (stamp.nanoseconds() - last_timestamp_.nanoseconds()) / 1e9;
         double bullet_speed = coordsolver_.getBulletSpeed();
-        RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "dt:%.3f", dt);
-        // cout << 7 << endl;
+        RCLCPP_WARN_THROTTLE(
+            logger_, 
+            steady_clock_, 
+            100, 
+            "bullet_speed:%.3f dt:%.3f", 
+            bullet_speed, dt
+        );
+        
+        if (target_msg.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
+        {
+            double pred_dt = last_target_.xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
+            last_target_.is_target_lost = true;
+            if (lost_cnt_ <= 5)
+            {
+                //进入预测追踪阶段
+                is_success = armor_predictor_.predict(last_target_, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
+                ++lost_cnt_;
+            }
+            else
+            {
+                armor_predictor_.predictor_state_ = LOST;
+                lost_cnt_ = 0;
+            }
+        }
+
         for (auto armor : target_msg.armors)
         {
             Eigen::Vector3d xyz = {armor.point3d_world.x, armor.point3d_world.y, armor.point3d_world.z};
+            double pred_dt = xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
+            Eigen::VectorXd state = armor_predictor_.uniform_ekf_.x();
+            Eigen::Vector3d center_xyz = {state(0), state(1), state(2)};
+
+            // cout << "rangle:" << armor.rangle << endl;
+            RCLCPP_WARN_THROTTLE(
+                logger_,
+                steady_clock_,
+                100, 
+                "xyz:【%.3f %.3f %.3f] center_norm:[%.3f %.3f %.3f]",
+                xyz(0), xyz(1), xyz(2), center_xyz(0), center_xyz(1), center_xyz(2)
+            );
+            RCLCPP_WARN_THROTTLE(
+                logger_,
+                steady_clock_, 
+                100, 
+                "radius:%.3f theta:%.3f omega:%.3f vx:%.3f vy:%.3f vz:%.3f", 
+                state(3), state(4), state(5), state(6), state(7), state(8)
+            );
+
             TargetInfo target = 
             { 
                 std::move(xyz),
@@ -168,53 +214,45 @@ namespace armor_processor
                 is_fitting_ = false;
             }
 
-            if (target.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
-            {
-                // cout << 9 << endl;
-                if (lost_cnt_ <= 5)
-                {
-                    //进入预测追踪阶段
-                    is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
-                    ++lost_cnt_;
-                }
-                else
-                {
-                    armor_predictor_.predictor_state_ = LOST;
-                    lost_cnt_ = 0;
-                }
-            }
-            else if (!target.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
+            if (!target.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
             {   //目标丢失后又重新出现
-                // cout << 10 << endl;
                 armor_predictor_.predictor_state_ = PREDICTING;
-                is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
+                is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
                 lost_cnt_ = 0;
             }
             else if (target.is_target_switched && !target.is_target_lost)
             {
-                // cout << 12 << endl;
+                armor_predictor_.predictor_state_ = PREDICTING;
                 if (armor_predictor_.resetPredictor())
                 {
                     RCLCPP_WARN(logger_, "Reset predictor...");
-                    is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
+                    is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
                 }                
             }
             else if (target.is_spinning_switched && !target.is_target_lost)
             {
-                // cout << 11 << endl;
                 // target_period_ = target.period;
+                armor_predictor_.predictor_state_ = PREDICTING;
                 Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
-                // cout << 14 << endl;
                 armor_predictor_.updatePredictor(meas);
-                // cout << 15 << endl;
-                is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
+                is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
             }
             else if (!target.is_target_lost)
             {
-                is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
+                armor_predictor_.predictor_state_ = PREDICTING;
+                is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
             }
+
+            last_target_ = target;
         }
-        // cout << 8 << endl;
+
+        RCLCPP_WARN_THROTTLE(
+            logger_, 
+            steady_clock_, 
+            100, 
+            "State:%s", 
+            armor_predictor_.predictor_state_ == LOST ? "LOST" : (armor_predictor_.predictor_state_ == LOSTING ? "LOSTING" : "PREDICTING")
+        );
         last_timestamp_ = stamp;
         return is_success;
     }

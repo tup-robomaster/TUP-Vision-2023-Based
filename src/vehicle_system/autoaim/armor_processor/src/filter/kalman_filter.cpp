@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2023-04-24 19:59:27
+ * @LastEditTime: 2023-04-30 19:18:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/kalman_filter.cpp
  */
 #include "../../include/filter/kalman_filter.hpp"
@@ -78,15 +78,23 @@ namespace armor_processor
     void KalmanFilter::Predict(const double& dt)
     {
         this->dt_ = dt;
+        // Predict();
+        
+        // cout << "x_:" << x_(2) << " " << x_(7) << endl;
         updatePrediction();
+        // cout << "x_pred:" << x_(2) << " " << x_(7) << endl;
+
         this->P_ = this->F_ * this->P_ * this->F_.transpose() + this->Q_;
     }
-
+ 
     void KalmanFilter::Update(const VectorXd& z)
     {
         MatrixXd z_pred = H_ * x_;
+        // cout << "z_meas:" << z(0) << " " << z(1) << " " << z(2) << " " << z(3) << endl;
+        // cout << "z_pred:" << z_pred(0, 0) << " " << z_pred(1, 0) << " " << z_pred(2, 0) << " " << z_pred(3, 0) << endl;
         MatrixXd y = z - z_pred;
-        
+
+        // cout << "y:" << y(0, 0) << " " << y(1, 0) << " " << y(2, 0) << " " << y(3, 0) << endl;
         //卡尔曼增益
         MatrixXd Ht = H_.transpose();
         MatrixXd PHt = P_ * Ht;
@@ -96,18 +104,35 @@ namespace armor_processor
 
         //update
         x_ = x_ + (K * y);
+        // cout << "z_post:" << x_(2) << endl;
+
         int x_size = x_.size();
         MatrixXd I = MatrixXd::Identity(x_size, x_size);
         P_ = (I - K * H_) * P_;
     }
 
+    // void KalmanFilter::Update(const Eigen::VectorXd& z, double rangle)
+    // {
+    //     this->H_ << 1, 0, 0, -sin(x_(4)), 0, 0, 0, 0, 0, 0, 0, 
+    //                 0, 1, 0,  cos(x_(4)), 0, 0, 0, 0, 0, 0, 0,
+    //                 0, 0, 1,            0, 0, 0, 0, 0, 0, 0, 0,
+    //                 0, 0, 0,            0, 1, 0, 0, 0, 0, 0, 0;
+    //     Update(z);
+    // }
+
     void KalmanFilter::Update(const Eigen::VectorXd& z, double rangle)
     {
-        this->H_ << 1, 0, 0, -sin(rangle), 0, 0, 0, 0, 0, 0, 0, 
-                    0, 1, 0,  cos(rangle), 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 1,            0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0,            0, 1, 0, 0, 0, 0, 0, 0;
+        // this->H_ << 1, 0, 0, -cos(x_(4)), x_(3) * sin(x_(4)) , 0, 0, 0, 0,
+        //             0, 1, 0, -sin(x_(4)), -x_(3) * cos(x_(4)), 0, 0, 0, 0,
+        //             0, 0, 1,           0,                   0, 0, 0, 0, 0,
+        //             0, 0, 0,           0,                   1, 0, 0, 0, 0; 
+ 
+        this->H_ << 1, 0, 0, sin(x_(4)), x_(3) * cos(x_(4)) , 0, 0, 0, 0,
+                    0, 1, 0, -cos(x_(4)), x_(3) * sin(x_(4)), 0, 0, 0, 0,
+                    0, 0, 1,           0,                   0, 0, 0, 0, 0,
+                    0, 0, 0,           0,                   1, 0, 0, 0, 0; 
         Update(z);
+        // cout << "z:" << this->x_(2) << endl;
     }
 
     /**
