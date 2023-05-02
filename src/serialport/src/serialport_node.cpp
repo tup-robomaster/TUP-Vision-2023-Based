@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-04-27 20:52:55
+ * @LastEditTime: 2023-04-28 16:57:18
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -228,7 +228,7 @@ namespace serialport
                 // Translation
                 t.transform.translation.x = 0.0;
                 t.transform.translation.y = 0.0;
-                t.transform.translation.z = -0.02;
+                t.transform.translation.z = 0.0;
 
                 // Rotation
                 t.transform.rotation.x = serial_msg.imu.orientation.x;
