@@ -35,6 +35,7 @@
 #include "../../global_user/include/global_user/global_user.hpp"
 
 using namespace global_user;
+using namespace cv;
 
 namespace camera_driver
 {
@@ -55,14 +56,23 @@ namespace camera_driver
         bool setBalance(int value, unsigned int value_num);
         bool deviceReset();
 
-    private:
+    public:
+        bool is_camera_initialized_ = false;
+
         int iCameraCounts = 1;
         int hCamera;
         tSdkCameraDevInfo tCameraEnumList;
         tSdkCameraCapbility tCapability;
         tSdkFrameHead sFrameInfo;
         BYTE* pbyBuffer;
-        Mat frame;
+        // BYTE* pFrameBuffer;
+
+        unsigned char * g_pRgbBuffer;     //处理后数据缓存区
+        // Mat frame;
+
+    public:
+        // Camera params.
+        CameraParam cam_param_;
 
     private:
         bool is_open_; 

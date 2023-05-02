@@ -35,20 +35,43 @@ namespace camera_driver
 
     bool MvsCamera::init()
     {
-        g_nPayloadSize = 0;
-        return true;
+        RCLCPP_FATAL(logger_, "Camera init called...");
+        CameraSdkInit(1);
+        // CameraSetImageResolution(hCamera, );
+        CameraEnumerateDevice(&tCameraEnumList, &iCameraCounts);
+        CameraInit(&tCameraEnumList, -1, -1, &hCamera);
+        // if (status == CAMERA_STATUS_SUCCESS) {
+        //     RCLCPP_INFO(logger_, "Camera init SUCCESS...");
+        // } else {
+        //     RCLCPP_FATAL(logger_, "Camera init FAILED...");
+        // }
+        CameraGetCapability(hCamera, &tCapability);
+        g_pRgbBuffer = (unsigned char*)malloc(tCapability.sResolutionRange.iHeightMax*tCapability.sResolutionRange.iWidthMax*3);
+
+        is_camera_initialized_ = true;
+
+        return is_camera_initialized_;
     }
 
     bool MvsCamera::open()
     {
-        CameraSdkInit(1);
-        CameraSetImageResolution(hCamera, );
-        CameraEnumerateDevice(&tCameraEnumList, &iCameraCounts);
-        status = CameraInit(&tCameraEnumList, -1, -1, &hCamera);
-        CameraGetCapability(hCamera, &tCapability);
-        CameraSetImageResolution(hCamera, &tCapability.pImageSizeDesc[0]); // 设置图像分辨率
+        RCLCPP_FATAL(logger_, "Camera open called...");
 
-        is_open_ = true;
+        // CameraSetTriggerMode(hCamera, 0);
+        setResolution(this->cam_param_.image_width, this->cam_param_.image_height);
+        // TODO : 更新时间戳，设置时间戳偏移量
+        // updateTimestamp(time_start_);
+        
+        // 设置曝光事件
+        setExposureTime(12000);
+        // TODO : 设置增益
+        setGain(3, this->cam_param_.exposure_gain);
+        // 是否启用自动白平衡
+        bool usingAutoWb = true;
+        CameraSetWbMode(hCamera, usingAutoWb);
+        
+        // CameraGetImageBuffer(hCamera, &sFrameInfo, &pbyBuffer, 500);
+        CameraPlay(hCamera);
 
         return true;
     }
@@ -56,31 +79,15 @@ namespace camera_driver
     bool MvsCamera::setResolution(int width, int height)
     {
         // TODO: Set Resolution
-        // 是否使用自动曝光
-        bool usingAe = false;
-        CameraSetAeState(hCamera, usingAe);
-        // 设置曝光事件
-        setExposureTime(this->cam_param_.exposure_time);
-        // TODO: 设置增益
-        // CameraSetGain(hCamera, gainRValue, gainGValue, gainBValue);
-        // CameraSetSharpness(hCamera, sharpnessValue);
-        // 是否启用自动白平衡
-        bool usingAutoWb = true;
-        CameraSetWbMode(hCamera, usingAutoWb);
-        // CameraSetSaturation(hCamera, saturationValue);
+        CameraSetImageResolution(hCamera, &tCapability.pImageSizeDesc[0]); // 设置图像分辨率
 
-        CameraGetImageBuffer(hCamera, &sFrameInfo, &pbyBuffer, 500);
-        CameraPlay(hCamera);
-
-        return true
+        return true;
     }
 
     bool MvsCamera::close()
     {
         CameraStop(hCamera);
         CameraUnInit(hCamera);
-
-        destroyAllWindows();
 
         return true;
     }
@@ -99,6 +106,9 @@ namespace camera_driver
     {
         CameraSdkStatus status;
 
+        bool usingAe = false;
+        CameraSetAeState(hCamera, usingAe);
+
         //设置曝光时间
         status = CameraSetExposureTime(hCamera, ExposureTime);
         if(status != CAMERA_STATUS_SUCCESS)
@@ -106,49 +116,45 @@ namespace camera_driver
         return true;
     }
 
-    bool HikCamera::setBalance(int value, unsigned int value_number)
-    {   //手动白平衡（具有记忆功能））
-        //关闭自动白平衡
-        this->nRet = MV_CC_SetEnumValue(handle, "BalanceWhiteAuto", MV_BALANCEWHITE_AUTO_OFF);
-        if(nRet != MV_OK)
-            RCLCPP_WARN(logger_, "Close auto balance failed! nRet [%x]", nRet);
+    bool MvsCamera::setBalance(int value, unsigned int value_num)
+    {
+        return true;
+    }
 
-        //设置RGB三通道白平衡值
-        if(value == 0)
-        {
-            this->nRet = MV_CC_SetBalanceRatioRed(handle, value_number);
-            if(nRet != MV_OK)
-                RCLCPP_WARN(logger_, "Set R_Balance failed！ nRet [%x]", nRet);
-        }
-        else if(value == 1)
-        {
-            this->nRet = MV_CC_SetBalanceRatioGreen(handle, value_number);
-            if(nRet != MV_OK)
-                RCLCPP_WARN(logger_, "Set G_Balance failed！ nRet [%x]", nRet);
-        }
-        else if(value == 2)
-        {
-            this->nRet = MV_CC_SetBalanceRatioBlue(handle, value_number);
-            if(nRet != MV_OK)
-                RCLCPP_WARN(logger_, "Set B_Balance failed！ nRet [%x]", nRet);
-        }
+    bool MvsCamera::setGain(int value, int exp_gain)
+    {
+        // CameraSetGain(hCamera, gainRValue, gainGValue, gainBValue);
+        CameraSetAnalogGain(hCamera, exp_gain);
         return true;
     }
 
     bool MvsCamera::getImage(::cv::Mat &Src, sensor_msgs::msg::Image& image_msg)
     {
-        if (CameraGetImageBuffer(hCamera, &sFrameInfo, &pbyBuffer, 1000) == CAMERA_STATUS_SUCCESS) {
-            frame.create(sFrameInfo.iHeight, sFrameInfo.iWidth, CV_8UC1);
-            memcpy(frame.data, pbyBuffer, sFrameInfo.iWidth * sFrameInfo.iHeight * sizeof(unsigned char));
-            cvtColor(frame, frame, COLOR_BayerBG2RGB);
-            CameraReleaseImageBuffer(hCamera, pbyBuffer);
-            image_msg.step = static_cast<sensor_msgs::msg::Image::_step_type>(Src.step);  
-            image_msg.is_bigendian = false;
-            image_msg.data.assign(Src.datastart, Src.dataend);
+        // RCLCPP_FATAL(logger_, "Camera getImage called...");
 
-            return true;
-        } else {
-            return false;
+        if (is_camera_initialized_) {
+            CameraGetImageBuffer(hCamera, &sFrameInfo, &pbyBuffer, 200);
+            if (CameraImageProcess(hCamera, pbyBuffer, g_pRgbBuffer, &sFrameInfo) == CAMERA_STATUS_SUCCESS) {
+                Src = cv::Mat(tCapability.pImageSizeDesc->iHeight, tCapability.pImageSizeDesc->iWidth, CV_8UC3);
+                // if (pbyBuffer == nullptr) {
+                //     cout << "buffer is null" << endl;
+                // }
+                memcpy(Src.data, g_pRgbBuffer, tCapability.pImageSizeDesc->iWidth * tCapability.pImageSizeDesc->iHeight * 3 * sizeof(unsigned char));
+                // cvtColor(Src, Src, COLOR_BayerBG2RGB);
+                
+                image_msg.step = static_cast<sensor_msgs::msg::Image::_step_type>(Src.step);
+                image_msg.is_bigendian = false;
+                image_msg.data.assign(Src.datastart, Src.dataend);
+
+                CameraReleaseImageBuffer(hCamera, pbyBuffer);
+                // if (status == CAMERA_STATUS_SUCCESS) {
+                //     cout << "free success" << endl;
+                // }
+
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 

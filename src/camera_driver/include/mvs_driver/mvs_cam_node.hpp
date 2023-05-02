@@ -36,5 +36,7 @@ namespace camera_driver
 
             // Params callback.
             rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
-    }
+    };
 }
+
+#endif

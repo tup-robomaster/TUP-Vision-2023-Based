@@ -70,4 +70,4 @@ namespace camera_driver
 } //namespace camera_driver
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(camera_driver::<MvsCamNode>)
+RCLCPP_COMPONENTS_REGISTER_NODE(camera_driver::MvsCamNode)
