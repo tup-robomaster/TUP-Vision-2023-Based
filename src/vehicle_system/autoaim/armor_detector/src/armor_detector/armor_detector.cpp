@@ -241,8 +241,8 @@ namespace armor_detector
 
             // 单目PnP
             // PnPInfo pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
-            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
-            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
+            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
+            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
             
             //防止装甲板类型出错导致解算问题，首先尝试切换装甲板类型，若仍无效则直接跳过该装甲板
             if (!isPnpSolverValidation(pnp_result.armor_cam))
@@ -1295,13 +1295,13 @@ namespace armor_detector
                 return armor.id;
             }
             else if ((armor.id == last_armor_.id 
-            // || last_armor_.roi.contains(armor.center2d)
+            || last_armor_.roi.contains(armor.center2d)
             )
             && abs(armor.area - last_armor_.area) / (float)armor.area < 0.40
             && abs(now_ - last_timestamp_) / 1e6 <= 100
             && (abs(rrangle) <= 16.0 || abs(rrangle) >= 74.0))
             {
-                // armor.id = last_armor_.id;
+                armor.id = last_armor_.id;
                 is_last_id_exists = true;
                 target_id = armor.id;
                 break;

@@ -218,6 +218,10 @@ namespace armor_processor
             Eigen::Vector4d circle_center3d = {circle_center(0), circle_center(1), state(2), 0.0};
             armor3d_vec.emplace_back(circle_center3d);
 
+            Eigen::Vector2d circle3d = calcCircleCenter(meas);
+            Eigen::Vector4d circle4d = {circle3d(0), circle3d(1), meas(2), meas(3)};
+            armor3d_vec.emplace_back(circle4d);               
+
             // cout << "pred_rangle:" << rangle << " x:" << result(1) << endl;
             Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
             for (int ii = 0; ii < 4; ii++)

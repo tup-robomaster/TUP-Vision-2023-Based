@@ -362,13 +362,13 @@ namespace armor_processor
                         if (marker.id == 0)
                         {
                             marker.type = visualization_msgs::msg::Marker::ARROW;
-                            marker.pose.position.z = 0;
+                            // marker.pose.position.z = armor3d(2);
                         }
-                        else if (flag == idx)
-                        {
-                            marker.type = visualization_msgs::msg::Marker::ARROW;
-                            q.setRPY(0, 0, armor3d(3));
-                        }
+                        // else if (flag == idx)
+                        // {
+                        //     marker.type = visualization_msgs::msg::Marker::ARROW;
+                        //     // q.setRPY(0, 0, armor3d(3));
+                        // }
                         else
                         {
                             marker.type = shape_;
@@ -386,12 +386,12 @@ namespace armor_processor
                             marker.scale.y = 0.010;
                             marker.scale.z = 0.010;
                         }
-                        else if (flag == idx)
-                        {
-                            marker.scale.x = -armor3d(2);
-                            marker.scale.y = 0.025;
-                            marker.scale.z = 0.025;
-                        }
+                        // else if (flag == idx)
+                        // {
+                        //     marker.scale.x = -armor3d(2);
+                        //     marker.scale.y = 0.025;
+                        //     marker.scale.z = 0.025;
+                        // }
                         else
                         {
                             marker.scale.x = 0.060;
