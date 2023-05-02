@@ -444,10 +444,6 @@ namespace armor_processor
         //             0,  0,  0,  0,  0,     0,     0,  1,  0,
         //             0,  0,  0,  0,  0,     0,     0,  0,  1;
 
-        double q[9] = {this->kf_param_.process_noise_params[0], this->kf_param_.process_noise_params[1], this->kf_param_.process_noise_params[2],
-            this->kf_param_.process_noise_params[3], this->kf_param_.process_noise_params[4], this->kf_param_.process_noise_params[5],
-            this->kf_param_.process_noise_params[6], this->kf_param_.process_noise_params[7], this->kf_param_.process_noise_params[8]
-        };
 
         this->Q_ << q[0], 0   , 0   , 0   , 0   , 0   ,
                     0   , q[1], 0   , 0   , 0   , 0   ,   
@@ -498,7 +494,7 @@ namespace armor_processor
     //           0,  0,  0,  0,  0,     0,  0,  0,                                                   0,                                                   0,                                                   0;
     // }
 
-    void UniformModel::setF(Eigen::MatrixXd& Ft, const double& dt)
+    void UniformModel::setF(Eigen::MatrixXd& Ft, double dt)
     {
         double alpha = kf_param_.singer_params[0];
         double sigma = kf_param_.singer_params[5];

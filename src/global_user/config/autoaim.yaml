@@ -92,13 +92,17 @@
     debug: true
     using_imu: false
     show_img: true
+    show_img: true
     draw_predict: false
+    show_predict: true
     show_predict: true
     sync_transport: false
     print_delay: false
     x_axis_filter: true
     y_axis_filter: true
     z_axis_filter: true
+    show_aim_cross: true
+    show_fps: true
     show_aim_cross: true
     show_fps: true
     show_marker: true

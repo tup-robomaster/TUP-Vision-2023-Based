@@ -356,7 +356,7 @@ namespace armor_processor
                         // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
                         marker.pose.position.x = armor3d(0);
                         marker.pose.position.y = armor3d(1);
-                        marker.pose.position.z = 0;
+                        marker.pose.position.z = armor3d(2);
 
                         if (marker.id == 0)
                         {
@@ -368,6 +368,11 @@ namespace armor_processor
                             marker.type = visualization_msgs::msg::Marker::ARROW;
                             q.setRPY(0, 0, armor3d(3));
                         }
+                        // else if (flag == idx)
+                        // {
+                        //     marker.type = visualization_msgs::msg::Marker::ARROW;
+                        //     // q.setRPY(0, 0, armor3d(3));
+                        // }
                         else
                         {
                             marker.type = shape_;
@@ -391,6 +396,12 @@ namespace armor_processor
                             marker.scale.y = 0.040;
                             marker.scale.z = 0.040;
                         }
+                        // else if (flag == idx)
+                        // {
+                        //     marker.scale.x = -armor3d(2);
+                        //     marker.scale.y = 0.025;
+                        //     marker.scale.z = 0.025;
+                        // }
                         else
                         {
                             marker.scale.x = 0.060;
@@ -437,6 +448,7 @@ namespace armor_processor
 
                     // Publish the marker_array
                     marker_array_pub_->publish(marker_array);
+                    idx++;
                 }
                 // AutoaimMsg predict_info;
                 // predict_info.header.frame_id = "camera_link";

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-30 19:38:16
+ * @LastEditTime: 2023-05-02 15:50:51
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -93,6 +93,8 @@ namespace armor_processor
         // }
         // last_rangle = target.rangle;
 
+        // cout << "cur_rangle:" << cur_rangle_ << " last_rangle:" << last_rangle << " cur_rangle:" << target.rangle << endl;
+        // last_rangle = target.rangle; 
         if (!predictBasedUniformModel(target.is_target_lost, spin_state, meas, dt, pred_dt, target.period, pred_point3d, armor3d_vec))
         {
             pred_point3d = target.xyz;
@@ -112,6 +114,7 @@ namespace armor_processor
             is_ekf_init_ = true;
             is_pred_success = false;
             result = {meas(0), meas(1), meas(2)};
+            return is_pred_success;
             return is_pred_success;
         }
 
@@ -153,7 +156,6 @@ namespace armor_processor
         {   
             Eigen::VectorXd state = uniform_ekf_.x();
             Eigen::Vector3d circle_center = {state(0), state(1), state(2)};
-
             double radius = state(3);
             double rangle = state(4);
             double omega = state(5);
@@ -201,6 +203,7 @@ namespace armor_processor
         }
         else
         {   // 更新
+        {   // 更新
             uniform_ekf_.Update(meas, meas(3));
             Eigen::VectorXd state = uniform_ekf_.x();
             double radius = state(3);
@@ -217,6 +220,9 @@ namespace armor_processor
             // Eigen::MatrixXd acc(3, 1);
             // acc << uniform_ekf_.x_(8), uniform_ekf_.x_(9), uniform_ekf_.x_(10);
             // Eigen::VectorXd pred = F * state + Control * acc;
+            // radius = pred(3);
+            // rangle = pred(4);
+            // omega = pred(5);
             // radius = pred(3);
             // rangle = pred(4);
             // omega = pred(5);
@@ -259,6 +265,10 @@ namespace armor_processor
             Eigen::Vector4d circle_center3d = {circle_center(0), circle_center(1), state(2), 0.0};
             armor3d_vec.emplace_back(circle_center3d);
 
+            Eigen::Vector2d circle3d = calcCircleCenter(meas);
+            Eigen::Vector4d circle4d = {circle3d(0), circle3d(1), meas(2), meas(3)};
+            armor3d_vec.emplace_back(circle4d);               
+
             // cout << "pred_rangle:" << rangle << " x:" << result(1) << endl;
             Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
             for (int ii = 0; ii < 4; ii++)
@@ -283,6 +293,7 @@ namespace armor_processor
             );
             is_pred_success = true;
         }
+
         return is_pred_success;
     }
 

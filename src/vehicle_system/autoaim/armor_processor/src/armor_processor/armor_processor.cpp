@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-04-30 19:19:01
+ * @LastEditTime: 2023-05-02 15:49:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -228,6 +228,7 @@ namespace armor_processor
             }
             else if (target.is_spinning_switched && !target.is_target_lost)
             {
+                RCLCPP_WARN(logger_, "Update predictor...");
                 // target_period_ = target.period;
                 armor_predictor_.predictor_state_ = PREDICTING;
                 Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
