@@ -80,8 +80,8 @@ namespace serialport
 
         // if (using_port_)
         // {   // Use serial port.
-            if (serial_port_->openPort())
-            {
+            // if (serial_port_->openPort())
+            // {
                 serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", qos);
                 joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
                 car_pos_pub_ = this->create_publisher<CarPosMsg>("/car_pos", qos);
@@ -95,7 +95,7 @@ namespace serialport
                     std::bind(&SerialPortNode::sentryNavCallback, this, _1)
                 );
                 watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
-            }
+            // }
         // }
     }
 

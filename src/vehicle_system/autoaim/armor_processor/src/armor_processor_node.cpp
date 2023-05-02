@@ -304,6 +304,23 @@ namespace armor_processor
             
             if (!target.is_target_lost)
             {
+                cv::Point2f point_2d = {0, 0};
+                double min_dist = 1e2;
+                int idx = 0, flag = -1;
+                for (auto armor_point3d_world : armor3d_vec)
+                {
+                    double armor3d_dist = armor_point3d_world.norm();
+                    if (armor3d_dist < min_dist)
+                    {
+                        min_dist = armor3d_dist;
+                        flag = idx;
+                    }
+                    // Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
+                    // point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                    // cv::circle(dst, point_2d, 6, {255, 255, 0}, -1);
+                    ++idx;
+                }
+                idx = 0;
                 if (show_marker_)
                 {
                     rclcpp::Time now = this->get_clock()->now();
@@ -344,7 +361,12 @@ namespace armor_processor
                         if (marker.id == 0)
                         {
                             marker.type = visualization_msgs::msg::Marker::ARROW;
-                            marker.pose.position.z = 0;
+                            // marker.pose.position.z = armor3d(2);
+                        }
+                        else if (flag == idx)
+                        {
+                            marker.type = visualization_msgs::msg::Marker::ARROW;
+                            q.setRPY(0, 0, armor3d(3));
                         }
                         else
                         {
@@ -360,8 +382,14 @@ namespace armor_processor
                         {
                             marker.scale.x = armor3d(2);
                             // RCLCPP_WARN(get_logger(), "z_axis:%.3f", armor3d(2));
-                            marker.scale.y = 0.025;
-                            marker.scale.z = 0.025;
+                            marker.scale.y = 0.010;
+                            marker.scale.z = 0.010;
+                        }
+                        else if (flag == idx)
+                        {
+                            marker.scale.x = target_info.clockwise ? -0.25 : 0.25;
+                            marker.scale.y = 0.040;
+                            marker.scale.z = 0.040;
                         }
                         else
                         {
@@ -404,7 +432,9 @@ namespace armor_processor
                         // }
                         marker_array.markers.emplace_back(marker);                     
                         ++marker_id;
+                        idx++;
                     }
+
                     // Publish the marker_array
                     marker_array_pub_->publish(marker_array);
                 }
@@ -464,18 +494,21 @@ namespace armor_processor
                             min_dist = armor3d_dist;
                             flag = idx;
                         }
-                        // Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
-                        // point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
-                        // cv::circle(dst, point_2d, 6, {255, 255, 0}, -1);
+                        // if (idx == 5 || idx == 0)
+                        // {
+                            Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
+                            point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                            cv::circle(dst, point_2d, 6, {255, 255, 0}, -1);
+                        // }
                         ++idx;
                     }
 
-                    if (flag != -1)
-                    {
-                        Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor3d_vec[flag](0), armor3d_vec[flag](1), armor3d_vec[flag](2)}, rmat_imu);
-                        point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
-                        cv::circle(dst, point_2d, 8, {255, 0, 125}, 2);
-                    }
+                    // if (flag != -1)
+                    // {
+                    //     Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor3d_vec[flag](0), armor3d_vec[flag](1), armor3d_vec[flag](2)}, rmat_imu);
+                    //     point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                    //     cv::circle(dst, point_2d, 8, {255, 0, 125}, 2);
+                    // }
                     
                     // point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
                     // cv::circle(dst, point_2d, 8, {255, 0, 125}, 2);
@@ -610,19 +643,25 @@ namespace armor_processor
         this->declare_parameter("measure_noise", measure_noise_params);
         measure_noise_params = this->get_parameter("measure_noise").as_double_array();
 
-        vector<double> uniform_ekf_params[3] = 
+        vector<double> uniform_ekf_params[5] = 
         {
             {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
             {1.0, 1.0, 1.0, 1.0},
-            {8.00, 10.0, 0.1, 0.8, 0.0030}
+            {20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0},
+            {8.00, 10.0, 0.1, 0.8, 5.00, 0.0045, 1.0, 2.0},
+            {8.00, 10.0, 0.1, 0.8, 5.00, 0.0045, 1.0, 2.0}
         };
         
         this->declare_parameter("uniform_ekf_process_noise_param", uniform_ekf_params[0]);
         this->declare_parameter("uniform_ekf_measure_noise_param", uniform_ekf_params[1]);
-        this->declare_parameter("uniform_ekf_singer_param", uniform_ekf_params[2]);
+        this->declare_parameter("singer_x_aixs_param", uniform_ekf_params[2]);
+        this->declare_parameter("singer_y_aixs_param", uniform_ekf_params[3]);
+        this->declare_parameter("singer_z_aixs_param", uniform_ekf_params[4]);
         uniform_ekf_params[0] = this->get_parameter("uniform_ekf_process_noise_param").as_double_array();
         uniform_ekf_params[1] = this->get_parameter("uniform_ekf_measure_noise_param").as_double_array();
-        uniform_ekf_params[2] = this->get_parameter("uniform_ekf_singer_param").as_double_array();
+        uniform_ekf_params[2] = this->get_parameter("singer_x_aixs_param").as_double_array();
+        uniform_ekf_params[3] = this->get_parameter("singer_y_aixs_param").as_double_array();
+        uniform_ekf_params[4] = this->get_parameter("singer_z_aixs_param").as_double_array();
 
         predict_param_.filter_model_param.imm_model_trans_prob_params = imm_model_trans_prob_params;
         predict_param_.filter_model_param.imm_model_prob_params = imm_model_prob_params;

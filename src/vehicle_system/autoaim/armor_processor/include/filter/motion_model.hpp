@@ -64,11 +64,11 @@ namespace armor_processor
         void init();
         void setKF(double dt);
         void setF(Eigen::MatrixXd& Ft, const double& pred_dt);
-        void setC(Eigen::MatrixXd& Ct, const double& pred_dt);
+        // void setC(Eigen::MatrixXd& Ct, const double& pred_dt);
 
     public:
         // vector<double> singer_param_;
-        double radius_ = 0.25;
+        double radius_ = 0.20;
         double rangle_ = 0.0;
     };
 } // armor_processor
