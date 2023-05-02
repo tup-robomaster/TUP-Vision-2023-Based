@@ -9,13 +9,13 @@
 
 namespace armor_processor
 {
-    Processor::Processor(const PredictParam& predict_param, vector<double>* uniform_ekf_param, const DebugParam& debug_param)
+    Processor::Processor(const PredictParam& predict_param, vector<double>* ekf_param, const DebugParam& debug_param)
     : logger_(rclcpp::get_logger("armor_processor")), predict_param_(predict_param), debug_param_(debug_param)  
     {
         //初始化预测器
-        armor_predictor_.uniform_ekf_.Init(9, 4, 3);
+        armor_predictor_.uniform_ekf_.Init(6, 4, 3);
         // armor_predictor_.uniform_ekf_.Init(11, 4, 3);
-        armor_predictor_.initPredictor(uniform_ekf_param);
+        armor_predictor_.initPredictor(ekf_param);
         armor_predictor_.resetPredictor();
 
         // car_id_map_ = {
@@ -138,6 +138,9 @@ namespace armor_processor
         rclcpp::Time stamp = target_msg.header.stamp;
         double dt = (stamp.nanoseconds() - last_timestamp_.nanoseconds()) / 1e9;
         double bullet_speed = coordsolver_.getBulletSpeed();
+        if (dt > 0.1)
+            dt = 0.015;
+
         RCLCPP_WARN_THROTTLE(
             logger_, 
             steady_clock_, 
@@ -171,20 +174,20 @@ namespace armor_processor
             Eigen::Vector3d center_xyz = {state(0), state(1), state(2)};
 
             // cout << "rangle:" << armor.rangle << endl;
-            RCLCPP_WARN_THROTTLE(
-                logger_,
-                steady_clock_,
-                100, 
-                "xyz:【%.3f %.3f %.3f] center_norm:[%.3f %.3f %.3f]",
-                xyz(0), xyz(1), xyz(2), center_xyz(0), center_xyz(1), center_xyz(2)
-            );
-            RCLCPP_WARN_THROTTLE(
-                logger_,
-                steady_clock_, 
-                100, 
-                "radius:%.3f theta:%.3f omega:%.3f vx:%.3f vy:%.3f vz:%.3f", 
-                state(3), state(4), state(5), state(6), state(7), state(8)
-            );
+            // RCLCPP_WARN_THROTTLE(
+            //     logger_,
+            //     steady_clock_,
+            //     100, 
+            //     "xyz:【%.3f %.3f %.3f] center_norm:[%.3f %.3f %.3f]",
+            //     xyz(0), xyz(1), xyz(2), center_xyz(0), center_xyz(1), center_xyz(2)
+            // );
+            // RCLCPP_WARN_THROTTLE(
+            //     logger_,
+            //     steady_clock_, 
+            //     100, 
+            //     "radius:%.3f theta:%.3f omega:%.3f vx:%.3f vy:%.3f vz:%.3f", 
+            //     state(3), state(4), state(5), state(6), state(7), state(8)
+            // );
 
             TargetInfo target = 
             { 

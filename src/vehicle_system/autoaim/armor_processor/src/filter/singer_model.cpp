@@ -28,18 +28,31 @@ namespace armor_processor
 
     SingerModel::SingerModel(int SP, int MP, int CP)
     {
-        F_ = Eigen::MatrixXd::Identity(SP, SP);
-        H_ = Eigen::MatrixXd::Zero(MP, SP);
-        C_ = Eigen::MatrixXd::Zero(SP, CP);            
-        P_ = Eigen::MatrixXd::Zero(SP, SP);
-        Q_ = Eigen::MatrixXd::Identity(SP, SP);
-        R_ = Eigen::MatrixXd::Zero(MP, MP);
-        singer_param_ = {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0};
+        this->x_.resize(3);
+        this->z_.resize(1);
+        this->P_ = Eigen::MatrixXd::Identity(SP, SP);
+        this->F_ = Eigen::MatrixXd::Identity(SP, SP);
+        this->H_ = Eigen::MatrixXd::Zero(MP, SP);
+        this->C_ = Eigen::MatrixXd::Zero(SP, CP);            
+        this->P_ = Eigen::MatrixXd::Zero(SP, SP);
+        this->Q_ = Eigen::MatrixXd::Identity(SP, SP);
+        this->R_ = Eigen::MatrixXd::Zero(MP, MP);
+        this->singer_param_ = {0.80, 5.0, 0.10, 0.80, 0.80, 0.20, 1.0, 1.0, 5.0};
         init();
     }
 
     SingerModel::~SingerModel()
     {
+    }
+
+    void SingerModel::updatePrediction()
+    {
+        this->x_ = this->F_ * this->x_;
+    }
+
+    void SingerModel::updateMeasurement()
+    {
+
     }
 
     void SingerModel::init()

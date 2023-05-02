@@ -610,19 +610,25 @@ namespace armor_processor
         this->declare_parameter("measure_noise", measure_noise_params);
         measure_noise_params = this->get_parameter("measure_noise").as_double_array();
 
-        vector<double> uniform_ekf_params[3] = 
+        vector<double> uniform_ekf_params[5] = 
         {
             {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
             {1.0, 1.0, 1.0, 1.0},
-            {8.00, 10.0, 0.1, 0.8, 0.0030}
+            {20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0},
+            {8.00, 10.0, 0.1, 0.8, 5.00, 0.0045, 1.0, 2.0},
+            {8.00, 10.0, 0.1, 0.8, 5.00, 0.0045, 1.0, 2.0}
         };
         
         this->declare_parameter("uniform_ekf_process_noise_param", uniform_ekf_params[0]);
         this->declare_parameter("uniform_ekf_measure_noise_param", uniform_ekf_params[1]);
-        this->declare_parameter("uniform_ekf_singer_param", uniform_ekf_params[2]);
+        this->declare_parameter("singer_x_aixs_param", uniform_ekf_params[2]);
+        this->declare_parameter("singer_y_aixs_param", uniform_ekf_params[3]);
+        this->declare_parameter("singer_z_aixs_param", uniform_ekf_params[4]);
         uniform_ekf_params[0] = this->get_parameter("uniform_ekf_process_noise_param").as_double_array();
         uniform_ekf_params[1] = this->get_parameter("uniform_ekf_measure_noise_param").as_double_array();
-        uniform_ekf_params[2] = this->get_parameter("uniform_ekf_singer_param").as_double_array();
+        uniform_ekf_params[2] = this->get_parameter("singer_x_aixs_param").as_double_array();
+        uniform_ekf_params[3] = this->get_parameter("singer_y_aixs_param").as_double_array();
+        uniform_ekf_params[4] = this->get_parameter("singer_z_aixs_param").as_double_array();
 
         predict_param_.filter_model_param.imm_model_trans_prob_params = imm_model_trans_prob_params;
         predict_param_.filter_model_param.imm_model_prob_params = imm_model_prob_params;
