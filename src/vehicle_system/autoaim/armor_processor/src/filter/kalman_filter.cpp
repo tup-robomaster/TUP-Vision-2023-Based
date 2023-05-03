@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2023-04-30 19:18:54
+ * @LastEditTime: 2023-05-04 02:26:48
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/kalman_filter.cpp
  */
 #include "../../include/filter/kalman_filter.hpp"
@@ -36,32 +36,9 @@ namespace armor_processor
         this->cp_ = CP;
     }
 
-    void KalmanFilter::Init(MatrixXd& x_in, MatrixXd& P_in, MatrixXd& F_in,
-            MatrixXd& H_in, MatrixXd& R_in, MatrixXd& Q_in)
-    {
-        x_ = x_in;
-        P_ = P_in;
-        F_ = F_in;
-        H_ = H_in;
-        R_ = R_in;
-        Q_ = Q_in;
-    }
-
-    void KalmanFilter::Init(MatrixXd& x_in, MatrixXd& P_in, MatrixXd& F_in,
-            MatrixXd& H_in, MatrixXd& R_in, MatrixXd& Q_in, MatrixXd& J_in)
-    {
-        x_ = x_in;
-        P_ = P_in;
-        F_ = F_in;
-        H_ = H_in;
-        R_ = R_in;
-        Q_ = Q_in;
-        J_ = J_in;
-    }
-
     void KalmanFilter::Predict()
     {
-        if(this->cp_ > 0)
+        if(cp_ > 0)
         {
             x_ = F_ * x_ + C_ * x_[2];
         }
@@ -69,22 +46,13 @@ namespace armor_processor
         {
             x_ = F_ * x_;
         }
-
-        MatrixXd Ft = F_.transpose();
-        
-        P_ = F_ * P_ * Ft + Q_;
+        P_ = Jf_ * P_ * Jf_.transpose() + Q_;
     }
 
     void KalmanFilter::Predict(const double& dt)
     {
         this->dt_ = dt;
-        // Predict();
-        
-        // cout << "x_:" << x_(2) << " " << x_(7) << endl;
-        updatePrediction();
-        // cout << "x_pred:" << x_(2) << " " << x_(7) << endl;
-
-        this->P_ = this->F_ * this->P_ * this->F_.transpose() + this->Q_;
+        Predict();
     }
  
     void KalmanFilter::Update(const VectorXd& z)
@@ -105,9 +73,9 @@ namespace armor_processor
         }
 
         //卡尔曼增益
-        MatrixXd Ht = H_.transpose();
+        MatrixXd Ht = Jh_.transpose();
         MatrixXd PHt = P_ * Ht;
-        MatrixXd S = H_ * PHt + R_;
+        MatrixXd S = Jh_ * PHt + R_;
         MatrixXd Si = S.inverse();
         MatrixXd K = PHt * Si;
 
@@ -121,36 +89,7 @@ namespace armor_processor
 
         int x_size = x_.size();
         MatrixXd I = MatrixXd::Identity(x_size, x_size);
-        P_ = (I - K * H_) * P_;
-    }
-
-    // void KalmanFilter::Update(const Eigen::VectorXd& z, double rangle)
-    // {
-    //     this->H_ << 1, 0, 0, -sin(x_(4)), 0, 0, 0, 0, 0, 0, 0, 
-    //                 0, 1, 0,  cos(x_(4)), 0, 0, 0, 0, 0, 0, 0,
-    //                 0, 0, 1,            0, 0, 0, 0, 0, 0, 0, 0,
-    //                 0, 0, 0,            0, 1, 0, 0, 0, 0, 0, 0;
-    //     Update(z);
-    // }
-
-    void KalmanFilter::Update(const Eigen::VectorXd& z, double rangle)
-    {
-        // this->H_ << 1, 0, 0, -cos(x_(4)), x_(3) * sin(x_(4)) , 0, 0, 0, 0,
-        //             0, 1, 0, -sin(x_(4)), -x_(3) * cos(x_(4)), 0, 0, 0, 0,
-        //             0, 0, 1,           0,                   0, 0, 0, 0, 0,
-        //             0, 0, 0,           0,                   1, 0, 0, 0, 0; 
- 
-        // this->H_ << 1, 0, 0, sin(x_(4)) , x_(3) * cos(x_(4)),  0,
-        //             0, 1, 0, -cos(x_(4)), x_(3) * sin(x_(4)),  0,
-        //             0, 0, 1,           0,                   0, 0,
-        //             0, 0, 0,           0,                   1, 0; 
-
-         this->H_ << 1, 0, 0, sin(x_(4)), 0,  0,
-                    0, 1, 0, -cos(x_(4)), 0,  0,
-                    0, 0, 1,           0, 0,  0,
-                    0, 0, 0,           0, 1,  0; 
-        Update(z);
-        // cout << "z:" << this->x_(2) << endl;
+        P_ = (I - K * Jh_) * P_;
     }
 
     /**
@@ -161,8 +100,6 @@ namespace armor_processor
      */
     void KalmanFilter::Update(const Eigen::VectorXd& z, int mp)
     {
-        updateMeasurement();
-
         // 测量值与预测值之间的残差
         Eigen::VectorXd v = z - this->x_;
         
@@ -196,11 +133,6 @@ namespace armor_processor
             Predict(dt);
             Update(*z);
         }
-    }
-
-    void KalmanFilter::UpdateJacobians()
-    {
-        
     }
 
     void KalmanFilter::UpdateEKF(const MatrixXd& z)

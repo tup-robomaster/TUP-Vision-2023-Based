@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-11 13:18:53
- * @LastEditTime: 2023-04-14 22:48:25
+ * @LastEditTime: 2023-05-04 02:28:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/singer_model.cpp
  */
 #include "../../include/filter/singer_model.hpp"
@@ -23,12 +23,10 @@ namespace armor_processor
         this->R_ = Eigen::MatrixXd::Zero(MP, MP);
         singer_param_ = singer_param;
         init();
-
     }
     
     SingerModel::SingerModel()
     {
-
     }
 
     SingerModel::SingerModel(int SP, int MP, int CP)
@@ -51,14 +49,50 @@ namespace armor_processor
     {
     }
 
-    void SingerModel::updatePrediction()
+    void SingerModel::updateF()
     {
-        this->x_ = this->F_ * this->x_;
+        double alpha = singer_param_[0];
+        F_ << 1, dt_, (alpha * dt_ - 1 + exp(-alpha * dt_)) / alpha / alpha,  
+            0, 1, (1 - exp(-alpha * dt_)) / alpha,
+            0, 0, exp(-alpha * dt_);
     }
 
-    void SingerModel::updateMeasurement()
+    void SingerModel::updateF(Eigen::MatrixXd& Ft, double dt)
+    {
+        double alpha = singer_param_[0];
+        Ft << 1, dt, (alpha * dt - 1 + exp(-alpha * dt)) / alpha / alpha,  
+            0, 1, (1 - exp(-alpha * dt)) / alpha,
+            0, 0, exp(-alpha * dt);
+    }
+
+    void SingerModel::updateH()
     {
 
+    }
+
+    void SingerModel::updateH(Eigen::MatrixXd& Ht, double dt)
+    {
+
+    }
+
+    void SingerModel::updateJf()
+    {
+        Jf_ = F_;
+    }
+
+    void SingerModel::updateJf(Eigen::MatrixXd& Jft, double dt)
+    {
+        Jft =Jf_;
+    }
+
+    void SingerModel::updateJh()
+    {
+        Jh_ = H_;
+    }
+
+    void SingerModel::updateJh(Eigen::MatrixXd& Jht, double dt)
+    {
+        Jht = Jh_;
     }
 
     void SingerModel::init()

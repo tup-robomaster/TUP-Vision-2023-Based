@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-30 18:43:53
+ * @LastEditTime: 2023-05-04 02:32:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -157,6 +157,9 @@ namespace armor_processor
         Eigen::Vector3d vehicle_center3d_cam = {0.0, 0.0, 0.0};
         Eigen::Vector4d vehicle_center3d_world = {0.0, 0.0, 0.0, 0.0};
         // PostProcessInfo post_process_info;
+        cv::Point2f point_2d = {0, 0};
+        double min_dist = 1e2;
+        int idx = 0, flag = -1;
 
         if (target_info.bullet_speed > 10.0)
         {   //更新弹速
@@ -203,10 +206,31 @@ namespace armor_processor
             param_mutex_.lock();
             if (processor_->predictor(target, aiming_point_world, armor3d_vec, sleep_time))
             {
-                aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
-                angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
                 if (!target_info.is_target_lost)
                 {
+                    for (auto armor_point3d_world : armor3d_vec)
+                    {
+                        double armor3d_dist = armor_point3d_world.norm();
+                        if (armor3d_dist < min_dist)
+                        {
+                            min_dist = armor3d_dist;
+                            flag = idx;
+                        }
+                        // Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
+                        // point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                        // cv::circle(dst, point_2d, 6, {255, 255, 0}, -1);
+                        ++idx;
+                    }
+                    if (flag != -1)
+                    {
+                        aiming_point_world = {armor3d_vec.at(flag)(0), armor3d_vec.at(flag)(1), armor3d_vec.at(flag)(2)};
+                    }
+                    else
+                    {
+                        is_shooting = false;
+                    }
+                    aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
+                    angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
                     tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
                     tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
                 }
@@ -248,6 +272,11 @@ namespace armor_processor
         {
             is_pred_ = true;
             is_shooting = true;
+        }
+
+        if (processor_->armor_predictor_.predictor_state_ != PREDICTING)
+        {
+            is_shooting = false;
         }
         
         // Gimbal info pub.
@@ -304,22 +333,6 @@ namespace armor_processor
             
             if (!target.is_target_lost)
             {
-                cv::Point2f point_2d = {0, 0};
-                double min_dist = 1e2;
-                int idx = 0, flag = -1;
-                for (auto armor_point3d_world : armor3d_vec)
-                {
-                    double armor3d_dist = armor_point3d_world.norm();
-                    if (armor3d_dist < min_dist)
-                    {
-                        min_dist = armor3d_dist;
-                        flag = idx;
-                    }
-                    // Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
-                    // point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
-                    // cv::circle(dst, point_2d, 6, {255, 255, 0}, -1);
-                    ++idx;
-                }
                 idx = 0;
                 if (show_marker_)
                 {
@@ -495,24 +508,24 @@ namespace armor_processor
                                 cv::Point2f(armor.point2d[(i + 1) % 4].x, armor.point2d[(i + 1) % 4].y), {125, 0, 255}, 1);
                     }
 
-                    cv::Point2f point_2d = {0, 0};
-                    double min_dist = 1e2;
-                    int idx = 0, flag = -1;
+                    // cv::Point2f point_2d = {0, 0};
+                    // double min_dist = 1e2;
+                    // int idx = 0, flag = -1;
                     for (auto armor_point3d_world : armor3d_vec)
                     {
-                        double armor3d_dist = armor_point3d_world.norm();
-                        if (armor3d_dist < min_dist)
-                        {
-                            min_dist = armor3d_dist;
-                            flag = idx;
-                        }
+                        // double armor3d_dist = armor_point3d_world.norm();
+                        // if (armor3d_dist < min_dist)
+                        // {
+                        //     min_dist = armor3d_dist;
+                        //     flag = idx;
+                        // }
                         // if (idx == 5 || idx == 0)
                         // {
                             Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
                             point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
                             cv::circle(dst, point_2d, 14, {255, 255, 0}, -1);
                         // }
-                        ++idx;
+                        // ++idx;
                     }
 
                     // if (flag != -1)

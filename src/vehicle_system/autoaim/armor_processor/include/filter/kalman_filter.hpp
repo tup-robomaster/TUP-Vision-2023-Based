@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:00:19
- * @LastEditTime: 2023-04-30 17:55:02
+ * @LastEditTime: 2023-05-04 02:25:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/kalman_filter.hpp
  */
 #ifndef KALMAN_FILTER_HPP_
@@ -28,11 +28,11 @@ namespace armor_processor
         public:
             KalmanFilter();
             KalmanFilter(KFParam kf_param);
-            ~KalmanFilter();
             virtual KalmanFilter* Clone()
             {
                 return new KalmanFilter(*this);
             }
+            ~KalmanFilter();
 
             /**
              * @brief Initialize matrix dimension
@@ -41,38 +41,30 @@ namespace armor_processor
             void Init(int stateParams, int measureParams, int controlParams);
 
             /**
-             * @brief 初始化卡尔曼滤波器
-             * @param x_in 初始化状态向量
-             * @param P_in 初始化状态协方差矩阵
-             * @param F_in 状态转移矩阵
-             * @param H_in 测量矩阵
-             * @param R_in 测量协方差矩阵
-             * @param Q_in 过程协方差矩阵
-             */
-            void Init(Eigen::MatrixXd& x_in, Eigen::MatrixXd& P_in, Eigen::MatrixXd& F_in,
-                Eigen::MatrixXd& H_in, Eigen::MatrixXd& R_in, Eigen::MatrixXd& Q_in);
-            
-            /**
-             * @brief 初始化卡尔曼滤波器
-             * @param x_in 初始化状态向量
-             * @param P_in 初始化状态协方差矩阵
-             * @param F_in 状态转移矩阵
-             * @param H_in 测量矩阵
-             * @param R_in 测量协方差矩阵
-             * @param Q_in 过程协方差矩阵
-             * @param J_in 雅可比矩阵
-             */
-            void Init(Eigen::MatrixXd& x_in, Eigen::MatrixXd& P_in, Eigen::MatrixXd& F_in,
-            Eigen::MatrixXd& H_in, Eigen::MatrixXd& R_in, Eigen::MatrixXd& Q_in, Eigen::MatrixXd& J_in);
-            
-            /**
              * @brief 预测状态向量和协方差矩阵
              * 
              */
             void Predict();
             void Predict(const double& dt);
-            virtual void updatePrediction() {}
-            virtual void updateMeasurement() {}
+
+            /**
+             * @brief 更新状态转移矩阵 
+             * 
+             */        
+            virtual void updateF() {}
+            virtual void updateF(Eigen::MatrixXd& Ft, double dt) 
+            {
+                Ft = F_;
+            }
+            
+            /**
+             * @brief 更新量测矩阵
+            */
+            virtual void updateH() {}
+            virtual void updateH(Eigen::MatrixXd& Ht, double dt)
+            {
+                Ht = H_;
+            }
 
             /**
              * @brief 更新状态向量
@@ -80,7 +72,6 @@ namespace armor_processor
              */
             void Update(const Eigen::VectorXd& z);
             void Update(const Eigen::VectorXd& z, int mp);
-            void Update(const Eigen::VectorXd& z, double rangle);
             void updateOnce(const double& dt, const Eigen::VectorXd* z);
 
             /**
@@ -90,10 +81,29 @@ namespace armor_processor
             void UpdateEKF(const Eigen::MatrixXd& z);
 
             /**
-             * @brief 雅可比矩阵
+             * @brief 系统模型的雅可比矩阵
              * 
              */
-            void UpdateJacobians();
+            virtual void updateJf()
+            {
+                this->Jf_ = this->F_;
+            }
+            virtual void updateJf(Eigen::MatrixXd& Jft, double dt)
+            {
+                Jft = Jf_;
+            }
+
+            /**
+             * @brief 量测模型的雅可比矩阵
+            */
+            virtual void updateJh()
+            {
+                this->Jh_ = this->H_;
+            }
+            virtual void updateJh(Eigen::MatrixXd& Jht, double dt)
+            {
+                Jht = Jh_;
+            }
 
             /**
              * @brief 返回模型似然值
@@ -136,8 +146,11 @@ namespace armor_processor
             //状态协方差矩阵
             Eigen::MatrixXd Q_;
 
-            //雅可比矩阵
-            Eigen::MatrixXd J_;
+            //状态转移矩阵的雅可比形式
+            Eigen::MatrixXd Jf_;
+
+            //测量矩阵的雅可比形式
+            Eigen::MatrixXd Jh_;
 
             //控制矩阵
             Eigen::MatrixXd C_;
@@ -154,10 +167,7 @@ namespace armor_processor
             int cp_; //控制量个数
         
         public:
-            // double r1_, r2_, r3_, r4_;
-            // double q1_, q2_, q3_, q4_, q5_, q6_;
             KFParam kf_param_;
-
             void setRCoeff(double& r, int idx)
             {
                 switch (idx)
