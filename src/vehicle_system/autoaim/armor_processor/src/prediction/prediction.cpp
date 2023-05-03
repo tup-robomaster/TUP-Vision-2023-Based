@@ -203,7 +203,6 @@ namespace armor_processor
         }
         else
         {   // 更新
-        {   // 更新
             uniform_ekf_.Update(meas, meas(3));
             Eigen::VectorXd state = uniform_ekf_.x();
             double radius = state(3);
@@ -278,10 +277,10 @@ namespace armor_processor
             }
             // cout << 4 << endl;
 
-            Eigen::Vector2d circle3d = calcCircleCenter(meas);
-            Eigen::Vector4d circle4d = {circle3d(0), circle3d(1), meas(2), meas(3)};
-            // armor3d_vec.emplace_back(circle4d);  
-            cout << "circle_x:" << circle4d(0) << " " << circle4d(1) << " " << circle4d(2) << endl;     
+            // Eigen::Vector2d circle3d = calcCircleCenter(meas);
+            // Eigen::Vector4d circle4d = {circle3d(0), circle3d(1), meas(2), meas(3)};
+            // // armor3d_vec.emplace_back(circle4d);  
+            // cout << "circle_x:" << circle4d(0) << " " << circle4d(1) << " " << circle4d(2) << endl;     
 
             RCLCPP_WARN_THROTTLE(
                 logger_, 

@@ -41,7 +41,7 @@
   # Camera config params.
     # camera_name: "00J90630561" 
     camera_name: "KE0200110074" #FIXME:根据相机序列号修改
-    camera_type: 3
+    camera_type: 0
     camera_param_path: "/config/camera.yaml"
 
   # Network model path.
@@ -91,24 +91,20 @@
   # Debug params.
     debug: true
     using_imu: false
-    show_img: true
-    show_img: true
+    show_img: false
     draw_predict: false
-    show_predict: true
-    show_predict: true
+    show_predict: false
     sync_transport: false
     print_delay: false
     x_axis_filter: true
     y_axis_filter: true
     z_axis_filter: true
-    show_aim_cross: true
-    show_fps: true
-    show_aim_cross: true
-    show_fps: true
+    show_aim_cross: false
+    show_fps: false
     show_marker: true
 
   # Camera params.
-    camera_type: 3 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
     coord_param_name: "KE0200110074" #FIXME:根据相机序列号修改
     coord_param_path: "/config/camera.yaml"

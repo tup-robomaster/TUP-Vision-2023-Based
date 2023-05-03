@@ -137,7 +137,7 @@ namespace camera_driver
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 5;
 
         // Camera type.
         this->declare_parameter<int>("camera_type", MVSCam);

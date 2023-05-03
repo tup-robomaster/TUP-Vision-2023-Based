@@ -444,7 +444,8 @@ namespace armor_processor
         //             0,  0,  0,  0,  0,     0,     0,  1,  0,
         //             0,  0,  0,  0,  0,     0,     0,  0,  1;
 
-
+        double q[6] = {kf_param_.process_noise_params[0], kf_param_.process_noise_params[1], kf_param_.process_noise_params[2],
+            kf_param_.process_noise_params[3], kf_param_.process_noise_params[4], kf_param_.process_noise_params[5]};
         this->Q_ << q[0], 0   , 0   , 0   , 0   , 0   ,
                     0   , q[1], 0   , 0   , 0   , 0   ,   
                     0   , 0   , q[2], 0   , 0   , 0   ,
@@ -494,30 +495,30 @@ namespace armor_processor
     //           0,  0,  0,  0,  0,     0,  0,  0,                                                   0,                                                   0,                                                   0;
     // }
 
-    void UniformModel::setF(Eigen::MatrixXd& Ft, double dt)
-    {
-        double alpha = kf_param_.singer_params[0];
-        double sigma = kf_param_.singer_params[5];
-        /*
-              Xc--Yc--Zc--r--theta--vx--vy--vz------------------------ax-------------------------------------------------------------------------------ay---------------------------------------------------az
-        */
-        Ft << 1,  0,  0,  0,  0,     0,    
-              0,  1,  0,  0,  0,     0,     
-              0,  0,  1,  0,  0,     0,    
-              0,  0,  0,  1,  0,     0,     
-              0,  0,  0,  0,  1,    dt,     
-              0,  0,  0,  0,  0,     1;
+    // void UniformModel::setF(Eigen::MatrixXd& Ft, double dt)
+    // {
+    //     double alpha = kf_param_.singer_params[0];
+    //     double sigma = kf_param_.singer_params[5];
+    //     /*
+    //           Xc--Yc--Zc--r--theta--vx--vy--vz------------------------ax-------------------------------------------------------------------------------ay---------------------------------------------------az
+    //     */
+    //     Ft << 1,  0,  0,  0,  0,     0,    
+    //           0,  1,  0,  0,  0,     0,     
+    //           0,  0,  1,  0,  0,     0,    
+    //           0,  0,  0,  1,  0,     0,     
+    //           0,  0,  0,  0,  1,    dt,     
+    //           0,  0,  0,  0,  0,     1;
 
-        // Ft << 1,  0,  0,  0,  0,     0,    dt,  0,  0,
-        //       0,  1,  0,  0,  0,     0,     0, dt,  0,
-        //       0,  0,  1,  0,  0,     0,     0,  0, dt,
-        //       0,  0,  0,  1,  0,     0,     0,  0,  0,
-        //       0,  0,  0,  0,  1,    dt,     0,  0,  0,
-        //       0,  0,  0,  0,  0,     1,     0,  0,  0,
-        //       0,  0,  0,  0,  0,     0,     1,  0,  0,
-        //       0,  0,  0,  0,  0,     0,     0,  1,  0,
-        //       0,  0,  0,  0,  0,     0,     0,  0,  1;
-    }
+    //     // Ft << 1,  0,  0,  0,  0,     0,    dt,  0,  0,
+    //     //       0,  1,  0,  0,  0,     0,     0, dt,  0,
+    //     //       0,  0,  1,  0,  0,     0,     0,  0, dt,
+    //     //       0,  0,  0,  1,  0,     0,     0,  0,  0,
+    //     //       0,  0,  0,  0,  1,    dt,     0,  0,  0,
+    //     //       0,  0,  0,  0,  0,     1,     0,  0,  0,
+    //     //       0,  0,  0,  0,  0,     0,     1,  0,  0,
+    //     //       0,  0,  0,  0,  0,     0,     0,  1,  0,
+    //     //       0,  0,  0,  0,  0,     0,     0,  0,  1;
+    // }
 
     // void UniformModel::setC(Eigen::MatrixXd& Ct, const double& dt)
     // {
