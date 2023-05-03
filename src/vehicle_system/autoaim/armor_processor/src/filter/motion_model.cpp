@@ -355,13 +355,16 @@ namespace armor_processor
     {
         double alpha = kf_param_.singer_params[0];
         double sigma = kf_param_.singer_params[5];
+        this->cp_ = 0;
 
         this->x_.resize(6);
         this->P_.setIdentity(6, 6);
         this->F_.resize(6, 6);
-        this->C_.resize(0, 0);
+        this->Jf_.resize(6, 6);
+        this->C_.resize(3, 1);
         this->z_.resize(4);
         this->H_.resize(4, 6);
+        this->Jh_.resize(4, 6);
         this->R_.resize(4, 4);
         double r[4] = {
             this->kf_param_.measure_noise_params[0],
@@ -431,7 +434,7 @@ namespace armor_processor
                      0, 1, 0, 0, 0,   0,
                      0, 0, 1, 0, 0,   0,
                      0, 0, 0, 1, 0,   0,
-                     0, 0, 0, 1, dt_, 0,
+                     0, 0, 0, 0, 1, dt_,
                      0, 0, 0, 0, 0,   1;
     }
     void UniformModel::updateJf(Eigen::MatrixXd& Jft, double dt)
@@ -440,7 +443,7 @@ namespace armor_processor
                0, 1, 0, 0,  0, 0,
                0, 0, 1, 0,  0, 0,
                0, 0, 0, 1,  0, 0,
-               0, 0, 0, 1, dt, 0,
+               0, 0, 0, 0,  1, dt,
                0, 0, 0, 0,  0, 1;
     }
 

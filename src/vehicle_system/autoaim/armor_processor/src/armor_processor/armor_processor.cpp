@@ -12,11 +12,15 @@ namespace armor_processor
     Processor::Processor(const PredictParam& predict_param, vector<double>* ekf_param, const DebugParam& debug_param)
     : logger_(rclcpp::get_logger("armor_processor")), predict_param_(predict_param), debug_param_(debug_param)  
     {
+        cout << 10 << endl;
+
         //初始化预测器
         armor_predictor_.uniform_ekf_.Init(6, 4, 3);
         // armor_predictor_.uniform_ekf_.Init(11, 4, 3);
         armor_predictor_.initPredictor(ekf_param);
         armor_predictor_.resetPredictor();
+
+        cout << 9 << endl;
 
         // car_id_map_ = {
         //     {"B0", 0}, {"B1", 1},
@@ -37,12 +41,14 @@ namespace armor_processor
         //     {"R1", 6}, {"R2", 7},
         //     {"R3", 8}, {"R4", 9} 
         // };
+        cout << 7 << endl;
 
         //初始化预测器
         // armor_predictor_.uniform_ekf_.Init(11, 4, 3);
         armor_predictor_.uniform_ekf_.Init(6, 4, 3);
         armor_predictor_.uniform_ekf_.init();
         armor_predictor_.resetPredictor();
+        cout << 8 << endl;
     }
 
     Processor::~Processor()

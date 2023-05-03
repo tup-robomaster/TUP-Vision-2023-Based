@@ -27,8 +27,10 @@ namespace armor_processor
 
         this->x_ = Eigen::VectorXd::Zero(SP);
         this->F_ = Eigen::MatrixXd::Identity(SP, SP);
+        this->Jf_ = Eigen::MatrixXd::Identity(SP, SP);
         this->Q_ = Eigen::MatrixXd::Identity(SP, SP);
         this->H_ = Eigen::MatrixXd::Zero(MP, SP);
+        this->Jh_ = Eigen::MatrixXd::Zero(MP, SP);
         this->R_ = Eigen::MatrixXd::Zero(MP, MP);
         this->P_ = Eigen::MatrixXd::Zero(SP, SP);
         this->C_ = Eigen::MatrixXd::Zero(SP, CP);
@@ -46,6 +48,7 @@ namespace armor_processor
         {
             x_ = F_ * x_;
         }
+
         P_ = Jf_ * P_ * Jf_.transpose() + Q_;
     }
 

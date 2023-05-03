@@ -48,7 +48,7 @@ namespace armor_processor
         bool updatePredictor(Eigen::VectorXd meas);
         bool predict(TargetInfo target, double dt, double pred_dt, double& delay_time, Eigen::Vector3d& pred_point3d, vector<Eigen::Vector4d>& armor3d_vec, cv::Mat* src = nullptr);
         
-        bool asyncPrediction(bool is_target_lost, Eigen::Vector3d meas, int64_t timestamp, Eigen::Vector3d& result);
+        bool asyncPrediction(bool is_target_lost, Eigen::Vector3d meas, double dt, double pred_dt, Eigen::Vector3d& result);
         // Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
         // PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
 
@@ -79,6 +79,7 @@ namespace armor_processor
         bool is_ekf_init_;
         UniformModel uniform_ekf_;
         PredictorState predictor_state_ = LOST;
+        Eigen::Vector4d last_state_;
 
         // singer ekf
         bool is_singer_init_[3];
@@ -109,7 +110,7 @@ namespace armor_processor
         
         // CS Model.
         // PredictStatus predictBasedSinger(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, int64_t timestamp);
-        bool predictBasedSinger(bool is_target_lost, int axis, double measurement, double& result, double target_vel, double target_acc, int64_t timestamp);
+        bool predictBasedSinger(bool is_target_lost, int axis, double measurement, double& result, double target_vel, double target_acc, double dt, double pred_dt);
 
         // Uniform Model.
         bool predictBasedUniformModel(bool is_target_lost, SpinHeading spin_state, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector4d>& armor3d_vec);

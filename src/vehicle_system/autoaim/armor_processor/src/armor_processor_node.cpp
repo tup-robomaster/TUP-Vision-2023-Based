@@ -14,8 +14,6 @@ namespace armor_processor
     : Node("armor_processor", options), my_sync_policy_(MySyncPolicy(5))
     {
         RCLCPP_INFO(this->get_logger(), "Starting processor node...");
-        
-        // cout << 3 << endl;
         try
         {
             processor_ = initArmorProcessor();
@@ -30,7 +28,6 @@ namespace armor_processor
         {
             RCLCPP_FATAL(this->get_logger(), "Fatal while initializing armor processor: %s", e.what());
         }
-        // cout << 4 << endl;
 
         // QoS
         rclcpp::QoS qos(0);
@@ -523,7 +520,7 @@ namespace armor_processor
                         // {
                             Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
                             point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
-                            cv::circle(dst, point_2d, 14, {255, 255, 0}, -1);
+                            cv::circle(dst, point_2d, 8, {255, 255, 0}, -1);
                         // }
                         // ++idx;
                     }
@@ -692,6 +689,8 @@ namespace armor_processor
         predict_param_.filter_model_param.imm_model_prob_params = imm_model_prob_params;
         predict_param_.filter_model_param.process_noise_params = process_noise_params;
         predict_param_.filter_model_param.measure_noise_params = measure_noise_params;
+        
+        cout << 5 << endl;
         return std::make_unique<Processor>(predict_param_, uniform_ekf_params, debug_param_);
     }
 

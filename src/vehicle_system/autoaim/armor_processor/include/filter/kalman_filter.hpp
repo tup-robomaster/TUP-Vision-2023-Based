@@ -164,7 +164,7 @@ namespace armor_processor
         public:
             double likelihood_; //似然值
             double dt_ = 0.015; //时间量
-            int cp_; //控制量个数
+            int cp_ = 0; //控制量个数
         
         public:
             KFParam kf_param_;

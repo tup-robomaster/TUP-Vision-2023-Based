@@ -36,7 +36,9 @@ namespace armor_processor
         this->z_.resize(1);
         this->P_ = Eigen::MatrixXd::Identity(SP, SP);
         this->F_ = Eigen::MatrixXd::Identity(SP, SP);
+        this->Jf_ = Eigen::MatrixXd::Identity(SP, SP);
         this->H_ = Eigen::MatrixXd::Zero(MP, SP);
+        this->Jh_ = Eigen::MatrixXd::Zero(MP, SP);
         this->C_ = Eigen::MatrixXd::Zero(SP, CP);            
         this->P_ = Eigen::MatrixXd::Zero(SP, SP);
         this->Q_ = Eigen::MatrixXd::Identity(SP, SP);
