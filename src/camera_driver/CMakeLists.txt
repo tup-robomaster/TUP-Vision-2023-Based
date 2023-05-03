@@ -28,6 +28,7 @@ find_package(global_interface REQUIRED)
 
 include_directories("dependencies/hik_sdk/include")
 include_directories("dependencies/daheng_sdk/include")
+include_directories("dependencies/mvs_sdk/include")
 include_directories(
   include
   ${OpenCV_INCLUDE_DIRS}
@@ -36,6 +37,7 @@ include_directories(
 )
 
 link_directories(/opt/MVS/lib/64/)
+
 set(dependencies 
   rclcpp
   rclcpp_components
@@ -60,7 +62,10 @@ add_library(${PROJECT_NAME} SHARED
   src/hik_driver/hik_cam_node.cpp
   src/daheng_driver/daheng_camera.cpp
   src/daheng_driver/daheng_cam_node.cpp
+  src/mvs_driver/mvs_camera.cpp 
+  src/mvs_driver/mvs_cam_node.cpp
 )
+
 target_compile_definitions(${PROJECT_NAME}
   PRIVATE "COMPOSITION_BUILDING_DLL"
 )
@@ -73,6 +78,7 @@ target_link_libraries(${PROJECT_NAME}
   FormatConversion
   MediaProcess
   gxiapi
+  MVSDK
   yaml-cpp
 )
 
@@ -94,7 +100,14 @@ target_link_libraries(daheng_cam_driver_node
   ${PROJECT_NAME}
   gxiapi
 )
-    
+
+# Add executable
+add_executable(mvs_cam_driver_node src/mvs_driver/mvs_cam_node_main.cpp)
+ament_target_dependencies(mvs_cam_driver_node ${dependencies})
+target_link_libraries(mvs_cam_driver_node 
+  ${PROJECT_NAME}
+)
+
 rclcpp_components_register_nodes(${PROJECT_NAME} 
   PLUGIN "camera_driver::UsbCamNode"
   EXECUTABLE usb_cam_driver_node 
@@ -106,6 +119,10 @@ rclcpp_components_register_nodes(${PROJECT_NAME}
 rclcpp_components_register_nodes(${PROJECT_NAME}
   PLUGIN "camera_driver::DahengCamNode"
   EXECUTABLE daheng_cam_driver_node
+)
+rclcpp_components_register_nodes(${PROJECT_NAME}
+  PLUGIN "camera_driver::MvsCamNode"
+  EXECUTABLE mvs_cam_driver_node
 )
     
 install(TARGETS 
@@ -119,6 +136,7 @@ install(TARGETS
   usb_cam_driver_node 
   hik_cam_driver_node
   daheng_cam_driver_node
+  mvs_cam_driver_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

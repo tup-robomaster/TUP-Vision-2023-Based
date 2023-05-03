@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-04-30 17:57:35
+ * @LastEditTime: 2023-05-03 17:42:18
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -71,6 +71,7 @@ namespace global_user
         double balance_r;
         bool using_video;
         string video_path;
+        string config_path = "src/camera_driver/config/daheng_cam_param.ini";
 
         CameraParam()
         {
