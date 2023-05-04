@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-04-18 22:01:58
+ * @LastEditTime: 2023-05-05 00:31:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -183,37 +183,35 @@ namespace armor_processor
                 lost_cnt_ = 0;
             }
         }
-        else
+
+        if (target.is_target_switched || armor_predictor_.predictor_state_ == LOST)
         {
-            if(!target.is_target_switched && armor_predictor_.predictor_state_ == LOSTING && !target.is_target_lost)
-            {   //当目标丢失后又出现时直接预测
-                for (int ii = 0; ii < 3; ii++)
-                {
-                    Eigen::Vector3d pred_state = armor_predictor_.singer_kf_[target.is_spinning][ii].x();
-                    if (abs(target.xyz[ii] - pred_state[0]) >= 0.2)
-                    {
-                        armor_predictor_.singer_kf_[target.is_spinning][ii].x_ << target.xyz[ii], pred_state[1], pred_state[2];   
-                    }
-                }
-                armor_predictor_.predictor_state_ = PREDICTING;
-            }
-            else if (target.is_target_switched || armor_predictor_.predictor_state_ == LOST)
-            {
-                //重置预测器
-                armor_predictor_.resetPredictor();
-                armor_predictor_.predictor_state_ = PREDICTING;
-            }
-            else if (target.is_spinning && target.is_spinning_switched)
-            {
-                //更新预测器（位置&速度继承）
-                armor_predictor_.updatePredictor(target.is_spinning, target);
-                armor_predictor_.predictor_state_ = PREDICTING;
-            }
+            //重置预测器
+            armor_predictor_.resetPredictor();
+            armor_predictor_.predictor_state_ = PREDICTING;
+        }
+        else if (target.is_spinning && target.is_spinning_switched)
+        {
+            //更新预测器（位置&速度继承）
+            armor_predictor_.updatePredictor();
+            armor_predictor_.predictor_state_ = PREDICTING;
         }
 
         if (armor_predictor_.predictor_state_ != LOST)
         {
             pred_result = armor_predictor_.predict(target, target.timestamp, sleep_time);
+            // if(!target.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
+            // {   //当目标丢失后又出现时直接预测
+            //     for (int ii = 0; ii < 3; ii++)
+            //     {
+            //         Eigen::Vector3d state = armor_predictor_.singer_kf_[target.is_spinning][ii].x();
+            //         if (abs(state[0] - target.xyz[ii]) > 0.2)
+            //         {
+            //             armor_predictor_.is_singer_init_[ii] = false;
+            //         }
+            //     }
+            //     armor_predictor_.predictor_state_ = PREDICTING;
+            // }
             is_success = true;
         }
 

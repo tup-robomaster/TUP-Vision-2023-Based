@@ -113,6 +113,7 @@ OpenCV  |https://github.com/opencv/opencv/tree/4.2.0 \ https://github.com/opencv
 
 | Date |  Issue   |   Debug    |
 | ---  |  ---     | ---   | 
+|2023-04-24|添加新网络模型，区分大小装甲板。|
 |2023-04-14|相机驱动节点加入ros2bag录制图像数据和回放数据功能|比赛前须打开此功能。|
 |2023-03-xx| Fixed image transport delay problem.(0.5ms左右)| 将图像订阅者的qos的depth设置为1。|
 |2022-12-11| Update buff node.| |

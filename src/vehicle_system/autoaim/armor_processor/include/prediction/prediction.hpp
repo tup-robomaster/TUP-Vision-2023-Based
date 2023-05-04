@@ -45,7 +45,7 @@ namespace armor_processor
         bool resetPredictor();
         bool updatePredictor(bool is_spinning, TargetInfo target);
         Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
-        bool syncPrediction(bool is_filtering, bool is_target_lost, bool is_spinning, Eigen::Vector3d meas, int64_t timestamp, Eigen::Vector3d& result);
+        bool asyncPrediction(bool is_filtering, bool is_target_lost, bool is_spinning, Eigen::Vector3d meas, int64_t timestamp, Eigen::Vector3d& result);
         // PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
         PredictorState predictor_state_ = LOST;
 

@@ -2,8 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-15 11:25:33
- * @LastEditTime: 2023-04-18 16:57:43
- * @LastEditTime: 2023-04-05 14:57:27
+ * @LastEditTime: 2023-05-05 00:29:05
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/spinning_detector/spinning_detector.hpp
  */
 #ifndef SPINNING_DETECTOR_HPP_
@@ -22,8 +21,8 @@ namespace armor_detector
     class SpinningDetector
     {
     private:
-        Color detect_color_;
         Armor last_armor_;
+        Color detect_color_;
         rclcpp::Logger logger_;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         DetectorInfo detector_info_;

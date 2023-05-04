@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-04-18 20:15:38
+ * @LastEditTime: 2023-05-05 00:28:16
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -52,10 +52,14 @@ namespace armor_detector
     
     enum Color 
     {
-        BLUE,
-        RED,
-        GRAY,
-        PURPLE
+        BLUE_SMALL,
+        BLUE_BIG,
+        RED_SMALL,
+        RED_BIG,
+        GRAY_SMALL,
+        GRAY_BIG,
+        PURPLE_SMALL,
+        PURPLE_BIG
     };
 
     struct GyroParam
@@ -194,7 +198,7 @@ namespace armor_detector
 
         DetectorParam()
         {
-            color = RED;
+            color = (Color)1;
             armor_type_wh_thres = 3;
             max_lost_cnt = 5;
             max_armors_cnt = 8;

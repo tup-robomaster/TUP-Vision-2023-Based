@@ -48,10 +48,8 @@
   # Network model path.
     # network_path: "/model/opt-0127-001.xml"
     # network_path: "/model/opt-0527-002.xml"
-    # network_path: "/model/1106-333.xml"
-    # network_path: "/model/yolox.xml"
     # network_path: "/model/opt-1208-001.xml"
-    network_path: "/model/opt-0127-001.xml"
+    network_path: "/model/yolox-04-21.xml"
   
   # Data saving.
     save_data: false
@@ -81,6 +79,7 @@
     max_v: 8
     min_fitting_lens: 5
     shoot_delay: 670
+    spin_shoot_delay: 200
     window_size: 3
     yaw_angle_offset: -0.5
     pitch_angle_offset: 0.5
@@ -107,7 +106,7 @@
     show_fps: false
 
   # Camera params.
-    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type: 3 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
     coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
     coord_param_path: "/config/camera.yaml"

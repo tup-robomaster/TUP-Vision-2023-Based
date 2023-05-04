@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-18 18:30:39
+ * @LastEditTime: 2023-05-05 00:31:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -98,7 +98,7 @@ namespace armor_processor
     {
         rclcpp::Time last = img_msg->header.stamp;
         rclcpp::Time now = this->get_clock()->now();
-        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Delay:%.2fms", (now.nanoseconds() - last.nanoseconds()) / 1e6);
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "Delay:%.2fms", (now.nanoseconds() - last.nanoseconds()) / 1e6);
 
         cv::Mat src = cv_bridge::toCvShare(img_msg, "bgr8")->image;
         if (!processTargetMsg(*target_msg, &src))
@@ -150,7 +150,7 @@ namespace armor_processor
             image_mutex_.unlock();
         }
 
-        if (target.is_target_lost && processor_->armor_predictor_.predictor_state_ == LOST)
+        if (target.target_switched || processor_->armor_predictor_.predictor_state_ == LOST)
         {
             is_aimed_ = false;
             is_pred_ = false;
@@ -175,7 +175,7 @@ namespace armor_processor
                 tracking_point_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
                 tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
             
-                if (abs(tracking_angle[0]) < 3.50 && abs(tracking_angle[1]) < 3.50)
+                if (abs(tracking_angle[0]) < 7.50 && abs(tracking_angle[1]) < 7.50)
                 {
                     is_pred_ = true;
                     is_aimed_ = true;
@@ -186,7 +186,6 @@ namespace armor_processor
                     is_pred_ = false;
                     is_aimed_ = false;
                 } 
-
             }
             param_mutex_.unlock();
         }
@@ -199,6 +198,12 @@ namespace armor_processor
         else
         {
             is_pred_ = true;
+        }
+
+        if (target.is_target_lost)
+        {
+            angle = {0.0, 0.0};
+            tracking_angle = {0.0, 0.0};
         }
         
         // Gimbal info pub.
@@ -218,7 +223,7 @@ namespace armor_processor
         gimbal_info.is_switched = target_info.target_switched;
         gimbal_info.is_spinning = target_info.is_spinning;
         gimbal_info.is_spinning_switched = target_info.spinning_switched;
-        gimbal_info.is_shooting = (post_process_info.find_target && post_process_info.is_shooting);
+        gimbal_info.is_shooting = (is_pred_ && !target.is_target_lost && !target_info.spinning_switched && !target_info.target_switched);
         gimbal_info.is_prediction = is_pred_; 
         gimbal_info_pub_->publish(std::move(gimbal_info));
 
@@ -240,7 +245,7 @@ namespace armor_processor
             tracking_info.is_switched = target_info.target_switched;
             tracking_info.is_spinning = target_info.is_spinning;
             tracking_info.is_spinning_switched = target_info.spinning_switched;
-            tracking_info.is_shooting = (post_process_info.find_target && post_process_info.is_shooting);
+            tracking_info.is_shooting = (is_pred_ && !target.is_target_lost && !target_info.spinning_switched && !target_info.target_switched);
             tracking_info.is_prediction = is_pred_;
             tracking_info_pub_->publish(std::move(tracking_info));
             if (!target.is_target_lost)
@@ -302,7 +307,14 @@ namespace armor_processor
             std::string angle_str1 = ch1;
             putText(dst, angle_str, {dst.size().width / 2 + 5, 30}, cv::FONT_HERSHEY_TRIPLEX, 1, {0, 255, 255});
             putText(dst, angle_str1, {dst.size().width / 2 + 5, 65}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
-            putText(dst, state_map_[(int)(processor_->armor_predictor_.predictor_state_)], {30, 80}, cv::FONT_HERSHEY_TRIPLEX, 1, {0, 125, 255}, 1);
+            // putText(dst, (is_aimed_[0] ? "pitchState:Predicting" : "pitchState:Tracking"), {5, 80}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
+            // putText(dst, (is_aimed_[1] ? "yawState:Predicting" : "yawState:Tracking"), {5, 130}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
+            
+            string pred_state = (processor_->armor_predictor_.predictor_state_ == TRACKING) ? "TRACKING" :
+                ((processor_->armor_predictor_.predictor_state_ == PREDICTING) ? "PREDICTION": 
+                ((processor_->armor_predictor_.predictor_state_ == LOSTING) ? "LOSTING" : "LOST"));
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "Predictor_State:%s", pred_state.c_str());
+            putText(dst, (is_pred_ ? "State:Predicting" : "State:Tracking"), {5, 80}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
             
             cv::namedWindow("pred", cv::WINDOW_AUTOSIZE);
             cv::imshow("pred", dst);
@@ -355,6 +367,7 @@ namespace armor_processor
         this->declare_parameter<int>("max_v", 8);
         this->declare_parameter<int>("min_fitting_lens", 10);
         this->declare_parameter<int>("shoot_delay", 100);
+        this->declare_parameter<int>("spin_shoot_delay", 200);
         this->declare_parameter<int>("window_size", 3);
         this->declare_parameter<double>("yaw_angle_offset", 0.0);
         this->declare_parameter<double>("pitch_angle_offset", 0.0);
@@ -392,7 +405,7 @@ namespace armor_processor
         // Get param from param server.
         bool success = updateParam();
         if(success)
-            RCLCPP_INFO(this->get_logger(), "Update param success!");
+            RCLCPP_WARN_ONCE(this->get_logger(), "Update param success!");
 
         vector<double> imm_model_trans_prob_params = {0.6, 0.3, 0.05, 0.05, 0.5, 0.4, 0.05, 0.05, 0.1, 0.1, 0.75, 0.05, 0.1, 0.1, 0.05, 0.75};
         this->declare_parameter("trans_prob_matrix", imm_model_trans_prob_params);
@@ -455,8 +468,8 @@ namespace armor_processor
         result.successful = processor_->coordsolver_.setStaticAngleOffset(predict_param_.angle_offset);
         
         param_mutex_.lock();
-        // processor_->predict_param_ = this->predict_param_;
-        // processor_->debug_param_ = this->debug_param_;
+        processor_->armor_predictor_.predict_param_ = this->predict_param_;
+        processor_->armor_predictor_.debug_param_ = this->debug_param_;
         param_mutex_.unlock();
         return result;
     }
@@ -475,6 +488,7 @@ namespace armor_processor
         predict_param_.max_v = this->get_parameter("max_v").as_int();
         predict_param_.min_fitting_lens = this->get_parameter("min_fitting_lens").as_int();
         predict_param_.shoot_delay = this->get_parameter("shoot_delay").as_int();
+        predict_param_.spin_shoot_delay = this->get_parameter("spin_shoot_delay").as_int();
         predict_param_.window_size = this->get_parameter("window_size").as_int();
         predict_param_.max_offset_value = this->get_parameter("max_offset_value").as_double();
         predict_param_.reserve_factor = this->get_parameter("reserve_factor").as_double();

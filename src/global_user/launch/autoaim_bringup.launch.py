@@ -36,13 +36,13 @@ def generate_launch_description():
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='daheng',
+        default_value='usb',
         description='hik daheng mvs usb'
     )
 
     declare_use_serial = DeclareLaunchArgument(
         name='using_imu',
-        default_value='True',
+        default_value='False',
         description='debug without serial port.'
     )
     

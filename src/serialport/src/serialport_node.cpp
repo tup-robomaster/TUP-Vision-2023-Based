@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-04-20 07:05:36
+ * @LastEditTime: 2023-05-05 00:28:05
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -350,7 +350,7 @@ namespace serialport
             // 若串口离线则跳过数据发送
             if (!serial_port_->serial_data_.is_initialized)
             {
-                RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "Serial port offline!!!");
+                RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 40, "Serial port offline!!!");
                 usleep(1000);
                 continue;
             }
@@ -364,8 +364,8 @@ namespace serialport
                 mutex_.unlock();
                 if(!is_receive_data)
                 {
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
-                    // usleep(1000);
+                    RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 40, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
+                    usleep(1000);
                 }
             }
             
@@ -377,34 +377,72 @@ namespace serialport
             
             if (flag == 0xA5)
             {
-                // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
-                std::vector<float> quat;
-                std::vector<float> gyro;
-                std::vector<float> acc;
-                float bullet_speed;
-                float theta;
-                float pitch;
-                data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata[47], theta);
-                data_transform_->getThetaAngle(&serial_port_->serial_data_.rdata[51], pitch);
-                //Process IMU Datas
-                data_transform_->getQuatData(&serial_port_->serial_data_.rdata[3], quat);
-                data_transform_->getGyroData(&serial_port_->serial_data_.rdata[19], gyro);
-                data_transform_->getAccData(&serial_port_->serial_data_.rdata[31], acc);
-                data_transform_->getBulletSpeed(&serial_port_->serial_data_.rdata[43], bullet_speed);
-                
-                // Gimbal angle
-                // float yaw_angle = 0.0, pitch_angle = 0.0;
-                // data_transform_->getYawAngle(flag, &serial_port_->serial_data_.rdata[55], yaw_angle);
-                // data_transform_->getPitchAngle(flag, &serial_port_->serial_data_.rdata[59], pitch_angle);
-                // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "yaw_angle:%.2f", yaw_angle);
-                // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "pitch_angle:%.2f", pitch_angle);
-                if (print_serial_info_)
+                receive_mutex_.lock();
+                memcpy(first_bag_, serial_port_->serial_data_.rdata, sizeof(uchar) * 64);
+                first_flag_ = true;
+                receive_mutex_.unlock();
+            }        
+            else if (flag == 0xB5)
+            {
+                receive_mutex_.lock();
+                memcpy(second_bag_, serial_port_->serial_data_.rdata, sizeof(uchar) * 64);
+                second_flag_ = true;
+                receive_mutex_.unlock();
+            }
+            else if (flag == 0xC5)
+            {
+                receive_mutex_.lock();
+                memcpy(third_bag_, serial_port_->serial_data_.rdata, sizeof(uchar) * 64);
+                third_flag_ = true;
+                receive_mutex_.unlock();
+            }
+        }
+    }
+
+    void SerialPortNode::pubMessage()
+    {
+        vector<float> vehicle_pos_info;
+        while (1)
+        {
+            if (first_flag_)
+            {
+                uchar raw_data[64];
+                receive_mutex_.lock();
+                memcpy(raw_data, first_bag_, sizeof(uchar) * 64);
+                first_flag_ = false;  
+                receive_mutex_.unlock();
+
+                if (raw_data[0] == 0xA5)
                 {
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1500, "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "gyro:[%f %f %f]", gyro[0], gyro[1], gyro[2]);
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "acc:[%f %f %f]", acc[0], acc[1], acc[2]);
-                }
-                RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "bullet_speed::%f", bullet_speed);
+                    // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
+                    std::vector<float> quat;
+                    std::vector<float> gyro;
+                    std::vector<float> acc;
+                    float bullet_speed;
+                    float theta;
+                    float pitch;
+
+                    data_transform_->getThetaAngle(&raw_data[47], theta);
+                    data_transform_->getThetaAngle(&raw_data[51], pitch);
+                    //Process IMU Datas
+                    data_transform_->getQuatData(&raw_data[3], quat);
+                    data_transform_->getGyroData(&raw_data[19], gyro);
+                    data_transform_->getAccData(&raw_data[31], acc);
+                    data_transform_->getBulletSpeed(&raw_data[43], bullet_speed);
+                    
+                    // Gimbal angle
+                    // float yaw_angle = 0.0, pitch_angle = 0.0;
+                    // data_transform_->getYawAngle(flag, &serial_port_->serial_data_.rdata[55], yaw_angle);
+                    // data_transform_->getPitchAngle(flag, &serial_port_->serial_data_.rdata[59], pitch_angle);
+                    // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "yaw_angle:%.2f", yaw_angle);
+                    // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "pitch_angle:%.2f", pitch_angle);
+                    if (print_serial_info_)
+                    {
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "gyro:[%f %f %f]", gyro[0], gyro[1], gyro[2]);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "acc:[%f %f %f]", acc[0], acc[1], acc[2]);
+                    }
+                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "bullet_speed::%f", bullet_speed);
 
                 rclcpp::Time now = this->get_clock()->now();
                 SerialMsg serial_msg;
@@ -458,14 +496,14 @@ namespace serialport
                     obj_hp_msg.hp[ii/2] = hp[ii/2];
                 }
 
-                if (print_referee_info_)
-                {
-                    for(int ii = 0; ii < 20; ii++)
-                        RCLCPP_INFO(this->get_logger(), "Pos:%.2f", vehicle_pos_info[ii]);
-                    for(int ii = 0; ii < 10; ii++)
-                        RCLCPP_INFO(this->get_logger(), "HP:%.2d", hp[ii]);
-                    RCLCPP_INFO(this->get_logger(), "timestamp:%.2d", timestamp);
-                }
+                    if (print_referee_info_)
+                    {
+                        for(int ii = 0; ii < 20; ii++)
+                            RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "Pos:%.2f", vehicle_pos_info[ii]);
+                        for(int ii = 0; ii < 10; ii++)
+                            RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "HP:%.2d", hp[ii]);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "timestamp:%.2d", timestamp);
+                    }
 
                 rclcpp::Time now = this->get_clock()->now();
                 car_pos_msg.header.frame_id = "";
@@ -502,7 +540,7 @@ namespace serialport
         //     mode = decision_msg_.mode;
         //     decision_mutex_.unlock();
         // }
-        // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "Mode:%d", mode);
         if (this->using_port_)
         {   
             VisionAimData vision_data;
@@ -538,7 +576,7 @@ namespace serialport
             rclcpp::Time start = target_info->header.stamp;
             // builtin_interfaces::msg::Time now_timestamp = now;
             // double dura = (now_timestamp.nanosec - target_info->header.stamp.nanosec) / 1e6;
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "All_delay:%.2fms", (now.nanoseconds() - start.nanoseconds()) / 1e6);
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "All_delay:%.2fms", (now.nanoseconds() - start.nanoseconds()) / 1e6);
             
             //数据发送
             mutex_.lock();
@@ -564,7 +602,7 @@ namespace serialport
         {
             if (!sendData(target_info))
             {   // Debug without com.
-                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub autoaim msg...");
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "Sub autoaim msg...");
             }
         }
         return;
@@ -581,7 +619,7 @@ namespace serialport
         if (mode == SMALL_BUFF || mode == BIG_BUFF)
         {
             if (!sendData(target_info))
-                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "Sub buff msg...");
         }
         return;
     }
@@ -614,7 +652,7 @@ namespace serialport
         }
         else
         {
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "Sub buff msg...");
         }
     }
 

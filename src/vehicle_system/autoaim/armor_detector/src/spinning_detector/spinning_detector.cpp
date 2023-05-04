@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-04-18 19:46:25
+ * @LastEditTime: 2023-05-05 00:30:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -14,7 +14,7 @@ namespace armor_detector
     {
         detector_info_.last_add_tracker_timestamp = 0;
         detector_info_.new_add_tracker_timestamp = 0;
-        this->detect_color_ = RED;
+        this->detect_color_ = (Color)1;
         this->gyro_params_.max_dead_buffer = 2;
         this->gyro_params_.max_delta_dist = 3.0;
         this->gyro_params_.max_delta_t = 30.0;
@@ -150,19 +150,19 @@ namespace armor_detector
         {
             //当装甲板颜色为灰色且当前dead_buffer小于max_dead_buffer
             string tracker_key;
-            if ((*armor).color == GRAY)
+            if ((*armor).color == GRAY_SMALL || (*armor).color == GRAY_BIG)
             {   
-                RCLCPP_WARN(logger_, "Gray armor...");
+                RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 40, "Gray armor...");
                 if (dead_buffer_cnt >= gyro_params_.max_dead_buffer)
                 {
-                    RCLCPP_INFO(logger_, "dead buffer cnt: %d", dead_buffer_cnt);
+                    RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 40, "dead buffer cnt: %d", dead_buffer_cnt);
                     is_dead_ = true;
                     continue;
                 }
 
-                if (detect_color_ == RED)
+                if (detect_color_ == 1)
                     tracker_key = "R" + to_string((*armor).id);
-                if (detect_color_ == BLUE)
+                if (detect_color_ == 0)
                     tracker_key = "B" + to_string((*armor).id);
             }
             else
@@ -546,7 +546,7 @@ namespace armor_detector
                         {
                             detector_info_.last_add_tracker_timestamp = detector_info_.new_add_tracker_timestamp;
                             detector_info_.new_add_tracker_timestamp = new_armor_timestamp;
-                            RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "[Spinning]: Switched...");
+                            RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 40, "[Spinning]: Switched...");
                             
                             // 记录新增的装甲板对应的时间戳
                             // auto cnt = spinning_time_map.count(new_tracker->key);
