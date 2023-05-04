@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-04-30 00:55:41
+LastEditTime: 2023-05-01 15:13:05
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -137,19 +137,19 @@ def generate_launch_description():
         #     # arguments=['-d', rviz2_config_path]
         # ),
 
-        # Node(
-        #     package='tf2_ros',
-        #     executable='static_transform_publisher',
-        #     output='screen',
-        #     arguments=['-0.01680645', '0.06407996', '0.04546766', '2.3101486', '-1.5109296', '-2.3492247', 'imu_link', 'camera_link']
-        # ),
-        
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',
             output='screen',
-            arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373', '-1.5249719', '1.408214', 'imu_link', 'camera_link']
+            arguments=['-0.01680645', '0.06407996', '0.04546766', '2.3101486', '-1.5109296', '-2.3492247', 'imu_link', 'camera_link']
         ),
+        
+        # Node(
+        #     package='tf2_ros',
+        #     executable='static_transform_publisher',
+        #     output='screen',
+        #     arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373', '-1.5249719', '1.408214', 'imu_link', 'camera_link']
+        # ),
 
         ComposableNodeContainer(
             name='serial_processor_container',
@@ -164,8 +164,8 @@ def generate_launch_description():
                     plugin='serialport::SerialPortNode',
                     name='serialport',
                     parameters=[{
-                        'using_port': True,
-                        'tracking_target': False,
+                        'using_port': False,
+                        'tracking_target': True,
                         'print_serial_info': False,
                         'print_referee_info': False            
                     }],

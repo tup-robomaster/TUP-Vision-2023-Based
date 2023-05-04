@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-04-30 18:43:53
+ * @LastEditTime: 2023-05-01 15:07:16
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -170,6 +170,16 @@ namespace armor_processor
             image_mutex_.unlock();
         }
 
+        if(!debug_param_.using_imu)
+        {
+            rmat_imu = Eigen::Matrix3d::Identity();
+        }
+        else
+        {
+            quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
+            rmat_imu = quat_imu.toRotationMatrix();
+        }
+        
         // cout << "is_target_lost:" << target.is_target_lost << endl;
         if (target.is_target_lost && processor_->is_last_exists_)
         {   //目标丢失且上帧存在，预测器进入丢失预测状态
@@ -190,16 +200,6 @@ namespace armor_processor
             {   //更新弹速
                 processor_->coordsolver_.setBulletSpeed(target_info.bullet_speed);
             }
-            if(!debug_param_.using_imu)
-            {
-                rmat_imu = Eigen::Matrix3d::Identity();
-            }
-            else
-            {
-                quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
-                rmat_imu = quat_imu.toRotationMatrix();
-            }
-            
             param_mutex_.lock();
             // cout << 1 << endl;
             if (processor_->predictor(target, aiming_point_world, armor3d_vec, sleep_time))
@@ -468,10 +468,10 @@ namespace armor_processor
                     {
                         Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
                         point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
-                        cv::circle(dst, point_2d, 10, {255, 255, 0}, -1);
+                        cv::circle(dst, point_2d, 8, {255, 255, 0}, -1);
                     }
                     point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
-                    cv::circle(dst, point_2d, 14, {255, 0, 125}, 2);
+                    cv::circle(dst, point_2d, 12, {255, 0, 125}, 2);
 
                     // cv::Point2f vehicle_center2d = processor_->coordsolver_.reproject(vehicle_center3d_cam);
                     // cv::circle(dst, vehicle_center2d, 11, {255, 255, 0}, -1);

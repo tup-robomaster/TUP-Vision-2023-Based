@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2023-04-30 19:18:54
+ * @LastEditTime: 2023-05-01 15:02:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/kalman_filter.cpp
  */
 #include "../../include/filter/kalman_filter.hpp"
@@ -127,6 +127,10 @@ namespace armor_processor
                     0, 1, 0, -sin(x_(4) + x_(5) * dt_), -x_(3) * cos(x_(4) + x_(5) * dt_), -x_(3) * dt_ * cos(x_(4) + x_(5) * dt_), 0, 0, 0,
                     0, 0, 1,           0,                   0, 0  , 0, 0, 0,
                     0, 0, 0,           0,                   1, dt_, 0, 0, 0; 
+        // this->H_ << 1, 0, 0, -cos(x_(4) + x_(5) * dt_), x_(3) * sin(x_(4) + x_(5) * dt_) , 0, 0 , 0, 0,
+        //             0, 1, 0, -sin(x_(4) + x_(5) * dt_), -x_(3) * cos(x_(4) + x_(5) * dt_), 0, 0, 0, 0,
+        //             0, 0, 1,           0,                   0, 0  , 0, 0, 0,
+        //             0, 0, 0,           0,                   1, 0, 0, 0, 0; 
         Update(z);
         // cout << "z:" << this->x_(2) << endl;
     }

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-30 19:38:16
+ * @LastEditTime: 2023-05-01 15:26:06
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -55,19 +55,19 @@ namespace armor_processor
         // cout << "meas:" << meas(0) << " " << meas(1) << " " << meas(2) << endl;
         // cout << 3 << endl;
         
-        if (target.is_spinning)
-        {
+        // if (target.is_spinning)
+        // {
             if (abs(target.rangle - last_rangle) > 1.0)
             {
                 // cur_rangle_ += CV_PI / 2;
                 cur_rangle_ += abs(target.rangle - last_rangle);
             }
             meas(3) += (spin_state == CLOCKWISE ? (-cur_rangle_) : (cur_rangle_));
-        }
-        else
-        {
-            // spin_switch_cnt_ = 0;
-        }
+        // }
+        // else
+        // {
+        //     spin_switch_cnt_ = 0;
+        // }
 
         // if (target.is_spinning_switched)
         // {
@@ -107,9 +107,21 @@ namespace armor_processor
             Eigen::VectorXd state = uniform_ekf_.x();
             // state(2) = meas(2);
             Eigen::Vector3d circle_center = {state(0), state(1), state(2)};
-            double radius = 0.15;
             double rangle = state(4);
+            double omega = state(5);
             
+            double radius = state(3);
+            if (radius < 0.15)
+            {
+                radius = 0.15;
+                uniform_ekf_.x_(3) = 0.15;
+            }
+            else if (radius > 0.35)
+            {
+                radius = 0.35;
+                uniform_ekf_.x_(3) = 0.35;
+            }
+
             double pred_rangle = rangle;
             // if (spin_state == CLOCKWISE)
             // {
@@ -124,7 +136,7 @@ namespace armor_processor
             Eigen::Vector4d circle_center3d = {state(0), state(1), state(2), 0.0};
             armor3d_vec.emplace_back(circle_center3d);
             
-            cout << "radius:" << state(3) << endl;
+            cout << "omega:" << state(5) << " radius:" << state(3) << endl;
             // cout << "pred_angle:" << pred_rangle << " result:" << result[0] << " " << result[1] << " " << result[2] << endl;
             Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
             for (int ii = 0; ii < 4; ii++)
@@ -147,7 +159,9 @@ namespace armor_processor
             // Eigen::Vector3d circle_center = {state(0), state(1), state(2)};
             // double radius = 0.15;
             // double rangle = state(4);
-
+            double radius = state(3);
+            double rangle = state(4);
+            double omega = state(5);
             Eigen::MatrixXd F(9, 9);
             uniform_ekf_.setF(F, pred_dt);
             Eigen::VectorXd pred = F * state;
@@ -158,10 +172,21 @@ namespace armor_processor
             // Eigen::VectorXd pred = F * state + Control * acc;
 
             // pred(2) = meas(2);
+            radius = pred(3);
+            rangle = pred(4);
+            omega = pred(5);
             Eigen::Vector3d circle_center = {pred(0), pred(1), pred(2)};
-            double radius = 0.15;
-            double rangle = pred(4);
-
+            if (radius < 0.15)
+            {
+                radius = 0.15;
+                uniform_ekf_.x_(3) = 0.15;
+            }
+            else if (radius > 0.35)
+            {
+                radius = 0.35;
+                uniform_ekf_.x_(3) = 0.35;
+            }
+            
             double pred_rangle = rangle;
             // double pred_rangle = 0.0;
             // if (spin_state == UNKNOWN)
@@ -179,11 +204,11 @@ namespace armor_processor
             
             result = {circle_center(0) - radius * cos(pred_rangle), circle_center(1) - radius * sin(pred_rangle), circle_center(2)};
             // cout << "meas_rangle:"<< meas(3) << " rangle:" << rangle << " pred_rangle:" << pred_rangle << endl;
-            Eigen::Vector4d circle_center3d = {pred(0), pred(1), meas(2), 0.0};
+            Eigen::Vector4d circle_center3d = {pred(0), pred(1), pred(2), 0.0};
             armor3d_vec.emplace_back(circle_center3d);
             // cout << "meas:" << meas(2) << endl;
             // cout << "pred_angle:" << pred_rangle << " result:" << result[0] << " " << result[1] << " " << result[2] << endl;
-            cout << "pred_radius:" << pred(3) << " calc_radius:"<< calcCircleRadius(circle_center, Eigen::Vector3d{meas(0), meas(1), meas(2)}) << endl;
+            cout << "omega:" << pred(5) << " pred_radius:" << pred(3) << " calc_radius:"<< calcCircleRadius(circle_center, Eigen::Vector3d{meas(0), meas(1), meas(2)}) << endl;
 
             Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
             for (int ii = 0; ii < 4; ii++)

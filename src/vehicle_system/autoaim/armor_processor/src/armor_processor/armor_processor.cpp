@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-04-30 19:19:01
+ * @LastEditTime: 2023-05-01 13:59:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -173,6 +173,7 @@ namespace armor_processor
             // double pred_dt = center_xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
 
             RCLCPP_WARN(logger_, "xyz:【%.3f %.3f %.3f] center_norm:[%.3f %.3f %.3f]", xyz(0), xyz(1), xyz(2), center_xyz(0), center_xyz(1), center_xyz(2));
+            RCLCPP_WARN(logger_, "radius:%.3f theta:%.3f omega:%.3f vx:%.3f vy:%.3f vz:%.3f", state(3), state(4), state(5), state(6), state(7), state(8));
             // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "dt:%.3f pred_dt:%.3f armor.rangle:%.3f", dt, pred_dt, armor.rangle);
             TargetInfo target = 
             { 
