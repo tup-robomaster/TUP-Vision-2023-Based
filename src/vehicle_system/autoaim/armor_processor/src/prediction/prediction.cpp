@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-04 23:03:56
+ * @LastEditTime: 2023-05-05 03:15:00
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -171,13 +171,13 @@ namespace armor_processor
             double radius = state(3);
             double rangle = state(4);
             double omega = state(5);
-            if (radius < 0.15)
+            if (radius < 0.18)
             {
                 radius = last_state_(3);
                 uniform_ekf_.radius_ = last_state_(3);
                 uniform_ekf_.x_(3) = last_state_(3);
             }
-            else if (radius > 0.30)
+            else if (radius > 0.32)
             {
                 radius = last_state_(3);
                 uniform_ekf_.radius_ = last_state_(3);
@@ -236,13 +236,13 @@ namespace armor_processor
             double rangle = state(4);
             double omega = state(5);
 
-            if (radius < 0.15)
+            if (radius < 0.18)
             {
                 radius = last_state_(3);
                 uniform_ekf_.radius_ = last_state_(3);
                 uniform_ekf_.x_(3) = last_state_(3);
             }
-            else if (radius > 0.30)
+            else if (radius > 0.32)
             {
                 radius = last_state_(3);
                 uniform_ekf_.radius_ = last_state_(3);

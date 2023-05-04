@@ -41,7 +41,7 @@
   # Camera config params.
     # camera_name: "00J90630561" 
     camera_name: "KE0200110073" #FIXME:根据相机序列号修改
-    camera_type: 3
+    camera_type: 0
     camera_param_path: "/config/camera.yaml"
 
   # Network model path.
@@ -58,10 +58,10 @@
   
   # Debug params.
     debug: true
-    using_imu: false
+    using_imu: true
     show_img: false
     show_fps: false
-    using_roi: false
+    using_roi: true
     detect_red: true # red: true / blue: false
     auto_label: false
     print_letency: false
@@ -90,7 +90,7 @@
 
   # Debug params.
     debug: true
-    using_imu: false
+    using_imu: true
     show_img: true
     draw_predict: false
     show_predict: true
@@ -104,7 +104,7 @@
     show_marker: true
 
   # Camera params.
-    camera_type: 3 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
     coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
     coord_param_path: "/config/camera.yaml"
@@ -112,9 +112,9 @@
   # Filter params.
     filter_param_path: "/config/filter_param.yaml"
     #----------------------------------Xc------Yc-----Zc--------r-----theta-----omega-----vx-------vy-----vz
-    uniform_ekf_process_noise_param: [0.01, 0.015, 0.002, 0.005, 0.05, 0.25, 0.0001, 0.001, 0.00001]
+    uniform_ekf_process_noise_param: [0.02, 0.015, 0.002, 0.005, 0.10, 0.35, 0.0001, 0.001, 0.00001]
     #----------------------------------X--------Y--------Z----theta
-    uniform_ekf_measure_noise_param: [2.0, 0.2, 1.0, 1.0]
+    uniform_ekf_measure_noise_param: [5.0, 0.2, 1.0, 1.0]
     # Singer model.  
     # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 dt:采样时间间隔 sigma:机动加速度标准差 p:过程协方差系数 r:观测协方差系数)
     singer_x_axis_param: [20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0]

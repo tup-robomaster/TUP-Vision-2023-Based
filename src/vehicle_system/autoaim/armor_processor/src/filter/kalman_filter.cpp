@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2023-05-04 23:03:15
+ * @LastEditTime: 2023-05-05 00:07:33
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/kalman_filter.cpp
  */
 #include "../../include/filter/kalman_filter.hpp"
@@ -60,20 +60,20 @@ namespace armor_processor
  
     void KalmanFilter::Update(const VectorXd& z)
     {
-        if (x_.size() > 5)
-        {
-            cout << "x_pre:" << x_(0) << " " << x_(1) << " " << x_(2) << " " << x_(3) << endl;
-        }
+        // if (x_.size() > 5)
+        // {
+        //     cout << "x_pre:" << x_(0) << " " << x_(1) << " " << x_(2) << " " << x_(3) << endl;
+        // }
 
         MatrixXd z_pred = H_ * x_;
         MatrixXd y = z - z_pred;
 
-        if (x_.size() > 5)
-        {
-            cout << "z_meas:" << z(0) << " " << z(1) << " " << z(2) << " " << z(3) << endl;
-            cout << "z_pred:" << z_pred(0, 0) << " " << z_pred(1, 0) << " " << z_pred(2, 0) << " " << z_pred(3, 0) << endl;
-            cout << "y:" << y(0, 0) << " " << y(1, 0) << " " << y(2, 0) << " " << y(3, 0) << endl;
-        }
+        // if (x_.size() > 5)
+        // {
+        //     cout << "z_meas:" << z(0) << " " << z(1) << " " << z(2) << " " << z(3) << endl;
+        //     cout << "z_pred:" << z_pred(0, 0) << " " << z_pred(1, 0) << " " << z_pred(2, 0) << " " << z_pred(3, 0) << endl;
+        //     cout << "y:" << y(0, 0) << " " << y(1, 0) << " " << y(2, 0) << " " << y(3, 0) << endl;
+        // }
 
         //卡尔曼增益
         MatrixXd Ht = Jh_.transpose();
@@ -85,10 +85,10 @@ namespace armor_processor
         //update
         x_ = x_ + (K * y);
         
-        if (x_.size() > 5)
-        {
-            cout << "x_post:" << x_(0) << " " << x_(1) << " " << x_(2) << " " << x_(3) << endl;
-        }
+        // if (x_.size() > 5)
+        // {
+        //     cout << "x_post:" << x_(0) << " " << x_(1) << " " << x_(2) << " " << x_(3) << endl;
+        // }
 
         int x_size = x_.size();
         MatrixXd I = MatrixXd::Identity(x_size, x_size);
