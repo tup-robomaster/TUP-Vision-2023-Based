@@ -54,7 +54,7 @@ namespace armor_detector
         // qos.durability();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 2;
 
         time_start_ = detector_->steady_clock_.now();
 
@@ -438,7 +438,7 @@ namespace armor_detector
             putText(src.img, delay_str, {src.img.size().width / 5 - 40, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 125, 255});
         }
 
-        //目标检测接口函数
+        // 目标检测接口函数
         detect(src, stamp);
     }
 

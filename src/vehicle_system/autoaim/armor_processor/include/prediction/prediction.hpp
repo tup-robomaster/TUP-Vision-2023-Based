@@ -43,13 +43,13 @@ namespace armor_processor
         ~ArmorPredictor();
         // ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, const DebugParam& debug_param);
 
-        void initPredictor(const vector<double>* uniform_param);
+        void initPredictor(const vector<double>* ekf_param);
         bool resetPredictor();
         bool updatePredictor(Eigen::VectorXd meas);
         bool predict(TargetInfo target, double dt, double pred_dt, double& delay_time, Eigen::Vector3d& pred_point3d, vector<Eigen::Vector4d>& armor3d_vec, cv::Mat* src = nullptr);
         
+        bool asyncPrediction(bool is_target_lost, Eigen::Vector3d meas, double dt, double pred_dt, Eigen::Vector3d& result);
         // Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
-        // bool asyncPrediction(bool is_filtering, bool is_target_lost, bool is_spinning, Eigen::Vector3d meas, int64_t timestamp, Eigen::Vector3d& result);
         // PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
 
     public:
@@ -75,17 +75,15 @@ namespace armor_processor
         double predict_acc_[2][3][4] = {{{0}}};
     
     public:
-        // ekf
+        // uniform ekf
         bool is_ekf_init_;
         UniformModel uniform_ekf_;
         PredictorState predictor_state_ = LOST;
+        Eigen::Vector4d last_state_;
 
-    public:
-        // 卡尔曼滤波
-        bool is_singer_init_[2][3];
-        vector<double> singer_param_[2][3]; //cs模型参数 
-        SingerModel singer_model_[2][3];
-        KalmanFilter singer_kf_[2][3];
+        // singer ekf
+        bool is_singer_init_[3];
+        SingerModel singer_model_[3];
         
     private:
         void kfInit();                      // 滤波参数初始化（矩阵维度、初始值）
@@ -104,11 +102,6 @@ namespace armor_processor
         double cur_rangle_ = 0.0;
         double last_rangle = 0.0;
         
-        // double delay_time_ = 200;
-        // double target_period_ = 0.0;
-        // int error_cnt_ = 0;
-        // double cur_pred_error_;
-    
     private:
         // IMM Model.
         std::shared_ptr<IMM> imm_;
@@ -117,7 +110,7 @@ namespace armor_processor
         
         // CS Model.
         // PredictStatus predictBasedSinger(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, int64_t timestamp);
-        bool predictBasedSinger(bool is_target_lost, bool is_spinning, int axis, double measurement, double& result, double target_vel, double target_acc, int64_t timestamp);
+        bool predictBasedSinger(bool is_target_lost, int axis, double measurement, double& result, double target_vel, double target_acc, double dt, double pred_dt);
 
         // Uniform Model.
         bool predictBasedUniformModel(bool is_target_lost, SpinHeading spin_state, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector4d>& armor3d_vec);

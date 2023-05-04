@@ -91,8 +91,7 @@ namespace coordsolver
         initMatrix(mat_ci,read_vector);
         transform_ci = mat_ci;
 
-        // cout << "1:" << angle_offset[0] << " " << angle_offset[1] << endl;
-
+        // cout << "angle_offset:" << angle_offset[0] << " " << angle_offset[1] << endl;
         return true;
     }
 

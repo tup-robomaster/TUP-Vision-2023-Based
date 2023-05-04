@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-04-16 18:11:16
+ * @LastEditTime: 2023-05-03 17:42:30
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -35,6 +35,7 @@
 #include "../usb_driver/usb_cam.hpp"
 #include "../hik_driver/hik_camera.hpp"
 #include "../daheng_driver/daheng_camera.hpp"
+#include "../mvs_driver/mvs_camera.hpp"
 #include "../../global_user/include/global_user/global_user.hpp"
 #include "global_interface/msg/decision.hpp"
 #include "global_interface/msg/serial.hpp"
@@ -136,10 +137,10 @@ namespace camera_driver
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 5;
 
         // Camera type.
-        this->declare_parameter<int>("camera_type", DaHeng);
+        this->declare_parameter<int>("camera_type", MVSCam);
         camera_type_ = this->get_parameter("camera_type").as_int();
 
         // Subscriptions transport type.
@@ -344,6 +345,7 @@ namespace camera_driver
         this->declare_parameter("fps", 30);
         this->declare_parameter("video_path", "/config/camera_ros.yaml");
         this->declare_parameter<bool>("save_video", false);
+        this->declare_parameter<string>("config_path", "/config/daheng_cam_param.ini");
 
         camera_params_.cam_id = this->get_parameter("cam_id").as_int();
         camera_params_.image_width = this->get_parameter("image_width").as_int();
@@ -361,6 +363,12 @@ namespace camera_driver
         camera_params_.balance_r = this->get_parameter("balance_r").as_double();
         camera_params_.using_video = this->get_parameter("using_video").as_bool();
         camera_params_.fps = this->get_parameter("fps").as_int();
+        
+        string pkg_prefix = get_package_share_directory("camera_driver");
+        string param_config_path = this->get_parameter("config_path").as_string();
+        string param_full_path = pkg_prefix + param_config_path;
+        camera_params_.config_path = param_full_path;
+        
         show_img_ = this->get_parameter("show_img").as_bool();
         save_video_ = this->get_parameter("save_video").as_bool();
 

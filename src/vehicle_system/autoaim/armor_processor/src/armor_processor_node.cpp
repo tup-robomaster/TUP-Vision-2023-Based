@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-01 15:07:16
+ * @LastEditTime: 2023-05-04 23:02:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -14,8 +14,6 @@ namespace armor_processor
     : Node("armor_processor", options), my_sync_policy_(MySyncPolicy(5))
     {
         RCLCPP_INFO(this->get_logger(), "Starting processor node...");
-        
-        // cout << 3 << endl;
         try
         {
             processor_ = initArmorProcessor();
@@ -30,7 +28,6 @@ namespace armor_processor
         {
             RCLCPP_FATAL(this->get_logger(), "Fatal while initializing armor processor: %s", e.what());
         }
-        // cout << 4 << endl;
 
         // QoS
         rclcpp::QoS qos(0);
@@ -42,7 +39,7 @@ namespace armor_processor
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 3;
 
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", qos);
@@ -157,6 +154,23 @@ namespace armor_processor
         Eigen::Vector3d vehicle_center3d_cam = {0.0, 0.0, 0.0};
         Eigen::Vector4d vehicle_center3d_world = {0.0, 0.0, 0.0, 0.0};
         // PostProcessInfo post_process_info;
+        cv::Point2f point_2d = {0, 0};
+        double min_dist = 1e2;
+        int idx = 0, flag = -1;
+
+        if (target_info.bullet_speed > 10.0)
+        {   //更新弹速
+            processor_->coordsolver_.setBulletSpeed(target_info.bullet_speed);
+        }
+        if(!debug_param_.using_imu)
+        {
+            rmat_imu = Eigen::Matrix3d::Identity();
+        }
+        else
+        {
+            quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
+            rmat_imu = quat_imu.toRotationMatrix();
+        }
 
         cv::Mat dst = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
         if (debug_param_.show_img)
@@ -170,17 +184,7 @@ namespace armor_processor
             image_mutex_.unlock();
         }
 
-        if(!debug_param_.using_imu)
-        {
-            rmat_imu = Eigen::Matrix3d::Identity();
-        }
-        else
-        {
-            quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
-            rmat_imu = quat_imu.toRotationMatrix();
-        }
-        
-        // cout << "is_target_lost:" << target.is_target_lost << endl;
+        RCLCPP_WARN_EXPRESSION(this->get_logger(), target.is_target_lost, "Target lost...");
         if (target.is_target_lost && processor_->is_last_exists_)
         {   //目标丢失且上帧存在，预测器进入丢失预测状态
             processor_->armor_predictor_.predictor_state_ = LOSTING;
@@ -196,37 +200,44 @@ namespace armor_processor
         }
         else
         {
-            if (target_info.bullet_speed > 10.0)
-            {   //更新弹速
-                processor_->coordsolver_.setBulletSpeed(target_info.bullet_speed);
-            }
             param_mutex_.lock();
-            // cout << 1 << endl;
             if (processor_->predictor(target, aiming_point_world, armor3d_vec, sleep_time))
             {
-                // cout << 2 << endl;
-                // cout << 7 << endl;
-
-                aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
-                // cout << 8 << endl;
-
-                angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
                 if (!target_info.is_target_lost)
                 {
+                    for (auto armor_point3d_world : armor3d_vec)
+                    {
+                        double armor3d_dist = armor_point3d_world.norm();
+                        if (armor3d_dist < min_dist)
+                        {
+                            min_dist = armor3d_dist;
+                            flag = idx;
+                        }
+                        // Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
+                        // point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                        // cv::circle(dst, point_2d, 6, {255, 255, 0}, -1);
+                        ++idx;
+                    }
+                    if (flag != -1)
+                    {
+                        aiming_point_world = {armor3d_vec.at(flag)(0), armor3d_vec.at(flag)(1), armor3d_vec.at(flag)(2)};
+                    }
+                    else
+                    {
+                        is_shooting = false;
+                    }
+                    aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
+                    angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
                     tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
                     tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
                 }
-                // cout << 9 << endl;
 
-                Eigen::VectorXd state = processor_->armor_predictor_.uniform_ekf_.x();
-                vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
-                vehicle_center3d_cam = processor_->coordsolver_.worldToCam({vehicle_center3d_world(0), vehicle_center3d_world(1), vehicle_center3d_world(2)}, rmat_imu);
+                // Eigen::VectorXd state = processor_->armor_predictor_.uniform_ekf_.x();
+                // vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
+                // vehicle_center3d_cam = processor_->coordsolver_.worldToCam({vehicle_center3d_world(0), vehicle_center3d_world(1), vehicle_center3d_world(2)}, rmat_imu);
                 // cout << "vehicle_center3d_world:" << vehicle_center3d_world(0) << " " << vehicle_center3d_world(1) << " " << vehicle_center3d_world(2) << endl;
-                // cout << 10 << endl;
-                
                 // vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
                 // armor3d_vec.emplace_back(vehicle_center3d_world);
-                
                 // Eigen::Vector4d pred3d = {aiming_point_world(0), aiming_point_world(1), aiming_point_world(2), 0.0};
                 // armor3d_vec.emplace_back(pred3d);
                 // RCLCPP_WARN(get_logger(), "z_axis:%.3f", state(2));
@@ -258,6 +269,11 @@ namespace armor_processor
         {
             is_pred_ = true;
             is_shooting = true;
+        }
+
+        if (processor_->armor_predictor_.predictor_state_ != PREDICTING)
+        {
+            is_shooting = false;
         }
         
         // Gimbal info pub.
@@ -314,6 +330,7 @@ namespace armor_processor
             
             if (!target.is_target_lost)
             {
+                idx = 0;
                 if (show_marker_)
                 {
                     rclcpp::Time now = this->get_clock()->now();
@@ -349,13 +366,23 @@ namespace armor_processor
                         // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
                         marker.pose.position.x = armor3d(0);
                         marker.pose.position.y = armor3d(1);
-                        marker.pose.position.z = 0;
+                        marker.pose.position.z = armor3d(2);
 
                         if (marker.id == 0)
                         {
                             marker.type = visualization_msgs::msg::Marker::ARROW;
-                            marker.pose.position.z = 0;
+                            // marker.pose.position.z = armor3d(2);
                         }
+                        else if (flag == idx)
+                        {
+                            marker.type = visualization_msgs::msg::Marker::ARROW;
+                            q.setRPY(0, 0, armor3d(3));
+                        }
+                        // else if (flag == idx)
+                        // {
+                        //     marker.type = visualization_msgs::msg::Marker::ARROW;
+                        //     // q.setRPY(0, 0, armor3d(3));
+                        // }
                         else
                         {
                             marker.type = shape_;
@@ -370,9 +397,21 @@ namespace armor_processor
                         {
                             marker.scale.x = armor3d(2);
                             // RCLCPP_WARN(get_logger(), "z_axis:%.3f", armor3d(2));
-                            marker.scale.y = 0.025;
-                            marker.scale.z = 0.025;
+                            marker.scale.y = 0.010;
+                            marker.scale.z = 0.010;
                         }
+                        else if (flag == idx)
+                        {
+                            marker.scale.x = target_info.clockwise ? -0.25 : 0.25;
+                            marker.scale.y = 0.040;
+                            marker.scale.z = 0.040;
+                        }
+                        // else if (flag == idx)
+                        // {
+                        //     marker.scale.x = -armor3d(2);
+                        //     marker.scale.y = 0.025;
+                        //     marker.scale.z = 0.025;
+                        // }
                         else
                         {
                             marker.scale.x = 0.060;
@@ -414,21 +453,24 @@ namespace armor_processor
                         // }
                         marker_array.markers.emplace_back(marker);                     
                         ++marker_id;
+                        idx++;
                     }
+
                     // Publish the marker_array
                     marker_array_pub_->publish(marker_array);
+                    idx++;
                 }
                 // AutoaimMsg predict_info;
                 // predict_info.header.frame_id = "camera_link";
                 // predict_info.header.stamp = target_info.header.stamp;
-                // // predict_info.header.stamp.nanosec += sleep_time;
-                // // predict_info.aiming_point_world.x = (aiming_point_world)[0];
-                // // predict_info.aiming_point_world.y = (aiming_point_world)[1];
-                // // predict_info.aiming_point_world.z = (aiming_point_world)[2];
-                // // predict_info.aiming_point_cam.x = aiming_point_cam[0];
-                // // predict_info.aiming_point_cam.y = aiming_point_cam[1];
-                // // predict_info.aiming_point_cam.z = aiming_point_cam[2];
-                // // predict_info.period = target_info.period;
+                // predict_info.header.stamp.nanosec += sleep_time;
+                // predict_info.aiming_point_world.x = (aiming_point_world)[0];
+                // predict_info.aiming_point_world.y = (aiming_point_world)[1];
+                // predict_info.aiming_point_world.z = (aiming_point_world)[2];
+                // predict_info.aiming_point_cam.x = aiming_point_cam[0];
+                // predict_info.aiming_point_cam.y = aiming_point_cam[1];
+                // predict_info.aiming_point_cam.z = aiming_point_cam[2];
+                // predict_info.period = target_info.period;
                 // predict_info_pub_->publish(std::move(predict_info));
                 // RCLCPP_INFO_EXPRESSION(
                 //     this->get_logger(), 
@@ -463,15 +505,35 @@ namespace armor_processor
                                 cv::Point2f(armor.point2d[(i + 1) % 4].x, armor.point2d[(i + 1) % 4].y), {125, 0, 255}, 1);
                     }
 
-                    cv::Point2f point_2d = {0, 0};
+                    // cv::Point2f point_2d = {0, 0};
+                    // double min_dist = 1e2;
+                    // int idx = 0, flag = -1;
                     for (auto armor_point3d_world : armor3d_vec)
                     {
-                        Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
-                        point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
-                        cv::circle(dst, point_2d, 8, {255, 255, 0}, -1);
+                        // double armor3d_dist = armor_point3d_world.norm();
+                        // if (armor3d_dist < min_dist)
+                        // {
+                        //     min_dist = armor3d_dist;
+                        //     flag = idx;
+                        // }
+                        // if (idx == 5 || idx == 0)
+                        // {
+                            Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
+                            point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                            cv::circle(dst, point_2d, 8, {255, 255, 0}, -1);
+                        // }
+                        // ++idx;
                     }
-                    point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
-                    cv::circle(dst, point_2d, 12, {255, 0, 125}, 2);
+
+                    // if (flag != -1)
+                    // {
+                    //     Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor3d_vec[flag](0), armor3d_vec[flag](1), armor3d_vec[flag](2)}, rmat_imu);
+                    //     point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                    //     cv::circle(dst, point_2d, 8, {255, 0, 125}, 2);
+                    // }
+                    
+                    // point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
+                    // cv::circle(dst, point_2d, 8, {255, 0, 125}, 2);
 
                     // cv::Point2f vehicle_center2d = processor_->coordsolver_.reproject(vehicle_center3d_cam);
                     // cv::circle(dst, vehicle_center2d, 11, {255, 255, 0}, -1);
@@ -603,24 +665,32 @@ namespace armor_processor
         this->declare_parameter("measure_noise", measure_noise_params);
         measure_noise_params = this->get_parameter("measure_noise").as_double_array();
 
-        vector<double> uniform_ekf_params[3] = 
+        vector<double> uniform_ekf_params[5] = 
         {
             {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
             {1.0, 1.0, 1.0, 1.0},
-            {8.00, 10.0, 0.1, 0.8, 0.0030}
+            {20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0},
+            {8.00, 10.0, 0.1, 0.8, 5.00, 0.0045, 1.0, 2.0},
+            {8.00, 10.0, 0.1, 0.8, 5.00, 0.0045, 1.0, 2.0}
         };
         
         this->declare_parameter("uniform_ekf_process_noise_param", uniform_ekf_params[0]);
         this->declare_parameter("uniform_ekf_measure_noise_param", uniform_ekf_params[1]);
-        this->declare_parameter("uniform_ekf_singer_param", uniform_ekf_params[2]);
+        this->declare_parameter("singer_x_aixs_param", uniform_ekf_params[2]);
+        this->declare_parameter("singer_y_aixs_param", uniform_ekf_params[3]);
+        this->declare_parameter("singer_z_aixs_param", uniform_ekf_params[4]);
         uniform_ekf_params[0] = this->get_parameter("uniform_ekf_process_noise_param").as_double_array();
         uniform_ekf_params[1] = this->get_parameter("uniform_ekf_measure_noise_param").as_double_array();
-        uniform_ekf_params[2] = this->get_parameter("uniform_ekf_singer_param").as_double_array();
+        uniform_ekf_params[2] = this->get_parameter("singer_x_aixs_param").as_double_array();
+        uniform_ekf_params[3] = this->get_parameter("singer_y_aixs_param").as_double_array();
+        uniform_ekf_params[4] = this->get_parameter("singer_z_aixs_param").as_double_array();
 
         predict_param_.filter_model_param.imm_model_trans_prob_params = imm_model_trans_prob_params;
         predict_param_.filter_model_param.imm_model_prob_params = imm_model_prob_params;
         predict_param_.filter_model_param.process_noise_params = process_noise_params;
         predict_param_.filter_model_param.measure_noise_params = measure_noise_params;
+        
+        cout << 5 << endl;
         return std::make_unique<Processor>(predict_param_, uniform_ekf_params, debug_param_);
     }
 
