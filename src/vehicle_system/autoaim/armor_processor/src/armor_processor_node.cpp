@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-05 00:31:04
+ * @LastEditTime: 2023-05-05 01:50:07
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -149,8 +149,8 @@ namespace armor_processor
             }
             image_mutex_.unlock();
         }
-
-        if (target.target_switched || processor_->armor_predictor_.predictor_state_ == LOST)
+        // cout << "is_target_lost:" << target.is_target_lost << endl; 
+        if (target.is_target_lost)
         {
             is_aimed_ = false;
             is_pred_ = false;

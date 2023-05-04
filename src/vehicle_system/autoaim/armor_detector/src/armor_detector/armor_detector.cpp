@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-05-05 00:28:57
+ * @LastEditTime: 2023-05-05 03:32:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -26,7 +26,7 @@ namespace armor_detector
         is_init_ = false;
         last_period_ = 0;
         last_last_status_ = last_status_ = cur_status_ = NONE;
-        dead_buffer_cnt_ = 0;
+        // dead_buffer_cnt_ = 0;
 
         is_save_data_ = debug_params_.save_data; //save distance error data
         save_dataset_ = debug_params_.save_dataset;
@@ -370,6 +370,40 @@ namespace armor_detector
      */
     bool Detector::gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp, DecisionMsg decision_msg)
     {
+        //Create ArmorTracker for new armors 
+        spinning_detector_.createArmorTracker(trackers_map_, new_armors_, new_armors_cnt_map_, now_, is_last_target_exists_);
+        if ((int)new_armors_cnt_map_.size() < 1)
+        {
+            RCLCPP_WARN_THROTTLE(logger_, this->steady_clock_, 50, "No Shooting Targets...");
+            if(debug_params_.show_aim_cross)
+            {
+                drawAimCrossCurve(src.img);
+            }
+
+            if(debug_params_.show_all_armors)
+            {
+                RCLCPP_DEBUG_ONCE(logger_, "Show all armors...");
+                showArmors(src);
+            }
+
+            target_info.aiming_point_cam.x = 0;
+            target_info.aiming_point_cam.y = 0;
+            target_info.aiming_point_cam.z = 0;
+            target_info.aiming_point_world.x = 0;
+            target_info.aiming_point_world.y = 0;
+            target_info.aiming_point_world.z = 0;
+            target_info.is_target_lost = true;
+            lost_cnt_++;
+            is_last_target_exists_ = false;
+            return false;
+        }
+
+        //Detect armors status
+        spinning_detector_.isSpinning(trackers_map_, new_armors_cnt_map_, now_);
+
+        //Update spinning score
+        // spinning_detector_.updateSpinScore();
+
         //Choose target vehicle
         //此处首先根据哨兵发来的ID指令进行目标车辆追踪
         int target_id = -1;
@@ -385,15 +419,6 @@ namespace armor_detector
         {
             target_id = chooseTargetID(src);
         }
-
-        //Create ArmorTracker for new armors 
-        spinning_detector_.createArmorTracker(trackers_map_, new_armors_, new_armors_cnt_map_, now_, dead_buffer_cnt_);
-        
-        //Detect armors status
-        spinning_detector_.isSpinning(trackers_map_, new_armors_cnt_map_, now_);
-
-        //Update spinning score
-        // spinning_detector_.updateSpinScore();
 
         // cout << "armor_size:" << (int)new_armors_.size() << endl;
 
@@ -981,24 +1006,23 @@ namespace armor_detector
         // target_info.target_switched = true;
         // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
 
-        if (spinning_detector_.is_dead_)
-        {
-            dead_buffer_cnt_ = 0;
-            RCLCPP_WARN(logger_, "dead_buffer_cnt: %d", dead_buffer_cnt_);
-            spinning_detector_.is_dead_ = false;
-        }
+        // if (spinning_detector_.is_dead_)
+        // {
+        //     dead_buffer_cnt_ = 0;
+        //     RCLCPP_WARN(logger_, "dead_buffer_cnt: %d", dead_buffer_cnt_);
+        //     spinning_detector_.is_dead_ = false;
+        // }
 
-        if (target.color == (int)(GRAY_SMALL) || target.color == (int)GRAY_BIG)
-        {
-            RCLCPP_WARN(logger_, "dead_buffer_cnt: %d", dead_buffer_cnt_);
-            dead_buffer_cnt_++;
-        }
-        else
-        {
-            dead_buffer_cnt_ = 0;
-        }
+        // if (target.color == (int)(GRAY_SMALL) || target.color == (int)GRAY_BIG)
+        // {
+        //     RCLCPP_WARN(logger_, "dead_buffer_cnt: %d", dead_buffer_cnt_);
+        //     dead_buffer_cnt_++;
+        // }
+        // else
+        // {
+        //     dead_buffer_cnt_ = 0;
+        // }
 
-        // cout << 1 << endl;
         //获取装甲板中心与装甲板面积以下一次ROI截取使用
         // last_roi_center_ = Point2i(512,640);
         // prev_timestamp_ = now_;
@@ -1009,6 +1033,18 @@ namespace armor_detector
         last_aiming_point_ = target.armor3d_cam;
         is_last_target_exists_ = true;
         last_armors_ = new_armors_;
+        if (spinning_detector_.is_gray_exists_ && target.id == spinning_detector_.gray_id_)
+        {
+            if (spinning_detector_.is_dead_)
+            {
+                target_info.is_target_lost = true;
+            }
+        }
+        else if (!spinning_detector_.is_gray_exists_)
+        {
+            spinning_detector_.is_dead_ = false;
+            spinning_detector_.dead_buffer_cnt_ = 0;
+        }
 
         // Eigen::Vector3d euler = rotationMatrixToEulerAngles(target.rmat);
         // RCLCPP_WARN_THROTTLE(
@@ -1347,54 +1383,56 @@ namespace armor_detector
         double min_3d_dist = 1e2;
         for (auto& armor : new_armors_)
         {   
-            // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "armor_area:%d", armor.area);
-            // double dist_2d = abs((src.img.size().width / 2.0) - armor.center2d.x);
-            float rrangle = armor.rrect.angle;
-            double dist_3d = armor.armor3d_world.norm();
+            if (armor.timestamp / 1e9 == src.timestamp / 1e9)
+            {
+                // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "armor_area:%d", armor.area);
+                // double dist_2d = abs((src.img.size().width / 2.0) - armor.center2d.x);
+                float rrangle = armor.rrect.angle;
+                double dist_3d = armor.armor3d_world.norm();
 
-            if (armor.id == 6 && src.mode == HERO_SLING)
-            {
-                return armor.id;
-            }
-            else if (armor.id == 1 && armor.armor3d_world.norm() <= detector_params_.hero_danger_zone)
-            {
-                return armor.id;
-            }
-            else if ((armor.id == last_armor_.id 
-            // || last_armor_.roi.contains(armor.center2d)
-            )
-            && abs(armor.area - last_armor_.area) / (float)armor.area < 0.40
-            && abs(now_ - last_timestamp_) / 1e6 <= 100
-            && (abs(rrangle) <= 16.0 || abs(rrangle) >= 74.0))
-            {
-                // armor.id = last_armor_.id;
-                is_last_id_exists = true;
-                target_id = armor.id;
-                break;
-            }
-            else if (abs(rrangle) >= 13.0 && abs(rrangle) <= 77.0)
-            {
-                continue;
-            }
-            else if ((abs(rrangle) > 77.0 || abs(rrangle) < 13.0) && (abs(rrangle) > abs(max_rrangle) || abs(rrangle) < abs(min_rrangle)))
-            {
-                min_rrangle = abs(rrangle) < 13.0 ? rrangle : 1e2;
-                max_rrangle = abs(rrangle) > 77.0 ? rrangle : 0.0; 
-                is_last_id_exists = true;
-                target_id = armor.id;
-            }
-            // else if (dist_2d < min_2d_dist && dist_3d / min_3d_dist >= 0.6 && dist_3d <= detector_params_.fire_zone)
-            // {
-            //     is_last_id_exists = true;
-            //     target_id = armor.id;
-            // }   
-            else if (dist_3d < min_3d_dist && dist_3d <= detector_params_.fire_zone)
-            {
-                is_last_id_exists = true;
-                target_id = armor.id;
+                if (armor.id == 6 && src.mode == HERO_SLING)
+                {
+                    return armor.id;
+                }
+                else if (armor.id == 1 && armor.armor3d_world.norm() <= detector_params_.hero_danger_zone)
+                {
+                    return armor.id;
+                }
+                else if ((armor.id == last_armor_.id 
+                // || last_armor_.roi.contains(armor.center2d)
+                )
+                && abs(armor.area - last_armor_.area) / (float)armor.area < 0.40
+                && abs(now_ - last_timestamp_) / 1e6 <= 100
+                && (abs(rrangle) <= 16.0 || abs(rrangle) >= 74.0))
+                {
+                    // armor.id = last_armor_.id;
+                    is_last_id_exists = true;
+                    target_id = armor.id;
+                    break;
+                }
+                else if (abs(rrangle) >= 13.0 && abs(rrangle) <= 77.0)
+                {
+                    continue;
+                }
+                else if ((abs(rrangle) > 77.0 || abs(rrangle) < 13.0) && (abs(rrangle) > abs(max_rrangle) || abs(rrangle) < abs(min_rrangle)))
+                {
+                    min_rrangle = abs(rrangle) < 13.0 ? rrangle : 1e2;
+                    max_rrangle = abs(rrangle) > 77.0 ? rrangle : 0.0; 
+                    is_last_id_exists = true;
+                    target_id = armor.id;
+                }
+                // else if (dist_2d < min_2d_dist && dist_3d / min_3d_dist >= 0.6 && dist_3d <= detector_params_.fire_zone)
+                // {
+                //     is_last_id_exists = true;
+                //     target_id = armor.id;
+                // }   
+                else if (dist_3d < min_3d_dist && dist_3d <= detector_params_.fire_zone)
+                {
+                    is_last_id_exists = true;
+                    target_id = armor.id;
+                }
             }
         }
-        
         //若不存在则返回面积最大的装甲板序号，即队列首元素序号
         if (is_last_id_exists)
         {
