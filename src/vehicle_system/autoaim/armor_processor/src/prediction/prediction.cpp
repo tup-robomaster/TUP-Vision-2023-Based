@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-05 15:06:24
+ * @LastEditTime: 2023-05-05 19:36:47
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -251,17 +251,9 @@ namespace armor_processor
 
                 // Eigen::MatrixXd predictState(9, 1);
                 Eigen::VectorXd State = singer_model_.x();
-
-                // double post_pos = State[0];
-                // predict_vel_[3] = predict_vel_[2];
-                // predict_vel_[2] = predict_vel_[1];
-                // predict_vel_[1] = predict_vel_[0];
-                // predict_vel_[0] = State[1];
                 
-                // predict_acc_[3] = predict_acc_[2];
-                // predict_acc_[2] = predict_acc_[1];
-                // predict_acc_[1] = predict_acc_[0];
-                // predict_acc_[0] = State[2];
+                updateVel({State(3), State(4), State(5)});
+                updateAcc({State(6), State(7), State(8)});
 
                 Eigen::MatrixXd F(9, 9);
                 singer_model_.updateF(F, dt);
@@ -312,6 +304,9 @@ namespace armor_processor
             singer_model_.Predict(dt);
 
             Eigen::VectorXd State = singer_model_.x();
+           
+            updateVel({State(3), State(4), State(5)});
+            updateAcc({State(6), State(7), State(8)});
             
             Eigen::MatrixXd F(9, 9);
             singer_model_.updateF(F, dt);
@@ -529,7 +524,7 @@ namespace armor_processor
         return is_available;
     }
 
-    void ArmorPredictor::updateVel(bool is_spinning, Eigen::Vector3d vel_3d)
+    void ArmorPredictor::updateVel(Eigen::Vector3d vel_3d)
     {
         // X-AXIS
         history_vel_[0][3] = history_vel_[0][2];
@@ -551,7 +546,7 @@ namespace armor_processor
         return;
     }
     
-    void ArmorPredictor::updateAcc(bool is_spinning, Eigen::Vector3d acc_3d)
+    void ArmorPredictor::updateAcc(Eigen::Vector3d acc_3d)
     {
         // X-AXIS
         history_acc_[0][3] = history_acc_[0][2];

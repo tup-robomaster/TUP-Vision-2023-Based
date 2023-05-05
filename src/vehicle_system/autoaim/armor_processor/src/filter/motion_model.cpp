@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 12:36:22
- * @LastEditTime: 2023-05-05 15:26:41
+ * @LastEditTime: 2023-05-05 19:15:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/motion_model.cpp
  */
 #include "../../include/filter/motion_model.hpp"
@@ -262,13 +262,13 @@ namespace armor_processor
         Init(SP, MP, CP);
         if (cp_ == 1)
         {
-            kf_param_.process_noise_params = {8.0, 0.0030, 1.0};
-            kf_param_.measure_noise_params = {8.0, 0.0030, 1.0};
+            kf_param_.process_noise_params = {8.0, 0.0030};
+            kf_param_.measure_noise_params = {1.0};
         }
         else if (cp_ == 3)
         {
-            kf_param_.process_noise_params = {20.0, 8.0, 8.0, 0.0025, 0.0030, 0.0030, 1.0, 1.0, 1.0};
-            kf_param_.measure_noise_params = {20.0, 8.0, 8.0, 0.0025, 0.0030, 0.0030, 1.0, 1.0, 1.0};
+            kf_param_.process_noise_params = {20.0, 8.0, 8.0, 0.0025, 0.0030, 0.0030};
+            kf_param_.measure_noise_params = {1.0, 1.0, 1.0};
         }
         init();
     }

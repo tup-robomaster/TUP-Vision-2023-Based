@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-05-05 15:00:11
+ * @LastEditTime: 2023-05-05 20:03:44
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -59,14 +59,16 @@ namespace armor_processor
     private:
         double evalRMSE(double* params);
         double calcError();
-        void updateVel(bool is_spinning, Eigen::Vector3d vel_3d);
-        void updateAcc(bool is_spinning, Eigen::Vector3d acc_3d);
 
-    private:
+    public:
         double history_vel_[3][4] = {{0}};
         double history_acc_[3][4] = {{0}};
-        double predict_vel_[3][4] = {{0}};
-        double predict_acc_[3][4] = {{0}};
+        // double predict_vel_[3][4] = {{0}};
+        // double predict_acc_[3][4] = {{0}};
+    
+    private:
+        void updateVel(Eigen::Vector3d vel_3d);
+        void updateAcc(Eigen::Vector3d acc_3d);
     
     public:
         // 卡尔曼滤波

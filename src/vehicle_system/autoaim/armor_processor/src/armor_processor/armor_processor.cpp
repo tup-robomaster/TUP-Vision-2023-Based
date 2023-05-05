@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-05-05 15:13:32
+ * @LastEditTime: 2023-05-05 19:43:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -275,24 +275,5 @@ namespace armor_processor
     //         pf_v.initParam(config_, "v");
     //         is_init_ = true;
     //     }
-    // }
-    
-    // /**
-    //  * @brief 同上
-    //  * 
-    //  * @param src 传入图像信息，方便可视化
-    //  * @param target 
-    //  * @param sleep_time 
-    //  * @return std::unique_ptr<Eigen::Vector3d> 
-    //  */
-    // std::unique_ptr<Eigen::Vector3d> Processor::predictor(cv::Mat& src, AutoaimMsg& target, double& sleep_time)
-    // {
-    //     if(target.target_switched)
-    //     {
-
-    //     }
-
-    //     auto hit_point = armor_predictor_.predict(target, target.timestamp, sleep_time, &src);
-    //     return std::make_unique<Eigen::Vector3d>(hit_point);
     // }
 } // armor_processor
