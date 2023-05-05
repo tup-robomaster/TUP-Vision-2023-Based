@@ -196,7 +196,7 @@ namespace armor_detector
 
         DetectorParam()
         {
-            color = RED;
+            color = (Color)1;
             armor_type_wh_thres = 3;
             max_lost_cnt = 5;
             max_armors_cnt = 8;

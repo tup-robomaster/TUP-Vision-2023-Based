@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-20 22:39:37
+ * @LastEditTime: 2023-05-03 10:18:24
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -92,7 +92,7 @@ namespace armor_detector
                 coordsolver_.setBulletSpeed(bullet_speed);
                 last_bullet_speed_ = bullet_speed;
             }
-            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "serial_bullet_speed:%.2f bullet_speed:%.2f", src.bullet_speed, last_bullet_speed_);
+            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 40, "serial_bullet_speed:%.2f bullet_speed:%.2f", src.bullet_speed, last_bullet_speed_);
         }
 
         // Eigen::Matrix3d rmat_imu;
@@ -159,13 +159,14 @@ namespace armor_detector
         //生成装甲板对象
         for (auto object : objects_)
         {
+            // cout << 111 << endl;
             //TODO:加入紫色装甲板限制通过条件
-            if (detector_params_.color == RED)
+            if (detector_params_.color == 1)
             {
                 if (object.color == BLUE_SMALL || object.color == BLUE_BIG || object.color == PURPLE_SMALL || object.color == PURPLE_BIG)
                     continue;
             }
-            else if (detector_params_.color == BLUE)
+            else if (detector_params_.color == 0)
             {
                 if (object.color == RED_SMALL || object.color == RED_BIG || object.color == PURPLE_SMALL || object.color == PURPLE_BIG)
                     continue;
@@ -220,6 +221,7 @@ namespace armor_detector
             memcpy(armor.apex2d, object.apex, 4 * sizeof(cv::Point2f));
             for(int i = 0; i < 4; i++)
                 armor.apex2d[i] += Point2f((float)roi_offset_.x, (float)roi_offset_.y);
+            
             Point2f apex_sum;
             for(auto apex : armor.apex2d)
                 apex_sum += apex;
@@ -244,7 +246,7 @@ namespace armor_detector
                         RCLCPP_WARN_THROTTLE(
                             logger_, 
                             steady_clock_, 
-                            500, 
+                            40, 
                             "[IGNORE]:armor_key:%s armor_conf:%.2f", 
                             armor.key.c_str(), 
                             armor.conf
@@ -285,7 +287,7 @@ namespace armor_detector
             // {   //FIXME：若存在平衡步兵需要对此处步兵装甲板类型进行修改
             //     target_type = SMALL;
             // }
-            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 50, "target_type:%s", to_string(target_type));
+            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 40, "target_type:%d", (int)target_type);
 
             // 单目PnP
             auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
@@ -317,7 +319,7 @@ namespace armor_detector
         //若无合适装甲板
         if (new_armors_.empty())
         {
-            RCLCPP_WARN_THROTTLE(logger_, this->steady_clock_, 500, "No suitable targets...");
+            RCLCPP_WARN_THROTTLE(logger_, this->steady_clock_, 40, "No targets...");
             if(debug_params_.show_aim_cross)
             {
                 drawAimCrossCurve(src.img);
@@ -456,7 +458,7 @@ namespace armor_detector
             target_info.is_target_lost = true;
             lost_cnt_++;
             is_last_target_exists_ = false;
-            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "No available tracker exists!");
+            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 40, "No available tracker exists!");
             return false;
         }
 
@@ -698,7 +700,7 @@ namespace armor_detector
                     {
                         double ave_per = (per_sum / idx);
                         target_info.period = ave_per;
-                        RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "ave_per:%lfs", ave_per);
+                        RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 40, "ave_per:%lfs", ave_per);
                     }
                     else
                         target_info.period = period;
@@ -885,7 +887,7 @@ namespace armor_detector
             spinning_detector_.is_dead_ = false;
         }
 
-        if (target.color == 2)
+        if (target.color == (int)(GRAY_SMALL) || target.color == (int)GRAY_BIG)
         {
             RCLCPP_WARN(logger_, "dead_buffer_cnt: %d", dead_buffer_cnt_);
             dead_buffer_cnt_++;
@@ -1000,16 +1002,25 @@ namespace armor_detector
             putText(src.img, conf_str, armor.apex2d[3], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
 
             std::string id_str = to_string(armor.id);
-            if (armor.color == 0)
-                putText(src.img, "B" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 0}, 2);
-            if (armor.color == 1)
-                putText(src.img, "R" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 0, 255}, 2);
-            if (armor.color == 2)
-                putText(src.img, "N" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 255, 255}, 2);
-            if (armor.color == 3)
-                putText(src.img, "P" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 255}, 2);
+            if (armor.color == BLUE_SMALL)
+                putText(src.img, "BS" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 0}, 2);
+            else if (armor.color == BLUE_BIG)
+                putText(src.img, "BB" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 0, 255}, 2);
+            else if (armor.color == GRAY_SMALL)
+                putText(src.img, "NS" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 0, 255}, 2);
+            else if (armor.color == GRAY_BIG)
+                putText(src.img, "NB" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255}, 2);
+            else if (armor.color == RED_SMALL)
+                putText(src.img, "RS" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
+            else if (armor.color == RED_BIG)
+                putText(src.img, "RB" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {125, 255, 125}, 2);
+            else if (armor.color == PURPLE_SMALL)
+                putText(src.img, "PS" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 0, 255}, 2);
+            else if (armor.color == PURPLE_BIG)
+                putText(src.img, "PB" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {125, 0, 125}, 2);
+
             for(int i = 0; i < 4; i++)
-                line(src.img, armor.apex2d[i % 4], armor.apex2d[(i + 1) % 4], {0,255,0}, 1);
+                line(src.img, armor.apex2d[i % 4], armor.apex2d[(i + 1) % 4], {0, 255, 0}, 1);
             rectangle(src.img, armor.roi, {255, 0, 255}, 1);
             // auto armor_center = coordsolver_.reproject(armor.armor3d_cam);
             // circle(src.img, armor_center, 4, {0, 0, 255}, 2);

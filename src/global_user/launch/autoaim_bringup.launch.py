@@ -36,13 +36,13 @@ def generate_launch_description():
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='daheng',
+        default_value='usb',
         description='hik daheng mvs usb'
     )
 
     declare_use_serial = DeclareLaunchArgument(
         name='using_imu',
-        default_value='True',
+        default_value='False',
         description='debug without serial port.'
     )
     
@@ -91,7 +91,7 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[{
                 'using_port': True,
-                'tracking_target': False,
+                'tracking_target': True,
                 'print_serial_info': False,
                 'print_referee_info': False
             }],

@@ -141,7 +141,7 @@ namespace serialport
             // 若串口离线则跳过数据发送
             if (!serial_port_->serial_data_.is_initialized)
             {
-                RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "Serial port offline!!!");
+                RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 40, "Serial port offline!!!");
                 usleep(1000);
                 continue;
             }
@@ -153,7 +153,7 @@ namespace serialport
                 is_receive_data = serial_port_->receiveData();
                 if(!is_receive_data)
                 {
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
+                    RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 40, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
                     usleep(1000);
                 }
             }
@@ -221,11 +221,11 @@ namespace serialport
                     // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "pitch_angle:%.2f", pitch_angle);
                     if (print_serial_info_)
                     {
-                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1500, "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
-                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "gyro:[%f %f %f]", gyro[0], gyro[1], gyro[2]);
-                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "acc:[%f %f %f]", acc[0], acc[1], acc[2]);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "gyro:[%f %f %f]", gyro[0], gyro[1], gyro[2]);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "acc:[%f %f %f]", acc[0], acc[1], acc[2]);
                     }
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "bullet_speed::%f", bullet_speed);
+                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "bullet_speed::%f", bullet_speed);
 
                     rclcpp::Time now = this->get_clock()->now();
                     SerialMsg serial_msg;
@@ -302,10 +302,10 @@ namespace serialport
                     if (print_referee_info_)
                     {
                         for(int ii = 0; ii < 20; ii++)
-                            RCLCPP_INFO(this->get_logger(), "Pos:%.2f", vehicle_pos_info[ii]);
+                            RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "Pos:%.2f", vehicle_pos_info[ii]);
                         for(int ii = 0; ii < 10; ii++)
-                            RCLCPP_INFO(this->get_logger(), "HP:%.2d", hp[ii]);
-                        RCLCPP_INFO(this->get_logger(), "timestamp:%.2d", timestamp);
+                            RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "HP:%.2d", hp[ii]);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 40, "timestamp:%.2d", timestamp);
                     }
 
                     rclcpp::Time now = this->get_clock()->now();
@@ -503,7 +503,7 @@ namespace serialport
         //     mode = decision_msg_.mode;
         //     decision_mutex_.unlock();
         // }
-        // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "Mode:%d", mode);
         if (this->using_port_)
         {   
             VisionAimData vision_data;
@@ -538,7 +538,7 @@ namespace serialport
             rclcpp::Time start = target_info->header.stamp;
             // builtin_interfaces::msg::Time now_timestamp = now;
             // double dura = (now_timestamp.nanosec - target_info->header.stamp.nanosec) / 1e6;
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "All_delay:%.2fms", (now.nanoseconds() - start.nanoseconds()) / 1e6);
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "All_delay:%.2fms", (now.nanoseconds() - start.nanoseconds()) / 1e6);
             
             //数据发送
             mutex_.lock();
@@ -564,7 +564,7 @@ namespace serialport
         {
             if (!sendData(target_info))
             {   // Debug without com.
-                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub autoaim msg...");
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "Sub autoaim msg...");
             }
         }
         return;
@@ -581,7 +581,7 @@ namespace serialport
         if (mode == SMALL_BUFF || mode == BIG_BUFF)
         {
             if (!sendData(target_info))
-                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "Sub buff msg...");
         }
         return;
     }
@@ -614,7 +614,7 @@ namespace serialport
         }
         else
         {
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 40, "Sub buff msg...");
         }
     }
 
