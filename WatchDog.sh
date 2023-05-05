@@ -13,6 +13,7 @@ sec=2
 cnt=0
 
 cd /home/tup/Desktop/$name/
+source /opt/intel/openvino_2022.1.0.643/setupvars.sh
 source /opt/ros/galactic/setup.bash
 colcon build --symlink-install
 source install/setup.bash

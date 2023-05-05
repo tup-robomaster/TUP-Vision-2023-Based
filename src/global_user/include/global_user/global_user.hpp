@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-04-14 03:19:54
+ * @LastEditTime: 2023-04-16 23:18:02
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -44,6 +44,7 @@
 #define MVS_IMAGE_HEIGHT 1024
 
 using namespace std;
+using namespace Eigen;
 using namespace Eigen;
 namespace global_user
 {   

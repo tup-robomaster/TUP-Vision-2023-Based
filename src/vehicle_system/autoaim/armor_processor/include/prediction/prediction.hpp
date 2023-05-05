@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-04-16 13:33:18
+ * @LastEditTime: 2023-04-16 18:35:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -43,7 +43,7 @@ namespace armor_processor
         ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, const DebugParam& debug_param);
 
         bool resetPredictor();
-        bool updatePredictor();
+        bool updatePredictor(bool is_spinning, TargetInfo target);
         Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
         bool asyncPrediction(bool is_filtering, bool is_target_lost, bool is_spinning, Eigen::Vector3d meas, int64_t timestamp, Eigen::Vector3d& result);
         // PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
@@ -86,13 +86,14 @@ namespace armor_processor
         bool is_imm_init_;
         bool fitting_disabled_; // 是否禁用曲线拟合
         bool filter_disabled_;  // 是否禁用滤波
-        int error_cnt_ = 0;
-        double cur_pred_error_;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         rclcpp::Logger logger_;
         TargetInfo final_target_;  //最终击打目标信息
         double target_period_ = 0.0;
         int lost_cnt_ = 0;
+        
+        // int error_cnt_ = 0;
+        // double cur_pred_error_;
     
     private:
         // IMM Model.

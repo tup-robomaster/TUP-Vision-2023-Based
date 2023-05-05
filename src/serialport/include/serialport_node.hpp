@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-04-15 20:59:17
+ * @LastEditTime: 2023-05-05 00:50:32
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -72,22 +72,8 @@ namespace serialport
         bool print_referee_info_;
 
         void receiveData();
-        // void receiveFirstBag();
-        // void receiveSecondBag();
-        // void receiveThirdBag();
-
         mutex receive_mutex_;
-        uchar first_bag_[64];
-        uchar second_bag_[64];
-        uchar third_bag_[64];
         std::unique_ptr<std::thread> receive_thread_;
-        std::unique_ptr<std::thread> msg_pub_thread_;
-        void pubMessage();
-        atomic<bool> first_flag_;
-        atomic<bool> second_flag_;
-        atomic<bool> third_flag_;
-        // std::unique_ptr<std::thread> receive_second_thread_;
-        // std::unique_ptr<std::thread> receive_third_thread_; 
         // rclcpp::TimerBase::SharedPtr receive_timer_;
         
         mutex mutex_;

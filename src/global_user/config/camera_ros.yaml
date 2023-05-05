@@ -27,7 +27,7 @@
     image_height: 1024
     width_scale: 1
     height_scale: 1
-    exposure_time: 10500
+    exposure_time: 5000
     exposure_gain: 15
     exposure_gain_b: 0
     exposure_gain_g: 0
@@ -52,6 +52,7 @@
     using_video: true
     using_ros2bag: false
     video_path: "/recorder/video/gyro_video.webm"
+    # video_path: "/recorder/video/gyro_transition_fusion.webm"
     # video_path: "/recorder/video/gyro_transition_fusion.webm"
     # video_path: "/recorder/video/buff.webm"
     # video_path: "/recorder/video/2022-06-23_19_36_54(1).avi"

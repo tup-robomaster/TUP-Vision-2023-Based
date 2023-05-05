@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-03-28 18:29:49
+ * @LastEditTime: 2023-03-20 10:06:49
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -158,7 +158,7 @@ namespace buff_detector
         {
             param_mutex_.unlock();
             buff_msg.header.frame_id = "gimbal_link";
-            buff_msg.header.stamp = img_info->header.stamp;
+            buff_msg.header.stamp = this->get_clock()->now();
             buff_msg.r_center.x = target_info.r_center[0];
             buff_msg.r_center.y = target_info.r_center[1];
             buff_msg.r_center.z = target_info.r_center[2];

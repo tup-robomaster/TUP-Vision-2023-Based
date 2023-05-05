@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-04-15 22:57:22
+ * @LastEditTime: 2023-05-05 00:35:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -193,7 +193,7 @@ namespace armor_processor
         else if (target.is_spinning && target.is_spinning_switched)
         {
             //更新预测器（位置&速度继承）
-            armor_predictor_.updatePredictor();
+            armor_predictor_.updatePredictor(target.is_spinning, target);
             armor_predictor_.predictor_state_ = PREDICTING;
         }
 

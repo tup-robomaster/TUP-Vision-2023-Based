@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-04-14 13:35:28
+ * @LastEditTime: 2023-05-05 01:00:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
@@ -87,8 +87,8 @@ namespace armor_detector
         int64_t now_; //当前帧时间戳
         int64_t last_timestamp_; //上一帧时间戳
 
+        // int dead_buffer_cnt_;
         int lost_cnt_;
-        int dead_buffer_cnt_;
         bool is_target_switched_;
         bool is_id_switched_;
         double last_target_area_;

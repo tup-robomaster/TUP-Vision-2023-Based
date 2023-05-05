@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:40
- * @LastEditTime: 2023-04-14 02:53:59
+ * @LastEditTime: 2023-04-16 22:51:48
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/usb_driver/usb_cam_node.hpp
  */
 #ifndef USB_CAM_NODE_HPP_

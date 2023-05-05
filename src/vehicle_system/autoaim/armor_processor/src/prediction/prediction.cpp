@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-16 13:34:15
+ * @LastEditTime: 2023-05-05 00:27:16
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -136,12 +136,20 @@ namespace armor_processor
         is_singer_init_[1][2] = false;
         filter_disabled_ = false;
         fitting_disabled_ = false;
+        history_info_.clear();
+        history_pred_.clear();
+        history_losting_pred_.clear();
 
         return true;
     }
 
-    bool ArmorPredictor::updatePredictor()
+    bool ArmorPredictor::updatePredictor(bool is_spinning, TargetInfo target)
     {
+        for (int ii = 0; ii < 3; ii++)
+        {
+            Eigen::Vector3d state = singer_kf_[is_spinning][ii].x();
+            singer_kf_[is_spinning][ii].x_ << target.xyz[ii], state[1], state[2];
+        }
         return true;
     }
 
@@ -205,7 +213,16 @@ namespace armor_processor
             TargetInfo target_pred;
             target_pred.xyz = result;
             target_pred.timestamp = timestamp;
-            history_pred_.push_back(target_pred);
+
+            if ((int)history_pred_.size() > 100)
+            {
+                history_pred_.pop_front();
+                history_pred_.push_back(target_pred);
+            }
+            else
+            {
+                history_pred_.push_back(target_pred);
+            }
             // RCLCPP_INFO(logger_, "111");
         }
         else if (predictor_state_ == LOSTING)
@@ -214,7 +231,15 @@ namespace armor_processor
             TargetInfo target_losting_pred;
             target_losting_pred.xyz = result;
             target_losting_pred.timestamp = timestamp;
-            history_losting_pred_.push_back(target_losting_pred);
+            if ((int)history_pred_.size() > 100)
+            {
+                history_losting_pred_.pop_front();
+                history_losting_pred_.push_back(target_losting_pred);
+            }
+            else
+            {
+                history_losting_pred_.push_back(target_losting_pred);
+            }
             // RCLCPP_INFO(logger_, "222");
         }
         if (predictor_state_ == TRACKING)
@@ -442,7 +467,7 @@ namespace armor_processor
                 Eigen::VectorXd State(3, 1);
                 State << singer_kf_[is_spinning][axis].x_[0], singer_kf_[is_spinning][axis].x_[1], singer_kf_[is_spinning][axis].x_[2];
 
-                double post_pos = State[0];
+                // double post_pos = State[0];
 
                 // predict_vel_[is_spinning][axis][3] = predict_vel_[is_spinning][axis][2];
                 // predict_vel_[is_spinning][axis][2] = predict_vel_[is_spinning][axis][1];
@@ -509,7 +534,7 @@ namespace armor_processor
 
             Eigen::VectorXd State(3, 1);
             State << singer_kf_[is_spinning][axis].x_[0], singer_kf_[is_spinning][axis].x_[1], singer_kf_[is_spinning][axis].x_[2];
-            double post_pos = State[0];
+            // double post_pos = State[0];
             double alpha = singer_param_[is_spinning][axis][0];
             double dt = singer_param_[is_spinning][axis][8] * singer_param_[is_spinning][axis][4];
             if (is_spinning)
