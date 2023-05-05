@@ -304,6 +304,24 @@ namespace armor_processor
             
             if (!target.is_target_lost)
             {
+                cv::Point2f point_2d = {0, 0};
+                double min_dist = 1e2;
+                int idx = 0, flag = -1;
+                for (auto armor_point3d_world : armor3d_vec)
+                {
+                    double armor3d_dist = armor_point3d_world.norm();
+                    if (armor3d_dist < min_dist)
+                    {
+                        min_dist = armor3d_dist;
+                        flag = idx;
+                    }
+                    // Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
+                    // point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                    // cv::circle(dst, point_2d, 6, {255, 255, 0}, -1);
+                    ++idx;
+                }
+
+                idx = 0;
                 if (show_marker_)
                 {
                     rclcpp::Time now = this->get_clock()->now();
@@ -339,13 +357,18 @@ namespace armor_processor
                         // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
                         marker.pose.position.x = armor3d(0);
                         marker.pose.position.y = armor3d(1);
-                        marker.pose.position.z = 0;
+                        marker.pose.position.z = armor3d(2);
 
                         if (marker.id == 0)
                         {
                             marker.type = visualization_msgs::msg::Marker::ARROW;
-                            marker.pose.position.z = 0;
+                            // marker.pose.position.z = armor3d(2);
                         }
+                        // else if (flag == idx)
+                        // {
+                        //     marker.type = visualization_msgs::msg::Marker::ARROW;
+                        //     // q.setRPY(0, 0, armor3d(3));
+                        // }
                         else
                         {
                             marker.type = shape_;
@@ -360,9 +383,15 @@ namespace armor_processor
                         {
                             marker.scale.x = armor3d(2);
                             // RCLCPP_WARN(get_logger(), "z_axis:%.3f", armor3d(2));
-                            marker.scale.y = 0.025;
-                            marker.scale.z = 0.025;
+                            marker.scale.y = 0.010;
+                            marker.scale.z = 0.010;
                         }
+                        // else if (flag == idx)
+                        // {
+                        //     marker.scale.x = -armor3d(2);
+                        //     marker.scale.y = 0.025;
+                        //     marker.scale.z = 0.025;
+                        // }
                         else
                         {
                             marker.scale.x = 0.060;
@@ -407,6 +436,7 @@ namespace armor_processor
                     }
                     // Publish the marker_array
                     marker_array_pub_->publish(marker_array);
+                    idx++;
                 }
                 // AutoaimMsg predict_info;
                 // predict_info.header.frame_id = "camera_link";
@@ -464,9 +494,9 @@ namespace armor_processor
                             min_dist = armor3d_dist;
                             flag = idx;
                         }
-                        // Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
-                        // point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
-                        // cv::circle(dst, point_2d, 6, {255, 255, 0}, -1);
+                        Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
+                        point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                        cv::circle(dst, point_2d, 6, {255, 255, 0}, -1);
                         ++idx;
                     }
 

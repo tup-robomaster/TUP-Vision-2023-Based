@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-04-30 19:38:16
+ * @LastEditTime: 2023-05-02 15:50:51
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -53,7 +53,12 @@ namespace armor_processor
 
     bool ArmorPredictor::updatePredictor(Eigen::VectorXd meas)
     {
-        uniform_ekf_.x_(2) = meas(2);
+        double pred_yaw = uniform_ekf_.x_(4);
+        if (abs(pred_yaw - meas(3)) > 0.6)
+        {
+            uniform_ekf_.x_(2) = meas(2);
+            uniform_ekf_.x_(4) = meas(3);
+        }
         return true;
     }
 
@@ -62,26 +67,27 @@ namespace armor_processor
         SpinHeading spin_state = target.is_spinning ? (target.is_clockwise ? CLOCKWISE : COUNTER_CLOCKWISE) : UNKNOWN;
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
         
-        if (is_ekf_init_)
-        {
-            if (abs(target.rangle - last_rangle) > 1.0)
-            {
-                // cur_rangle_ += CV_PI / 2;
-                cur_rangle_ += (last_rangle - target.rangle);
-            }
-            meas(3) += cur_rangle_;
-        }
-        else
-        {
-            cur_rangle_ = 0.0;
-        }
+        // if (is_ekf_init_)
+        // {
+        //     if (abs(target.rangle - last_rangle) > 0.6)
+        //     {
+        //         // cur_rangle_ += CV_PI / 2;
+        //         cur_rangle_ += (last_rangle - target.rangle);
+        //     }
+        //     meas(3) += cur_rangle_;
+        // }
+        // else
+        // {
+        //     cur_rangle_ = 0.0;
+        // }
 
+        // cout << "cur_rangle:" << cur_rangle_ << " last_rangle:" << last_rangle << " cur_rangle:" << target.rangle << endl;
+        // last_rangle = target.rangle; 
         if (!predictBasedUniformModel(target.is_target_lost, spin_state, meas, dt, pred_dt, target.period, pred_point3d, armor3d_vec))
         {
             pred_point3d = target.xyz;
             return false;
         }
-        last_rangle = target.rangle;
 
         return true;
     }
@@ -96,14 +102,31 @@ namespace armor_processor
             is_ekf_init_ = true;
             is_pred_success = false;
             result = {meas(0), meas(1), meas(2)};
+            return is_pred_success;
         }
-        else if (is_target_lost && predictor_state_ == LOSTING)
-        {   // 预测
-            uniform_ekf_.setKF(dt);
-            uniform_ekf_.Predict(dt);
+
+        // 预测
+        uniform_ekf_.setKF(dt);
+        uniform_ekf_.Predict(dt);
+        if (is_ekf_init_ && !is_target_lost)
+        {
+            Eigen::Vector3d cur_pos = {meas(0), meas(1), meas(2)};
+            Eigen::Vector3d pred_pos = {uniform_ekf_.x_(0) + uniform_ekf_.x_(3) * sin(uniform_ekf_.x_(4)), uniform_ekf_.x_(1) - uniform_ekf_.x_(3) * cos(uniform_ekf_.x_(4)), uniform_ekf_.x_(2)};
+            if ((pred_pos - pred_pos).norm() > 0.25)
+            {
+                double radius = uniform_ekf_.x_(3);
+                uniform_ekf_.x_(0) = cur_pos(0) - radius * sin(meas(3));
+                uniform_ekf_.x_(1) = cur_pos(1) + radius * cos(meas(3));
+                uniform_ekf_.x_(6) = 0.0;
+                uniform_ekf_.x_(7) = 0.0;
+                uniform_ekf_.x_(8) = 0.0;
+            }
+        }
+
+        if (is_target_lost && predictor_state_ == LOSTING)
+        {   
             Eigen::VectorXd state = uniform_ekf_.x();
             Eigen::Vector3d circle_center = {state(0), state(1), state(2)};
-
             double radius = state(3);
             double rangle = state(4);
             double omega = state(5);
@@ -111,11 +134,13 @@ namespace armor_processor
             {
                 radius = 0.20;
                 uniform_ekf_.radius_ = 0.20;
+                uniform_ekf_.x_(3) = 0.20;
             }
             else if (radius > 0.35)
             {
                 radius = 0.35;
                 uniform_ekf_.radius_ = 0.35;
+                uniform_ekf_.x_(3) = 0.35;
             }
             double pred_rangle = rangle;
             // if (spin_state == CLOCKWISE)
@@ -148,38 +173,46 @@ namespace armor_processor
             is_pred_success = true;
         }
         else
-        { // 预测+更新
-            uniform_ekf_.setKF(dt);
-            uniform_ekf_.Predict(dt);
+        {   // 更新
             uniform_ekf_.Update(meas, meas(3));
             Eigen::VectorXd state = uniform_ekf_.x();
+
+            if (abs(state(6)) > 1.0 || abs(state(7)) > 1.0 || abs(state(8)) > 1.0 || abs(state(3)) > 0.5 || abs(state(0) - meas(0)) > 1.0 || abs(state(1) - meas(1)) > 1.0)
+            {
+                is_ekf_init_ = false;
+                result = {meas(0), meas(1), meas(2)};
+                is_pred_success = false;
+                return is_pred_success;
+            }
 
             double radius = state(3);
             double rangle = state(4);
             double omega = state(5);
 
-            Eigen::MatrixXd F(6, 6);
-            uniform_ekf_.setF(F, pred_dt);
-            Eigen::VectorXd pred = F * state;
-            state = pred;
+            // Eigen::MatrixXd F(9, 9);
+            // uniform_ekf_.setF(F, pred_dt);
+            // Eigen::VectorXd pred = F * state;
+            // state = pred;
             // Eigen::MatrixXd Control(11, 3);
             // uniform_ekf_.setC(Control, pred_dt);
             // Eigen::MatrixXd acc(3, 1);
             // acc << uniform_ekf_.x_(8), uniform_ekf_.x_(9), uniform_ekf_.x_(10);
             // Eigen::VectorXd pred = F * state + Control * acc;
-            radius = pred(3);
-            rangle = pred(4);
-            omega = pred(5);
+            // radius = pred(3);
+            // rangle = pred(4);
+            // omega = pred(5);
 
             if (radius < 0.20)
             {
                 radius = 0.20;
                 uniform_ekf_.radius_ = 0.20;
+                uniform_ekf_.x_(3) = 0.20;
             }
             else if (radius > 0.35)
             {
                 radius = 0.35;
                 uniform_ekf_.radius_ = 0.35;
+                uniform_ekf_.x_(3) = 0.35;
             }
 
             // Eigen::Vector3d circle_center = {pred(0), pred(1), pred(2)};
@@ -203,6 +236,10 @@ namespace armor_processor
             Eigen::Vector4d circle_center3d = {circle_center(0), circle_center(1), state(2), 0.0};
             armor3d_vec.emplace_back(circle_center3d);
 
+            Eigen::Vector2d circle3d = calcCircleCenter(meas);
+            Eigen::Vector4d circle4d = {circle3d(0), circle3d(1), meas(2), meas(3)};
+            armor3d_vec.emplace_back(circle4d);               
+
             // cout << "pred_rangle:" << rangle << " x:" << result(1) << endl;
             Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
             for (int ii = 0; ii < 4; ii++)
@@ -221,6 +258,7 @@ namespace armor_processor
             );
             is_pred_success = true;
         }
+
         return is_pred_success;
     }
 

@@ -438,7 +438,7 @@ namespace armor_detector
             putText(src.img, delay_str, {src.img.size().width / 5 - 40, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 125, 255});
         }
 
-        //目标检测接口函数
+        // 目标检测接口函数
         detect(src, stamp);
     }
 
