@@ -127,7 +127,10 @@ namespace armor_processor
 
     bool ArmorProcessorNode::processTargetMsg(const AutoaimMsg& target_info, cv::Mat* src)
     {
-        double sleep_time = 0.0;
+        // Eigen::Vector3d result = {target_info.aiming_point_world.x, target_info.aiming_point_world.y, target_info.aiming_point_world.z};
+        // cout << "xyz:(" << result(0) << ", " << result(1) << ", " << result(1) << ")" << endl;
+        
+        double sleep_time = 0.0; 
         AutoaimMsg target = std::move(target_info);
         Eigen::Vector2d angle = {0.0, 0.0};
         Eigen::Vector3d aiming_point_world;
@@ -149,45 +152,52 @@ namespace armor_processor
             }
             image_mutex_.unlock();
         }
-        // cout << "is_target_lost:" << target.is_target_lost << endl; 
-        if (target.is_target_lost)
+
+        // if (!target.is_target_lost)
+        // {
+        //     processor_->armor_predictor_.predictor_state_ == PREDICTING;
+        // }
+
+        if (!debug_param_.using_imu)
+        {
+            rmat_imu = Eigen::Matrix3d::Identity();
+        }
+        else
+        {
+            quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
+            rmat_imu = quat_imu.toRotationMatrix();
+        }
+        
+        param_mutex_.lock();
+        if (processor_->predictor(target, aiming_point_world, sleep_time))
+        {
+            aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
+            angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
+            tracking_point_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
+            tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
+        
+            if (abs(tracking_angle[0]) < 7.50 && abs(tracking_angle[1]) < 7.50)
+            {
+                is_pred_ = true;
+                is_aimed_ = true;
+            }
+        
+            if (abs(angle[0]) > 45.0 || abs(angle[1]) > 45.0)
+            {
+                is_pred_ = false;
+                is_aimed_ = false;
+            } 
+        }
+        param_mutex_.unlock();
+
+        if (processor_->armor_predictor_.predictor_state_ == LOST)
         {
             is_aimed_ = false;
             is_pred_ = false;
         }
-        else
+        else if (processor_->armor_predictor_.predictor_state_ == TRACKING)
         {
-            if(!debug_param_.using_imu)
-            {
-                rmat_imu = Eigen::Matrix3d::Identity();
-            }
-            else
-            {
-                quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
-                rmat_imu = quat_imu.toRotationMatrix();
-            }
-            
-            param_mutex_.lock();
-            if (processor_->predictor(target, aiming_point_world, sleep_time))
-            {
-                aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
-                angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
-                tracking_point_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
-                tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
-            
-                if (abs(tracking_angle[0]) < 7.50 && abs(tracking_angle[1]) < 7.50)
-                {
-                    is_pred_ = true;
-                    is_aimed_ = true;
-                }
-            
-                if (abs(angle[0]) > 45.0 || abs(angle[1]) > 45.0)
-                {
-                    is_pred_ = false;
-                    is_aimed_ = false;
-                } 
-            }
-            param_mutex_.unlock();
+            is_pred_ = false;
         }
 
         if (!is_aimed_)
@@ -295,10 +305,13 @@ namespace armor_processor
                 line(dst, cv::Point2f(0, dst.size().height / 2), cv::Point2f(dst.size().width, dst.size().height / 2), {0, 255, 0}, 1);
             }
 
-            // draw vel and acc curve
-            processor_->curveDrawer(0, dst, processor_->armor_predictor_.history_vel_[0], cv::Point2i(260, 250));
-            processor_->curveDrawer(1, dst, processor_->armor_predictor_.history_vel_[1], cv::Point2i(260, 480));
-            processor_->curveDrawer(2, dst, processor_->armor_predictor_.history_vel_[2], cv::Point2i(260, 710));
+            if (debug_param_.draw_predict)
+            {
+                // Draw vel and acc curve.
+                processor_->curveDrawer(0, dst, processor_->armor_predictor_.history_vel_[0], cv::Point2i(260, 120));
+                processor_->curveDrawer(1, dst, processor_->armor_predictor_.history_vel_[1], cv::Point2i(260, 200));
+                processor_->curveDrawer(2, dst, processor_->armor_predictor_.history_vel_[2], cv::Point2i(260, 280));
+            }
 
             char ch[40];
             char ch1[40];

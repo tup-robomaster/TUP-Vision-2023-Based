@@ -326,7 +326,8 @@ namespace armor_detector
         target_info.header.stamp = stamp;
         target_info.timestamp = stamp.nanoseconds();
 
-        // RCLCPP_INFO(this->get_logger(), "timestamp:%.8f", target_info.timestamp / 1e9);
+        // rclcpp::Time sp = target_info.header.stamp;
+        // RCLCPP_INFO(this->get_logger(), "t imestamp:%.3f", sp.nanoseconds() / 1e9);
 
         // if (is_visual_msgs_)
         // {
@@ -379,12 +380,11 @@ namespace armor_detector
 
         // if (target_info.spinning_switched)
             // cout << "spinning_switched" << endl;
+        rclcpp::Time end = this->get_clock()->now();
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 200, "detect_delay:%.2fms", (end - now).nanoseconds() / 1e6);
 
         armor_info_pub_->publish(std::move(target_info));
 
-        rclcpp::Time end = this->get_clock()->now();
-        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 200, "detect_delay:%.2fms", (end - now).nanoseconds() / 1e6);
-        
         debug_.show_img = this->get_parameter("show_img").as_bool();
         if (debug_.show_img)
         {
@@ -452,7 +452,7 @@ namespace armor_detector
         src.timestamp = stamp.nanoseconds();
         src.img = cv_bridge::toCvShare(img_info, "bgr8")->image;
         // img.copyTo(src.img);
-        // RCLCPP_INFO(this->get_logger(), "src_timestamp:%.8f", src.timestamp / 1e9);
+        // RCLCPP_INFO(this->get_logger(), "src_timestamp:%.3f", src.timestamp / 1e9);
         
         if (debug_.show_img)
         {
@@ -496,13 +496,14 @@ namespace armor_detector
     std::unique_ptr<Detector> DetectorNode::initDetector()
     {
         //Detector params.
-        this->declare_parameter<int>("armor_type_wh_thres", 3);
+        this->declare_parameter<double>("armor_type_wh_high_thres", 3.0);
+        this->declare_parameter<double>("armor_type_wh_low_thres", 2.5);
         this->declare_parameter<int>("max_lost_cnt", 5);
         this->declare_parameter<int>("max_armors_cnt", 8);
         this->declare_parameter<int>("max_v", 8);
         this->declare_parameter<double>("no_crop_thres", 1e-2);
         this->declare_parameter<int>("hero_danger_zone", 4);
-        this->declare_parameter<bool>("color", true);
+        this->declare_parameter<int>("color", 1);
         this->declare_parameter<double>("no_crop_ratio", 2e-3);
         this->declare_parameter<double>("full_crop_ratio", 1e-4);
         this->declare_parameter<double>("armor_roi_expand_ratio_width", 1.1);
@@ -560,17 +561,14 @@ namespace armor_detector
      */
     bool DetectorNode::updateParam()
     {
-        detector_params_.armor_type_wh_thres = this->get_parameter("armor_type_wh_thres").as_int();
+        detector_params_.armor_type_wh_high_thres = this->get_parameter("armor_type_wh_high_thres").as_double();
+        detector_params_.armor_type_wh_low_thres = this->get_parameter("armor_type_wh_low_thres").as_double();
         detector_params_.max_lost_cnt = this->get_parameter("max_lost_cnt").as_int();
         detector_params_.max_armors_cnt = this->get_parameter("max_armors_cnt").as_int();
         detector_params_.max_v = this->get_parameter("max_v").as_int();
         detector_params_.no_crop_thres = this->get_parameter("no_crop_thres").as_double();
         detector_params_.hero_danger_zone = this->get_parameter("hero_danger_zone").as_int();
-        bool det_red = this->get_parameter("color").as_bool();
-        if(det_red)
-            detector_params_.color = (Color)1;
-        else
-            detector_params_.color = (Color)0;
+        detector_params_.color = this->get_parameter("color").as_int();
         detector_params_.no_crop_ratio = this->get_parameter("no_crop_ratio").as_double();
         detector_params_.full_crop_ratio = this->get_parameter("full_crop_ratio").as_double();
         detector_params_.armor_roi_expand_ratio_width = this->get_parameter("armor_roi_expand_ratio_width").as_double();

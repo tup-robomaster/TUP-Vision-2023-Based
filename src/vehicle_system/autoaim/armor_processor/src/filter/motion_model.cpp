@@ -250,6 +250,7 @@ namespace armor_processor
         Init(SP, MP, CP);
         kf_param_.process_noise_params = ekf_param[0];
         kf_param_.measure_noise_params = ekf_param[1];
+        cout << "alpha:" << ekf_param[0][0] << " r:" << ekf_param[1][0] << endl;
         init();
     }
     
@@ -294,6 +295,8 @@ namespace armor_processor
             double alpha_y = kf_param_.process_noise_params[1];
             double alpha_z = kf_param_.process_noise_params[2];
             double dt = dt_;
+            // cout << "alpha:" << alpha_x << " " << alpha_y << " " << alpha_z << " dt" << dt << endl;
+
             F_ << 1, 0, 0, dt, 0, 0, (alpha_x * dt - 1 + exp(-alpha_x * dt)) / alpha_x / alpha_x, 0, 0, 
                   0, 1, 0, 0, dt, 0, 0, (alpha_y * dt - 1 + exp(-alpha_y * dt)) / alpha_y / alpha_y, 0, 
                   0, 0, 1, 0, 0, dt, 0, 0, (alpha_z * dt - 1 + exp(-alpha_z * dt)) / alpha_z / alpha_z, 
@@ -324,6 +327,8 @@ namespace armor_processor
             double alpha_y = kf_param_.process_noise_params[1];
             double alpha_z = kf_param_.process_noise_params[2];
             double dt = pred_dt;
+            // cout << "alpha:" << alpha_x << " " << alpha_y << " " << alpha_z << " pred_dt" << pred_dt << endl;
+            
             Ft << 1, 0, 0, dt, 0, 0, (alpha_x * dt - 1 + exp(-alpha_x * dt)) / alpha_x / alpha_x, 0, 0, 
                   0, 1, 0, 0, dt, 0, 0, (alpha_y * dt - 1 + exp(-alpha_y * dt)) / alpha_y / alpha_y, 0, 
                   0, 0, 1, 0, 0, dt, 0, 0, (alpha_z * dt - 1 + exp(-alpha_z * dt)) / alpha_z / alpha_z, 
@@ -345,9 +350,9 @@ namespace armor_processor
         }
         else if (cp_ == 3)
         {
-            H_ << 1, 0, 0,
-                  0, 1, 0,
-                  0, 0, 1;
+            H_ << 1, 0, 0, 0, 0, 0, 0, 0, 0,
+                  0, 1, 0, 0, 0, 0, 0, 0, 0,
+                  0, 0, 1, 0, 0, 0, 0, 0, 0;
         }
     }
 
@@ -363,7 +368,7 @@ namespace armor_processor
 
     void SingerModel::updateJf(Eigen::MatrixXd& Jft, double dt)
     {
-        Jft =Jf_;
+        Jft = Jf_;
     }
 
     void SingerModel::updateJh()
@@ -393,7 +398,9 @@ namespace armor_processor
             double r1 = kf_param_.measure_noise_params[0];
             double r2 = kf_param_.measure_noise_params[1];
             double r3 = kf_param_.measure_noise_params[2];
-            R_ << r1, r2, r3;
+            R_ << r1, 0,  0, 
+                  0,  r2, 0,
+                  0,  0,  r3;
         }
     }
 
@@ -459,12 +466,16 @@ namespace armor_processor
 
     void SingerModel::updateQ()
     {
+        updateQ(dt_);
+    }
+
+    void SingerModel::updateQ(double dt)
+    {
         assert(cp_ == 1 || cp_ == 3);
         if (cp_ == 1)
         {
             double alpha = kf_param_.process_noise_params[0];
             double sigma = kf_param_.process_noise_params[1];
-            double dt = dt_;
             double q11 = 1 / (2 * pow(alpha, 5)) * (1 - exp(-2 * alpha * dt) + 2 * alpha * dt + 2 * pow(alpha * dt, 3) / 3 - 2 * pow(alpha * dt, 2) - 4 * alpha * dt * exp(-alpha * dt));
             double q12 = 1 / (2 * pow(alpha, 4)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt) + 2 * alpha * dt * exp(-alpha * dt) - 2 * alpha * dt + pow(alpha * dt, 2));
             double q13 = 1 / (2 * pow(alpha, 3)) * (1 - exp(-2 * alpha * dt) - 2 * alpha * dt * exp(-alpha * dt));
@@ -483,7 +494,6 @@ namespace armor_processor
             double sigma_x = kf_param_.process_noise_params[3];
             double sigma_y = kf_param_.process_noise_params[4];
             double sigma_z = kf_param_.process_noise_params[5];
-            double dt = dt_;
             double x_q11 = 2 * pow(sigma_x, 2) * alpha_x / (2 * pow(alpha_x, 5)) * (1 - exp(-2 * alpha_x * dt) + 2 * alpha_x * dt + 2 * pow(alpha_x * dt, 3) / 3 - 2 * pow(alpha_x * dt, 2) - 4 * alpha_x * dt * exp(-alpha_x * dt));
             double x_q12 = 2 * pow(sigma_x, 2) * alpha_x / (2 * pow(alpha_x, 4)) * (exp(-2 * alpha_x * dt) + 1 - 2 * exp(-alpha_x * dt) + 2 * alpha_x * dt * exp(-alpha_x * dt) - 2 * alpha_x * dt + pow(alpha_x * dt, 2));
             double x_q13 = 2 * pow(sigma_x, 2) * alpha_x / (2 * pow(alpha_x, 3)) * (1 - exp(-2 * alpha_x * dt) - 2 * alpha_x * dt * exp(-alpha_x * dt));

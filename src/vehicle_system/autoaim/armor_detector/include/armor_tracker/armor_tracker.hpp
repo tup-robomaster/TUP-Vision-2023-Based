@@ -57,6 +57,9 @@ namespace armor_detector
         double hit_score;                       //该tracker可能作为目标的分数,由装甲板旋转角度,距离,面积大小决定
         Armor last_armor;                       //上一次装甲板
         Armor new_armor;                       //本次装甲板
+        int gray_armor_cnt_ = 0;
+        bool is_dead_ = false;
+        int max_gray_armor_cnt_ = 5;
         
         int64_t now = 0.0;                       //本次装甲板时间戳
         int64_t last_timestamp = 0.0;            //上次装甲板时间戳

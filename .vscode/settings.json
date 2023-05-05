@@ -109,7 +109,11 @@
         "dense": "cpp",
         "specialfunctions": "cpp",
         "*.ipp": "cpp",
-        "tensor": "cpp"
+        "tensor": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "ranges": "cpp",
+        "stop_token": "cpp"
     },
     "python.autoComplete.extraPaths": [
         "/opt/ros/galactic/lib/python3.8/site-packages"

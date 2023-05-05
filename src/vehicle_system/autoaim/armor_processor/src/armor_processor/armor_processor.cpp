@@ -9,8 +9,8 @@
 
 namespace armor_processor
 {
-    Processor::Processor(const PredictParam& predict_param, vector<double>* singer_model_param, const DebugParam& debug_param)
-    : armor_predictor_(predict_param, singer_model_param, debug_param)
+    Processor::Processor(const PredictParam& predict_param, vector<double>* ekf_param, const DebugParam& debug_param)
+    : armor_predictor_(predict_param, ekf_param, debug_param)
     {
         car_id_map_ = {
             {"B0", 0}, {"B1", 1},
@@ -128,10 +128,17 @@ namespace armor_processor
     bool Processor::predictor(AutoaimMsg& target_msg, Eigen::Vector3d& pred_result, double& sleep_time)
     {
         bool is_success = false;
-        rclcpp::Time stamp = target_msg.header.stamp;
-        int64_t dt = stamp.nanoseconds();
+        rclcpp::Time now = target_msg.header.stamp;
+        double dt = (now.nanoseconds() - last_stamp_.nanoseconds()) / 1e9;
+        if (dt > 0.20 || dt < 0.0)
+        {
+            RCLCPP_WARN(armor_predictor_.logger_, "exception time:%.2fs", dt);
+            dt = 0.015;
+        }
+        // cout << "timestamp:" << dt / 1e9 << endl;
 
         Eigen::Vector3d xyz = {target_msg.aiming_point_world.x, target_msg.aiming_point_world.y, target_msg.aiming_point_world.z};
+        pred_result = xyz;
         TargetInfo target = 
         {
             std::move(xyz),
@@ -148,25 +155,29 @@ namespace armor_processor
             (OutpostStatus)(target_msg.is_controlled),
             armor_predictor_.predict_param_.system_model
         };
-
-        if (target.is_spinning && target.is_spinning_switched)
-        {
-            armor_predictor_.target_period_ = target.period;
-        }
-        if(target.is_outpost_mode || target.is_spinning)
-        {
-            armor_predictor_.fitting_disabled_ = false;
-            armor_predictor_.filter_disabled_ = true;
-        }
-        else
-        {
-            armor_predictor_.fitting_disabled_ = true;
-            armor_predictor_.filter_disabled_ = false;
-        }
+        // cout << "xyz:(" << xyz(0) << ", " << xyz(1) << ", " << xyz(1) << ")" << endl;
 
         if (target.is_target_lost && armor_predictor_.predictor_state_ == PREDICTING)
         {
             armor_predictor_.predictor_state_ = LOSTING;
+        }
+
+        if (!target.is_target_lost)
+        {
+            if (target.is_spinning && target.is_spinning_switched)
+            {
+                armor_predictor_.target_period_ = target.period;
+            }
+            // if(target.is_outpost_mode || target.is_spinning)
+            // {
+            //     armor_predictor_.fitting_disabled_ = false;
+            //     armor_predictor_.filter_disabled_ = true;
+            // }
+            else
+            {
+                armor_predictor_.fitting_disabled_ = true;
+                armor_predictor_.filter_disabled_ = false;
+            }
         }
 
         if (target.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
@@ -183,14 +194,13 @@ namespace armor_processor
                 lost_cnt_ = 0;
             }
         }
-
-        if (target.is_target_switched || armor_predictor_.predictor_state_ == LOST)
+        else if ((target.is_target_switched || armor_predictor_.predictor_state_ == LOST) && !target.is_target_lost)
         {
             //重置预测器
             armor_predictor_.resetPredictor();
             armor_predictor_.predictor_state_ = PREDICTING;
         }
-        else if (target.is_spinning && target.is_spinning_switched)
+        else if (target.is_spinning && target.is_spinning_switched && !target.is_target_lost)
         {
             //更新预测器（位置&速度继承）
             armor_predictor_.updatePredictor(target.is_spinning, target);
@@ -200,7 +210,7 @@ namespace armor_processor
         if (armor_predictor_.predictor_state_ != LOST)
         {
             double bullet_speed = coordsolver_.getBulletSpeed();
-            pred_result = armor_predictor_.predict(target, bullet_speed, target.timestamp, sleep_time);
+            pred_result = armor_predictor_.predict(target, bullet_speed, dt, sleep_time);
             // if(!target.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
             // {   //当目标丢失后又出现时直接预测
             //     for (int ii = 0; ii < 3; ii++)
@@ -215,6 +225,8 @@ namespace armor_processor
             // }
             is_success = true;
         }
+        
+        last_stamp_ = now;
         return is_success;
     }
 
@@ -242,10 +254,10 @@ namespace armor_processor
             char ch[15];
             sprintf(ch, "%.3f", mean_v);
             std::string str = ch;
-            float k1 = 50;
+            float k1 = 100;
             if (!src.empty())
             {
-                string axis_str = (axis == 0 && start_pos.x == 260) ? "X_AXIS" : (((axis == 1 && start_pos.x == 260)) ? "Y_AXIS" : (((axis == 3 && start_pos.x == 260)) ? "Z_AXIS" : ""));
+                string axis_str = (axis == 0 && start_pos.x == 260) ? "X_AXIS" : (((axis == 1 && start_pos.x == 260)) ? "Y_AXIS" : (((axis == 2 && start_pos.x == 260)) ? "Z_AXIS" : ""));
                 cv::putText(src, axis_str, cv::Point(1, start_pos.y * (axis + 1) - 5), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 125));
                 cv::line(src, cv::Point(start_pos.x - 240, start_pos.y * (axis + 1)), cv::Point(start_pos.x, start_pos.y * (axis + 1)), cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
                 cv::line(src, cv::Point(start_pos.x - 240, start_pos.y * (axis + 1) + mean_v * k1), cv::Point(start_pos.x, start_pos.y * (axis + 1) + mean_v * k1), cv::Scalar(255, 255, 0), 1, cv::LINE_AA);

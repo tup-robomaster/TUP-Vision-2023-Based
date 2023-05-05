@@ -42,7 +42,7 @@ namespace armor_processor
 
         bool resetPredictor();
         bool updatePredictor(bool is_spinning, TargetInfo target);
-        Eigen::Vector3d predict(TargetInfo target, double bullet_speed, uint64_t now, double& delay_time, cv::Mat* src = nullptr);
+        Eigen::Vector3d predict(TargetInfo target, double bullet_speed, double dt, double& delay_time, cv::Mat* src = nullptr);
         // PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
         PredictorState predictor_state_ = LOST;
 
@@ -85,7 +85,6 @@ namespace armor_processor
         TargetInfo final_target_;  //最终击打目标信息
         double target_period_ = 0.0;
         int lost_cnt_ = 0;
-        int64_t last_dt_ = 0;
         
         // int error_cnt_ = 0;
         // double cur_pred_error_;

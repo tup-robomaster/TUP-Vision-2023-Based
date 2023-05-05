@@ -74,6 +74,7 @@ namespace armor_processor
         void updateC(); 
         void updateC(MatrixXd& C, const double dt);
         void updateQ();
+        void updateQ(double dt);
         
         // void updateQ(const double acc);
         // void updateQ(const double& dt, const double& alpha, const double& acc);

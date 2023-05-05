@@ -171,11 +171,8 @@ namespace armor_detector
 
     struct DetectorParam
     {
-        // int dw, dh;             //letterbox对原图像resize的padding区域的宽度和高度
-        // float rescale_ratio;    //缩放比例 
-        // int max_delta_t;   //使用同一预测器的最大时间间隔(ms)
-
-        int armor_type_wh_thres; //大小装甲板长宽比阈值
+        double armor_type_wh_high_thres; //大小装甲板长宽比高阈值
+        double armor_type_wh_low_thres; //大小装甲板长宽比低阈值
         int max_lost_cnt;        //最大丢失目标帧数
         int max_armors_cnt;    //视野中最多装甲板数
         int max_v;         //两次预测间最大速度(m/s)
@@ -191,15 +188,16 @@ namespace armor_detector
         double armor_roi_expand_ratio_height;
         double armor_conf_high_thres;
         
-        Color color;
+        int color;
         Eigen::Vector2d angle_offset;
         int shoot_delay;
         double bullet_speed;
 
         DetectorParam()
         {
-            color = (Color)1;
-            armor_type_wh_thres = 3;
+            color = 1;
+            armor_type_wh_high_thres = 3.0;
+            armor_type_wh_low_thres = 2.5;
             max_lost_cnt = 5;
             max_armors_cnt = 8;
             max_v = 0;

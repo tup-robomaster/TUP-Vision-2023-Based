@@ -119,42 +119,34 @@ namespace armor_processor
      * @param src 图像数据
      * @return Eigen::Vector3d 
      */
-    Eigen::Vector3d ArmorPredictor::predict(TargetInfo target, double bullet_speed, uint64_t now, double& delay_time, cv::Mat* src)
+    Eigen::Vector3d ArmorPredictor::predict(TargetInfo target, double bullet_speed, double dt, double& delay_time, cv::Mat* src)
     {
         auto t1 = steady_clock_.now();
-
         Eigen::Vector3d result = {0.0, 0.0, 0.0};
         Eigen::Vector3d target_vel = {0.0, 0.0, 0.0};
         Eigen::Vector3d target_acc = {0.0, 0.0, 0.0};
+        result = target.xyz;
+        // cout << "xyz:(" << result(0) << ", " << result(1) << ", " << result(1) << ")" << endl;
         
-        double dt = (now - last_dt_) / 1e9;
         double pred_dt = dt;
         double spin_dt = dt;
         if (!target.is_target_lost)
         {
-            if ((int)history_info_.size() > 0)
+            if((int)history_info_.size() > 100)
             {
-                if((int)history_info_.size() > 100)
-                {
-                    history_info_.pop_front();
-                    history_info_.push_back(target);
-                }
-                else
-                {
-                    history_info_.push_back(target);
-                }
-
-                double last_dist = history_info_.back().dist;
-                pred_dt = (last_dist / bullet_speed) + predict_param_.shoot_delay / 1e3;
-                delay_time = pred_dt;
-                spin_dt = (last_dist / bullet_speed) + predict_param_.spin_shoot_delay / 1e3;
-                final_target_ = target;
+                history_info_.pop_front();
+                history_info_.push_back(target);
             }
             else
             {
                 history_info_.push_back(target);
-                return result;
             }
+
+            double last_dist = history_info_.back().dist;
+            pred_dt = (last_dist / bullet_speed) + predict_param_.shoot_delay / 1e3;
+            delay_time = pred_dt;
+            spin_dt = (last_dist / bullet_speed) + predict_param_.spin_shoot_delay / 1e3;
+            final_target_ = target;
         }
             
         bool is_target_lost = target.is_target_lost;
@@ -162,36 +154,36 @@ namespace armor_processor
         if (predictor_state_ == PREDICTING)
         {   //预测器处于预测击打阶段
             predictBasedSinger(is_target_lost, is_spinning, target.xyz, result, target_vel, target_acc, dt, pred_dt);
-            TargetInfo target_pred;
-            target_pred.xyz = result;
-            target_pred.timestamp = now;
+            // TargetInfo target_pred;
+            // target_pred.xyz = result;
+            // target_pred.timestamp = now;
 
-            if ((int)history_pred_.size() > 100)
-            {
-                history_pred_.pop_front();
-                history_pred_.push_back(target_pred);
-            }
-            else
-            {
-                history_pred_.push_back(target_pred);
-            }
+            // if ((int)history_pred_.size() > 100)
+            // {
+            //     history_pred_.pop_front();
+            //     history_pred_.push_back(target_pred);
+            // }
+            // else
+            // {
+            //     history_pred_.push_back(target_pred);
+            // }
             // RCLCPP_INFO(logger_, "111");
         }
         else if (predictor_state_ == LOSTING)
         {
             predictBasedSinger(is_target_lost, is_spinning, target.xyz, result, target_vel, target_acc, dt, pred_dt);
-            TargetInfo target_losting_pred;
-            target_losting_pred.xyz = result;
-            target_losting_pred.timestamp = now;
-            if ((int)history_pred_.size() > 100)
-            {
-                history_losting_pred_.pop_front();
-                history_losting_pred_.push_back(target_losting_pred);
-            }
-            else
-            {
-                history_losting_pred_.push_back(target_losting_pred);
-            }
+            // TargetInfo target_losting_pred;
+            // target_losting_pred.xyz = result;
+            // target_losting_pred.timestamp = now;
+            // if ((int)history_pred_.size() > 100)
+            // {
+            //     history_losting_pred_.pop_front();
+            //     history_losting_pred_.push_back(target_losting_pred);
+            // }
+            // else
+            // {
+            //     history_losting_pred_.push_back(target_losting_pred);
+            // }
             // RCLCPP_INFO(logger_, "222");
         }
         if (predictor_state_ == TRACKING)
@@ -217,7 +209,7 @@ namespace armor_processor
         }
         final_target_.xyz = result;
         
-        last_dt_ = now;
+        // cout << "xyz:(" << result(0) << ", " << result(1) << ", " << result(1) << ")" << endl; 
         // string pred_state = (predictor_state_ == TRACKING) ? "TRACKING" : ((predictor_state_ == PREDICTING) ? "PREDICTION": ((predictor_state_ == LOSTING) ? "LOSTING" : "LOST"));
         // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 40, "Predictor_State:%s", pred_state.c_str());
         return result;
@@ -225,6 +217,7 @@ namespace armor_processor
 
     bool ArmorPredictor::predictBasedSinger(bool is_target_lost, bool is_spinning, Eigen::Vector3d meas, Eigen::Vector3d& result, Eigen::Vector3d target_vel, Eigen::Vector3d target_acc, double dt, double pred_dt)
     {
+        // cout << "xyz:(" << meas(0) << ", " << meas(1) << ", " << meas(1) << ")" << endl;
         bool is_available;
         if (!is_target_lost)
         {
@@ -238,7 +231,8 @@ namespace armor_processor
             else
             {
                 singer_model_.updateF(singer_model_.F_, dt);
-                singer_model_.updateJf(singer_model_.Jf_, dt);
+                singer_model_.updateJf();
+                singer_model_.updateQ(dt);
                 singer_model_.Predict(dt);
                 // Eigen::MatrixXd stateCovPre = singer_model_.P();
                 // Eigen::MatrixXd statePre = singer_model_.x();
@@ -246,7 +240,7 @@ namespace armor_processor
                 Eigen::VectorXd measurement = Eigen::VectorXd(3);
                 measurement << meas(0), meas(1), meas(2);
                 singer_model_.updateH(singer_model_.H_, dt);
-                singer_model_.updateJh(singer_model_.Jh_, dt);
+                singer_model_.updateJh();
                 singer_model_.Update(measurement);
 
                 // Eigen::MatrixXd predictState(9, 1);
@@ -256,9 +250,9 @@ namespace armor_processor
                 updateAcc({State(6), State(7), State(8)});
 
                 Eigen::MatrixXd F(9, 9);
-                singer_model_.updateF(F, dt);
+                singer_model_.updateF(F, pred_dt);
                 Eigen::MatrixXd Control(9, 3);
-                singer_model_.updateC(Control, dt);
+                singer_model_.updateC(Control, pred_dt);
 
                 // if (history_acc_[0] == 0.0)
                 //     singer_model_.setQ(target_acc);
@@ -269,6 +263,7 @@ namespace armor_processor
                 VectorXd pred = F * State + Control * acc;
                 result = {pred(0), pred(1), pred(2)};
 
+                // cout << "xyz:(" << result(0) << ", " << result(1) << ", " << result(1) << ")" << endl;
                 // if (checkDivergence(statePre, stateCovPre, singer_model_.H_, singer_model_.R_, measurement) || abs(result - meas) > 0.85)
                 // {
                 //     RCLCPP_WARN(logger_, "Filter is diverging...");
@@ -294,13 +289,13 @@ namespace armor_processor
                 // }
                 is_available = true;
             }
-            return is_available;
         }
         else if (predictor_state_ == LOSTING)
         {
             //对目标可能出现的位置进行预测
             singer_model_.updateF(singer_model_.F_, dt);
-            singer_model_.updateJf(singer_model_.Jf_, dt);
+            singer_model_.updateJf();
+            singer_model_.updateQ(dt);
             singer_model_.Predict(dt);
 
             Eigen::VectorXd State = singer_model_.x();
@@ -309,9 +304,9 @@ namespace armor_processor
             updateAcc({State(6), State(7), State(8)});
             
             Eigen::MatrixXd F(9, 9);
-            singer_model_.updateF(F, dt);
+            singer_model_.updateF(F, pred_dt);
             Eigen::MatrixXd Control(9, 3);
-            singer_model_.updateC(Control, dt);
+            singer_model_.updateC(Control, pred_dt);
 
             Eigen::Vector3d acc = {State(6), State(7), State(8)};
             VectorXd pred = F * State + Control * acc;
@@ -319,6 +314,7 @@ namespace armor_processor
             result = {pred(0), pred(1), pred(2)};
             is_available = true;
         }
+
         return is_available;
     }
 

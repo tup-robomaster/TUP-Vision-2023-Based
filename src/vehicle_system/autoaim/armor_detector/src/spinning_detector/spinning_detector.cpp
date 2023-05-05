@@ -36,7 +36,7 @@ namespace armor_detector
         // last_pitch_diff_ = 0.0;
     }
 
-    SpinningDetector::SpinningDetector(Color color, GyroParam gyro_params)
+    SpinningDetector::SpinningDetector(int color, GyroParam gyro_params)
     : logger_(rclcpp::get_logger("spinning_detector"))
     {
         detector_info_.last_add_tracker_timestamp = 0;
@@ -150,20 +150,8 @@ namespace armor_detector
         {
             //当装甲板颜色为灰色且当前dead_buffer小于max_dead_buffer
             string tracker_key;
-            is_gray_exists_ = false;
             if ((*armor).color == GRAY_SMALL || (*armor).color == GRAY_BIG)
             {   
-                gray_id_ = (*armor).color;
-                is_gray_exists_ = true;
-                RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 50, "Gray armor...");
-                if (dead_buffer_cnt_ >= gyro_params_.max_dead_buffer || !is_last_exists)
-                {
-                    RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 50, "dead buffer cnt: %d", dead_buffer_cnt_);
-                    is_dead_ = true;
-                    continue;
-                }
-                ++dead_buffer_cnt_;
-
                 if (detect_color_ == 1)
                     tracker_key = "R" + to_string((*armor).id);
                 if (detect_color_ == 0)
@@ -174,6 +162,7 @@ namespace armor_detector
                 is_dead_ = false;
                 tracker_key = (*armor).key;
             }
+            // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 20, "Target key: %s", tracker_key.c_str());
 
             int predictors_with_same_key = trackers_map.count(tracker_key);
             if (predictors_with_same_key == 0 && (*armor).color != GRAY_SMALL && (*armor).color != GRAY_BIG)
@@ -187,18 +176,19 @@ namespace armor_detector
             {   // 当存在一个该类型ArmorTracker
                 // cout << 5 << endl;
                 auto candidate = trackers_map.find(tracker_key);
-                int64_t delta_t = timestamp - (*candidate).second.now;
-                double delta_dist = abs(((*armor).armor3d_world - (*candidate).second.new_armor.armor3d_world).norm());
+                double delta_t = (timestamp - (*candidate).second.now) / 1e6;
+                double delta_dist = ((*armor).armor3d_world - (*candidate).second.new_armor.armor3d_world).norm();
                 // auto iou = (*candidate).second.last_armor.roi & (*armor);
-                // auto velocity = (delta_dist / delta_t) * 1e3;
                  
                 // 若匹配则使用此ArmorTracker
-                if (delta_dist <= gyro_params_.max_delta_dist && delta_t > 0 && (*candidate).second.new_armor.roi.contains((*armor).center2d))
+                if (delta_dist <= gyro_params_.max_delta_dist && (delta_t < 100 && delta_t > 0) && (*candidate).second.new_armor.roi.contains((*armor).center2d))
                 {   // 若当前装甲板与上一次的距离小于阈值，并且当前装甲板的中心在上一次装甲板的roi范围内则视为同一装甲板目标，对此tracker进行更新
+                    // cout << 6 << endl;
                     (*candidate).second.update((*armor), timestamp);
                 }
                 else if ((*armor).color != GRAY_SMALL && (*armor).color != GRAY_BIG)
                 {   // 若不匹配且不为灰色装甲板则创建新ArmorTracker（不为灰色装甲板分配新的追踪器）
+                    // cout << 7 << endl;
                     ArmorTracker tracker((*armor), timestamp);
                     trackers_map.insert(make_pair((*armor).key, tracker));
                     new_armors_cnt_map[(*armor).key]++;
@@ -206,9 +196,8 @@ namespace armor_detector
             }
             else
             {   //当存在多个该类型装甲板ArmorTracker
-                // cout << 6 << endl;
-
                 //1e9无实际意义，仅用于以非零初始化
+                // cout << 8 << endl;
                 double min_delta_dist = 1e9;
                 int64_t min_delta_t = (int64_t)9e19;
                 bool is_best_candidate_exist = false;
@@ -218,8 +207,6 @@ namespace armor_detector
                 {   // 遍历所有同Key预测器，匹配速度最小且更新时间最近的ArmorTracker
                     int64_t delta_t = timestamp - (*iter).second.now;
                     double delta_dist = abs((*armor).armor3d_world.norm() - (*iter).second.new_armor.armor3d_world.norm());
-                    // double velocity = (delta_dist / delta_t) * 1e9;
-                    
                     if ((*iter).second.new_armor.roi.contains((*armor).center2d) && delta_t > 0)
                     {   // 若当前预测器中的装甲板的roi包含当前装甲板的中心
                         // RCLCPP_WARN(logger_, "time:%ld dist:%.3f", delta_t, delta_dist);
@@ -233,28 +220,31 @@ namespace armor_detector
                         }
                     }
                 }
-                if (is_best_candidate_exist)
-                {   // 若找到速度最小且更新时间最近的tracker，则更新
-                    // auto velocity = min_delta_dist;
-                    // auto delta_t = min_delta_t;
-                    (*best_candidate).second.update((*armor), timestamp);
-                    // cout << 7 << endl;
-                }
-                else if ((*armor).color != 2)
-                {   // 若未匹配到，则新建tracker（灰色装甲板只会分配给已有tracker，不会新建tracker）
-                    ArmorTracker tracker((*armor), timestamp);
-                    trackers_map.insert(make_pair((*armor).key, tracker));
-                    new_armors_cnt_map[(*armor).key]++;
-                    // cout << 8 << endl;
+
+                if ((*armor).color != GRAY_SMALL && (*armor).color != GRAY_BIG)
+                {
+                    if (is_best_candidate_exist)
+                    {   // 若找到速度最小且更新时间最近的tracker，则更新
+                        (*best_candidate).second.update((*armor), timestamp);
+                        // cout << 7 << endl;
+                    }
+                    else
+                    {   // 若未匹配到，则新建tracker（灰色装甲板只会分配给已有tracker，不会新建tracker）
+                        ArmorTracker tracker((*armor), timestamp);
+                        trackers_map.insert(make_pair((*armor).key, tracker));
+                        new_armors_cnt_map[(*armor).key]++;
+                        // cout << 8 << endl;
+                    }
                 }
             }
         }
+
         if (trackers_map.size() != 0)
-        {   //维护预测器Map，删除过久之前的装甲板
+        {   //维护预测器Map，删除过久之前的装甲板，同时删除装甲板判定为熄灭的tracker
             for (auto iter = trackers_map.begin(); iter != trackers_map.end();)
             {   //删除元素后迭代器会失效，需先行获取下一元素
                 auto next = iter;
-                if ((timestamp - (*iter).second.now) / 1e6 > gyro_params_.max_delta_t)
+                if (((timestamp - (*iter).second.now) / 1e6 > gyro_params_.max_delta_t) || (*iter).second.is_dead_)
                     next = trackers_map.erase(iter);
                 else
                     ++next;

@@ -22,14 +22,14 @@ namespace armor_detector
     {
     private:
         Armor last_armor_;
-        Color detect_color_;
+        int detect_color_;
         rclcpp::Logger logger_;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         DetectorInfo detector_info_;
 
     public:
         SpinningDetector();
-        SpinningDetector(Color color, GyroParam gyro_params);
+        SpinningDetector(int color, GyroParam gyro_params);
         ~SpinningDetector();
 
         // bool updateSpinScore();
