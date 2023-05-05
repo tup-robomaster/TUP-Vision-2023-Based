@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-04-16 18:35:13
+ * @LastEditTime: 2023-05-05 15:00:11
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -16,8 +16,6 @@
 //opencv
 #include <opencv2/opencv.hpp>
 
-//Singer Model
-#include "../filter/singer_model.hpp"
 //IMM Model(CV、CA、CT)
 #include "../filter/model_generator.hpp"
 
@@ -44,8 +42,7 @@ namespace armor_processor
 
         bool resetPredictor();
         bool updatePredictor(bool is_spinning, TargetInfo target);
-        Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
-        bool asyncPrediction(bool is_filtering, bool is_target_lost, bool is_spinning, Eigen::Vector3d meas, int64_t timestamp, Eigen::Vector3d& result);
+        Eigen::Vector3d predict(TargetInfo target, double bullet_speed, uint64_t now, double& delay_time, cv::Mat* src = nullptr);
         // PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
         PredictorState predictor_state_ = LOST;
 
@@ -66,20 +63,15 @@ namespace armor_processor
         void updateAcc(bool is_spinning, Eigen::Vector3d acc_3d);
 
     private:
-        double history_vel_[2][3][4] = {{{0}}};
-        double history_acc_[2][3][4] = {{{0}}};
-        double predict_vel_[2][3][4] = {{{0}}};
-        double predict_acc_[2][3][4] = {{{0}}};
+        double history_vel_[3][4] = {{0}};
+        double history_acc_[3][4] = {{0}};
+        double predict_vel_[3][4] = {{0}};
+        double predict_acc_[3][4] = {{0}};
     
     public:
         // 卡尔曼滤波
-        bool is_singer_init_[2][3];
-        vector<double> singer_param_[2][3]; //cs模型参数 
-        SingerModel singer_model_[2][3];
-        KalmanFilter singer_kf_[2][3];
-    private:
-        void kfInit();                      // 滤波参数初始化（矩阵维度、初始值）
-        void kfInit(int axis);              // 滤波参数初始化（矩阵维度、初始值）
+        bool is_singer_init_ = false;
+        SingerModel singer_model_;
 
     public:
         bool is_init_;
@@ -91,6 +83,7 @@ namespace armor_processor
         TargetInfo final_target_;  //最终击打目标信息
         double target_period_ = 0.0;
         int lost_cnt_ = 0;
+        int64_t last_dt_ = 0;
         
         // int error_cnt_ = 0;
         // double cur_pred_error_;
@@ -103,18 +96,13 @@ namespace armor_processor
         
         // CS Model.
         // PredictStatus predictBasedSinger(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, int64_t timestamp);
-        bool predictBasedSinger(bool is_target_lost, bool is_spinning, int axis, double measurement, double& result, double target_vel, double target_acc, int64_t timestamp);
+        bool predictBasedSinger(bool is_target_lost, bool is_spinning, Eigen::Vector3d meas, Eigen::Vector3d& result, Eigen::Vector3d target_vel, Eigen::Vector3d target_acc, double dt, double pred_dt);
 
         // 前哨站旋转装甲板曲线拟合预测函数    
         PredictStatus spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int64_t timestamp);
         
         // 滑窗滤波
         Eigen::Vector3d shiftWindowFilter(int start_idx);
-
-        // 粒子滤波
-        // PredictStatus predictBasePF(TargetInfo target, Vector3d& result, int64_t timestamp);
-        // PredictStatus uncoupleFittingPredict(Eigen::Vector3d& result, int64_t timestamp);
-        // PredictStatus coupleFittingPredict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, int64_t timestamp);
     };
 } //namespace armor_processor
 

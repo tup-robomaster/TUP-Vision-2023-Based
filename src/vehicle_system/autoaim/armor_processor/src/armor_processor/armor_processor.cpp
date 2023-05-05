@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-05-05 00:35:15
+ * @LastEditTime: 2023-05-05 15:13:32
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -199,7 +199,8 @@ namespace armor_processor
 
         if (armor_predictor_.predictor_state_ != LOST)
         {
-            pred_result = armor_predictor_.predict(target, target.timestamp, sleep_time);
+            double bullet_speed = coordsolver_.getBulletSpeed();
+            pred_result = armor_predictor_.predict(target, bullet_speed, target.timestamp, sleep_time);
             // if(!target.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
             // {   //当目标丢失后又出现时直接预测
             //     for (int ii = 0; ii < 3; ii++)
@@ -214,7 +215,6 @@ namespace armor_processor
             // }
             is_success = true;
         }
-
         return is_success;
     }
 

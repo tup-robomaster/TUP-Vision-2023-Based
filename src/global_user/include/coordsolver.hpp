@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:13
- * @LastEditTime: 2023-04-20 06:26:50
+ * @LastEditTime: 2023-05-05 15:12:34
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/coordsolver.hpp
  */
 
@@ -45,7 +45,6 @@ namespace coordsolver
         CoordSolver(const Eigen::Vector2d& static_angle_offset);
         ~CoordSolver();
         
-        
         bool loadParam(std::string coord_path, std::string param_name);
         bool setStaticAngleOffset(const Eigen::Vector2d& static_angle_offset);
 
@@ -63,9 +62,11 @@ namespace coordsolver
         inline double calcYaw(Eigen::Vector3d &xyz);
         inline double calcPitch(Eigen::Vector3d &xyz);
         Eigen::Vector2d calcYawPitch(Eigen::Vector3d &xyz);
-        bool setBulletSpeed(double speed);
         cv::Point2f reproject(Eigen::Vector3d &xyz);
-        cv::Point2f getHeading(Eigen::Vector3d &xyz_cam);
+        // cv::Point2f getHeading(Eigen::Vector3d &xyz_cam);
+
+        bool setBulletSpeed(double speed);
+        double getBulletSpeed() { return this->bullet_speed; }
 
     private:
         int max_iter;
@@ -82,7 +83,7 @@ namespace coordsolver
         YAML::Node param_node;
 
         // double bullet_speed = 28.0;            
-        double bullet_speed = 10.0;            //TODO:弹速可变
+        double bullet_speed = 15.0;            //TODO:弹速可变
         // const double k = 0.01903;                //25°C,1atm,小弹丸
         const double k = 0.00556;                //25°C,1atm,大弹丸
         // const double k = 0.00530;                //25°C,1atm,发光大弹丸
