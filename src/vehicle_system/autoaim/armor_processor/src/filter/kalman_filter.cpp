@@ -23,26 +23,30 @@ namespace armor_processor
 
     void KalmanFilter::Init(int SP, int MP, int CP)
     {
-        assert(SP > 0 && MP > 0 && CP > 0);
-
+        assert(SP > 0 && MP > 0);
         this->x_ = Eigen::VectorXd::Zero(SP);
+        this->z_ = Eigen::VectorXd::Zero(MP);
+        this->C_ = Eigen::MatrixXd::Zero(SP, CP);
         this->F_ = Eigen::MatrixXd::Identity(SP, SP);
         this->Jf_ = Eigen::MatrixXd::Identity(SP, SP);
+        this->P_ = Eigen::MatrixXd::Identity(SP, SP);
         this->Q_ = Eigen::MatrixXd::Identity(SP, SP);
-        this->H_ = Eigen::MatrixXd::Zero(MP, SP);
-        this->Jh_ = Eigen::MatrixXd::Zero(MP, SP);
-        this->R_ = Eigen::MatrixXd::Zero(MP, MP);
-        this->P_ = Eigen::MatrixXd::Zero(SP, SP);
-        this->C_ = Eigen::MatrixXd::Zero(SP, CP);
-
+        this->H_ = Eigen::MatrixXd::Identity(MP, SP);
+        this->Jh_ = Eigen::MatrixXd::Identity(MP, SP);
+        this->R_ = Eigen::MatrixXd::Identity(MP, MP);
         this->cp_ = CP;
     }
 
     void KalmanFilter::Predict()
     {
-        if(cp_ > 0)
+        if(cp_ == 1)
         {
             x_ = F_ * x_ + C_ * x_[2];
+        }
+        else if (cp_ == 3)
+        {
+            Eigen::Vector3d acc = {x_(6), x_(7), x_(8)};
+            x_ = F_ * x_ + C_ * acc;
         }
         else
         {
@@ -63,6 +67,7 @@ namespace armor_processor
         // if (x_.size() > 5)
         // {
         //     cout << "x_pre:" << x_(0) << " " << x_(1) << " " << x_(2) << " " << x_(3) << endl;
+        //     cout << "z:" << z(0) << " " << z(1) << " " << z(2) << endl;
         // }
 
         MatrixXd z_pred = H_ * x_;
@@ -71,7 +76,7 @@ namespace armor_processor
         // if (x_.size() > 5)
         // {
         //     cout << "z_meas:" << z(0) << " " << z(1) << " " << z(2) << " " << z(3) << endl;
-        //     cout << "z_pred:" << z_pred(0, 0) << " " << z_pred(1, 0) << " " << z_pred(2, 0) << " " << z_pred(3, 0) << endl;
+        //     cout << "z_pred:" << z_pred(0, 0) << " " << z_pred(1, 0) << " " << z_pred(2, 0) << z_pred(3, 0) << endl;
         //     cout << "y:" << y(0, 0) << " " << y(1, 0) << " " << y(2, 0) << " " << y(3, 0) << endl;
         // }
 

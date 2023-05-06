@@ -16,8 +16,6 @@
 //opencv
 #include <opencv2/opencv.hpp>
 
-//Singer Model
-#include "../filter/singer_model.hpp"
 //IMM Model(CV、CA、CT)
 #include "../filter/model_generator.hpp"
 
@@ -35,7 +33,6 @@ namespace armor_processor
 {
     class ArmorPredictor
     {
-        typedef global_interface::msg::Armor ArmorMsg;
         typedef global_interface::msg::Autoaim AutoaimMsg;
         
     public:
@@ -43,12 +40,12 @@ namespace armor_processor
         ~ArmorPredictor();
         // ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, const DebugParam& debug_param);
 
-        void initPredictor(const vector<double>* ekf_param);
+        void initPredictor();
+        void initPredictor(const vector<double>* uniform_ekf_param, const vector<double>* singer_ekf_param);
         bool resetPredictor();
         bool updatePredictor(Eigen::VectorXd meas);
         bool predict(TargetInfo target, double dt, double pred_dt, double& delay_time, Eigen::Vector3d& pred_point3d, vector<Eigen::Vector4d>& armor3d_vec, cv::Mat* src = nullptr);
         
-        bool asyncPrediction(bool is_target_lost, Eigen::Vector3d meas, double dt, double pred_dt, Eigen::Vector3d& result);
         // Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
         // PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
 
@@ -65,14 +62,14 @@ namespace armor_processor
     private:
         double evalRMSE(double* params);
         double calcError();
-        void updateVel(bool is_spinning, Eigen::Vector3d vel_3d);
-        void updateAcc(bool is_spinning, Eigen::Vector3d acc_3d);
+        void updateVel(Eigen::Vector3d vel_3d);
+        void updateAcc(Eigen::Vector3d acc_3d);
 
-    private:
-        double history_vel_[2][3][4] = {{{0}}};
-        double history_acc_[2][3][4] = {{{0}}};
-        double predict_vel_[2][3][4] = {{{0}}};
-        double predict_acc_[2][3][4] = {{{0}}};
+    public:
+        double history_vel_[3][4] = {{0}};
+        double history_acc_[3][4] = {{0}};
+        double predict_vel_[3][4] = {{0}};
+        double predict_acc_[3][4] = {{0}};
     
     public:
         // uniform ekf
@@ -82,12 +79,8 @@ namespace armor_processor
         Eigen::Vector4d last_state_;
 
         // singer ekf
-        bool is_singer_init_[3];
-        SingerModel singer_model_[3];
-        
-    private:
-        void kfInit();                      // 滤波参数初始化（矩阵维度、初始值）
-        void kfInit(int axis);              // 滤波参数初始化（矩阵维度、初始值）
+        bool is_singer_init_;
+        SingerModel singer_ekf_;
 
     public:
         bool is_init_;
@@ -110,7 +103,7 @@ namespace armor_processor
         
         // CS Model.
         // PredictStatus predictBasedSinger(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, int64_t timestamp);
-        bool predictBasedSinger(bool is_target_lost, int axis, double measurement, double& result, double target_vel, double target_acc, double dt, double pred_dt);
+        bool predictBasedSinger(bool is_target_lost, Eigen::Vector3d meas, Eigen::Vector3d& result, Eigen::Vector3d target_vel, Eigen::Vector3d target_acc, double dt, double pred_dt);
 
         // Uniform Model.
         bool predictBasedUniformModel(bool is_target_lost, SpinHeading spin_state, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector4d>& armor3d_vec);
@@ -125,8 +118,6 @@ namespace armor_processor
 
         double calcCircleRadius(Eigen::Vector3d p1, Eigen::Vector3d p2);
 
-        // 粒子滤波
-        // PredictStatus predictBasePF(TargetInfo target, Vector3d& result, int64_t timestamp);
         // PredictStatus uncoupleFittingPredict(Eigen::Vector3d& result, int64_t timestamp);
         // PredictStatus coupleFittingPredict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, int64_t timestamp);
     };

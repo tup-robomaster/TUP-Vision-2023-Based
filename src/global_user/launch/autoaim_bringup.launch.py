@@ -98,7 +98,7 @@ def generate_launch_description():
             output='screen', # log/screen/both
             emulate_tty=True,
             parameters=[{
-                'using_port': True,
+                'using_port': False,
                 'tracking_target': True,
                 'print_serial_info': False,
                 'print_referee_info': False

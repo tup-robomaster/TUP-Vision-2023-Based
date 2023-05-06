@@ -35,8 +35,7 @@ namespace armor_detector
         typedef global_interface::msg::Decision DecisionMsg;
 
     public:
-        Detector(const PathParam& path_params, const DetectorParam& detector_params, const DebugParam& debug_params,
-            const GyroParam& gyro_params, const Eigen::Vector2d& angle_offset);
+        Detector(const PathParam& path_params, const DetectorParam& detector_params, const DebugParam& debug_params, const GyroParam& gyro_params);
         ~Detector();
 
         // void run();

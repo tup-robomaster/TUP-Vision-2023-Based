@@ -25,7 +25,7 @@ namespace armor_processor
 
     public:
         Processor();
-        Processor(const PredictParam& predict_param, vector<double>* uniform_ekf_param, const DebugParam& debug_param);
+        Processor(const PredictParam& predict_param, vector<double>* uniform_ekf_param, vector<double>* singer_ekf_param, const DebugParam& debug_param);
         ~Processor();
 
         // std::unique_ptr<Eigen::Vector3d> predictor(cv::Mat& src, AutoaimMsg& Autoaim, double& sleep_time);
@@ -36,7 +36,7 @@ namespace armor_processor
         void init(std::string coord_path, std::string coord_name);
         bool predictor(AutoaimMsg& Autoaim, Eigen::Vector3d& pred_result, vector<Eigen::Vector4d>& armor3d_vec, double& sleep_time);
 
-        // void curveDrawer(int axis, cv::Mat& src, double* params, cv::Point2i start_pos);
+        void curveDrawer(int axis, cv::Mat& src, double* params, cv::Point2i start_pos);
         // bool autoShootingLogic(AutoaimMsg& armor, PostProcessInfo& post_process_info);
         // bool setBulletSpeed(double speed);
     
