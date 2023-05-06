@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-04 23:14:43
+ * @LastEditTime: 2023-05-06 23:45:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -211,7 +211,7 @@ namespace armor_processor
                     for (auto armor_point3d_world : armor3d_vec)
                     {
                         double armor3d_dist = armor_point3d_world.norm();
-                        if (armor3d_dist < min_dist)
+                        if (armor3d_dist < min_dist && (armor_point3d_world(3) > 1.2 && armor_point3d_world(3) < 1.8))
                         {
                             min_dist = armor3d_dist;
                             flag = idx;
@@ -224,6 +224,7 @@ namespace armor_processor
                     if (flag != -1)
                     {
                         aiming_point_world = {armor3d_vec.at(flag)(0), armor3d_vec.at(flag)(1), armor3d_vec.at(flag)(2)};
+                        is_shooting = true;
                     }
                     else
                     {
@@ -250,7 +251,7 @@ namespace armor_processor
                 {
                     is_pred_ = true;
                     is_aimed_ = true;
-                    is_shooting = true;
+                    // is_shooting = true;
                 }
                 if (abs(angle[0]) > 45.0 || abs(angle[1]) > 45.0)
                 {
@@ -271,7 +272,7 @@ namespace armor_processor
         else
         {
             is_pred_ = true;
-            is_shooting = true;
+            // is_shooting = true;
         }
 
         if (processor_->armor_predictor_.predictor_state_ != PREDICTING)
@@ -504,7 +505,7 @@ namespace armor_processor
                         cv::Point2f(target_info.armors.front().point2d[(i + 1) % 4].x, target_info.armors.front().point2d[(i + 1) % 4].y), {125, 0, 255}, 1);
                 cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
                 cv::Point2f armor_center = processor_->coordsolver_.reproject(tracking_point_cam);
-                cv::circle(dst, point_2d, 14, {255, 0, 125}, 2);
+                cv::circle(dst, point_2d, 18, {255, 0, 125}, 3);
                 // cv::line(dst, cv::Point2f(point_2d.x - 30, point_2d.y), cv::Point2f(point_2d.x + 30, point_2d.y), {0, 0, 255}, 1);
                 // cv::line(dst, cv::Point2f(point_2d.x, point_2d.y - 35), cv::Point2f(point_2d.x, point_2d.y + 35), {0, 0, 255}, 1);
                 // cv::line(dst, cv::Point2f(armor_center.x - 30, armor_center.y), cv::Point2f(armor_center.x + 30, armor_center.y), {0, 0, 255}, 1);

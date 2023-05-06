@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-05-02 14:10:41
+ * @LastEditTime: 2023-05-06 23:42:38
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -362,8 +362,8 @@ namespace serialport
                     (target_info->is_switched || target_info->is_spinning_switched), 
                     target_info->is_target, 
                     target_info->is_spinning, 
-                    target_info->is_shooting,
                     target_info->is_prediction,
+                    target_info->is_shooting,
                     {target_info->meas_point_cam.x, target_info->meas_point_cam.y, target_info->meas_point_cam.z},
                     {target_info->pred_point_cam.x, target_info->pred_point_cam.y, target_info->pred_point_cam.z}
                 };

@@ -56,13 +56,13 @@
   
   # Debug params.
     debug: true
-    using_imu: false
+    using_imu: true
     detect_red: true # red: true / blue: false
-    show_img: true
-    show_fps: true
     using_roi: true
-    show_aim_cross: true
-    show_all_armors: true
+    show_img: false
+    show_fps: false
+    show_aim_cross: false
+    show_all_armors: false
     auto_label: false
     print_letency: false
     sync_transport: false
@@ -92,10 +92,10 @@
     show_predict: true
     show_aim_cross: true
     show_fps: true
-    show_marker: true
     print_delay: false
     sync_transport: false
-
+    show_marker: false
+ 
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
@@ -107,15 +107,15 @@
   
   # uniform model
     #----------------------------------Xc------Yc----Zc-----r---theta--omega
-    uniform_ekf_process_noise_param: [0.02, 0.001, 0.002, 0.001, 0.1, 0.002]
+    uniform_ekf_process_noise_param: [0.02, 0.001, 0.002, 0.005, 0.1, 0.002]
     #----------------------------------X----Y---Z---theta
     uniform_ekf_measure_noise_param: [5.0, 0.2, 1.0, 1.0]
     
   # Singer model
     # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)
-    singer_model_process_param: [1.05, 1.05, 1.05, 8.5, 10.65, 8.5]
+    singer_model_process_param: [1.05, 1.05, 1.05, 1.5, 1.65, 1.5]
     # r:观测协方差系数(r1/r2/r3)
-    singer_model_measure_param: [1.0, 0.25, 0.25]
+    singer_model_measure_param: [1.0, 1.25, 1.25]
 
     # IMM model.
     #状态转移概率

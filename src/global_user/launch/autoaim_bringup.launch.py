@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-05-04 23:24:12
+LastEditTime: 2023-05-06 23:26:16
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -98,8 +98,8 @@ def generate_launch_description():
             output='screen', # log/screen/both
             emulate_tty=True,
             parameters=[{
-                'using_port': False,
-                'tracking_target': True,
+                'using_port': True,
+                'tracking_target': False,
                 'print_serial_info': False,
                 'print_referee_info': False
             }],
