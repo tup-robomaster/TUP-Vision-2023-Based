@@ -89,6 +89,8 @@ namespace armor_processor
         rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_pub_;
         uint64 shape_ = visualization_msgs::msg::Marker::SPHERE;
         bool show_marker_ = false;
+        int count_ = 0;
+        bool shoot_flag_ = false;
 
     private:
         std::unique_ptr<Processor> processor_;

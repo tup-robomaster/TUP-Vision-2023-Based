@@ -277,24 +277,24 @@ namespace armor_processor
 
             // Eigen::Vector3d circle_center = {pred(0), pred(1), pred(2)};
             Eigen::Vector3d circle_center = {state(0), state(1), state(2)};
-            Eigen::Vector3d meas_center = circle_center;
-            if (predictBasedSinger(is_target_lost, meas_center, circle_center, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, dt, pred_dt))
-            {
-                // uniform_ekf_.x_(0) = circle_center(0);
-                // uniform_ekf_.x_(1) = circle_center(1);
-                // uniform_ekf_.x_(2) = state(2);
+            // Eigen::Vector3d meas_center = circle_center;
+            // if (predictBasedSinger(is_target_lost, meas_center, circle_center, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, dt, pred_dt))
+            // {
+            //     // uniform_ekf_.x_(0) = circle_center(0);
+            //     // uniform_ekf_.x_(1) = circle_center(1);
+            //     // uniform_ekf_.x_(2) = state(2);
                 
-                // 超前预测
-                Eigen::MatrixXd F(9, 9);
-                singer_ekf_.updateF(F, pred_dt);
-                Eigen::MatrixXd Control(9, 3);
-                singer_ekf_.updateC(Control, pred_dt);
+            //     // 超前预测
+            //     Eigen::MatrixXd F(9, 9);
+            //     singer_ekf_.updateF(F, pred_dt);
+            //     Eigen::MatrixXd Control(9, 3);
+            //     singer_ekf_.updateC(Control, pred_dt);
 
-                Eigen::VectorXd State = singer_ekf_.x();
-                Eigen::Vector3d acc = {State(6), State(7), State(8)};
-                VectorXd pred = F * State + Control * acc;
-                circle_center = {pred(0), pred(1), pred(2)};
-            }
+            //     Eigen::VectorXd State = singer_ekf_.x();
+            //     Eigen::Vector3d acc = {State(6), State(7), State(8)};
+            //     VectorXd pred = F * State + Control * acc;
+            //     circle_center = {pred(0), pred(1), pred(2)};
+            // }
             double pred_rangle = rangle;
 
             // if (spin_state == CLOCKWISE)

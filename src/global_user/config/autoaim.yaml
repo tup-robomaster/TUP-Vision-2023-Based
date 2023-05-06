@@ -17,8 +17,8 @@
 
   # Spinning params.
     max_cost: 500
-    shoot_delay: 50
-    bullet_speed: 28.0
+    shoot_delay: 75
+    bullet_speed: 12.7
     max_dead_buffer: 10
     max_delta_dist: 0.5
     min_fitting_lens: 10
@@ -38,7 +38,7 @@
 
   # Camera config params.
     # camera_name: "00J90630561" 
-    camera_name: "KE0200110073" #FIXME:根据相机序列号修改
+    camera_name: "KE0200110074" #FIXME:根据相机序列号修改
     camera_type: 0
     camera_param_path: "/config/camera.yaml"
 
@@ -57,8 +57,8 @@
   # Debug params.
     debug: true
     using_imu: true
-    detect_red: true # red: true / blue: false
     using_roi: true
+    detect_red: true # red: true / blue: false
     show_img: false
     show_fps: false
     show_aim_cross: false
@@ -71,12 +71,12 @@
 /armor_processor:
   ros__parameters:
   # Predict params.
-    bullet_speed: 28.0
+    bullet_speed: 12.7
     max_time_delta: 1000
     max_cost: 10
     max_v: 8
     min_fitting_lens: 5
-    shoot_delay: 200
+    shoot_delay: 150 
     window_size: 3
     max_offset_value: 0.45
     reserve_factor: 500.0 # 储备系数(>=1)
@@ -88,7 +88,7 @@
     debug: true
     using_imu: true
     show_img: true
-    draw_predict: false
+    draw_predict: true
     show_predict: true
     show_aim_cross: true
     show_fps: true
@@ -99,7 +99,7 @@
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
+    coord_param_name: "KE0200110074" #FIXME:根据相机序列号修改
     coord_param_path: "/config/camera.yaml"
     
   # Filter params.

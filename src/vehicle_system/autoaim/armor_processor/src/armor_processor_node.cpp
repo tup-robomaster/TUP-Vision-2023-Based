@@ -211,7 +211,9 @@ namespace armor_processor
                     for (auto armor_point3d_world : armor3d_vec)
                     {
                         double armor3d_dist = armor_point3d_world.norm();
-                        if (armor3d_dist < min_dist && (armor_point3d_world(3) > 1.2 && armor_point3d_world(3) < 1.8))
+                        int scale = armor_point3d_world(3) / (2 * CV_PI);
+                        double rangle = armor_point3d_world(3) - scale * (2 * CV_PI);
+                        if (armor3d_dist < min_dist && rangle >= 1.35 && rangle <= 1.77)
                         {
                             min_dist = armor3d_dist;
                             flag = idx;
@@ -247,7 +249,7 @@ namespace armor_processor
                 // RCLCPP_WARN(get_logger(), "z_axis:%.3f", state(2));
                 // cout << "radius:" << state(3) << endl;
 
-                if (abs(tracking_angle[0]) < 3.50 && abs(tracking_angle[1]) < 3.50)
+                if (abs(tracking_angle[0]) < 8.50 && abs(tracking_angle[1]) < 8.50)
                 {
                     is_pred_ = true;
                     is_aimed_ = true;
@@ -279,6 +281,27 @@ namespace armor_processor
         {
             is_shooting = false;
         }
+
+        // if (shoot_flag_)
+        // {
+        //     if (count_ <= 40)
+        //     {
+        //         is_shooting = false;
+        //         count_++;
+        //     }
+        //     else
+        //     {
+        //         shoot_flag_ = false;
+        //         count_ = 0;
+        //     }
+        // }
+
+        // if (is_shooting)
+        // {
+        //     shoot_flag_ = true;
+        // }
+
+        cout << "is_shooting:" << (is_shooting ? "111" : "000") << endl;
         
         // Gimbal info pub.
         GimbalMsg gimbal_info;
