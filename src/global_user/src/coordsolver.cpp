@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-04-30 17:52:52
+ * @LastEditTime: 2023-05-04 23:50:55
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -176,7 +176,7 @@ namespace coordsolver
             // auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
             // double angle = angle_axisd.angle();
             // result.axis_angle = angle;
-            // RCLCPP_INFO(logger_, "euler:[%.3f %.3f %.3f]", result.euler(0) * (180 / CV_PI), result.euler(1) * (180 / CV_PI), result.euler(2) * (180 / CV_PI));
+            // RCLCPP_INFO(logger_, "euler:[%.3f %.3f %.3f]", result.euler(0), result.euler(1), result.euler(2));
         }
         else
         {

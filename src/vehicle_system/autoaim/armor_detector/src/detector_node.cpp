@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-04-27 21:17:29
+ * @LastEditTime: 2023-05-05 02:38:37
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -256,16 +256,21 @@ namespace armor_detector
                 RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "bulletSpd:%.2f", src.bullet_speed);
             // }
         }
+        else 
+        {
+            Eigen::Matrix3d rmat = Eigen::Matrix3d::Identity();
+            src.quat = Eigen::Quaterniond(rmat);
+        }
         serial_msg_mutex_.unlock(); 
         
         // RCLCPP_WARN(this->get_logger(), "mode:%d", src.mode);
-
         AutoaimMsg target_info;
+        target_info.is_target_lost = true;
         Eigen::Vector2d tracking_angle = {0.0, 0.0};
         Eigen::Matrix3d rmat_imu = Eigen::Matrix3d::Identity();
-        bool is_target_lost = true;
+        
         param_mutex_.lock();
-        if (detector_->armor_detect(src, is_target_lost))
+        if (detector_->armor_detect(src, target_info.is_target_lost))
         {   
             global_interface::msg::DetectionArray detection_array;
             detection_array.header = img_header_;
@@ -286,36 +291,30 @@ namespace armor_detector
 
             if (src.mode == SENTRY_NORMAL)
             {
-                if (!detector_->gyro_detector(src, target_info, obj_hp_msg_, decision_msg_))
+                if (detector_->gyro_detector(src, target_info, obj_hp_msg_, decision_msg_))
                 {
-                    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Not spinning...");
+                    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 200, "Spinning detecting...");
+                    rmat_imu = src.quat.toRotationMatrix();
+                    Eigen::Vector3d armor_3d_cam = {target_info.armors.front().point3d_cam.x, target_info.armors.front().point3d_cam.y, target_info.armors.front().point3d_cam.z};
+                    tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_imu);
                 }
             }
             else
             {
-                if (!detector_->gyro_detector(src, target_info))
+                if (detector_->gyro_detector(src, target_info))
                 {
-                    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Not spinning...");
+                    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 200, "Spinning detecting...");
+                    rmat_imu = src.quat.toRotationMatrix();
+                    Eigen::Vector3d armor_3d_cam = {target_info.armors.front().point3d_cam.x, target_info.armors.front().point3d_cam.y, target_info.armors.front().point3d_cam.z};
+                    tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_imu);
                 }
             }
-
-            // rmat_imu = src.quat.toRotationMatrix();
-            // Eigen::Vector3d armor_3d_cam = {target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z};
-            // tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_imu);
-            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "target info_cam: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
+            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "target info_cam: %lf %lf %lf", target_info.armors.front().point3d_cam.x, target_info.armors.front().point3d_cam.y, target_info.armors.front().point3d_cam.z);
             // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "target info_world: %lf %lf %lf", target_info.aiming_point_world.x, target_info.aiming_point_world.y, target_info.aiming_point_world.z);
         }
+        param_mutex_.unlock();
 
-        // if (is_target_lost)
-        // {
-        //     target_info.aiming_point_cam.x = 0;
-        //     target_info.aiming_point_cam.y = 0;
-        //     target_info.aiming_point_cam.z = 0;
-        //     target_info.aiming_point_world.x = 0;
-        //     target_info.aiming_point_world.y = 0;
-        //     target_info.aiming_point_world.z = 0;
-        // }
-        // else
+        // if (!target_info.is_target_lost)
         // {
         //     Eigen::Vector3d rpy_raw = {0, 0, 0};
         //     Eigen::AngleAxisd rollAngle(Eigen::AngleAxisd(rpy_raw[2], Eigen::Vector3d::UnitX()));
@@ -323,8 +322,6 @@ namespace armor_detector
         //     Eigen::AngleAxisd yawAngle(Eigen::AngleAxisd(rpy_raw[0], Eigen::Vector3d::UnitZ()));
         //     Eigen::Matrix3d rmat = yawAngle * pitchAngle * rollAngle;
         // }
-
-        param_mutex_.unlock();
 
         if (debug_.using_imu)
         {
@@ -344,10 +341,8 @@ namespace armor_detector
         //     t.child_frame_id = "";           
         // }
 
-        target_info.is_target_lost = is_target_lost;
         target_info.header.frame_id = "gimbal_link";
         target_info.header.stamp = stamp;
-        // target_info.timestamp = stamp.nanoseconds();
         // RCLCPP_INFO(this->get_logger(), "timestamp:%.8f", target_info.timestamp / 1e9);
 
         // if (target_info.spinning_switched)

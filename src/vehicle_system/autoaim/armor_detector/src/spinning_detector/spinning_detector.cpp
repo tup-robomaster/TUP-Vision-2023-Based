@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-04-30 03:12:26
+ * @LastEditTime: 2023-05-05 03:04:53
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -132,25 +132,27 @@ namespace armor_detector
      * @param timestamp 本帧对应的时间戳
      * @param dead_buffer_cnt 目标装甲板灯条灭掉的帧数
      */
-    void SpinningDetector::createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map, std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int64_t timestamp, int dead_buffer_cnt)
+    void SpinningDetector::createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map, std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int64_t timestamp, int& dead_buffer_cnt, bool is_target_last_exists)
     {
         new_armors_cnt_map.clear();
-
+        is_gray_exists_ = false;
         //为装甲板分配或新建最佳ArmorTracker(注:将不会为灰色装甲板创建预测器，只会分配给现有的预测器)
         for (auto armor = armors.begin(); armor != armors.end(); ++armor)
         {
             //当装甲板颜色为灰色且当前dead_buffer小于max_dead_buffer
             string tracker_key;
-            if ((*armor).color == 2)
+            if ((*armor).color == GRAY)
             {   
-                RCLCPP_WARN(logger_, "Gray armor...");
-                if (dead_buffer_cnt >= gyro_params_.max_dead_buffer)
+                gray_id_ = (*armor).id;
+                is_gray_exists_ = true;
+                RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 50, "Gray armor...");
+                if (dead_buffer_cnt >= gyro_params_.max_dead_buffer || !is_target_last_exists)
                 {
-                    RCLCPP_WARN(logger_, "dead buffer cnt: %d", dead_buffer_cnt);
+                    RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 50, "dead buffer cnt: %d", dead_buffer_cnt);
                     is_dead_ = true;
                     continue;
                 }
-
+                ++dead_buffer_cnt;
                 if (detect_color == RED)
                     tracker_key = "R" + to_string((*armor).id);
                 if (detect_color == BLUE)
@@ -162,7 +164,7 @@ namespace armor_detector
             }
 
             int predictors_with_same_key = trackers_map.count(tracker_key);
-            if (predictors_with_same_key == 0 && (*armor).color != 2)
+            if (predictors_with_same_key == 0 && (*armor).color != GRAY)
             {   // 当不存在该类型装甲板ArmorTracker且该装甲板Tracker类型不为灰色装甲板
                 ArmorTracker tracker((*armor), timestamp);
                 auto target_predictor = trackers_map.insert(make_pair((*armor).key, tracker));
@@ -181,7 +183,7 @@ namespace armor_detector
                 {   // 若当前装甲板与上一次的距离小于阈值，并且当前装甲板的中心在上一次装甲板的roi范围内则视为同一装甲板目标，对此tracker进行更新
                     (*candidate).second.update((*armor), timestamp);
                 }
-                else if ((*armor).color != 2)
+                else if ((*armor).color != GRAY)
                 {   // 若不匹配且不为灰色装甲板则创建新ArmorTracker（不为灰色装甲板分配新的追踪器）
                     ArmorTracker tracker((*armor), timestamp);
                     trackers_map.insert(make_pair((*armor).key, tracker));
@@ -220,7 +222,7 @@ namespace armor_detector
                     // auto delta_t = min_delta_t;
                     (*best_candidate).second.update((*armor), timestamp);
                 }
-                else if ((*armor).color != 2)
+                else if ((*armor).color != GRAY)
                 {   // 若未匹配到，则新建tracker（灰色装甲板只会分配给已有tracker，不会新建tracker）
                     ArmorTracker tracker((*armor), timestamp);
                     trackers_map.insert(make_pair((*armor).key, tracker));

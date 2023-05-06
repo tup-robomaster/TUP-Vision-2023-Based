@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-04 02:32:03
+ * @LastEditTime: 2023-05-04 23:14:43
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -218,7 +218,7 @@ namespace armor_processor
                         }
                         Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
                         point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
-                        cv::circle(dst, point_2d, 14, {255, 255, 0}, -1);
+                        cv::circle(dst, point_2d, 11, {255, 255, 0}, -1);
                         ++idx;
                     }
                     if (flag != -1)
@@ -523,7 +523,7 @@ namespace armor_processor
                     //     // {
                     //         Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
                     //         point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
-                    //         cv::circle(dst, point_2d, 12, {255, 255, 0}, -1);
+                    //         cv::circle(dst, point_2d, 8, {255, 255, 0}, -1);
                     //     // }
                     //     // ++idx;
                     // }
