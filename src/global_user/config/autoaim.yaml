@@ -59,10 +59,10 @@
   # Debug params.
     debug: true
     using_imu: false
-    show_img: true
-    show_fps: true
-    show_aim_cross: true
-    show_all_armors: true
+    show_img: false
+    show_fps: false
+    show_aim_cross: false
+    show_all_armors: false
     using_roi: true
     detect_red: true
     auto_label: false
@@ -92,12 +92,12 @@
   # Debug params.
     debug: true
     using_imu: false
-    show_img: false
-    draw_predict: false
-    show_predict: false
+    show_img: true
+    draw_predict: true
+    show_predict: true
     sync_transport: false
     print_delay: false
-    show_aim_cross: false
+    show_aim_cross: true
     show_fps: false
 
   # Camera params.

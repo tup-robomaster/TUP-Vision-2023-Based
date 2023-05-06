@@ -32,7 +32,6 @@ namespace armor_processor
         resetPredictor();
     }
 
-
     bool ArmorPredictor::resetPredictor()
     {
         is_init_ = false;
@@ -48,7 +47,7 @@ namespace armor_processor
 
     bool ArmorPredictor::updatePredictor(bool is_spinning, TargetInfo target)
     {
-        Eigen::Vector3d state = singer_model_.x();
+        Eigen::VectorXd state = singer_model_.x();
         singer_model_.x_ << target.xyz(0), target.xyz(1), target.xyz(2),
                             state(3),      state(4),      state(5),
                             state(6),      state(7),      state(8);
