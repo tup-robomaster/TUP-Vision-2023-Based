@@ -83,6 +83,8 @@ namespace camera_driver
         std::unique_ptr<T> cam_driver_;
         rclcpp::TimerBase::SharedPtr camera_watcher_timer_;
         rclcpp::TimerBase::SharedPtr img_callback_timer_;
+        std::thread img_callback_thread_;
+
         std::map<std::string, int> param_map_;
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
         rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_;
@@ -191,8 +193,9 @@ namespace camera_driver
 
         image_msg_.header.frame_id = camera_topic_;
         image_msg_.encoding = "bgr8";
-        img_callback_timer_ = this->create_wall_timer(1ms, std::bind(&CameraBaseNode::imageCallback, this));
         camera_watcher_timer_ = rclcpp::create_timer(this, this->get_clock(), 100ms, std::bind(&CameraBaseNode::cameraWatcher, this));
+        img_callback_timer_ = this->create_wall_timer(1ms, std::bind(&CameraBaseNode::imageCallback, this));
+        // img_callback_thread_ = std::thread(std::bind(&CameraBaseNode::imageCallback, this));
 
         this->declare_parameter("using_port", false);
         use_serial_ = this->get_parameter("using_port").as_bool();
@@ -257,61 +260,64 @@ namespace camera_driver
     template<class T>
     void CameraBaseNode<T>::imageCallback()
     {
-        if (use_serial_)
-        {
-            if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
+        // while (1)
+        // {
+            if (use_serial_)
             {
+                if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
+                {
+                    return;
+                }
+            }
+
+            if (!cam_driver_->getImage(frame_, image_msg_))
+            {
+                RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
+                is_cam_open_ = false;
                 return;
             }
-        }
 
-        if (!cam_driver_->getImage(frame_, image_msg_))
-        {
-            RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
-            is_cam_open_ = false;
-            return;
-        }
-
-        rclcpp::Time now = this->get_clock()->now();
-        image_msg_.header.stamp = now;
-        camera_info_msg_.header = image_msg_.header;
-        image_msg_.width = this->image_size_.width;
-        image_msg_.height = this->image_size_.height;
-        camera_pub_.publish(image_msg_, camera_info_msg_);
-            
-        if (save_video_)
-        {   // Video recorder.
-            ++frame_cnt_;
-            if (frame_cnt_ % 50 == 0)
-            {
-                sensor_msgs::msg::Image image_msg = image_msg_;
-                auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
-                auto serialized_msg = rclcpp::SerializedMessage();
-                serializer.serialize_message(&image_msg, &serialized_msg);
-                auto bag_msg = std::make_shared<rosbag2_storage::SerializedBagMessage>();
-                bag_msg->serialized_data = std::shared_ptr<rcutils_uint8_array_t>(
-                    new rcutils_uint8_array_t,
-                    [this](rcutils_uint8_array_t* msg)
-                    {
-                        if (rcutils_uint8_array_fini(msg) != RCUTILS_RET_OK)
+            rclcpp::Time now = this->get_clock()->now();
+            image_msg_.header.stamp = now;
+            camera_info_msg_.header = image_msg_.header;
+            image_msg_.width = this->image_size_.width;
+            image_msg_.height = this->image_size_.height;
+            camera_pub_.publish(image_msg_, camera_info_msg_);
+                
+            if (save_video_)
+            {   // Video recorder.
+                ++frame_cnt_;
+                if (frame_cnt_ % 50 == 0)
+                {
+                    sensor_msgs::msg::Image image_msg = image_msg_;
+                    auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
+                    auto serialized_msg = rclcpp::SerializedMessage();
+                    serializer.serialize_message(&image_msg, &serialized_msg);
+                    auto bag_msg = std::make_shared<rosbag2_storage::SerializedBagMessage>();
+                    bag_msg->serialized_data = std::shared_ptr<rcutils_uint8_array_t>(
+                        new rcutils_uint8_array_t,
+                        [this](rcutils_uint8_array_t* msg)
                         {
-                            RCLCPP_ERROR(this->get_logger(), "RCUTILS_RET_INVALID_ARGUMENT OR RCUTILS_RET_ERROR");
+                            if (rcutils_uint8_array_fini(msg) != RCUTILS_RET_OK)
+                            {
+                                RCLCPP_ERROR(this->get_logger(), "RCUTILS_RET_INVALID_ARGUMENT OR RCUTILS_RET_ERROR");
+                            }
+                            delete msg;
                         }
-                        delete msg;
-                    }
-                );
-                *bag_msg->serialized_data = serialized_msg.release_rcl_serialized_message();
-                bag_msg->topic_name = camera_topic_;
-                bag_msg->time_stamp = now.nanoseconds();
-                writer_->write(bag_msg);
+                    );
+                    *bag_msg->serialized_data = serialized_msg.release_rcl_serialized_message();
+                    bag_msg->topic_name = camera_topic_;
+                    bag_msg->time_stamp = now.nanoseconds();
+                    writer_->write(bag_msg);
+                }
             }
-        }
-        if (show_img_)
-        {
-            cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
-            cv::imshow("frame", frame_);
-            cv::waitKey(1);
-        }
+            if (show_img_)
+            {
+                cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
+                cv::imshow("frame", frame_);
+                cv::waitKey(1);
+            }
+        // }
     }
 
     template<class T>

@@ -224,11 +224,19 @@ namespace camera_driver
         // RCLCPP_INFO(logger_, "Camera getImage called...");
         if (is_camera_initialized_) {
             status = CameraGetImageBuffer(hCamera, &sFrameInfo, &pbyBuffer, 1000);
+            if (status != CAMERA_STATUS_SUCCESS) {
+                RCLCPP_WARN(logger_, "Get image buffer failed! Error code: %d", status);
+                return false;
+            }
             if (CameraImageProcess(hCamera, pbyBuffer, g_pRgbBuffer, &sFrameInfo) == CAMERA_STATUS_SUCCESS) {
                 Src = cv::Mat(tCapability.pImageSizeDesc->iHeight, tCapability.pImageSizeDesc->iWidth, CV_8UC3);
                 memcpy(Src.data, g_pRgbBuffer, tCapability.pImageSizeDesc->iWidth * tCapability.pImageSizeDesc->iHeight * 3 * sizeof(unsigned char));
                 cvtColor(Src, Src, COLOR_RGB2BGR);
                 
+                // for (int ii = 0; ii < 10; ii++)
+                // {
+                //     cout << pbyBuffer[ii] << " ";
+                // }
                 image_msg.step = static_cast<sensor_msgs::msg::Image::_step_type>(Src.step);
                 image_msg.is_bigendian = false;
                 image_msg.data.assign(Src.datastart, Src.dataend);
@@ -236,7 +244,7 @@ namespace camera_driver
                 status = CameraReleaseImageBuffer(hCamera, pbyBuffer);
                 if (status != CAMERA_STATUS_SUCCESS) {
                     RCLCPP_WARN(logger_, "Release image buffer failed! Error code: %d", status);
-                    return false;
+                    // return false;
                 }
                 return true;
             } else {

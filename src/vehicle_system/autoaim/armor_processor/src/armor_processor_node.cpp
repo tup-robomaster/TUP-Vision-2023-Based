@@ -140,6 +140,9 @@ namespace armor_processor
 
     bool ArmorProcessorNode::processTargetMsg(const AutoaimMsg& target_info, cv::Mat* src)
     {
+        // rclcpp::Time sp = target_info.header.stamp;
+        // cout << "sp:" << sp.nanoseconds() / 1e9 << endl;
+
         double sleep_time = 0.0;
         AutoaimMsg target = std::move(target_info);
         Eigen::Vector2d angle = {0.0, 0.0};
@@ -213,9 +216,9 @@ namespace armor_processor
                             min_dist = armor3d_dist;
                             flag = idx;
                         }
-                        // Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
-                        // point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
-                        // cv::circle(dst, point_2d, 6, {255, 255, 0}, -1);
+                        Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
+                        point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                        cv::circle(dst, point_2d, 14, {255, 255, 0}, -1);
                         ++idx;
                     }
                     if (flag != -1)
@@ -508,22 +511,22 @@ namespace armor_processor
                     // cv::Point2f point_2d = {0, 0};
                     // double min_dist = 1e2;
                     // int idx = 0, flag = -1;
-                    for (auto armor_point3d_world : armor3d_vec)
-                    {
-                        // double armor3d_dist = armor_point3d_world.norm();
-                        // if (armor3d_dist < min_dist)
-                        // {
-                        //     min_dist = armor3d_dist;
-                        //     flag = idx;
-                        // }
-                        // if (idx == 5 || idx == 0)
-                        // {
-                            Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
-                            point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
-                            cv::circle(dst, point_2d, 8, {255, 255, 0}, -1);
-                        // }
-                        // ++idx;
-                    }
+                    // for (auto armor_point3d_world : armor3d_vec)
+                    // {
+                    //     // double armor3d_dist = armor_point3d_world.norm();
+                    //     // if (armor3d_dist < min_dist)
+                    //     // {
+                    //     //     min_dist = armor3d_dist;
+                    //     //     flag = idx;
+                    //     // }
+                    //     // if (idx == 5 || idx == 0)
+                    //     // {
+                    //         Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
+                    //         point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                    //         cv::circle(dst, point_2d, 12, {255, 255, 0}, -1);
+                    //     // }
+                    //     // ++idx;
+                    // }
 
                     // if (flag != -1)
                     // {
