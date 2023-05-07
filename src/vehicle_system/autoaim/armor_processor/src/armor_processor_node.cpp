@@ -31,7 +31,7 @@ namespace armor_processor
 
         // QoS
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(5);
         qos.durability();
         qos.reliable();
         // qos.best_effort();
@@ -39,7 +39,7 @@ namespace armor_processor
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 5;
 
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", qos);
@@ -174,7 +174,7 @@ namespace armor_processor
             quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
             rmat_imu = quat_imu.toRotationMatrix();
         }
-
+                                     
         cv::Mat dst = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
         if (debug_param_.show_img)
         {
@@ -183,7 +183,7 @@ namespace armor_processor
             {
                 src_.copyTo(dst);
                 image_flag_ = false;
-            }
+            }         
             image_mutex_.unlock();
         }
 
@@ -301,7 +301,7 @@ namespace armor_processor
         //     shoot_flag_ = true;
         // }
 
-        cout << "is_shooting:" << (is_shooting ? "111" : "000") << endl;
+        RCLCPP_WARN_EXPRESSION(this->get_logger(), is_shooting, "Shooting...");
         
         // Gimbal info pub.
         GimbalMsg gimbal_info;
@@ -601,7 +601,7 @@ namespace armor_processor
         };
         // Declare prediction params.
         this->declare_parameter<double>("bullet_speed", 28.0);
-        this->declare_parameter<int>("max_time_delta", 1000);
+        this->declare_parameter<int>("max_dt", 1000);
         this->declare_parameter<int>("max_cost", 509);
         this->declare_parameter<int>("max_v", 8);
         this->declare_parameter<int>("min_fitting_lens", 10);
@@ -631,14 +631,14 @@ namespace armor_processor
         this->declare_parameter("show_marker", false);
 
         // Declare path params.
+        this->declare_parameter<std::string>("camera_name", "00J90630561");
+        this->declare_parameter<std::string>("camera_param_path", "/config/camera.yaml");
         this->declare_parameter<std::string>("filter_param_path", "/config/filter_param.yaml");
-        this->declare_parameter<std::string>("coord_param_path", "/config/camera.yaml");
-        this->declare_parameter<std::string>("coord_param_name", "00J90630561");
         
         // Get path param.
         string pkg_share_path = get_package_share_directory("global_user");
-        path_param_.coord_name = this->get_parameter("coord_param_name").as_string();
-        path_param_.coord_path = pkg_share_path + this->get_parameter("coord_param_path").as_string();
+        path_param_.coord_name = this->get_parameter("camera_name").as_string();
+        path_param_.coord_path = pkg_share_path + this->get_parameter("camera_param_path").as_string();
         path_param_.filter_path = pkg_share_path + this->get_parameter("filter_param_path").as_string();
 
         // Get param from param server.
@@ -721,7 +721,7 @@ namespace armor_processor
     {   // 动态调参(与rqt_reconfigure一块使用)
         //Prediction param.
         predict_param_.bullet_speed = this->get_parameter("bullet_speed").as_double();
-        predict_param_.max_delta_time = this->get_parameter("max_time_delta").as_int();
+        predict_param_.max_dt = this->get_parameter("max_dt").as_int();
         predict_param_.max_cost = this->get_parameter("max_cost").as_int();
         predict_param_.max_v = this->get_parameter("max_v").as_int();
         predict_param_.min_fitting_lens = this->get_parameter("min_fitting_lens").as_int();

@@ -4,7 +4,6 @@
     armor_type_wh_thres: 3
     max_lost_cnt: 5
     max_armors_cnt: 8
-    max_v: 8
     max_delta_t: 50
     no_crop_thres: 0.01
     hero_danger_zone: 4
@@ -16,12 +15,10 @@
     armor_conf_high_thres: 0.82
 
   # Spinning params.
-    max_cost: 500
     shoot_delay: 75
     bullet_speed: 12.7
     max_dead_buffer: 10
     max_delta_dist: 0.5
-    min_fitting_lens: 10
     switch_max_dt: 2000.0
     anti_spin_max_r_multiple: 4.5
     anti_spin_judge_low_thres: 2000.0
@@ -37,10 +34,10 @@
     delta_y_3d_lower_thresh: 0.05
 
   # Camera config params.
+    camera_type: 2
+    camera_param_path: "/config/camera.yaml"
     # camera_name: "00J90630561" 
     camera_name: "KE0200110074" #FIXME:根据相机序列号修改
-    camera_type: 0
-    camera_param_path: "/config/camera.yaml"
 
   # Network model path.
     # network_path: "/model/opt-0527-002.xml"
@@ -56,7 +53,7 @@
   
   # Debug params.
     debug: true
-    using_imu: true
+    using_imu: false
     using_roi: true
     detect_red: true # red: true / blue: false
     show_img: false
@@ -72,7 +69,7 @@
   ros__parameters:
   # Predict params.
     bullet_speed: 12.7
-    max_time_delta: 1000
+    max_dt: 1000
     max_cost: 10
     max_v: 8
     min_fitting_lens: 5
@@ -86,7 +83,7 @@
 
   # Debug params.
     debug: true
-    using_imu: true
+    using_imu: false
     show_img: true
     draw_predict: true
     show_predict: true
@@ -94,13 +91,13 @@
     show_fps: true
     print_delay: false
     sync_transport: false
-    show_marker: false
+    show_marker: true
  
   # Camera params.
-    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
-    # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110074" #FIXME:根据相机序列号修改
-    coord_param_path: "/config/camera.yaml"
+    camera_type: 2 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_param_path: "/config/camera.yaml"
+    # camera_name: "00J90630561" 
+    camera_name: "KE0200110074" #FIXME:根据相机序列号修改
     
   # Filter params.
     filter_param_path: "/config/filter_param.yaml"
@@ -113,9 +110,9 @@
     
   # Singer model
     # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)
-    singer_model_process_param: [1.05, 1.05, 1.05, 1.5, 1.65, 1.5]
+    singer_model_process_param: [1.05, 1.05, 1.05, 4.5, 5.65, 4.5]
     # r:观测协方差系数(r1/r2/r3)
-    singer_model_measure_param: [1.0, 1.25, 1.25]
+    singer_model_measure_param: [1.0, 1.0, 1.0]
 
     # IMM model.
     #状态转移概率

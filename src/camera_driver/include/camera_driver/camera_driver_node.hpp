@@ -131,7 +131,7 @@ namespace camera_driver
 
         //QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(5);
         qos.best_effort();
         qos.durability();
         // qos.reliable();
@@ -139,7 +139,7 @@ namespace camera_driver
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 5;
 
         // Camera type.
         this->declare_parameter<int>("camera_type", MVSCam);

@@ -75,12 +75,14 @@ namespace armor_processor
         // uniform ekf
         bool is_ekf_init_;
         UniformModel uniform_ekf_;
-        PredictorState predictor_state_ = LOST;
-        Eigen::Vector4d last_state_;
 
         // singer ekf
         bool is_singer_init_;
         SingerModel singer_ekf_;
+        
+        PredictorState predictor_state_ = LOST;
+        Eigen::Vector4d last_state_;
+        deque<Eigen::Vector4d> history_switched_state_;
 
     public:
         bool is_init_;

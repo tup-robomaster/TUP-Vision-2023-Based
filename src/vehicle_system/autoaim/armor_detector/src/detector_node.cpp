@@ -44,7 +44,7 @@ namespace armor_detector
 
         // QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(5);
         qos.reliable();
         qos.transient_local();
         qos.durability_volatile();
@@ -54,7 +54,7 @@ namespace armor_detector
         // qos.durability();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 5;
 
         time_start_ = detector_->steady_clock_.now();
 

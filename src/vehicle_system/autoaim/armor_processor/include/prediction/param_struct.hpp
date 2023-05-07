@@ -91,7 +91,7 @@ namespace armor_processor
     struct PredictParam
     {
         double bullet_speed;    //弹速
-        int max_delta_time;     //最大时间跨度，大于该值则重置预测器
+        int max_dt;             //最大时间跨度，大于该值则重置预测器(ms)
         int max_cost;           //回归函数最大cost
         int max_v;              //
         int min_fitting_lens;   //最短队列长度
@@ -110,7 +110,7 @@ namespace armor_processor
         PredictParam()
         {
             bullet_speed = 28;    
-            max_delta_time = 1000;     
+            max_dt = 1000;     
             max_cost = 509;           
             max_v = 8;              
             min_fitting_lens = 10;   
