@@ -1,13 +1,13 @@
 /armor_detector:
   ros__parameters:
   # Detector params.
-    armor_type_wh_thres: 3
+    color: 1 # red: 1 / blue: 0
+    max_delta_t: 50
     max_lost_cnt: 5
     max_armors_cnt: 8
-    max_delta_t: 50
-    no_crop_thres: 0.01
     hero_danger_zone: 4
-    color: 1 # red: 1 / blue: 0
+    armor_type_wh_thres: 3
+    no_crop_thres: 0.01
     no_crop_ratio: 0.002
     full_crop_ratio: 0.0001
     armor_roi_expand_ratio_width: 1.2
@@ -34,7 +34,7 @@
     delta_y_3d_lower_thresh: 0.05
 
   # Camera config params.
-    camera_type: 2
+    camera_type: 2 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_param_path: "/config/camera.yaml"
     # camera_name: "00J90630561" 
     camera_name: "KE0200110074" #FIXME:根据相机序列号修改
@@ -53,10 +53,11 @@
   
   # Debug params.
     debug: true
-    using_imu: false
-    using_roi: true
     detect_red: true # red: true / blue: false
+    use_serial: false
+    use_roi: true
     show_img: false
+    show_crop_img: false
     show_fps: false
     show_aim_cross: false
     show_all_armors: false
@@ -83,7 +84,7 @@
 
   # Debug params.
     debug: true
-    using_imu: false
+    use_serial: false
     show_img: true
     draw_predict: true
     show_predict: true

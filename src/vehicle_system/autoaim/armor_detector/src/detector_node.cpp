@@ -64,9 +64,9 @@ namespace armor_detector
         // target info pub.
         armor_info_pub_ = this->create_publisher<AutoaimMsg>("/armor_detector/armor_msg", qos);
         detections_pub_ = this->create_publisher<global_interface::msg::DetectionArray>("/armor_detector/detections", qos);
-        if (debug_.using_imu)
+        if (debug_.use_serial)
         {
-            RCLCPP_INFO(this->get_logger(), "Using imu...");
+            RCLCPP_INFO(this->get_logger(), "Using serial...");
             serial_msg_.imu.header.frame_id = "imu_link";
             this->declare_parameter<double>("bullet_speed", 28.0);
             this->get_parameter("bullet_speed", serial_msg_.bullet_speed);
@@ -234,7 +234,7 @@ namespace armor_detector
     void DetectorNode::detect(TaskData& src, rclcpp::Time stamp)
     {
         rclcpp::Time now = this->get_clock()->now();
-        if (debug_.using_imu)
+        if (debug_.use_serial)
         {
             serial_msg_mutex_.lock();
             src.mode = serial_msg_.mode;
@@ -477,12 +477,12 @@ namespace armor_detector
         this->declare_parameter("save_path", "/data/info.txt");
         
         //Debug.
-        this->declare_parameter("debug_without_com", true);
-        this->declare_parameter("using_imu", false);
-        this->declare_parameter("using_roi", true);
-        this->declare_parameter("show_aim_cross", false);
-        this->declare_parameter("show_img", false);
         this->declare_parameter("detect_red", true);
+        this->declare_parameter("use_serial", false);
+        this->declare_parameter("use_roi", true);
+        this->declare_parameter("show_img", false);
+        this->declare_parameter("show_crop_img", false);
+        this->declare_parameter("show_aim_cross", false);
         this->declare_parameter("show_fps", false);
         this->declare_parameter("print_letency", false);
         this->declare_parameter("print_target_info", false);
@@ -528,11 +528,11 @@ namespace armor_detector
         detector_params_.armor_conf_high_thres = this->get_parameter("armor_conf_high_thres").as_double();
 
         debug_.detect_red = this->get_parameter("detect_red").as_bool();
-        debug_.debug_without_com  = this->get_parameter("debug_without_com").as_bool();
-        debug_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
+        debug_.use_serial = this->get_parameter("use_serial").as_bool();
+        debug_.use_roi = this->get_parameter("use_roi").as_bool();
         debug_.show_img = this->get_parameter("show_img").as_bool();
-        debug_.using_imu = this->get_parameter("using_imu").as_bool();
-        debug_.using_roi = this->get_parameter("using_roi").as_bool();
+        debug_.show_crop_img = this->get_parameter("show_crop_img").as_bool();
+        debug_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
         debug_.show_fps = this->get_parameter("show_fps").as_bool();
         debug_.print_letency = this->get_parameter("print_letency").as_bool();
         debug_.print_target_info = this->get_parameter("print_target_info").as_bool();

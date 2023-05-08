@@ -29,25 +29,26 @@
 
 using namespace global_user;
 using namespace coordsolver;
+using namespace Eigen;
 namespace armor_processor
 {
     class ArmorPredictor
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
+        typedef Vector<double, 6> Vector6d;
         
     public:
         ArmorPredictor();
         ~ArmorPredictor();
         // ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, const DebugParam& debug_param);
+        // Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
+        // PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
 
         void initPredictor();
         void initPredictor(const vector<double>* uniform_ekf_param, const vector<double>* singer_ekf_param);
         bool resetPredictor();
         bool updatePredictor(Eigen::VectorXd meas);
         bool predict(TargetInfo target, double dt, double pred_dt, double& delay_time, Eigen::Vector3d& pred_point3d, vector<Eigen::Vector4d>& armor3d_vec, cv::Mat* src = nullptr);
-        
-        // Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
-        // PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
 
     public:
         PredictParam predict_param_;  //滤波先验参数/模型先验参数/调试参数
@@ -81,10 +82,13 @@ namespace armor_processor
         SingerModel singer_ekf_;
         
         PredictorState predictor_state_ = LOST;
-        Eigen::Vector4d last_state_;
-        deque<Eigen::Vector4d> history_switched_state_;
+        bool is_predictor_update_ = false;
+        Vector6d last_state_;
+        deque<Vector6d> history_switched_state_vec_;
+        deque<Vector6d> history_state_vec_;
 
     public:
+        double now_ = 0.0;
         bool is_init_;
         bool is_imm_init_;
         bool fitting_disabled_; // 是否禁用曲线拟合
@@ -101,7 +105,7 @@ namespace armor_processor
         // IMM Model.
         std::shared_ptr<IMM> imm_;
         ModelGenerator model_generator_;
-        PredictStatus predictBasedImm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector3d target_vel, Eigen::Vector3d target_acc, int64_t timestamp);
+        bool predictBasedImm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector3d target_vel, Eigen::Vector3d target_acc, int64_t timestamp);
         
         // CS Model.
         // PredictStatus predictBasedSinger(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, int64_t timestamp);
@@ -111,7 +115,7 @@ namespace armor_processor
         bool predictBasedUniformModel(bool is_target_lost, SpinHeading spin_state, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector4d>& armor3d_vec);
         
         // 前哨站旋转装甲板曲线拟合预测函数    
-        PredictStatus spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int64_t timestamp);
+        bool spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int64_t timestamp);
         
         // 滑窗滤波
         Eigen::Vector3d shiftWindowFilter(int start_idx);

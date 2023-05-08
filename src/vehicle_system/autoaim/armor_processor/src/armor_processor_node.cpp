@@ -165,7 +165,8 @@ namespace armor_processor
         {   //更新弹速
             processor_->coordsolver_.setBulletSpeed(target_info.bullet_speed);
         }
-        if(!debug_param_.using_imu)
+        
+        if(debug_param_.use_serial)
         {
             rmat_imu = Eigen::Matrix3d::Identity();
         }
@@ -616,17 +617,11 @@ namespace armor_processor
         this->declare_parameter<double>("rotation_roll", 0.0);
 
         // Declare debug params.
+        this->declare_parameter("use_serial", true);
         this->declare_parameter("show_img", false);
-        this->declare_parameter("using_imu", false);
         this->declare_parameter("draw_predict", false);
         this->declare_parameter("show_predict", true);
         this->declare_parameter("print_delay", false);
-        this->declare_parameter("x_axis_filter", true);
-        this->declare_parameter("y_axis_filter", false);
-        this->declare_parameter("z_axis_filter", false);
-        this->declare_parameter("disable_filter", false);
-        this->declare_parameter("disable_fitting", true);
-        this->declare_parameter("show_transformed_info", false);
         this->declare_parameter("show_aim_cross", true);
         this->declare_parameter("show_marker", false);
 
@@ -703,11 +698,10 @@ namespace armor_processor
         result.successful = false;
         result.reason = "debug";
         result.successful = updateParam();
-        result.successful = processor_->coordsolver_.setStaticAngleOffset(predict_param_.angle_offset);
         
         param_mutex_.lock();
-        // processor_->predict_param_ = this->predict_param_;
-        // processor_->debug_param_ = this->debug_param_;
+        processor_->predict_param_ = this->predict_param_;
+        processor_->debug_param_ = this->debug_param_;
         param_mutex_.unlock();
         return result;
     }
@@ -732,21 +726,13 @@ namespace armor_processor
         predict_param_.rotation_yaw = this->get_parameter("rotation_yaw").as_double();
         predict_param_.rotation_pitch = this->get_parameter("rotation_pitch").as_double();
         predict_param_.rotation_roll = this->get_parameter("rotation_roll").as_double();
-        predict_param_.angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
-        predict_param_.angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
 
         //Debug param.
+        debug_param_.use_serial = this->get_parameter("use_serial").as_bool();
         debug_param_.show_img = this->get_parameter("show_img").as_bool();
-        debug_param_.using_imu = this->get_parameter("using_imu").as_bool();
         debug_param_.draw_predict = this->get_parameter("draw_predict").as_bool();
         debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
-        debug_param_.x_axis_filter = this->get_parameter("x_axis_filter").as_bool();
-        debug_param_.y_axis_filter = this->get_parameter("y_axis_filter").as_bool();
-        debug_param_.z_axis_filter = this->get_parameter("z_axis_filter").as_bool();
         debug_param_.print_delay = this->get_parameter("print_delay").as_bool();
-        debug_param_.disable_filter = this->get_parameter("disable_filter").as_bool();
-        debug_param_.disable_fitting = this->get_parameter("disable_fitting").as_bool();
-        debug_param_.show_transformed_info = this->get_parameter("show_transformed_info").as_bool();
         debug_param_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
         show_marker_ = this->get_parameter("show_marker").as_bool();
 

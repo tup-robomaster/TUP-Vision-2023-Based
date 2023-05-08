@@ -62,8 +62,8 @@ namespace armor_detector
         now_ = src.timestamp;
         auto input = src.img;
         
-        if (!debug_params_.debug_without_com)
-        {   //有串口
+        if (debug_params_.use_serial)
+        {   //使用串口数据
             //设置弹速,若弹速大于10m/s值,且弹速变化大于0.5m/s则更新
             if (src.bullet_speed > 10 && abs(src.bullet_speed - last_bullet_speed_) > 0.5)
             {
@@ -80,7 +80,7 @@ namespace armor_detector
         }
 
         // Eigen::Matrix3d rmat_imu;
-        if (debug_params_.using_imu)
+        if (debug_params_.use_serial)
         {   //使用陀螺仪数据
             rmat_imu_ = src.quat.toRotationMatrix();
             // auto vec = rotationMatrixToEulerAngles(rmat_imu_);
@@ -95,7 +95,7 @@ namespace armor_detector
             RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 1000, "No imu...");
         }
 
-        if (debug_params_.using_roi)
+        if (debug_params_.use_roi)
         {   //启用roi
             //吊射模式采用固定ROI
             if (src.mode == 2)
@@ -265,6 +265,13 @@ namespace armor_detector
             // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 200, "rotate_angle:%.3f", points_pic_rrect.angle);       
         }
         
+        if (debug_params_.show_crop_img)
+        {
+            cv::namedWindow("crop_img", cv::WINDOW_AUTOSIZE);
+            cv::imshow("crop_img", input);
+            cv::waitKey(1);
+        }
+
         //若无合适装甲板
         if (new_armors_.empty())
         {
