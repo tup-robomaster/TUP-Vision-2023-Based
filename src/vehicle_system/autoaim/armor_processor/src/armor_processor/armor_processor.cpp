@@ -2,43 +2,43 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-04-26 22:04:02
+ * @LastEditTime: 2023-05-05 00:04:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
 
 namespace armor_processor
 {
-    Processor::Processor(const PredictParam& predict_param, std::vector<double>* uniform_ekf_param, const DebugParam& debug_param)
+    Processor::Processor(const PredictParam& predict_param, vector<double>* uniform_ekf_param,
+        vector<double>* singer_ekf_param, const DebugParam& debug_param)
     : logger_(rclcpp::get_logger("armor_processor")), predict_param_(predict_param), debug_param_(debug_param)  
     {
         //初始化预测器
-        armor_predictor_.uniform_ekf_.Init(11, 4, 1);
-        armor_predictor_.initPredictor(uniform_ekf_param);
+        armor_predictor_.initPredictor(uniform_ekf_param, singer_ekf_param);
         armor_predictor_.resetPredictor();
 
-        // car_id_map_ = {
-        //     {"B0", 0}, {"B1", 1},
-        //     {"B2", 2}, {"B3", 3},
-        //     {"B4", 4}, {"R0", 5},
-        //     {"R1", 6}, {"R2", 7},
-        //     {"R3", 8}, {"R4", 9} 
-        // };
+        car_id_map_ = {
+            {"B0", 0}, {"B1", 1},
+            {"B2", 2}, {"B3", 3},
+            {"B4", 4}, {"R0", 5},
+            {"R1", 6}, {"R2", 7},
+            {"R3", 8}, {"R4", 9} 
+        };
     }
     
     Processor::Processor()
     : logger_(rclcpp::get_logger("armor_processor"))
     {
-        // car_id_map_ = {
-        //     {"B0", 0}, {"B1", 1},
-        //     {"B2", 2}, {"B3", 3},
-        //     {"B4", 4}, {"R0", 5},
-        //     {"R1", 6}, {"R2", 7},
-        //     {"R3", 8}, {"R4", 9} 
-        // };
+        car_id_map_ = {
+            {"B0", 0}, {"B1", 1},
+            {"B2", 2}, {"B3", 3},
+            {"B4", 4}, {"R0", 5},
+            {"R1", 6}, {"R2", 7},
+            {"R3", 8}, {"R4", 9} 
+        };
 
         //初始化预测器
-        armor_predictor_.uniform_ekf_.Init(11, 4, 1);
+        armor_predictor_.initPredictor();
         armor_predictor_.resetPredictor();
     }
 
@@ -74,13 +74,7 @@ namespace armor_processor
     //  * @param hp 车辆血量信息
     //  * @return true 
     //  * @return false 
-    //  */
-    // bool Processor::autoShootingLogic(AutoaimMsg& armor, PostProcessInfo& post_process_info)
-    // {
-    //     post_process_info = postProcess(armor);
-    
-    //     // 如果当前目标血量偏低直接发弹
-    //     if (armor.hp <= 75)
+    //  */2
     //     {
     //         post_process_info.find_target = true;
     //         post_process_info.is_shooting = true;
@@ -133,13 +127,63 @@ namespace armor_processor
     {
         bool is_success = false;
         rclcpp::Time stamp = target_msg.header.stamp;
+        armor_predictor_.now_ = stamp.nanoseconds() / 1e9;
+        // cout << "now:" << armor_predictor_.now_ << endl;
+
         double dt = (stamp.nanoseconds() - last_timestamp_.nanoseconds()) / 1e9;
         double bullet_speed = coordsolver_.getBulletSpeed();
-        RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "dt:%.3f", dt);
-        // cout << 7 << endl;
+        if (dt > 0.1)
+            dt = 0.015;
+
+        RCLCPP_WARN_THROTTLE(
+            logger_, 
+            steady_clock_, 
+            100, 
+            "bullet_speed:%.3f dt:%.3f", 
+            bullet_speed, dt
+        );
+        
+        if (target_msg.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
+        {
+            double pred_dt = last_target_.xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
+            last_target_.is_target_lost = true;
+            if (lost_cnt_ <= 5)
+            {
+                //进入预测追踪阶段
+                is_success = armor_predictor_.predict(last_target_, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
+                ++lost_cnt_;
+            }
+            else
+            {
+                armor_predictor_.predictor_state_ = LOST;
+                lost_cnt_ = 0;
+            }
+        }
+
         for (auto armor : target_msg.armors)
         {
+            // cout << "armor.point3d_world:" << armor.point3d_world.x << " " << armor.point3d_world.y << " " << armor.point3d_world.z << endl;
             Eigen::Vector3d xyz = {armor.point3d_world.x, armor.point3d_world.y, armor.point3d_world.z};
+            double pred_dt = xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
+            Eigen::VectorXd state = armor_predictor_.uniform_ekf_.x();
+            Eigen::Vector3d center_xyz = {state(0), state(1), state(2)};
+
+            // cout << "rangle:" << armor.rangle << endl;
+            // RCLCPP_WARN_THROTTLE(
+            //     logger_,
+            //     steady_clock_,
+            //     100, 
+            //     "xyz:【%.3f %.3f %.3f] center_norm:[%.3f %.3f %.3f]",
+            //     xyz(0), xyz(1), xyz(2), center_xyz(0), center_xyz(1), center_xyz(2)
+            // );
+            // RCLCPP_WARN_THROTTLE(
+            //     logger_,
+            //     steady_clock_, 
+            //     100, 
+            //     "radius:%.3f theta:%.3f omega:%.3f vx:%.3f vy:%.3f vz:%.3f", 
+            //     state(3), state(4), state(5), state(6), state(7), state(8)
+            // );
+
             TargetInfo target = 
             { 
                 std::move(xyz),
@@ -168,57 +212,80 @@ namespace armor_processor
                 is_fitting_ = false;
             }
 
-            if (target.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
-            {
-                // cout << 9 << endl;
-                if (lost_cnt_ <= 5)
-                {
-                    //进入预测追踪阶段
-                    is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
-                    ++lost_cnt_;
-                }
-                else
-                {
-                    armor_predictor_.predictor_state_ = LOST;
-                    lost_cnt_ = 0;
-                }
-            }
-            else if (!target.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
+            if (!target.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
             {   //目标丢失后又重新出现
-                // cout << 10 << endl;
                 armor_predictor_.predictor_state_ = PREDICTING;
-                is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
+                is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
                 lost_cnt_ = 0;
             }
             else if (target.is_target_switched && !target.is_target_lost)
             {
-                // cout << 12 << endl;
+                armor_predictor_.predictor_state_ = PREDICTING;
                 if (armor_predictor_.resetPredictor())
                 {
                     RCLCPP_WARN(logger_, "Reset predictor...");
-                    is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
+                    is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
                 }                
             }
             else if (target.is_spinning_switched && !target.is_target_lost)
             {
-                // cout << 11 << endl;
+                RCLCPP_WARN(logger_, "Update predictor...");
                 // target_period_ = target.period;
+                armor_predictor_.predictor_state_ = PREDICTING;
                 Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
-                // cout << 14 << endl;
                 armor_predictor_.updatePredictor(meas);
-                // cout << 15 << endl;
-                is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
+                is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
             }
             else if (!target.is_target_lost)
             {
-                is_success = armor_predictor_.predict(target, bullet_speed, dt, sleep_time, pred_result, armor3d_vec);
+                armor_predictor_.predictor_state_ = PREDICTING;
+                is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
             }
+
+            last_target_ = target;
         }
-        // cout << 8 << endl;
+
+        RCLCPP_WARN_THROTTLE(
+            logger_, 
+            steady_clock_, 
+            100, 
+            "State:%s", 
+            armor_predictor_.predictor_state_ == LOST ? "LOST" : (armor_predictor_.predictor_state_ == LOSTING ? "LOSTING" : "PREDICTING")
+        );
         last_timestamp_ = stamp;
         return is_success;
     }
 
+    /**
+     * @brief Draw curve.
+    */
+    void Processor::curveDrawer(int axis, cv::Mat& src, double* params, cv::Point2i start_pos)
+    {
+        try
+        {
+            float mean_v = (params[0] + params[1] + params[2] + params[3]) / 4.0;
+            char ch[15];
+            sprintf(ch, "%.3f", mean_v);
+            std::string str = ch;
+            float k1 = 50;
+            if (!src.empty())
+            {
+                string axis_str = (axis == 0 && start_pos.x == 260) ? "X_AXIS" : (((axis == 1 && start_pos.x == 260)) ? "Y_AXIS" : (((axis == 2 && start_pos.x == 260)) ? "Z_AXIS" : ""));
+                cv::putText(src, axis_str, cv::Point(1, start_pos.y * (axis + 1) - 5), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 125));
+                cv::line(src, cv::Point(start_pos.x - 240, start_pos.y * (axis + 1)), cv::Point(start_pos.x, start_pos.y * (axis + 1)), cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
+                cv::line(src, cv::Point(start_pos.x - 240, start_pos.y * (axis + 1) + mean_v * k1), cv::Point(start_pos.x, start_pos.y * (axis + 1) + mean_v * k1), cv::Scalar(255, 255, 0), 1, cv::LINE_AA);
+                cv::putText(src, str, cv::Point(start_pos.x + 10, start_pos.y * (axis + 1) + mean_v * k1), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(255, 255, 0));
+                cv::line(src, cv::Point(start_pos.x - 180, start_pos.y * (axis + 1) + params[3] * k1), cv::Point(start_pos.x - 120, start_pos.y * (axis + 1) + params[2] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+                cv::line(src, cv::Point(start_pos.x - 120, start_pos.y * (axis + 1) + params[2] * k1), cv::Point(start_pos.x - 60, start_pos.y * (axis + 1) + params[1] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+                cv::line(src, cv::Point(start_pos.x - 60, start_pos.y * (axis + 1) + params[1] * k1), cv::Point(start_pos.x, start_pos.y * (axis + 1) + params[0] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+            }
+        }
+        catch(const std::exception& e)
+        {
+            RCLCPP_ERROR(logger_, "Error while drawing curve: %s", e.what());
+        }
+    }
+    
     // /**
     //  * @brief 设置弹速
     //  * 
@@ -232,35 +299,6 @@ namespace armor_processor
     //     return true;
     // }
 
-    // /**
-    //  * @brief Draw curve.
-    // */
-    // void Processor::curveDrawer(int axis, cv::Mat& src, double* params, cv::Point2i start_pos)
-    // {
-    //     try
-    //     {
-    //         float mean_v = (params[0] + params[1] + params[2] + params[3]) / 4.0;
-    //         char ch[15];
-    //         sprintf(ch, "%.3f", mean_v);
-    //         std::string str = ch;
-    //         float k1 = 50;
-    //         if (!src.empty())
-    //         {
-    //             string axis_str = (axis == 0 && start_pos.x == 260) ? "X_AXIS" : (((axis == 1 && start_pos.x == 260)) ? "Y_AXIS" : (((axis == 3 && start_pos.x == 260)) ? "Z_AXIS" : ""));
-    //             cv::putText(src, axis_str, cv::Point(1, start_pos.y * (axis + 1) - 5), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 125));
-    //             cv::line(src, cv::Point(start_pos.x - 240, start_pos.y * (axis + 1)), cv::Point(start_pos.x, start_pos.y * (axis + 1)), cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
-    //             cv::line(src, cv::Point(start_pos.x - 240, start_pos.y * (axis + 1) + mean_v * k1), cv::Point(start_pos.x, start_pos.y * (axis + 1) + mean_v * k1), cv::Scalar(255, 255, 0), 1, cv::LINE_AA);
-    //             cv::putText(src, str, cv::Point(start_pos.x + 10, start_pos.y * (axis + 1) + mean_v * k1), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(255, 255, 0));
-    //             cv::line(src, cv::Point(start_pos.x - 180, start_pos.y * (axis + 1) + params[3] * k1), cv::Point(start_pos.x - 120, start_pos.y * (axis + 1) + params[2] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
-    //             cv::line(src, cv::Point(start_pos.x - 120, start_pos.y * (axis + 1) + params[2] * k1), cv::Point(start_pos.x - 60, start_pos.y * (axis + 1) + params[1] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
-    //             cv::line(src, cv::Point(start_pos.x - 60, start_pos.y * (axis + 1) + params[1] * k1), cv::Point(start_pos.x, start_pos.y * (axis + 1) + params[0] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
-    //         }
-    //     }
-    //     catch(const std::exception& e)
-    //     {
-    //         RCLCPP_ERROR(logger_, "Error while drawing curve: %s", e.what());
-    //     }
-    // }
 
     // /**
     //  * @brief 加载滤波参数

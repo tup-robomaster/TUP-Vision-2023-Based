@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-04-16 18:11:16
+ * @LastEditTime: 2023-05-09 21:58:19
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -105,7 +105,7 @@ namespace camera_driver
 
         SerialMsg serial_msg_;
         mutex serial_mutex_;
-        bool use_serial_;
+        // bool use_serial_;
     };
 
     template<class T>
@@ -129,7 +129,7 @@ namespace camera_driver
         qos.durability();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 5;
 
         // Camera type.
         this->declare_parameter<int>("camera_type", DaHeng);
@@ -181,13 +181,13 @@ namespace camera_driver
         else
             is_cam_open_ = true;
 
-        image_msg_.header.frame_id = camera_topic_;
+        image_msg_.header.frame_id = "camera_frame";
         image_msg_.encoding = "bgr8";
         img_callback_timer_ = this->create_wall_timer(1ms, std::bind(&CameraBaseNode::imageCallback, this));
         camera_watcher_timer_ = rclcpp::create_timer(this, this->get_clock(), 100ms, std::bind(&CameraBaseNode::cameraWatcher, this));
 
-        this->declare_parameter("using_port", false);
-        use_serial_ = this->get_parameter("using_port").as_bool();
+        // this->declare_parameter("using_port", false);
+        // use_serial_ = this->get_parameter("using_port").as_bool();
     }
 
     template<class T>
@@ -219,13 +219,13 @@ namespace camera_driver
     {
         // while (1)
         // {
-            if (use_serial_)
-            {
-                if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
-                {
-                    return;
-                }
-            }
+            // if (use_serial_)
+            // {
+            //     if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
+            //     {
+            //         return;
+            //     }
+            // }
 
             if (!cam_driver_->getImage(frame_, image_msg_))
             {

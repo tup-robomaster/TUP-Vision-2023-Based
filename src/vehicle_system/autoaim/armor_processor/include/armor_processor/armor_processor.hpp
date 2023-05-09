@@ -18,16 +18,17 @@ using namespace global_user;
 using namespace coordsolver;
 namespace armor_processor
 {
-    class Processor : public ArmorPredictor
+    class Processor
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
         typedef global_interface::msg::ObjHP ObjHPMsg;
 
     public:
         Processor();
-        Processor(const PredictParam& predict_param, std::vector<double>* uniform_ekf_param, const DebugParam& debug_param);
+        Processor(const PredictParam& predict_param, vector<double>* uniform_ekf_param, vector<double>* singer_ekf_param, const DebugParam& debug_param);
         ~Processor();
 
+        // std::unique_ptr<Eigen::Vector3d> predictor(cv::Mat& src, AutoaimMsg& Autoaim, double& sleep_time);
         // void loadParam(std::string filter_param_path);
 
         //预测(接收armor_detector节点发布的目标信息进行预测)
@@ -35,7 +36,7 @@ namespace armor_processor
         void init(std::string coord_path, std::string coord_name);
         bool predictor(AutoaimMsg& Autoaim, Eigen::Vector3d& pred_result, vector<Eigen::Vector4d>& armor3d_vec, double& sleep_time);
 
-        // void curveDrawer(int axis, cv::Mat& src, double* params, cv::Point2i start_pos);
+        void curveDrawer(int axis, cv::Mat& src, double* params, cv::Point2i start_pos);
         // bool autoShootingLogic(AutoaimMsg& armor, PostProcessInfo& post_process_info);
         // bool setBulletSpeed(double speed);
     
@@ -46,15 +47,17 @@ namespace armor_processor
         bool is_param_initialized_ = false;
         rclcpp::Time last_timestamp_;
         // double target_period_ = 0.0;
+        TargetInfo last_target_;
         
         //预测器(每辆车默认分配4个预测器，平衡仅使用2个预测器)
         //目前只分配一个预测器
         ArmorPredictor armor_predictor_;
 
-    private:
-        std::map<std::string, int> car_id_map_;
         PredictParam predict_param_;
         DebugParam debug_param_;
+        
+    private:
+        std::map<std::string, int> car_id_map_;
         rclcpp::Logger logger_;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
     };

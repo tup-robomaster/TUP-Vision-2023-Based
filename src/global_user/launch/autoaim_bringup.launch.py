@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-04-27 21:07:59
+LastEditTime: 2023-05-09 22:09:24
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -34,6 +34,7 @@ def generate_launch_description():
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
     camera_type = 'usb'
+    camera_name = 'KE0200110075'
     use_serial = False
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
@@ -101,7 +102,7 @@ def generate_launch_description():
         camera_remappings = [("/image", "/hik_img")]
 
     else:
-        raise BaseException("Invalid Cam Type!!") 
+        raise BaseException("Invalid Cam Type!!!") 
     detector_container = ComposableNodeContainer(
         name='armor_detector_container',
         namespace='',
@@ -109,22 +110,26 @@ def generate_launch_description():
         package='rclcpp_components',
         executable='component_container',
         composable_node_descriptions=[
-            ComposableNode(package='camera_driver',
-            plugin=camera_plugin,
-            name=camera_node,
-            parameters=[camera_params],
-            extra_arguments=[{
-                'use_intra_process_comms':True
-            }]
-        ),
+            ComposableNode(
+                package='camera_driver',
+                plugin=camera_plugin,
+                name=camera_node,
+                parameters=[camera_params],
+                extra_arguments=[{
+                    'use_intra_process_comms': True
+                }]
+            ),
             ComposableNode(
                 package='armor_detector',
                 plugin='armor_detector::DetectorNode',
                 name='armor_detector',
-                parameters=[armor_detector_params],
+                parameters=[armor_detector_params,
+                {
+                    'camera_name': camera_name,
+                }],
                 remappings= camera_remappings,
                 extra_arguments=[{
-                    'use_intra_process_comms':True
+                    'use_intra_process_comms': True
                 }]
             ),
         ],
@@ -143,8 +148,11 @@ def generate_launch_description():
                 package='armor_processor',
                 plugin='armor_processor::ArmorProcessorNode',
                 name='armor_processor',
-                parameters=[armor_processor_params], 
-                remappings= camera_remappings,
+                parameters=[armor_processor_params,
+                {
+                    'camera_name': camera_name,
+                }],
+                remappings = camera_remappings,
                 extra_arguments=[{
                     'use_intra_process_comms':True
                 }]

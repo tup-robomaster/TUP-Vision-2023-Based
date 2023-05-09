@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-31 19:20:59
- * @LastEditTime: 2023-04-24 19:59:27
+ * @LastEditTime: 2023-05-05 00:07:33
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/kalman_filter.cpp
  */
 #include "../../include/filter/kalman_filter.hpp"
@@ -23,91 +23,81 @@ namespace armor_processor
 
     void KalmanFilter::Init(int SP, int MP, int CP)
     {
-        assert(SP > 0 && MP > 0 && CP > 0);
-
+        assert(SP > 0 && MP > 0);
         this->x_ = Eigen::VectorXd::Zero(SP);
-        this->F_ = Eigen::MatrixXd::Identity(SP, SP);
-        this->Q_ = Eigen::MatrixXd::Identity(SP, SP);
-        this->H_ = Eigen::MatrixXd::Zero(MP, SP);
-        this->R_ = Eigen::MatrixXd::Zero(MP, MP);
-        this->P_ = Eigen::MatrixXd::Zero(SP, SP);
+        this->z_ = Eigen::VectorXd::Zero(MP);
         this->C_ = Eigen::MatrixXd::Zero(SP, CP);
-
+        this->F_ = Eigen::MatrixXd::Identity(SP, SP);
+        this->Jf_ = Eigen::MatrixXd::Identity(SP, SP);
+        this->P_ = Eigen::MatrixXd::Identity(SP, SP);
+        this->Q_ = Eigen::MatrixXd::Identity(SP, SP);
+        this->H_ = Eigen::MatrixXd::Identity(MP, SP);
+        this->Jh_ = Eigen::MatrixXd::Identity(MP, SP);
+        this->R_ = Eigen::MatrixXd::Identity(MP, MP);
         this->cp_ = CP;
-    }
-
-    void KalmanFilter::Init(MatrixXd& x_in, MatrixXd& P_in, MatrixXd& F_in,
-            MatrixXd& H_in, MatrixXd& R_in, MatrixXd& Q_in)
-    {
-        x_ = x_in;
-        P_ = P_in;
-        F_ = F_in;
-        H_ = H_in;
-        R_ = R_in;
-        Q_ = Q_in;
-    }
-
-    void KalmanFilter::Init(MatrixXd& x_in, MatrixXd& P_in, MatrixXd& F_in,
-            MatrixXd& H_in, MatrixXd& R_in, MatrixXd& Q_in, MatrixXd& J_in)
-    {
-        x_ = x_in;
-        P_ = P_in;
-        F_ = F_in;
-        H_ = H_in;
-        R_ = R_in;
-        Q_ = Q_in;
-        J_ = J_in;
     }
 
     void KalmanFilter::Predict()
     {
-        if(this->cp_ > 0)
+        if(cp_ == 1)
         {
             x_ = F_ * x_ + C_ * x_[2];
+        }
+        else if (cp_ == 3)
+        {
+            Eigen::Vector3d acc = {x_(6), x_(7), x_(8)};
+            x_ = F_ * x_ + C_ * acc;
         }
         else
         {
             x_ = F_ * x_;
         }
 
-        MatrixXd Ft = F_.transpose();
-        
-        P_ = F_ * P_ * Ft + Q_;
+        P_ = Jf_ * P_ * Jf_.transpose() + Q_;
     }
 
     void KalmanFilter::Predict(const double& dt)
     {
         this->dt_ = dt;
-        updatePrediction();
-        this->P_ = this->F_ * this->P_ * this->F_.transpose() + this->Q_;
+        Predict();
     }
-
+ 
     void KalmanFilter::Update(const VectorXd& z)
     {
+        // if (x_.size() > 5)
+        // {
+        //     cout << "x_pre:" << x_(0) << " " << x_(1) << " " << x_(2) << " " << x_(3) << endl;
+        //     cout << "z:" << z(0) << " " << z(1) << " " << z(2) << endl;
+        // }
+
         MatrixXd z_pred = H_ * x_;
         MatrixXd y = z - z_pred;
-        
+
+        // if (x_.size() > 5)
+        // {
+        //     cout << "z_meas:" << z(0) << " " << z(1) << " " << z(2) << " " << z(3) << endl;
+        //     cout << "z_pred:" << z_pred(0, 0) << " " << z_pred(1, 0) << " " << z_pred(2, 0) << z_pred(3, 0) << endl;
+        //     cout << "y:" << y(0, 0) << " " << y(1, 0) << " " << y(2, 0) << " " << y(3, 0) << endl;
+        // }
+
         //卡尔曼增益
-        MatrixXd Ht = H_.transpose();
+        MatrixXd Ht = Jh_.transpose();
         MatrixXd PHt = P_ * Ht;
-        MatrixXd S = H_ * PHt + R_;
+        MatrixXd S = Jh_ * PHt + R_;
         MatrixXd Si = S.inverse();
         MatrixXd K = PHt * Si;
 
         //update
         x_ = x_ + (K * y);
+        
+        // if (x_.size() > 5)
+        // {
+        //     cout << "x_post:" << x_(0) << " " << x_(1) << " " << x_(2) << " " << x_(3) << endl;
+        // }
+
         int x_size = x_.size();
         MatrixXd I = MatrixXd::Identity(x_size, x_size);
-        P_ = (I - K * H_) * P_;
-    }
-
-    void KalmanFilter::Update(const Eigen::VectorXd& z, double rangle)
-    {
-        this->H_ << 1, 0, 0, -sin(rangle), 0, 0, 0, 0, 0, 0, 0, 
-                    0, 1, 0,  cos(rangle), 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 1,            0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0,            0, 1, 0, 0, 0, 0, 0, 0;
-        Update(z);
+        P_ = (I - K * Jh_) * P_;
     }
 
     /**
@@ -118,8 +108,6 @@ namespace armor_processor
      */
     void KalmanFilter::Update(const Eigen::VectorXd& z, int mp)
     {
-        updateMeasurement();
-
         // 测量值与预测值之间的残差
         Eigen::VectorXd v = z - this->x_;
         
@@ -153,11 +141,6 @@ namespace armor_processor
             Predict(dt);
             Update(*z);
         }
-    }
-
-    void KalmanFilter::UpdateJacobians()
-    {
-        
     }
 
     void KalmanFilter::UpdateEKF(const MatrixXd& z)

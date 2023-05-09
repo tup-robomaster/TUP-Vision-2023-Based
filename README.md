@@ -19,12 +19,12 @@ V3.0
 
 |    Name   |      Function  | Description |
 |    ---    |        ---     |    ---         |
-|global_user|     定义全局接口 |包含通用函数/结构体/枚举类型|
+|global_user|     定义全局接口 |包含通用函数/结构体/枚举类型，详情见[global_user](src/global_user/README.md)|
 |global_interface|自定义消息   |全局msg定义|
 |serialport|      串口驱动     |定义与下位机的通信协议|
 |camera_driver|相机驱动        | 包含大恒/海康/USB相机驱动接口|
-|armor_detector| 装甲板检测节点 | 识别出待打击目标|
-|armor_processor| 装甲板预测节点|对待打击目标进行预测|
+|armor_detector| 装甲板检测节点 | 识别出待打击目标，详情见[armor_detector](src/vehicle_system/autoaim/armor_detector/README.md)|
+|armor_processor| 装甲板预测节点|对待打击目标进行预测，详情见[armor_processor](src/vehicle_system/autoaim/armor_processor/README.md)|
 |buff_detector| 能量机关检测节点|识别出待打击扇叶|
 |buff_processor|能量机关预测节点| 对待打击扇叶进行预测|
 
@@ -56,45 +56,99 @@ OpenCV  |https://github.com/opencv/opencv/tree/4.2.0 \ https://github.com/opencv
 |大恒相机库 | https://www.daheng-imaging.com/index.php?m=content&c=index&a=lists&catid=59&czxt=9&sylx=21&syxj=44#mmd | 编译安装时给权限
 
 ## 4.Debug
+### 调试软件Foxglove（Recommended）
 - Prepare
-  - 参数配置文件位置：src/global_user/config/autoaim.yaml
-  - 对应的launch文件位置：src/global_user/launch/autoaim_bringup.launch.py
-  - 首先根据实际情况更改相机类型（camera_type）和型号(camera_name)（包括armor_detector空间和armor_processor空间下对应的参数）；
+  -
+  - Download URL: https://foxglove.dev/download
+  - 实时连接配置
+      > a.rosbridge_server安装  \
+        ```
+          sudo apt-get install ros-galactic-rosbridge-suite
+        ```  \
+      > b.将服务端与客户端置于同一网络下，远程调试使用网线连接提高通信效率。 \
+      > c.启动WebSocket服务器，同时会输出监听的端口号（一般为port:9090）  \
+        ```
+          ros2 launch rosbridge_server rosbridge_websocket_launch.xml
+        ```  \
+      > d.打开Foxglove Studio，选择‘打开连接’，点击侧边栏‘Rosbridge’，更改对应WebSocket URL，包括两部分：服务端的本机ip地址+服务器监听的端口号。
+  - 使用说明 \
+    TODO:
+    
+### 1.自瞄调试
+ 
+- Prepare
+  - 
+  - 相机参数配置文件目录：src/camera_driver/config/ 
+  - 自瞄参数配置文件路径：src/global_user/config/autoaim.yaml
+  - 对应的launch文件路径：src/global_user/launch/autoaim_bringup.launch.py
+  - 首先根据实际情况更改相机类型（camera_type）和型号(camera_name)（包括armor_detector空间和armor_processor空间下对应的参数），调试视频则把camera_type赋为3；
   - 与下位机通信调试时将配置文件中的using_imu参数改为true，同时把launch文件中的using_imu参数置为True；
   - 调试的参数主要是CS模型(singer_model)和IMM模型对应的参数(trans_prob_matrix\model_prob_vector\process_noise\measure_noise)。
+  - 自瞄参数配置详解见:[Autoaim_Config](src/global_user/README.md)  
+
 - Compile
-    
+  - 
+```
         colcon build --symlink-install 
         . install/setup.bash
+```
 
 - Command
-        
+  - 
+```    
         ros2 launch global_user autoaim_bringup.launch.py
+```
+- Startup
+  - 
 
-#### 2.能量机关调试
+  - Step1:设置shell脚本权限
+        
+```
+        sudo chmod 777 your_shell_script_path
+```
+
+  - Step2:配置程序启动首选项
+```
+        gnome-terminal -- your_shell_script_path
+```
+- Log
+  -  
+  - 日志保存路径设置
+```
+        sudo gedit ~/.bashrc
+        export ROS_HOME=~/ros_logs
+```
+
+### 2.能量机关调试
 - Prepare
-    
+  - 
+    - 相机参数配置文件目录：src/camera_driver/config/ 
     - 参数配置文件位置：src/global_user/config/buff.yaml
     - 对应的launch文件位置：src/global_user/launch/buff_bringup.launch.py
     - 首先根据实际情况更改相机类型（camera_type）和型号(camera_name)（包括buff_detector空间和buff_processor空间下对应的参数），调试视频则把camera_type赋为3，同时更改launch文件中的相机类型；
     - 与下位机通信调试时将配置文件中的using_imu参数改为true，同时把launch文件中的using_imu参数置为True；
-    - 调试时可以适当修改时间延迟量（delay_small和delay_big）。
+    - 调试时可以适当修改时间延迟量（delay_small和delay_big）。\
+    详细调试介绍见[Buff_Debug](src/vehicle_system/buff/README.md)
 
 - Compile
+  - 
     
         colcon build --symlink-install 
         . install/setup.bash
 
 - Command
+  - 
 
         ros2 launch global_user buff_bringup.launch.py
 
 ## 5.Develop log
 
 | Date |  Issue   |   Debug    |
-| ---  |  ---     | ---   | 
-|2023-04-14|相机驱动节点加入ros2bag录制图像数据和回放数据功能|比赛前须打开此功能。|
-|2023-03-xx| Fixed image transport delay problem.(0.5ms左右)| 将图像订阅者的qos的depth设置为1。|
+| ---  |  ---     | ---   |  
+|2023-05-03|添加迈德威视相机驱动。 |   |
+|2023-04-24|添加新网络模型，区分大小装甲板。 |   |
+|2023-04-14|相机驱动节点加入ros2bag录制图像数据和回放数据功能。|比赛前须打开此功能。目前每隔100帧保存一帧，可适当修改（录制帧率不能太高）。|
+|2023-03-xx| Fixed image transport delay problem.(0.5ms左右)| ~~将图像订阅者的qos的depth设置为1。~~ 考虑到图像后处理耗时，图像qos深度可适当调整。|
 |2022-12-11| Update buff node.| |
 |2022-12-01| Merge armor_detector node and armor_processor node to one node.||
 |2022-11-11| 添加ros2 parameter callback，配合rqt_reconfigure插件可以实现节点动态调参(目前仅可在usb相机驱动节点使用)。 |全局均可使用，普通数据类型可以直接修改，目前不支持对数组容器的动态修改。|

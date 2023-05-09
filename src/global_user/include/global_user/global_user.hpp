@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-04-14 03:19:54
+ * @LastEditTime: 2023-05-03 17:42:18
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -71,6 +71,7 @@ namespace global_user
         double balance_r;
         bool using_video;
         string video_path;
+        string config_path = "src/camera_driver/config/daheng_cam_param.ini";
 
         CameraParam()
         {
@@ -148,6 +149,13 @@ namespace global_user
         BUFF
     };
 
+    enum SpinHeading
+    {
+        UNKNOWN,
+        CLOCKWISE, 
+        COUNTER_CLOCKWISE
+    };
+
     /**
      * @brief 模式选择（取消视觉，自瞄，英雄吊射，小符，大符，哨兵）
      * 
@@ -160,9 +168,7 @@ namespace global_user
         SMALL_BUFF,
         BIG_BUFF,
         OUTPOST_ROTATION_MODE,
-        SENTRY_NORMAL,
-        SENTRY_SWING,
-        SENTRY_AUTOAIM
+        SENTRY_NORMAL
     };
 
     struct TaskData
