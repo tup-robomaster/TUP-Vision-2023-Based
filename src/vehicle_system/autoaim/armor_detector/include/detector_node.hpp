@@ -50,8 +50,6 @@ namespace armor_detector
         void detect(TaskData& src, rclcpp::Time start);
     private:
         rclcpp::Time time_start_;
-        ImageInfo image_info_;
-        ImageSize image_size_;
         // Pub target armor msg.
         rclcpp::Publisher<AutoaimMsg>::SharedPtr armor_info_pub_;
         rclcpp::Publisher<global_interface::msg::DetectionArray>::SharedPtr detections_pub_;

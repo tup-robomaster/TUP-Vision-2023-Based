@@ -23,7 +23,6 @@ find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(robot_state_publisher REQUIRED)
-find_package(OpenCV REQUIRED)
 find_package(global_interface REQUIRED)
 find_package(global_user REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -36,7 +35,6 @@ find_package(tf2_ros REQUIRED)
 include_directories(
   include
   ${EIGEN3_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
 )
   
 set(node_plugins "")
@@ -53,7 +51,6 @@ set(dependencies
   rclcpp_components
   std_msgs
   sensor_msgs
-  OpenCV
   global_interface
   global_user
   message_filters 

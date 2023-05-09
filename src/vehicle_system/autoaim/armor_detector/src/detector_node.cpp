@@ -86,15 +86,10 @@ namespace armor_detector
         // Initialize the transform broadcaster
         // tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
          
-        // CameraType camera_type;
-        this->declare_parameter<int>("camera_type", DaHeng);
-        int camera_type = this->get_parameter("camera_type").as_int();
         // Subscriptions transport type.
         std::string transport_type = "raw";
-        // Image size.
-        image_size_ = image_info_.image_size_map[camera_type];
-        // image sub.
-        std::string camera_topic = image_info_.camera_topic_map[camera_type];
+        std::string camera_topic = "/image";
+        
         if (sync_transport)
         {
             // Create serial msg subscriber.

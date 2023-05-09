@@ -15,9 +15,6 @@
 #include <vector>
 #include <string>
 
-//opencv
-#include <opencv2/opencv.hpp>
-
 //ros
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist.hpp>

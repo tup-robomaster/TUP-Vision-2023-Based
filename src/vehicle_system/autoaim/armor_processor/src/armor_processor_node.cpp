@@ -59,9 +59,6 @@ namespace armor_processor
                 qos,
                 std::bind(&ArmorProcessorNode::targetMsgCallback, this, _1));
         }
-        // 相机类型
-        this->declare_parameter<int>("camera_type", DaHeng);
-        int camera_type = this->get_parameter("camera_type").as_int();
         
         this->declare_parameter<bool>("debug", true);
         this->get_parameter("debug", debug_);
@@ -78,8 +75,7 @@ namespace armor_processor
 
             if (debug_param_.show_img)
             {
-                image_size_ = image_info_.image_size_map[camera_type];
-                std::string camera_topic = image_info_.camera_topic_map[camera_type];
+                std::string camera_topic = "/image";
                 if (sync_transport_)
                 {
                     RCLCPP_WARN(this->get_logger(), "Synchronously...");
@@ -158,7 +154,7 @@ namespace armor_processor
         Eigen::Vector4d vehicle_center3d_world = {0.0, 0.0, 0.0, 0.0};
         // PostProcessInfo post_process_info;
 
-        cv::Mat dst = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
+        cv::Mat dst;
         if (debug_param_.show_img)
         {
             image_mutex_.lock();

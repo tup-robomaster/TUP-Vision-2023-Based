@@ -95,9 +95,6 @@ namespace armor_processor
         std::unique_ptr<Processor> initArmorProcessor();
 
     protected:
-        ImageSize image_size_;
-        ImageInfo image_info_;
-
         // Image callback.
         void imageProcessor(cv::Mat& img);
         void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);

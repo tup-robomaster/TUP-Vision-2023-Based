@@ -59,7 +59,7 @@ OpenCV  |https://github.com/opencv/opencv/tree/4.2.0 \ https://github.com/opencv
 - Prepare
   - 参数配置文件位置：src/global_user/config/autoaim.yaml
   - 对应的launch文件位置：src/global_user/launch/autoaim_bringup.launch.py
-  - 首先根据实际情况更改相机类型（camera_type）和型号(camera_name)（包括armor_detector空间和armor_processor空间下对应的参数），调试视频则把camera_type赋为3；
+  - 首先根据实际情况更改相机类型（camera_type）和型号(camera_name)（包括armor_detector空间和armor_processor空间下对应的参数）；
   - 与下位机通信调试时将配置文件中的using_imu参数改为true，同时把launch文件中的using_imu参数置为True；
   - 调试的参数主要是CS模型(singer_model)和IMM模型对应的参数(trans_prob_matrix\model_prob_vector\process_noise\measure_noise)。
 - Compile
