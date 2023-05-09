@@ -274,13 +274,9 @@ namespace camera_driver
             return;
         }
 
-        rclcpp::Time now = this->get_clock()->now();
         image_msg_.header.stamp = now;
         camera_info_msg_.header = image_msg_.header;
         image_msg_.width = this->image_size_.width;
-        image_msg_.height = this->image_size_.height;
-        camera_pub_.publish(image_msg_, camera_info_msg_);
-            
         if (save_video_)
         {   // Video recorder.
             ++frame_cnt_;
@@ -288,15 +284,6 @@ namespace camera_driver
             {
                 sensor_msgs::msg::Image image_msg = image_msg_;
                 auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
-                auto serialized_msg = rclcpp::SerializedMessage();
-                serializer.serialize_message(&image_msg, &serialized_msg);
-                auto bag_msg = std::make_shared<rosbag2_storage::SerializedBagMessage>();
-                bag_msg->serialized_data = std::shared_ptr<rcutils_uint8_array_t>(
-                    new rcutils_uint8_array_t,
-                    [this](rcutils_uint8_array_t* msg)
-                    {
-                        if (rcutils_uint8_array_fini(msg) != RCUTILS_RET_OK)
-                        {
                             RCLCPP_ERROR(this->get_logger(), "[Record video] RCUTILS_RET_INVALID_ARGUMENT OR RCUTILS_RET_ERROR");
                         }
                         delete msg;

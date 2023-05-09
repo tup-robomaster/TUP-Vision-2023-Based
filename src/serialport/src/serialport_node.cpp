@@ -78,6 +78,7 @@ namespace serialport
         // timer_ = this->create_wall_timer(5ms, std::bind(&SerialPortNode::sendData, this));
         // send_timer_ = rclcpp::create_timer(this, this->get_clock(), 30ms, std::bind(&SerialPortNode::sendingData, this));
 
+
         if (using_port_)
         {   // Use serial port.
             if (serial_port_->openPort())
@@ -97,12 +98,15 @@ namespace serialport
                 watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
             }
         }
+
+        // tf2
+        tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+        // Initialize the transform broadcaster
+
     }
 
     SerialPortNode::~SerialPortNode()
     {
-        // if (receive_thread_.joinable())
-        //     receive_thread_.join();
     }
 
     void SerialPortNode::decisionMsgCallback(DecisionMsg::SharedPtr msg)

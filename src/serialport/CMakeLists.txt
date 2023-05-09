@@ -30,6 +30,8 @@ find_package(sensor_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED COMPONENTS EigenSparse)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 include_directories(
   include
@@ -56,9 +58,11 @@ set(dependencies
   global_user
   message_filters 
   robot_state_publisher 
-  yaml-cpp
+  # yaml-cpp
   Eigen3
   Ceres
+  tf2_geometry_msgs
+  tf2_ros 
 )
 
 ament_target_dependencies(${PROJECT_NAME}
