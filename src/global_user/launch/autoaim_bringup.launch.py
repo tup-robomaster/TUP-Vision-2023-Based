@@ -162,6 +162,7 @@ def generate_launch_description():
     ld = LaunchDescription()
     if use_serial:
         ld.add_action(serial_node)
+    
     ld.add_action(detector_container)
     ld.add_action(processor_container)
     ld.add_action(tf_static_node)
