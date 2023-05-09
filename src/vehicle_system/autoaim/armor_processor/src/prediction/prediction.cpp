@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-07 00:10:11
+ * @LastEditTime: 2023-05-09 10:59:10
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -59,11 +59,13 @@ namespace armor_processor
             //     uniform_ekf_.x_(0) = circle3d(0);
             //     uniform_ekf_.x_(1) = circle3d(1);
             // }
+
+            double z_diff = (meas(2) - uniform_ekf_.x_(2));
             uniform_ekf_.x_(2) = meas(2);
             uniform_ekf_.x_(4) = meas(3);
             // uniform_ekf_.x_(5) = 0.0;
 
-            Vector6d switched_state = {uniform_ekf_.x_(0), uniform_ekf_.x_(1), uniform_ekf_.x_(2), uniform_ekf_.x_(3), uniform_ekf_.x_(4), now_};
+            Vector6d switched_state = {uniform_ekf_.x_(0), uniform_ekf_.x_(1), uniform_ekf_.x_(2), uniform_ekf_.x_(3), uniform_ekf_.x_(4), z_diff};
             if (history_switched_state_vec_.size() > 2)
             {
                 history_switched_state_vec_.pop_back();
@@ -124,7 +126,8 @@ namespace armor_processor
             uniform_ekf_.x_ << circle_center(0), circle_center(1), meas(2), uniform_ekf_.radius_, meas(3), 0;
             is_ekf_init_ = true;
             is_pred_success = false;
-            result = {meas(0), meas(1), meas(2)};
+            result = {circle_center(0), circle_center(1), meas(2)};
+            is_pred_success = predictBasedSinger(is_target_lost, result, result, {0, 0, 0}, {0, 0, 0}, dt, pred_dt);
             predictor_state_ = TRACKING;
             return is_pred_success;
         }
@@ -223,7 +226,8 @@ namespace armor_processor
             //     pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
             // }
 
-            result = {circle_center(0), circle_center(1), state(2)};
+            // result = {circle_center(0), circle_center(1), state(2)};
+            result = {circle_center(0), circle_center(1), circle_center(2)};
             // Eigen::Vector4d circle_center3d = {circle_center(0), circle_center(1), state(2), 0.0};
             // armor3d_vec.emplace_back(circle_center3d);
 
@@ -232,23 +236,32 @@ namespace armor_processor
             {
                 for (int ii = 0; ii < 4; ii++)
                 {
-                    armor3d = {circle_center(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), circle_center(1) - radius * cos(pred_rangle + CV_PI / 2 * ii), state(2), (pred_rangle + CV_PI / 2 * ii)};
+                    armor3d = {result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii), result(2), (pred_rangle + CV_PI / 2 * ii)};
                     armor3d_vec.emplace_back(armor3d);
                 }
             }
             else
             {
+                double z_pred_arr[3] = {0};
+                double z_cur = result(2);
+                for (int ii = 0; ii < 3; ii++)
+                {
+                    z_pred_arr[ii] = z_cur - history_switched_state_vec_.at(ii)(5);
+                    z_cur = z_pred_arr[ii];
+                }
                 for (int ii = 0; ii < 4; ii++)
                 {
-                    armor3d = {circle_center(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), circle_center(1) - radius * cos(pred_rangle + CV_PI / 2 * ii), (ii > 0 ? history_switched_state_vec_.at(ii - 1)(2) : state(2)), (pred_rangle + CV_PI / 2 * ii)};
+                    armor3d = {result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii), (ii > 0 ? z_pred_arr[ii-1] : result(2)), (pred_rangle + CV_PI / 2 * ii)};
                     armor3d_vec.emplace_back(armor3d);
                 }
             }
 
-            last_state_(0) = circle_center(0);
-            last_state_(1) = circle_center(1);
-            last_state_(2) = circle_center(2);
+            last_state_(0) = state(0);
+            last_state_(1) = state(1);
+            last_state_(2) = state(2);
             last_state_(3) = radius;
+            last_state_(4) = state(4);
+            last_state_(5) = state(5);
             RCLCPP_WARN_THROTTLE(
                 logger_, 
                 steady_clock_, 
@@ -260,36 +273,42 @@ namespace armor_processor
         }
         else
         {   // 更新
-            uniform_ekf_.updateH(uniform_ekf_.H_, dt);
-            uniform_ekf_.updateJh(uniform_ekf_.Jh_, dt);
-            uniform_ekf_.Update(meas);
             Eigen::VectorXd state = uniform_ekf_.x();
             double radius = state(3);
             double rangle = state(4);
             double omega = state(5);
-
-            if (is_predictor_update_)
+            
+            if (!is_predictor_update_)
             {
-                double z_diff = state(2) - last_state_(2);
-                for (auto& history_state : history_switched_state_vec_)
-                {
-                    history_state(2) += z_diff;
-                }
+                uniform_ekf_.updateH(uniform_ekf_.H_, dt);
+                uniform_ekf_.updateJh(uniform_ekf_.Jh_, dt);
+                uniform_ekf_.Update(meas);
 
-                double rangle_diff = state(4) - last_state_(4);
-                if (abs(rangle_diff) > 0.05)
-                {
-                    Vector6d cur_state = {state(0), state(1), state(2), state(3), state(4), now_};
-                    if ((int)history_state_vec_.size() > 50)
-                    {
-                        history_state_vec_.pop_front();
-                        history_state_vec_.emplace_back(cur_state);
-                    }
-                    else
-                    {
-                        history_state_vec_.emplace_back(cur_state);
-                    }
-                }
+                state = uniform_ekf_.x();
+                radius = state(3);
+                rangle = state(4);
+                omega = state(5);
+                
+                // double z_diff = state(2) - last_state_(2);
+                // for (auto& history_state : history_switched_state_vec_)
+                // {
+                //     history_state(2) += z_diff;
+                // }
+
+                // double rangle_diff = state(4) - last_state_(4);
+                // if (abs(rangle_diff) > 0.05)
+                // {
+                //     Vector6d cur_state = {state(0), state(1), state(2), state(3), state(4), now_};
+                //     if ((int)history_state_vec_.size() > 50)
+                //     {
+                //         history_state_vec_.pop_front();
+                //         history_state_vec_.emplace_back(cur_state);
+                //     }
+                //     else
+                //     {
+                //         history_state_vec_.emplace_back(cur_state);
+                //     }
+                // }
             }
 
             if (radius < 0.18)
@@ -316,6 +335,7 @@ namespace armor_processor
             last_state_(2) = state(2);
             last_state_(3) = radius;
             last_state_(4) = state(4);
+            last_state_(5) = state(5);
 
             Eigen::MatrixXd F(6, 6);
             uniform_ekf_.updateF(F, pred_dt);
@@ -341,16 +361,23 @@ namespace armor_processor
                 // uniform_ekf_.x_(1) = circle_center(1);
                 // uniform_ekf_.x_(2) = state(2);
                 
-                // 超前预测
-                Eigen::MatrixXd F(9, 9);
-                singer_ekf_.updateF(F, pred_dt);
-                Eigen::MatrixXd Control(9, 3);
-                singer_ekf_.updateC(Control, pred_dt);
+                if (!is_predictor_update_)
+                {
+                    // 超前预测
+                    Eigen::MatrixXd F(9, 9);
+                    singer_ekf_.updateF(F, pred_dt);
+                    Eigen::MatrixXd Control(9, 3);
+                    singer_ekf_.updateC(Control, pred_dt);
 
-                Eigen::VectorXd State = singer_ekf_.x();
-                Eigen::Vector3d acc = {State(6), State(7), State(8)};
-                VectorXd pred = F * State + Control * acc;
-                circle_center = {pred(0), pred(1), pred(2)};
+                    Eigen::VectorXd State = singer_ekf_.x();
+                    Eigen::Vector3d acc = {State(6), State(7), State(8)};
+                    VectorXd pred = F * State + Control * acc;
+                    circle_center = {pred(0), pred(1), pred(2)};
+                }
+                else
+                {
+                    is_predictor_update_ = false;
+                }
             }
             double pred_rangle = rangle;
 
@@ -363,7 +390,8 @@ namespace armor_processor
             //     pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
             // }
             
-            result = {circle_center(0), circle_center(1), state(2)};
+            // result = {circle_center(0), circle_center(1), state(2)};
+            result = {circle_center(0), circle_center(1), circle_center(2)};
             // Eigen::Vector4d circle_center3d = {circle_center(0), circle_center(1), state(2), 0.0};
             // armor3d_vec.emplace_back(circle_center3d);
 
@@ -378,15 +406,22 @@ namespace armor_processor
             {
                 for (int ii = 0; ii < 4; ii++)
                 {
-                    armor3d = {circle_center(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), circle_center(1) - radius * cos(pred_rangle + CV_PI / 2 * ii), state(2), (pred_rangle + CV_PI / 2 * ii)};
+                    armor3d = {result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii), result(2), (pred_rangle + CV_PI / 2 * ii)};
                     armor3d_vec.emplace_back(armor3d);
                 }
             }
             else
             {
+                double z_pred_arr[3] = {0};
+                double z_cur = result(2);
+                for (int ii = 0; ii < 3; ii++)
+                {
+                    z_pred_arr[ii] = z_cur - history_switched_state_vec_.at(ii)(5);
+                    z_cur = z_pred_arr[ii];
+                }
                 for (int ii = 0; ii < 4; ii++)
                 {
-                    armor3d = {circle_center(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), circle_center(1) - radius * cos(pred_rangle + CV_PI / 2 * ii), (ii > 0 ? history_switched_state_vec_.at(ii - 1)(2) : state(2)), (pred_rangle + CV_PI / 2 * ii)};
+                    armor3d = {result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii), (ii > 0 ? z_pred_arr[ii-1] : result(2)), (pred_rangle + CV_PI / 2 * ii)};
                     armor3d_vec.emplace_back(armor3d);
                 }
             }
@@ -432,19 +467,19 @@ namespace armor_processor
                     singer_ekf_.updateJf();
                     singer_ekf_.updateQ(dt);
                     singer_ekf_.Predict(dt);
+                    // Eigen::MatrixXd stateCovPre = singer_ekf_.P();
+                    // Eigen::MatrixXd statePre = singer_ekf_.x();
+                    
+                    Eigen::VectorXd measurement = Eigen::VectorXd(3);
+                    measurement << meas(0), meas(1), meas(2);
+                    singer_ekf_.updateH(singer_ekf_.H_, dt);
+                    singer_ekf_.updateJh();
+                    singer_ekf_.Update(measurement);
                 }
-                else
-                {
-                    is_predictor_update_ = false;
-                }
-                // Eigen::MatrixXd stateCovPre = singer_ekf_.P();
-                // Eigen::MatrixXd statePre = singer_ekf_.x();
-                
-                Eigen::VectorXd measurement = Eigen::VectorXd(3);
-                measurement << meas(0), meas(1), meas(2);
-                singer_ekf_.updateH(singer_ekf_.H_, dt);
-                singer_ekf_.updateJh();
-                singer_ekf_.Update(measurement);
+                // else
+                // {
+                //     is_predictor_update_ = false;
+                // }
 
                 // Eigen::MatrixXd predictState(9, 1);
                 Eigen::VectorXd State = singer_ekf_.x();
