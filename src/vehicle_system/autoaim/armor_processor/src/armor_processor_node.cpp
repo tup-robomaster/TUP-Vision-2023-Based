@@ -540,7 +540,6 @@ namespace armor_processor
         // Declare debug params.
         this->declare_parameter("show_img", false);
         this->declare_parameter("using_imu", false);
-        this->declare_parameter("draw_predict", false);
         this->declare_parameter("show_predict", true);
         this->declare_parameter("print_delay", false);
         this->declare_parameter("x_axis_filter", true);
@@ -652,7 +651,6 @@ namespace armor_processor
         //Debug param.
         debug_param_.show_img = this->get_parameter("show_img").as_bool();
         debug_param_.using_imu = this->get_parameter("using_imu").as_bool();
-        debug_param_.draw_predict = this->get_parameter("draw_predict").as_bool();
         debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
         debug_param_.x_axis_filter = this->get_parameter("x_axis_filter").as_bool();
         debug_param_.y_axis_filter = this->get_parameter("y_axis_filter").as_bool();

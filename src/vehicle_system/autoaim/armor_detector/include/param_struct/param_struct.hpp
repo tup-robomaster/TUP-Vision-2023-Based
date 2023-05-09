@@ -218,7 +218,6 @@ namespace armor_detector
         bool using_roi;
         bool show_aim_cross;
         bool show_img;
-        bool detect_red;
         bool show_all_armors;
         bool show_fps;
         bool print_latency;
@@ -234,7 +233,6 @@ namespace armor_detector
             using_roi = false;
             show_aim_cross = false;
             show_img = true;
-            detect_red = true;
             show_all_armors = true;
             show_fps = true;
             print_latency = false;

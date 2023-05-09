@@ -494,7 +494,6 @@ namespace armor_detector
         this->declare_parameter("using_roi", true);
         this->declare_parameter("show_aim_cross", false);
         this->declare_parameter("show_img", false);
-        this->declare_parameter("detect_red", true);
         this->declare_parameter("show_fps", false);
         this->declare_parameter("print_latency", false);
         this->declare_parameter("print_target_info", false);
@@ -549,7 +548,6 @@ namespace armor_detector
         detector_params_.angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
         detector_params_.angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
 
-        debug_.detect_red = this->get_parameter("detect_red").as_bool();
         debug_.debug_without_com  = this->get_parameter("debug_without_com").as_bool();
         debug_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
         debug_.show_img = this->get_parameter("show_img").as_bool();

@@ -127,7 +127,6 @@ namespace armor_processor
     {
         bool show_img;
         bool using_imu;
-        bool draw_predict;
         bool show_predict;
         bool print_delay;
         bool x_axis_filter;
@@ -143,7 +142,6 @@ namespace armor_processor
         {
             show_img = false;
             using_imu = false;
-            draw_predict = true;
             show_predict = false;
             print_delay = false;
             x_axis_filter = true;

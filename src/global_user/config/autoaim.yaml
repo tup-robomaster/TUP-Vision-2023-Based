@@ -63,7 +63,6 @@
     show_img: true
     show_fps: false
     using_roi: false
-    detect_red: true
     auto_label: false
     print_latency: false
     show_aim_cross: false
@@ -93,7 +92,6 @@
     debug: true
     using_imu: false
     show_img: false
-    draw_predict: false
     show_predict: false
     sync_transport: false
     print_delay: false
