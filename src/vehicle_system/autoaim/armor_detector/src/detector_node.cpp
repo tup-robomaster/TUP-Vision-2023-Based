@@ -496,7 +496,7 @@ namespace armor_detector
         this->declare_parameter("show_img", false);
         this->declare_parameter("detect_red", true);
         this->declare_parameter("show_fps", false);
-        this->declare_parameter("print_letency", false);
+        this->declare_parameter("print_latency", false);
         this->declare_parameter("print_target_info", false);
         this->declare_parameter("show_all_armors", false);
         this->declare_parameter("save_data", false);
@@ -556,7 +556,7 @@ namespace armor_detector
         debug_.using_imu = this->get_parameter("using_imu").as_bool();
         debug_.using_roi = this->get_parameter("using_roi").as_bool();
         debug_.show_fps = this->get_parameter("show_fps").as_bool();
-        debug_.print_letency = this->get_parameter("print_letency").as_bool();
+        debug_.print_latency = this->get_parameter("print_latency").as_bool();
         debug_.print_target_info = this->get_parameter("print_target_info").as_bool();
         debug_.show_all_armors = this->get_parameter("show_all_armors").as_bool();
         debug_.save_data = this->get_parameter("save_data").as_bool();

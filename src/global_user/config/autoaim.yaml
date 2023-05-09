@@ -65,7 +65,7 @@
     using_roi: false
     detect_red: true
     auto_label: false
-    print_letency: false
+    print_latency: false
     show_aim_cross: false
     sync_transport: false
     show_all_armors: false

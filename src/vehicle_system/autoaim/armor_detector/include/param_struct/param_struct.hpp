@@ -221,7 +221,7 @@ namespace armor_detector
         bool detect_red;
         bool show_all_armors;
         bool show_fps;
-        bool print_letency;
+        bool print_latency;
         bool print_target_info;
         bool save_data;
         bool save_dataset;
@@ -237,7 +237,7 @@ namespace armor_detector
             detect_red = true;
             show_all_armors = true;
             show_fps = true;
-            print_letency = false;
+            print_latency = false;
             print_target_info = true; 
             save_data = false;
             save_dataset = false;

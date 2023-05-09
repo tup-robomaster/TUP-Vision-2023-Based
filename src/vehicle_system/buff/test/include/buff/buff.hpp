@@ -37,7 +37,7 @@ namespace buff
         bool detect_red;
         bool show_all_fans;
         bool show_fps;
-        bool print_letency;
+        bool print_latency;
         bool print_target_info;
         bool assist_label;
         bool detect_buff_red;

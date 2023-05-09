@@ -974,7 +974,7 @@ namespace armor_detector
             putText(src.img, fps_str, {10, 25}, FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
         }
 
-        if(debug_params_.print_letency)
+        if(debug_params_.print_latency)
         {
             RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 20, "-----------TIME------------");
             RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 20, "Crop:  %lfms", (dr_crop_ns / 1e6));
