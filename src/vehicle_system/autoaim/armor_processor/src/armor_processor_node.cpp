@@ -39,7 +39,7 @@ namespace armor_processor
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 5;
+        rmw_qos.depth = 1;
 
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", qos);
@@ -219,9 +219,12 @@ namespace armor_processor
                             min_dist = armor3d_dist;
                             flag = idx;
                         }
-                        Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
-                        point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
-                        cv::circle(dst, point_2d, 13, {255, 255, 0}, -1);
+                        // if (idx == 0 || idx == 3)
+                        // {
+                            Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
+                            point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                            cv::circle(dst, point_2d, 13, {255, 255, 0}, -1);
+                        // }
                         ++idx;
                     }
                     if (flag != -1)

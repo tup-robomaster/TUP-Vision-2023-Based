@@ -65,9 +65,13 @@ namespace armor_processor
             uniform_ekf_.x_(4) = meas(3);
             // uniform_ekf_.x_(5) = 0.0;
 
+            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 50, "z_diff:%.3f", z_diff);
+
             Vector6d switched_state = {uniform_ekf_.x_(0), uniform_ekf_.x_(1), uniform_ekf_.x_(2), uniform_ekf_.x_(3), uniform_ekf_.x_(4), z_diff};
-            if (history_switched_state_vec_.size() > 2)
+            if (history_switched_state_vec_.size() > 3)
             {
+                Vector6d last_same_switch_state = history_switched_state_vec_.back();
+                switched_state(5) = (z_diff + last_same_switch_state(5)) / 2.0;
                 history_switched_state_vec_.pop_back();
                 history_switched_state_vec_.emplace_front(switched_state);
             }
@@ -232,7 +236,7 @@ namespace armor_processor
             // armor3d_vec.emplace_back(circle_center3d);
 
             Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
-            if ((int)history_switched_state_vec_.size() != 3)
+            if ((int)history_switched_state_vec_.size() != 4)
             {
                 for (int ii = 0; ii < 4; ii++)
                 {
@@ -262,10 +266,16 @@ namespace armor_processor
             last_state_(3) = radius;
             last_state_(4) = state(4);
             last_state_(5) = state(5);
-            RCLCPP_WARN_THROTTLE(
+            // RCLCPP_WARN_THROTTLE(
+            //     logger_, 
+            //     steady_clock_, 
+            //     100, 
+            //     "circle_center:(%.3f, %.3f %.3f) radius:%.3f theta:%.3f omega:%.3f",
+            //     state(0), state(1), state(2), state(3), state(4), state(5)
+            // );
+
+            RCLCPP_WARN(
                 logger_, 
-                steady_clock_, 
-                100, 
                 "circle_center:(%.3f, %.3f %.3f) radius:%.3f theta:%.3f omega:%.3f",
                 state(0), state(1), state(2), state(3), state(4), state(5)
             );
@@ -402,7 +412,7 @@ namespace armor_processor
 
             // cout << "pred_rangle:" << rangle << " x:" << result(1) << endl;
             Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
-            if ((int)history_switched_state_vec_.size() != 3)
+            if ((int)history_switched_state_vec_.size() != 4)
             {
                 for (int ii = 0; ii < 4; ii++)
                 {

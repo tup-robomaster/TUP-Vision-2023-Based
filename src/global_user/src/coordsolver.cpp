@@ -146,7 +146,9 @@ namespace coordsolver
 
         // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Armor type: %d", (int)(type));
         solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, method);
-            
+
+        RCLCPP_INFO(logger_, "rvec:[%.3f %.3f %.3f]", rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2));
+
         PnPInfo result;
         //Pc = R * Pw + T
         Rodrigues(rvec, rmat);
@@ -160,12 +162,19 @@ namespace coordsolver
             
             Eigen::Matrix3d rmat_eigen_world = rmat_imu * (transform_ic.block(0, 0, 3, 3) * rmat_eigen);
             result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
+            // result.euler = rmat_eigen_world.eulerAngles(2, 1, 0); //(yaw/pitch/roll)
+            // Eigen::Vector3d euler_angle = rotationMatrixToEulerAngles(rmat_eigen_world);
+            // if (abs(result.euler(0) - euler_angle(0)) > 0.15)
+            // {
+            //     RCLCPP_INFO(logger_, "euler1:[%.3f %.3f %.3f]", result.euler(0), result.euler(1), result.euler(2));
+            //     RCLCPP_INFO(logger_, "euler2:[%.3f %.3f %.3f]", euler_angle(0), euler_angle(1), euler_angle(2));
+            // }
             result.rmat = rmat_eigen_world;
             result.rangle = result.euler(0);
             // auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
             // double angle = angle_axisd.angle();
             // result.axis_angle = angle;
-            // RCLCPP_INFO(logger_, "euler:[%.3f %.3f %.3f]", result.euler(0), result.euler(1), result.euler(2));
+            RCLCPP_INFO(logger_, "type:%d euler:[%.3f %.3f %.3f]", (int)type, result.euler(0), result.euler(1), result.euler(2));
         }
         else
         {
