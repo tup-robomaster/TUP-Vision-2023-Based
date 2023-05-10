@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-05-05 02:38:37
+ * @LastEditTime: 2023-05-06 21:56:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -54,7 +54,7 @@ namespace armor_detector
         // qos.durability();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 2;
+        rmw_qos.depth = 1;
 
         time_start_ = detector_->steady_clock_.now();
 

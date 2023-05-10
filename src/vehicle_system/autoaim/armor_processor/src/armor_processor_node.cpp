@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-04 23:14:43
+ * @LastEditTime: 2023-05-06 23:12:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -39,7 +39,7 @@ namespace armor_processor
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 3;
+        rmw_qos.depth = 1;
 
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", qos);
@@ -208,7 +208,7 @@ namespace armor_processor
                     for (auto armor_point3d_world : armor3d_vec)
                     {
                         double armor3d_dist = armor_point3d_world.norm();
-                        if (armor3d_dist < min_dist)
+                        if (armor3d_dist < min_dist && (armor_point3d_world(3) > 0.8 && armor_point3d_world(3) < 2.2))
                         {
                             min_dist = armor3d_dist;
                             flag = idx;

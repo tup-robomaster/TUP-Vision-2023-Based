@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-05 03:15:00
+ * @LastEditTime: 2023-05-06 23:15:24
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -202,7 +202,7 @@ namespace armor_processor
             //     pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
             // }
 
-            result = {circle_center(0) + radius * sin(pred_rangle), circle_center(1) - radius * cos(pred_rangle), state(2)};
+            result = {circle_center(0), circle_center(1), state(2)};
             Eigen::Vector4d circle_center3d = {circle_center(0), circle_center(1), state(2), 0.0};
             armor3d_vec.emplace_back(circle_center3d);
 
@@ -293,7 +293,7 @@ namespace armor_processor
             //     pred_rangle = rangle + (2 * CV_PI / spinning_period) * pred_dt;
             // }
             
-            result = {circle_center(0) + radius * sin(pred_rangle), circle_center(1) - radius * cos(pred_rangle), state(2)};
+            result = {circle_center(0), circle_center(1), state(2)};
             Eigen::Vector4d circle_center3d = {circle_center(0), circle_center(1), state(2), 0.0};
             armor3d_vec.emplace_back(circle_center3d);
 
