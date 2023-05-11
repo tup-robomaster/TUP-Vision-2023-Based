@@ -18,16 +18,6 @@ namespace coordsolver
     {  
     }
 
-    CoordSolver::CoordSolver(const Eigen::Vector2d& static_angle_offset)
-    : logger_(rclcpp::get_logger("coordsolver"))
-    {
-        // if (!loadParam(coord_path, param_name))
-        // {
-        //     RCLCPP_ERROR(logger_, "Error while loading coord params...");
-        // }
-        angle_offset = static_angle_offset;
-    }
-
     /**
      * @brief Destroy the Coord Solver:: Coord Solver object
      * 
@@ -35,7 +25,6 @@ namespace coordsolver
     CoordSolver::~CoordSolver()
     {   
     }
-
 
     /**
      * @brief 加载CoordSolver参数

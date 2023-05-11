@@ -20,26 +20,23 @@ namespace armor_detector
     class SpinningDetector
     {
     private:
-        Color detect_color;
-        Armor last_armor;
+        Armor last_armor_;
+        int detect_color_;
         rclcpp::Logger logger_;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         DetectorInfo detector_info_;
 
     public:
         SpinningDetector();
-        SpinningDetector(Color color, GyroParam gyro_params);
+        SpinningDetector(int color, GyroParam gyro_params);
         ~SpinningDetector();
 
         bool updateSpinScore();
         void createArmorTracker(std::multimap<std::string, ArmorTracker>& trackers_map,
-            std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int64_t timestamp, int& dead_buffer_cnt, bool is_target_last_exists);
+            std::vector<Armor>& armors, std::map<std::string, int>& new_armors_cnt_map, int64_t now);
         bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, int64_t now);
         bool isSpinning(std::multimap<std::string, ArmorTracker>& trackers_map, std::map<std::string, int>& new_armors_cnt_map, int64_t now);
         
-        bool is_gray_exists_ = false;
-        int gray_id_;
-        bool is_dead_;
         double max_hop_period_;
         double last_timestamp_;
         GyroParam gyro_params_;

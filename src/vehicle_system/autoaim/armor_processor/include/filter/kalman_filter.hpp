@@ -20,9 +20,8 @@ namespace armor_processor
     {
         vector<double> process_noise_params;
         vector<double> measure_noise_params;
-        vector<double> singer_params;
     };
-
+    
     class KalmanFilter
     {
         public:
@@ -63,7 +62,7 @@ namespace armor_processor
             virtual void updateH() {}
             virtual void updateH(Eigen::MatrixXd& Ht, double dt)
             {
-                Ht = H_;
+                Ht = H_; 
             }
 
             /**

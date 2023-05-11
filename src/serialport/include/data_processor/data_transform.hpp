@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 01:45:19
- * @LastEditTime: 2023-04-14 14:37:59
+ * @LastEditTime: 2023-05-06 23:39:59
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/data_processor/data_transform.hpp
  */
 #ifndef DATA_TRANSFORM_HPP_
@@ -45,8 +45,8 @@ namespace serialport
         int isSwitched;                   //目标是否发生切换
         int isFindTarget;                 //当识别的图片范围内有目标且电控发来的信号不为0x00（关闭视觉）置为1，否则置0
         int isSpinning;                   //目标是否处于陀螺状态
-        int isShooting;
-        int isPrediction;                     //设置1表示目标进入了可以开火的范围，设置0则表示目标尚未进入可开火的范围，默认置0
+        int isPrediction;                 //当前预测器是否处于预测状态
+        int isShooting;                   //是否开火（自动开火控制）
         Eigen::Vector3d meas_tracking_point;
         Eigen::Vector3d pred_aiming_point;
     } VisionAimData;

@@ -43,7 +43,6 @@ namespace coordsolver
     {
     public:
         CoordSolver();
-        CoordSolver(const Eigen::Vector2d& static_angle_offset);
         ~CoordSolver();
         
         bool loadParam(std::string coord_path, std::string param_name);

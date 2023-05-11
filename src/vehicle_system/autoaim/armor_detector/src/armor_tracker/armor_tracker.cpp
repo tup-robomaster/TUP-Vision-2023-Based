@@ -76,10 +76,20 @@ namespace armor_detector
             history_info_.push_back(new_add_armor);
         }
 
-        this->last_timestamp = this->now; //上一帧目标装甲板对应的时间戳信息
-        this->now = new_timestamp;  //当前装甲板对应的时间戳信息
-        this->last_armor = this->new_armor;         //上一帧目标装甲板信息
-        this->new_armor = new_add_armor;          //当前装甲板信息
+        this->last_timestamp = this->now;   //上一帧目标装甲板对应的时间戳信息
+        this->now = new_timestamp;          //当前装甲板对应的时间戳信息
+        this->last_armor = this->new_armor; //上一帧目标装甲板信息
+        this->new_armor = new_add_armor;    //当前装甲板信息
+
+        if (new_add_armor.color == GRAY)
+        {
+            ++gray_armor_cnt_;
+            cout << "gray_cnt:" <<gray_armor_cnt_ << endl;
+            if (gray_armor_cnt_ >= max_gray_armor_cnt_)
+            {
+                is_dead_ = true;
+            }
+        }
 
         this->calcTargetScore();  //计算装甲板分数，作为打击目标切换判据，防止随意切换造成云台乱抖
         this->is_initialized = true;

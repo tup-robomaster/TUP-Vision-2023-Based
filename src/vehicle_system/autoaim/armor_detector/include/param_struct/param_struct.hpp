@@ -166,10 +166,7 @@ namespace armor_detector
 
     struct DetectorParam
     {
-        // int dw, dh;             //letterbox对原图像resize的padding区域的宽度和高度
-        // float rescale_ratio;    //缩放比例 
-        // int max_delta_t;   //使用同一预测器的最大时间间隔(ms)
-
+        int color;
         int armor_type_wh_thres; //大小装甲板长宽比阈值
         int max_lost_cnt;        //最大丢失目标帧数
         int max_armors_cnt;    //视野中最多装甲板数
@@ -185,13 +182,10 @@ namespace armor_detector
         double armor_roi_expand_ratio_width;
         double armor_roi_expand_ratio_height;
         double armor_conf_high_thres;
-        
-        Color color;
-        Eigen::Vector2d angle_offset;
 
         DetectorParam()
         {
-            color = RED;
+            color = 1; //(Red:1/Blue:0)
             armor_type_wh_thres = 3;
             max_lost_cnt = 5;
             max_armors_cnt = 8;
@@ -205,42 +199,38 @@ namespace armor_detector
             armor_roi_expand_ratio_width = 1.1;
             armor_roi_expand_ratio_height = 1.5;
             armor_conf_high_thres = 0.82;
-
-            angle_offset = {0.0, 0.0};
         }
     };
 
     struct DebugParam
     {
-        bool debug_without_com;
-        bool using_imu;
-        bool using_roi;
+        bool detect_red;
+        bool use_serial;
+        bool use_roi;
         bool show_aim_cross;
         bool show_img;
-        bool detect_red;
+        bool show_crop_img;
         bool show_all_armors;
         bool show_fps;
         bool print_letency;
         bool print_target_info;
         bool save_data;
         bool save_dataset;
-        bool show_spinning_img;
 
         DebugParam()
         {
-            debug_without_com = true;
-            using_imu = false;
-            using_roi = false;
-            show_aim_cross = false;
-            show_img = true;
             detect_red = true;
-            show_all_armors = true;
-            show_fps = true;
+            use_serial = false;
+            use_roi = false;
+            show_img = false;
+            show_crop_img = false;
+            show_aim_cross = false;
+            show_all_armors = false;
+            show_fps = false;
             print_letency = false;
-            print_target_info = true; 
+            print_target_info = false; 
             save_data = false;
             save_dataset = false;
-            show_spinning_img = false;
         }
     };
     

@@ -1,29 +1,24 @@
 /armor_detector:
   ros__parameters:
   # Detector params.
-    armor_type_wh_thres: 3
+    color: 1 # red: 1 / blue: 0
+    max_delta_t: 50
     max_lost_cnt: 5
     max_armors_cnt: 8
-    max_v: 8
-    max_delta_t: 50
-    no_crop_thres: 0.01
     hero_danger_zone: 4
-    color: true # red: true / blue: false
+    armor_type_wh_thres: 3
+    no_crop_thres: 0.01
     no_crop_ratio: 0.002
     full_crop_ratio: 0.0001
     armor_roi_expand_ratio_width: 1.2
     armor_roi_expand_ratio_height: 1.8
     armor_conf_high_thres: 0.82
-    yaw_angle_offset: -0.5
-    pitch_angle_offset: 0.5
 
   # Spinning params.
-    max_cost: 500
-    shoot_delay: 50
-    bullet_speed: 28.0
+    shoot_delay: 75
+    bullet_speed: 12.7
     max_dead_buffer: 10
     max_delta_dist: 0.5
-    min_fitting_lens: 10
     switch_max_dt: 2000.0
     anti_spin_max_r_multiple: 4.5
     anti_spin_judge_low_thres: 2000.0
@@ -39,10 +34,10 @@
     delta_y_3d_lower_thresh: 0.05
 
   # Camera config params.
-    # camera_name: "00J90630561" 
-    camera_name: "KE0200110073" #FIXME:根据相机序列号修改
-    camera_type: 0
+    camera_type: 2 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_param_path: "/config/camera.yaml"
+    # camera_name: "00J90630561" 
+    camera_name: "KE0200110074" #FIXME:根据相机序列号修改
 
   # Network model path.
     # network_path: "/model/opt-0527-002.xml"
@@ -58,30 +53,29 @@
   
   # Debug params.
     debug: true
-    using_imu: true
-    show_img: true
-    show_fps: true
-    using_roi: true
     detect_red: true # red: true / blue: false
+    use_serial: false
+    use_roi: true
+    show_img: false
+    show_crop_img: false
+    show_fps: false
+    show_aim_cross: false
+    show_all_armors: false
     auto_label: false
     print_letency: false
-    show_aim_cross: true
     sync_transport: false
-    show_all_armors: true
     print_target_info: false
 
 /armor_processor:
   ros__parameters:
   # Predict params.
-    bullet_speed: 28.0
-    max_time_delta: 1000
+    bullet_speed: 12.7
+    max_dt: 1000
     max_cost: 10
     max_v: 8
     min_fitting_lens: 5
-    shoot_delay: 200
+    shoot_delay: 150 
     window_size: 3
-    yaw_angle_offset: -0.5
-    pitch_angle_offset: 0.5
     max_offset_value: 0.45
     reserve_factor: 500.0 # 储备系数(>=1)
     # rotation_yaw: 0.0
@@ -90,36 +84,36 @@
 
   # Debug params.
     debug: true
-    using_imu: true
-    show_img: false
-    draw_predict: false
-    show_predict: false
-    sync_transport: false
+    use_serial: false
+    show_img: true
+    draw_predict: true
+    show_predict: true
+    show_aim_cross: true
+    show_fps: true
     print_delay: false
-    x_axis_filter: true
-    y_axis_filter: true
-    z_axis_filter: true
-    show_aim_cross: false
-    show_fps: false
+    sync_transport: false
     show_marker: true
-
+ 
   # Camera params.
-    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
-    # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
-    coord_param_path: "/config/camera.yaml"
+    camera_type: 2 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_param_path: "/config/camera.yaml"
+    # camera_name: "00J90630561" 
+    camera_name: "KE0200110074" #FIXME:根据相机序列号修改
     
   # Filter params.
     filter_param_path: "/config/filter_param.yaml"
-    #----------------------------------Xc------Yc-----Zc--------r-----theta-----omega-----vx-------vy-----vz
-    uniform_ekf_process_noise_param: [0.02, 0.015, 0.002, 0.005, 0.10, 0.35, 0.0001, 0.001, 0.00001]
-    #----------------------------------X--------Y--------Z----theta
+  
+  # uniform model
+    #----------------------------------Xc------Yc----Zc-----r---theta--omega
+    uniform_ekf_process_noise_param: [0.02, 0.001, 0.002, 0.005, 0.1, 0.002]
+    #----------------------------------X----Y---Z---theta
     uniform_ekf_measure_noise_param: [5.0, 0.2, 1.0, 1.0]
-    # Singer model.  
-    # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 dt:采样时间间隔 sigma:机动加速度标准差 p:过程协方差系数 r:观测协方差系数)
-    singer_x_axis_param: [20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0]
-    singer_y_axis_param: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0045, 1.0, 2.0]
-    singer_z_axis_param: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0045, 1.0, 2.0]
+    
+  # Singer model
+    # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)
+    singer_model_process_param: [1.05, 1.05, 1.05, 4.5, 5.65, 4.5]
+    # r:观测协方差系数(r1/r2/r3)
+    singer_model_measure_param: [1.0, 1.0, 1.0]
 
     # IMM model.
     #状态转移概率

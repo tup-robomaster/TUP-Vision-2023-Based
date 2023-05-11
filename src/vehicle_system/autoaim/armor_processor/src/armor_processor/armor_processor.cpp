@@ -9,46 +9,37 @@
 
 namespace armor_processor
 {
-    Processor::Processor(const PredictParam& predict_param, vector<double>* ekf_param, const DebugParam& debug_param)
+    Processor::Processor(const PredictParam& predict_param, vector<double>* uniform_ekf_param,
+        vector<double>* singer_ekf_param, const DebugParam& debug_param)
     : logger_(rclcpp::get_logger("armor_processor")), predict_param_(predict_param), debug_param_(debug_param)  
     {
-        cout << 10 << endl;
-
         //初始化预测器
-        armor_predictor_.uniform_ekf_.Init(6, 4, 3);
-        // armor_predictor_.uniform_ekf_.Init(11, 4, 3);
-        armor_predictor_.initPredictor(ekf_param);
+        armor_predictor_.initPredictor(uniform_ekf_param, singer_ekf_param);
         armor_predictor_.resetPredictor();
 
-        cout << 9 << endl;
-
-        // car_id_map_ = {
-        //     {"B0", 0}, {"B1", 1},
-        //     {"B2", 2}, {"B3", 3},
-        //     {"B4", 4}, {"R0", 5},
-        //     {"R1", 6}, {"R2", 7},
-        //     {"R3", 8}, {"R4", 9} 
-        // };
+        car_id_map_ = {
+            {"B0", 0}, {"B1", 1},
+            {"B2", 2}, {"B3", 3},
+            {"B4", 4}, {"R0", 5},
+            {"R1", 6}, {"R2", 7},
+            {"R3", 8}, {"R4", 9} 
+        };
     }
     
     Processor::Processor()
     : logger_(rclcpp::get_logger("armor_processor"))
     {
-        // car_id_map_ = {
-        //     {"B0", 0}, {"B1", 1},
-        //     {"B2", 2}, {"B3", 3},
-        //     {"B4", 4}, {"R0", 5},
-        //     {"R1", 6}, {"R2", 7},
-        //     {"R3", 8}, {"R4", 9} 
-        // };
-        cout << 7 << endl;
+        car_id_map_ = {
+            {"B0", 0}, {"B1", 1},
+            {"B2", 2}, {"B3", 3},
+            {"B4", 4}, {"R0", 5},
+            {"R1", 6}, {"R2", 7},
+            {"R3", 8}, {"R4", 9} 
+        };
 
         //初始化预测器
-        // armor_predictor_.uniform_ekf_.Init(11, 4, 3);
-        armor_predictor_.uniform_ekf_.Init(6, 4, 3);
-        armor_predictor_.uniform_ekf_.init();
+        armor_predictor_.initPredictor();
         armor_predictor_.resetPredictor();
-        cout << 8 << endl;
     }
 
     Processor::~Processor()
@@ -136,6 +127,9 @@ namespace armor_processor
     {
         bool is_success = false;
         rclcpp::Time stamp = target_msg.header.stamp;
+        armor_predictor_.now_ = stamp.nanoseconds() / 1e9;
+        // cout << "now:" << armor_predictor_.now_ << endl;
+
         double dt = (stamp.nanoseconds() - last_timestamp_.nanoseconds()) / 1e9;
         double bullet_speed = coordsolver_.getBulletSpeed();
         if (dt > 0.1)
@@ -262,6 +256,36 @@ namespace armor_processor
         return is_success;
     }
 
+    /**
+     * @brief Draw curve.
+    */
+    void Processor::curveDrawer(int axis, cv::Mat& src, double* params, cv::Point2i start_pos)
+    {
+        try
+        {
+            float mean_v = (params[0] + params[1] + params[2] + params[3]) / 4.0;
+            char ch[15];
+            sprintf(ch, "%.3f", mean_v);
+            std::string str = ch;
+            float k1 = 50;
+            if (!src.empty())
+            {
+                string axis_str = (axis == 0 && start_pos.x == 260) ? "X_AXIS" : (((axis == 1 && start_pos.x == 260)) ? "Y_AXIS" : (((axis == 2 && start_pos.x == 260)) ? "Z_AXIS" : ""));
+                cv::putText(src, axis_str, cv::Point(1, start_pos.y * (axis + 1) - 5), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 125));
+                cv::line(src, cv::Point(start_pos.x - 240, start_pos.y * (axis + 1)), cv::Point(start_pos.x, start_pos.y * (axis + 1)), cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
+                cv::line(src, cv::Point(start_pos.x - 240, start_pos.y * (axis + 1) + mean_v * k1), cv::Point(start_pos.x, start_pos.y * (axis + 1) + mean_v * k1), cv::Scalar(255, 255, 0), 1, cv::LINE_AA);
+                cv::putText(src, str, cv::Point(start_pos.x + 10, start_pos.y * (axis + 1) + mean_v * k1), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(255, 255, 0));
+                cv::line(src, cv::Point(start_pos.x - 180, start_pos.y * (axis + 1) + params[3] * k1), cv::Point(start_pos.x - 120, start_pos.y * (axis + 1) + params[2] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+                cv::line(src, cv::Point(start_pos.x - 120, start_pos.y * (axis + 1) + params[2] * k1), cv::Point(start_pos.x - 60, start_pos.y * (axis + 1) + params[1] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+                cv::line(src, cv::Point(start_pos.x - 60, start_pos.y * (axis + 1) + params[1] * k1), cv::Point(start_pos.x, start_pos.y * (axis + 1) + params[0] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
+            }
+        }
+        catch(const std::exception& e)
+        {
+            RCLCPP_ERROR(logger_, "Error while drawing curve: %s", e.what());
+        }
+    }
+    
     // /**
     //  * @brief 设置弹速
     //  * 
@@ -275,35 +299,6 @@ namespace armor_processor
     //     return true;
     // }
 
-    // /**
-    //  * @brief Draw curve.
-    // */
-    // void Processor::curveDrawer(int axis, cv::Mat& src, double* params, cv::Point2i start_pos)
-    // {
-    //     try
-    //     {
-    //         float mean_v = (params[0] + params[1] + params[2] + params[3]) / 4.0;
-    //         char ch[15];
-    //         sprintf(ch, "%.3f", mean_v);
-    //         std::string str = ch;
-    //         float k1 = 50;
-    //         if (!src.empty())
-    //         {
-    //             string axis_str = (axis == 0 && start_pos.x == 260) ? "X_AXIS" : (((axis == 1 && start_pos.x == 260)) ? "Y_AXIS" : (((axis == 3 && start_pos.x == 260)) ? "Z_AXIS" : ""));
-    //             cv::putText(src, axis_str, cv::Point(1, start_pos.y * (axis + 1) - 5), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 125));
-    //             cv::line(src, cv::Point(start_pos.x - 240, start_pos.y * (axis + 1)), cv::Point(start_pos.x, start_pos.y * (axis + 1)), cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
-    //             cv::line(src, cv::Point(start_pos.x - 240, start_pos.y * (axis + 1) + mean_v * k1), cv::Point(start_pos.x, start_pos.y * (axis + 1) + mean_v * k1), cv::Scalar(255, 255, 0), 1, cv::LINE_AA);
-    //             cv::putText(src, str, cv::Point(start_pos.x + 10, start_pos.y * (axis + 1) + mean_v * k1), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(255, 255, 0));
-    //             cv::line(src, cv::Point(start_pos.x - 180, start_pos.y * (axis + 1) + params[3] * k1), cv::Point(start_pos.x - 120, start_pos.y * (axis + 1) + params[2] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
-    //             cv::line(src, cv::Point(start_pos.x - 120, start_pos.y * (axis + 1) + params[2] * k1), cv::Point(start_pos.x - 60, start_pos.y * (axis + 1) + params[1] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
-    //             cv::line(src, cv::Point(start_pos.x - 60, start_pos.y * (axis + 1) + params[1] * k1), cv::Point(start_pos.x, start_pos.y * (axis + 1) + params[0] * k1), cv::Scalar(0, 0, 255), 2, cv::LINE_8);
-    //         }
-    //     }
-    //     catch(const std::exception& e)
-    //     {
-    //         RCLCPP_ERROR(logger_, "Error while drawing curve: %s", e.what());
-    //     }
-    // }
 
     // /**
     //  * @brief 加载滤波参数

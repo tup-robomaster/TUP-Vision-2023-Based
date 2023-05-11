@@ -49,6 +49,37 @@ namespace armor_processor
         virtual CT* Clone() { return new CT(*this); }
     };
 
+    class SingerModel : public KalmanFilter
+    {
+    public:
+        void updateF();
+        void updateF(Eigen::MatrixXd& Ft, double dt);
+        void updateH();
+        void updateH(Eigen::MatrixXd& Ht, double dt);
+        void updateJf();
+        void updateJf(Eigen::MatrixXd& Jft, double dt);
+        void updateJh();
+        void updateJh(Eigen::MatrixXd& Jht, double dt);
+    
+    public:
+        SingerModel();
+        SingerModel(int SP, int MP, int CP);
+        SingerModel(const vector<double>* ekf_param, int SP, int MP, int CP);
+        virtual SingerModel* Clone() { return new SingerModel(*this); } 
+        ~SingerModel();
+
+        void init();
+    public:
+        void updateC(); 
+        void updateC(MatrixXd& C, const double dt);
+        void updateQ();
+        void updateQ(double dt);
+        
+        // void updateQ(const double acc);
+        // void updateQ(const double& dt, const double& alpha, const double& acc);
+        // void updateQ(const double& dt, const double& alpha, const double& acc, MatrixXd* Q = nullptr);
+    };
+
     class UniformModel : public KalmanFilter
     {
     public:
@@ -63,7 +94,8 @@ namespace armor_processor
         
     public:
         UniformModel();
-        UniformModel(const KFParam kf_param);
+        UniformModel(int SP, int MP, int CP);
+        UniformModel(const vector<double>* kf_param, int SP, int MP, int CP);
         virtual UniformModel* Clone() { return new UniformModel(*this); } 
         ~UniformModel();
         

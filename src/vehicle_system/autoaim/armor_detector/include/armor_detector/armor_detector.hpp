@@ -35,8 +35,7 @@ namespace armor_detector
         typedef global_interface::msg::Decision DecisionMsg;
 
     public:
-        Detector(const PathParam& path_params, const DetectorParam& detector_params, const DebugParam& debug_params,
-            const GyroParam& gyro_params, const Eigen::Vector2d& angle_offset);
+        Detector(const PathParam& path_params, const DetectorParam& detector_params, const DebugParam& debug_params, const GyroParam& gyro_params);
         ~Detector();
 
         // void run();
@@ -90,11 +89,11 @@ namespace armor_detector
         int64_t now_; //当前帧时间戳
         int64_t last_timestamp_; //上一帧时间戳
 
-        int lost_cnt_;
-        int dead_buffer_cnt_;
+        int lost_cnt_ = 0;
+        int dead_buffer_cnt_ = 0;
         bool is_target_switched_;
         bool is_id_switched_;
-        double last_target_area_;
+        double last_target_area_ = 0;
         Point2i last_roi_center_;
         double last_bullet_speed_ = 15.5;
         bool is_last_target_exists_;

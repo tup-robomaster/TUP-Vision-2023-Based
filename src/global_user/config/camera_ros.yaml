@@ -22,8 +22,8 @@
     cam_id: 0
     camera_type: 3
     frame_id: usb_cam
-    image_width: 640
-    image_height: 480
+    image_width: 990
+    image_height: 720
     fps: 60
     debug: true
     using_video: true
