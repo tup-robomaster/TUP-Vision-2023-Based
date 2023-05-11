@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-10 17:28:38
+ * @LastEditTime: 2023-05-10 17:49:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -39,7 +39,7 @@ namespace armor_processor
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 5;
+        rmw_qos.depth = 3;
 
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", qos);
@@ -283,24 +283,24 @@ namespace armor_processor
             is_shooting = false;
         }
 
-        // if (shoot_flag_)
-        // {
-        //     if (count_ <= 40)
-        //     {
-        //         is_shooting = false;
-        //         count_++;
-        //     }
-        //     else
-        //     {
-        //         shoot_flag_ = false;
-        //         count_ = 0;
-        //     }
-        // }
+        if (shoot_flag_)
+        {
+            if (count_ <= 40)
+            {
+                is_shooting = false;
+                count_++;
+            }
+            else
+            {
+                shoot_flag_ = false;
+                count_ = 0;
+            }
+        }
 
-        // if (is_shooting)
-        // {
-        //     shoot_flag_ = true;
-        // }
+        if (is_shooting)
+        {
+            shoot_flag_ = true;
+        }
 
         RCLCPP_WARN_EXPRESSION(this->get_logger(), is_shooting, "Shooting...");
         
