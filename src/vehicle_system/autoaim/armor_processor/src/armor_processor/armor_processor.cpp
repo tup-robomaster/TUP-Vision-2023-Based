@@ -127,6 +127,9 @@ namespace armor_processor
     {
         bool is_success = false;
         rclcpp::Time stamp = target_msg.header.stamp;
+        armor_predictor_.now_ = stamp.nanoseconds() / 1e9;
+        // cout << "now:" << armor_predictor_.now_ << endl;
+
         double dt = (stamp.nanoseconds() - last_timestamp_.nanoseconds()) / 1e9;
         double bullet_speed = coordsolver_.getBulletSpeed();
         if (dt > 0.1)

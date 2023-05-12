@@ -53,10 +53,11 @@ namespace armor_processor
         //目前只分配一个预测器
         ArmorPredictor armor_predictor_;
 
-    private:
-        std::map<std::string, int> car_id_map_;
         PredictParam predict_param_;
         DebugParam debug_param_;
+        
+    private:
+        std::map<std::string, int> car_id_map_;
         rclcpp::Logger logger_;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
     };

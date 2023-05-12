@@ -204,35 +204,33 @@ namespace armor_detector
 
     struct DebugParam
     {
-        bool debug_without_com;
-        bool using_imu;
-        bool using_roi;
+        bool detect_red;
+        bool use_serial;
+        bool use_roi;
         bool show_aim_cross;
         bool show_img;
-        bool detect_red;
+        bool show_crop_img;
         bool show_all_armors;
         bool show_fps;
         bool print_letency;
         bool print_target_info;
         bool save_data;
         bool save_dataset;
-        bool show_spinning_img;
 
         DebugParam()
         {
-            debug_without_com = true;
-            using_imu = false;
-            using_roi = false;
-            show_aim_cross = false;
-            show_img = true;
             detect_red = true;
-            show_all_armors = true;
-            show_fps = true;
+            use_serial = false;
+            use_roi = false;
+            show_img = false;
+            show_crop_img = false;
+            show_aim_cross = false;
+            show_all_armors = false;
+            show_fps = false;
             print_letency = false;
-            print_target_info = true; 
+            print_target_info = false; 
             save_data = false;
             save_dataset = false;
-            show_spinning_img = false;
         }
     };
     

@@ -33,18 +33,18 @@ def generate_launch_description():
     # urdf_model_path = os.path.join(get_package_share_directory('robot_description'), 'urdf', 'my_robot/gimbal') + '.urdf.xacro'
     
     camera_type = LaunchConfiguration('camera_type')
-    use_serial = LaunchConfiguration('using_imu')
+    use_serial = LaunchConfiguration('use_serial')
     debug_pred = LaunchConfiguration("debug_pred")
     # record_topic_args = LaunchConfiguration("record_topic")
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='daheng',
+        default_value='mvs',
         description='hik daheng mvs usb'
     )
 
     declare_use_serial = DeclareLaunchArgument(
-        name='using_imu',
+        name='use_serial',
         default_value='True',
         description='debug without serial port.'
     )

@@ -26,7 +26,7 @@ namespace serialport
 
         // QoS
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(5);
         qos.reliable();
         qos.durability();
         qos.deadline();
@@ -34,7 +34,7 @@ namespace serialport
         // qos.durability_volatile();
    
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 5;
         
         //自瞄msg订阅
         if (!tracking_target_)

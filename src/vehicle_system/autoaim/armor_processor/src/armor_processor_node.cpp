@@ -31,7 +31,7 @@ namespace armor_processor
 
         // QoS
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(5);
         qos.durability();
         qos.reliable();
         // qos.best_effort();
@@ -165,7 +165,8 @@ namespace armor_processor
         {   //更新弹速
             processor_->coordsolver_.setBulletSpeed(target_info.bullet_speed);
         }
-        if(!debug_param_.using_imu)
+        
+        if(debug_param_.use_serial)
         {
             rmat_imu = Eigen::Matrix3d::Identity();
         }
@@ -174,7 +175,7 @@ namespace armor_processor
             quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
             rmat_imu = quat_imu.toRotationMatrix();
         }
-
+                                     
         cv::Mat dst = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
         if (debug_param_.show_img)
         {
@@ -183,7 +184,7 @@ namespace armor_processor
             {
                 src_.copyTo(dst);
                 image_flag_ = false;
-            }
+            }         
             image_mutex_.unlock();
         }
 
@@ -218,9 +219,12 @@ namespace armor_processor
                             min_dist = armor3d_dist;
                             flag = idx;
                         }
-                        Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
-                        point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
-                        cv::circle(dst, point_2d, 13, {255, 255, 0}, -1);
+                        // if (idx == 0 || idx == 3)
+                        // {
+                            Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
+                            point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                            cv::circle(dst, point_2d, 13, {255, 255, 0}, -1);
+                        // }
                         ++idx;
                     }
                     if (flag != -1)
@@ -301,7 +305,7 @@ namespace armor_processor
         //     shoot_flag_ = true;
         // }
 
-        cout << "is_shooting:" << (is_shooting ? "111" : "000") << endl;
+        RCLCPP_WARN_EXPRESSION(this->get_logger(), is_shooting, "Shooting...");
         
         // Gimbal info pub.
         GimbalMsg gimbal_info;
@@ -601,7 +605,7 @@ namespace armor_processor
         };
         // Declare prediction params.
         this->declare_parameter<double>("bullet_speed", 28.0);
-        this->declare_parameter<int>("max_time_delta", 1000);
+        this->declare_parameter<int>("max_dt", 1000);
         this->declare_parameter<int>("max_cost", 509);
         this->declare_parameter<int>("max_v", 8);
         this->declare_parameter<int>("min_fitting_lens", 10);
@@ -616,29 +620,23 @@ namespace armor_processor
         this->declare_parameter<double>("rotation_roll", 0.0);
 
         // Declare debug params.
+        this->declare_parameter("use_serial", true);
         this->declare_parameter("show_img", false);
-        this->declare_parameter("using_imu", false);
         this->declare_parameter("draw_predict", false);
         this->declare_parameter("show_predict", true);
         this->declare_parameter("print_delay", false);
-        this->declare_parameter("x_axis_filter", true);
-        this->declare_parameter("y_axis_filter", false);
-        this->declare_parameter("z_axis_filter", false);
-        this->declare_parameter("disable_filter", false);
-        this->declare_parameter("disable_fitting", true);
-        this->declare_parameter("show_transformed_info", false);
         this->declare_parameter("show_aim_cross", true);
         this->declare_parameter("show_marker", false);
 
         // Declare path params.
+        this->declare_parameter<std::string>("camera_name", "00J90630561");
+        this->declare_parameter<std::string>("camera_param_path", "/config/camera.yaml");
         this->declare_parameter<std::string>("filter_param_path", "/config/filter_param.yaml");
-        this->declare_parameter<std::string>("coord_param_path", "/config/camera.yaml");
-        this->declare_parameter<std::string>("coord_param_name", "00J90630561");
         
         // Get path param.
         string pkg_share_path = get_package_share_directory("global_user");
-        path_param_.coord_name = this->get_parameter("coord_param_name").as_string();
-        path_param_.coord_path = pkg_share_path + this->get_parameter("coord_param_path").as_string();
+        path_param_.coord_name = this->get_parameter("camera_name").as_string();
+        path_param_.coord_path = pkg_share_path + this->get_parameter("camera_param_path").as_string();
         path_param_.filter_path = pkg_share_path + this->get_parameter("filter_param_path").as_string();
 
         // Get param from param server.
@@ -703,11 +701,10 @@ namespace armor_processor
         result.successful = false;
         result.reason = "debug";
         result.successful = updateParam();
-        result.successful = processor_->coordsolver_.setStaticAngleOffset(predict_param_.angle_offset);
         
         param_mutex_.lock();
-        // processor_->predict_param_ = this->predict_param_;
-        // processor_->debug_param_ = this->debug_param_;
+        processor_->predict_param_ = this->predict_param_;
+        processor_->debug_param_ = this->debug_param_;
         param_mutex_.unlock();
         return result;
     }
@@ -721,7 +718,7 @@ namespace armor_processor
     {   // 动态调参(与rqt_reconfigure一块使用)
         //Prediction param.
         predict_param_.bullet_speed = this->get_parameter("bullet_speed").as_double();
-        predict_param_.max_delta_time = this->get_parameter("max_time_delta").as_int();
+        predict_param_.max_dt = this->get_parameter("max_dt").as_int();
         predict_param_.max_cost = this->get_parameter("max_cost").as_int();
         predict_param_.max_v = this->get_parameter("max_v").as_int();
         predict_param_.min_fitting_lens = this->get_parameter("min_fitting_lens").as_int();
@@ -732,21 +729,13 @@ namespace armor_processor
         predict_param_.rotation_yaw = this->get_parameter("rotation_yaw").as_double();
         predict_param_.rotation_pitch = this->get_parameter("rotation_pitch").as_double();
         predict_param_.rotation_roll = this->get_parameter("rotation_roll").as_double();
-        predict_param_.angle_offset[0] = this->get_parameter("yaw_angle_offset").as_double();
-        predict_param_.angle_offset[1] = this->get_parameter("pitch_angle_offset").as_double();
 
         //Debug param.
+        debug_param_.use_serial = this->get_parameter("use_serial").as_bool();
         debug_param_.show_img = this->get_parameter("show_img").as_bool();
-        debug_param_.using_imu = this->get_parameter("using_imu").as_bool();
         debug_param_.draw_predict = this->get_parameter("draw_predict").as_bool();
         debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
-        debug_param_.x_axis_filter = this->get_parameter("x_axis_filter").as_bool();
-        debug_param_.y_axis_filter = this->get_parameter("y_axis_filter").as_bool();
-        debug_param_.z_axis_filter = this->get_parameter("z_axis_filter").as_bool();
         debug_param_.print_delay = this->get_parameter("print_delay").as_bool();
-        debug_param_.disable_filter = this->get_parameter("disable_filter").as_bool();
-        debug_param_.disable_fitting = this->get_parameter("disable_fitting").as_bool();
-        debug_param_.show_transformed_info = this->get_parameter("show_transformed_info").as_bool();
         debug_param_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
         show_marker_ = this->get_parameter("show_marker").as_bool();
 
