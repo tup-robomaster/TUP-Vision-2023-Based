@@ -54,17 +54,6 @@ def generate_launch_description():
         default_value='False',
         description='debug armor prediction.'
     )
-
-    # declare_record_topic = DeclareLaunchArgument(
-    #     name='record_topic',
-    #     default_value='/daheng_img',
-    #     description='hik daheng mvs usb'
-    # )
-
-    # robot_description = Command([
-    #     'xacro ', 
-    #     os.path.join(get_package_share_directory('robot_description'), 'urdf', 'my_robot/gimbal.urdf.xacro'),
-    # ])
     
     with open(camera_param_file, 'r') as f:
         usb_cam_params = yaml.safe_load(f)['/usb_cam_driver']['ros__parameters']

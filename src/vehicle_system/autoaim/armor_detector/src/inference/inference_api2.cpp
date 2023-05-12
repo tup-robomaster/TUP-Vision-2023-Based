@@ -61,7 +61,7 @@ namespace armor_detector
     }
 
     /**
-     * @brief Generate grids and stride.
+     * @brief 
      * @param target_w Width of input.
      * @param target_h Height of input.
      * @param strides A vector of stride.
