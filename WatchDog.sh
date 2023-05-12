@@ -11,7 +11,7 @@ package=global_user
 launch_file=autoaim_bringup.launch.py
 
 cd /home/tup/Desktop/$name/
-source /opt/intel/openvino_2022/setupvars.sh
+source /opt/openvino/setupvars.sh
 source /opt/ros/galactic/setup.bash
 colcon build --symlink-install
 source install/setup.bash

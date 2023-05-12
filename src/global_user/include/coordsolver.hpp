@@ -72,8 +72,8 @@ namespace coordsolver
         int max_iter;
         float stop_error;
         int R_K_iter;
-        cv::Mat intrinsic;
-        cv::Mat dis_coeff;
+        cv::Mat intrinsic = cv::Mat(3, 3, CV_64FC1);
+        cv::Mat dis_coeff = cv::Mat(1, 5, CV_64FC1);
         Eigen::Vector3d xyz_offset;
         Eigen::Vector2d angle_offset;
         Eigen::Vector3d t_iw;

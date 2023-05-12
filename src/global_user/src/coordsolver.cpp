@@ -136,18 +136,21 @@ namespace coordsolver
             // {0.1125,-0.027,0},
             // {0.1125,0.027,0}};
         }
-        cv::Mat rvec;
-        cv::Mat rmat;
-        cv::Mat tvec;
+        cv::Mat rvec = cv::Mat(1, 3, CV_64FC1);
+        cv::Mat rmat = cv::Mat(3, 3, CV_64FC1);
+        cv::Mat tvec = cv::Mat(1, 3, CV_64FC1);
         Eigen::Matrix3d rmat_eigen;
         Eigen::Vector3d R_center_world = {0, -0.7, -0.05};
         Eigen::Vector3d tvec_eigen;
         Eigen::Vector3d coord_camera;
 
         // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Armor type: %d", (int)(type));
-        solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, method);
+        if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, method))
+        {
+            RCLCPP_WARN(logger_, "Pnp solver failed...");
+        }
 
-        RCLCPP_INFO(logger_, "rvec:[%.3f %.3f %.3f]", rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2));
+        // RCLCPP_INFO(logger_, "rvec:[%.3f %.3f %.3f]", rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2));
 
         PnPInfo result;
         //Pc = R * Pw + T
@@ -174,7 +177,7 @@ namespace coordsolver
             // auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
             // double angle = angle_axisd.angle();
             // result.axis_angle = angle;
-            RCLCPP_INFO(logger_, "type:%d euler:[%.3f %.3f %.3f]", (int)type, result.euler(0), result.euler(1), result.euler(2));
+            // RCLCPP_INFO(logger_, "type:%d euler:[%.3f %.3f %.3f]", (int)type, result.euler(0), result.euler(1), result.euler(2));
         }
         else
         {

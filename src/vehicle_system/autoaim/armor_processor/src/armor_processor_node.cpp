@@ -196,6 +196,7 @@ namespace armor_processor
             processor_->is_last_exists_ = false;
         }
 
+        // cout << 111 << endl;
         if (target.is_target_lost && processor_->armor_predictor_.predictor_state_ == LOST)
         {   //目标丢失且预测器处于丢失状态则退出预测状态
             is_aimed_ = false;
@@ -214,7 +215,7 @@ namespace armor_processor
                         double armor3d_dist = armor_point3d_world.norm();
                         int scale = armor_point3d_world(3) / (2 * CV_PI);
                         double rangle = armor_point3d_world(3) - scale * (2 * CV_PI);
-                        if (armor3d_dist < min_dist && rangle >= 1.35 && rangle <= 1.77)
+                        if (armor3d_dist < min_dist && rangle >= 1.44 && rangle <= 1.66)
                         {
                             min_dist = armor3d_dist;
                             flag = idx;
@@ -238,9 +239,11 @@ namespace armor_processor
                     }
                     aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
                     angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
-                    tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
-                    tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
+                    
                 }
+
+
+                // cout << 222 << endl;
 
                 // Eigen::VectorXd state = processor_->armor_predictor_.uniform_ekf_.x();
                 // vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
@@ -253,7 +256,7 @@ namespace armor_processor
                 // RCLCPP_WARN(get_logger(), "z_axis:%.3f", state(2));
                 // cout << "radius:" << state(3) << endl;
 
-                if (abs(tracking_angle[0]) < 8.50 && abs(tracking_angle[1]) < 8.50)
+                if (abs(tracking_angle[0]) < 6.50 && abs(tracking_angle[1]) < 6.50)
                 {
                     is_pred_ = true;
                     is_aimed_ = true;
@@ -269,6 +272,12 @@ namespace armor_processor
             param_mutex_.unlock();
         }
 
+        if (!target_info.is_target_lost)
+        {
+            tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
+            tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
+        }
+        
         if (!is_aimed_)
         {
             angle = tracking_angle;
@@ -336,6 +345,7 @@ namespace armor_processor
         // gimbal_joint_states.name.emplace_back("base_to_camera_pitch_joint");
         // gimbal_joint_states.position.emplace_back(gimbal_info.pitch * CV_PI / 180);
         // joint_state_pub_->publish(gimbal_joint_states);
+        // cout << 333 << endl;
         
         if (this->debug_)
         {
@@ -521,6 +531,8 @@ namespace armor_processor
         {
             processor_->is_last_exists_ = false;
         }
+        
+        // cout << 444 << endl;
 
         if (debug_param_.show_img && !dst.empty()) 
         {

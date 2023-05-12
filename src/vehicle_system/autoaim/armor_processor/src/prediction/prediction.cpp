@@ -71,7 +71,8 @@ namespace armor_processor
             if (history_switched_state_vec_.size() > 3)
             {
                 Vector6d last_same_switch_state = history_switched_state_vec_.back();
-                switched_state(5) = (z_diff + last_same_switch_state(5)) / 2.0;
+                // switched_state(5) = (z_diff + last_same_switch_state(5)) / 2.0;
+                switched_state(5) = z_diff;
                 history_switched_state_vec_.pop_back();
                 history_switched_state_vec_.emplace_front(switched_state);
             }
@@ -195,6 +196,7 @@ namespace armor_processor
 
         if (is_target_lost && predictor_state_ == LOSTING)
         {   
+            // cout << "losting..." << endl;
             Eigen::VectorXd state = uniform_ekf_.x();
             double radius = state(3);
             double rangle = state(4);
@@ -253,6 +255,8 @@ namespace armor_processor
                     z_pred_arr[ii] = z_cur - history_switched_state_vec_.at(ii)(5);
                     z_cur = z_pred_arr[ii];
                 }
+                z_cur = result(2);
+                z_pred_arr[2] = z_cur + history_switched_state_vec_.at(3)(5);
                 for (int ii = 0; ii < 4; ii++)
                 {
                     armor3d = {result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii), (ii > 0 ? z_pred_arr[ii-1] : result(2)), (pred_rangle + CV_PI / 2 * ii)};
@@ -364,31 +368,31 @@ namespace armor_processor
 
             // Eigen::Vector3d circle_center = {pred(0), pred(1), pred(2)};
             Eigen::Vector3d circle_center = {state(0), state(1), state(2)};
-            Eigen::Vector3d meas_center = circle_center;
-            if (predictBasedSinger(is_target_lost, meas_center, circle_center, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, dt, pred_dt))
-            {
-                // uniform_ekf_.x_(0) = circle_center(0);
-                // uniform_ekf_.x_(1) = circle_center(1);
-                // uniform_ekf_.x_(2) = state(2);
+            // Eigen::Vector3d meas_center = circle_center;
+            // if (predictBasedSinger(is_target_lost, meas_center, circle_center, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, dt, pred_dt))
+            // {
+            //     // uniform_ekf_.x_(0) = circle_center(0);
+            //     // uniform_ekf_.x_(1) = circle_center(1);
+            //     // uniform_ekf_.x_(2) = state(2);
                 
-                if (!is_predictor_update_)
-                {
-                    // 超前预测
-                    Eigen::MatrixXd F(9, 9);
-                    singer_ekf_.updateF(F, pred_dt);
-                    Eigen::MatrixXd Control(9, 3);
-                    singer_ekf_.updateC(Control, pred_dt);
+            //     if (!is_predictor_update_)
+            //     {
+            //         // 超前预测
+            //         Eigen::MatrixXd F(9, 9);
+            //         singer_ekf_.updateF(F, pred_dt);
+            //         Eigen::MatrixXd Control(9, 3);
+            //         singer_ekf_.updateC(Control, pred_dt);
 
-                    Eigen::VectorXd State = singer_ekf_.x();
-                    Eigen::Vector3d acc = {State(6), State(7), State(8)};
-                    VectorXd pred = F * State + Control * acc;
-                    circle_center = {pred(0), pred(1), pred(2)};
-                }
-                else
-                {
+            //         Eigen::VectorXd State = singer_ekf_.x();
+            //         Eigen::Vector3d acc = {State(6), State(7), State(8)};
+            //         VectorXd pred = F * State + Control * acc;
+            //         circle_center = {pred(0), pred(1), pred(2)};
+            //     }
+            //     else
+            //     {
                     is_predictor_update_ = false;
-                }
-            }
+                // }
+            // }
             double pred_rangle = rangle;
 
             // if (spin_state == CLOCKWISE)
@@ -429,6 +433,8 @@ namespace armor_processor
                     z_pred_arr[ii] = z_cur - history_switched_state_vec_.at(ii)(5);
                     z_cur = z_pred_arr[ii];
                 }
+                z_cur = result(2);
+                z_pred_arr[2] = z_cur + history_switched_state_vec_.at(3)(5);
                 for (int ii = 0; ii < 4; ii++)
                 {
                     armor3d = {result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii), (ii > 0 ? z_pred_arr[ii-1] : result(2)), (pred_rangle + CV_PI / 2 * ii)};

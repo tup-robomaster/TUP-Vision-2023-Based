@@ -162,6 +162,7 @@ namespace armor_processor
 
         for (auto armor : target_msg.armors)
         {
+            // cout << 555 << endl;
             // cout << "armor.point3d_world:" << armor.point3d_world.x << " " << armor.point3d_world.y << " " << armor.point3d_world.z << endl;
             Eigen::Vector3d xyz = {armor.point3d_world.x, armor.point3d_world.y, armor.point3d_world.z};
             double pred_dt = xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
