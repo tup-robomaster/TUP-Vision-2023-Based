@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-03-21 15:44:52
+ * @LastEditTime: 2023-04-30 19:34:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -16,8 +16,6 @@
 //opencv
 #include <opencv2/opencv.hpp>
 
-//Singer Model
-#include "../filter/singer_model.hpp"
 //IMM Model(CV、CA、CT)
 #include "../filter/model_generator.hpp"
 
@@ -31,102 +29,103 @@
 
 using namespace global_user;
 using namespace coordsolver;
+using namespace Eigen;
 namespace armor_processor
 {
     class ArmorPredictor
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
+        typedef Vector<double, 6> Vector6d;
         
     public:
         ArmorPredictor();
         ~ArmorPredictor();
-        ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, 
-            const PathParam& path_param, const DebugParam& debug_param);
-    
-    private:
-        ParticleFilter pf_pos;  //目前坐标粒子滤波
-        ParticleFilter pf_v;    //速度粒子滤波
+        // ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, const DebugParam& debug_param);
+        // Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
+        // PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
 
-        std::deque<TargetInfo> history_info_; //历史测量信息
-        std::deque<TargetInfo> history_pred_; //历史预测信息
-        int history_deque_lens_; //历史队列长度
+        void initPredictor();
+        void initPredictor(const vector<double>* uniform_ekf_param, const vector<double>* singer_ekf_param);
+        bool resetPredictor();
+        bool updatePredictor(Eigen::VectorXd meas);
+        bool predict(TargetInfo target, double dt, double pred_dt, double& delay_time, Eigen::Vector3d& pred_point3d, vector<Eigen::Vector4d>& armor3d_vec, cv::Mat* src = nullptr);
 
     public:
-        YAML::Node config_;
         PredictParam predict_param_;  //滤波先验参数/模型先验参数/调试参数
         DebugParam debug_param_;
-        std::string filter_param_path_;
-        
-        bool setBulletSpeed(double speed);
-        void loadParam(std::string filter_param_path);
-        Eigen::Vector3d predict(AutoaimMsg& target_msg, uint64 timestamp, double& sleep_time, cv::Mat* src = nullptr);
-        PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
-        void curveDrawer(int axis, cv::Mat& src, double* params, cv::Point2i start_pos);
 
     private:
-        std::deque<cv::Point2d> history_pred_info_;
-        std::deque<cv::Point2d> history_origin_info_;
-        std::deque<double> history_y_info_;
-        double last_start_timestamp_;
-        double last_end_x_;
-        bool is_predicted_;
-        TargetInfo final_target_;  //最终击打目标信息
-        // TargetInfo last_pf_target_; //最后一次粒子滤波后的位置结果
-
-        //移动轨迹拟合预测（小陀螺+横移->旋轮线，若目标处于原地小陀螺状态，则剔除掉模型中的横移项）
-        double fitting_params_[5] = {0.1, 0.1, 0.1, 0.1, 0.1};
-    
+        int history_deque_lens_; //历史队列长度
+        std::deque<TargetInfo> history_info_; //历史测量信息
+        std::deque<TargetInfo> history_pred_; //历史预测信息
+        std::deque<TargetInfo> history_losting_pred_; //历史目标losting后预测信息
+        
     private:
         double evalRMSE(double* params);
         double calcError();
         void updateVel(Eigen::Vector3d vel_3d);
         void updateAcc(Eigen::Vector3d acc_3d);
 
-    private:
-        double history_vel_[3][4] = {{0}, {0}, {0}};
-        double history_acc_[3][4] = {{0}, {0}, {0}};
-        double predict_vel_[3][4] = {{0}, {0}, {0}};
-        double predict_acc_[3][4] = {{0}, {0}, {0}};
+    public:
+        double history_vel_[3][4] = {{0}};
+        double history_acc_[3][4] = {{0}};
+        double predict_vel_[3][4] = {{0}};
+        double predict_acc_[3][4] = {{0}};
+    
+    public:
+        // uniform ekf
+        bool is_ekf_init_;
+        UniformModel uniform_ekf_;
 
-    private:
-        // 卡尔曼滤波
-        vector<double> singer_param_[3]; //cs模型参数 
-        SingerModel singer_model_[3];
-        KalmanFilter singer_kf_[3];
-        void kfInit(); // 滤波参数初始化（矩阵维度、初始值）
-        void kfInit(int axis); // 滤波参数初始化（矩阵维度、初始值）
+        // singer ekf
+        bool is_singer_init_;
+        SingerModel singer_ekf_;
+        
+        PredictorState predictor_state_ = LOST;
+        bool is_predictor_update_ = false;
+        Vector6d last_state_;
+        deque<Vector6d> history_switched_state_vec_;
+        deque<Vector6d> history_state_vec_;
 
     public:
-        bool is_singer_init_[3];
+        double now_ = 0.0;
         bool is_init_;
         bool is_imm_init_;
         bool fitting_disabled_; // 是否禁用曲线拟合
         bool filter_disabled_;  // 是否禁用滤波
-        int error_cnt_ = 0;
-        double cur_pred_error_;
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         rclcpp::Logger logger_;
-    
+        TargetInfo final_target_;  //最终击打目标信息
+        int lost_cnt_ = 0;
+        int spin_switch_cnt_ = 0;
+        double cur_rangle_ = 0.0;
+        double last_rangle = 0.0;
+        
     private:
         // IMM Model.
         std::shared_ptr<IMM> imm_;
         ModelGenerator model_generator_;
-        PredictStatus predictBasedImm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector3d& target_vel, Eigen::Vector3d& target_acc, double timestamp);
+        bool predictBasedImm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector3d target_vel, Eigen::Vector3d target_acc, int64_t timestamp);
         
         // CS Model.
-        // PredictStatus predictBasedSinger(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, double timestamp);
-        bool predictBasedSinger(int axis, double measurement, double& result, double target_vel, double target_acc, double timestamp);
+        // PredictStatus predictBasedSinger(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, int64_t timestamp);
+        bool predictBasedSinger(bool is_target_lost, Eigen::Vector3d meas, Eigen::Vector3d& result, Eigen::Vector3d target_vel, Eigen::Vector3d target_acc, double dt, double pred_dt);
 
-        // 前哨站旋转装甲板曲线拟合预测函数    
-        PredictStatus spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, double timestamp);
+        // Uniform Model.
+        bool predictBasedUniformModel(bool is_target_lost, SpinHeading spin_state, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector4d>& armor3d_vec);
         
-        // 粒子滤波
-        PredictStatus predictBasePF(TargetInfo target, Vector3d& result, double timestamp);
-        // PredictStatus uncoupleFittingPredict(Eigen::Vector3d& result, double timestamp);
-        PredictStatus coupleFittingPredict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, double timestamp);
+        // 前哨站旋转装甲板曲线拟合预测函数    
+        bool spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int64_t timestamp);
         
         // 滑窗滤波
         Eigen::Vector3d shiftWindowFilter(int start_idx);
+
+        Eigen::Vector2d calcCircleCenter(Eigen::VectorXd meas);
+
+        double calcCircleRadius(Eigen::Vector3d p1, Eigen::Vector3d p2);
+
+        // PredictStatus uncoupleFittingPredict(Eigen::Vector3d& result, int64_t timestamp);
+        // PredictStatus coupleFittingPredict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, int64_t timestamp);
     };
 } //namespace armor_processor
 

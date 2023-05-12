@@ -9,12 +9,12 @@
 
   # Paths.
     camera_type: 3
+    camera_name: "KE0200110074"
+    camera_param_path: "/config/camera.yaml"
+    path_prefix: "/recorder/dataset/"
     # network_path: "/model/buff.xml"
     # network_path: "/model/yolox.xml"
     network_path: "/model/yolox-03-17.xml"
-    camera_param_path: "/config/camera.yaml"
-    camera_name: "KE0200110075"
-    path_prefix: "/recorder/dataset/"
 
   # Debug.
     using_imu: false
@@ -43,7 +43,7 @@
     window_size: 2
 
   # Paths.
-    camera_name: "KE0200110075"
+    camera_name: "KE0200110074"
     pf_path: "/config/filter_param.yaml"
     camera_param_path: "/config/camera.yaml"
 

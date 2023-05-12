@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:17:34
- * @LastEditTime: 2023-03-08 21:41:36
+ * @LastEditTime: 2022-12-27 00:33:40
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/particle_filter.cpp
  */
 #include "../../include/filter/particle_filter.hpp"
@@ -26,12 +26,11 @@ namespace armor_processor
         default_random_engine e(rd());
         std::vector<normal_distribution<double>> normal_distribution_list;
 
-
         //假设各个变量不相关
         for (int i = 0; i < cov.cols(); i++)
         {
             normal_distribution<double> n(0,cov(i,i));
-            normal_distribution_list.emplace_back(n);
+            normal_distribution_list.push_back(n);
         }
 
         for (int col = 0; col < matrix.cols(); col++)

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-03-17 20:00:03
+ * @LastEditTime: 2023-04-28 15:05:06
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -13,6 +13,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <image_transport/publisher.hpp>
 #include <image_transport/image_transport.hpp>
 #include <image_transport/subscriber_filter.hpp>
@@ -20,6 +21,10 @@
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 //std
 #include <mutex>
@@ -32,7 +37,7 @@
 #include "global_interface/msg/autoaim.hpp"
 #include "global_interface/msg/gimbal.hpp"
 #include "global_interface/msg/car_pos.hpp"
-#include "global_interface/msg/car_hp.hpp"
+#include "global_interface/msg/obj_hp.hpp"
 #include "global_interface/msg/game_info.hpp"
 
 using namespace global_user;
@@ -45,7 +50,7 @@ namespace armor_processor
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
         typedef global_interface::msg::Gimbal GimbalMsg;
-        typedef global_interface::msg::CarHP CarHPMsg;
+        typedef global_interface::msg::ObjHP ObjHPMsg;
         typedef global_interface::msg::CarPos CarPosMsg;
         typedef global_interface::msg::GameInfo GameMsg;
         typedef sync_policies::ApproximateTime<sensor_msgs::msg::Image, AutoaimMsg> MySyncPolicy;
@@ -59,15 +64,18 @@ namespace armor_processor
         void targetMsgCallback(const AutoaimMsg& target_info);
         bool processTargetMsg(const AutoaimMsg& target_info, cv::Mat* src = nullptr);
 
+        cv::Mat src_;
         mutex debug_mutex_;
         mutex image_mutex_;
-        atomic<bool> flag_;
-        cv::Point2f apex2d[4];
-        cv::Mat src_;
+        bool is_aimed_ = false;
+        bool is_pred_ = false;
+        map<int, string> state_map_;
+        atomic<bool> image_flag_ = false;
         
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
         rclcpp::Publisher<AutoaimMsg>::SharedPtr predict_info_pub_;
+        // rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
         
         // message_filter
         MySyncPolicy my_sync_policy_;
@@ -76,6 +84,13 @@ namespace armor_processor
         std::shared_ptr<message_filters::Synchronizer<MySyncPolicy>> sync_;
         void syncCallback(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg, const AutoaimMsg::ConstSharedPtr& target_msg);
         bool sync_transport_ = false;
+
+        // visualization_msgs::Marker
+        rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_pub_;
+        uint64 shape_ = visualization_msgs::msg::Marker::SPHERE;
+        bool show_marker_ = false;
+        int count_ = 0;
+        bool shoot_flag_ = false;
 
     private:
         std::unique_ptr<Processor> processor_;

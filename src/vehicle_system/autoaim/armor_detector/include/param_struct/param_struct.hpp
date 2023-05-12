@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-03-10 15:56:09
+ * @LastEditTime: 2023-04-30 17:54:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -17,22 +17,44 @@
 #include <future>
 #include <vector>
 
+//angle
+#include <angles/angles.h>
+
 //eigen
 #include <Eigen/Core>
 
+#include "../../global_user/include/global_user/global_user.hpp"
+
+using namespace global_user;
+#include "../../global_user/include/global_user/global_user.hpp"
+
+using namespace global_user;
 namespace armor_detector
 {
-    enum SpinHeading
+    struct SpinState
     {
-        UNKNOWN, 
-        CLOCKWISE, 
-        COUNTER_CLOCKWISE
+        int64_t switch_timestamp;
+        SpinHeading spin_state;
+        SpinState()
+        {
+            switch_timestamp = 0;
+            spin_state = UNKNOWN;
+        }
     };
 
+    enum SwitchStatus
+    {
+        NONE,
+        SINGER,
+        DOUBLE
+    };
+    
     enum Color 
     {
         BLUE,
-        RED
+        RED,
+        GRAY,
+        PURPLE
     };
 
     struct GyroParam
@@ -56,10 +78,15 @@ namespace armor_detector
         double delta_y_3d_higher_thresh;
         double delta_y_3d_low_thresh;
         double delta_y_3d_lower_thresh;
+
+        double max_rotation_angle;
+        double min_rotation_angle;
+        double max_hop_period;
+        double max_conf_dis;
         GyroParam()
         {
             max_delta_t = 100;
-            switch_max_dt = 10000.0;
+            switch_max_dt = 2000.0;
             delta_x_3d_high_thresh = 0.18;
             delta_x_3d_higher_thresh = 0.25;
             delta_x_3d_low_thresh = 0.10;
@@ -69,6 +96,11 @@ namespace armor_detector
             delta_y_3d_higher_thresh = 0.25;
             delta_y_3d_low_thresh = 0.10;
             delta_y_3d_lower_thresh = 0.05;
+
+            max_rotation_angle = 10.0 * (M_PI / 180);
+            min_rotation_angle = 3.0 * (M_PI / 180);
+            max_hop_period = 3.0;
+            max_conf_dis = 3.5;
         }
     };
 
@@ -108,20 +140,33 @@ namespace armor_detector
         double new_add_tracker_timestamp;
     };
 
+    struct SpinCounter
+    {
+        int flag;
+        int normal_gyro_status_counter;
+        int switch_gyro_status_counter;
+        SpinCounter()
+        {
+            normal_gyro_status_counter = 0;
+            switch_gyro_status_counter = 0;
+            flag = 0;
+        }
+    };
+
     struct SpinningMap
     {
-        std::map<std::string, SpinHeading> spin_status_map; //反小陀螺，记录该车小陀螺状态
+        // std::map<std::string, SpinState> spin_status_map; //反小陀螺，记录该车小陀螺状态
+        // std::map<std::string, SpinCounter> spin_counter_map; //记录装甲板旋转帧数，大于0为逆时针旋转，小于0为顺时针
         std::map<std::string, double> spin_score_map;       //反小陀螺，记录各装甲板小陀螺可能性分数，大于0为逆时针旋转，小于0为顺时针旋转
+        std::map<std::string, SpinHeading> spin_status_map;
+
         std::multimap<std::string, TimeInfo> spinning_time_map;
         std::multimap<std::string, GyroInfo> spinning_x_map;
     };
 
     struct DetectorParam
     {
-        // int dw, dh;             //letterbox对原图像resize的padding区域的宽度和高度
-        // float rescale_ratio;    //缩放比例 
-        // int max_delta_t;   //使用同一预测器的最大时间间隔(ms)
-
+        int color;
         int armor_type_wh_thres; //大小装甲板长宽比阈值
         int max_lost_cnt;        //最大丢失目标帧数
         int max_armors_cnt;    //视野中最多装甲板数
@@ -138,10 +183,9 @@ namespace armor_detector
         double armor_roi_expand_ratio_height;
         double armor_conf_high_thres;
 
-        Color color;
         DetectorParam()
         {
-            color = RED;
+            color = 1; //(Red:1/Blue:0)
             armor_type_wh_thres = 3;
             max_lost_cnt = 5;
             max_armors_cnt = 8;
@@ -160,12 +204,12 @@ namespace armor_detector
 
     struct DebugParam
     {
-        bool debug_without_com;
-        bool using_imu;
-        bool using_roi;
+        bool detect_red;
+        bool use_serial;
+        bool use_roi;
         bool show_aim_cross;
         bool show_img;
-        bool detect_red;
+        bool show_crop_img;
         bool show_all_armors;
         bool show_fps;
         bool print_letency;
@@ -175,16 +219,16 @@ namespace armor_detector
 
         DebugParam()
         {
-            debug_without_com = true;
-            using_imu = false;
-            using_roi = false;
-            show_aim_cross = false;
-            show_img = true;
             detect_red = true;
-            show_all_armors = true;
-            show_fps = true;
+            use_serial = false;
+            use_roi = false;
+            show_img = false;
+            show_crop_img = false;
+            show_aim_cross = false;
+            show_all_armors = false;
+            show_fps = false;
             print_letency = false;
-            print_target_info = true; 
+            print_target_info = false; 
             save_data = false;
             save_dataset = false;
         }
@@ -198,12 +242,6 @@ namespace armor_detector
         std::string save_path;
     };
 
-    enum SwitchStatus
-    {
-        NONE,
-        SINGER,
-        DOUBLE
-    };
 } //namespace armor_detector
 
 #endif

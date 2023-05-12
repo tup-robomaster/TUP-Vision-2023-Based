@@ -20,12 +20,15 @@ find_package(sensor_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(camera_info_manager REQUIRED)
+find_package(rosbag2_cpp REQUIRED)
+find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(global_user REQUIRED)
 find_package(global_interface REQUIRED)
 
 include_directories("dependencies/hik_sdk/include")
 include_directories("dependencies/daheng_sdk/include")
+include_directories("dependencies/mvs_sdk/include")
 include_directories(
   include
   ${OpenCV_INCLUDE_DIRS}
@@ -33,7 +36,8 @@ include_directories(
   ${cv_bridge_INCLUDE_DIRS}
 )
 
-link_directories(/opt/MvCamCtrlSDK/lib/64/)
+link_directories(/opt/MVS/lib/64/)
+
 set(dependencies 
   rclcpp
   rclcpp_components
@@ -42,6 +46,8 @@ set(dependencies
   camera_info_manager
   image_transport
   camera_calibration_parsers
+  rosbag2_cpp
+  cv_bridge
   OpenCV
   Eigen3
   yaml-cpp
@@ -56,7 +62,10 @@ add_library(${PROJECT_NAME} SHARED
   src/hik_driver/hik_cam_node.cpp
   src/daheng_driver/daheng_camera.cpp
   src/daheng_driver/daheng_cam_node.cpp
+  src/mvs_driver/mvs_camera.cpp 
+  src/mvs_driver/mvs_cam_node.cpp
 )
+
 target_compile_definitions(${PROJECT_NAME}
   PRIVATE "COMPOSITION_BUILDING_DLL"
 )
@@ -69,6 +78,7 @@ target_link_libraries(${PROJECT_NAME}
   FormatConversion
   MediaProcess
   gxiapi
+  MVSDK
   yaml-cpp
 )
 
@@ -76,14 +86,12 @@ add_executable(usb_cam_driver_node src/usb_driver/usb_cam_node_main.cpp)
 ament_target_dependencies(usb_cam_driver_node ${dependencies})
 target_link_libraries(usb_cam_driver_node
   ${PROJECT_NAME}
-  yaml-cpp
 )
 
 add_executable(hik_cam_driver_node src/hik_driver/hik_cam_node_main.cpp)
 ament_target_dependencies(hik_cam_driver_node ${dependencies})
 target_link_libraries(hik_cam_driver_node 
   ${PROJECT_NAME}
-  yaml-cpp
 )
 
 add_executable(daheng_cam_driver_node src/daheng_driver/daheng_cam_node_main.cpp)
@@ -91,9 +99,15 @@ ament_target_dependencies(daheng_cam_driver_node ${dependencies})
 target_link_libraries(daheng_cam_driver_node
   ${PROJECT_NAME}
   gxiapi
-  yaml-cpp
 )
-    
+
+# Add executable
+add_executable(mvs_cam_driver_node src/mvs_driver/mvs_cam_node_main.cpp)
+ament_target_dependencies(mvs_cam_driver_node ${dependencies})
+target_link_libraries(mvs_cam_driver_node 
+  ${PROJECT_NAME}
+)
+
 rclcpp_components_register_nodes(${PROJECT_NAME} 
   PLUGIN "camera_driver::UsbCamNode"
   EXECUTABLE usb_cam_driver_node 
@@ -105,6 +119,10 @@ rclcpp_components_register_nodes(${PROJECT_NAME}
 rclcpp_components_register_nodes(${PROJECT_NAME}
   PLUGIN "camera_driver::DahengCamNode"
   EXECUTABLE daheng_cam_driver_node
+)
+rclcpp_components_register_nodes(${PROJECT_NAME}
+  PLUGIN "camera_driver::MvsCamNode"
+  EXECUTABLE mvs_cam_driver_node
 )
     
 install(TARGETS 
@@ -118,6 +136,7 @@ install(TARGETS
   usb_cam_driver_node 
   hik_cam_driver_node
   daheng_cam_driver_node
+  mvs_cam_driver_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

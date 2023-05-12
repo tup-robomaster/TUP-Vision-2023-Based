@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-03-26 19:16:03
+ * @LastEditTime: 2023-04-05 16:02:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -143,7 +143,7 @@ namespace armor_detector
                 for (int i = 0; i < 4; i++)
                 {
                     obj.apex[i] = cv::Point2f(apex_dst(0,i),apex_dst(1,i));
-                    obj.pts.emplace_back(obj.apex[i]);
+                    obj.pts.push_back(obj.apex[i]);
                 }
                 
                 std::vector<cv::Point2f> tmp(obj.apex,obj.apex + 4);
@@ -153,7 +153,7 @@ namespace armor_detector
                 obj.color = box_color;
                 obj.prob = box_prob;
 
-                objects.emplace_back(obj);
+                objects.push_back(obj);
             }
         } // point anchor loop
     }
@@ -249,14 +249,14 @@ namespace armor_detector
                     {
                         for (int i = 0; i < 4; i++)
                         {
-                            b.pts.emplace_back(a.apex[i]);
+                            b.pts.push_back(a.apex[i]);
                         }
                     }
                     // cout<<b.pts_x.size()<<endl;
                 }
             }
             if (keep)
-                picked.emplace_back(i);
+                picked.push_back(i);
         }
     }
 
@@ -433,8 +433,12 @@ namespace armor_detector
         // // 转换图像数据为ov::Tensor
         // input_tensor = ov::Tensor(input_type, input_shape, input_data_ptr);
 
+        // auto st = std::chrono::steady_clock::now();
         // 推理
         infer_request.infer();
+        // auto end = std::chrono::steady_clock::now();
+        // double infer_dt = std::chrono::duration<double,std::milli>(end - st).count();
+        // cout << "infer_time:" << infer_dt << endl;
         
         // 处理推理结果
         ov::Tensor output_tensor = infer_request.get_output_tensor();

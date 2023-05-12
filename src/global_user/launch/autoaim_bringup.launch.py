@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-03-26 19:21:53
+LastEditTime: 2023-05-06 23:26:16
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -14,10 +14,12 @@ from launch.substitutions import PythonExpression
 from launch_ros.descriptions import ComposableNode
 from launch.substitutions import ThisLaunchFileDir
 from launch.actions import IncludeLaunchDescription
+from launch.actions import ExecuteProcess
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node, ComposableNodeContainer
 from ament_index_python.packages import get_package_share_directory
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import Command
 
 def generate_launch_description():
     # autoaim_param_file = os.path.join(get_package_share_directory('global_user'), 'config/autoaim.yaml')
@@ -27,19 +29,22 @@ def generate_launch_description():
     
     camera_param_file = os.path.join(get_package_share_directory('global_user'), 'config/camera_ros.yaml')
     autoaim_param_file = os.path.join(get_package_share_directory('global_user'), 'config/autoaim.yaml')
+    # rviz2_config_path = os.path.join(get_package_share_directory('robot_description'), 'launch/view_model.rviz')
+    # urdf_model_path = os.path.join(get_package_share_directory('robot_description'), 'urdf', 'my_robot/gimbal') + '.urdf.xacro'
     
     camera_type = LaunchConfiguration('camera_type')
-    use_serial = LaunchConfiguration('using_imu')
+    use_serial = LaunchConfiguration('use_serial')
     debug_pred = LaunchConfiguration("debug_pred")
+    # record_topic_args = LaunchConfiguration("record_topic")
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='usb',
+        default_value='mvs',
         description='hik daheng mvs usb'
     )
 
     declare_use_serial = DeclareLaunchArgument(
-        name='using_imu',
+        name='use_serial',
         default_value='True',
         description='debug without serial port.'
     )
@@ -50,8 +55,6 @@ def generate_launch_description():
         description='debug armor prediction.'
     )
     
-
- #   选取的文件夹不存在,报文件未找到的错误提示
     with open(camera_param_file, 'r') as f:
         usb_cam_params = yaml.safe_load(f)['/usb_cam_driver']['ros__parameters']
     with open(camera_param_file, 'r') as f:
@@ -70,30 +73,73 @@ def generate_launch_description():
         declare_camera_type,
         declare_use_serial,
         declare_debug_pred,
+        # declare_record_topic,
 
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                os.path.join(
-                    get_package_share_directory('robot_description'), 'launch', 'view_model.launch.py'
-                ),
-            ),
-        ),
-
+        # ExecuteProcess(
+        #     cmd=['ros2', 'bag', 'record', record_topic_args],
+        #     output='screen',
+        # ),
+        
         Node(
             package='serialport',
             executable='serialport_node',
             name='serialport',
-            output='screen',
+            output='screen', # log/screen/both
             emulate_tty=True,
             parameters=[{
-                'using_port': True,
-                'tracking_target': True,
+                'using_port': False,
+                'tracking_target': False,
                 'print_serial_info': False,
                 'print_referee_info': False
             }],
+            respawn=True,
+            respawn_delay=1,
             condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
         ),
         
+        # Node(
+        #     package='robot_state_publisher',
+        #     executable='robot_state_publisher',
+        #     name='robot_state_publisher',
+        #     output='screen',  
+        #     parameters=[
+        #         {
+        #             'use_sim_time': False,
+        #             'robot_description': robot_description
+        #         }
+        #     ],
+        #     # arguments=[urdf_model_path]
+        # ),
+        
+        # Node(
+        #     package='joint_state_publisher',
+        #     executable='joint_state_publisher',
+        #     name='joint_state_publisher',
+        #     output='screen'
+        # ),
+        
+        # Node(
+        #     package='rviz2',
+        #     executable='rviz2',
+        #     name='rviz2',
+        #     output='screen',
+        #     # arguments=['-d', rviz2_config_path]
+        # ),
+
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            output='screen',
+            arguments=['-0.01680645', '0.06407996', '0.04546766', '2.3101486', '-1.5109296', '-2.3492247', 'imu_link', 'camera_link']
+        ),
+        
+        # Node(
+        #     package='tf2_ros',
+        #     executable='static_transform_publisher',
+        #     output='screen',
+        #     arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373', '-1.5249719', '1.408214', 'imu_link', 'camera_link']
+        # ),
+
         ComposableNodeContainer(
             name='serial_processor_container',
             package='rclcpp_components',
@@ -107,7 +153,7 @@ def generate_launch_description():
                     plugin='serialport::SerialPortNode',
                     name='serialport',
                     parameters=[{
-                        'using_port': True,
+                        'using_port': False,
                         'tracking_target': True,
                         'print_serial_info': False,
                         'print_referee_info': False            
@@ -125,7 +171,9 @@ def generate_launch_description():
                         'use_intra_process_comms':True
                     }]
                 ),
-            ]
+            ],
+            respawn=True,
+            respawn_delay=1,
         ),
         
         ComposableNodeContainer(
@@ -165,6 +213,8 @@ def generate_launch_description():
                 #     }]
                 # ),  
             ],
+            respawn=True,
+            respawn_delay=1,
         ),
         
         ComposableNodeContainer(
@@ -204,6 +254,8 @@ def generate_launch_description():
                 #     }]
                 # ),  
             ],
+            respawn=True,
+            respawn_delay=1,
         ),
 
         ComposableNodeContainer(
@@ -243,6 +295,8 @@ def generate_launch_description():
                 #     }]
                 # ),  
             ],
+            respawn=True,
+            respawn_delay=1,
         ),
 
         ComposableNodeContainer(
@@ -282,15 +336,19 @@ def generate_launch_description():
                 #     }]
                 # ),  
             ],
+            respawn=True,
+            respawn_delay=1,
         ),
 
         Node(
             package='armor_processor',
             executable='armor_processor_node',
             namespace='armor_processor',
-            output='screen',
+            output='screen', 
             emulate_tty=True,
             parameters=[armor_processor_params],
+            respawn=True,
+            respawn_delay=1,
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
         ),
     ])
