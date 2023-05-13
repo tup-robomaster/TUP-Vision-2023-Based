@@ -29,8 +29,9 @@ find_package(sensor_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED COMPONENTS EigenSparse)
-find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 include_directories(
   include
@@ -58,8 +59,9 @@ set(dependencies
   # yaml-cpp
   Eigen3
   Ceres
-  tf2_geometry_msgs
+  tf2
   tf2_ros 
+  tf2_geometry_msgs
 )
 
 ament_target_dependencies(${PROJECT_NAME}

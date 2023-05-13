@@ -13,6 +13,13 @@ namespace serialport
     SerialPortNode::SerialPortNode(const rclcpp::NodeOptions& options)
     : Node("serial_port", options), device_name_("ttyACM0"), baud_(115200)
     {
+        // tf2
+        tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+        tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+        tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
+
+        virtual_heading_.setRotation(tf2::Quaternion(0,0,0,1));
+
         RCLCPP_WARN(this->get_logger(), "Serialport node...");
         try
         {
@@ -84,23 +91,23 @@ namespace serialport
             if (serial_port_->openPort())
             {
                 serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", qos);
-                joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
                 car_pos_pub_ = this->create_publisher<CarPosMsg>("/car_pos", qos);
                 obj_hp_pub_ = this->create_publisher<ObjHPMsg>("/obj_hp", qos);
                 game_msg_pub_ = this->create_publisher<GameMsg>("/game_info", qos);
-                receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
+                joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
+
+
                 // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
                 sentry_twist_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
                     "/cmd_vel",
                     rclcpp::SensorDataQoS(), 
                     std::bind(&SerialPortNode::sentryNavCallback, this, _1)
                 );
+                receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
                 watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
             }
         }
 
-        // tf2
-        tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
         // Initialize the transform broadcaster
 
     }
@@ -231,8 +238,29 @@ namespace serialport
                 serial_msg_pub_->publish(std::move(serial_msg));
                 // RCLCPP_WARN(this->get_logger(), "serial_msg_pub:%.3fs", now.nanoseconds() / 1e9);
 
+                tf2::Transform trans_imu;
+                trans_imu.setRotation(tf2::Quaternion(quat[1], quat[2], quat[3], quat[0]));
+                
+                tf2::Transform trans_base_to_virt;
+                tf_lock_.lock();
+                trans_base_to_virt = trans_imu * virtual_heading_;
+                tf_lock_.unlock();
+
+                double r,p,y;
+                tf2::Quaternion q;
+                trans_base_to_virt.getBasis().getRPY(r,p,y);
+                q.setRPY(0,0,y);
+                trans_base_to_virt.setRotation(q);
+                geometry_msgs::msg::TransformStamped trans_base_to_virt_msg;
+                geometry_msgs::msg::Transform trans_base_to_virt_msg_nostamp;
+                trans_base_to_virt_msg.transform = tf2::toMsg(trans_base_to_virt);
+                trans_base_to_virt_msg.header.stamp = now;
+                trans_base_to_virt_msg.header.frame_id = "base_link";
+                trans_base_to_virt_msg.child_frame_id = "virt_heading_frame";
+                tf_broadcaster_->sendTransform(trans_base_to_virt_msg);
+
                 sensor_msgs::msg::JointState joint_state;
-                joint_state.header.stamp = this->get_clock()->now();
+                joint_state.header.stamp = now;
                 joint_state.name.push_back("gimbal_yaw_joint");
                 joint_state.name.push_back("gimbal_pitch_joint");
                 joint_state.position.push_back(theta);
@@ -402,29 +430,65 @@ namespace serialport
      */
     void SerialPortNode::sentryNavCallback(geometry_msgs::msg::Twist::SharedPtr msg)
     {
-        int mode = mode_;
-        // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
-        if (this->using_port_)
-        {   
-            VisionNavData vision_data;
-            vision_data.linear_velocity[0] = msg->linear.x;
-            vision_data.linear_velocity[1] = msg->linear.y;
-            vision_data.linear_velocity[2] = msg->linear.z;
-            vision_data.angular_velocity[0] = msg->angular.x;
-            vision_data.angular_velocity[1] = msg->angular.y;
-            vision_data.angular_velocity[2] = msg->angular.z * 0.0015;
-            //根据不同mode进行对应的数据转换
-            data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
-            //数据发送
-            mutex_.lock();
-            serial_port_->sendData();
-            mutex_.unlock();
+        geometry_msgs::msg::TwistStamped twist;
+        twist.header.stamp = this->now();
+        twist.header.frame_id = "virt_heading_frame";
+        twist.twist = (*msg);
+
+        rclcpp::Time t1(twist.header.stamp);
+        rclcpp::Time t0(last_twist_.header.stamp);
+        double dt = (t1.nanoseconds() - t0.nanoseconds()) * 1e-9;
+        double dtheta = (twist.twist.angular.z + last_twist_.twist.angular.z) / 2 * dt;
+        // std::cout<<"DT:"<<dt<<", DTHETA:"<<dtheta<<std::endl;
+
+        if (dt > 0.1)
+        {
+            last_twist_ = twist;
             return;
         }
-        else
+        
+        tf2::Transform trans;
+        tf2::Quaternion q;
+        q.setRPY(0,0,dtheta);
+        trans.setRotation(q);
+        tf_lock_.lock();
+        virtual_heading_ = virtual_heading_ * trans;
+        tf_lock_.unlock();
+
+        tf2::Transform transform;
+        geometry_msgs::msg::TransformStamped tf_msg;
+        try
         {
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
+            tf_msg = tf_buffer_->lookupTransform("base_link",
+                                                    "virt_heading_frame",
+                                                    t0,
+                                                    rclcpp::Duration::from_seconds(0.02));
+            tf2::convert(tf_msg.transform, transform);
         }
+        catch (const tf2::TransformException &ex)
+        {
+            RCLCPP_ERROR(this->get_logger(), "%s",ex.what());
+            return;
+        }
+        tf2::Vector3 virt_vel(msg->linear.x,msg->linear.y,1);
+        tf2::Vector3 base_vel = transform * virt_vel;
+        int mode = mode_;
+        // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
+        VisionNavData vision_data;
+        vision_data.linear_velocity[0] = base_vel[0];
+        vision_data.linear_velocity[1] = base_vel[1];
+        // vision_data.linear_velocity[2] = msg->linear.z;
+        // vision_data.angular_velocity[0] = msg->angular.x;
+        // vision_data.angular_velocity[1] = msg->angular.y;
+        // vision_data.angular_velocity[2] = msg->angular.z * 0.003;
+
+        last_twist_ = twist;
+        //根据不同mode进行对应的数据转换
+        data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
+        //数据发送
+        mutex_.lock();
+        serial_port_->sendData();
+        mutex_.unlock();
     }
 
     /**

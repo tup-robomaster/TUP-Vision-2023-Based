@@ -36,7 +36,7 @@ namespace coordsolver
         Eigen::Vector3d R_world;
         Eigen::Vector3d euler;
         Eigen::Matrix3d rmat;
-        double axis_angle;
+        double rangle;
     };
 
     class CoordSolver

@@ -175,7 +175,7 @@ namespace coordsolver
             result.rmat = rmat_eigen_world;
             auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
             double angle = angle_axisd.angle();
-            result.axis_angle = angle;
+            result.rangle = result.euler[0];
             // RCLCPP_INFO(logger_, "rotate angle:%lf", angle * (180 / CV_PI));
         }
         else

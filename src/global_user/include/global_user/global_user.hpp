@@ -168,7 +168,9 @@ namespace global_user
         SMALL_BUFF,
         BIG_BUFF,
         OUTPOST_ROTATION_MODE,
-        SENTRY_NORMAL
+        SENTRY_NORMAL,
+        SENTRY_SWING,
+        SENTRY_AUTOAIM
     };
 
     struct TaskData
