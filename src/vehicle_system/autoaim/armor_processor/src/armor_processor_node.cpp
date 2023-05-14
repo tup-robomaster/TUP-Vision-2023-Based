@@ -164,7 +164,7 @@ namespace armor_processor
         {   //更新弹速
             processor_->coordsolver_.setBulletSpeed(target_info.bullet_speed);
         }
-        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "bullet_speed:%.2f", target_info.bullet_speed);
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "rec_bullet_speed:%.3f cur_bullet_speed:%.3f", target_info.bullet_speed, processor_->coordsolver_.getBulletSpeed());
         
         if(debug_param_.use_serial)
         {
