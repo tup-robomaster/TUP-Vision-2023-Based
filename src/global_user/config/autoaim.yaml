@@ -52,10 +52,11 @@
     save_dataset: false
   
   # Debug params.
-    use_serial: false
-    detect_red: true # red: true / blue: false
-    use_roi: true
     debug: true
+    detect_red: true # red: true / blue: false
+    use_serial: false
+    use_imu: false
+    use_roi: false
     show_img: false
     show_crop_img: false
     show_fps: false
@@ -84,12 +85,12 @@
 
   # Debug params.
     use_serial: false
-    debug: true
-    show_img: false
-    draw_predict: false
-    show_predict: false
-    show_aim_cross: false
-    show_fps: false
+    use_imu: false
+    show_img: true
+    draw_predict: true
+    show_predict: true
+    show_aim_cross: true
+    show_fps: true
     print_delay: false
     sync_transport: false
     show_marker: false
