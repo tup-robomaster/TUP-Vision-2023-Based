@@ -126,13 +126,15 @@ def generate_launch_description():
         #     # arguments=['-d', rviz2_config_path]
         # ),
 
+        # hero
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',
             output='screen',
-            arguments=['-0.01680645', '0.06407996', '0.04546766', '2.3101486', '-1.5109296', '-2.3492247', 'imu_link', 'camera_link']
+            arguments=['-0.00239488', '0.02142155', '0.04276791', '-1.8511209', '-1.4914339', '-0.2751819', 'imu_link', 'camera_link']
         ),
         
+        # infantry3
         # Node(
         #     package='tf2_ros',
         #     executable='static_transform_publisher',

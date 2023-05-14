@@ -24,7 +24,6 @@ namespace armor_detector
         is_init_ = false;
         last_period_ = 0;
         last_last_status_ = last_status_ = cur_status_ = NONE;
-        // dead_buffer_cnt_ = 0;
 
         is_save_data_ = debug_params_.save_data; //save distance error data
         save_dataset_ = debug_params_.save_dataset;

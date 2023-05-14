@@ -144,6 +144,7 @@ namespace armor_detector
         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "delay:%.2fms", dura);
         // if ((dura) > 20.0)
         //     return;
+
         TaskData src;
         // Convert the image to opencv format.
         // cv_bridge::CvImagePtr cv_ptr;
@@ -239,10 +240,18 @@ namespace armor_detector
             serial_msg_mutex_.lock();
             src.mode = serial_msg_.mode;
             src.bullet_speed = serial_msg_.bullet_speed;
-            src.quat.w() = serial_msg_.imu.orientation.w;
-            src.quat.x() = serial_msg_.imu.orientation.x;
-            src.quat.y() = serial_msg_.imu.orientation.y;
-            src.quat.z() = serial_msg_.imu.orientation.z;
+            if (debug_.use_imu)
+            {
+                src.quat.w() = serial_msg_.imu.orientation.w;
+                src.quat.x() = serial_msg_.imu.orientation.x;
+                src.quat.y() = serial_msg_.imu.orientation.y;
+                src.quat.z() = serial_msg_.imu.orientation.z;
+            }
+            else
+            {
+                Eigen::Matrix3d rmat = Eigen::Matrix3d::Identity();
+                src.quat = Eigen::Quaterniond(rmat);
+            }
             serial_msg_mutex_.unlock(); 
             
             auto dt = (now - serial_msg_.imu.header.stamp).nanoseconds() / 1e6;
@@ -329,6 +338,7 @@ namespace armor_detector
         target_info.quat_imu.x = src.quat.x();
         target_info.quat_imu.y = src.quat.y();
         target_info.quat_imu.z = src.quat.z();
+        target_info.bullet_speed = src.bullet_speed;
         // RCLCPP_INFO(this->get_logger(), "timestamp:%.8f", target_info.timestamp / 1e9);
 
         // if (target_info.spinning_switched)
@@ -377,12 +387,6 @@ namespace armor_detector
     void DetectorNode::sensorMsgCallback(const SerialMsg& serial_msg)
     {
         serial_msg_mutex_.lock();
-        // serial_msg_.imu.header.stamp = this->get_clock()->now();
-        // if(serial_msg.bullet_speed > 10)
-        //     serial_msg_.bullet_speed = serial_msg.bullet_speed;
-        // if(serial_msg.mode == AUTOAIM || serial_msg.mode == HERO_SLING || serial_msg.mode == SENTRY_NORMAL)
-        //     serial_msg_.mode = serial_msg.mode;
-        // serial_msg_.imu = serial_msg.imu;
         serial_msg_ = serial_msg;
         serial_msg_.header.stamp = this->get_clock()->now();
         serial_msg_mutex_.unlock();
@@ -455,20 +459,17 @@ namespace armor_detector
     std::unique_ptr<Detector> DetectorNode::initDetector()
     {
         //Detector params.
+        this->declare_parameter<int>("color", 1);
         this->declare_parameter<int>("armor_type_wh_thres", 3);
         this->declare_parameter<int>("max_lost_cnt", 5);
         this->declare_parameter<int>("max_armors_cnt", 8);
-        this->declare_parameter<int>("max_v", 8);
-        this->declare_parameter<double>("no_crop_thres", 1e-2);
         this->declare_parameter<int>("hero_danger_zone", 4);
-        this->declare_parameter<int>("color", 1);
+        this->declare_parameter<double>("no_crop_thres", 1e-2);
         this->declare_parameter<double>("no_crop_ratio", 2e-3);
         this->declare_parameter<double>("full_crop_ratio", 1e-4);
         this->declare_parameter<double>("armor_roi_expand_ratio_width", 1.1);
         this->declare_parameter<double>("armor_roi_expand_ratio_height", 1.5);
         this->declare_parameter<double>("armor_conf_high_thres", 0.82);
-        this->declare_parameter<double>("yaw_angle_offset", 0.0);
-        this->declare_parameter<double>("pitch_angle_offset", 0.0);
         
         //TODO:Set by your own path.
         this->declare_parameter("camera_name", "KE0200110075"); //相机型号
@@ -478,7 +479,8 @@ namespace armor_detector
         
         //Debug.
         this->declare_parameter("detect_red", true);
-        this->declare_parameter("use_serial", false);
+        this->declare_parameter("use_serial", true);
+        this->declare_parameter("use_imu", true);
         this->declare_parameter("use_roi", true);
         this->declare_parameter("show_img", false);
         this->declare_parameter("show_crop_img", false);
@@ -513,22 +515,22 @@ namespace armor_detector
      */
     bool DetectorNode::updateParam()
     {
-        detector_params_.armor_type_wh_thres = this->get_parameter("armor_type_wh_thres").as_int();
+        detector_params_.color = this->get_parameter("color").as_int();
         detector_params_.max_lost_cnt = this->get_parameter("max_lost_cnt").as_int();
         detector_params_.max_armors_cnt = this->get_parameter("max_armors_cnt").as_int();
-        detector_params_.max_v = this->get_parameter("max_v").as_int();
         detector_params_.no_crop_thres = this->get_parameter("no_crop_thres").as_double();
         detector_params_.hero_danger_zone = this->get_parameter("hero_danger_zone").as_int();
-        detector_params_.color = this->get_parameter("color").as_int();
+        detector_params_.armor_type_wh_thres = this->get_parameter("armor_type_wh_thres").as_int();
         
         detector_params_.no_crop_ratio = this->get_parameter("no_crop_ratio").as_double();
         detector_params_.full_crop_ratio = this->get_parameter("full_crop_ratio").as_double();
+        detector_params_.armor_conf_high_thres = this->get_parameter("armor_conf_high_thres").as_double();
         detector_params_.armor_roi_expand_ratio_width = this->get_parameter("armor_roi_expand_ratio_width").as_double();
         detector_params_.armor_roi_expand_ratio_height = this->get_parameter("armor_roi_expand_ratio_height").as_double();
-        detector_params_.armor_conf_high_thres = this->get_parameter("armor_conf_high_thres").as_double();
 
         debug_.detect_red = this->get_parameter("detect_red").as_bool();
         debug_.use_serial = this->get_parameter("use_serial").as_bool();
+        debug_.use_imu = this->get_parameter("use_imu").as_bool();
         debug_.use_roi = this->get_parameter("use_roi").as_bool();
         debug_.show_img = this->get_parameter("show_img").as_bool();
         debug_.show_crop_img = this->get_parameter("show_crop_img").as_bool();

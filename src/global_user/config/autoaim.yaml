@@ -56,6 +56,7 @@
     debug: true
     detect_red: true # red: true / blue: false
     use_serial: false
+    use_imu: false
     use_roi: false
     show_img: false
     show_crop_img: false
@@ -86,6 +87,7 @@
   # Debug params.
     debug: true
     use_serial: false
+    use_imu: false
     show_img: true
     draw_predict: true
     show_predict: true

@@ -90,9 +90,9 @@ namespace armor_processor
         SystemModel system_model;
         double reserve_factor;
         double max_offset_value;
-        double rotation_yaw;
-        double rotation_pitch;
-        double rotation_roll;
+        // double rotation_yaw;
+        // double rotation_pitch;
+        // double rotation_roll;
         
         PredictParam()
         {
@@ -106,9 +106,9 @@ namespace armor_processor
             system_model = CSMODEL;   
             reserve_factor = 15.0;
             max_offset_value = 0.25;
-            rotation_yaw = 0.0;
-            rotation_pitch = 0.0;
-            rotation_roll = 0.0;
+            // rotation_yaw = 0.0;
+            // rotation_pitch = 0.0;
+            // rotation_roll = 0.0;
         }
     };
 
@@ -116,6 +116,7 @@ namespace armor_processor
     {
         bool show_img;
         bool use_serial;
+        bool use_imu;
         bool draw_predict;
         bool show_predict;
         bool print_delay;
@@ -124,13 +125,14 @@ namespace armor_processor
 
         DebugParam()
         {
+            use_imu = true;
             use_serial = true;
             show_img = false;
+            show_fps = false;
             draw_predict = false;
             show_predict = false;
             print_delay = false;
             show_aim_cross = false;
-            show_fps = false;
         }
     };
 

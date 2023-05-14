@@ -170,7 +170,6 @@ namespace armor_detector
         int armor_type_wh_thres; //大小装甲板长宽比阈值
         int max_lost_cnt;        //最大丢失目标帧数
         int max_armors_cnt;    //视野中最多装甲板数
-        int max_v;         //两次预测间最大速度(m/s)
 
         double no_crop_thres; //禁用ROI裁剪的装甲板占图像面积最大面积比值
         double hero_danger_zone; //英雄危险距离阈值，检测到有小于该距离的英雄直接开始攻击
@@ -189,7 +188,6 @@ namespace armor_detector
             armor_type_wh_thres = 3;
             max_lost_cnt = 5;
             max_armors_cnt = 8;
-            max_v = 0;
             no_crop_thres = 2e-3;
             no_crop_ratio = 2e-3;
             full_crop_ratio = 1e-4;
@@ -206,6 +204,7 @@ namespace armor_detector
     {
         bool detect_red;
         bool use_serial;
+        bool use_imu;
         bool use_roi;
         bool show_aim_cross;
         bool show_img;
@@ -220,17 +219,18 @@ namespace armor_detector
         DebugParam()
         {
             detect_red = true;
-            use_serial = false;
+            use_serial = true;
+            use_imu = true;
             use_roi = false;
             show_img = false;
-            show_crop_img = false;
-            show_aim_cross = false;
-            show_all_armors = false;
             show_fps = false;
-            print_letency = false;
-            print_target_info = false; 
             save_data = false;
             save_dataset = false;
+            show_crop_img = false;
+            print_letency = false;
+            show_aim_cross = false;
+            show_all_armors = false;
+            print_target_info = false; 
         }
     };
     
