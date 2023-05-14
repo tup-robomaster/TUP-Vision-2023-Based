@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2023-04-29 17:44:52
+ * @LastEditTime: 2023-05-14 16:19:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/detector_node.hpp
  */
 // #include "../../global_user/include/global_user/global_user.hpp"
@@ -39,9 +39,7 @@ namespace armor_detector
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
         typedef global_interface::msg::Serial SerialMsg;
-        typedef global_interface::msg::ObjHP ObjHPMsg;
         typedef sync_policies::ApproximateTime<sensor_msgs::msg::Image, SerialMsg> MySyncPolicy;
-        typedef global_interface::msg::Decision DecisionMsg;
 
     public:
         DetectorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
@@ -50,12 +48,10 @@ namespace armor_detector
         void detect(TaskData& src, rclcpp::Time start);
 
     private:
-        rclcpp::Time time_start_;
         ImageInfo image_info_;
         ImageSize image_size_;
         // Pub target armor msg.
         rclcpp::Publisher<AutoaimMsg>::SharedPtr armor_info_pub_;
-        rclcpp::Publisher<global_interface::msg::DetectionArray>::SharedPtr detections_pub_;
 
     private:    
         // Params callback.
@@ -68,23 +64,11 @@ namespace armor_detector
         std::shared_ptr<image_transport::Subscriber> img_sub_;
         void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
 
-        std_msgs::msg::Header img_header_;
-
         // Subscribe serial msg.
         SerialMsg serial_msg_;
         Mutex serial_msg_mutex_;
         rclcpp::Subscription<SerialMsg>::SharedPtr serial_msg_sub_;
         void sensorMsgCallback(const SerialMsg& serial_msg);
-
-        ObjHPMsg obj_hp_msg_;
-        Mutex obj_hp_msg_mutex_;
-        rclcpp::Subscription<ObjHPMsg>::SharedPtr obj_hp_msg_sub_;
-        void objHPMsgCallback(const ObjHPMsg& obj_hp_msg);
-
-        DecisionMsg decision_msg_;
-        Mutex decision_msg_mutex_;
-        rclcpp::Subscription<DecisionMsg>::SharedPtr decision_msg_sub_;
-        void decisionMsgCallback(const DecisionMsg& decision_msg);
 
         // Subscribe img and serial msgs synchronously.
         std::shared_ptr<message_filters::Subscriber<SerialMsg>> serial_msg_sync_sub_;

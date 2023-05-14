@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-11 17:47:24
+ * @LastEditTime: 2023-05-14 14:42:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -21,6 +21,7 @@ namespace armor_processor
             {
                 RCLCPP_INFO_ONCE(this->get_logger(), "Loading param...");
                 processor_->init(path_param_.coord_path, path_param_.coord_name);
+                processor_->coordsolver_.setBulletSpeed(predict_param_.bullet_speed);
             }
         }
         catch(const std::exception& e)

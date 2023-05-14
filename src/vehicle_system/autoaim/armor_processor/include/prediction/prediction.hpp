@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-04-30 19:34:38
+ * @LastEditTime: 2023-05-14 14:08:42
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -20,7 +20,6 @@
 #include "../filter/model_generator.hpp"
 
 #include "./param_struct.hpp"
-#include "../filter/particle_filter.hpp"
 #include "./curve_fitting.hpp"
 
 #include "global_interface/msg/autoaim.hpp"
