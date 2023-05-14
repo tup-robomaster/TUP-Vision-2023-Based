@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 02:02:10
- * @LastEditTime: 2023-05-06 23:40:38
+ * @LastEditTime: 2023-05-14 16:10:27
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/data_processor/data_transform.cpp
  */
 #include "../../include/data_processor/data_transform.hpp"
@@ -85,6 +85,12 @@ namespace serialport
         float theta[] = {vision_data.theta_gimbal,vision_data.theta_chassis};
         float2UcharRawArray(theta, 2, &trans_data[3]);
         crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
+    }
+
+    void DataTransform::getShootDelay(uchar* raw_data, float& shoot_delay)
+    {
+        shoot_delay = ucharRaw2Float(raw_data);
+        return;
     }
 
     void DataTransform::getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle)

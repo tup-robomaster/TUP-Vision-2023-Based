@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-04-30 19:34:38
+ * @LastEditTime: 2023-05-14 14:08:42
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -20,7 +20,6 @@
 #include "../filter/model_generator.hpp"
 
 #include "./param_struct.hpp"
-#include "../filter/particle_filter.hpp"
 #include "./curve_fitting.hpp"
 
 #include "global_interface/msg/autoaim.hpp"
@@ -55,7 +54,7 @@ namespace armor_processor
         DebugParam debug_param_;
 
     private:
-        int history_deque_lens_; //历史队列长度
+        int history_deque_lens_ = 50; //历史队列长度
         std::deque<TargetInfo> history_info_; //历史测量信息
         std::deque<TargetInfo> history_pred_; //历史预测信息
         std::deque<TargetInfo> history_losting_pred_; //历史目标losting后预测信息
@@ -82,10 +81,9 @@ namespace armor_processor
         SingerModel singer_ekf_;
         
         PredictorState predictor_state_ = LOST;
-        bool is_predictor_update_ = false;
         Vector6d last_state_;
         deque<Vector6d> history_switched_state_vec_;
-        deque<Vector6d> history_state_vec_;
+        // deque<Vector6d> history_state_vec_;
 
     public:
         double now_ = 0.0;
@@ -120,12 +118,11 @@ namespace armor_processor
         // 滑窗滤波
         Eigen::Vector3d shiftWindowFilter(int start_idx);
 
+        // 计算车辆中心
         Eigen::Vector2d calcCircleCenter(Eigen::VectorXd meas);
 
+        // 计算车辆半径
         double calcCircleRadius(Eigen::Vector3d p1, Eigen::Vector3d p2);
-
-        // PredictStatus uncoupleFittingPredict(Eigen::Vector3d& result, int64_t timestamp);
-        // PredictStatus coupleFittingPredict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, int64_t timestamp);
     };
 } //namespace armor_processor
 

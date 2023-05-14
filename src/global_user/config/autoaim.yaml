@@ -34,17 +34,9 @@
     delta_y_3d_lower_thresh: 0.05
 
   # Camera config params.
-    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_param_path: "/config/camera.yaml"
-    camera_name: "KE0200110074" #FIXME:根据相机序列号修改
-    # camera_name: "00J90630561" 
-    # camera_name: "MV_Sentry"
 
   # Network model path.
-    # network_path: "/model/opt-0527-002.xml"
-    # network_path: "/model/1106-333.xml"
-    # network_path: "/model/yolox.xml"
-    # network_path: "/model/opt-1208-001.xml"
     network_path: "/model/opt-0127-001.xml"
   
   # Data saving.
@@ -53,15 +45,16 @@
     save_dataset: false
   
   # Debug params.
-    debug: true
     detect_red: true # red: true / blue: false
-    use_serial: true
     use_roi: true
-    show_img: false
+    use_serial: true
+    use_imu: false
+    debug: true
+    show_img: true
     show_crop_img: false
-    show_fps: false
-    show_aim_cross: false
-    show_all_armors: false
+    show_fps: true
+    show_aim_cross: true
+    show_all_armors: true
     auto_label: false
     print_letency: false
     sync_transport: false
@@ -70,7 +63,8 @@
 /armor_processor:        
   ros__parameters:
   # Predict params.
-    bullet_speed: 12.7
+    shoot_delay: 250 
+    bullet_speed: 15.0
     max_dt: 1000
     max_cost: 10
     max_v: 8
@@ -84,23 +78,19 @@
     # rotation_roll: 0.0
 
   # Debug params.
-    debug: true
     use_serial: true
+    use_imu: false
     show_img: false
-    draw_predict: false
-    show_predict: false
-    show_aim_cross: false
-    show_fps: false
+    draw_predict: true
+    show_predict: true
+    show_aim_cross: true
+    show_fps: true
     print_delay: false
     sync_transport: false
-    show_marker: true
+    show_marker: false
  
   # Camera params.
-    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_param_path: "/config/camera.yaml"
-    camera_name: "KE0200110074" #FIXME:根据相机序列号修改
-    # camera_name: "00J90630561" 
-    # camera_name: "MV_Sentry"
     
   # Filter params.
     filter_param_path: "/config/filter_param.yaml"

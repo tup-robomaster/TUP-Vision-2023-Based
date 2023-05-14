@@ -169,22 +169,6 @@ namespace armor_processor
             Eigen::VectorXd state = armor_predictor_.uniform_ekf_.x();
             Eigen::Vector3d center_xyz = {state(0), state(1), state(2)};
 
-            // cout << "rangle:" << armor.rangle << endl;
-            // RCLCPP_WARN_THROTTLE(
-            //     logger_,
-            //     steady_clock_,
-            //     100, 
-            //     "xyz:【%.3f %.3f %.3f] center_norm:[%.3f %.3f %.3f]",
-            //     xyz(0), xyz(1), xyz(2), center_xyz(0), center_xyz(1), center_xyz(2)
-            // );
-            // RCLCPP_WARN_THROTTLE(
-            //     logger_,
-            //     steady_clock_, 
-            //     100, 
-            //     "radius:%.3f theta:%.3f omega:%.3f vx:%.3f vy:%.3f vz:%.3f", 
-            //     state(3), state(4), state(5), state(6), state(7), state(8)
-            // );
-
             TargetInfo target = 
             { 
                 std::move(xyz),
