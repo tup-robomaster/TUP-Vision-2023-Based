@@ -126,19 +126,20 @@ def generate_launch_description():
         #     # arguments=['-d', rviz2_config_path]
         # ),
 
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            output='screen',
-            arguments=['-0.01680645', '0.06407996', '0.04546766', '2.3101486', '-1.5109296', '-2.3492247', 'imu_link', 'camera_link']
-        ),
-        
         # Node(
         #     package='tf2_ros',
         #     executable='static_transform_publisher',
         #     output='screen',
-        #     arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373', '-1.5249719', '1.408214', 'imu_link', 'camera_link']
+        #     arguments=['-0.01680645', '0.06407996', '0.04546766', '2.3101486', '-1.5109296', '-2.3492247', 'imu_link', 'camera_link']
         # ),
+        
+        # 3infantry
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            output='screen',
+            arguments=['-0.03410782', '-0.00340863', '0.01676429', '1.3145651', '-1.3590434', '2.9736881', 'imu_link', 'camera_link']
+        ),
 
         ComposableNodeContainer(
             name='serial_processor_container',

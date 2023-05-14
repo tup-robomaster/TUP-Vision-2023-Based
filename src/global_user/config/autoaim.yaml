@@ -15,7 +15,7 @@
     armor_conf_high_thres: 0.82
 
   # Spinning params.
-    shoot_delay: 50
+    shoot_delay: 100
     bullet_speed: 12.7
     max_dead_buffer: 10
     max_delta_dist: 0.5
@@ -55,7 +55,7 @@
   # Debug params.
     debug: true
     detect_red: true # red: true / blue: false
-    use_serial: false
+    use_serial: true
     use_roi: true
     show_img: false
     show_crop_img: false
@@ -75,7 +75,7 @@
     max_cost: 10
     max_v: 8
     min_fitting_lens: 5
-    shoot_delay: 50
+    shoot_delay: 100
     window_size: 3
     max_offset_value: 0.45
     reserve_factor: 500.0 # 储备系数(>=1)
@@ -85,7 +85,7 @@
 
   # Debug params.
     debug: true
-    use_serial: false
+    use_serial: true
     show_img: false
     draw_predict: false
     show_predict: false
@@ -93,7 +93,7 @@
     show_fps: false
     print_delay: false
     sync_transport: false
-    show_marker: false
+    show_marker: true
  
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
@@ -107,7 +107,7 @@
   
   # uniform model
     #----------------------------------Xc------Yc----Zc-----r---theta--omega
-    uniform_ekf_process_noise_param: [0.01, 0.001, 0.002, 0.001, 0.05, 0.001]
+    uniform_ekf_process_noise_param: [0.01, 0.001, 0.002, 0.0005, 0.005, 0.0005]
     #----------------------------------X----Y---Z---theta
     uniform_ekf_measure_noise_param: [5.0, 5.0, 1.0, 1.0]
     

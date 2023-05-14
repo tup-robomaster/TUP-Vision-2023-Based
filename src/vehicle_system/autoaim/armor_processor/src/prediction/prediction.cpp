@@ -68,18 +68,20 @@ namespace armor_processor
             RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 50, "z_diff:%.3f", z_diff);
 
             Vector6d switched_state = {uniform_ekf_.x_(0), uniform_ekf_.x_(1), uniform_ekf_.x_(2), uniform_ekf_.x_(3), uniform_ekf_.x_(4), z_diff};
-            if (history_switched_state_vec_.size() > 3)
-            {
-                Vector6d last_same_switch_state = history_switched_state_vec_.back();
-                // switched_state(5) = (z_diff + last_same_switch_state(5)) / 2.0;
-                switched_state(5) = z_diff;
-                history_switched_state_vec_.pop_back();
-                history_switched_state_vec_.emplace_front(switched_state);
-            }
-            else 
-            {
-                history_switched_state_vec_.emplace_front(switched_state);
-            }
+            history_switched_state_vec_.clear();
+            history_switched_state_vec_.push_front(switched_state);
+            // if (history_switched_state_vec_.size() > 3)
+            // {
+            //     Vector6d last_same_switch_state = history_switched_state_vec_.back();
+            //     // switched_state(5) = (z_diff + last_same_switch_state(5)) / 2.0;
+            //     switched_state(5) = z_diff;
+            //     history_switched_state_vec_.pop_back();
+            //     history_switched_state_vec_.emplace_front(switched_state);
+            // }
+            // else 
+            // {
+            //     history_switched_state_vec_.emplace_front(switched_state);
+            // }
 
             Eigen::VectorXd state = singer_ekf_.x();
             singer_ekf_.x_ << uniform_ekf_.x_(0),  uniform_ekf_.x_(1),  uniform_ekf_.x_(2),
@@ -94,7 +96,9 @@ namespace armor_processor
     bool ArmorPredictor::predict(TargetInfo target, double dt, double pred_dt, double &delay_time, Eigen::Vector3d &pred_point3d, vector<Eigen::Vector4d> &armor3d_vec, cv::Mat *src)
     {
         SpinHeading spin_state = target.is_spinning ? (target.is_clockwise ? CLOCKWISE : COUNTER_CLOCKWISE) : UNKNOWN;
-        Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
+
+        cout << "x:" << target.xyz(0) << " y:" << target.xyz(1) << " z:" << target.xyz(2) << endl;
+        Eigen::Vector4d meas = {target.xyz(1), -target.xyz(0), target.xyz(2), (target.rangle > 0 ? (target.rangle - CV_PI / 2) : (CV_PI * 1.5 + target.rangle ))};
         
         // if (is_ekf_init_)
         // {
@@ -131,20 +135,20 @@ namespace armor_processor
             uniform_ekf_.x_ << circle_center(0), circle_center(1), meas(2), uniform_ekf_.radius_, meas(3), 0;
             is_ekf_init_ = true;
             is_pred_success = false;
-            result = {circle_center(0), circle_center(1), meas(2)};
+            result = {-circle_center(1), circle_center(0), meas(2)};
             is_pred_success = predictBasedSinger(is_target_lost, result, result, {0, 0, 0}, {0, 0, 0}, dt, pred_dt);
             predictor_state_ = TRACKING;
             return is_pred_success;
         }
 
         // 预测
-        if (!is_predictor_update_)
-        {
+        // if (!is_predictor_update_)
+        // {
             uniform_ekf_.updateF(uniform_ekf_.F_, dt);
             uniform_ekf_.updateJf(uniform_ekf_.Jf_, dt);
             uniform_ekf_.Predict(dt);
             // is_predictor_update_ = false;
-        }
+        // }
         if (is_ekf_init_ && !is_target_lost)
         {
             Eigen::Vector3d cur_pos = {meas(0), meas(1), meas(2)};
@@ -172,7 +176,7 @@ namespace armor_processor
             {
                 is_singer_init_ = false;
                 is_ekf_init_ = false;
-                result = {meas(0), meas(1), meas(2)};
+                result = {-meas(1), meas(0), meas(2)};
                 predictor_state_ = TRACKING;
                 is_predictor_update_ = false;
                 return false;
@@ -214,7 +218,7 @@ namespace armor_processor
                 uniform_ekf_.x_(3) = radius;
             }
             
-            if (abs(state(2) - last_state_(2)) > 0.10)
+            if (abs(state(2) - last_state_(2)) > 0.06)
             {
                 uniform_ekf_.x_(2) = (state(2) + last_state_(2)) / 2.0;
                 state(2) = uniform_ekf_.x_(2);
@@ -234,35 +238,57 @@ namespace armor_processor
 
             // result = {circle_center(0), circle_center(1), state(2)};
             result = {circle_center(0), circle_center(1), circle_center(2)};
-            // Eigen::Vector4d circle_center3d = {circle_center(0), circle_center(1), state(2), 0.0};
-            // armor3d_vec.emplace_back(circle_center3d);
-
+            Eigen::Vector4d circle_center3d = {-circle_center(1), circle_center(0), state(2), 0.0};
+            armor3d_vec.emplace_back(circle_center3d);
+            
             Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
-            if ((int)history_switched_state_vec_.size() != 4)
+            for (int ii = 0; ii < 4; ii++)
             {
-                for (int ii = 0; ii < 4; ii++)
-                {
-                    armor3d = {result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii), result(2), (pred_rangle + CV_PI / 2 * ii)};
-                    armor3d_vec.emplace_back(armor3d);
-                }
+                double pred_x = result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii);
+                double pred_y = result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii);
+                double pred_z = result(2);
+                // if (history_switched_state_vec_.size() > 0 && ii % 2 == 1)
+                // {
+                //     pred_z = result(2) - history_switched_state_vec_.front()(5);
+                // }
+                double prangle = (pred_rangle + CV_PI / 2 * ii);
+                armor3d = {-pred_y, pred_x, pred_z, prangle};
+                armor3d_vec.emplace_back(armor3d);
             }
-            else
-            {
-                double z_pred_arr[3] = {0};
-                double z_cur = result(2);
-                for (int ii = 0; ii < 3; ii++)
-                {
-                    z_pred_arr[ii] = z_cur - history_switched_state_vec_.at(ii)(5);
-                    z_cur = z_pred_arr[ii];
-                }
-                z_cur = result(2);
-                z_pred_arr[2] = z_cur + history_switched_state_vec_.at(3)(5);
-                for (int ii = 0; ii < 4; ii++)
-                {
-                    armor3d = {result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii), (ii > 0 ? z_pred_arr[ii-1] : result(2)), (pred_rangle + CV_PI / 2 * ii)};
-                    armor3d_vec.emplace_back(armor3d);
-                }
-            }
+
+            // if ((int)history_switched_state_vec_.size() != 4)
+            // {
+            //     for (int ii = 0; ii < 4; ii++)
+            //     {
+            //         double pred_x = result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii);
+            //         double pred_y = result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii);
+            //         double pred_z = result(2);
+            //         double prangle = (pred_rangle + CV_PI / 2 * ii);
+            //         armor3d = {-pred_y, pred_x, pred_z, prangle};
+            //         armor3d_vec.emplace_back(armor3d);
+            //     }
+            // }
+            // else
+            // {
+            //     double z_pred_arr[3] = {0};
+            //     double z_cur = result(2);
+            //     for (int ii = 0; ii < 3; ii++)
+            //     {
+            //         z_pred_arr[ii] = z_cur - history_switched_state_vec_.at(ii)(5);
+            //         z_cur = z_pred_arr[ii];
+            //     }
+            //     z_cur = result(2);
+            //     z_pred_arr[2] = z_cur + history_switched_state_vec_.at(3)(5);
+            //     for (int ii = 0; ii < 4; ii++)
+            //     {
+            //         double pred_x = result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii);
+            //         double pred_y = result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii);
+            //         double pred_z = (ii > 0 ? z_pred_arr[ii-1] : result(2));
+            //         double prangle = (pred_rangle + CV_PI / 2 * ii);
+            //         armor3d = {-pred_y, pred_x, pred_z, prangle};
+            //         armor3d_vec.emplace_back(armor3d);
+            //     }
+            // }
 
             last_state_(0) = state(0);
             last_state_(1) = state(1);
@@ -292,8 +318,8 @@ namespace armor_processor
             double rangle = state(4);
             double omega = state(5);
             
-            if (!is_predictor_update_)
-            {
+            // if (!is_predictor_update_)
+            // {
                 uniform_ekf_.updateH(uniform_ekf_.H_, dt);
                 uniform_ekf_.updateJh(uniform_ekf_.Jh_, dt);
                 uniform_ekf_.Update(meas);
@@ -323,7 +349,7 @@ namespace armor_processor
                 //         history_state_vec_.emplace_back(cur_state);
                 //     }
                 // }
-            }
+            // }
 
             if (radius < 0.18)
             {
@@ -338,7 +364,7 @@ namespace armor_processor
                 uniform_ekf_.x_(3) = radius;
             }
 
-            if (abs(state(2) - last_state_(2)) > 0.10)
+            if (abs(state(2) - last_state_(2)) > 0.06)
             {
                 uniform_ekf_.x_(2) = (state(2) + last_state_(2)) / 2.0;
                 state(2) = uniform_ekf_.x_(2);
@@ -406,8 +432,8 @@ namespace armor_processor
             
             // result = {circle_center(0), circle_center(1), state(2)};
             result = {circle_center(0), circle_center(1), circle_center(2)};
-            // Eigen::Vector4d circle_center3d = {circle_center(0), circle_center(1), state(2), 0.0};
-            // armor3d_vec.emplace_back(circle_center3d);
+            Eigen::Vector4d circle_center3d = {-circle_center(1), circle_center(0), state(2), 0.0};
+            armor3d_vec.emplace_back(circle_center3d);
 
             // Eigen::Vector2d circle3d = calcCircleCenter(meas);
             // Eigen::Vector4d circle4d = {circle3d(0), circle3d(1), meas(2), meas(3)};
@@ -416,31 +442,54 @@ namespace armor_processor
 
             // cout << "pred_rangle:" << rangle << " x:" << result(1) << endl;
             Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
-            if ((int)history_switched_state_vec_.size() != 4)
+            for (int ii = 0; ii < 4; ii++)
             {
-                for (int ii = 0; ii < 4; ii++)
-                {
-                    armor3d = {result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii), result(2), (pred_rangle + CV_PI / 2 * ii)};
-                    armor3d_vec.emplace_back(armor3d);
-                }
+                double pred_x = result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii);
+                double pred_y = result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii);
+                double pred_z = result(2);
+                // if (history_switched_state_vec_.size() > 0 && ii % 2 == 1)
+                // {
+                //     pred_z = result(2) - history_switched_state_vec_.front()(5);
+                // }
+                double prangle = (pred_rangle + CV_PI / 2 * ii);
+                armor3d = {-pred_y, pred_x, pred_z, prangle};
+                armor3d_vec.emplace_back(armor3d);
             }
-            else
-            {
-                double z_pred_arr[3] = {0};
-                double z_cur = result(2);
-                for (int ii = 0; ii < 3; ii++)
-                {
-                    z_pred_arr[ii] = z_cur - history_switched_state_vec_.at(ii)(5);
-                    z_cur = z_pred_arr[ii];
-                }
-                z_cur = result(2);
-                z_pred_arr[2] = z_cur + history_switched_state_vec_.at(3)(5);
-                for (int ii = 0; ii < 4; ii++)
-                {
-                    armor3d = {result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii), result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii), (ii > 0 ? z_pred_arr[ii-1] : result(2)), (pred_rangle + CV_PI / 2 * ii)};
-                    armor3d_vec.emplace_back(armor3d);
-                }
-            }
+
+            // if ((int)history_switched_state_vec_.size() != 4)
+            // {
+            //     for (int ii = 0; ii < 4; ii++)
+            //     {
+            //         double pred_x = result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii);
+            //         double pred_y = result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii);
+            //         double pred_z = result(2);
+            //         double prangle = (pred_rangle + CV_PI / 2 * ii);
+            //         armor3d = {-pred_y, pred_x, pred_z, prangle};
+            //         armor3d_vec.emplace_back(armor3d);
+            //     }
+            // }
+            // else
+            // {
+            //     double z_pred_arr[3] = {0};
+            //     double z_cur = result(2);
+            //     for (int ii = 0; ii < 3; ii++)
+            //     {
+            //         z_pred_arr[ii] = z_cur - history_switched_state_vec_.at(ii)(5);
+            //         z_cur = z_pred_arr[ii];
+            //     }
+            //     z_cur = result(2);
+            //     z_pred_arr[2] = z_cur + history_switched_state_vec_.at(3)(5);
+            //     for (int ii = 0; ii < 4; ii++)
+            //     {
+            //         double pred_x = result(0) + radius * sin(pred_rangle + CV_PI / 2 * ii);
+            //         double pred_y = result(1) - radius * cos(pred_rangle + CV_PI / 2 * ii);
+            //         double pred_z = (ii > 0 ? z_pred_arr[ii-1] : result(2));
+            //         double prangle = (pred_rangle + CV_PI / 2 * ii);
+            //         armor3d = {-pred_y, pred_x, pred_z, prangle};
+            //         armor3d_vec.emplace_back(armor3d);
+            //     }
+            // }
+
             RCLCPP_WARN_THROTTLE(
                 logger_, 
                 steady_clock_, 

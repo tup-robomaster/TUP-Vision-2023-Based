@@ -168,12 +168,12 @@ namespace armor_processor
         
         if(debug_param_.use_serial)
         {
-            rmat_imu = Eigen::Matrix3d::Identity();
+            quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
+            rmat_imu = quat_imu.toRotationMatrix();
         }
         else
         {
-            quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
-            rmat_imu = quat_imu.toRotationMatrix();
+            rmat_imu = Eigen::Matrix3d::Identity();
         }
                                      
         cv::Mat dst = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
@@ -188,7 +188,7 @@ namespace armor_processor
             image_mutex_.unlock();
         }
 
-        RCLCPP_WARN_EXPRESSION(this->get_logger(), target.is_target_lost, "Target lost...");
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "is target lost: %d", (int)target.is_target_lost);
         if (target.is_target_lost && processor_->is_last_exists_)
         {   //目标丢失且上帧存在，预测器进入丢失预测状态
             processor_->armor_predictor_.predictor_state_ = LOSTING;
@@ -215,7 +215,7 @@ namespace armor_processor
                         double armor3d_dist = armor_point3d_world.norm();
                         int scale = armor_point3d_world(3) / (2 * CV_PI);
                         double rangle = armor_point3d_world(3) - scale * (2 * CV_PI);
-                        if (armor3d_dist < min_dist && rangle >= 1.44 && rangle <= 1.66)
+                        if (armor3d_dist < min_dist && rangle >= 1.34 && rangle <= 1.52)
                         {
                             min_dist = armor3d_dist;
                             flag = idx;
@@ -241,7 +241,6 @@ namespace armor_processor
                     angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
                     
                 }
-
 
                 // cout << 222 << endl;
 
