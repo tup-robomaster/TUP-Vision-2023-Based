@@ -35,6 +35,7 @@
   # Camera config params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_param_path: "/config/camera.yaml"
+    # camera_name: "KE0200110074" #FIXME:根据相机序列号修改
     # camera_name: "00J90630561" 
     camera_name: "KE0200110073" #FIXME:根据相机序列号修改
 
@@ -96,6 +97,7 @@
   # Camera params.
     camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_param_path: "/config/camera.yaml"
+    # camera_name: "KE0200110074" #FIXME:根据相机序列号修改
     # camera_name: "00J90630561" 
     camera_name: "KE0200110073" #FIXME:根据相机序列号修改
     
@@ -106,7 +108,7 @@
     #----------------------------------Xc------Yc----Zc-----r---theta--omega
     uniform_ekf_process_noise_param: [0.02, 0.001, 0.002, 0.005, 0.1, 0.002]
     #----------------------------------X----Y---Z---theta
-    uniform_ekf_measure_noise_param: [5.0, 0.2, 1.0, 1.0]
+    uniform_ekf_measure_noise_param: [5.0, 0.5, 1.0, 1.0]
     
   # Singer model
     # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)

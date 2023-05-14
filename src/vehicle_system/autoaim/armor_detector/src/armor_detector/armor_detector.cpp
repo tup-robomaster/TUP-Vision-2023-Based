@@ -210,6 +210,13 @@ namespace armor_detector
 
             //生成装甲板旋转矩形和ROI
             std::vector<Point2f> points_pic(armor.apex2d, armor.apex2d + 4);
+            cout << "cornor:";
+            for (auto pts : points_pic)
+            {
+                cout << "(" << pts.x << "," << pts.y << ") ";
+            }
+            cout << endl;
+
             RotatedRect points_pic_rrect = minAreaRect(points_pic); 
             armor.rrect = points_pic_rrect;
             auto bbox = points_pic_rrect.boundingRect();
@@ -239,14 +246,17 @@ namespace armor_detector
 
             // 单目PnP
             // PnPInfo pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
-            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
-            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
+            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
+            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
+            // cout << 1 << endl;
             
             //防止装甲板类型出错导致解算问题，首先尝试切换装甲板类型，若仍无效则直接跳过该装甲板
             if (!isPnpSolverValidation(pnp_result.armor_cam))
             {
                 target_type = (target_type == SMALL) ? BIG : SMALL;
                 pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
+                // cout << 2 << endl;
+
                 if (!isPnpSolverValidation(pnp_result.armor_cam))
                 {
                     continue;
@@ -265,6 +275,7 @@ namespace armor_detector
             // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 200, "rotate_angle:%.3f", points_pic_rrect.angle);       
         }
         
+        // cout << "armors size:" << new_armors_.size() << endl;
         if (debug_params_.show_crop_img)
         {
             cv::namedWindow("crop_img", cv::WINDOW_AUTOSIZE);
@@ -919,13 +930,19 @@ namespace armor_detector
         last_armors_ = new_armors_;
 
         Eigen::Vector3d euler = rotationMatrixToEulerAngles(target.rmat);
-        RCLCPP_WARN_THROTTLE(
-            logger_, 
-            steady_clock_, 
-            50, 
-            "rAngle:{%.3f %.3f %.3f}",
-            euler(0), euler(1), euler(2)
-        );
+        // RCLCPP_WARN_THROTTLE(
+        //     logger_, 
+        //     steady_clock_, 
+        //     50, 
+        //     "rAngle:{%.3f %.3f %.3f}",
+        //     euler(0), euler(1), euler(2)
+        // );
+
+        // RCLCPP_WARN(
+        //     logger_, 
+        //     "rAngle:{%.3f %.3f %.3f}",
+        //     euler(0), euler(1), euler(2)
+        // );
 
         if(debug_params_.show_aim_cross)
         {
