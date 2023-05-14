@@ -12,7 +12,7 @@
 
 #include "../param_struct/param_struct.hpp"
 #include "../param_struct/curve_fitting.hpp"
-#include "../inference/inference_api2.hpp"
+#include "../TRTInfer/Inference.h"
 #include "../armor_tracker/armor_tracker.hpp"
 #include "../spinning_detector/spinning_detector.hpp"
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -51,7 +51,7 @@ namespace armor_detector
 
     public:
         CoordSolver coordsolver_;
-        ArmorDetector armor_detector_;
+        TRTInferV1::TRTInfer TRTinfer_;
         SpinningDetector spinning_detector_;
 
         std::vector<Armor> last_armors_;

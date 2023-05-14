@@ -1,24 +1,18 @@
 cmake_minimum_required(VERSION 3.8)
-project(armor_detector)
+project(armor_detector  LANGUAGES CXX CUDA)
+
+option(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
+add_compile_options(-std=c++17)
+set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,stack-size=16000000")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -O3  -Wall -fopenmp")
+set(CUDA_GEN_CODE "-gencode=arch=compute_86,code=sm_86")
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}  -std=c++17 -O3 -Xcompiler -fPIC -g -w ${CUDA_GEN_CODE}")
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# Default to C++14
-# if(NOT CMAKE_CXX_STANDARD)
-#   set(CMAKE_CXX_STANDARD 14)
-#   set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# endif()
-  
-# set(CMAKE_CXX_STANDARD 17)
-# set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17 -Os -pthread -g")
-
-# set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-# set(CMAKE_C_VISIBILITY_PRESET default)
-# set(CMAKE_CXX_VISIBILITY_PRESET default)
-# set(CMAKE_VISIBILITY_INLINES_HIDDEN OFF)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -30,7 +24,8 @@ find_package(message_filters REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
-find_package(OpenVINO REQUIRED)
+find_package(CUDA REQUIRED)
+find_package(CUDNN REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED COMPONENTS EigenSparse)
 find_package(yaml-cpp REQUIRED)
@@ -40,10 +35,9 @@ find_package(global_user REQUIRED)
 find_package(global_interface REQUIRED)
 
 include_directories(
-  include
+  ${PROJECT_SOURCE_DIR}/include
   ${OpenCV_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
-  ${OpenVINO_INCLUDE_DIRS}
 )
 
 set(dependencies 
@@ -93,7 +87,7 @@ add_executable(armor_detector_node
   src/armor_tracker/armor_tracker.cpp 
   src/armor_detector/armor_detector.cpp 
   src/spinning_detector/spinning_detector.cpp
-  src/inference/inference_api2.cpp
+  src/TRTInfer/Inference.cpp
   src/detector_node.cpp 
 )
 ament_target_dependencies(armor_detector_node

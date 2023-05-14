@@ -11,9 +11,30 @@ using namespace std;
 namespace armor_detector
 {
     Detector::Detector(const PathParam& path_param, const DetectorParam& detector_params, const DebugParam& debug_params, const GyroParam& gyro_params)
-    : spinning_detector_(detector_params.color, gyro_params), detector_params_(detector_params), debug_params_(debug_params),
-    logger_(rclcpp::get_logger("armor_detector"))
+    : spinning_detector_(detector_params.color, gyro_params),
+        TRTinfer_(0),
+        detector_params_(detector_params),
+        debug_params_(debug_params),
+        logger_(rclcpp::get_logger("armor_detector"))
     {
+        //初始化Infer
+        std::string onnx_path = path_param.network_path;
+        int postfix_idx = onnx_path.find(".onnx");
+        if (postfix_idx == onnx_path.npos)
+        {
+            RCLCPP_ERROR("Invalid onnx path");
+            throw(std::exception);
+        }
+        std::string trt_path = onnx_path.replace(onnx_path.begin()+postfix_idx, 5, ".engine");
+        if (!TRTinfer_.initMoudle(trt_path, 1, 4, 8, 8, 128))
+        {
+            RCLCPP_WARN("Invalid trt file, attempting to convert onnx to trt.");
+            nvinfer1::IHostMemory *data = TRTinfer_.createEngine(onnx_path, 1, 416, 416);
+            TRTinfer_.saveEngineFile(data, trt_path);
+            TRTinfer_.initMoudle(trt_path, 1, 4, 8, 8, 128);
+        }
+        // std::string engine_path = onnx_path.replace()
+
         //初始化clear
         lost_cnt_ = 0;
         is_last_target_exists_ = false;
