@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-05-04 23:50:55
+ * @LastEditTime: 2023-05-11 20:16:01
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -136,19 +136,26 @@ namespace coordsolver
             // {0.1125,-0.027,0},
             // {0.1125,0.027,0}};
         }
-        cv::Mat rvec;
-        cv::Mat rmat;
-        cv::Mat tvec;
+        cv::Mat rvec = cv::Mat(1, 3, CV_64FC1);
+        cv::Mat rmat = cv::Mat(3, 3, CV_64FC1);
+        cv::Mat tvec = cv::Mat(1, 3, CV_64FC1);
         Eigen::Matrix3d rmat_eigen;
         Eigen::Vector3d R_center_world = {0, -0.7, -0.05};
         Eigen::Vector3d tvec_eigen;
         Eigen::Vector3d coord_camera;
 
         // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Armor type: %d", (int)(type));
-        solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, method);
-        // cv::solvePnPRansac(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, 200, 0.1);\
+        if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, method))
+        {
+            RCLCPP_WARN(logger_, "Pnp solver failed...");
+        }
 
-        RCLCPP_INFO(logger_, "rvec:[%.3f %.3f %.3f]", rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2));
+        RCLCPP_INFO(
+            logger_, 
+            "rvec:[%.3f %.3f %.3f] rangle:%.3f", 
+            rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2), 
+            sqrt(rvec.at<double>(0) * rvec.at<double>(0) + rvec.at<double>(1) * rvec.at<double>(1) + rvec.at<double>(2) * rvec.at<double>(2))
+        );
 
         PnPInfo result;
         //Pc = R * Pw + T
@@ -163,7 +170,7 @@ namespace coordsolver
             
             Eigen::Matrix3d rmat_eigen_world = rmat_imu * (transform_ic.block(0, 0, 3, 3) * rmat_eigen);
             result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
-            // result.euler = rmat_eigen_world.eulerAngles(2, 1, 0); //(yaw/pitch/roll)
+            // Eigen::Vector3d euler_angle = rmat_eigen_world.eulerAngles(2, 1, 0); //(yaw/pitch/roll)
             // Eigen::Vector3d euler_angle = rotationMatrixToEulerAngles(rmat_eigen_world);
             // if (abs(result.euler(0) - euler_angle(0)) > 0.15)
             // {
@@ -175,6 +182,7 @@ namespace coordsolver
             // auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
             // double angle = angle_axisd.angle();
             // result.axis_angle = angle;
+            // RCLCPP_INFO(logger_, "euler2:[%.3f %.3f %.3f]", euler_angle(0), euler_angle(1), euler_angle(2));
             RCLCPP_INFO(logger_, "type:%d euler:[%.3f %.3f %.3f]", (int)type, result.euler(0), result.euler(1), result.euler(2));
         }
         else

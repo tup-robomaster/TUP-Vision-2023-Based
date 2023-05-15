@@ -168,22 +168,6 @@ namespace armor_processor
             Eigen::VectorXd state = armor_predictor_.uniform_ekf_.x();
             Eigen::Vector3d center_xyz = {state(0), state(1), state(2)};
 
-            // cout << "rangle:" << armor.rangle << endl;
-            // RCLCPP_WARN_THROTTLE(
-            //     logger_,
-            //     steady_clock_,
-            //     100, 
-            //     "xyz:【%.3f %.3f %.3f] center_norm:[%.3f %.3f %.3f]",
-            //     xyz(0), xyz(1), xyz(2), center_xyz(0), center_xyz(1), center_xyz(2)
-            // );
-            // RCLCPP_WARN_THROTTLE(
-            //     logger_,
-            //     steady_clock_, 
-            //     100, 
-            //     "radius:%.3f theta:%.3f omega:%.3f vx:%.3f vy:%.3f vz:%.3f", 
-            //     state(3), state(4), state(5), state(6), state(7), state(8)
-            // );
-
             TargetInfo target = 
             { 
                 std::move(xyz),
@@ -232,6 +216,8 @@ namespace armor_processor
                 RCLCPP_WARN(logger_, "Update predictor...");
                 // target_period_ = target.period;
                 armor_predictor_.predictor_state_ = PREDICTING;
+
+                // Eigen::Vector4d meas = {target.xyz(1), -target.xyz(0), target.xyz(2), (target.rangle > 0 ? (target.rangle - CV_PI / 2) : (CV_PI * 1.5 + target.rangle ))};
                 Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
                 armor_predictor_.updatePredictor(meas);
                 is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);

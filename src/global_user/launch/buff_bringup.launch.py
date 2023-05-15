@@ -1,8 +1,8 @@
 '''
-# Description: This is a ros-based project!
+Description: This is a ros-based project!
 Author: Liu Biao
-Date: 2022-12-27 01:40:28
-LastEditTime: 2023-04-14 18:08:04
+Date: 2022-12-22 01:49:00
+LastEditTime: 2023-05-14 15:39:42
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/buff_bringup.launch.py
 '''
 import os
@@ -14,40 +14,30 @@ from launch.substitutions import PythonExpression
 from launch_ros.descriptions import ComposableNode
 from launch.substitutions import ThisLaunchFileDir
 from launch.actions import IncludeLaunchDescription
+from launch.actions import ExecuteProcess
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node, ComposableNodeContainer
 from ament_index_python.packages import get_package_share_directory
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import Command
 
 def generate_launch_description():
-    detect_node_launch_file = os.path.join(get_package_share_directory('buff_detector'), 'launch/buff_detector.launch.py')
-    processor_node_launch_file = os.path.join(get_package_share_directory('buff_processor'), 'launch/buff_processor.launch.py')
-
     camera_param_file = os.path.join(get_package_share_directory('global_user'), 'config/camera_ros.yaml')
     buff_param_file = os.path.join(get_package_share_directory('global_user'), 'config/buff.yaml')
     
-    camera_type = LaunchConfiguration('camera_type')
-    use_serial = LaunchConfiguration('using_imu')
-    debug_pred = LaunchConfiguration("debug_pred")
-
-    declare_camera_type = DeclareLaunchArgument(
-        name='camera_type',
-        default_value='usb',
-        description='hik daheng mvs usb'
-    )
-
-    declare_use_serial = DeclareLaunchArgument(
-        name='using_imu',
-        default_value='False',
-        description='debug without serial port.'
-    )
+    #-------------------------------------------------------------------------------------------
+    #--------------------------------------Configs----------------------------------------------
+    camera_type = 'daheng' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_name = 'KE0200110073'
+    use_serial = True
+    #------------------------------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------
     
-    declare_debug_pred = DeclareLaunchArgument(
-        name='debug_pred',
-        default_value='False',
-        description='debug armor prediction.'
-    )
-    
+    serial_node = []
+    detector_container = []
+    processor_node = []
+    tf_static_node = []
+
     with open(camera_param_file, 'r') as f:
         usb_cam_params = yaml.safe_load(f)['/usb_cam_driver']['ros__parameters']
     with open(camera_param_file, 'r') as f:
@@ -61,237 +51,119 @@ def generate_launch_description():
         buff_detector_params = yaml.safe_load(f)['/buff_detector']['ros__parameters']
     with open(buff_param_file, 'r') as f:
         buff_processor_params = yaml.safe_load(f)['/buff_processor']['ros__parameters']
+    #---------------------------------Serial Node--------------------------------------------
+    if use_serial:
+        serial_node = Node(package='serialport',
+                            executable='serialport_node',
+                            name='serialport',
+                            output='screen', # log/screen/both
+                            emulate_tty=True,
+                            parameters=[{
+                                'using_port': False,
+                                'tracking_target': True,
+                                'print_serial_info': False,
+                                'print_referee_info': False
+                            }],
+                            respawn=True,
+                            respawn_delay=1)
+    #---------------------------------Detector Node--------------------------------------------
+    camera_params = []
+    camera_plugin = ""
+    camera_node = ""
+    camera_remappings = []
+    if camera_type == "daheng":
+        camera_params = daheng_cam_params
+        camera_plugin = "camera_driver::DahengCamNode"
+        camera_node = "daheng_driver"
+        camera_remappings = [("/image", "/daheng_img")]
+
+    elif camera_type == "usb":
+        camera_params = usb_cam_params
+        camera_plugin = "camera_driver::UsbCamNode"
+        camera_node = "usb_driver"
+        camera_remappings = [("/image", "/usb_img")]
+
+    elif camera_type == "mvs":
+        camera_params = mvs_cam_params
+        camera_plugin = "camera_driver::MvsCamNode"
+        camera_node = "mvs_driver"
+        camera_remappings = [("/image", "/mvs_img")]
+
+    elif camera_type == "hik":
+        camera_params = hik_cam_params
+        camera_plugin = "camera_driver::HikCamNode"
+        camera_node = "hik_driver"
+        camera_remappings = [("/image", "/hik_img")]
+
+    else:
+        raise BaseException("Invalid Cam Type!!!") 
+    detector_container = ComposableNodeContainer(
+        name='armor_detector_container',
+        namespace='',
+        output='screen',
+        package='rclcpp_components',
+        executable='component_container',
+        composable_node_descriptions=[
+            ComposableNode(
+                package='camera_driver',
+                plugin=camera_plugin,
+                name=camera_node,
+                parameters=[camera_params],
+                extra_arguments=[{
+                    'use_intra_process_comms': True
+                }]
+            ),
+            ComposableNode(
+                package='buff_processor',
+                plugin='buff_processor::BuffDetectorNode',
+                name='buff_processor',
+                parameters=[buff_processor_params], 
+                extra_arguments=[{
+                    'use_intra_process_comms':True
+                }]
+            ),
+        ],
+        respawn=True,
+        respawn_delay=1,
+    )
+    #---------------------------------Processor Node--------------------------------------------
+    processor_container = ComposableNodeContainer(
+        name='serial_processor_container',
+        package='rclcpp_components',
+        executable='component_container',
+        namespace='',
+        output='screen',
+        composable_node_descriptions=[
+            ComposableNode(
+                package='buff_processor',
+                plugin='buff_processor::BuffProcessorNode',
+                name='buff_processor',
+                parameters=[buff_processor_params,
+                {
+                    'camera_name': camera_name,
+                }],
+                remappings = camera_remappings,
+                extra_arguments=[{
+                    'use_intra_process_comms':True
+                }]
+            ),
+        ],
+        respawn=True,
+        respawn_delay=1,
+    ),
     
-    return LaunchDescription([
-        declare_camera_type,
-        declare_use_serial,
-        declare_debug_pred,
+    tf_static_node = Node(package='tf2_ros',
+                            executable='static_transform_publisher',
+                            output='screen',
+                            arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373',
+                                        '-1.5249719', '1.408214', 'imu_link', 'camera_link'])
 
-        Node(
-            package='serialport',
-            executable='serialport_node',
-            name='serialport',
-            output='log',
-            emulate_tty=True,
-            parameters=[{
-                'using_port': True,
-                'tracking_target': False,
-                'print_serial_info': False,
-                'print_referee_info': False
-            }],
-            respawn=True,
-            respawn_delay=4,
-            condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
-        ),
-        
-        ComposableNodeContainer(
-            name='serial_processor_container',
-            package='rclcpp_components',
-            executable='component_container',
-            namespace='',
-            output='log',
-            condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'True'"])),
-            composable_node_descriptions=[
-                ComposableNode(
-                    package='serialport',
-                    plugin='serialport::SerialPortNode',
-                    name='serialport',
-                    parameters=[{
-                        'using_port': True,
-                        'tracking_target': True,
-                        'print_serial_info': False,
-                        'print_referee_info': False            
-                    }],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                ComposableNode(
-                    package='buff_processor',
-                    plugin='buff_processor::BuffDetectorNode',
-                    name='buff_processor',
-                    parameters=[buff_processor_params], 
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-            ],
-            respawn=True,
-            respawn_delay=4,
-        ),
+    ld = LaunchDescription()
+    if use_serial:
+        ld.add_action(serial_node)
+    
+    ld.add_action(detector_container)
+    ld.add_action(processor_node)
+    ld.add_action(tf_static_node)
 
-        ComposableNodeContainer(
-            name='buff_detector_container',
-            namespace='',
-            output='log',
-            package='rclcpp_components',
-            executable='component_container',
-            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'usb'"])),
-            composable_node_descriptions=[
-                ComposableNode(
-                    package='camera_driver',
-                    plugin='camera_driver::UsbCamNode',
-                    name='usb_driver',
-                    parameters=[usb_cam_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                ComposableNode(
-                    package='buff_detector',
-                    plugin='buff_detector::BuffDetectorNode',
-                    name='buff_detector',
-                    parameters=[buff_detector_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                # ComposableNode(
-                #     package='buff_processor',
-                #     plugin='buff_processor::BuffProcessorNode',
-                #     name='buff_processor',
-                #     namespace='',
-                #     parameters=[buff_processor_params],
-                #     extra_arguments=[{
-                #         'use_intra_process_comms':True
-                #     }]
-                # )
-            ],
-            respawn=True,
-            respawn_delay=4,
-        ),
-
-        ComposableNodeContainer(
-            name='buff_detector_container',
-            namespace='',
-            output='log',
-            package='rclcpp_components',
-            executable='component_container',
-            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'daheng'"])),
-            composable_node_descriptions=[
-                ComposableNode(
-                    package='camera_driver',
-                    plugin='camera_driver::DahengCamNode',
-                    name='daheng_driver',
-                    parameters=[daheng_cam_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                ComposableNode(
-                    package='buff_detector',
-                    plugin='buff_detector::BuffDetectorNode',
-                    name='buff_detector',
-                    parameters=[buff_detector_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                # ComposableNode(
-                #     package='buff_processor',
-                #     plugin='buff_processor::BuffProcessorNode',
-                #     name='buff_processor',
-                #     namespace='',
-                #     parameters=[buff_processor_params],
-                #     extra_arguments=[{
-                #         'use_intra_process_comms':True
-                #     }]
-                # )
-            ],
-            respawn=True,
-            respawn_delay=4,
-        ),
-
-        ComposableNodeContainer(
-            name='buff_detector_container',
-            namespace='',
-            output='log',
-            package='rclcpp_components',
-            executable='component_container',
-            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'hik'"])),
-            composable_node_descriptions=[
-                ComposableNode(
-                    package='camera_driver',
-                    plugin='camera_driver::HikCamNode',
-                    name='hik_driver',
-                    parameters=[hik_cam_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                ComposableNode(
-                    package='buff_detector',
-                    plugin='buff_detector::BuffDetectorNode',
-                    name='buff_detector',
-                    parameters=[buff_detector_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                # ComposableNode(
-                #     package='buff_processor',
-                #     plugin='buff_processor::BuffProcessorNode',
-                #     name='buff_processor',
-                #     namespace='',
-                #     parameters=[buff_processor_params],
-                #     extra_arguments=[{
-                #         'use_intra_process_comms':True
-                #     }]
-                # )
-            ],
-            respawn=True,
-            respawn_delay=4,
-        ),
-
-        ComposableNodeContainer(
-            name='buff_detector_container',
-            namespace='',
-            output='log',
-            package='rclcpp_components',
-            executable='component_container',
-            condition=IfCondition(PythonExpression(["'", camera_type, "' == 'mvs'"])),
-            composable_node_descriptions=[
-                ComposableNode(
-                    package='camera_driver',
-                    plugin='camera_driver::MvsCamNode',
-                    name='mvs_driver',
-                    parameters=[mvs_cam_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                ComposableNode(
-                    package='buff_detector',
-                    plugin='buff_detector::BuffDetectorNode',
-                    name='buff_detector',
-                    parameters=[buff_detector_params],
-                    extra_arguments=[{
-                        'use_intra_process_comms':True
-                    }]
-                ),
-                # ComposableNode(
-                #     package='buff_processor',
-                #     plugin='buff_processor::BuffProcessorNode',
-                #     name='buff_processor',
-                #     namespace='',
-                #     parameters=[buff_processor_params],
-                #     extra_arguments=[{
-                #         'use_intra_process_comms':True
-                #     }]
-                # )
-            ],
-            respawn=True,
-            respawn_delay=4,
-        ),
-
-        Node(
-            package='buff_processor',
-            executable='buff_processor_node',
-            output='log',
-            emulate_tty=True,
-            parameters=[buff_processor_params],
-            respawn=True,
-            respawn_delay=4,
-            condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
-        )
-    ])
+    return ld

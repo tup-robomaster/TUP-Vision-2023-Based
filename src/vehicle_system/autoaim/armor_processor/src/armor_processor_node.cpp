@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-06 23:45:38
+ * @LastEditTime: 2023-05-14 14:42:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -20,8 +20,8 @@ namespace armor_processor
             if (!processor_->is_param_initialized_)
             {
                 RCLCPP_INFO_ONCE(this->get_logger(), "Loading param...");
-                // processor_->loadParam(path_param_.filter_path);
                 processor_->init(path_param_.coord_path, path_param_.coord_name);
+                processor_->coordsolver_.setBulletSpeed(predict_param_.bullet_speed);
             }
         }
         catch(const std::exception& e)
@@ -39,12 +39,11 @@ namespace armor_processor
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 3;
 
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", qos);
         tracking_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/tracking_msg", qos);
-        // joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
 
         this->declare_parameter<bool>("sync_transport", false);
         sync_transport_ = this->get_parameter("sync_transport").as_bool();
@@ -165,11 +164,19 @@ namespace armor_processor
         {   //更新弹速
             processor_->coordsolver_.setBulletSpeed(target_info.bullet_speed);
         }
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "rec_bullet_speed:%.3f cur_bullet_speed:%.3f", target_info.bullet_speed, processor_->coordsolver_.getBulletSpeed());
         
         if(debug_param_.use_serial)
         {
-            quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
-            rmat_imu = quat_imu.toRotationMatrix();
+            if (debug_param_.use_imu)
+            {
+                quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
+                rmat_imu = quat_imu.toRotationMatrix();
+            }
+            else
+            {
+                rmat_imu = Eigen::Matrix3d::Identity();
+            }
         }
         else
         {
@@ -196,6 +203,7 @@ namespace armor_processor
             processor_->is_last_exists_ = false;
         }
 
+        // cout << 111 << endl;
         if (target.is_target_lost && processor_->armor_predictor_.predictor_state_ == LOST)
         {   //目标丢失且预测器处于丢失状态则退出预测状态
             is_aimed_ = false;
@@ -214,17 +222,15 @@ namespace armor_processor
                         double armor3d_dist = armor_point3d_world.norm();
                         int scale = armor_point3d_world(3) / (2 * CV_PI);
                         double rangle = armor_point3d_world(3) - scale * (2 * CV_PI);
-                        if (armor3d_dist < min_dist && rangle >= 1.35 && rangle <= 1.77)
+                        if (armor3d_dist < min_dist && rangle >= 1.35 && rangle <= 1.55)
                         {
                             min_dist = armor3d_dist;
                             flag = idx;
                         }
-                        // if (idx == 0 || idx == 3)
-                        // {
-                            Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
-                            point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
-                            cv::circle(dst, point_2d, 13, {255, 255, 0}, -1);
-                        // }
+                       
+                        Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
+                        point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                        cv::circle(dst, point_2d, 13, {255, 255, 0}, -1);
                         ++idx;
                     }
                     if (flag != -1)
@@ -238,26 +244,13 @@ namespace armor_processor
                     }
                     aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
                     angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
-                    tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
-                    tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
+                    
                 }
 
-                // Eigen::VectorXd state = processor_->armor_predictor_.uniform_ekf_.x();
-                // vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
-                // vehicle_center3d_cam = processor_->coordsolver_.worldToCam({vehicle_center3d_world(0), vehicle_center3d_world(1), vehicle_center3d_world(2)}, rmat_imu);
-                // cout << "vehicle_center3d_world:" << vehicle_center3d_world(0) << " " << vehicle_center3d_world(1) << " " << vehicle_center3d_world(2) << endl;
-                // vehicle_center3d_world = {state(0), state(1), state(2), 0.0};
-                // armor3d_vec.emplace_back(vehicle_center3d_world);
-                // Eigen::Vector4d pred3d = {aiming_point_world(0), aiming_point_world(1), aiming_point_world(2), 0.0};
-                // armor3d_vec.emplace_back(pred3d);
-                // RCLCPP_WARN(get_logger(), "z_axis:%.3f", state(2));
-                // cout << "radius:" << state(3) << endl;
-
-                if (abs(tracking_angle[0]) < 8.50 && abs(tracking_angle[1]) < 8.50)
+                if (abs(tracking_angle[0]) < 6.50 && abs(tracking_angle[1]) < 6.50)
                 {
                     is_pred_ = true;
                     is_aimed_ = true;
-                    // is_shooting = true;
                 }
                 if (abs(angle[0]) > 45.0 || abs(angle[1]) > 45.0)
                 {
@@ -269,6 +262,12 @@ namespace armor_processor
             param_mutex_.unlock();
         }
 
+        if (!target_info.is_target_lost)
+        {
+            tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
+            tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
+        }
+        
         if (!is_aimed_)
         {
             angle = tracking_angle;
@@ -278,7 +277,6 @@ namespace armor_processor
         else
         {
             is_pred_ = true;
-            // is_shooting = true;
         }
 
         if (processor_->armor_predictor_.predictor_state_ != PREDICTING)
@@ -286,24 +284,24 @@ namespace armor_processor
             is_shooting = false;
         }
 
-        // if (shoot_flag_)
-        // {
-        //     if (count_ <= 40)
-        //     {
-        //         is_shooting = false;
-        //         count_++;
-        //     }
-        //     else
-        //     {
-        //         shoot_flag_ = false;
-        //         count_ = 0;
-        //     }
-        // }
+        if (shoot_flag_)
+        {
+            if (count_ <= 40)
+            {
+                is_shooting = false;
+                count_++;
+            }
+            else
+            {
+                shoot_flag_ = false;
+                count_ = 0;
+            }
+        }
 
-        // if (is_shooting)
-        // {
-        //     shoot_flag_ = true;
-        // }
+        if (is_shooting)
+        {
+            shoot_flag_ = true;
+        }
 
         RCLCPP_WARN_EXPRESSION(this->get_logger(), is_shooting, "Shooting...");
         
@@ -328,15 +326,6 @@ namespace armor_processor
         gimbal_info.is_prediction = is_pred_; 
         gimbal_info_pub_->publish(std::move(gimbal_info));
 
-        // publish gimbal joint states.
-        // sensor_msgs::msg::JointState gimbal_joint_states;
-        // gimbal_joint_states.header.frame_id = "base_link";
-        // gimbal_joint_states.name.emplace_back("base_to_camera_yaw_joint");
-        // gimbal_joint_states.position.emplace_back(gimbal_info.yaw * CV_PI / 180);
-        // gimbal_joint_states.name.emplace_back("base_to_camera_pitch_joint");
-        // gimbal_joint_states.position.emplace_back(gimbal_info.pitch * CV_PI / 180);
-        // joint_state_pub_->publish(gimbal_joint_states);
-        
         if (this->debug_)
         {
             GimbalMsg tracking_info;
@@ -409,11 +398,6 @@ namespace armor_processor
                             marker.type = visualization_msgs::msg::Marker::ARROW;
                             q.setRPY(0, 0, armor3d(3));
                         }
-                        // else if (flag == idx)
-                        // {
-                        //     marker.type = visualization_msgs::msg::Marker::ARROW;
-                        //     // q.setRPY(0, 0, armor3d(3));
-                        // }
                         else
                         {
                             marker.type = shape_;
@@ -427,7 +411,6 @@ namespace armor_processor
                         if (marker.id == 0)
                         {
                             marker.scale.x = armor3d(2);
-                            // RCLCPP_WARN(get_logger(), "z_axis:%.3f", armor3d(2));
                             marker.scale.y = 0.010;
                             marker.scale.z = 0.010;
                         }
@@ -437,12 +420,6 @@ namespace armor_processor
                             marker.scale.y = 0.040;
                             marker.scale.z = 0.040;
                         }
-                        // else if (flag == idx)
-                        // {
-                        //     marker.scale.x = -armor3d(2);
-                        //     marker.scale.y = 0.025;
-                        //     marker.scale.z = 0.025;
-                        // }
                         else
                         {
                             marker.scale.x = 0.060;
@@ -453,15 +430,15 @@ namespace armor_processor
                         // Set the color -- be sure to set alpha to something non-zero!
                         if (marker.id == 1)
                         {
-                            marker.color.r = 255.0f;
+                            marker.color.r = 1.0f;
                             marker.color.g = 0.0f;
                             marker.color.b = 0.0f;
                             marker.color.a = 1.0;
                         }
                         else if (marker.id == 0)
                         {
-                            marker.color.r = 125.0f;
-                            marker.color.g = 255.0f;
+                            marker.color.r = 0.5f;
+                            marker.color.g = 1.0f;
                             marker.color.b = 0.0f;
                             marker.color.a = 1.0;
                         }
@@ -469,47 +446,17 @@ namespace armor_processor
                         {
                             marker.color.r = 0.5f;
                             marker.color.g = 0.5f;
-                            marker.color.b = 255.5f;
+                            marker.color.b = 1.0f;
                             marker.color.a = 1.0;
                         }
 
-                        // while ((int)marker_array_pub_->get_subscription_count() < 1)
-                        // {
-                        //     if (!rclcpp::ok())
-                        //     {
-                        //         return 0;
-                        //     }
-                        //     RCLCPP_WARN(this->get_logger(), "Please create a subscriber to the marker");
-                        //     sleep(1);
-                        // }
                         marker_array.markers.emplace_back(marker);                     
                         ++marker_id;
                         idx++;
                     }
-
                     // Publish the marker_array
                     marker_array_pub_->publish(marker_array);
-                    // idx++;
                 }
-                // AutoaimMsg predict_info;
-                // predict_info.header.frame_id = "camera_link";
-                // predict_info.header.stamp = target_info.header.stamp;
-                // predict_info.header.stamp.nanosec += sleep_time;
-                // predict_info.aiming_point_world.x = (aiming_point_world)[0];
-                // predict_info.aiming_point_world.y = (aiming_point_world)[1];
-                // predict_info.aiming_point_world.z = (aiming_point_world)[2];
-                // predict_info.aiming_point_cam.x = aiming_point_cam[0];
-                // predict_info.aiming_point_cam.y = aiming_point_cam[1];
-                // predict_info.aiming_point_cam.z = aiming_point_cam[2];
-                // predict_info.period = target_info.period;
-                // predict_info_pub_->publish(std::move(predict_info));
-                // RCLCPP_INFO_EXPRESSION(
-                //     this->get_logger(), 
-                //     debug_param_.show_predict && debug_param_.print_delay, 
-                //     "tracking_point_world:[%.3f %.3f %.3f] aiming_point_world:[%.3f %.3f %.3f]",
-                //     tracking_point_cam[0], tracking_point_cam[1], tracking_point_cam[2],
-                //     aiming_point_cam[0], aiming_point_cam[1], aiming_point_cam[2]
-                // );
             }
         }
 
@@ -521,6 +468,8 @@ namespace armor_processor
         {
             processor_->is_last_exists_ = false;
         }
+        
+        // cout << 444 << endl;
 
         if (debug_param_.show_img && !dst.empty()) 
         {
@@ -611,16 +560,15 @@ namespace armor_processor
         this->declare_parameter<int>("min_fitting_lens", 10);
         this->declare_parameter<int>("shoot_delay", 100);
         this->declare_parameter<int>("window_size", 3);
-        this->declare_parameter<double>("yaw_angle_offset", 0.0);
-        this->declare_parameter<double>("pitch_angle_offset", 0.0);
         this->declare_parameter<double>("max_offset_value", 0.25);
         this->declare_parameter<double>("reserve_factor", 15.0);
-        this->declare_parameter<double>("rotation_yaw", 0.0);
-        this->declare_parameter<double>("rotation_pitch", 0.0);
-        this->declare_parameter<double>("rotation_roll", 0.0);
+        // this->declare_parameter<double>("rotation_yaw", 0.0);
+        // this->declare_parameter<double>("rotation_pitch", 0.0);
+        // this->declare_parameter<double>("rotation_roll", 0.0);
 
         // Declare debug params.
         this->declare_parameter("use_serial", true);
+        this->declare_parameter("use_imu", true);
         this->declare_parameter("show_img", false);
         this->declare_parameter("draw_predict", false);
         this->declare_parameter("show_predict", true);
@@ -726,12 +674,13 @@ namespace armor_processor
         predict_param_.window_size = this->get_parameter("window_size").as_int();
         predict_param_.max_offset_value = this->get_parameter("max_offset_value").as_double();
         predict_param_.reserve_factor = this->get_parameter("reserve_factor").as_double();
-        predict_param_.rotation_yaw = this->get_parameter("rotation_yaw").as_double();
-        predict_param_.rotation_pitch = this->get_parameter("rotation_pitch").as_double();
-        predict_param_.rotation_roll = this->get_parameter("rotation_roll").as_double();
+        // predict_param_.rotation_yaw = this->get_parameter("rotation_yaw").as_double();
+        // predict_param_.rotation_pitch = this->get_parameter("rotation_pitch").as_double();
+        // predict_param_.rotation_roll = this->get_parameter("rotation_roll").as_double();
 
         //Debug param.
         debug_param_.use_serial = this->get_parameter("use_serial").as_bool();
+        debug_param_.use_imu = this->get_parameter("use_imu").as_bool();
         debug_param_.show_img = this->get_parameter("show_img").as_bool();
         debug_param_.draw_predict = this->get_parameter("draw_predict").as_bool();
         debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
