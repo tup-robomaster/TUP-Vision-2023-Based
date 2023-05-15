@@ -79,36 +79,36 @@ namespace armor_processor
     struct PredictParam
     {
         double bullet_speed;    //弹速
+        double shoot_delay;        //射击延迟
         int max_dt;             //最大时间跨度，大于该值则重置预测器(ms)
         int max_cost;           //回归函数最大cost
         int max_v;              //
         int min_fitting_lens;   //最短队列长度
-        int shoot_delay;        //射击延迟
         int window_size;        //滑窗大小
         KFParam kf_param;       //卡尔曼滤波参数
         FilterModelParam filter_model_param; //滤波模型参数
         SystemModel system_model;
         double reserve_factor;
         double max_offset_value;
-        double rotation_yaw;
-        double rotation_pitch;
-        double rotation_roll;
+        // double rotation_yaw;
+        // double rotation_pitch;
+        // double rotation_roll;
         
         PredictParam()
         {
             bullet_speed = 28;    
+            shoot_delay = 100.0;       
             max_dt = 1000;     
             max_cost = 509;           
             max_v = 8;              
             min_fitting_lens = 10;   
-            shoot_delay = 100;       
             window_size = 3;     
             system_model = CSMODEL;   
             reserve_factor = 15.0;
             max_offset_value = 0.25;
-            rotation_yaw = 0.0;
-            rotation_pitch = 0.0;
-            rotation_roll = 0.0;
+            // rotation_yaw = 0.0;
+            // rotation_pitch = 0.0;
+            // rotation_roll = 0.0;
         }
     };
 
@@ -116,6 +116,7 @@ namespace armor_processor
     {
         bool show_img;
         bool use_serial;
+        bool use_imu;
         bool draw_predict;
         bool show_predict;
         bool print_delay;
@@ -124,13 +125,14 @@ namespace armor_processor
 
         DebugParam()
         {
+            use_imu = true;
             use_serial = true;
             show_img = false;
+            show_fps = false;
             draw_predict = false;
             show_predict = false;
             print_delay = false;
             show_aim_cross = false;
-            show_fps = false;
         }
     };
 

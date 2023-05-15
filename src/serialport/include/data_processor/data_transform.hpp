@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 01:45:19
- * @LastEditTime: 2023-05-06 23:39:59
+ * @LastEditTime: 2023-05-14 16:10:42
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/data_processor/data_transform.hpp
  */
 #ifndef DATA_TRANSFORM_HPP_
@@ -82,6 +82,7 @@ namespace serialport
         void getGameInfo(uchar flag, uchar* raw_data, ushort& timestamp);
         void getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle);
         void getPitchAngle(uchar flag, uchar* raw_data, float& pitch_angle);
+        void getShootDelay(uchar* raw_data, float& shoot_delay);
 
         int mode_;     
         rclcpp::Logger logger_;  

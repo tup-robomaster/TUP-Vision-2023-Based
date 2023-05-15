@@ -90,7 +90,6 @@ namespace armor_detector
         int64_t last_timestamp_; //上一帧时间戳
 
         int lost_cnt_ = 0;
-        int dead_buffer_cnt_ = 0;
         bool is_target_switched_;
         bool is_id_switched_;
         double last_target_area_ = 0;
