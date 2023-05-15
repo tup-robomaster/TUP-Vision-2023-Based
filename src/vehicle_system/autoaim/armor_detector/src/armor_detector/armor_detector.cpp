@@ -341,18 +341,20 @@ namespace armor_detector
         //Choose target vehicle
         //此处首先根据哨兵发来的ID指令进行目标车辆追踪
         int target_id = -1;
-        if (src.mode == SENTRY_NORMAL && decision_msg.decision_id == AUTOAIM)
-        {
-            target_id = chooseTargetID(src, new_armors_, hp, decision_msg);
-        }
+        target_id = chooseTargetID(src);
+        
+        // if (src.mode == SENTRY_NORMAL && decision_msg.decision_id == AUTOAIM)
+        // {
+        //     target_id = chooseTargetID(src, new_armors_, hp, decision_msg);
+        // }
         // else if (src.mode == AUTOAIM || src.mode == HERO_SLING)
         // {
         //     target_id = chooseTargetID(src, new_armors_, now_);
         // }
-        else
-        {
-            target_id = chooseTargetID(src);
-        }
+        // else
+        // {
+        //     target_id = chooseTargetID(src);
+        // }
         // cout << "armor_size:" << (int)new_armors_.size() << endl;
 
         //未检索到有效车辆ID，直接退出
@@ -796,10 +798,13 @@ namespace armor_detector
             
             //判断装甲板是否切换，若切换将变量置1
             // auto delta_t = now_ - prev_timestamp_;
-            // auto delta_dist = (target.armor3d_world - last_armor_.armor3d_world).norm();
             // auto velocity = (delta_dist / delta_t) * 1e9;
-            if ((target.id != last_armor_.id || !last_armor_.roi.contains((target.center2d))) && !is_last_target_exists_)
+
+            double delta_dist = (target.armor3d_world - last_armor_.armor3d_world).norm();
+            // cout << "delta_dist:" << delta_dist << endl;
+            if (target.id != last_armor_.id || delta_dist >= 1.0)
             {
+                cout << "target_switched..." << endl;
                 is_target_switched_ = true;
                 target_info.target_switched = true;
             }
@@ -810,10 +815,10 @@ namespace armor_detector
             }
 
             double x_2d_dis = abs(last_armor_.center2d.x - target.center2d.x);
-            if (target_id != last_armor_.id || !last_armor_.roi.contains(target.center2d) || (x_2d_dis > 250))
+            if (target_id != last_armor_.id || (!last_armor_.roi.contains(target.center2d) && (x_2d_dis >= 250 || delta_dist >= 0.35)))
             {
+                cout << "spinning_switched" << endl;
                 target_info.spinning_switched = true;
-                // cout << "spinning_switched" << endl;
             }
             // cout << "x_dis:" << x_2d_dis << endl;
         }

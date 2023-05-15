@@ -3,16 +3,20 @@
 * 此系统包含两个节点，分别对应armor_detector和armor_processor。
 * armor_detector节点主要检测装甲板并识别装甲板运动状态，并发布目标位置信息；armor_processor节点主要对识别的目标进行预测，并将最终打击位置发布。
 
-## `Autoaim priority`(TODO)
+## `Autoaim Shooting Criterion`
 
 |   |  | |  |   | Type of Robot |
 |--:| -|-|--|---|---|
 
 |Decision Msg|   Robot with manipulator(Ground)|Robot without manipulator(Ground)|Drone(Midair) |
 |-------------|------------------------------|---------------------------------|-------------|
-|HP      |          |       |           |
-|Distance|          |       |           |
-|ID      |          |       |           |
+|HP      | 低于斩杀线（<= 75）         | 低于斩杀线（<= 100）      |           |
+|Distance| 小于射击高命中率范围（<=3.0m）         | 小于开火有效范围（<= 6.0m)  |           |
+|ID      |忽略工程/哨兵        |忽略工程       |           |
+|Velocity | 小于速度上限       | 小于速度上限           |     |
+| Acceleration               |  小于加速度上限     | 小于加速度上限            |        |
+|Direction | 运动方向与预测方向一致       | 运动方向与预测方向一致         | 运动方向与预测方向一致           |
+|offset         |小于位移偏移上限        | 小于位移偏移上限            | 小于位移偏移上限       |
 
 ## `自瞄逻辑`
 - 整体流程

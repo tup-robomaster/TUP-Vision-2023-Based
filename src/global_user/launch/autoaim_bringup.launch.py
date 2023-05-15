@@ -27,11 +27,11 @@ def generate_launch_description():
     
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
-    camera_type = 'daheng' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type = 'mvs' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_name = 'KE0200110074'
     use_serial = True
     use_imu = False
-    shoot_delay = 200
+    shoot_delay = 150.0
     bullet_speed = 12.7
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ def generate_launch_description():
                             output='screen', # log/screen/both
                             emulate_tty=True,
                             parameters=[{
-                                'using_port': True,
+                                'using_port': False,
                                 'tracking_target': True,
                                 'print_serial_info': False,
                                 'print_referee_info': False

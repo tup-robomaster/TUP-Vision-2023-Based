@@ -150,12 +150,12 @@ namespace coordsolver
             RCLCPP_WARN(logger_, "Pnp solver failed...");
         }
 
-        RCLCPP_INFO(
-            logger_, 
-            "rvec:[%.3f %.3f %.3f] rangle:%.3f", 
-            rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2), 
-            sqrt(rvec.at<double>(0) * rvec.at<double>(0) + rvec.at<double>(1) * rvec.at<double>(1) + rvec.at<double>(2) * rvec.at<double>(2))
-        );
+        // RCLCPP_INFO(
+        //     logger_, 
+        //     "rvec:[%.3f %.3f %.3f] rangle:%.3f", 
+        //     rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2), 
+        //     sqrt(rvec.at<double>(0) * rvec.at<double>(0) + rvec.at<double>(1) * rvec.at<double>(1) + rvec.at<double>(2) * rvec.at<double>(2))
+        // );
 
         PnPInfo result;
         //Pc = R * Pw + T
@@ -183,7 +183,7 @@ namespace coordsolver
             // double angle = angle_axisd.angle();
             // result.axis_angle = angle;
             // RCLCPP_INFO(logger_, "euler2:[%.3f %.3f %.3f]", euler_angle(0), euler_angle(1), euler_angle(2));
-            RCLCPP_INFO(logger_, "type:%d euler:[%.3f %.3f %.3f]", (int)type, result.euler(0), result.euler(1), result.euler(2));
+            // RCLCPP_INFO(logger_, "type:%d euler:[%.3f %.3f %.3f]", (int)type, result.euler(0), result.euler(1), result.euler(2));
         }
         else
         {

@@ -44,7 +44,7 @@ namespace armor_detector
         this->gyro_params_.anti_spin_judge_low_thres = gyro_params.anti_spin_judge_low_thres;
         this->gyro_params_.anti_spin_max_r_multiple = gyro_params.anti_spin_max_r_multiple;
         last_timestamp_ = 0.0;
-        max_hop_period_ = 3000.0;
+        max_hop_period_ = 500.0;
         // normal_gyro_status_counter_ = 0;
         // switch_gyro_status_counter_ = 0;
         // last_yaw_diff_ = 0.0;
@@ -386,7 +386,7 @@ namespace armor_detector
             {
                 // cout << "Add new armor..." << endl;
                 int same_armors_cnt = trackers_map.count(cnt.first);
-                if (same_armors_cnt >= 2)
+                if (same_armors_cnt == 2)
                 {   // 若相同key键的tracker存在两个，一个为新增，一个先前存在，且两个tracker本次都有更新，则视为一次陀螺动作（其实就是对应目标车辆小陀螺时两个装甲板同时出现在视野的情况）
                     // 遍历所有同Key预测器，确定左右侧的Tracker
                     // cout << "Two same armor..." << endl;
@@ -429,7 +429,7 @@ namespace armor_detector
                         auto spin_movement = new_armor_center - last_armor_center;
                         auto spin_x_dis = last_tracker->new_armor.armor3d_world[xyz_axis_[0]] - new_tracker->new_armor.armor3d_world[xyz_axis_[0]];
 
-                        spinning_map_.spin_counter_map[cnt.first].flag += (spin_x_dis > 0) ? (-25) : 25; 
+                        // spinning_map_.spin_counter_map[cnt.first].flag += (spin_x_dis > 0) ? (-25) : 25; 
                         if (spinning_map_.spin_status_map[cnt.first].spin_state != UNKNOWN
                         && (new_armor_timestamp - spinning_map_.spin_status_map[cnt.first].switch_timestamp) / 1e6 > gyro_params_.switch_max_dt
                         && (last_armor_timestamp - spinning_map_.spin_status_map[cnt.first].switch_timestamp) / 1e6 > gyro_params_.switch_max_dt)
@@ -547,7 +547,7 @@ namespace armor_detector
                     }
                 }
 
-                if (abs(spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter) >= 25
+                if (abs(spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter) >= 20
                 || 
                 // (spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter >= 10
                 // && 

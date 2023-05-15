@@ -73,7 +73,7 @@
 
   # Debug params.
     debug: true
-    show_img: false
+    show_img: true
     draw_predict: true
     show_predict: true
     show_aim_cross: true
@@ -90,9 +90,9 @@
   
   # uniform model
     #----------------------------------Xc------Yc----Zc-----r---theta--omega
-    uniform_ekf_process_noise_param: [0.01, 0.001, 0.002, 0.0005, 0.005, 0.0005]
+    uniform_ekf_process_noise_param: [0.01, 0.0001, 0.002, 0.0005, 0.002, 0.001]
     #----------------------------------X----Y---Z---theta
-    uniform_ekf_measure_noise_param: [5.0, 5.0, 1.0, 1.0]
+    uniform_ekf_measure_noise_param: [5.0, 1.0, 1.0, 1.0]
     
   # Singer model
     # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)
