@@ -146,6 +146,7 @@ namespace coordsolver
 
         // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Armor type: %d", (int)(type));
         solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, method);
+        // cv::solvePnPRansac(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, 200, 0.1);\
 
         RCLCPP_INFO(logger_, "rvec:[%.3f %.3f %.3f]", rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2));
 

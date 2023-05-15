@@ -84,6 +84,7 @@ namespace armor_processor
         PredictorState predictor_state_ = LOST;
         bool is_predictor_update_ = false;
         Vector6d last_state_;
+        Vector4d last_meas_;
         deque<Vector6d> history_switched_state_vec_;
         deque<Vector6d> history_state_vec_;
 
