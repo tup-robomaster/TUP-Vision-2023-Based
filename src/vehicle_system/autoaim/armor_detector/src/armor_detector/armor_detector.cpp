@@ -36,6 +36,10 @@ namespace armor_detector
             RCLCPP_INFO(logger_,"TRT Engine successfully saved to %s", trt_path.c_str());
             TRTinfer_.initMoudle(trt_path, 1, 4, 8, 8, 128);
         }
+        else
+        {
+            RCLCPP_WARN(logger_,"Using cached TRT engine file,do remember to delete it before you use different onnx.");
+        }
 
         //初始化clear
         lost_cnt_ = 0;
