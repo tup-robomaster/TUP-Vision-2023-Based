@@ -58,7 +58,7 @@ OpenCV  |https://github.com/opencv/opencv/tree/4.2.0 \ https://github.com/opencv
 ## 4.Debug
 - Prepare
   - 
-  - 参数配置文件位置：src/global_user/config/autoaim.yaml
+  - 参数配置文件位置：src/global_user/config/autoaim.yaml(参数配置详解见:[Autoaim_Config](src/global_user/README.md)  )
   - 对应的launch文件位置：src/global_user/launch/autoaim_bringup.launch.py
   - 首先根据实际情况更改相机类型（camera_type）和型号(camera_name)（包括armor_detector空间和armor_processor空间下对应的参数），调试视频则把camera_type赋为3；
   - 与下位机通信调试时将配置文件中的using_imu参数改为true，同时把launch文件中的using_imu参数置为True；
@@ -113,6 +113,7 @@ OpenCV  |https://github.com/opencv/opencv/tree/4.2.0 \ https://github.com/opencv
 
 | Date |  Issue   |   Debug    |
 | ---  |  ---     | ---   | 
+|2023-04-24|添加新网络模型，区分大小装甲板。|
 |2023-04-14|相机驱动节点加入ros2bag录制图像数据和回放数据功能|比赛前须打开此功能。|
 |2023-03-xx| Fixed image transport delay problem.(0.5ms左右)| 将图像订阅者的qos的depth设置为1。|
 |2022-12-11| Update buff node.| |

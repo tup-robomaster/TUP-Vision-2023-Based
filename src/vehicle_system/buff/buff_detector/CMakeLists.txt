@@ -114,6 +114,7 @@ install(TARGETS
 install(DIRECTORY 
   launch
   model
+  model
   DESTINATION share/${PROJECT_NAME}
 )
 

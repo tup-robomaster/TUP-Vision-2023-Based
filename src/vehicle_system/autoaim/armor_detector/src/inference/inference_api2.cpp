@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-04-20 22:13:16
+ * @LastEditTime: 2023-05-05 00:29:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -97,7 +97,6 @@ namespace armor_detector
                                         Eigen::Matrix<float,3,3> &transform_matrix,float prob_threshold,
                                         std::vector<ArmorObject>& objects)
     {
-
         const int num_anchors = grid_strides.size();
         //Travel all the anchors
         for (int anchor_idx = 0; anchor_idx < num_anchors; anchor_idx++)
@@ -105,7 +104,7 @@ namespace armor_detector
             const int grid0 = grid_strides[anchor_idx].grid0;
             const int grid1 = grid_strides[anchor_idx].grid1;
             const int stride = grid_strides[anchor_idx].stride;
-            const int basic_pos = anchor_idx * (9 + NUM_COLORS + NUM_CLASSES);
+            const int basic_pos = anchor_idx * (9 + (NUM_COLORS) + NUM_CLASSES);
 
             // yolox/models/yolo_head.py decode logic
             //  outputs[..., :2] = (outputs[..., :2] + grids) * strides
@@ -118,11 +117,17 @@ namespace armor_detector
             float y_3 = (feat_ptr[basic_pos + 5] + grid1) * stride;
             float x_4 = (feat_ptr[basic_pos + 6] + grid0) * stride;
             float y_4 = (feat_ptr[basic_pos + 7] + grid1) * stride;
-
+            
+            float box_objectness = (feat_ptr[basic_pos + 8]);
             int box_color = argmax(feat_ptr + basic_pos + 9, NUM_COLORS);
             int box_class = argmax(feat_ptr + basic_pos + 9 + NUM_COLORS, NUM_CLASSES);
 
-            float box_objectness = (feat_ptr[basic_pos + 8]);
+            // cout << "output:" << endl;
+            // for (int ii = 0; ii < 25; ii++)
+            // {
+            //     cout << feat_ptr[basic_pos + ii] << " ";
+            // }
+            // cout << endl;
             // float color_conf = (feat_ptr[basic_pos + 9 + box_color]);
             // float cls_conf = (feat_ptr[basic_pos + 9 + NUM_COLORS + box_class]);
             // float box_prob = (box_objectness + cls_conf + color_conf) / 3.0;
@@ -134,24 +139,30 @@ namespace armor_detector
                 Eigen::Matrix<float,3,4> apex_norm;
                 Eigen::Matrix<float,3,4> apex_dst;
 
-                apex_norm << x_1,x_2,x_3,x_4,
-                            y_1,y_2,y_3,y_4,
-                            1,1,1,1;
+                apex_norm << x_1, x_2, x_3, x_4,
+                             y_1, y_2, y_3, y_4,
+                             1,   1,   1,   1;
                 
                 apex_dst = transform_matrix * apex_norm;
 
                 for (int i = 0; i < 4; i++)
                 {
-                    obj.apex[i] = cv::Point2f(apex_dst(0,i),apex_dst(1,i));
+                    obj.apex[i] = cv::Point2f(apex_dst(0,i), apex_dst(1,i));
                     obj.pts.push_back(obj.apex[i]);
                 }
                 
-                std::vector<cv::Point2f> tmp(obj.apex,obj.apex + 4);
+                std::vector<cv::Point2f> tmp(obj.apex, obj.apex + 4);
                 obj.rect = cv::boundingRect(tmp);
-
                 obj.cls = box_class;
                 obj.color = box_color;
                 obj.prob = box_prob;
+
+                // cout << "output:";
+                // for (int i = 0; i < 4; i++)
+                // {
+                //     cout << " " << "(" << obj.pts[i].x << "," << obj.pts[i].y << ") "; 
+                // }
+                // cout << "obj_prob:" << obj.prob << " obj_color:" << obj.color << " obj_cls:" << obj.cls << endl;
 
                 objects.push_back(obj);
             }
@@ -215,12 +226,9 @@ namespace armor_detector
         qsort_descent_inplace(objects, 0, objects.size() - 1);
     }
 
-
-    static void nms_sorted_bboxes(std::vector<ArmorObject>& faceobjects, std::vector<int>& picked,
-                                float nms_threshold)
+    static void nms_sorted_bboxes(std::vector<ArmorObject>& faceobjects, std::vector<int>& picked, float nms_threshold)
     {
         picked.clear();
-
         const int n = faceobjects.size();
 
         std::vector<float> areas(n);
@@ -328,13 +336,14 @@ namespace armor_detector
         // {
         //     std::cout << "device:" << device << std::endl;
         // }
-
         std::cout << "Start initialize model..." << std::endl;
+
         // Setting Configuration Values
         core.set_property("CPU", ov::enable_profiling(true));
-
+    
         //Step 1.Create openvino runtime core
         model = core.read_model(path);
+        // model = core.import_model();
 
         // Preprocessing
         ov::preprocess::PrePostProcessor ppp(model);
@@ -351,7 +360,7 @@ namespace armor_detector
         //Step 2. Compile the model
         compiled_model = core.compile_model(
             model,
-            "CPU",
+            "GPU",
             ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
             // "AUTO:GPU,CPU", 
             // ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
@@ -359,6 +368,17 @@ namespace armor_detector
         );
 
         // compiled_model.set_property(ov::device::priorities("GPU"));
+
+        // Save compiled model
+        // ofstream save_file("src/vehicle_system/autoaim/armor_detector/model/compiled_model.txt", ios::in | ios::binary);
+        // if (save_file)
+        // {
+        //     compiled_model.export_model(save_file);
+        // }
+
+        // Async inference
+        // infer_request.start_async()
+        // infer_request.wait()
 
         // Step 3. Create an Inference Request
         infer_request = compiled_model.create_infer_request();
@@ -433,12 +453,22 @@ namespace armor_detector
         // // 转换图像数据为ov::Tensor
         // input_tensor = ov::Tensor(input_type, input_shape, input_data_ptr);
 
+        // auto st = std::chrono::steady_clock::now();
         // 推理
         infer_request.infer();
+        // auto end = std::chrono::steady_clock::now();
+        // double infer_dt = std::chrono::duration<double,std::milli>(end - st).count();
+        // cout << "infer_time:" << infer_dt << endl;
         
         // 处理推理结果
         ov::Tensor output_tensor = infer_request.get_output_tensor();
         float* output = output_tensor.data<float_t>();
+        // cout << "output:" << " ";
+        // for (int ii = 0; ii < 25; ii++)
+        // {
+        //     cout << output[ii] << " ";
+        // }
+        // cout << endl;
         // u_int8_t* output = output_tensor.data<u_int8_t>();
         // std::cout << &output << std::endl;
 
@@ -454,7 +484,7 @@ namespace armor_detector
                 cv::Point2f pts_final[4];
                 for (int i = 0; i < (int)N; i++)
                 {
-                    pts_final[i % 4]+=(*object).pts[i];
+                    pts_final[i % 4] += (*object).pts[i];
                 }
 
                 for (int i = 0; i < 4; i++)
@@ -477,6 +507,13 @@ namespace armor_detector
             // (*object).apex[1] = pts_final[1];
             // (*object).apex[2] = pts_final[2];
             // (*object).apex[3] = pts_final[3];
+
+            // cout << "output:";
+            // for (int i = 0; i < 4; i++)
+            // {
+            //     cout << " " << "(" << (*object).apex[i].x << "," << (*object).apex[i].y << ") "; 
+            // }
+            // cout << "obj_prob:" << (*object).prob << " obj_color:" << (*object).color << " obj_cls:" << (*object).cls << endl;
             
             (*object).area = (int)(calcTetragonArea((*object).apex));
         }

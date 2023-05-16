@@ -70,12 +70,12 @@ namespace buff_detector
         if(debug_param_.using_imu)
         {
             rmat_imu_ = src.quat.toRotationMatrix();
-            RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 5000, "Using imu...");
+            RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 40, "Using imu...");
         }
         else
         {
             rmat_imu_= Eigen::Matrix3d::Identity();
-            RCLCPP_WARN_THROTTLE(logger_, this->steady_clock_, 1000, "No imu...");
+            RCLCPP_WARN_THROTTLE(logger_, this->steady_clock_, 40, "No imu...");
         }
         
         // TODO:修复ROI

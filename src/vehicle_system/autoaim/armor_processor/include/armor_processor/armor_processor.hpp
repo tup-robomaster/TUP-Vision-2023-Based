@@ -42,6 +42,7 @@ namespace armor_processor
     
         bool is_param_initialized_ = false;
         int lost_cnt_;
+        rclcpp::Time last_stamp_;
         
         //预测器
         ArmorPredictor armor_predictor_;

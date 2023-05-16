@@ -7,7 +7,8 @@
                 "/opt/ros/galactic/include/**",
                 "/usr/include/**",
                 "/usr/local/lib/**",
-                "/opt/ros/galactic/include/**"
+                "/opt/ros/galactic/include/**",
+                "/opt/intel/openvino_2022/**"
             ],
             "name": "ros-galactic",
             "defines": [],

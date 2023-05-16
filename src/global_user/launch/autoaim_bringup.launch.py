@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-04-16 14:54:14
+LastEditTime: 2023-05-05 01:48:57
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -36,13 +36,13 @@ def generate_launch_description():
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='daheng',
+        default_value='mvs',
         description='hik daheng mvs usb'
     )
 
     declare_use_serial = DeclareLaunchArgument(
         name='using_imu',
-        default_value='True',
+        default_value='False',
         description='debug without serial port.'
     )
     
@@ -87,11 +87,11 @@ def generate_launch_description():
             package='serialport',
             executable='serialport_node',
             name='serialport',
-            output='log', # log/screen/both
+            output='screen', # log/screen/both
             emulate_tty=True,
             parameters=[{
                 'using_port': True,
-                'tracking_target': False,
+                'tracking_target': True,
                 'print_serial_info': False,
                 'print_referee_info': False
             }],
@@ -105,7 +105,7 @@ def generate_launch_description():
             package='rclcpp_components',
             executable='component_container',
             namespace='',
-            output='log',
+            output='screen',
             respawn=True,
             respawn_delay=1,
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'True'"])),
@@ -221,7 +221,7 @@ def generate_launch_description():
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
-            output='log',
+            output='screen',
             package='rclcpp_components',
             executable='component_container',
             respawn=True,
@@ -262,7 +262,7 @@ def generate_launch_description():
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
-            output='log',
+            output='screen',
             package='rclcpp_components',
             executable='component_container',
             respawn=True,
@@ -304,7 +304,7 @@ def generate_launch_description():
             package='armor_processor',
             executable='armor_processor_node',
             namespace='armor_processor',
-            output='log', 
+            output='screen', 
             emulate_tty=True,
             parameters=[armor_processor_params],
             respawn=True,

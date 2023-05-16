@@ -100,6 +100,7 @@ namespace armor_processor
         int max_v;              //
         int min_fitting_lens;   //最短队列长度
         int shoot_delay;        //射击延迟
+        int spin_shoot_delay;
         int window_size;        //滑窗大小
         KFParam kf_param;       //卡尔曼滤波参数
         FilterModelParam filter_model_param; //滤波模型参数
@@ -118,7 +119,8 @@ namespace armor_processor
             max_cost = 509;           
             max_v = 8;              
             min_fitting_lens = 10;   
-            shoot_delay = 100;       
+            shoot_delay = 100;
+            spin_shoot_delay = 200;       
             window_size = 3;     
             system_model = CSMODEL;   
             reserve_factor = 15.0;

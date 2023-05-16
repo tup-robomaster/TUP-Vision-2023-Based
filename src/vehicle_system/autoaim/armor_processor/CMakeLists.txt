@@ -59,9 +59,8 @@ add_library(${PROJECT_NAME} SHARED
   src/filter/particle_filter.cpp 
   src/filter/kalman_filter.cpp
   src/filter/motion_model.cpp 
-  src/filter/imm.cpp 
-  src/filter/singer_model.cpp
   src/filter/model_generator.cpp 
+  src/filter/imm.cpp 
   src/prediction/prediction.cpp 
   src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
   src/${PROJECT_NAME}_node.cpp  

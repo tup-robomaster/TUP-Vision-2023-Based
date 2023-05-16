@@ -40,8 +40,8 @@ namespace buff_processor
         qos.durability();
         // qos.best_effort();
         // qos.transient_local();
-        qos.durability_volatile();
-        
+        // qos.durability_volatile();
+
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
 
@@ -147,7 +147,7 @@ namespace buff_processor
                 predict_msg.predict_point.x = predict_info.hit_point_world[0];
                 predict_msg.predict_point.y = predict_info.hit_point_world[1];
                 predict_msg.predict_point.z = predict_info.hit_point_world[2];
-                // cout << 1 << endl;
+            
                 predict_info_pub_->publish(std::move(predict_msg));
             }
 

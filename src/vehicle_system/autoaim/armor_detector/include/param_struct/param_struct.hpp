@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-04-20 22:16:31
+ * @LastEditTime: 2023-05-05 00:28:16
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -160,10 +160,10 @@ namespace armor_detector
 
     struct SpinningMap
     {
-        // std::map<std::string, SpinState> spin_status_map; //反小陀螺，记录该车小陀螺状态
-        // std::map<std::string, SpinCounter> spin_counter_map; //记录装甲板旋转帧数，大于0为逆时针旋转，小于0为顺时针
-        std::map<std::string, double> spin_score_map;       //反小陀螺，记录各装甲板小陀螺可能性分数，大于0为逆时针旋转，小于0为顺时针旋转
-        std::map<std::string, SpinHeading> spin_status_map;
+        std::map<std::string, SpinState> spin_status_map; //反小陀螺，记录该车小陀螺状态
+        std::map<std::string, SpinCounter> spin_counter_map; //记录装甲板旋转帧数，大于0为逆时针旋转，小于0为顺时针
+        // std::map<std::string, double> spin_score_map;       //反小陀螺，记录各装甲板小陀螺可能性分数，大于0为逆时针旋转，小于0为顺时针旋转
+        // std::map<std::string, SpinHeading> spin_status_map;
 
         std::multimap<std::string, TimeInfo> spinning_time_map;
         std::multimap<std::string, GyroInfo> spinning_x_map;
@@ -171,11 +171,8 @@ namespace armor_detector
 
     struct DetectorParam
     {
-        // int dw, dh;             //letterbox对原图像resize的padding区域的宽度和高度
-        // float rescale_ratio;    //缩放比例 
-        // int max_delta_t;   //使用同一预测器的最大时间间隔(ms)
-
-        int armor_type_wh_thres; //大小装甲板长宽比阈值
+        double armor_type_wh_high_thres; //大小装甲板长宽比高阈值
+        double armor_type_wh_low_thres; //大小装甲板长宽比低阈值
         int max_lost_cnt;        //最大丢失目标帧数
         int max_armors_cnt;    //视野中最多装甲板数
         int max_v;         //两次预测间最大速度(m/s)
@@ -191,13 +188,16 @@ namespace armor_detector
         double armor_roi_expand_ratio_height;
         double armor_conf_high_thres;
         
-        Color color;
+        int color;
         Eigen::Vector2d angle_offset;
+        int shoot_delay;
+        double bullet_speed;
 
         DetectorParam()
         {
-            color = RED;
-            armor_type_wh_thres = 3;
+            color = 1;
+            armor_type_wh_high_thres = 3.0;
+            armor_type_wh_low_thres = 2.5;
             max_lost_cnt = 5;
             max_armors_cnt = 8;
             max_v = 0;
@@ -212,6 +212,8 @@ namespace armor_detector
             armor_conf_high_thres = 0.82;
 
             angle_offset = {0.0, 0.0};
+            shoot_delay = 0;
+            bullet_speed = 0;
         }
     };
 

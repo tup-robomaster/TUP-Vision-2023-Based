@@ -1,15 +1,14 @@
 /armor_detector:
   ros__parameters:
   # Detector params.
-    armor_type_wh_thres: 3
+    armor_type_wh_high_thres: 3.0
+    armor_type_wh_low_thres: 2.5
     max_lost_cnt: 5
     max_armors_cnt: 8
-    max_v: 8
     max_delta_t: 50
     no_crop_thres: 0.01
     hero_danger_zone: 4
-    color: true # red: true
-                # blue: false
+    color: 1 # 0: blue / 1: red
     no_crop_ratio: 0.002
     full_crop_ratio: 0.0001
     armor_roi_expand_ratio_width: 1.2
@@ -19,12 +18,10 @@
     pitch_angle_offset: 0.5
 
   # Spinning params.
-    max_cost: 500
-    shoot_delay: 50
-    bullet_speed: 28.0
-    max_dead_buffer: 10
+    shoot_delay: 200
+    bullet_speed: 15.0
+    max_dead_buffer: 5
     max_delta_dist: 0.5
-    min_fitting_lens: 10
     switch_max_dt: 2000.0
     anti_spin_max_r_multiple: 4.5
     anti_spin_judge_low_thres: 2000.0
@@ -42,16 +39,17 @@
   # Camera config params.
     # camera_name: "00J90630561" 
     camera_name: "KE0200110073" #FIXME:根据相机序列号修改
-    camera_type: 3
+    camera_type: 2
     camera_param_path: "/config/camera.yaml"
 
   # Network model path.
-    # network_path: "/model/opt-0127-001.xml"
     # network_path: "/model/opt-0527-002.xml"
-    # network_path: "/model/1106-333.xml"
-    # network_path: "/model/yolox.xml"
     # network_path: "/model/opt-1208-001.xml"
-    network_path: "/model/opt-0127-001.xml"
+    # network_path: "/model/opt-0127-001.xml"
+    # network_path: "/model/yolox-05-08.xml"
+    # network_path: "/model/yolox-05-08.onnx"
+    # network_path: "/model/yolox-04-21.xml"
+    network_path: "/model/yolox-05-16.xml"
   
   # Data saving.
     save_data: false
@@ -63,24 +61,25 @@
     using_imu: false
     show_img: true
     show_fps: true
-    using_roi: false
+    show_aim_cross: true
+    show_all_armors: true
+    using_roi: true
     detect_red: true
     auto_label: false
-    print_letency: false
-    show_aim_cross: true
+    print_letency: true
     sync_transport: false
-    show_all_armors: true
     print_target_info: false
 
 /armor_processor:
   ros__parameters:
   # Predict params.
-    bullet_speed: 28.0
+    bullet_speed: 10.0
     max_time_delta: 1000
     max_cost: 10
     max_v: 8
     min_fitting_lens: 5
-    shoot_delay: 670
+    shoot_delay: 200
+    spin_shoot_delay: 100
     window_size: 3
     yaw_angle_offset: -0.5
     pitch_angle_offset: 0.5
@@ -94,61 +93,27 @@
     debug: true
     using_imu: false
     show_img: false
-    draw_predict: false
-    show_predict: false
+    draw_predict: true
+    show_predict: true
     sync_transport: false
     print_delay: false
-    x_axis_filter: true
-    y_axis_filter: true
-    z_axis_filter: true
-    show_aim_cross: false
-    show_fps: false
-    # disable_filter: true
-    # disable_fitting: false
+    show_aim_cross: true
+    show_fps: true
 
   # Camera params.
-    camera_type: 3 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type: 2 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
-    coord_param_name: "KE0200110075" #FIXME:根据相机序列号修改
+    coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
     coord_param_path: "/config/camera.yaml"
     
   # Filter params.
     filter_param_path: "/config/filter_param.yaml"
 
   # Singer model(--->CS Model).
-    # (alpha:机动频率 a_max:加速度上限 p_max:最大值概率 p0:非机动概率 dt:采样时间间隔 
-    #  sigma:机动加速度标准差 p:过程协方差系数 r:观测协方差系数 coeff:预测提前量系数)
-    # singer_model_x_axis: [1.05, 5.0, 0.2, 0.2, 0.275, 1.05, 1.0, 1.0, 2.0] 
-    # singer_model_y_axis: [1.18, 5.0, 0.2, 0.2, 0.190, 1.15, 1.0, 1.0, 0.1] 
-    # singer_model_z_axis: [1.25, 5.0, 0.1, 0.9, 0.200, 1.2, 1.0, 1.0, 0.1]
-
-    # singer_model_x_axis: [1.0, 10.0, 0.1, 0.8, 0.30, 2.50, 0.25, 1.0, 0.1] 
-    # singer_model_y_axis: [1.18, 10.0, 0.1, 0.8, 0.18, 0.5, 1.0, 1.0, 5.0] 
-    # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.170, 0.5, 1.0, 1.0, 5.0]
-
-    # singer_model_x_axis: [1.00, 10.0, 0.1, 0.8, 0.24, 2.60, 1.0, 1.0, 0.1] 
-    # singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.18, 1.85, 1.0, 1.0, 0.1] 
-    # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.20, 1.2, 1.0, 1.0, 0.1]
-
-    # singer_model_x_axis: [1.00, 10.0, 0.1, 0.8, 0.22, 2.80, 1.0, 1.0, 0.1] 
-    # singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.17, 1.90, 1.0, 1.0, 0.1] 
-    # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.20, 1.2, 1.0, 1.0, 0.1]
-
-    # singer_model_x_axis: [1.00, 10.0, 0.1, 0.8, 0.215, 2.85, 1.0, 1.0, 0.1] 
-    # singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.165, 1.95, 1.0, 1.0, 0.1] 
-    # singer_model_z_axis: [1.25, 10.0, 0.1, 0.8, 0.20, 1.2, 1.0, 1.0, 0.1]
-
-    singer_model_x_axis: [20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0, 1.0] 
-    singer_model_y_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0] 
-    singer_model_z_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0]
-
-    gyro_singer_model_x_axis: [20.0, 10.0, 0.1, 0.8, 5.00, 0.0025, 1.0, 1.0, 1.0]
-    gyro_singer_model_y_axis: [1.12, 10.0, 0.1, 0.8, 0.18, 1.85, 1.0, 1.0, 0.1]
-    gyro_singer_model_z_axis: [8.00, 10.0, 0.1, 0.8, 5.00, 0.0030, 1.0, 1.0, 7.0]
-
-    # singer_model_x_axis: [1.0, 10.0, 0.1, 0.8, 5.00, 0.1, 1.0, 1.0, 1.0] 
-    # singer_model_y_axis: [5.0, 10.0, 0.1, 0.8, 16.00, 0.001, 1.0, 0.2, 4.0] 
-    # singer_model_z_axis: [5.0, 10.0, 0.1, 0.8, 16.00, 0.0008, 1.0, 0.2, 4.0]
+    # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)
+    singer_model_process_param: [1.05, 1.05, 1.05, 8.5, 10.65, 8.5]
+    # r:观测协方差系数(r1/r2/r3)
+    singer_model_measure_param: [1.0, 0.25, 0.25]
 
   # IMM model.
     #状态转移概率

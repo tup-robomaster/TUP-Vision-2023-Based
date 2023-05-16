@@ -1,6 +1,51 @@
+/daheng_cam_driver:
+  ros__parameters:
+    camera_type: 0
+    frame_id: daheng_cam
+    debug: true
+    save_video: false
+    using_port: false
+    save_path: "/recorder/video/"
+    config_path: "/config/daheng_cam_param.ini" #加载参数配置文件路径
+
+/mvs_cam_driver: # 配置文件在camera_driver包的config目录下
+  ros__parameters:
+    camera_type: 2
+    frame_id: mvs_cam
+    using_port: false
+    save_video: false
+    save_path: "/recorder/video/"
+    config_path: "/config/mvs_cam_param.config" #加载参数配置文件路径
+    
+/usb_cam_driver:
+  ros__parameters:
+    cam_id: 0
+    camera_type: 3
+    frame_id: usb_cam
+    image_width: 640
+    image_height: 480
+    fps: 60
+    debug: true
+    using_video: true
+    using_ros2bag: false
+    video_path: "/recorder/video/gyro_video.webm"
+    # video_path: "/recorder/video/gyro_transition_fusion.webm"
+    # video_path: "/recorder/video/buff.webm"
+    # video_path: "/recorder/video/2022-06-23_19_36_54(1).avi"
+    # video_path: "/recorder/video/new_buff.mp4"
+    # video_path: "/recorder/video/new_buff1.mp4"
+    # video_path: "/recorder/video/new_buff2.avi"
+    # video_path: "/recorder/video/new_buff3.avi"
+    # video_path: "/recorder/video/2023-04-14_01_39_37/2023-04-14_01_39_37_0.db3"
+    # video_path: "/recorder/video/balance.avi"
+    save_video: false
+    save_path: "/recorder/video/"
+    using_port: false
+    
 /hik_cam_driver:
   ros__parameters:
     cam_id: 0
+    camera_type: 1
     frame_id: hik_cam
     image_width: 1440
     image_height: 1080
@@ -17,58 +62,7 @@
     save_path: "/recorder/video/"
     using_port: false
 
-/daheng_cam_driver:
-  ros__parameters:
-    cam_id: 1
-    frame_id: daheng_cam
-    image_width: 1280
-    image_height: 1024
-    width_scale: 1
-    height_scale: 1
-    exposure_time: 5500
-    exposure_gain: 15
-    exposure_gain_b: 0
-    exposure_gain_g: 0
-    exposure_gain_r: 0
-    balance_b: 1.56
-    balance_g: 1.0
-    balance_r: 1.548
-    debug: true
-    save_video: false
-    save_path: "/recorder/video/"
-    using_port: false
-    
-/usb_cam_driver:
-  ros__parameters:
-    cam_id: 0
-    frame_id: usb_cam
-    image_width: 1280
-    image_height: 800
-    fps: 60
-    debug: true
-    using_video: false
-    using_ros2bag: false
-    # video_path: "/recorder/video/gyro_video.webm"
-    # video_path: "/recorder/video/gyro_transition_fusion.webm"
-    # video_path: "/recorder/video/buff.webm"
-    # video_path: "/recorder/video/2022-06-23_19_36_54(1).avi"
-    # video_path: "/recorder/video/new_buff.mp4"
-    # video_path: "/recorder/video/new_buff1.mp4"
-    # video_path: "/recorder/video/new_buff2.avi"
-    # video_path: "/recorder/video/new_buff3.avi"
-    # video_path: "/recorder/video/2023-04-14_01_39_37/2023-04-14_01_39_37_0.db3"
-    save_video: false
-    save_path: "/recorder/video/"
-    using_port: false
 
-/mvs_cam_driver:
-  ros__parameters:
-    cam_id: 0
-    frame_id: mvs_cam
-    using_port: false
-    save_video: false
-    save_path: "/recorder/video/"
-  
 /serialport:
   ros__parameters:
     debug_without_com: true

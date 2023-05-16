@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2023-04-19 04:59:35
+ * @LastEditTime: 2023-05-05 00:28:11
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/detector_node.hpp
  */
 #include "../../global_user/include/global_user/global_user.hpp"
@@ -93,7 +93,7 @@ namespace armor_detector
 
         //visualization_msgs
         bool is_visual_msgs_;
-        rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+        // rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
 
     public:
         Mutex param_mutex_;

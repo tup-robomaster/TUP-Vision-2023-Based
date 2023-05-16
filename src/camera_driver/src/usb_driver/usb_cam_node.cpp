@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2023-04-19 04:27:22
+ * @LastEditTime: 2023-04-28 15:24:56
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -50,39 +50,6 @@ namespace camera_driver
         this->declare_parameter<bool>("using_video", true);
         using_video_ = this->get_parameter("using_video").as_bool();
 
-        if(save_video_)
-        {   // Video save.
-            RCLCPP_INFO(this->get_logger(), "Saving video...");
-            time_t tmpcal_ptr;
-            tm *tmp_ptr = nullptr;
-            tmpcal_ptr = time(nullptr);
-            tmp_ptr = localtime(&tmpcal_ptr);
-            char now[64];
-            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", tmp_ptr);  // 以时间为名字
-            std::string now_string(now);
-            std::string pkg_path = get_package_share_directory("camera_driver");
-            this->declare_parameter<string>("save_path", "/recorder/video/");
-            std::string save_path = this->get_parameter("save_path").as_string();
-            std::string path = pkg_path + save_path + now_string;
-
-            RCLCPP_WARN_ONCE(this->get_logger(), "Save path:%s", path.c_str());
-            writer_ = std::make_unique<rosbag2_cpp::writers::SequentialWriter>();
-            rosbag2_storage::StorageOptions storage_options({path, "sqlite3"});
-            rosbag2_cpp::ConverterOptions converter_options({
-                rmw_get_serialization_format(),
-                rmw_get_serialization_format()
-            });
-            writer_->open(storage_options, converter_options);
-            writer_->create_topic({
-                "usb_img",
-                "sensor_msgs::msg::Image",
-                rmw_get_serialization_format(),
-                ""
-            });
-        }
-        else
-            RCLCPP_WARN_ONCE(this->get_logger(), "Not save video...");
-
         // sleep(10);
         if(using_video_)
         {
@@ -122,7 +89,6 @@ namespace camera_driver
                 RCLCPP_INFO(this->get_logger(), "Open camera success!");
             }
         }
-        
 
         cap_.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_width);
         cap_.set(cv::CAP_PROP_FRAME_WIDTH, usb_cam_params_.image_height);
@@ -155,6 +121,36 @@ namespace camera_driver
             // param_cb_handle_ = param_subscriber_->add_parameter_callback("ParamCallback", cb);
         }
         
+        if(save_video_)
+        {   // Video save.
+            RCLCPP_INFO(this->get_logger(), "Saving video...");
+            time_t tmpcal_ptr;
+            tm *tmp_ptr = nullptr;
+            tmpcal_ptr = time(nullptr);
+            tmp_ptr = localtime(&tmpcal_ptr);
+            char now[64];
+            strftime(now, 64, "%Y-%m-%d_%H_%M_%S", tmp_ptr);  // 以时间为名字
+            std::string now_string(now);
+            string pkg_path = get_package_share_directory("camera_driver");
+            std::string path = pkg_path + save_path_ + now_string;
+            RCLCPP_WARN_ONCE(this->get_logger(), "Save path:%s", path.c_str());
+
+            writer_ = std::make_unique<rosbag2_cpp::writers::SequentialWriter>();
+            rosbag2_storage::StorageOptions storage_options({path, "sqlite3"});
+            rosbag2_cpp::ConverterOptions converter_options({
+                rmw_get_serialization_format(),
+                rmw_get_serialization_format()
+            });
+            writer_->open(storage_options, converter_options);
+            writer_->create_topic({
+                "usb_img",
+                "sensor_msgs::msg::Image",
+                rmw_get_serialization_format(),
+                ""
+            });
+        }
+        else
+            RCLCPP_WARN_ONCE(this->get_logger(), "Not save video...");
     }
 
     UsbCamNode::~UsbCamNode()
@@ -239,11 +235,11 @@ namespace camera_driver
             if(!frame_.empty() && dt > (1 / usb_cam_params_.fps))
             {
                 last_time_ = now;
-                // if(frame_.rows != usb_cam_params_.image_width || frame_.cols != usb_cam_params_.image_height)
-                // { 
-                //     cv::resize(frame_, frame_, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
-                //     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Resize frame...");
-                // }
+                if(frame_.rows != usb_cam_params_.image_width || frame_.cols != usb_cam_params_.image_height)
+                { 
+                    cv::resize(frame_, frame_, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
+                    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Resize frame...");
+                }
                 // if(!is_filpped)
                 // {
                 //     RCLCPP_INFO(this->get_logger(), "is_filpped...");
@@ -275,7 +271,7 @@ namespace camera_driver
                 if (save_video_)
                 {   // Video recorder.
                     ++frame_cnt_;
-                    if (frame_cnt_ % 100 == 0)
+                    if (frame_cnt_ % 50 == 0)
                     {
                         sensor_msgs::msg::Image image_msg = *msg;
                         auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
@@ -296,10 +292,7 @@ namespace camera_driver
                         *bag_msg->serialized_data = serialized_msg.release_rcl_serialized_message();
                         bag_msg->topic_name = "usb_img";
                         bag_msg->time_stamp = now.nanoseconds();
-                        auto async_future = std::async(std::launch::async, [&](){
-                            writer_->write(bag_msg);
-                        });
-                        async_future.wait_for(2ms);
+                        writer_->write(bag_msg);
                     }
                 }
             }
@@ -325,8 +318,8 @@ namespace camera_driver
             cv::waitKey(2000);
         }
 
-        // if(using_video_)
-        //     usleep(5000);
+        if(using_video_)
+            usleep(2000);
     }
 
     bool UsbCamNode::setParam(rclcpp::Parameter param)
@@ -381,6 +374,9 @@ namespace camera_driver
         usb_cam_params_.image_width = this->get_parameter("image_width").as_int();
         usb_cam_params_.image_height = this->get_parameter("image_height").as_int();
         usb_cam_params_.fps = this->get_parameter("fps").as_int();
+
+        this->declare_parameter<string>("save_path", "/recorder/video/");
+        save_path_ = this->get_parameter("save_path").as_string();
 
         return std::make_unique<UsbCam>(usb_cam_params_);
     }
