@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-04-09 22:01:39
+ * @LastEditTime: 2023-05-14 14:16:14
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -23,15 +23,14 @@
 //eigen
 #include <Eigen/Core>
 
+#include "../../global_user/include/global_user/global_user.hpp"
+
+using namespace global_user;
+#include "../../global_user/include/global_user/global_user.hpp"
+
+using namespace global_user;
 namespace armor_detector
 {
-    enum SpinHeading
-    {
-        UNKNOWN,
-        CLOCKWISE, 
-        COUNTER_CLOCKWISE
-    };
-
     struct SpinState
     {
         int64_t switch_timestamp;
@@ -156,8 +155,7 @@ namespace armor_detector
 
     struct SpinningMap
     {
-        std::map<std::string, SpinState> spin_status_map; //反小陀螺，记录该车小陀螺状态
-        // std::map<std::string, double> spin_score_map;       //反小陀螺，记录各装甲板小陀螺可能性分数，大于0为逆时针旋转，小于0为顺时针旋转
+        std::map<std::string, SpinState> spin_status_map;    //反小陀螺，记录该车小陀螺状态
         std::map<std::string, SpinCounter> spin_counter_map; //记录装甲板旋转帧数，大于0为逆时针旋转，小于0为顺时针
 
         std::multimap<std::string, TimeInfo> spinning_time_map;
@@ -166,14 +164,10 @@ namespace armor_detector
 
     struct DetectorParam
     {
-        // int dw, dh;             //letterbox对原图像resize的padding区域的宽度和高度
-        // float rescale_ratio;    //缩放比例 
-        // int max_delta_t;   //使用同一预测器的最大时间间隔(ms)
-
+        int color;
         int armor_type_wh_thres; //大小装甲板长宽比阈值
         int max_lost_cnt;        //最大丢失目标帧数
         int max_armors_cnt;    //视野中最多装甲板数
-        int max_v;         //两次预测间最大速度(m/s)
 
         double no_crop_thres; //禁用ROI裁剪的装甲板占图像面积最大面积比值
         double hero_danger_zone; //英雄危险距离阈值，检测到有小于该距离的英雄直接开始攻击
@@ -186,14 +180,12 @@ namespace armor_detector
         double armor_roi_expand_ratio_height;
         double armor_conf_high_thres;
 
-        Color color;
         DetectorParam()
         {
-            color = RED;
+            color = 1; //(Red:1/Blue:0)
             armor_type_wh_thres = 3;
             max_lost_cnt = 5;
             max_armors_cnt = 8;
-            max_v = 0;
             no_crop_thres = 2e-3;
             no_crop_ratio = 2e-3;
             full_crop_ratio = 1e-4;
@@ -208,35 +200,35 @@ namespace armor_detector
 
     struct DebugParam
     {
-        bool debug_without_com;
-        bool using_imu;
-        bool using_roi;
+        bool detect_red;
+        bool use_serial;
+        bool use_imu;
+        bool use_roi;
         bool show_aim_cross;
         bool show_img;
-        bool detect_red;
+        bool show_crop_img;
         bool show_all_armors;
         bool show_fps;
         bool print_letency;
         bool print_target_info;
         bool save_data;
         bool save_dataset;
-        bool show_spinning_img;
 
         DebugParam()
         {
-            debug_without_com = true;
-            using_imu = false;
-            using_roi = false;
-            show_aim_cross = false;
-            show_img = true;
             detect_red = true;
-            show_all_armors = true;
-            show_fps = true;
-            print_letency = false;
-            print_target_info = true; 
+            use_serial = true;
+            use_imu = true;
+            use_roi = false;
+            show_img = false;
+            show_fps = false;
             save_data = false;
             save_dataset = false;
-            show_spinning_img = false;
+            show_crop_img = false;
+            print_letency = false;
+            show_aim_cross = false;
+            show_all_armors = false;
+            print_target_info = false; 
         }
     };
     

@@ -2,7 +2,7 @@
  * @Description is a ros-based project!
  * @AuthorBiao
  * @Date-09-05 03:13:49
- * @LastEditTime: 2023-03-17 18:45:03
+ * @LastEditTime: 2023-04-14 02:40:37
  * @FilePath_2023/src/camera_driver/include/hik_driver/HikCamera.hpp
  */
 //ros
@@ -45,6 +45,47 @@ namespace camera_driver
         G_CHANNEL,
         B_CHANNEL
     } GAIN_MODE;
+
+    struct TriggerSetting
+    {
+        unsigned int acquisition_mode;
+        const char* acquisition_start;
+        const char* acquisition_stop;
+        unsigned int acquisition_burst_frame_count;
+        unsigned int trigger_selector;
+        unsigned int trigger_mode;
+        unsigned int trigger_source_line;
+        unsigned int trigger_activation;
+        unsigned int trigger_delay;
+
+        TriggerSetting()
+        {
+            acquisition_mode = 2;
+            acquisition_start = "AcquisitionStart";
+            acquisition_stop = "AcquisitionStop";
+            acquisition_burst_frame_count = 1;
+            trigger_selector = 10;
+            trigger_mode = MV_TRIGGER_MODE_OFF; 
+            trigger_source_line = MV_TRIGGER_SOURCE_LINE2;
+            trigger_activation = 0;
+            trigger_delay = 0.0;
+        }
+    };
+
+    struct IoControlSetting
+    {
+        unsigned int line_selector;
+        unsigned int line_mode;
+        bool line_status;
+        unsigned int trigger_selector;
+        IoControlSetting()
+        {
+            line_selector = 2;
+            line_mode = 8;
+            line_status = false;
+            trigger_selector = 10;
+        }
+    };
     
     class HikCamera
     {
@@ -56,39 +97,26 @@ namespace camera_driver
         bool init();
         bool open();
         bool close();
-        bool is_open();
+        bool isOpen();
 
-        bool get_frame(cv::Mat &src, sensor_msgs::msg::Image& image_msg);
-        bool set_gain(int value, int exp_gain);
-        bool set_exposure_time(float exposure_time);
-        bool set_balance(int value, unsigned int value_num);
+        bool getImage(cv::Mat &src, sensor_msgs::msg::Image& image_msg);
+        bool setGain(int value, int exp_gain);
+        bool setExposureTime(float exposure_time);
+        bool setBalance(int value, unsigned int value_num);
         bool deviceReset();
     
     private:
-        void start_device(int serial_number);
-        bool set_stream_on();
-        bool set_resolution(int width, int height);
-        bool set_auto_balance();
-        bool set_gamma(bool set_status, double gamma_param);
-        bool color_correct(bool value);
-        bool set_contrast(bool set_status, int contrast_param);
-        bool update_timestamp(rclcpp::Time time_start);
-        int get_timestamp();
-
-        bool set_trigger_mode(unsigned int acquisition_mode = 2,
-            const char* acquisition_start = "AcquisitionStart",
-            const char* acquisition_stop = "AcquisitionStop",
-            unsigned int acquisition_burst_frame_count = 1,
-            unsigned int trigger_selector = 10,
-            unsigned int trigger_mode = MV_TRIGGER_MODE_OFF, 
-            unsigned int trigger_source_line = MV_TRIGGER_SOURCE_LINE2,
-            unsigned int trigger_activation = 0,
-            unsigned int trigger_delay = 0.0);
-
-        bool set_digital_io_control(unsigned int line_selector = 2,
-            unsigned int line_mode = 8,
-            bool line_status = false,
-            unsigned int trigger_selector = 10);
+        void startDevice(int serial_number);
+        bool setStreamOn();
+        bool setResolution(int width, int height);
+        bool setAutoBalance();
+        bool setGamma(bool set_status, double gamma_param);
+        bool colorCorrect(bool value);
+        bool setContrast(bool set_status, int contrast_param);
+        bool updateTimestamp(rclcpp::Time time_start);
+        int getTimestamp();
+        bool setTriggerMode(TriggerSetting trigger_setting = TriggerSetting());
+        bool setDigitalIoControl(IoControlSetting io_control_setting = IoControlSetting());
     
     public:
         // Camera params.

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 01:45:19
- * @LastEditTime: 2023-05-16 16:21:53
+ * @LastEditTime: 2023-05-14 16:10:42
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/data_processor/data_transform.hpp
  */
 #ifndef DATA_TRANSFORM_HPP_
@@ -45,7 +45,8 @@ namespace serialport
         int isSwitched;                   //目标是否发生切换
         int isFindTarget;                 //当识别的图片范围内有目标且电控发来的信号不为0x00（关闭视觉）置为1，否则置0
         int isSpinning;                   //目标是否处于陀螺状态
-        int isPrediction;                     //设置1表示目标进入了可以开火的范围，设置0则表示目标尚未进入可开火的范围，默认置0
+        int isPrediction;                 //当前预测器是否处于预测状态
+        int isShooting;                   //是否开火（自动开火控制）
         Eigen::Vector3d meas_tracking_point;
         Eigen::Vector3d pred_aiming_point;
     } VisionAimData;
@@ -71,19 +72,17 @@ namespace serialport
         void transformData(int mode, const VisionAimData &data, uchar* trans_data);
         void transformData(int mode, const VisionNavData &data, uchar* trans_data);
         void transformData(int mode, const VisionDecisionData &data, uchar* trans_data); 
-        
         void getQuatData(uchar* raw_data, vector<float>& quat);
         void getGyroData(uchar* raw_data, vector<float>& gyro);
         void getAccData(uchar* raw_data, vector<float>& acc);
         void getBulletSpeed(uchar* raw_data, float& bullet_speed);
-        void getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle);
-        void getPitchAngle(uchar flag, uchar* raw_data, float& pitch_angle);
         void getThetaAngle(uchar* raw_data, float& theta);
-
         void getPosInfo(uchar flag, uchar* raw_data, vector<float>& pos);
         void getHPInfo(uchar flag, uchar* raw_data, vector<ushort>& hp);
-        void getTimeInfo(uchar flag, uchar* raw_data, ushort& remainning_time);
-        void getGameProgress(uchar flag, uchar* raw_data, uint8_t& game_progress);
+        void getGameInfo(uchar flag, uchar* raw_data, ushort& timestamp);
+        void getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle);
+        void getPitchAngle(uchar flag, uchar* raw_data, float& pitch_angle);
+        void getShootDelay(uchar* raw_data, float& shoot_delay);
 
         int mode_;     
         rclcpp::Logger logger_;  

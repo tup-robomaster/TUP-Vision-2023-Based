@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-04-04 15:36:15
+ * @LastEditTime: 2023-05-03 17:42:18
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -71,6 +71,7 @@ namespace global_user
         double balance_r;
         bool using_video;
         string video_path;
+        string config_path = "src/camera_driver/config/daheng_cam_param.ini";
 
         CameraParam()
         {
@@ -146,6 +147,13 @@ namespace global_user
         SMALL, 
         BIG, 
         BUFF
+    };
+
+    enum SpinHeading
+    {
+        UNKNOWN,
+        CLOCKWISE, 
+        COUNTER_CLOCKWISE
     };
 
     /**
@@ -273,7 +281,6 @@ namespace global_user
     Eigen::Matrix3d eulerToRotationMatrix(Eigen::Vector3d &theta);
     float calcDistance(cv::Point2f& p1, cv::Point2f& p2);
 
-    void videoRecorder(VideoRecordParam& video_param, cv::Mat* src = nullptr);  
     bool setSharedMemory(SharedMemoryParam& shared_memory_param, int id, int image_width = 1280, int image_height = 1024);
     bool getSharedMemory(SharedMemoryParam& shared_memory_param, int id);
     bool destorySharedMemory(SharedMemoryParam& shared_memory_param);
