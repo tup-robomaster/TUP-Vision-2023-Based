@@ -140,7 +140,8 @@ namespace serialport
                 if(!is_receive_data)
                 {
                     RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
-                    usleep(1000);
+                    // usleep(1000);
+                    // continue;
                 }
             }
             
@@ -175,11 +176,11 @@ namespace serialport
                 // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "pitch_angle:%.2f", pitch_angle);
                 if (print_serial_info_)
                 {
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1500, "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "gyro:[%f %f %f]", gyro[0], gyro[1], gyro[2]);
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "acc:[%f %f %f]", acc[0], acc[1], acc[2]);
+                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
+                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "gyro:[%f %f %f]", gyro[0], gyro[1], gyro[2]);
+                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "acc:[%f %f %f]", acc[0], acc[1], acc[2]);
+                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "bullet_speed::%f", bullet_speed);
                 }
-                RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "bullet_speed::%f", bullet_speed);
 
                 rclcpp::Time now = this->get_clock()->now();
                 SerialMsg serial_msg;
@@ -217,7 +218,7 @@ namespace serialport
             else if (flag == 0xC5)
             {
                 data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
-                data_transform_->getHPInfo(flag, &serial_port_->serial_data_.rdata[27], hp);
+                data_transform_->getHPInfo(flag, &serial_port_->serial_data_.rdata[43], hp);
             }
             else if (flag == 0xD5)
             {    
@@ -227,6 +228,7 @@ namespace serialport
                 data_transform_->getHPInfo(flag, &serial_port_->serial_data_.rdata[3], hp);
                 data_transform_->getTimeInfo(flag, &serial_port_->serial_data_.rdata[17], timestamp);
                 data_transform_->getGameProgress(flag, &serial_port_->serial_data_.rdata[19], game_progress);
+                // game_progress = serial_port_->serial_data_.rdata[19];
                 
                 CarPosMsg car_pos_msg;
                 ObjHPMsg obj_hp_msg;
@@ -244,12 +246,18 @@ namespace serialport
 
                 if (print_referee_info_)
                 {
-                    for(int ii = 0; ii < 24; ii++)
-                        RCLCPP_INFO(this->get_logger(), "Pos:%.2f", vehicle_pos_info[ii]);
-                    for(int ii = 0; ii < 16; ii++)
-                        RCLCPP_INFO(this->get_logger(), "HP:%.2d", hp[ii]);
-                    RCLCPP_INFO(this->get_logger(), "timestamp:%.2d", timestamp);
-                    RCLCPP_INFO(this->get_logger(), "timestamp:%.1d", game_progress);
+                    // cout << "Pos:";
+                    // for(int ii = 0; ii < 24; ii++)
+                    //     cout << " " << vehicle_pos_info[ii];
+                    // cout << endl;
+                    // cout << "HP:";
+                    // for(int ii = 0; ii < 16; ii++)
+                    //     cout << " " << hp[ii];
+                    // cout << endl;
+                    
+                    // cout << "timestamp:" << timestamp << endl;
+                    // cout << "game_progress:" << game_progress << endl;
+                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "game_progress:%d", game_progress);
                 }
 
                 rclcpp::Time now = this->get_clock()->now();

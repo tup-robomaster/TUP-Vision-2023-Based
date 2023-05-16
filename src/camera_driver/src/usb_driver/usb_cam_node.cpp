@@ -133,31 +133,7 @@ namespace camera_driver
         ros_image.is_bigendian = false;
         ros_image.data.assign(frame.datastart, frame.dataend);
 
-        // RCLCPP_INFO(this->get_logger(), "Copy frame...");
-        // ros_image.is_bigendian = (std::endian::native == std::endian::big);
-        // ros_image.step = frame.cols * frame.elemSize();
-        // size_t size = ros_image.step * frame.rows;
-        // ros_image.data.resize(size);
-        // RCLCPP_INFO(this->get_logger(), "resize ros frame...");
-        // if(frame.isContinuous())
-        // {
-        //     RCLCPP_INFO(this->get_logger(), "copy frame...");
-        //     memcpy(reinterpret_cast<char*>(&ros_image.data[0]), frame.data, frame.size().height * frame.size().width);
-        // }
-        // else
-        // {
-        //     // copy row by row
-        //     RCLCPP_INFO(this->get_logger(), "frame is not continuous...");
-        //     uchar *ros_data_ptr = reinterpret_cast<uchar*>(&ros_image.data[0]);
-        //     uchar *cv_data_ptr = frame.data;
-        //     for(int i = 0; i < frame.rows; i++)
-        //     {
-        //         RCLCPP_INFO(this->get_logger(), "frame copy row by row...");
-        //         memcpy(ros_data_ptr, cv_data_ptr, ros_image.step);
-        //         ros_data_ptr += ros_image.step;
-        //         cv_data_ptr += frame.step;
-        //     }
-        // }
+     
         auto msg_ptr = std::make_shared<sensor_msgs::msg::Image>(ros_image);
         return msg_ptr;
     }
@@ -175,28 +151,6 @@ namespace camera_driver
                 cv::resize(frame, frame, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
                 RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Resize frame...");
             }
-            // if(!is_filpped)
-            // {
-            //     RCLCPP_INFO(this->get_logger(), "is_filpped...");
-            //     image_msg = convert_frame_to_message(frame);
-            //     RCLCPP_INFO(this->get_logger(), "convert success...");
-            // }
-            // else
-            // {
-            //     //flip the image
-            //     // cv::filp(frame, filpped_frame, 1);
-            //     image_msg = convert_frame_to_message(frame);
-            // }
-
-            // Put the message into a queue to be processed by the middleware.
-            // This call is non-blocking.
-            // RCLCPP_INFO(this->get_logger(), "get info...");
-            // sensor_msgs::msg::CameraInfo::SharedPtr camera_info_msg(
-            //     new sensor_msgs::msg::CameraInfo(cam_info_manager->getCameraInfo()));
-            // image_msg->header.stamp = timestamp;
-            // image_msg->header.frame_id = frame_id;
-            // camera_info_msg->header.stamp = timestamp;
-            // camera_info_msg->header.frame_id = frame_id;
 
             sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>();
             rclcpp::Time now = this->get_clock()->now();

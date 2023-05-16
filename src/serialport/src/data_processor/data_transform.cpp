@@ -107,22 +107,31 @@ namespace serialport
     void DataTransform::getPosInfo(uchar flag, uchar* raw_data, vector<float>& pos)
     {
         if (flag == 0xB5)
+        {
             if (!ucharRaw2FloatVector(raw_data, 56, pos))
                 RCLCPP_ERROR(logger_, "Get Pos data failed!!!");
-        else if (flag == 0xC5)
+        }
+        
+        if (flag == 0xC5)
+        {
             if (!ucharRaw2FloatVector(raw_data, 40, pos))
                 RCLCPP_ERROR(logger_, "Get Pos data failed!!!");
+        }
         return;
     }
 
     void DataTransform::getHPInfo(uchar flag, uchar* raw_data, vector<ushort>& hp)
     {
         if (flag == 0xC5)
+        {
             if (!ucharRaw2Int16Vector(raw_data, 18, hp))
                 RCLCPP_ERROR(logger_, "Get HP data failed: %x", flag);
+        }
         if (flag == 0xD5)
+        {
             if (!ucharRaw2Int16Vector(raw_data, 14, hp))
                 RCLCPP_ERROR(logger_, "Get HP data failed: %x", flag);
+        }
         return;
     }
 
@@ -138,7 +147,9 @@ namespace serialport
     {
         if (flag == 0xD5)
         {
-            game_progress = raw_data[0];
+            uint8_t uint8_data;
+            uint8_data = *((uint8_t*)&raw_data[0]);
+            game_progress = uint8_data;
         }
     }
 

@@ -81,7 +81,7 @@ namespace serialport
         bool openPort();
         void closePort();
         
-        // uchar Tdata[64] = {0x00}; 
+        uchar Tdata[64] = {0x00}; 
         SerialData serial_data_;
     private:
         string serial_id_;

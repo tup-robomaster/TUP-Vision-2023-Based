@@ -40,7 +40,7 @@ def generate_launch_description():
 
     declare_use_serial = DeclareLaunchArgument(
         name='using_imu',
-        default_value='False',
+        default_value='True',
         description='debug without serial port.'
     )
     
@@ -73,12 +73,12 @@ def generate_launch_description():
             package='serialport',
             executable='serialport_node',
             name='serialport',
-            output='log', # log/screen/both
+            output='screen', # log/screen/both
             emulate_tty=True,
             parameters=[{
                 'using_port': True,
                 'tracking_target': False,
-                'print_serial_info': False,
+                'print_serial_info': True,
                 'print_referee_info': False
             }],
             condition=IfCondition(PythonExpression(["'", use_serial, "' == 'True'"]))
@@ -89,7 +89,7 @@ def generate_launch_description():
             package='rclcpp_components',
             executable='component_container',
             namespace='',
-            output='log',
+            output='screen',
             condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'True'"])),
             composable_node_descriptions=[
                 ComposableNode(
@@ -98,9 +98,9 @@ def generate_launch_description():
                     name='serialport',
                     parameters=[{
                         'using_port': True,
-                        'tracking_target': False,
+                        'tracking_target': True,
                         'print_serial_info': False,
-                        'print_referee_info': False            
+                        'print_referee_info': True            
                     }],
                     extra_arguments=[{
                         'use_intra_process_comms':True
@@ -121,7 +121,7 @@ def generate_launch_description():
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
-            output='log',
+            output='screen',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'usb'"])),
@@ -160,7 +160,7 @@ def generate_launch_description():
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
-            output='log',
+            output='screen',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'daheng'"])),
@@ -199,7 +199,7 @@ def generate_launch_description():
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
-            output='log',
+            output='screen',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'hik'"])),
@@ -238,7 +238,7 @@ def generate_launch_description():
         ComposableNodeContainer(
             name='armor_detector_container',
             namespace='',
-            output='log',
+            output='screen',
             package='rclcpp_components',
             executable='component_container',
             condition=IfCondition(PythonExpression(["'", camera_type, "' == 'mvs'"])),
@@ -274,13 +274,13 @@ def generate_launch_description():
             ],
         ),
 
-        Node(
-            package='armor_processor',
-            executable='armor_processor_node',
-            namespace='armor_processor',
-            output='log', 
-            emulate_tty=True,
-            parameters=[armor_processor_params],
-            condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
-        ),
+        # Node(
+        #     package='armor_processor',
+        #     executable='armor_processor_node',
+        #     namespace='armor_processor',
+        #     output='screen', 
+        #     emulate_tty=True,
+        #     parameters=[armor_processor_params],
+        #     condition=IfCondition(PythonExpression(["'", debug_pred, "' == 'False'"]))
+        # ),
     ])

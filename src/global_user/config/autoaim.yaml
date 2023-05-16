@@ -60,8 +60,8 @@
   
   # Debug params.
     debug: true
-    using_imu: false
-    show_img: false
+    using_imu: true
+    show_img: true
     show_fps: false
     using_roi: false
     detect_red: true
@@ -92,8 +92,8 @@
 
   # Debug params.
     debug: true
-    using_imu: false
-    show_img: true
+    using_imu: true
+    show_img: false
     draw_predict: false
     show_predict: true
     sync_transport: false
