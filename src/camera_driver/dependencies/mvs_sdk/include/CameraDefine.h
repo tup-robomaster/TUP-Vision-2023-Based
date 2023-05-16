@@ -20,7 +20,7 @@ typedef void* HWND;
 typedef char* LPCTSTR;
 typedef unsigned short USHORT;
 typedef short SHORT;
- typedef unsigned char* LPBYTE;
+typedef unsigned char* LPBYTE;
 typedef char CHAR;
 typedef char TCHAR;
 typedef  unsigned short WORD;

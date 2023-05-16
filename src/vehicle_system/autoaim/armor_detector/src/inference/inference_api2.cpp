@@ -336,13 +336,14 @@ namespace armor_detector
         // {
         //     std::cout << "device:" << device << std::endl;
         // }
-
         std::cout << "Start initialize model..." << std::endl;
+
         // Setting Configuration Values
         core.set_property("CPU", ov::enable_profiling(true));
-
+    
         //Step 1.Create openvino runtime core
         model = core.read_model(path);
+        // model = core.import_model();
 
         // Preprocessing
         ov::preprocess::PrePostProcessor ppp(model);
@@ -359,7 +360,7 @@ namespace armor_detector
         //Step 2. Compile the model
         compiled_model = core.compile_model(
             model,
-            "CPU",
+            "GPU",
             ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
             // "AUTO:GPU,CPU", 
             // ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
@@ -367,6 +368,17 @@ namespace armor_detector
         );
 
         // compiled_model.set_property(ov::device::priorities("GPU"));
+
+        // Save compiled model
+        // ofstream save_file("src/vehicle_system/autoaim/armor_detector/model/compiled_model.txt", ios::in | ios::binary);
+        // if (save_file)
+        // {
+        //     compiled_model.export_model(save_file);
+        // }
+
+        // Async inference
+        // infer_request.start_async()
+        // infer_request.wait()
 
         // Step 3. Create an Inference Request
         infer_request = compiled_model.create_infer_request();

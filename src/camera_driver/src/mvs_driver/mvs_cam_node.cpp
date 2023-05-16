@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-18 14:30:38
- * @LastEditTime: 2023-04-14 02:38:20
- * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/hik_driver/hik_cam_node.cpp
+ * @LastEditTime: 2023-05-03 12:46:36
+ * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/mvs_driver/mvs_cam_node.cpp
  */
 #include "../../include/mvs_driver/mvs_cam_node.hpp"
 
@@ -13,12 +13,12 @@ using namespace std::chrono_literals;
 namespace camera_driver
 {
     MvsCamNode::MvsCamNode(const rclcpp::NodeOptions &options)
-    : CameraBaseNode("mvs_driver", options)
+    : CameraBaseNode<MvsCamera>("mvs_driver", options)
     {
-        bool debug_;
-        this->declare_parameter<bool>("debug", true);
-        this->get_parameter("debug", debug_);
-        if(debug_)
+        bool debug = false;
+        this->declare_parameter<bool>("debug", false);
+        this->get_parameter("debug", debug);
+        if(debug)
         {
             //动态调参回调
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&MvsCamNode::paramsCallback, this, _1));

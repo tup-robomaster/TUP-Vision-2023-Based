@@ -129,6 +129,7 @@ namespace armor_detector
 
         objects_.clear();
         new_armors_.clear();
+       
         if (!armor_detector_.detect(input, objects_))
         {   //若未检测到目标
             if (debug_params_.show_aim_cross)

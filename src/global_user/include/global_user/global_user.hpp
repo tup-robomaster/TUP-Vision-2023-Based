@@ -72,6 +72,7 @@ namespace global_user
         double balance_r;
         bool using_video;
         string video_path;
+        string config_path;
 
         CameraParam()
         {

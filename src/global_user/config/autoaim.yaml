@@ -5,7 +5,6 @@
     armor_type_wh_low_thres: 2.5
     max_lost_cnt: 5
     max_armors_cnt: 8
-    max_v: 8
     max_delta_t: 50
     no_crop_thres: 0.01
     hero_danger_zone: 4
@@ -19,12 +18,10 @@
     pitch_angle_offset: 0.5
 
   # Spinning params.
-    max_cost: 500
     shoot_delay: 200
-    bullet_speed: 10.0
-    max_dead_buffer: 10
+    bullet_speed: 15.0
+    max_dead_buffer: 5
     max_delta_dist: 0.5
-    min_fitting_lens: 10
     switch_max_dt: 2000.0
     anti_spin_max_r_multiple: 4.5
     anti_spin_judge_low_thres: 2000.0
@@ -42,14 +39,17 @@
   # Camera config params.
     # camera_name: "00J90630561" 
     camera_name: "KE0200110073" #FIXME:根据相机序列号修改
-    camera_type: 0
+    camera_type: 2
     camera_param_path: "/config/camera.yaml"
 
   # Network model path.
-    # network_path: "/model/opt-0127-001.xml"
     # network_path: "/model/opt-0527-002.xml"
     # network_path: "/model/opt-1208-001.xml"
-    network_path: "/model/yolox-04-21.xml"
+    # network_path: "/model/opt-0127-001.xml"
+    # network_path: "/model/yolox-05-08.xml"
+    # network_path: "/model/yolox-05-08.onnx"
+    # network_path: "/model/yolox-04-21.xml"
+    network_path: "/model/yolox-05-16.xml"
   
   # Data saving.
     save_data: false
@@ -59,14 +59,14 @@
   # Debug params.
     debug: true
     using_imu: false
-    show_img: false
-    show_fps: false
-    show_aim_cross: false
-    show_all_armors: false
+    show_img: true
+    show_fps: true
+    show_aim_cross: true
+    show_all_armors: true
     using_roi: true
     detect_red: true
     auto_label: false
-    print_letency: false
+    print_letency: true
     sync_transport: false
     print_target_info: false
 
@@ -92,16 +92,16 @@
   # Debug params.
     debug: true
     using_imu: false
-    show_img: true
+    show_img: false
     draw_predict: true
     show_predict: true
     sync_transport: false
     print_delay: false
     show_aim_cross: true
-    show_fps: false
+    show_fps: true
 
   # Camera params.
-    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type: 2 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     # coord_param_name: "00J90630561" 
     coord_param_name: "KE0200110073" #FIXME:根据相机序列号修改
     coord_param_path: "/config/camera.yaml"

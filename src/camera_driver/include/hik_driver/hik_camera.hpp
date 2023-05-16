@@ -2,7 +2,7 @@
  * @Description is a ros-based project!
  * @AuthorBiao
  * @Date-09-05 03:13:49
- * @LastEditTime: 2023-04-16 22:51:39
+ * @LastEditTime: 2023-04-14 02:40:37
  * @FilePath_2023/src/camera_driver/include/hik_driver/HikCamera.hpp
  */
 //ros

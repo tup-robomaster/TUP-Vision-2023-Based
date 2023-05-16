@@ -36,7 +36,7 @@ def generate_launch_description():
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='daheng',
+        default_value='mvs',
         description='hik daheng mvs usb'
     )
 

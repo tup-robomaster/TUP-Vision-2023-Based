@@ -28,6 +28,8 @@
 #include "../../global_user/include/global_user/global_user.hpp"
 
 using namespace global_user;
+using namespace InferenceEngine;
+using namespace ov;
 namespace armor_detector
 {
     struct ArmorObject : Object

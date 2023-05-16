@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:40
- * @LastEditTime: 2023-04-16 22:51:48
+ * @LastEditTime: 2023-04-16 14:37:37
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/usb_driver/usb_cam_node.hpp
  */
 #ifndef USB_CAM_NODE_HPP_
@@ -70,6 +70,7 @@ namespace camera_driver
     
     private:
         bool save_video_;
+        string save_path_;
         bool using_video_;
         std::string video_path_;
         int frame_cnt_;

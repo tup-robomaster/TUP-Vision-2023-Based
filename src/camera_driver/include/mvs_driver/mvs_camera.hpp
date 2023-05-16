@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Leo
  * @Date: 2023-04-29 12:02:22
- * @LastEditTime: 2023-04-29 12:02:22
+ * @LastEditTime: 2023-05-03 16:08:59
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/mvs_driver/mvs_camera.hpp
  */
 
@@ -49,30 +49,30 @@ namespace camera_driver
         bool open();
         bool close();
         bool isOpen();
-
         bool getImage(cv::Mat &src, sensor_msgs::msg::Image& image_msg);
-        bool setGain(int value, int exp_gain);
-        bool setExposureTime(float exposure_time);
-        bool setBalance(int value, unsigned int value_num);
-        bool deviceReset();
+        
+        void setGain(int value, int exp_gain);
+        void setExposureTime(float exposure_time);
+        void setBalance(int value, unsigned int value_num);
+        void setResolution(int width, int height); // TODO
+        void deviceReset();
 
     public:
-        bool is_camera_initialized_ = false;
-
         int iCameraCounts = 1;
         int hCamera;
         tSdkCameraDevInfo tCameraEnumList;
         tSdkCameraCapbility tCapability;
         tSdkFrameHead sFrameInfo;
         BYTE* pbyBuffer;
+        BYTE* g_pRgbBuffer;     //处理后数据缓存区
+        CameraSdkStatus status;
         // BYTE* pFrameBuffer;
-
-        unsigned char * g_pRgbBuffer;     //处理后数据缓存区
         // Mat frame;
 
     public:
         // Camera params.
         CameraParam cam_param_;
+        bool is_camera_initialized_ = false;
 
     private:
         bool is_open_; 
@@ -80,9 +80,5 @@ namespace camera_driver
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         rclcpp::Time time_start_;
         rclcpp::Logger logger_;
-
-    private:
-        bool setResolution(int width, int height); // TODO
-        bool updateTimestamp(rclcpp::Time time_start);
     };
 }
