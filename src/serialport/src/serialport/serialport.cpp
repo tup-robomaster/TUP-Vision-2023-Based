@@ -67,12 +67,16 @@ namespace serialport
         }
         
         bytes = read(serial_data_.fd, serial_data_.rdata, (size_t)(lens));
-        timestamp_ = this->steady_clock_.now();
-        if ((serial_data_.rdata[0] == 0xA5 || serial_data_.rdata[0] == 0xB5 || serial_data_.rdata[0] == 0xC5)
-            && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3))
+        if ((serial_data_.rdata[0] == 0xA5 || serial_data_.rdata[0] == 0xB5 ||
+            serial_data_.rdata[0] == 0xC5 || serial_data_.rdata[0] == 0xD5)
+            // && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3)
+            // && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens))
+        )
         {
+            // RCLCPP_WARN(logger_, "flag:%x", serial_data_.rdata[0]);
             return true;
         }
+        
         return false;
     }
 
