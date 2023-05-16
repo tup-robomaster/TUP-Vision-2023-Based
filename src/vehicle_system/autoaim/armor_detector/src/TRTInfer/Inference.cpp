@@ -1,4 +1,4 @@
-#include "../include/Inference.h"
+#include "../../include/TRTInfer/Inference.h"
 namespace TRTInferV1
 {
     static constexpr float MERGE_CONF_ERROR = 0.15;

@@ -33,7 +33,7 @@ def generate_launch_description():
     
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
-    camera_type = 'usb'
+    camera_type = 'daheng'
     camera_name = 'KE0200110075'
     use_serial = False
     #------------------------------------------------------------------------------------------
@@ -152,10 +152,7 @@ def generate_launch_description():
                 {
                     'camera_name': camera_name,
                 }],
-                remappings = camera_remappings,
-                extra_arguments=[{
-                    'use_intra_process_comms':True
-                }]
+                remappings = camera_remappings
             ),
         ],
         respawn=True,

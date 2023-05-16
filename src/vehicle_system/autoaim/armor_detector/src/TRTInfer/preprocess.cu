@@ -1,4 +1,4 @@
-#include "../include/preprocess.h"
+#include "../../include/TRTInfer/preprocess.h"
 
 __global__ void warpaffine_kernel(
     uint8_t *src, int src_line_size, int src_width,

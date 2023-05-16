@@ -76,7 +76,7 @@ namespace armor_processor
             if (debug_param_.show_img)
             {
                 image_size_ = image_info_.image_size_map[camera_type];
-                std::string camera_topic = image_info_.camera_topic_map[camera_type];
+                std::string camera_topic = "/image";
                 if (sync_transport_)
                 {
                     RCLCPP_WARN(this->get_logger(), "Synchronously...");

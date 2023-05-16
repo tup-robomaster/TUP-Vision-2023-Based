@@ -378,6 +378,7 @@ namespace camera_driver
             //     {
             //         RCLCPP_ERROR(logger_, "Color Set Failed!");
             //     }
+            
             // }
             // if (set_saturation)
             // {

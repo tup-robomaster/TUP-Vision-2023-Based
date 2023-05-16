@@ -28,7 +28,6 @@ namespace armor_detector
         if (!detector_->is_init_)
         {
             RCLCPP_INFO(this->get_logger(), "Initializing network model...");
-            detector_->armor_detector_.initModel(path_params_.network_path);
             detector_->coordsolver_.loadParam(path_params_.camera_param_path, path_params_.camera_name);
             if(detector_->is_save_data_)
             {
@@ -478,7 +477,7 @@ namespace armor_detector
         this->declare_parameter("show_crop_img", false);
         this->declare_parameter("show_aim_cross", false);
         this->declare_parameter("show_fps", false);
-        this->declare_parameter("print_letency", false);
+        this->declare_parameter("print_latency", false);
         this->declare_parameter("print_target_info", false);
         this->declare_parameter("show_all_armors", false);
         this->declare_parameter("save_data", false);
@@ -507,13 +506,14 @@ namespace armor_detector
      */
     bool DetectorNode::updateParam()
     {
+        this->get_parameter("detect_red").as_bool() ? detector_params_.color = RED : detector_params_.color = BLUE;
+        
         detector_params_.armor_type_wh_thres = this->get_parameter("armor_type_wh_thres").as_int();
         detector_params_.max_lost_cnt = this->get_parameter("max_lost_cnt").as_int();
         detector_params_.max_armors_cnt = this->get_parameter("max_armors_cnt").as_int();
         detector_params_.max_v = this->get_parameter("max_v").as_int();
         detector_params_.no_crop_thres = this->get_parameter("no_crop_thres").as_double();
         detector_params_.hero_danger_zone = this->get_parameter("hero_danger_zone").as_int();
-        detector_params_.color = this->get_parameter("color").as_int();
         
         detector_params_.no_crop_ratio = this->get_parameter("no_crop_ratio").as_double();
         detector_params_.full_crop_ratio = this->get_parameter("full_crop_ratio").as_double();
@@ -528,7 +528,7 @@ namespace armor_detector
         debug_.show_crop_img = this->get_parameter("show_crop_img").as_bool();
         debug_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
         debug_.show_fps = this->get_parameter("show_fps").as_bool();
-        debug_.print_letency = this->get_parameter("print_letency").as_bool();
+        debug_.print_latency = this->get_parameter("print_latency").as_bool();
         debug_.print_target_info = this->get_parameter("print_target_info").as_bool();
         debug_.show_all_armors = this->get_parameter("show_all_armors").as_bool();
         debug_.save_data = this->get_parameter("save_data").as_bool();

@@ -1,8 +1,8 @@
 /hik_cam_driver:
   ros__parameters:
     cam_id: 0
-    camera_type: 1
     frame_id: hik_cam
+    camera_topic: /hik_img
     image_width: 1440
     image_height: 1080
     exposure_time: 4000
@@ -21,8 +21,8 @@
 /daheng_cam_driver:
   ros__parameters:
     cam_id: 1
-    camera_type: 0
     frame_id: daheng_cam
+    camera_topic: /daheng_img
     image_width: 1280
     image_height: 1024
     width_scale: 1
@@ -43,8 +43,8 @@
 /usb_cam_driver:
   ros__parameters:
     cam_id: 0
-    camera_type: 3
     frame_id: usb_cam
+    camera_topic: /usb_img
     image_width: 990
     image_height: 720
     fps: 60
@@ -68,7 +68,7 @@
 /mvs_cam_driver:
   ros__parameters:
     cam_id: 0
-    camera_type: 2
+    camera_topic: /mvs_img
     frame_id: mvs_cam
     using_port: false
     save_video: false

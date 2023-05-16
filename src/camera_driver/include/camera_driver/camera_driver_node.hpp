@@ -56,7 +56,7 @@ namespace camera_driver
         CameraBaseNode(string node_name, const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         ~CameraBaseNode();
         
-        void imageCallback();
+        void imagePublisher();
         virtual std::unique_ptr<T> initCamDriver();
         void cameraWatcher();
 
@@ -76,10 +76,9 @@ namespace camera_driver
         }
 
     public:
-        ImageInfo image_info_;
-        ImageSize image_size_;
         CameraParam camera_params_;
         std::unique_ptr<T> cam_driver_;
+        std::unique_ptr<std::thread> img_pub_thread_;
         rclcpp::TimerBase::SharedPtr camera_watcher_timer_;
         rclcpp::TimerBase::SharedPtr img_callback_timer_;
         std::map<std::string, int> param_map_;
@@ -90,7 +89,6 @@ namespace camera_driver
         sensor_msgs::msg::Image image_msg_;
         cv::Mat frame_;
         bool is_cam_open_;
-        int camera_type_;
         string camera_topic_;
 
         // 图像保存
@@ -124,23 +122,16 @@ namespace camera_driver
 
         //QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(5);
         qos.best_effort();
         qos.durability();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 5;
 
-        // Camera type.
-        this->declare_parameter<int>("camera_type", DaHeng);
-        camera_type_ = this->get_parameter("camera_type").as_int();
-
         // Subscriptions transport type.
         string transport_type = "raw";
-    
-        image_size_ = image_info_.image_size_map[camera_type_];
-        camera_topic_ = image_info_.camera_topic_map[camera_type_];
-        
+            
         if(save_video_)
         {   // Video save.
             RCLCPP_WARN_ONCE(this->get_logger(), "Saving video...");
@@ -183,9 +174,9 @@ namespace camera_driver
 
         image_msg_.header.frame_id = "camera_frame";
         image_msg_.encoding = "bgr8";
-        img_callback_timer_ = this->create_wall_timer(1ms, std::bind(&CameraBaseNode::imageCallback, this));
         camera_watcher_timer_ = rclcpp::create_timer(this, this->get_clock(), 100ms, std::bind(&CameraBaseNode::cameraWatcher, this));
 
+        img_pub_thread_ = std::make_unique<std::thread>(&CameraBaseNode::imagePublisher, this);
         // this->declare_parameter("using_port", false);
         // use_serial_ = this->get_parameter("using_port").as_bool();
     }
@@ -213,12 +204,11 @@ namespace camera_driver
             }
         }
     }
-
     template<class T>
-    void CameraBaseNode<T>::imageCallback()
+    void CameraBaseNode<T>::imagePublisher()
     {
-        // while (1)
-        // {
+        while (rclcpp::ok())
+        {
             // if (use_serial_)
             // {
             //     if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
@@ -231,14 +221,15 @@ namespace camera_driver
             {
                 RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
                 is_cam_open_ = false;
-                return;
+                usleep(2e3);
+                continue;
             }
 
             rclcpp::Time now = this->get_clock()->now();
             image_msg_.header.stamp = now;
             camera_info_msg_.header = image_msg_.header;
-            image_msg_.width = this->image_size_.width;
-            image_msg_.height = this->image_size_.height;
+            image_msg_.width = frame_.size().width;
+            image_msg_.height = frame_.size().height;
             camera_pub_.publish(image_msg_, camera_info_msg_);
                 
             if (save_video_)
@@ -268,13 +259,15 @@ namespace camera_driver
                     writer_->write(bag_msg);
                 }
             }
+
             if (show_img_)
             {
                 cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
                 cv::imshow("frame", frame_);
                 cv::waitKey(1);
             }
-        // }
+            usleep(2e3);
+        }
     }
     
     template<class T>
@@ -290,6 +283,7 @@ namespace camera_driver
         };
 
         this->declare_parameter("cam_id", 1);
+        this->declare_parameter("camera_topic", "/image");
         this->declare_parameter("image_width", 1280);
         this->declare_parameter("image_height", 1024);
         this->declare_parameter("width_scale", 1);
@@ -325,6 +319,8 @@ namespace camera_driver
         camera_params_.balance_r = this->get_parameter("balance_r").as_double();
         camera_params_.using_video = this->get_parameter("using_video").as_bool();
         camera_params_.fps = this->get_parameter("fps").as_int();
+
+        camera_topic_ = this->get_parameter("camera_topic").as_string();
         show_img_ = this->get_parameter("show_img").as_bool();
         save_video_ = this->get_parameter("save_video").as_bool();
 
