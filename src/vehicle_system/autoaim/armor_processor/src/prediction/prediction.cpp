@@ -152,8 +152,8 @@ namespace armor_processor
                             pred_y = pred_point3d(1) - pred_radius * cos(pred_next_rangle);
                             pred_z = (ii % 2 == 0) ? pred_point3d(2) : history_switched_state_vec_.front()(2);
                         }
-                        // armor3d = {pred_x, pred_y, pred_z, pred_next_rangle};
-                        // armor3d_vec.emplace_back(armor3d);
+                        armor3d = {pred_x, pred_y, pred_z, pred_next_rangle};
+                        armor3d_vec.emplace_back(armor3d);
                     }
                 }
                 else

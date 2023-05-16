@@ -36,9 +36,9 @@ namespace armor_detector
         int area;
         Rect roi;
         Rect rect;
-        Point2d apex2d[4];
+        Point2f apex2d[4];
         RotatedRect rrect;
-        cv::Point2d center2d;
+        cv::Point2f center2d;
         TargetType type;
         bool is_front;
         double rangle;

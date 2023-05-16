@@ -23,7 +23,7 @@ namespace armor_detector
         this->gyro_params_.anti_spin_judge_low_thres = 2e3;
         this->gyro_params_.anti_spin_max_r_multiple = 3;
         last_timestamp_ = 0.0;
-        max_hop_period_ = 3000.0;
+        max_hop_period_ = 1000.0;
         // normal_gyro_status_counter_ = 0;
         // switch_gyro_status_counter_ = 0;
         // last_yaw_diff_ = 0.0;
@@ -44,7 +44,7 @@ namespace armor_detector
         this->gyro_params_.anti_spin_judge_low_thres = gyro_params.anti_spin_judge_low_thres;
         this->gyro_params_.anti_spin_max_r_multiple = gyro_params.anti_spin_max_r_multiple;
         last_timestamp_ = 0.0;
-        max_hop_period_ = 500.0;
+        max_hop_period_ = 1000.0;
         // normal_gyro_status_counter_ = 0;
         // switch_gyro_status_counter_ = 0;
         // last_yaw_diff_ = 0.0;

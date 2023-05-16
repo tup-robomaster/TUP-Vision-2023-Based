@@ -172,7 +172,7 @@ namespace armor_detector
                 armor.apex2d[i] += Point2f((float)roi_offset_.x,(float)roi_offset_.y);
             Point2f apex_sum;
             for(auto apex : armor.apex2d)
-                apex_sum +=apex;
+                apex_sum += apex;
             armor.center2d = apex_sum / 4.f;
             //若装甲板置信度小于高阈值，需要相同位置存在过装甲板才放行
             if (armor.conf < this->detector_params_.armor_conf_high_thres)
