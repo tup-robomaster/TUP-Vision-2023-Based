@@ -26,12 +26,6 @@ using namespace std;
 using namespace global_user;
 namespace armor_processor
 {
-    typedef enum SpinningStatus
-    {
-        STILL_SPINNING,
-        MOVEMENT_SPINNING
-    } SpinningStatus;
-
     typedef enum SystemModel
     {
         CSMODEL,
@@ -51,7 +45,6 @@ namespace armor_processor
         bool is_spinning_switched;
         bool is_clockwise;
         bool is_outpost_mode;
-        SpinningStatus spinning_status;
         SystemModel system_model;
     };
 

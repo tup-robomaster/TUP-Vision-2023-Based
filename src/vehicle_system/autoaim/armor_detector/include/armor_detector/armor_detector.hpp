@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:51:58
- * @LastEditTime: 2023-05-17 04:47:27
+ * @LastEditTime: 2023-05-17 14:22:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_detector/armor_detector.hpp
  */
 //ros
@@ -40,7 +40,7 @@ namespace armor_detector
         ~Detector();
 
         // void run();
-        bool detectArmor(TaskData &src, geometry_msgs::msg::TransformStamped t, bool& is_target_lost);
+        bool detectArmor(TaskData &src, const Eigen::Matrix3d rmat_gimbal, const Eigen::Vector3d translation, bool& is_target_lost);
         bool detectSpinning(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp = ObjHPMsg(), DecisionMsg decision_msg = DecisionMsg());
 
         Point2i cropImageByROI(Mat &img);
@@ -58,11 +58,11 @@ namespace armor_detector
         std::vector<Armor> last_armors_;
         std::vector<Armor> new_armors_;
         atomic<int> target_id_ = -1; 
+        atomic<int> mode_ = 1; 
 
         bool is_init_;
         ofstream data_save_;
         bool is_save_data_;
-        atomic<int> mode_;
 
     private:
         Armor last_armor_;
@@ -73,7 +73,6 @@ namespace armor_detector
         std::multimap<std::string, ArmorTracker> trackers_map_;
         std::map<string, int> new_armors_cnt_map_;    //装甲板计数map，记录新增装甲板数
         std::map<std::string, int> car_id_map_;
-        Eigen::Matrix3d rmat_imu_;
 
     private:
         ofstream file_;
@@ -95,7 +94,6 @@ namespace armor_detector
         bool is_id_switched_;
         double last_target_area_ = 0;
         Point2i last_roi_center_;
-        double last_bullet_speed_ = 15.5;
         bool is_last_target_exists_;
         Eigen::Vector3d last_aiming_point_;
         

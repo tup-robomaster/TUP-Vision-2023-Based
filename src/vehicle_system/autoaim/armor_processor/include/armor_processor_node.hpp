@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-04-28 15:05:06
+ * @LastEditTime: 2023-05-17 15:12:06
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -60,9 +60,8 @@ namespace armor_processor
         ~ArmorProcessorNode();
 
     private:
-        rclcpp::Subscription<AutoaimMsg>::SharedPtr target_info_sub_;
-        void targetMsgCallback(const AutoaimMsg& target_info);
-        bool processTargetMsg(const AutoaimMsg& target_info, cv::Mat* src = nullptr);
+        void targetMsgCallback(const AutoaimMsg& autoaim_msg);
+        rclcpp::Subscription<AutoaimMsg>::SharedPtr autoaim_msg_sub_;
 
         cv::Mat src_;
         mutex debug_mutex_;
@@ -76,20 +75,13 @@ namespace armor_processor
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
         rclcpp::Publisher<AutoaimMsg>::SharedPtr predict_info_pub_;
         
-        // message_filter
-        MySyncPolicy my_sync_policy_;
-        std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image>> img_msg_sync_sub_;
-        std::shared_ptr<message_filters::Subscriber<AutoaimMsg>> target_msg_sync_sub_;
-        std::shared_ptr<message_filters::Synchronizer<MySyncPolicy>> sync_;
-        void syncCallback(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg, const AutoaimMsg::ConstSharedPtr& target_msg);
-        bool sync_transport_ = false;
-
         // visualization_msgs::Marker
         rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_pub_;
         uint64 shape_ = visualization_msgs::msg::Marker::SPHERE;
         bool show_marker_ = false;
         int count_ = 0;
         bool shoot_flag_ = false;
+        void pubMarkerArray(vector<Eigen::Vector4d> armor3d_vec, bool is_clockwise, int flag);
 
     private:
         std::unique_ptr<Processor> processor_;

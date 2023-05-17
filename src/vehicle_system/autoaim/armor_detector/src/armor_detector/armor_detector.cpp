@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-05-17 05:17:50
+ * @LastEditTime: 2023-05-17 14:20:59
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -54,31 +54,43 @@ namespace armor_detector
      * @return true 
      * @return false 
      */
-    bool Detector::detectArmor(TaskData &src, geometry_msgs::msg::TransformStamped t, bool& is_target_lost)
+    bool Detector::detectArmor(TaskData &src, bool& is_target_lost)
     {
         time_start_ = steady_clock_.now();
         last_timestamp_ = now_;
         now_ = src.timestamp;
         auto input = src.img;
+
+        mode_ = src.mode;
+        Eigen::Matrix3d rmat_gimbal = src.rmat_gimbal;
+        Eigen::Vector3d translation = src.translation;
         
-        if (debug_params_.use_serial)
-        {   //使用串口数据
-            //设置弹速,若弹速大于10m/s值,且弹速变化大于0.5m/s则更新
-            if (src.bullet_speed > 10 && abs(src.bullet_speed - last_bullet_speed_) > 0.5)
-            {
-                double bullet_speed;
-                if (abs(src.bullet_speed - last_bullet_speed_) > 0.5)
-                    bullet_speed = src.bullet_speed;
-                else
-                    bullet_speed = (last_bullet_speed_ + src.bullet_speed) / 2;
+        // if (debug_params_.use_serial)
+        // {   //使用串口数据
+        //     //设置弹速,若弹速大于10m/s值,且弹速变化大于0.5m/s则更新
+        //     if (src.bullet_speed > 10 && abs(src.bullet_speed - last_bullet_speed_) > 0.5)
+        //     {
+        //         double bullet_speed;
+        //         if (abs(src.bullet_speed - last_bullet_speed_) > 0.5)
+        //             bullet_speed = src.bullet_speed;
+        //         else
+        //             bullet_speed = (last_bullet_speed_ + src.bullet_speed) / 2;
                 
-                coordsolver_.setBulletSpeed(bullet_speed);
-                last_bullet_speed_ = bullet_speed;
-            }
-            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "serial_bullet_speed:%.2f bullet_speed:%.2f", src.bullet_speed, last_bullet_speed_);
-        }
+        //         coordsolver_.setBulletSpeed(bullet_speed);
+        //         last_bullet_speed_ = bullet_speed;
+        //     }
+        //     RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "serial_bullet_speed:%.2f bullet_speed:%.2f", src.bullet_speed, last_bullet_speed_);
+        // }
 
+        // Eigen::Quaterniond quat_gimbal;
+        // quat_gimbal.x = t.transform.rotation.x;
+        // quat_gimbal.y = t.transform.rotation.y;
+        // quat_gimbal.z = t.transform.rotation.z;
+        // quat_gimbal.w = t.transform.rotation.w;
+        // Eigen::Matrix3d rmat_gimbal = quat_gimbal.toRotationMatrix();
 
+        // Eigen::Vector3d translation = {t.transform.translation.x, t.transform.translation.y, t.transform.translation.z};
+        
         // if (debug_params_.use_serial)
         // {   //使用陀螺仪数据
         //     rmat_imu_ = src.quat.toRotationMatrix();
@@ -244,29 +256,20 @@ namespace armor_detector
                 target_type = SMALL;
             }
 
-            Eigen::Quaterniond quat_gimbal;
-            quat_gimbal.x = t.transform.rotation.x;
-            quat_gimbal.y = t.transform.rotation.y;
-            quat_gimbal.z = t.transform.rotation.z;
-            quat_gimbal.w = t.transform.rotation.w;
-            Eigen::Matrix3d rmat_gimbal = quat_gimbal.toRotationMatrix();
-
-            Eigen::Vector3d translation = {t.transform.translation.x, t.transform.translation.y, t.transform.translation.z};
-
             // 单目PnP
             // PnPInfo pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
             // PnPInfo pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
-            PnPInfo pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
-            pnp_result.armor_world = rmat_gimbal * pnp_result.armor_cam + translation;
-            pnp_result.rmat = rmat_gimbal * pnp_result.rmat; 
-            pnp_result.euler = pnp_result.rmat.eulerAngles(2, 1, 0); //(yaw/pitch/roll)
-            pnp_result.rangle = pnp_result.euler(0);
+            PnPInfo pnp_result = coordsolver_.pnp(points_pic, rmat_gimbal, translation, target_type, SOLVEPNP_IPPE);
+            // pnp_result.armor_world = rmat_gimbal * pnp_result.armor_cam + translation;
+            // pnp_result.rmat = rmat_gimbal * pnp_result.rmat; 
+            // pnp_result.euler = pnp_result.rmat.eulerAngles(2, 1, 0); //(yaw/pitch/roll)
+            // pnp_result.rangle = pnp_result.euler(0);
 
             //防止装甲板类型出错导致解算问题，首先尝试切换装甲板类型，若仍无效则直接跳过该装甲板
             if (!isPnpSolverValidation(pnp_result.armor_cam))
             {
                 target_type = (target_type == SMALL) ? BIG : SMALL;
-                pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
+                pnp_result = coordsolver_.pnp(points_pic, rmat_gimbal, translation, target_type, SOLVEPNP_IPPE);
                 // cout << 2 << endl;
 
                 if (!isPnpSolverValidation(pnp_result.armor_cam))
@@ -798,13 +801,13 @@ namespace armor_detector
             line(src.img, cv::Point2f(armor_center.x, armor_center.y - 30), cv::Point2f(armor_center.x, armor_center.y + 30), {0, 0, 255}, 1);
         }
         
-        auto angle = coordsolver_.getAngle(target.armor3d_cam, rmat_imu_);
-        // 若预测出错则直接世界坐标系下坐标作为击打点
-        if (!isAngleSolverValidataion(angle))
-        {
-            angle = coordsolver_.getAngle(target.armor3d_world, rmat_imu_);
-            RCLCPP_ERROR(logger_, "Error while solving angle: %.2f %.2f", angle[0], angle[1]);
-        }
+        // auto angle = coordsolver_.getAngle(target.armor3d_cam, rmat_imu_);
+        // // 若预测出错则直接世界坐标系下坐标作为击打点
+        // if (!isAngleSolverValidataion(angle))
+        // {
+        //     angle = coordsolver_.getAngle(target.armor3d_world, rmat_imu_);
+        //     RCLCPP_ERROR(logger_, "Error while solving angle: %.2f %.2f", angle[0], angle[1]);
+        // }
         
         auto time_predict = steady_clock_.now();
         double dr_crop_ns = (time_crop_ - time_start_).nanoseconds();

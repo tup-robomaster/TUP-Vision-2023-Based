@@ -1,19 +1,12 @@
 std_msgs/Header header
 uint8 mode
-# float64 w
-# int64 timestamp
-# bool is_controlled
+Armor[] armors
 bool is_target_lost
-string vehicle_id
-uint16 vehicle_hp
-float64 spinning_period
-float32 bullet_speed
-float32 shoot_delay
-bool clockwise
 bool target_switched
 bool is_spinning
+bool is_clockwise
 bool spinning_switched
-bool is_still_spinning
-geometry_msgs/Quaternion quat_imu
+float64 spinning_period
 geometry_msgs/TransformStamped transform_gimbal
-Armor[] armors
+float64 bullet_speed
+float64 shoot_delay

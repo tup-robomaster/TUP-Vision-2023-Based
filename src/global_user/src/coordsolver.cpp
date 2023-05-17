@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-05-17 05:32:13
+ * @LastEditTime: 2023-05-17 13:52:02
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -92,7 +92,7 @@ namespace coordsolver
      * @param method PnP解算方法
      * @return PnPInfo 
      */
-    PnPInfo CoordSolver::pnp(const std::vector<cv::Point2f> &points_pic, const Eigen::Matrix3d &rmat_imu, enum TargetType type, int method = cv::SOLVEPNP_IPPE)
+    PnPInfo CoordSolver::pnp(const std::vector<cv::Point2f> &points_pic, const Eigen::Matrix3d& rmat_gimbal, const Eigen::Vector3d& translation, enum TargetType type, int method = cv::SOLVEPNP_IPPE)
     {
         std::vector<cv::Point3d> points_world;
 
@@ -174,6 +174,10 @@ namespace coordsolver
         {
             result.armor_cam = tvec_eigen;
             result.rmat = rmat_eigen;
+            result.armor_world = rmat_gimbal * result.armor_cam + translation;
+            result.rmat = rmat_gimbal * result.rmat; 
+            result.euler = result.rmat.eulerAngles(2, 1, 0); //(yaw/pitch/roll)
+            result.rangle = result.euler(0);
 
             // result.armor_world = camToWorld(result.armor_cam, rmat_imu);
             // Eigen::Matrix3d rmat_eigen_world = rmat_imu * (transform_ic.block(0, 0, 3, 3) * rmat_eigen);

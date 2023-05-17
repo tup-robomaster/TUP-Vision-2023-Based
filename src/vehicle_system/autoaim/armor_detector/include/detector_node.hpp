@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 16:49:59
- * @LastEditTime: 2023-05-17 04:47:11
+ * @LastEditTime: 2023-05-17 14:10:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/detector_node.hpp
  */
 // #include "../../global_user/include/global_user/global_user.hpp"
@@ -71,14 +71,6 @@ namespace armor_detector
         Mutex serial_msg_mutex_;
         rclcpp::Subscription<SerialMsg>::SharedPtr serial_msg_sub_;
         void sensorMsgCallback(const SerialMsg& serial_msg);
-
-        // Subscribe img and serial msgs synchronously.
-        std::shared_ptr<message_filters::Subscriber<SerialMsg>> serial_msg_sync_sub_;
-        std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image>> img_msg_sync_sub_;
-        // std::shared_ptr<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, SerialMsg>> sync_;
-        MySyncPolicy my_sync_policy_;
-        std::shared_ptr<Synchronizer<MySyncPolicy>> sync_;
-        void syncCallback(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg, const SerialMsg::ConstSharedPtr& serial_msg);
 
         // tf2
         std::unique_ptr<tf2_ros::Buffer> tf_buffer_;

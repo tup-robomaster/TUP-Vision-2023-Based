@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-17 05:33:08
+ * @LastEditTime: 2023-05-17 15:17:56
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -11,7 +11,7 @@ using namespace std::placeholders;
 namespace armor_processor
 {
     ArmorProcessorNode::ArmorProcessorNode(const rclcpp::NodeOptions& options)
-    : Node("armor_processor", options), my_sync_policy_(MySyncPolicy(5))
+    : Node("armor_processor", options)
     {
         RCLCPP_INFO(this->get_logger(), "Starting processor node...");
         try
@@ -45,20 +45,12 @@ namespace armor_processor
         gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/gimbal_msg", qos);
         tracking_info_pub_ = this->create_publisher<GimbalMsg>("/armor_processor/tracking_msg", qos);
 
-        this->declare_parameter<bool>("sync_transport", false);
-        sync_transport_ = this->get_parameter("sync_transport").as_bool();
-        if(!sync_transport_)
-        {
-            // 订阅目标装甲板信息
-            target_info_sub_ = this->create_subscription<AutoaimMsg>(
-                "/armor_detector/armor_msg",
-                qos,
-                std::bind(&ArmorProcessorNode::targetMsgCallback, this, _1));
-        }
-        
-        // 相机类型
-        // this->declare_parameter<int>("camera_type", DaHeng);
-        // int camera_type = this->get_parameter("camera_type").as_int();
+        // 订阅目标装甲板信息
+        autoaim_msg_sub_ = this->create_subscription<AutoaimMsg>(
+            "/armor_detector/armor_msg",
+            qos,
+            std::bind(&ArmorProcessorNode::targetMsgCallback, this, _1)
+        );
         
         this->declare_parameter<bool>("debug", true);
         this->get_parameter("debug", debug_);
@@ -75,28 +67,12 @@ namespace armor_processor
 
             if (debug_param_.show_img)
             {
-                // image_size_ = image_info_.image_size_map[camera_type];
-                std::string camera_topic = "/image";
-                if (sync_transport_)
-                {
-                    RCLCPP_WARN(this->get_logger(), "Synchronously...");
-                    my_sync_policy_.setInterMessageLowerBound(0, rclcpp::Duration(0, 3e5));
-                    my_sync_policy_.setInterMessageLowerBound(1, rclcpp::Duration(0, 3e5));
-                    my_sync_policy_.setMaxIntervalDuration(rclcpp::Duration(0, 3e7));
-                    img_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this, camera_topic, rmw_qos);
-                    target_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<AutoaimMsg>>(this, "/armor_detector/armor_msg", rmw_qos);
-                    sync_ = std::make_shared<message_filters::Synchronizer<MySyncPolicy>>(MySyncPolicy(my_sync_policy_), *img_msg_sync_sub_, *target_msg_sync_sub_);
-                    sync_->registerCallback(std::bind(&ArmorProcessorNode::syncCallback, this, _1, _2));
-                }
-                else
-                {
-                    RCLCPP_WARN_ONCE(this->get_logger(), "Img subscribing...");
-                    // 图像的传输方式
-                    std::string transport = "raw";
-                    // image sub.
-                    img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
-                        std::bind(&ArmorProcessorNode::imageCallback, this, _1), transport, rmw_qos));
-                }
+                RCLCPP_WARN_ONCE(this->get_logger(), "Img subscribing...");
+                // 图像的传输方式
+                std::string transport = "raw";
+                // image sub.
+                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, "/image",
+                    std::bind(&ArmorProcessorNode::imageCallback, this, _1), transport, rmw_qos));
                 // 动态调参回调
                 callback_handle_ = this->add_on_set_parameters_callback(std::bind(&ArmorProcessorNode::paramsCallback, this, _1));
             }
@@ -107,44 +83,15 @@ namespace armor_processor
     {
     }
 
-    void ArmorProcessorNode::syncCallback(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg, const AutoaimMsg::ConstSharedPtr& target_msg)
-    {
-        rclcpp::Time last = img_msg->header.stamp;
-        rclcpp::Time now = this->get_clock()->now();
-        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Delay:%.2fms", (now.nanoseconds() - last.nanoseconds()) / 1e6);
-
-        cv::Mat src = cv_bridge::toCvShare(img_msg, "bgr8")->image;
-        if (!processTargetMsg(*target_msg, &src))
-            RCLCPP_ERROR(this->get_logger(), "Armor processes error synchronously...");
-        
-        if (debug_param_.show_img)
-        {
-            cv::namedWindow("pred", cv::WINDOW_AUTOSIZE);
-            cv::imshow("pred", src);
-            cv::waitKey(1);
-        }
-        return;
-    }
-
     /**
      * @brief 目标回调函数
      * 
-     * @param target_info 装甲板信息
+     * @param autoaim_msg 装甲板信息
      */
-    void ArmorProcessorNode::targetMsgCallback(const AutoaimMsg& target_info)
+    void ArmorProcessorNode::targetMsgCallback(const AutoaimMsg& autoaim_msg)
     {
-        if (!processTargetMsg(target_info))
-            RCLCPP_WARN(this->get_logger(), "Armor processes error...");            
-        return;
-    }
-
-    bool ArmorProcessorNode::processTargetMsg(const AutoaimMsg& target_info, cv::Mat* src)
-    {
-        // rclcpp::Time sp = target_info.header.stamp;
-        // cout << "sp:" << sp.nanoseconds() / 1e9 << endl;
-
         double sleep_time = 0.0;
-        AutoaimMsg target = std::move(target_info);
+        AutoaimMsg target = std::move(autoaim_msg);
         Eigen::Vector2d angle = {0.0, 0.0};
         Eigen::Vector2d tracking_angle = {0.0, 0.0};
         Eigen::Vector3d aiming_point_world = {0.0, 0.0, 0.0};
@@ -153,13 +100,19 @@ namespace armor_processor
         Eigen::Matrix3d rmat_imu;
         Eigen::Quaterniond quat_imu;
         vector<Eigen::Vector4d> armor3d_vec;
-        Eigen::Vector3d vehicle_center3d_cam = {0.0, 0.0, 0.0};
-        Eigen::Vector4d vehicle_center3d_world = {0.0, 0.0, 0.0, 0.0};
-        // PostProcessInfo post_process_info;
         cv::Point2f point_2d = {0, 0};
         double min_dist = 1e2;
         int idx = 0, flag = -1;
         bool is_shooting = false;
+        
+        geometry_msgs::msg::TransformStamped t = target.transform_gimbal;
+        Eigen::Quaterniond quat_gimbal;
+        quat_gimbal.x() = t.transform.rotation.x;
+        quat_gimbal.y() = t.transform.rotation.y;
+        quat_gimbal.z() = t.transform.rotation.z;
+        quat_gimbal.w() = t.transform.rotation.w;
+        Eigen::Matrix3d rmat_gimbal = quat_gimbal.toRotationMatrix();
+        Eigen::Vector3d translation = {t.transform.translation.x, t.transform.translation.y, t.transform.translation.z};
 
         if (target.bullet_speed >= 10.0)
         {   //更新弹速
@@ -167,39 +120,12 @@ namespace armor_processor
         }
 
         if (target.shoot_delay >= 50)
-        {
+        {   //更新发弹延迟
             processor_->predict_param_.shoot_delay = (processor_->predict_param_.shoot_delay + target.shoot_delay) / 2.0;
         }
 
-        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 100, "rec_bullet_speed:%.3f cur_bullet_speed:%.3f cur_shoot_delay:%.3f", target_info.bullet_speed, processor_->coordsolver_.getBulletSpeed(), processor_->predict_param_.shoot_delay);
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 100, "rec_bullet_speed:%.3f cur_bullet_speed:%.3f cur_shoot_delay:%.3f", target.bullet_speed, processor_->coordsolver_.getBulletSpeed(), processor_->predict_param_.shoot_delay);
         
-        geometry_msgs::msg::TransformStamped t = target_info.transform_gimbal;
-        
-        Eigen::Quaterniond quat_gimbal;
-        quat_gimbal.x = t.transform.rotation.x;
-        quat_gimbal.y = t.transform.rotation.y;
-        quat_gimbal.z = t.transform.rotation.z;
-        quat_gimbal.w = t.transform.rotation.w;
-        Eigen::Matrix3d rmat_gimbal = quat_gimbal.toRotationMatrix();
-
-        Eigen::Vector3d translation = {t.transform.translation.x, t.transform.translation.y, t.transform.translation.z};
-        // if(debug_param_.use_serial)
-        // {
-        //     if (debug_param_.use_imu)
-        //     {
-        //         quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
-        //         rmat_imu = quat_imu.toRotationMatrix();
-        //     }
-        //     else
-        //     {
-        //         rmat_imu = Eigen::Matrix3d::Identity();
-        //     }
-        // }
-        // else
-        // {
-        //     rmat_imu = Eigen::Matrix3d::Identity();
-        // }
-                                     
         cv::Mat dst;
         if (debug_param_.show_img)
         {
@@ -245,10 +171,9 @@ namespace armor_processor
                                 min_dist = armor3d_dist;
                                 flag = idx;
                             }
-                        
-                            // Eigen::Vector3d armor_point3d_cam = processor_->coordsolver_.worldToCam({armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)}, rmat_imu);
-                            Eigen::Vector3d armor_point3d_cam = rmat_gimbal.transpose() * armor_point3d_world - translation; 
-                            point_2d = processor_->coordsolver_.reproject(armor_point3d_cam);
+                            Eigen::Vector3d armor3d_world = {armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)};
+                            Eigen::Vector3d armor3d_cam = rmat_gimbal.transpose() * armor3d_world - translation; 
+                            point_2d = processor_->coordsolver_.reproject(armor3d_cam);
                             cv::circle(dst, point_2d, 13, {255, 255, 0}, -1);
                             ++idx;
                         }
@@ -266,8 +191,6 @@ namespace armor_processor
                     {   //机动目标下自动开火判据(TODO)
                         
                     }
-                    // aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
-                    // angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
                     aiming_point_cam = rmat_gimbal.transpose() * aiming_point_world - translation; 
                     angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_gimbal, translation);
                 }
@@ -292,10 +215,9 @@ namespace armor_processor
             param_mutex_.unlock();
         }
 
-        if (!target_info.is_target_lost)
+        if (!target.is_target_lost)
         {
-            tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
-            // tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
+            tracking_point_cam = {target.armors[0].point3d_cam.x, target.armors[0].point3d_cam.y, target.armors[0].point3d_cam.z};
             tracking_angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_gimbal, translation);
         }
         
@@ -339,7 +261,7 @@ namespace armor_processor
         // Gimbal info pub.
         GimbalMsg gimbal_info;
         gimbal_info.header.frame_id = "barrel_link";
-        gimbal_info.header.stamp = target_info.header.stamp;
+        gimbal_info.header.stamp = target.header.stamp;
         gimbal_info.pitch = abs(angle[1]) >= 45.0 ? 0.0 : angle[1];
         gimbal_info.yaw = abs(angle[0]) >= 45.0 ? 0.0 : angle[0];
         gimbal_info.pred_point_cam.x = aiming_point_cam[0];
@@ -349,10 +271,10 @@ namespace armor_processor
         gimbal_info.meas_point_cam.y = tracking_point_cam[1];
         gimbal_info.meas_point_cam.z = tracking_point_cam[2];
         gimbal_info.distance = aiming_point_cam.norm();
-        gimbal_info.is_target = !target_info.is_target_lost;
-        gimbal_info.is_switched = target_info.target_switched;
-        gimbal_info.is_spinning = target_info.is_spinning;
-        gimbal_info.is_spinning_switched = target_info.spinning_switched;
+        gimbal_info.is_target = !target.is_target_lost;
+        gimbal_info.is_switched = target.target_switched;
+        gimbal_info.is_spinning = target.is_spinning;
+        gimbal_info.is_spinning_switched = target.spinning_switched;
         gimbal_info.is_shooting = is_shooting;
         gimbal_info.is_prediction = is_pred_; 
         gimbal_info_pub_->publish(std::move(gimbal_info));
@@ -361,7 +283,7 @@ namespace armor_processor
         {
             GimbalMsg tracking_info;
             tracking_info.header.frame_id = "barrel_link1";
-            tracking_info.header.stamp = target_info.header.stamp;
+            tracking_info.header.stamp = target.header.stamp;
             tracking_info.pitch = abs(tracking_angle[1]) >= 45.0 ? 0.0 : tracking_angle[1];
             tracking_info.yaw = abs(tracking_angle[0]) >= 45.0 ? 0.0 : tracking_angle[0];
             tracking_info.meas_point_cam.x = tracking_point_cam[0];
@@ -371,123 +293,17 @@ namespace armor_processor
             tracking_info.pred_point_cam.y = aiming_point_cam[1];
             tracking_info.pred_point_cam.z = aiming_point_cam[2];
             tracking_info.distance = tracking_point_cam.norm();
-            tracking_info.is_target = !target_info.is_target_lost;
-            tracking_info.is_switched = target_info.target_switched;
-            tracking_info.is_spinning = target_info.is_spinning;
-            tracking_info.is_spinning_switched = target_info.spinning_switched;
+            tracking_info.is_target = !target.is_target_lost;
+            tracking_info.is_switched = target.target_switched;
+            tracking_info.is_spinning = target.is_spinning;
+            tracking_info.is_spinning_switched = target.spinning_switched;
             tracking_info.is_shooting = is_shooting;
             tracking_info.is_prediction = is_pred_;
             tracking_info_pub_->publish(std::move(tracking_info));
             
-            if (!target.is_target_lost)
+            if (!target.is_target_lost && show_marker_)
             {
-                idx = 0;
-                if (show_marker_)
-                {
-                    rclcpp::Time now = this->get_clock()->now();
-
-                    visualization_msgs::msg::MarkerArray marker_array;
-                    visualization_msgs::msg::Marker marker;
-                    int marker_id = 0;
-                    
-                    // Set the frame ID and timestamp.
-                    marker.header.frame_id = "base_link";
-                    marker.header.stamp = now;
-
-                    // Set the namespace and id for this marker.  This serves to create a unique ID
-                    // Any marker sent with the same namespace and id will overwrite the old one
-                    marker.ns = "basic_shapes";
-
-                    // Set the marker type.  
-                    // Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
-                    marker.type = shape_;
-
-                    // Set the marker action.
-                    // Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
-                    marker.action = visualization_msgs::msg::Marker::ADD;
-
-                    marker.lifetime = rclcpp::Duration::from_nanoseconds((rcl_duration_value_t)5e3);
-                    
-                    for (auto armor3d : armor3d_vec)
-                    {
-                        marker.id = marker_id;
-                        
-                        tf2::Quaternion q;
-                        q.setRPY(CV_PI, -CV_PI / 2, 0);
-                        // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-                        marker.pose.position.x = armor3d(0);
-                        marker.pose.position.y = armor3d(1);
-                        marker.pose.position.z = armor3d(2);
-
-                        if (marker.id == 0)
-                        {
-                            marker.type = visualization_msgs::msg::Marker::ARROW;
-                            // marker.pose.position.z = armor3d(2);
-                        }
-                        else if (flag == idx)
-                        {
-                            marker.type = visualization_msgs::msg::Marker::ARROW;
-                            q.setRPY(0, 0, armor3d(3));
-                        }
-                        else
-                        {
-                            marker.type = shape_;
-                        }
-                        marker.pose.orientation.x = q.x();
-                        marker.pose.orientation.y = q.y();
-                        marker.pose.orientation.z = q.z();
-                        marker.pose.orientation.w = q.w();
-
-                        // Set the scale of the marker -- 1x1x1 here means 1m on a side
-                        if (marker.id == 0)
-                        {
-                            marker.scale.x = armor3d(2);
-                            marker.scale.y = 0.010;
-                            marker.scale.z = 0.010;
-                        }
-                        else if (flag == idx)
-                        {
-                            marker.scale.x = target_info.clockwise ? -0.25 : 0.25;
-                            marker.scale.y = 0.040;
-                            marker.scale.z = 0.040;
-                        }
-                        else
-                        {
-                            marker.scale.x = 0.060;
-                            marker.scale.y = 0.060;
-                            marker.scale.z = 0.060;
-                        }
-
-                        // Set the color -- be sure to set alpha to something non-zero!
-                        if (marker.id == 1)
-                        {
-                            marker.color.r = 1.0f;
-                            marker.color.g = 0.0f;
-                            marker.color.b = 0.0f;
-                            marker.color.a = 1.0;
-                        }
-                        else if (marker.id == 0)
-                        {
-                            marker.color.r = 0.5f;
-                            marker.color.g = 1.0f;
-                            marker.color.b = 0.0f;
-                            marker.color.a = 1.0;
-                        }
-                        else
-                        {
-                            marker.color.r = 0.5f;
-                            marker.color.g = 0.5f;
-                            marker.color.b = 1.0f;
-                            marker.color.a = 1.0;
-                        }
-
-                        marker_array.markers.emplace_back(marker);                     
-                        ++marker_id;
-                        idx++;
-                    }
-                    // Publish the marker_array
-                    marker_array_pub_->publish(marker_array);
-                }
+                pubMarkerArray(armor3d_vec, target.is_clockwise, flag);
             }
         }
 
@@ -506,8 +322,8 @@ namespace armor_processor
             {
                 // Draw target 2d rectangle.
                 for(int i = 0; i < 4; i++)
-                    cv::line(dst, cv::Point2f(target_info.armors.front().point2d[i % 4].x, target_info.armors.front().point2d[i % 4].y),
-                        cv::Point2f(target_info.armors.front().point2d[(i + 1) % 4].x, target_info.armors.front().point2d[(i + 1) % 4].y), {125, 0, 255}, 1);
+                    cv::line(dst, cv::Point2f(target.armors.front().point2d[i % 4].x, target.armors.front().point2d[i % 4].y),
+                        cv::Point2f(target.armors.front().point2d[(i + 1) % 4].x, target.armors.front().point2d[(i + 1) % 4].y), {125, 0, 255}, 1);
                 cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
                 cv::Point2f armor_center = processor_->coordsolver_.reproject(tracking_point_cam);
                 cv::circle(dst, point_2d, 18, {255, 0, 125}, 3);
@@ -545,7 +361,6 @@ namespace armor_processor
             cv::imshow("pred", dst);
             cv::waitKey(1);
         }
-        return true;
     }
 
     /**
@@ -565,6 +380,74 @@ namespace armor_processor
         src_ = cv_bridge::toCvShare(img_msg, "bgr8")->image;
         image_flag_ = true;
         image_mutex_.unlock();
+    }
+
+    void ArmorProcessorNode::pubMarkerArray(vector<Eigen::Vector4d> armor3d_vec, bool is_clockwise, int flag)
+    {
+        visualization_msgs::msg::MarkerArray marker_array;
+        visualization_msgs::msg::Marker marker;
+        int marker_id = 0;
+        
+        rclcpp::Time now = this->get_clock()->now();
+
+        // Set the frame ID and timestamp.
+        marker.header.frame_id = "base_link";
+        marker.header.stamp = now;
+
+        // Set the namespace and id for this marker.  This serves to create a unique ID
+        // Any marker sent with the same namespace and id will overwrite the old one
+        marker.ns = "basic_shapes";
+
+        // Set the marker type.  
+        // Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
+        marker.type = shape_;
+
+        // Set the marker action.
+        // Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
+        marker.action = visualization_msgs::msg::Marker::ADD;
+
+        marker.lifetime = rclcpp::Duration::from_nanoseconds((rcl_duration_value_t)5e3);
+        
+        int idx = 0;
+        for (auto armor3d : armor3d_vec)
+        {
+            marker.id = marker_id;
+            
+            tf2::Quaternion q;
+            q.setRPY(CV_PI, -CV_PI / 2, 0);
+            // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+            marker.pose.position.x = armor3d(0);
+            marker.pose.position.y = armor3d(1);
+            marker.pose.position.z = armor3d(2);
+
+            marker.type = (marker.id == 0 || flag == idx) ? visualization_msgs::msg::Marker::ARROW : shape_;
+            if (flag == idx)
+            {
+                q.setRPY(0, 0, armor3d(3));
+            }
+            
+            marker.pose.orientation.x = q.x();
+            marker.pose.orientation.y = q.y();
+            marker.pose.orientation.z = q.z();
+            marker.pose.orientation.w = q.w();
+
+            // Set the scale of the marker -- 1x1x1 here means 1m on a side
+            marker.scale.x = marker.id == 0 ? armor3d(2) : (flag == idx ? (is_clockwise ? -0.25 : 0.25) : 0.060);
+            marker.scale.y = marker.id == 0 ? 0.010 : (flag == idx ? 0.040 : 0.060);
+            marker.scale.z = marker.scale.y;
+
+            // Set the color -- be sure to set alpha to something non-zero!
+            marker.color.r = marker.id == 1 ? 1.0f : 0.5f;
+            marker.color.g = marker.id == 0 ? 1.0f : (marker.id == 1 ? 0.0f : 0.5f);
+            marker.color.b = marker.id == 0 ? 0.0f : (marker.id == 1 ? 0.0f : 1.0f);
+            marker.color.a = 1.0;
+
+            marker_array.markers.emplace_back(marker);                     
+            ++marker_id;
+            ++idx;
+        }
+        // Publish the marker_array
+        marker_array_pub_->publish(marker_array);
     }
 
     /**

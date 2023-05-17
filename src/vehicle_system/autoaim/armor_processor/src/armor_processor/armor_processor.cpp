@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-05-05 00:04:36
+ * @LastEditTime: 2023-05-17 15:14:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -179,9 +179,8 @@ namespace armor_processor
                 target_msg.target_switched,
                 target_msg.is_spinning,
                 target_msg.spinning_switched,
-                target_msg.clockwise,
+                target_msg.is_clockwise,
                 false,
-                (SpinningStatus)(target_msg.is_still_spinning),
                 predict_param_.system_model
             };
             
