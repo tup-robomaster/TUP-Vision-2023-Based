@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-05-17 14:39:21
+ * @LastEditTime: 2023-05-17 15:32:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -228,8 +228,15 @@ namespace armor_detector
                 Eigen::Vector3d armor_3d_cam = {autoaim_msg.armors.front().point3d_cam.x, autoaim_msg.armors.front().point3d_cam.y, autoaim_msg.armors.front().point3d_cam.z};
                 tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_gimbal, translation);
             }
-            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "target info_cam: %lf %lf %lf", autoaim_msg.armors.front().point3d_cam.x, autoaim_msg.armors.front().point3d_cam.y, autoaim_msg.armors.front().point3d_cam.z);
-            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "target info_world: %lf %lf %lf", autoaim_msg.aiming_point_world.x, autoaim_msg.aiming_point_world.y, autoaim_msg.aiming_point_world.z);
+            
+            RCLCPP_INFO_THROTTLE(
+                this->get_logger(), 
+                *this->get_clock(), 
+                500, 
+                "target info_cam: [%lf %lf %lf] target info_world: [%lf %lf %lf]", 
+                autoaim_msg.armors.front().point3d_cam.x, autoaim_msg.armors.front().point3d_cam.y, autoaim_msg.armors.front().point3d_cam.z,
+                autoaim_msg.aiming_point_world.x, autoaim_msg.aiming_point_world.y, autoaim_msg.aiming_point_world.z
+            );
         }
         param_mutex_.unlock();
 

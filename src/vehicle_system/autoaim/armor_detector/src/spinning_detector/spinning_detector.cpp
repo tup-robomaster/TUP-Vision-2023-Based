@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-05-14 14:14:20
+ * @LastEditTime: 2023-05-17 15:28:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -337,29 +337,8 @@ namespace armor_detector
                         //     );
                         // }
                     }
-                    else
-                    {   //追踪期间目标未发生装甲板切换，此时先不进入陀螺识别
-                        // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "[Spinning]: No hop...");
-                        // tracker.second.relative_angle = relative_angle;
-                        // spinning_map_.spin_status_map[tracker.first].switch_timestamp = 0;
-                        // spinning_map_.spin_status_map[tracker.first].spin_state = UNKNOWN;
-                        // spinning_map_.spin_counter_map[tracker.first].flag = 0;
-                        // spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter = 0;
-                        // spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter = 0;
-                    }  
                 }
             }
-            // else
-            // {
-            //     // tracker.second.relative_angle = relative_angle;
-            //     // spinning_map_.spin_status_map[tracker.first].switch_timestamp = 0;
-            //     spinning_map_.spin_status_map[tracker.first].spin_state = UNKNOWN;
-            //     spinning_map_.spin_counter_map[tracker.first].flag = 0;
-            //     spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter = 0;
-            //     spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter = 0;
-            // }
-            // RCLCPP_INFO(logger_, "normal_status_counter:%d switch_status_counter:%d", 
-            //     spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter, spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter);
         }
 
         last_timestamp_ = now;
@@ -434,13 +413,6 @@ namespace armor_detector
                         && (new_armor_timestamp - spinning_map_.spin_status_map[cnt.first].switch_timestamp) / 1e6 > gyro_params_.switch_max_dt
                         && (last_armor_timestamp - spinning_map_.spin_status_map[cnt.first].switch_timestamp) / 1e6 > gyro_params_.switch_max_dt)
                         {
-                            // last_tracker->normal_gyro_status_counter_ = 0;
-                            // last_tracker->switch_gyro_status_counter_ = 0;
-                            // new_tracker->normal_gyro_status_counter_ = 0;
-                            // new_tracker->switch_gyro_status_counter_ = 0;
-                            // last_tracker->flag_ = 0;
-                            // last_tracker->spin_status_ = UNKNOWN;
-                            // new_tracker->spin_status_ = UNKNOWN;
                             spinning_map_.spin_counter_map[cnt.first].flag = 0;
                             spinning_map_.spin_counter_map[cnt.first].normal_gyro_status_counter = 0;
                             spinning_map_.spin_counter_map[cnt.first].switch_gyro_status_counter = 0;
@@ -448,7 +420,12 @@ namespace armor_detector
                             spinning_map_.spin_status_map[cnt.first].switch_timestamp = 0;
                             spinning_map_.spin_status_map[cnt.first].spin_state = UNKNOWN;
                         }
-                        // RCLCPP_INFO(logger_, "[Spinning]: spin_x_dix:%.3f last_dt:%.5f new_dt:%.5f now:%.5f", abs(spin_x_dis), last_armor_timestamp / 1e9, new_armor_timestamp / 1e9, now / 1e9);
+
+                        // RCLCPP_INFO(
+                        //     logger_, 
+                        //     "[Spinning]: spin_x_dix:%.3f last_dt:%.5f new_dt:%.5f now:%.5f", 
+                        //     abs(spin_x_dis), last_armor_timestamp / 1e9, new_armor_timestamp / 1e9, now / 1e9
+                        // );
 
                         // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "switch_dx:%.3f", abs(spin_x_dis));
                         if (abs(spin_x_dis) > 0.10 && new_armor_timestamp == now && last_armor_timestamp == now)
@@ -457,20 +434,6 @@ namespace armor_detector
                             detector_info_.new_add_tracker_timestamp = new_armor_timestamp;
                             RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "[Spinning]: Switched...");
                             
-                            // 记录新增的装甲板对应的时间戳
-                            // auto cnt = spinning_time_map.count(new_tracker->key);
-                            // if(cnt == 0)
-                            // {   // 若multimap中没有当前key键，则创建
-                            //     Timestamp ts;
-                            //     ts.new_timestamp = new_add_tracker_timestamp;
-                            //     ts.last_timestamp = 0;
-                            //     spinning_time_map.insert(make_pair(new_tracker->key, ts));
-                            // }1 若multimap中存在上次新增装甲板对应的key键，则更新
-                            //     auto candidate = spinning_time_map.find(new_tracker->key);
-                            //     (*candidate).second.last_timestamp = (*candidate).second.new_timestamp;
-                            //     (*candidate).second.new_timestamp = new_armor_timestamp;
-                            // }
-
                             auto cnts = spinning_map_.spinning_x_map.count(new_tracker->key);
                             if(cnts == 0)
                             {
@@ -513,15 +476,9 @@ namespace armor_detector
 
                             spinning_map_.spin_status_map[cnt.first].switch_timestamp = now;
                             ++spinning_map_.spin_counter_map[cnt.first].switch_gyro_status_counter;
-                            
-                            // new_tracker->hop_timestamp_ = now;
-                            // last_tracker->hop_timestamp_ = now;
-                            // ++new_tracker->switch_gyro_status_counter_;
                         }
                         else
                         {
-                            // RCLCPP_WARN(logger_, "switch_dx:%.3f", abs(spin_x_dis));
-                            // --new_tracker->switch_gyro_status_counter_;
                             spinning_map_.spin_status_map[cnt.first].switch_timestamp = now;
                             --spinning_map_.spin_counter_map[cnt.first].switch_gyro_status_counter;
                         }
@@ -547,12 +504,8 @@ namespace armor_detector
                     }
                 }
 
-                if (abs(spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter) >= 20
-                || 
-                // (spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter >= 10
-                // && 
-                abs(spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter >= 3))
-                // )
+                if (abs(spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter) >= 20 ||
+                    abs(spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter >= 6))
                 {
                     SpinHeading spin_status = UNKNOWN;
                     int count = spinning_map_.spin_counter_map[tracker.first].flag;
@@ -577,7 +530,7 @@ namespace armor_detector
                     // spinning_map_.spin_status_map[tracker.first].switch_timestamp = 0;
                     spinning_map_.spin_status_map[tracker.first].spin_state = UNKNOWN;
                 }
-                // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "Normal_counter:%d Switch_counter:%d", spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter, spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter);
+                
                 // RCLCPP_INFO_THROTTLE(
                 //     logger_, 
                 //     steady_clock_, 
@@ -588,7 +541,6 @@ namespace armor_detector
                 // );
             }
         }
-        // cout << "spin detected..." << endl;
         return true;
     }
 } //namespace detector
