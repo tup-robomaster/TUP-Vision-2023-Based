@@ -57,12 +57,9 @@ namespace buff_processor
         target_predictor_sub_ = this->create_subscription<BuffMsg>("/buff_detector/buff_msg", qos,
             std::bind(&BuffProcessorNode::targetPredictorCallback, this, _1));
 
-        // 相机类型
-        this->declare_parameter<int>("camera_type", USBCam);
-        int camera_type = this->get_parameter("camera_type").as_int();
-        
         // 图像的传输方式
         std::string transport_type = "raw";
+        std::string camera_topic = "/image";
         
         bool debug = false;
         this->declare_parameter<bool>("debug", false);
@@ -72,10 +69,7 @@ namespace buff_processor
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffProcessorNode::paramsCallback, this, _1));
             if(debug_param_.show_predict)
             {
-                // sleep(5);
-                image_size_ = image_info_.image_size_map[camera_type];
                 // image sub.
-                std::string camera_topic = image_info_.camera_topic_map[camera_type];
                 img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic, 
                     std::bind(&BuffProcessorNode::imageCallback, this, _1), transport_type, rmw_qos));
             }
@@ -85,9 +79,9 @@ namespace buff_processor
     BuffProcessorNode::~BuffProcessorNode()
     {}
 
-    void BuffProcessorNode::targetFittingCallback(const BuffMsg& target_info)
+    void BuffProcessorNode::targetFittingCallback(const BuffMsg& buff_info)
     {
-        if(buff_processor_->fittingThread(target_info))
+        if(buff_processor_->fittingThread(buff_info))
         {
             
         }
@@ -97,12 +91,31 @@ namespace buff_processor
         }
     }
         
-    void BuffProcessorNode::targetPredictorCallback(const BuffMsg& target_info)
+    void BuffProcessorNode::targetPredictorCallback(const BuffMsg& buff_info)
     {
         TargetInfo predict_info;
         cv::Point2f point_2d = cv::Point2f(0, 0);
+        Eigen::Quaterniond quat_gimbal;
+        geometry_msgs::msg::TransformStamped t = buff_info.transform_gimbal;
 
-        cv::Mat dst = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
+        quat_gimbal.x() = t.transform.rotation.x;
+        quat_gimbal.y() = t.transform.rotation.y;
+        quat_gimbal.z() = t.transform.rotation.z;
+        quat_gimbal.w() = t.transform.rotation.w;
+        Eigen::Matrix3d rmat_gimbal = quat_gimbal.toRotationMatrix();
+        Eigen::Vector3d translation = {t.transform.translation.x, t.transform.translation.y, t.transform.translation.z};
+
+        if (buff_info.bullet_speed >= 10.0)
+        {   //更新弹速
+            buff_processor_->coordsolver_.setBulletSpeed(buff_info.bullet_speed);
+        }
+
+        if (buff_info.shoot_delay >= 50)
+        {   //更新发弹延迟
+            buff_processor_->predictor_param_.shoot_delay = (buff_processor_->predictor_param_.shoot_delay + buff_info.shoot_delay) / 2.0;
+        }
+
+        cv::Mat dst;
         if (debug_param_.show_predict)
         {
             image_mutex_.lock();
@@ -110,16 +123,12 @@ namespace buff_processor
             image_mutex_.unlock();
         }
 
-        if (target_info.is_target_lost)
-        {
-            
-        }
-        else if (buff_processor_->predictorThread(target_info, predict_info))
+        if (buff_processor_->predictorThread(buff_info, rmat_gimbal, translation, predict_info))
         {
             RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "predict...");
             GimbalMsg gimbal_msg;
-            gimbal_msg.header.frame_id = "barrel_link";
-            gimbal_msg.header.stamp = target_info.header.stamp;
+            gimbal_msg.header.frame_id = "barrel_link2";
+            gimbal_msg.header.stamp = buff_info.header.stamp;
             gimbal_msg.pitch = predict_info.angle[1];
             gimbal_msg.yaw = predict_info.angle[0];
             gimbal_msg.distance = predict_info.hit_point_cam.norm();
@@ -132,14 +141,15 @@ namespace buff_processor
             {
                 BuffMsg predict_msg;
                 predict_msg.header.frame_id = "camera_link";
-                predict_msg.header.stamp = target_info.header.stamp;
-                predict_msg.header.stamp.nanosec += (500 * 1e6);
-                // predict_msg.predict_point.x = predict_info.hit_point_cam[0];
-                // predict_msg.predict_point.y = predict_info.hit_point_cam[1];
-                // predict_msg.predict_point.z = predict_info.hit_point_cam[2];
+                predict_msg.header.stamp = buff_info.header.stamp;
                 predict_msg.predict_point.x = predict_info.hit_point_world[0];
                 predict_msg.predict_point.y = predict_info.hit_point_world[1];
                 predict_msg.predict_point.z = predict_info.hit_point_world[2];
+                
+                // predict_msg.header.stamp.nanosec += (500 * 1e6);
+                // predict_msg.predict_point.x = predict_info.hit_point_cam[0];
+                // predict_msg.predict_point.y = predict_info.hit_point_cam[1];
+                // predict_msg.predict_point.z = predict_info.hit_point_cam[2];
             
                 predict_info_pub_->publish(std::move(predict_msg));
             }
@@ -155,8 +165,8 @@ namespace buff_processor
                     //     vertex_sum += apex2d[i];
                     // else
                     //     r_center = apex2d[i];
-                    cv::line(dst, cv::Point2i(target_info.points2d[i % 5].x, target_info.points2d[i % 5].y),
-                        cv::Point2i(target_info.points2d[(i+1)%5].x, target_info.points2d[(i+1)%5].y), {125, 0, 255}, 2);
+                    cv::line(dst, cv::Point2i(buff_info.points2d[i % 5].x, buff_info.points2d[i % 5].y),
+                        cv::Point2i(buff_info.points2d[(i+1)%5].x, buff_info.points2d[(i+1)%5].y), {125, 0, 255}, 2);
                 }
                 point_2d = buff_processor_->coordsolver_.reproject(predict_info.hit_point_cam);
             
@@ -178,22 +188,22 @@ namespace buff_processor
         }
     }
 
-    // void BuffProcessorNode::target_info_callback(const BuffMsg& target_info)
+    // void BuffProcessorNode::buff_info_callback(const BuffMsg& buff_info)
     // {
-    //     if(target_info.target_switched)
+    //     if(buff_info.target_switched)
     //     {
     //         RCLCPP_INFO(this->get_logger(), "Target switched...");    
     //     }
         
     //     TargetInfo target;
     //     // rclcpp::Time now = this->get_clock()->now();
-    //     // Eigen::Vector3d armor_world = {target_info.armor3d_world.x, target_info.armor3d_world.y, target_info.armor3d_world.z};
-    //     if(buff_processor_->predictor(target_info, target))
+    //     // Eigen::Vector3d armor_world = {buff_info.armor3d_world.x, buff_info.armor3d_world.y, buff_info.armor3d_world.z};
+    //     if(buff_processor_->predictor(buff_info, target))
     //     {
     //         // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "predict...");
     //         // GimbalMsg gimbal_msg;
     //         // gimbal_msg.header.frame_id = "barrel_link";
-    //         // gimbal_msg.header.stamp = target_info.header.stamp;
+    //         // gimbal_msg.header.stamp = buff_info.header.stamp;
     //         // gimbal_msg.pitch = target.angle[0];
     //         // gimbal_msg.yaw = target.angle[1];
     //         // gimbal_msg.distance = target.hit_point_cam.norm();
@@ -206,7 +216,7 @@ namespace buff_processor
     //         // {
     //         //     BuffMsg predict_info;
     //         //     predict_info.header.frame_id = "camera_link";
-    //         //     predict_info.header.stamp = target_info.header.stamp;
+    //         //     predict_info.header.stamp = buff_info.header.stamp;
     //         //     predict_info.predict_point.x = target.hit_point_cam[0];
     //         //     predict_info.predict_point.y = target.hit_point_cam[1];
     //         //     predict_info.predict_point.z = target.hit_point_cam[2];
@@ -284,6 +294,7 @@ namespace buff_processor
     {
         //Prediction param.
         this->get_parameter("bullet_speed", predict_param_.bullet_speed);
+        this->get_parameter("shoot_delay", predict_param_.shoot_delay);
         this->get_parameter("delay_big", predict_param_.delay_big);
         this->get_parameter("delay_small", predict_param_.delay_small);
         this->get_parameter("history_deque_len_cos", predict_param_.history_deque_len_cos);
@@ -298,7 +309,7 @@ namespace buff_processor
         
         //Debug param.
         this->get_parameter("show_predict", this->debug_param_.show_predict);
-        this->get_parameter("using_imu", this->debug_param_.using_imu);
+        this->get_parameter("use_serial", this->debug_param_.use_serial);
 
         return true;
     }
@@ -307,6 +318,7 @@ namespace buff_processor
     {
         //Prediction param.
         this->declare_parameter<double>("bullet_speed", 28.0);
+        this->declare_parameter<double>("shoot_delay", 100.0);
         this->declare_parameter<double>("delay_big", 175.0);
         this->declare_parameter<double>("delay_small", 100.0);
         this->declare_parameter<int>("history_deque_len_cos", 250);
@@ -330,7 +342,7 @@ namespace buff_processor
 
         //Debug param.
         this->declare_parameter<bool>("show_predict", true);
-        this->declare_parameter<bool>("using_imu", false);
+        this->declare_parameter<bool>("use_serial", false);
 
         auto success = updateParam();
         if(success)

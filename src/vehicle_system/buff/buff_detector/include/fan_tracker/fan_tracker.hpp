@@ -31,6 +31,7 @@ namespace buff_detector
         Point2f apex2d[5];
         Eigen::Vector3d centerR3d_cam;
         Eigen::Vector3d centerR3d_world;
+        Eigen::Quaterniond quat_cam;
     };
 
     // struct FanTracker

@@ -38,6 +38,7 @@ namespace buff_processor
     {
         string pf_path;
         double bullet_speed;
+        double shoot_delay;
         double max_timespan;            //最大时间跨度，大于该时间重置预测器(ms)
         double max_rmse;                //TODO:回归函数最大Cost
         double max_v;                   //设置最大速度,单位rad/s
@@ -61,6 +62,7 @@ namespace buff_processor
         {
             pf_path = "src/global_user/config/filter_param.yaml";
             bullet_speed = 28.0;
+            shoot_delay = 100.0;
             max_timespan = 50000;       
             max_rmse = 2.0;
             max_v = 3.0;
@@ -95,11 +97,11 @@ namespace buff_processor
 
     struct DebugParam
     {
-        bool using_imu;
+        bool use_serial;
         bool show_predict;
         DebugParam()
         {
-            using_imu = false;
+            use_serial = false;
             show_predict = true;
         }
     };

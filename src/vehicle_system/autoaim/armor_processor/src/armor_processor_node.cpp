@@ -124,7 +124,13 @@ namespace armor_processor
             processor_->predict_param_.shoot_delay = (processor_->predict_param_.shoot_delay + target.shoot_delay) / 2.0;
         }
 
-        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 100, "rec_bullet_speed:%.3f cur_bullet_speed:%.3f cur_shoot_delay:%.3f", target.bullet_speed, processor_->coordsolver_.getBulletSpeed(), processor_->predict_param_.shoot_delay);
+        RCLCPP_WARN_THROTTLE(
+            this->get_logger(), 
+            *this->get_clock(), 
+            100, 
+            "rec_bullet_speed:%.1f cur_bullet_speed:%.1f cur_shoot_delay:%.1f",
+            target.bullet_speed, processor_->coordsolver_.getBulletSpeed(), processor_->predict_param_.shoot_delay
+        );
         
         cv::Mat dst;
         if (debug_param_.show_img)
@@ -172,7 +178,7 @@ namespace armor_processor
                                 flag = idx;
                             }
                             Eigen::Vector3d armor3d_world = {armor_point3d_world(0), armor_point3d_world(1), armor_point3d_world(2)};
-                            Eigen::Vector3d armor3d_cam = rmat_gimbal.transpose() * armor3d_world - translation; 
+                            Eigen::Vector3d armor3d_cam = rmat_gimbal.transpose() * (armor3d_world - translation); 
                             point_2d = processor_->coordsolver_.reproject(armor3d_cam);
                             cv::circle(dst, point_2d, 13, {255, 255, 0}, -1);
                             ++idx;
@@ -191,7 +197,7 @@ namespace armor_processor
                     {   //机动目标下自动开火判据(TODO)
                         
                     }
-                    aiming_point_cam = rmat_gimbal.transpose() * aiming_point_world - translation; 
+                    aiming_point_cam = rmat_gimbal.transpose() * (aiming_point_world - translation); 
                     angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_gimbal, translation);
                 }
 
@@ -327,11 +333,6 @@ namespace armor_processor
                 cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
                 cv::Point2f armor_center = processor_->coordsolver_.reproject(tracking_point_cam);
                 cv::circle(dst, point_2d, 18, {255, 0, 125}, 3);
-                // cv::line(dst, cv::Point2f(point_2d.x - 30, point_2d.y), cv::Point2f(point_2d.x + 30, point_2d.y), {0, 0, 255}, 1);
-                // cv::line(dst, cv::Point2f(point_2d.x, point_2d.y - 35), cv::Point2f(point_2d.x, point_2d.y + 35), {0, 0, 255}, 1);
-                // cv::line(dst, cv::Point2f(armor_center.x - 30, armor_center.y), cv::Point2f(armor_center.x + 30, armor_center.y), {0, 0, 255}, 1);
-                // cv::line(dst, cv::Point2f(armor_center.x, armor_center.y - 35), cv::Point2f(armor_center.x, armor_center.y + 35), {0, 0, 255}, 1);
-                // cv::line(dst, cv::Point2f(point_2d.x, point_2d.y), cv::Point2f(armor_center.x, armor_center.y), {255, 0, 125}, 1);
             }
             if (debug_param_.show_aim_cross)
             {

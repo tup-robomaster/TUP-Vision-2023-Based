@@ -7,12 +7,11 @@
  */
 #include "../include/detector_node.hpp"
 
-using namespace message_filters;
 using namespace std::placeholders;
 namespace armor_detector
 {
     DetectorNode::DetectorNode(const rclcpp::NodeOptions& options)
-    : Node("armor_detector", options), my_sync_policy_(MySyncPolicy(3))
+    : Node("armor_detector", options)
     {
         RCLCPP_WARN(this->get_logger(), "Starting detector node...");
 
@@ -38,10 +37,6 @@ namespace armor_detector
             detector_->is_init_ = true;
         }
         
-        // 同步通信/异步通信
-        this->declare_parameter<bool>("sync_transport", false);
-        bool sync_transport = this->get_parameter("sync_transport").as_bool();
-
         // QoS    
         rclcpp::QoS qos(0);
         qos.keep_last(5);
@@ -61,21 +56,18 @@ namespace armor_detector
         if (debug_.use_serial)
         {
             RCLCPP_INFO(this->get_logger(), "Using serial...");
-            serial_msg_.imu.header.frame_id = "imu_link";
-            this->declare_parameter<int>("mode", 1);
+
+            this->declare_parameter<int>("mode", (int)AUTOAIM);
             serial_msg_.mode = this->get_parameter("mode").as_int();
             this->declare_parameter<double>("bullet_speed", 28.0);
             serial_msg_.bullet_speed = this->get_parameter("bullet_speed").as_double();
             detector_->coordsolver_.setBulletSpeed(serial_msg_.bullet_speed);            
 
-            if (!sync_transport)
-            {
-                // Imu msg sub.
-                serial_msg_sub_ = this->create_subscription<SerialMsg>("/serial_msg",
-                    qos,
-                    std::bind(&DetectorNode::sensorMsgCallback, this, _1)
-                );
-            }
+            // Imu msg sub.
+            serial_msg_sub_ = this->create_subscription<SerialMsg>("/serial_msg",
+                qos,
+                std::bind(&DetectorNode::sensorMsgCallback, this, _1)
+            );
         }
 
         // tf2
@@ -87,31 +79,8 @@ namespace armor_detector
         std::string camera_topic = "/image";
 
         // image sub.
-        if (sync_transport)
-        {
-            // Create serial msg subscriber.
-            serial_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<SerialMsg>>(this, "/serial_msg", rmw_qos);
-
-            // Create image subscriber.
-            img_msg_sync_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this, camera_topic, rmw_qos);
-
-            // Create synchronous timer.
-            my_sync_policy_.setInterMessageLowerBound(0, rclcpp::Duration(0, 1e7));
-            my_sync_policy_.setInterMessageLowerBound(1, rclcpp::Duration(0, 1e7));
-            my_sync_policy_.setMaxIntervalDuration(rclcpp::Duration(0, 3e7));
-            // sync_ = std::make_shared<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, SerialMsg>>(*img_msg_sync_sub_, *serial_msg_sync_sub_, 0.005);
-            sync_ = std::make_shared<message_filters::Synchronizer<MySyncPolicy>>(MySyncPolicy(my_sync_policy_), *img_msg_sync_sub_, *serial_msg_sync_sub_);
-
-            // Register a callback function to process.
-            sync_->registerCallback(std::bind(&DetectorNode::syncCallback, this, _1, _2));
-
-            RCLCPP_WARN(this->get_logger(), "Synchronously...");
-        }
-        else
-        {
-            img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
-                std::bind(&DetectorNode::imageCallback, this, _1), transport_type, rmw_qos));
-        }
+        img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
+            std::bind(&DetectorNode::imageCallback, this, _1), transport_type, rmw_qos));
 
         bool debug = false;
         this->declare_parameter<bool>("debug", true);
@@ -144,15 +113,15 @@ namespace armor_detector
     /**
      * @brief 图像数据回调
      * 
-     * @param img_info 图像传感器数据
+     * @param img_msg 图像传感器数据
      */
-    void DetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
+    void DetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {
         // RCLCPP_INFO(this->get_logger(), "image callback...");
-        if(!img_info)
+        if(!img_msg)
             return;
 
-        rclcpp::Time time = img_info->header.stamp;
+        rclcpp::Time time = img_msg->header.stamp;
         rclcpp::Time now = this->get_clock()->now();
         double dura = (now.nanoseconds() - time.nanoseconds()) / 1e6;
         if ((dura) > 20.0)
@@ -168,9 +137,9 @@ namespace armor_detector
         double shoot_delay = 0.0;
         rclcpp::Time serial_msg_stamp;
         
-        rclcpp::Time stamp = img_info->header.stamp;
+        src.img = cv_bridge::toCvShare(img_msg, "bgr8")->image;
+        rclcpp::Time stamp = img_msg->header.stamp;
         src.timestamp = stamp.nanoseconds();
-        src.img = cv_bridge::toCvShare(img_info, "bgr8")->image;
 
         // compute transformations
         std::string fromFrameRel = "camera_link";
@@ -195,10 +164,10 @@ namespace armor_detector
             return;
         }
 
-        quat_gimbal.x = t.transform.rotation.x;
-        quat_gimbal.y = t.transform.rotation.y;
-        quat_gimbal.z = t.transform.rotation.z;
-        quat_gimbal.w = t.transform.rotation.w;
+        quat_gimbal.x() = t.transform.rotation.x;
+        quat_gimbal.y() = t.transform.rotation.y;
+        quat_gimbal.z() = t.transform.rotation.z;
+        quat_gimbal.w() = t.transform.rotation.w;
         // rotation
         rmat_gimbal = quat_gimbal.toRotationMatrix();
         // translation
@@ -213,9 +182,8 @@ namespace armor_detector
             src.mode = serial_msg_.mode;
             bullet_speed = serial_msg_.bullet_speed;
             shoot_delay = serial_msg_.shoot_delay;
-            serial_msg_stamp = serial_msg_.imu.header.stamp;
+            serial_msg_stamp = serial_msg_.header.stamp;
             serial_msg_mutex_.unlock(); 
-            
         }
 
         param_mutex_.lock();
@@ -224,19 +192,18 @@ namespace armor_detector
             if (detector_->detectSpinning(src, autoaim_msg))
             {
                 RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Spinning detecting...");
-                rmat_imu = src.quat.toRotationMatrix();
                 Eigen::Vector3d armor_3d_cam = {autoaim_msg.armors.front().point3d_cam.x, autoaim_msg.armors.front().point3d_cam.y, autoaim_msg.armors.front().point3d_cam.z};
                 tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_gimbal, translation);
+              
+                RCLCPP_INFO_THROTTLE(
+                    this->get_logger(), 
+                    *this->get_clock(), 
+                    500, 
+                    "target info_cam: [%lf %lf %lf] target info_world: [%lf %lf %lf]", 
+                    autoaim_msg.armors.front().point3d_cam.x, autoaim_msg.armors.front().point3d_cam.y, autoaim_msg.armors.front().point3d_cam.z,
+                    autoaim_msg.armors.front().point3d_world.x, autoaim_msg.armors.front().point3d_world.y, autoaim_msg.armors.front().point3d_world.z
+                );
             }
-            
-            RCLCPP_INFO_THROTTLE(
-                this->get_logger(), 
-                *this->get_clock(), 
-                500, 
-                "target info_cam: [%lf %lf %lf] target info_world: [%lf %lf %lf]", 
-                autoaim_msg.armors.front().point3d_cam.x, autoaim_msg.armors.front().point3d_cam.y, autoaim_msg.armors.front().point3d_cam.z,
-                autoaim_msg.aiming_point_world.x, autoaim_msg.aiming_point_world.y, autoaim_msg.aiming_point_world.z
-            );
         }
         param_mutex_.unlock();
 
@@ -248,6 +215,18 @@ namespace armor_detector
         //     Eigen::AngleAxisd yawAngle(Eigen::AngleAxisd(rpy_raw[0], Eigen::Vector3d::UnitZ()));
         //     Eigen::Matrix3d rmat = yawAngle * pitchAngle * rollAngle;
         // }
+
+        if (!autoaim_msg.is_target_lost)
+        {
+            for (auto target : autoaim_msg.armors)
+            {
+                RCLCPP_WARN(
+                    this->get_logger(),
+                    "rangle: %.3f",
+                    target.rangle    
+                );
+            }
+        }
 
         autoaim_msg.header.frame_id = "gimbal_link";
         autoaim_msg.header.stamp = stamp;
@@ -275,7 +254,8 @@ namespace armor_detector
             char ch3[50];
             double dt = (now - serial_msg_stamp).nanoseconds() / 1e6;
             sprintf(ch3, "IMU_DELAY:%.2fms", dt);
-            putText(src.img, ch3, cv::Point2i(50, 80), cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
+            std::string imu_delay = ch3;
+            putText(src.img, imu_delay, cv::Point2i(50, 80), cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
 
             cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
             cv::imshow("dst", src.img);
@@ -339,8 +319,8 @@ namespace armor_detector
         this->declare_parameter("show_crop_img", false);
         this->declare_parameter("show_aim_cross", false);
         this->declare_parameter("show_fps", false);
-        this->declare_parameter("print_letency", false);
-        this->declare_parameter("print_autoaim_msg", false);
+        this->declare_parameter("print_latency", false);
+        this->declare_parameter("print_target_info", false);
         this->declare_parameter("show_all_armors", false);
         this->declare_parameter("save_data", false);
         this->declare_parameter("save_dataset", false);
@@ -389,8 +369,8 @@ namespace armor_detector
         debug_.show_crop_img = this->get_parameter("show_crop_img").as_bool();
         debug_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
         debug_.show_fps = this->get_parameter("show_fps").as_bool();
-        debug_.print_letency = this->get_parameter("print_letency").as_bool();
-        debug_.print_autoaim_msg = this->get_parameter("print_autoaim_msg").as_bool();
+        debug_.print_latency = this->get_parameter("print_latency").as_bool();
+        debug_.print_target_info = this->get_parameter("print_target_info").as_bool();
         debug_.show_all_armors = this->get_parameter("show_all_armors").as_bool();
         debug_.save_data = this->get_parameter("save_data").as_bool();
         debug_.save_dataset = this->get_parameter("save_dataset").as_bool();

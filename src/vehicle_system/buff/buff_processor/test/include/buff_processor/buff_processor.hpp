@@ -46,7 +46,7 @@ namespace buff_processor
         BuffPredictor buff_predictor_;
         
         bool fittingThread(BuffMsg buff_msg);
-        bool predictorThread(BuffMsg buff_msg, TargetInfo& target_info);
+        bool predictorThread(BuffMsg buff_msg, Eigen::Matrix3d rmat_gimbal, Eigen::Vector3d translation, TargetInfo& target_info);
         bool predictor(BuffMsg buff_msg, TargetInfo& target_info);
     };
 } //namespace buff_processor

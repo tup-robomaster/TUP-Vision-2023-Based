@@ -116,9 +116,9 @@ namespace serialport
                 t.child_frame_id = "imu_link";
                 
                 // Translation
-                t.transform.translation.x = 0.0;
+                t.transform.translation.x = -0.1;
                 t.transform.translation.y = 0.0;
-                t.transform.translation.z = 0.0;
+                t.transform.translation.z = -0.05;
 
                 // Rotation
                 t.transform.rotation.x = 0.0;
@@ -135,7 +135,6 @@ namespace serialport
                 if (!serial_port_->serial_data_.is_initialized)
                 {
                     RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "Serial port offline!!!");
-                    usleep(1000);
                     continue;
                 }
 
@@ -156,12 +155,10 @@ namespace serialport
                 uchar flag = serial_port_->serial_data_.rdata[0];
                 uchar mode = serial_port_->serial_data_.rdata[1];
                 mode_ = mode;
+
                 // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
-                // RCLCPP_INFO(this->get_logger(), "mode:%d", mode);
-                
                 if (flag == 0xA5)
                 {
-                    // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
                     std::vector<float> quat;
                     std::vector<float> gyro;
                     std::vector<float> acc;
@@ -175,12 +172,6 @@ namespace serialport
                     data_transform_->getBulletSpeed(&serial_port_->serial_data_.rdata[43], bullet_speed);
                     data_transform_->getShootDelay(&serial_port_->serial_data_.rdata[47], shoot_delay);
                     
-                    // Gimbal angle
-                    // float yaw_angle = 0.0, pitch_angle = 0.0;
-                    // data_transform_->getYawAngle(flag, &serial_port_->serial_data_.rdata[55], yaw_angle);
-                    // data_transform_->getPitchAngle(flag, &serial_port_->serial_data_.rdata[59], pitch_angle);
-                    // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "yaw_angle:%.2f", yaw_angle);
-                    // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "pitch_angle:%.2f", pitch_angle);
                     if (print_serial_info_)
                     {
                         RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "quat:[%.3f %.3f %.3f %.3f]", quat[0], quat[1], quat[2], quat[3]);
@@ -194,39 +185,26 @@ namespace serialport
                     SerialMsg serial_msg;
                     serial_msg.header.frame_id = "serial";
                     serial_msg.header.stamp = now;
-                    serial_msg.imu.header.frame_id = "imu_link";
-                    serial_msg.imu.header.stamp = now;
                     serial_msg.mode = mode;
                     serial_msg.bullet_speed = bullet_speed;
                     serial_msg.shoot_delay = shoot_delay;
-                    serial_msg.imu.orientation.w = quat[0];
-                    serial_msg.imu.orientation.x = quat[1];
-                    serial_msg.imu.orientation.y = quat[2];
-                    serial_msg.imu.orientation.z = quat[3];
-                    serial_msg.imu.angular_velocity.x = gyro[0];
-                    serial_msg.imu.angular_velocity.y = gyro[1];
-                    serial_msg.imu.angular_velocity.z = gyro[2];
-                    serial_msg.imu.linear_acceleration.x = acc[0];
-                    serial_msg.imu.linear_acceleration.y = acc[1];
-                    serial_msg.imu.linear_acceleration.z = acc[2];
                     
                     geometry_msgs::msg::TransformStamped t;
-
                     // Read message content and assign it to corresponding tf variables
                     t.header.stamp = this->get_clock()->now();
                     t.header.frame_id = "base_link";
                     t.child_frame_id = "imu_link";
 
                     // Translation
-                    t.transform.translation.x = 0.0;
+                    t.transform.translation.x = -0.1;
                     t.transform.translation.y = 0.0;
-                    t.transform.translation.z = 0.0;
+                    t.transform.translation.z = -0.05;
 
                     // Rotation
-                    t.transform.rotation.x = serial_msg.imu.orientation.x;
-                    t.transform.rotation.y = serial_msg.imu.orientation.y;
-                    t.transform.rotation.z = serial_msg.imu.orientation.z;
-                    t.transform.rotation.w = serial_msg.imu.orientation.w;
+                    t.transform.rotation.w = quat[0];
+                    t.transform.rotation.x = quat[1];
+                    t.transform.rotation.y = quat[2];
+                    t.transform.rotation.z = quat[3];
 
                     // Send the transformation
                     tf_broadcaster_->sendTransform(t);

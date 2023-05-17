@@ -8,9 +8,11 @@
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-
+  
   <depend>rclcpp</depend>
   <depend>rclpy</depend>
+  <depend>tf2_ros</depend>
+  <depend>geometry_msgsy</depend>
   <depend>OpenCV</depend>
   <depend>message_filters</depend>
   <depend>image_transport</depend>

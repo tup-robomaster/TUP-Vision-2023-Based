@@ -209,7 +209,7 @@ namespace armor_detector
         bool show_crop_img;
         bool show_all_armors;
         bool show_fps;
-        bool print_letency;
+        bool print_latency;
         bool print_target_info;
         bool save_data;
         bool save_dataset;
@@ -225,7 +225,7 @@ namespace armor_detector
             save_data = false;
             save_dataset = false;
             show_crop_img = false;
-            print_letency = false;
+            print_latency = false;
             show_aim_cross = false;
             show_all_armors = false;
             print_target_info = false; 

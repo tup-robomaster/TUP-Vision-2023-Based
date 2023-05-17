@@ -38,6 +38,7 @@ namespace coordsolver
         Eigen::Vector3d R_world;
         Eigen::Vector3d euler;
         Eigen::Matrix3d rmat;
+        Eigen::Quaterniond quat_cam;
         double rangle;
     };
 
@@ -53,12 +54,12 @@ namespace coordsolver
         
         PnPInfo pnp(const std::vector<cv::Point2f> &points_pic, const Eigen::Matrix3d& rmat_gimbal, const Eigen::Vector3d& translation, enum TargetType type, int method);
         
-        Eigen::Vector3d camToWorld(const Eigen::Vector3d &point_camera,const Eigen::Matrix3d &rmat);
-        Eigen::Vector3d worldToCam(const Eigen::Vector3d &point_world,const Eigen::Matrix3d &rmat);
+        // Eigen::Vector3d camToWorld(const Eigen::Vector3d &point_camera,const Eigen::Matrix3d &rmat);
+        // Eigen::Vector3d worldToCam(const Eigen::Vector3d &point_world,const Eigen::Matrix3d &rmat);
+        // Eigen::Vector2d getAngle(Eigen::Vector3d &xyz_cam, Eigen::Matrix3d &rmat);
 
         Eigen::Vector3d staticCoordOffset(Eigen::Vector3d &xyz);
         Eigen::Vector2d staticAngleOffset(Eigen::Vector2d &angle);
-        Eigen::Vector2d getAngle(Eigen::Vector3d &xyz_cam, Eigen::Matrix3d &rmat);
         Eigen::Vector2d getAngle(Eigen::Vector3d xyz_cam, Eigen::Matrix3d rmat_gimbal, Eigen::Vector3d translation);
         bool setStaticAngleOffset(const Eigen::Vector2d& static_angle_offset);
         double getBulletSpeed();
@@ -72,16 +73,18 @@ namespace coordsolver
 
     private:
         YAML::Node param_node;
-        int max_iter;
-        float stop_error;
-        int R_K_iter;
+        int max_iter = 10;          // 使用迭代法求解pitch补偿的最大迭代次数
+        float stop_error = 0.001;   // 停止迭代的最小误差(单位m)
+        int R_K_iter = 50;          // 龙格库塔法求解落点的迭代次数
+        Eigen::Vector3d xyz_offset = {0.0, 0.0, 0.0}; // x,y,z坐标偏移量(相机至枪管),单位m
+        
+        // Eigen::Vector3d t_iw;
+        // Eigen::Matrix4d transform_ic;
+        // Eigen::Matrix4d transform_ci;
+
+        Eigen::Vector2d angle_offset = {0.0, 0.0};
         cv::Mat intrinsic = cv::Mat(3, 3, CV_64FC1);
         cv::Mat dis_coeff = cv::Mat(1, 5, CV_64FC1);
-        Eigen::Vector3d xyz_offset;
-        Eigen::Vector2d angle_offset;
-        Eigen::Vector3d t_iw;
-        Eigen::Matrix4d transform_ic;
-        Eigen::Matrix4d transform_ci;
 
         double bullet_speed = 16.0;   
         // const double k = 0.01903;                //25°C,1atm,小弹丸

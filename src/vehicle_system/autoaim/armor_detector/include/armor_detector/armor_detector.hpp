@@ -9,10 +9,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <angles/angles.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include <geometry_msgs/msg/transform_stamped.hpp>
 
 #include "../param_struct/param_struct.hpp"
-#include "../param_struct/curve_fitting.hpp"
 #include "../inference/inference_api2.hpp"
 #include "../armor_tracker/armor_tracker.hpp"
 #include "../spinning_detector/spinning_detector.hpp"
@@ -40,7 +38,7 @@ namespace armor_detector
         ~Detector();
 
         // void run();
-        bool detectArmor(TaskData &src, const Eigen::Matrix3d rmat_gimbal, const Eigen::Vector3d translation, bool& is_target_lost);
+        bool detectArmor(TaskData &src, bool& is_target_lost);
         bool detectSpinning(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp = ObjHPMsg(), DecisionMsg decision_msg = DecisionMsg());
 
         Point2i cropImageByROI(Mat &img);

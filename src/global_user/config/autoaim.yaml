@@ -2,6 +2,7 @@
   ros__parameters:
   # Detector params.
     color: 1 # red: 1 / blue: 0
+    mode: 1  #模式位
     max_delta_t: 50
     max_lost_cnt: 5
     max_armors_cnt: 8
@@ -53,8 +54,7 @@
     show_aim_cross: true
     show_all_armors: true
     auto_label: false
-    print_letency: false
-    sync_transport: false
+    print_latency: false
     print_target_info: false
 
 /armor_processor:        
@@ -79,7 +79,6 @@
     show_aim_cross: true
     show_fps: false
     print_delay: false
-    sync_transport: false
     show_marker: false
  
   # Camera params.

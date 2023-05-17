@@ -38,7 +38,7 @@ namespace buff_detector
 
     }
 
-    bool Detector::run(TaskData& src, TargetInfo& target_info)
+    bool Detector::run(TaskData& src, TargetInfo& buff_info)
     {
         auto time_start = steady_clock_.now();
 
@@ -46,40 +46,11 @@ namespace buff_detector
         // vector<Fan> fans_;
         auto input = src.img;
 
-        // TODO:放在节点类初始化时加载
-        if(!is_initialized_)
-        {
-            buff_detector_.initModel(path_param_.network_path);
-            coordsolver_.loadParam(path_param_.camera_param_path, path_param_.camera_name);
-            is_initialized_ = true;
-        }
+        Eigen::Matrix3d rmat_gimbal = src.rmat_gimbal;
+        Eigen::Vector3d translation = src.translation;
 
-        if (!debug_param_.using_imu && src.bullet_speed > 10)
-        {
-            double bullet_speed = 0.0;
-            if (abs(src.bullet_speed - last_bullet_speed_) < 0.5 || abs(src.bullet_speed - last_bullet_speed_) > 1.5)
-            {
-                bullet_speed = src.bullet_speed;
-                coordsolver_.setBulletSpeed(bullet_speed);
-                last_bullet_speed_ = bullet_speed;
-                target_info.bullet_speed = bullet_speed;
-                RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "bullet speed: %.2fm/s", bullet_speed);
-            }
-        }
-
-        if (debug_param_.using_imu)
-        {
-            rmat_imu_ = src.quat.toRotationMatrix();
-            RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Using imu...");
-        }
-        else
-        {
-            rmat_imu_= Eigen::Matrix3d::Identity();
-            RCLCPP_WARN_THROTTLE(logger_, this->steady_clock_, 500, "No imu...");
-        }
-        
         // TODO:修复ROI
-        if (debug_param_.using_roi)
+        if (debug_param_.use_roi)
         {
             roi_offset_ = cropImageByROI(input);
             RCLCPP_INFO_ONCE(logger_, "Using roi...");
@@ -100,7 +71,7 @@ namespace buff_detector
             lost_cnt_++;
             is_last_target_exists_ = false;
             last_target_area_ = 0;
-            target_info.find_target = false;
+            buff_info.find_target = false;
             RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "No buff target is detected...");
             return false;
         }
@@ -116,6 +87,7 @@ namespace buff_detector
             if(!debug_param_.detect_red)
                 if (object.color != 0 && object.color != 1)
                     continue;
+            
             Fan fan;
             fan.id = object.cls;
             fan.color = object.color;
@@ -161,7 +133,7 @@ namespace buff_detector
             
             // TODO:迭代法进行PnP解算
             TargetType target_type = BUFF;
-            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
+            auto pnp_result = coordsolver_.pnp(points_pic, rmat_gimbal, translation, target_type, SOLVEPNP_ITERATIVE);
             // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
 
             fan.armor3d_cam = pnp_result.armor_cam;
@@ -170,6 +142,7 @@ namespace buff_detector
             fan.centerR3d_world = pnp_result.R_world;
             fan.euler = pnp_result.euler;
             fan.rmat = pnp_result.rmat;
+            fan.quat_cam = pnp_result.quat_cam;
 
             // Eigen::Vector2d center_yaw_pitch;
             // center_yaw_pitch[0] = fan.centerR3d_world[1] / fan.centerR3d_world[0];
@@ -445,7 +418,7 @@ namespace buff_detector
 
             lost_cnt_++;
             is_last_target_exists_ = false;
-            target_info.find_target = false;
+            buff_info.find_target = false;
             RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "No active target...");
             return false;
         }
@@ -525,18 +498,23 @@ namespace buff_detector
                 showFans(src);
             }
             lost_cnt_++;
-            target_info.find_target = false;
+            buff_info.find_target = false;
             return false;
         }
 
         //FIXME:用角度变化量的均值对当前待激活扇叶的角度变化进行校正
         mean_delta_angle = delta_angle_sum / avail_tracker_cnt;
         mean_r_center = r_center_sum / avail_tracker_cnt;
-        auto r_center_cam = coordsolver_.worldToCam(target.centerR3d_world, rmat_imu_);
+        Eigen::Vector3d r_center_cam = {0.0, 0.0, 0.0};
         auto center2d_src = coordsolver_.reproject(r_center_cam);
-        auto angle = coordsolver_.getAngle(target.armor3d_cam, rmat_imu_);
-
-        // RCLCPP_INFO(logger_, "armor3d_cam: %lf %lf %lf", target.armor3d_cam[0], target.armor3d_cam[1], target.armor3d_cam[2]);
+        
+        RCLCPP_INFO_THROTTLE(
+            logger_, 
+            steady_clock_,
+            200,
+            "armor3d_cam: %lf %lf %lf", 
+            target.armor3d_cam[0], target.armor3d_cam[1], target.armor3d_cam[2]
+        );
 
         // 判断扇叶是否发生切换
         bool is_switched = false;
@@ -544,7 +522,14 @@ namespace buff_detector
         double delta_angle = (target.angle - last_fan_.angle);
         if ((target.dx > 0 && target.dz > 0) || (target.dx < 0 && target.dz < 0))
             delta_angle = (delta_angle < 0) ? abs(delta_angle) : (delta_angle > 0 ? (-delta_angle) : delta_angle);
-        // RCLCPP_INFO(logger_, "target.angle: %lf last_fan.angle:%lf", target.angle, last_fan_.angle);
+        
+        RCLCPP_INFO_THROTTLE(
+            logger_, 
+            steady_clock_,
+            200,
+            "target.angle: %lf last_fan.angle:%lf", 
+            target.angle, last_fan_.angle
+        );
         
         if (delta_angle_vec_.size() > 1)
         {
@@ -555,7 +540,14 @@ namespace buff_detector
             delta_angle = angle_sum / (int)(delta_angle_vec_.size());
         }
         delta_angle_vec_.clear();
-        RCLCPP_INFO(logger_, "delta_angle: %lf", delta_angle);
+        
+        RCLCPP_INFO_THROTTLE(
+            logger_, 
+            steady_clock_, 
+            200,
+            "delta_angle: %lf", 
+            delta_angle
+        );
 
         if (!is_switched)
         {
@@ -565,7 +557,7 @@ namespace buff_detector
         
         if (is_switched)
         {
-            target_info.angle_offset = target.angle - last_fan_.angle;
+            buff_info.angle_offset = target.angle - last_fan_.angle;
             double delta_angle_sum = 0.0;
             if (delta_angle_vec_.size() > 1)
             {
@@ -580,29 +572,36 @@ namespace buff_detector
             }
         }
         else
-            target_info.angle_offset = 0.0;
+            buff_info.angle_offset = 0.0;
 
-        target_info.points2d[0].x = target.apex2d[0].x;
-        target_info.points2d[0].y = target.apex2d[0].y;
-        target_info.points2d[1].x = target.apex2d[1].x;
-        target_info.points2d[1].y = target.apex2d[1].y;
-        target_info.points2d[2].x = target.apex2d[2].x;
-        target_info.points2d[2].y = target.apex2d[2].y;
-        target_info.points2d[3].x = target.apex2d[3].x;
-        target_info.points2d[3].y = target.apex2d[3].y;
-        target_info.points2d[4].x = target.apex2d[4].x;
-        target_info.points2d[4].y = target.apex2d[4].y;
+        buff_info.points2d[0].x = target.apex2d[0].x;
+        buff_info.points2d[0].y = target.apex2d[0].y;
+        buff_info.points2d[1].x = target.apex2d[1].x;
+        buff_info.points2d[1].y = target.apex2d[1].y;
+        buff_info.points2d[2].x = target.apex2d[2].x;
+        buff_info.points2d[2].y = target.apex2d[2].y;
+        buff_info.points2d[3].x = target.apex2d[3].x;
+        buff_info.points2d[3].y = target.apex2d[3].y;
+        buff_info.points2d[4].x = target.apex2d[4].x;
+        buff_info.points2d[4].y = target.apex2d[4].y;
 
-        target_info.rmat = target.rmat;
-        target_info.angle = target.angle;
-        target_info.r_center = mean_r_center;
-        target_info.delta_angle = delta_angle;
-        target_info.target_switched = is_switched;
-        target_info.armor3d_world = target.armor3d_world;
-        target_info.armor3d_cam = target.armor3d_cam;
+        buff_info.rmat = target.rmat;
+        buff_info.angle = target.angle;
+        buff_info.r_center = mean_r_center;
+        buff_info.delta_angle = delta_angle;
+        buff_info.target_switched = is_switched;
+        buff_info.armor3d_world = target.armor3d_world;
+        buff_info.armor3d_cam = target.armor3d_cam;
+        buff_info.quat_cam = target.quat_cam;
         
-        // RCLCPP_INFO(logger_, "Target's angle: %lf", target_info.angle);
-        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "Target is switched: %d", (int)(is_switched));
+        // RCLCPP_INFO(logger_, "Target's angle: %lf", buff_info.angle);
+        RCLCPP_INFO_THROTTLE(
+            logger_, 
+            steady_clock_, 
+            200, 
+            "Target is switched: %d", 
+            (int)(is_switched)
+        );
 
         lost_cnt_ = 0;
         last_roi_center_ = center2d_src;
@@ -613,14 +612,6 @@ namespace buff_detector
         last_delta_angle_ = delta_angle;
         is_last_target_exists_ = true;
 
-        if (isnan(angle[0]) || isnan(angle[1]) || abs(angle[0]) > 45 || abs(angle[1]) > 45)
-        {
-            target_info.find_target = false;
-            return false;
-        }
-        else
-            RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 1000, "pitch: %lf yaw: %lf", angle[0], angle[1]);
-        
         auto time_detect = steady_clock_.now();
         double dr_full_ns = (time_detect - time_start).nanoseconds();
         double dr_crop_ns = (time_crop - time_start).nanoseconds();
@@ -655,15 +646,13 @@ namespace buff_detector
         }
         if (debug_param_.print_target_info)
         {
-            RCLCPP_DEBUG_ONCE(logger_, "Print target_info...");
+            RCLCPP_DEBUG_ONCE(logger_, "Print buff_info...");
             RCLCPP_INFO(logger_, "-----------INFO------------");
-            RCLCPP_INFO(logger_, "Yaw: %lf", angle[0]);
-            RCLCPP_INFO(logger_, "Pitch: %lf", angle[1]);
             RCLCPP_INFO(logger_, "Dist: %f m", (float)target.armor3d_cam.norm());
             RCLCPP_INFO(logger_, "Is switched: %d", (int)(is_switched));
         }
 
-        target_info.find_target = true;
+        buff_info.find_target = true;
         return true;
     }
 

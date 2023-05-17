@@ -24,9 +24,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(rclpy REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(message_filters REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(image_transport REQUIRED)
@@ -48,9 +48,10 @@ include_directories(include
 set(dependencies 
   rclcpp 
   rclcpp_components
+  tf2_ros
+  geometry_msgs
   OpenCV
   OpenVINO
-  geometry_msgs
   Ceres 
   Eigen3 
   rclpy 

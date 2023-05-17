@@ -27,16 +27,12 @@ def generate_launch_description():
     
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
+    
     camera_type = 'mvs' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_name = 'KE0200110074'
     use_serial = True
-    use_imu = False
     shoot_delay = 150.0
     bullet_speed = 12.7
-
-    # static tf2(cam to imu frame)
-    #                  x            y            z        yaw       pitch       roll 
-    transform = [-0.00197128, -0.00937364, 0.00107134, 1.6545464, -1.5638996, -3.062463]
 
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
@@ -59,6 +55,18 @@ def generate_launch_description():
         armor_detector_params = yaml.safe_load(f)['/armor_detector']['ros__parameters']
     with open(autoaim_param_file, 'r') as f:
         armor_processor_params = yaml.safe_load(f)['/armor_processor']['ros__parameters']
+    
+    # 哨兵
+    tf_static_node = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        output='screen',
+        arguments=[
+            #      x            y               z            yaw           pitch       roll    parent_frame  child_frame
+            '-0.00197128', '-0.00937364', '0.00107134', '1.6545464', '-1.5638996', '-3.062463', 'imu_link', 'camera_link'
+        ],
+    )
+    
     #---------------------------------Serial Node--------------------------------------------
     if use_serial:
         serial_node = Node(package='serialport',
@@ -129,8 +137,6 @@ def generate_launch_description():
                 {
                     'camera_name': camera_name,
                     'use_serial': use_serial,
-                    'use_imu': use_imu,
-                    'bullet_speed': bullet_speed,
                 }],
                 remappings = camera_remappings,
                 extra_arguments=[{
@@ -143,7 +149,7 @@ def generate_launch_description():
     )
     #---------------------------------Processor Node--------------------------------------------
     processor_container = ComposableNodeContainer(
-        name='serial_processor_container',
+        name='armor_processor_container',
         package='rclcpp_components',
         executable='component_container',
         namespace='',
@@ -157,7 +163,6 @@ def generate_launch_description():
                 {
                     'camera_name': camera_name,
                     'use_serial': use_serial,
-                    'use_imu': use_imu,
                     'shoot_delay': shoot_delay,
                     'bullet_speed': bullet_speed,
                 }],
@@ -169,18 +174,6 @@ def generate_launch_description():
         ],
         respawn=True,
         respawn_delay=1,
-    )
-
-    # 哨兵
-    tf_static_node = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        output='screen',
-        arguments=[ {
-            'x': transform[0], 'y': transform[1], 'z': transform[2],        # translation
-            'yaw': transform[3], 'pitch': transform[4], 'roll': transform[5],   # rotation
-            'parent_frame': 'imu_link', 'child_frame': 'camera_link'    # cam to imu frame
-        }],
     )
 
     ld = LaunchDescription()

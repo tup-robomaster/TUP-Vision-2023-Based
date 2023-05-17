@@ -15,8 +15,8 @@ namespace buff_detector
 {
     struct DebugParam
     {
-        bool using_imu;
-        bool using_roi;
+        bool use_serial;
+        bool use_roi;
         bool detect_red;
         bool show_img;
         bool show_all_fans;
@@ -27,8 +27,8 @@ namespace buff_detector
 
         DebugParam()
         {
-            using_imu = false;
-            using_roi = false;
+            use_serial = false;
+            use_roi = false;
             detect_red = true;
             show_img = true;
             show_all_fans = true;
@@ -85,13 +85,17 @@ namespace buff_detector
         bool target_switched;
         bool find_target;
         double bullet_speed;
+        double shoot_delay;
         Eigen::Vector3d r_center;
         Eigen::Vector3d armor3d_cam;
         Eigen::Vector3d armor3d_world;
         Eigen::Matrix3d rmat;
+        Eigen::Quaterniond quat_cam;
         cv::Point2f points2d[5];
         TargetInfo()
         {
+            bullet_speed = 28.0;
+            shoot_delay = 100;
             r_center = {0, 0, 0};
             rotate_speed = 0.0;
             delta_angle = 0.0;

@@ -106,11 +106,16 @@
 |use_serial            | 是否使用串口   | 若为false，serialport节点不会启动，即无串口调试，`调试时得改！！！`      |
 |debug_pred           | （条件运行）自瞄预测节点和串口通信节点的同进程启动   | 若为false，自瞄预测节点独立进程运行；若为true，串口通信节点和自瞄预测节点会被加载进同一个进程，在container中运行      |
 
-    - 节点参数配置（serialport节点）
+* 节点参数配置（serialport节点）
+
 | 参数名 | 释义       | 配置说明         |
 |---    | ---       | ---             |
 |using_port   | 是否使用串口       |若为false，串口节点运行时不发布下位机发布的消息，`无串口调试时得开！！！`     | 
 |tracking_target   | 是否关闭预测       |`自瞄调试时得改！！！`      | 
 |print_serial_info   | 是否打印串口消息       |调试时输出      | 
 |print_referee_info   | 是否打印裁判系统消息       | 调试时输出     | 
+
+* tf_static_node
+    
+    `启动launch文件前需修改参数`，根据兵种不同，camera_link->imu_link的变换关系也不同。
     

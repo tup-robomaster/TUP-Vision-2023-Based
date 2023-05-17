@@ -5,7 +5,6 @@
  * @LastEditTime: 2023-05-17 14:10:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/detector_node.hpp
  */
-// #include "../../global_user/include/global_user/global_user.hpp"
 #include "./armor_detector/armor_detector.hpp"
 
 //ros
@@ -14,9 +13,6 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
-#include <message_filters/time_synchronizer.h>
-#include <message_filters/subscriber.h>
-#include <message_filters/sync_policies/approximate_time.h>
 #include <image_transport/image_transport.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <tf2_ros/buffer.h>
@@ -32,7 +28,6 @@
 
 using namespace global_user;
 using namespace coordsolver;
-using namespace message_filters;
 using namespace ament_index_cpp;
 using namespace std::chrono_literals;
 namespace armor_detector
@@ -41,14 +36,11 @@ namespace armor_detector
     {
         typedef global_interface::msg::Autoaim AutoaimMsg;
         typedef global_interface::msg::Serial SerialMsg;
-        typedef sync_policies::ApproximateTime<sensor_msgs::msg::Image, SerialMsg> MySyncPolicy;
 
     public:
         DetectorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         ~DetectorNode();
         
-        void detect(TaskData& src, rclcpp::Time start);
-
     private:
         ImageInfo image_info_;
         ImageSize image_size_;

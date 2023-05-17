@@ -60,12 +60,12 @@ namespace buff_processor
         }
     }
         
-    bool Processor::predictorThread(BuffMsg buff_msg, TargetInfo& target_info)
+    bool Processor::predictorThread(BuffMsg buff_msg, Eigen::Matrix3d rmat_gimbal, Eigen::Vector3d translation, TargetInfo& pred_info)
     {
         buff_msg.mode = 4;
         // mutex_.lock();
-        int local_mode = buff_predictor_.mode;
-        buff_predictor_.last_mode = local_mode;
+        int custom_mode = buff_predictor_.mode;
+        buff_predictor_.last_mode = custom_mode;
         if (buff_msg.mode == 3)
             buff_predictor_.mode = 0;
         else if (buff_msg.mode == 4)
@@ -80,27 +80,24 @@ namespace buff_processor
             if (!buff_predictor_.predict(buff_msg, armor_center.norm(), theta_offset))
             {
                 Eigen::Vector3d armor3d_world = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
-                if (debug_param_.using_imu)
-                {
-                    Eigen::Quaterniond imu_quat = {buff_msg.quat_imu.w, buff_msg.quat_imu.x, buff_msg.quat_imu.y, buff_msg.quat_imu.z};
-                    rmat_imu_ = imu_quat.toRotationMatrix();
-                }
-                else
-                    rmat_imu_ = Eigen::Matrix3d::Identity();
                 
                 // 转换到相机系
-                Eigen::Vector3d hit_point_cam = coordsolver_.worldToCam(armor3d_world, rmat_imu_);
+                Eigen::Vector3d hit_point_cam = rmat_gimbal.transpose() * (armor3d_world - translation);
 
                 // 计算云台偏转角度（pitch、yaw）
-                Eigen::Vector2d angle = coordsolver_.getAngle(hit_point_cam, rmat_imu_);
-                RCLCPP_INFO(logger_, "Yaw: %lf Pitch: %lf", angle[0], angle[1]);
+                Eigen::Vector2d angle = coordsolver_.getAngle(hit_point_cam, rmat_gimbal, translation);
+                RCLCPP_INFO(
+                    logger_, 
+                    "Yaw: %.3f Pitch: %.3f", 
+                    angle[0], angle[1]
+                );
 
-                target_info.angle = angle;
-                target_info.armor3d_world = armor3d_world;
-                target_info.hit_point_world = armor3d_world;
-                target_info.hit_point_cam = hit_point_cam;
-                target_info.armor3d_cam = hit_point_cam;
-                target_info.target_switched = buff_msg.target_switched;
+                pred_info.angle = angle;
+                pred_info.armor3d_world = armor3d_world;
+                pred_info.hit_point_world = armor3d_world;
+                pred_info.hit_point_cam = hit_point_cam;
+                pred_info.armor3d_cam = hit_point_cam;
+                pred_info.target_switched = buff_msg.target_switched;
 
                 RCLCPP_WARN(logger_, "Predictor failed...");
                 return true;
@@ -116,31 +113,24 @@ namespace buff_processor
                 Eigen::Vector3d armor3d_world = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
                 Eigen::Quaterniond quat = {buff_msg.quat_cam.w, buff_msg.quat_cam.x, buff_msg.quat_cam.y, buff_msg.quat_cam.z};
                 Eigen::Matrix3d rmat = quat.toRotationMatrix();
-                if (debug_param_.using_imu)
-                {
-                    Eigen::Quaterniond imu_quat = {buff_msg.quat_imu.w, buff_msg.quat_imu.x, buff_msg.quat_imu.y, buff_msg.quat_imu.z};
-                    rmat_imu_ = imu_quat.toRotationMatrix();
-                }
-                else
-                    rmat_imu_ = Eigen::Matrix3d::Identity();
-
                 hit_point_world = rmat * hit_point_world + armor3d_world;
+
                 // RCLCPP_INFO(logger_, "hit_point_world: %lf %lf %lf", (rmat * hit_point_world)[0], (rmat * hit_point_world)[1], (rmat * hit_point_world)[2]);
                 // RCLCPP_INFO(logger_, "armor3d_world: %lf %lf %lf", armor3d_world[0], armor3d_world[1], armor3d_world[2]);
                 // RCLCPP_INFO(logger_, "hit_point: %lf %lf %lf", hit_point_world[0], hit_point_world[1], hit_point_world[2]);
 
                 // 转换到相机系
-                Eigen::Vector3d hit_point_cam = coordsolver_.worldToCam(hit_point_world, rmat_imu_);
+                Eigen::Vector3d hit_point_cam = rmat_gimbal.transpose() * (hit_point_world - translation);
                 // 计算云台偏转角度（pitch、yaw）
-                Eigen::Vector2d angle = coordsolver_.getAngle(hit_point_cam, rmat_imu_);
+                Eigen::Vector2d angle = coordsolver_.getAngle(hit_point_cam, rmat_gimbal, translation);
                 RCLCPP_INFO(logger_, "Yaw: %lf Pitch: %lf", angle[0], angle[1]);
 
-                target_info.angle = angle;
-                target_info.armor3d_world = armor3d_world;
-                target_info.hit_point_world = hit_point_world;
-                target_info.hit_point_cam = hit_point_cam;
-                target_info.armor3d_cam = coordsolver_.worldToCam(armor3d_world, rmat_imu_);
-                target_info.target_switched = buff_msg.target_switched;
+                pred_info.angle = angle;
+                pred_info.armor3d_world = armor3d_world;
+                pred_info.hit_point_world = hit_point_world;
+                pred_info.hit_point_cam = hit_point_cam;
+                pred_info.armor3d_cam = rmat_gimbal * armor3d_world + translation; 
+                pred_info.target_switched = buff_msg.target_switched;
                 return true;
             }
         }
@@ -151,7 +141,7 @@ namespace buff_processor
         }
     }
 
-    // bool Processor::predictor(BuffMsg buff_msg, TargetInfo& target_info)
+    // bool Processor::predictor(BuffMsg buff_msg, TargetInfo& pred_info)
     // {
     //     // if(!is_initialized)
     //     // {
@@ -203,12 +193,12 @@ namespace buff_processor
     //             Eigen::Vector2d angle = coordsolver_.getAngle(hit_point_cam, rmat_imu_);
     //             RCLCPP_INFO(logger_, "Yaw: %lf Pitch: %lf", angle[0], angle[1]);
 
-    //             target_info.angle = angle;
-    //             target_info.armor3d_world = armor3d_world;
-    //             target_info.hit_point_world = hit_point_world;
-    //             target_info.hit_point_cam = hit_point_cam;
-    //             target_info.armor3d_cam = coordsolver_.worldToCam(armor3d_world, rmat_imu_);
-    //             target_info.target_switched = buff_msg.target_switched;
+    //             pred_info.angle = angle;
+    //             pred_info.armor3d_world = armor3d_world;
+    //             pred_info.hit_point_world = hit_point_world;
+    //             pred_info.hit_point_cam = hit_point_cam;
+    //             pred_info.armor3d_cam = coordsolver_.worldToCam(armor3d_world, rmat_imu_);
+    //             pred_info.target_switched = buff_msg.target_switched;
     //             return true;
     //         }
     //     }
