@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-25 18:52:43
- * @LastEditTime: 2023-02-26 12:27:24
+ * @LastEditTime: 2023-04-14 02:47:53
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/daheng_driver/daheng_cam_node.cpp
  */
 #include "../../include/daheng_driver/daheng_cam_node.hpp"
@@ -42,23 +42,23 @@ namespace camera_driver
         switch (param_idx)
         {
         case 0:
-            this->cam_driver_->SetExposureTime(param.as_int());
+            this->cam_driver_->setExposureTime(param.as_int());
             RCLCPP_INFO(this->get_logger(), "Set daheng camera exposure time: %ldus", param.as_int());
             break;
         case 1:
-            this->cam_driver_->SetGAIN(3, param.as_int());
+            this->cam_driver_->setGain(3, param.as_int());
             RCLCPP_INFO(this->get_logger(), "Set daheng camera exposure gain: %ld", param.as_int());
             break;
         case 2:
-            this->cam_driver_->Set_BALANCE(0, param.as_double());
+            this->cam_driver_->setBalance(0, param.as_double());
             RCLCPP_INFO(this->get_logger(), "Set daheng camera balance B channel: %lf", param.as_double());
             break;
         case 3:
-            this->cam_driver_->Set_BALANCE(1, param.as_double());
+            this->cam_driver_->setBalance(1, param.as_double());
             RCLCPP_INFO(this->get_logger(), "Set daheng camera balance G channel: %lf", param.as_double());
             break;
         case 4:
-            this->cam_driver_->Set_BALANCE(2, param.as_double());
+            this->cam_driver_->setBalance(2, param.as_double());
             RCLCPP_INFO(this->get_logger(), "Set daheng camera balance R channel: %lf", param.as_double());
             break;
         default:

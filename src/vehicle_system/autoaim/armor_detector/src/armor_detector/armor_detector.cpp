@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-04-11 15:52:17
+ * @LastEditTime: 2023-05-17 15:24:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -10,10 +10,8 @@
 using namespace std;
 namespace armor_detector
 {
-    Detector::Detector(const PathParam& path_param, const DetectorParam& detector_params,
-    const DebugParam& debug_params, const GyroParam& gyro_params, const Eigen::Vector2d& angle_offset) 
-    : spinning_detector_(detector_params_.color, gyro_params), coordsolver_(angle_offset),
-    detector_params_(detector_params), path_params_(path_param), debug_params_(debug_params),
+    Detector::Detector(const PathParam& path_param, const DetectorParam& detector_params, const DebugParam& debug_params, const GyroParam& gyro_params)
+    : spinning_detector_(detector_params.color, gyro_params), detector_params_(detector_params), debug_params_(debug_params),
     logger_(rclcpp::get_logger("armor_detector"))
     {
         //初始化clear
@@ -26,7 +24,6 @@ namespace armor_detector
         is_init_ = false;
         last_period_ = 0;
         last_last_status_ = last_status_ = cur_status_ = NONE;
-        dead_buffer_cnt_ = 0;
 
         is_save_data_ = debug_params_.save_data; //save distance error data
         save_dataset_ = debug_params_.save_dataset;
@@ -57,61 +54,18 @@ namespace armor_detector
      * @return true 
      * @return false 
      */
-    bool Detector::armor_detect(TaskData &src, bool& is_target_lost)
+    bool Detector::detectArmor(TaskData &src, bool& is_target_lost)
     {
         time_start_ = steady_clock_.now();
         last_timestamp_ = now_;
         now_ = src.timestamp;
-        // cout << "timestamp:" << now_ / 1e6 << endl;
-        // RCLCPP_WARN(logger_, "now:%.8f", now_ / 1e9);
         auto input = src.img;
 
-        // if(!is_init_)
-        // {
-        //     armor_detector_.initModel(path_params_.network_path);
-        //     coordsolver_.loadParam(path_params_.camera_param_path, path_params_.camera_name);
-        //     if(is_save_data_)
-        //     {
-        //         data_save_.open(path_params_.save_path, ios::out | ios::trunc);
-        //         data_save_ << fixed;
-        //     }
-        //     is_init_ = true;
-        // }
-        
-        if (!debug_params_.debug_without_com)
-        {   //有串口
-            //设置弹速,若弹速大于10m/s值,且弹速变化大于0.5m/s则更新
-            if (src.bullet_speed > 10 && abs(src.bullet_speed - last_bullet_speed_) > 0.5)
-            {
-                double bullet_speed;
-                if (abs(src.bullet_speed - last_bullet_speed_) > 0.5)
-                    bullet_speed = src.bullet_speed;
-                else
-                    bullet_speed = (last_bullet_speed_ + src.bullet_speed) / 2;
-                
-                coordsolver_.setBulletSpeed(bullet_speed);
-                last_bullet_speed_ = bullet_speed;
-            }
-            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "serial_bullet_speed:%.2f bullet_speed:%.2f", src.bullet_speed, last_bullet_speed_);
-        }
+        mode_ = src.mode;
+        Eigen::Matrix3d rmat_gimbal = src.rmat_gimbal;
+        Eigen::Vector3d translation = src.translation;
 
-        // Eigen::Matrix3d rmat_imu;
-        if (debug_params_.using_imu)
-        {   //使用陀螺仪数据
-            rmat_imu_ = src.quat.toRotationMatrix();
-            // auto vec = rotationMatrixToEulerAngles(rmat_imu_);
-            // cout<<"Euler : "<<vec[0] * 180.f / CV_PI<<" "<<vec[1] * 180.f / CV_PI<<" "<<vec[2] * 180.f / CV_PI<<endl;
-            // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Euler: %lf %lf %lf", vec[0] * 180 / CV_PI, vec[1] * 180 / CV_PI, vec[2] * 180 / CV_PI);
-            // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 1000, "Using imu...");
-            // RCLCPP_INFO(logger_, "quat:[%f %f %f %f]", src.quat.x(), src.quat.y(), src.quat.z(), src.quat.w());
-        }
-        else
-        {
-            rmat_imu_ = Eigen::Matrix3d::Identity();
-            RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 1000, "No imu...");
-        }
-
-        if (debug_params_.using_roi)
+        if (debug_params_.use_roi)
         {   //启用roi
             //吊射模式采用固定ROI
             if (src.mode == 2)
@@ -189,7 +143,7 @@ namespace armor_detector
                 armor.apex2d[i] += Point2f((float)roi_offset_.x,(float)roi_offset_.y);
             Point2f apex_sum;
             for(auto apex : armor.apex2d)
-                apex_sum +=apex;
+                apex_sum += apex;
             armor.center2d = apex_sum / 4.f;
             //若装甲板置信度小于高阈值，需要相同位置存在过装甲板才放行
             if (armor.conf < this->detector_params_.armor_conf_high_thres)
@@ -226,6 +180,7 @@ namespace armor_detector
 
             //生成装甲板旋转矩形和ROI
             std::vector<Point2f> points_pic(armor.apex2d, armor.apex2d + 4);
+            
             RotatedRect points_pic_rrect = minAreaRect(points_pic); 
             armor.rrect = points_pic_rrect;
             auto bbox = points_pic_rrect.boundingRect();
@@ -254,15 +209,13 @@ namespace armor_detector
             }
 
             // 单目PnP
-            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
-            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
-            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
-            
+            PnPInfo pnp_result = coordsolver_.pnp(points_pic, rmat_gimbal, translation, target_type, SOLVEPNP_IPPE);
+
             //防止装甲板类型出错导致解算问题，首先尝试切换装甲板类型，若仍无效则直接跳过该装甲板
             if (!isPnpSolverValidation(pnp_result.armor_cam))
             {
                 target_type = (target_type == SMALL) ? BIG : SMALL;
-                pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
+                pnp_result = coordsolver_.pnp(points_pic, rmat_gimbal, translation, target_type, SOLVEPNP_IPPE);
                 if (!isPnpSolverValidation(pnp_result.armor_cam))
                 {
                     continue;
@@ -271,15 +224,20 @@ namespace armor_detector
 
             armor.armor3d_world = pnp_result.armor_world;
             armor.armor3d_cam = pnp_result.armor_cam;
-            armor.euler = pnp_result.euler;
             armor.rmat = pnp_result.rmat;
+            armor.euler = pnp_result.euler;
+            armor.rangle = pnp_result.rangle;
             armor.area = object.area;
             new_armors_.emplace_back(armor);
-
-            // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 250, "armor_area:%d", armor.area);
-            // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 200, "rotate_angle:%.3f", points_pic_rrect.angle);       
         }
         
+        if (debug_params_.show_crop_img)
+        {
+            cv::namedWindow("crop_img", cv::WINDOW_AUTOSIZE);
+            cv::imshow("crop_img", input);
+            cv::waitKey(1);
+        }
+
         //若无合适装甲板
         if (new_armors_.empty())
         {
@@ -294,9 +252,6 @@ namespace armor_detector
                 RCLCPP_DEBUG_ONCE(logger_, "Show all armors...");
                 showArmors(src);
             }
-
-            //更新陀螺分数
-            // spinning_detector_.updateSpinScore();
 
             is_target_lost = true;
             lost_cnt_++;
@@ -318,7 +273,6 @@ namespace armor_detector
             }
             last_armors_ = new_armors_;
         }
-        // cout << "armor_size:" << (int)new_armors_.size() << endl;
         is_target_lost = false;
         return true;
     }
@@ -331,44 +285,22 @@ namespace armor_detector
      * @return true 
      * @return false 
      */
-    bool Detector::gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp)
+    bool Detector::detectSpinning(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp, DecisionMsg decision_msg)
     {
-        //Choose target vehicle
-        //此处首先根据哨兵发来的ID指令进行目标车辆追踪
-        int target_id = -1;
-        if (src.mode == SENTRY_NORMAL)
-        {
-            target_id = chooseTargetID(src, new_armors_, hp);
-        }
-        // else if (src.mode == AUTOAIM || src.mode == HERO_SLING)
-        // {
-        //     target_id = chooseTargetID(src, new_armors_, now_);
-        // }
-        else
-        {
-            target_id = chooseTargetID(src);
-        }
-
         //Create ArmorTracker for new armors 
-        spinning_detector_.createArmorTracker(trackers_map_, new_armors_, new_armors_cnt_map_, now_, dead_buffer_cnt_);
+        spinning_detector_.createArmorTracker(trackers_map_, new_armors_, new_armors_cnt_map_, now_);
         
         //Detect armors status
         spinning_detector_.isSpinning(trackers_map_, new_armors_cnt_map_, now_);
 
-        //Update spinning score
-        // spinning_detector_.updateSpinScore();
-
-        // cout << "armor_size:" << (int)new_armors_.size() << endl;
-
+        //Choose target vehicle
+        //此处首先根据哨兵发来的ID指令进行目标车辆追踪
+        int target_id = -1;
+        target_id = chooseTargetID(src);
+        
         //未检索到有效车辆ID，直接退出
         if(target_id == -1)
         {
-            target_info.aiming_point_cam.x = 0;
-            target_info.aiming_point_cam.y = 0;
-            target_info.aiming_point_cam.z = 0;
-            target_info.aiming_point_world.x = 0;
-            target_info.aiming_point_world.y = 0;
-            target_info.aiming_point_world.z = 0;
             target_info.is_target_lost = true;
             target_info.target_switched = true;
             target_info.is_spinning = false;
@@ -376,30 +308,19 @@ namespace armor_detector
         }
 
         string target_key;
-        string vehicle_key;
-        int idx = target_id_;
-        target_id_ = -1; //置零，确保哨兵发送的目标ID信息是在更新
         //TODO:考虑灰色装甲板
         if (detector_params_.color == BLUE)
         {
-            vehicle_key = "B" + to_string(idx);
+            // vehicle_key = "B" + to_string(idx);
             target_key = "B" + to_string(target_id);
         }
         else if (detector_params_.color == RED)
         {
-            vehicle_key = "R" + to_string(idx);
+            // vehicle_key = "R" + to_string(idx);
             target_key = "R" + to_string(target_id);
         }
         
-        // 如果当前tracker队列中存在哨兵发送的目标id，则直接将其选为目标车辆
-        if(!trackers_map_.count(vehicle_key) == 0)
-        {   
-            RCLCPP_WARN_THROTTLE(logger_, this->steady_clock_, 500, "Detect sentry sending id: %s", vehicle_key.c_str());
-            target_key = vehicle_key;
-        }
-
         // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Target key: %s", target_key.c_str());
-
         ///-----------------------------detect whether exists matched tracker------------------------------------------
         if (trackers_map_.count(target_key) == 0)
         {
@@ -413,12 +334,6 @@ namespace armor_detector
                 showArmors(src);
             }
 
-            target_info.aiming_point_cam.x = 0;
-            target_info.aiming_point_cam.y = 0;
-            target_info.aiming_point_cam.z = 0;
-            target_info.aiming_point_world.x = 0;
-            target_info.aiming_point_world.y = 0;
-            target_info.aiming_point_world.z = 0;
             target_info.is_target_lost = true;
             lost_cnt_++;
             is_last_target_exists_ = false;
@@ -481,81 +396,8 @@ namespace armor_detector
                         auto angle_axisd = Eigen::AngleAxisd(rrmat);
                         auto angle = angle_axisd.angle();
                         w = (angle / dt);
-                        period = ((2 * CV_PI) / w / 4.0);
+                        period = ((2 * CV_PI) / w);
                         new_period_deq_.emplace_back(period);
-
-                        // double relative_angle_sum = 0.0;
-                        // int64_t dt_sum = 0;
-                        // cv::Point3d circle_center_sum = {0, 0, 0};
-                        // cv::Point3d circle_center_ave = {0, 0, 0};
-                        // for (int ii = 0; ii < (int)(*iter).second.history_info_.size() - 1; ii++)
-                        // {
-                        //     auto relative_rmat = (*iter).second.history_info_[ii].rmat.transpose() * (*iter).second.history_info_[ii+1].rmat;
-                        //     auto relative_angle_axisd = Eigen::AngleAxisd(relative_rmat);
-                        //     auto relative_angle = relative_angle_axisd.angle(); 
-                        //     relative_angle_sum += relative_angle;  
-
-                        //     Eigen::Vector3d point3d_last = (*iter).second.history_info_[ii+1].armor3d_world;
-                        //     Eigen::Vector3d point3d_now = (*iter).second.history_info_.front().armor3d_world;
-                        //     double x_pos = (point3d_now[1] + point3d_last[1]) / 2.0 + ((point3d_now[0] - point3d_last[0]) / (2 * tan(relative_angle_sum)));
-                        //     double x_neg = (point3d_now[1] + point3d_last[1]) / 2.0 - ((point3d_now[0] - point3d_last[0]) / (2 * tan(relative_angle_sum)));
-                        //     double y_pos = (point3d_now[0] + point3d_last[0]) / 2.0 + ((point3d_now[1] - point3d_last[1]) / (2 * tan(relative_angle_sum)));
-                        //     double y_neg = (point3d_now[0] + point3d_last[0]) / 2.0 - ((point3d_now[1] - point3d_last[1]) / (2 * tan(relative_angle_sum)));
-                        //     circle_center_sum.y += (y_pos < y_neg) ? y_pos : y_neg;
-                        //     circle_center_sum.x += (y_pos < y_neg) ? x_pos : x_neg;
-                        //     circle_center_sum.z += (point3d_now[2] + point3d_last[2]) / 2.0;
-                        // }
-                        // RCLCPP_WARN_THROTTLE(
-                        //     logger_, 
-                        //     steady_clock_, 
-                        //     10, 
-                        //     "Relative angle: %.2f",
-                        //     angle * (180 / CV_PI)
-                        // );
-
-                        // circle_center_ave = circle_center_sum / ((int)(*iter).second.history_info_.size() - 1);
-
-                        // Armor cur_armor = (*iter).second.new_armor;
-                        // Eigen::Vector3d cur_euler = rotationMatrixToEulerAngles(cur_armor.rmat);
-                        // Eigen::Vector3d opposite_euler = {cur_euler[0], cur_euler[1], cur_euler[2] + CV_PI};
-                        // Eigen::Vector3d opposite_armor3d_world = {2 * circle_center_ave.x - cur_armor.armor3d_world[1], 2 * circle_center_ave.y - cur_armor.armor3d_world[0], circle_center_ave.z};
-                        // Eigen::Vector3d opposite_armor3d_cam = coordsolver_.worldToCam(opposite_armor3d_world, rmat_imu_);
-                        // cv::Point2f opposite_armor_center2d = coordsolver_.reproject(opposite_armor3d_cam);
-                        // cv::Point2f circle_center2d = {(opposite_armor_center2d.x + cur_armor.center2d.x) / 2.0, (opposite_armor_center2d.y + cur_armor.center2d.y) / 2.0};
-                        // cv::Point2f reproject_circle_center2d = coordsolver_.reproject(circle_center_ave);
-                        // cv::Point2f opposite_armor2d_apex[4] = 
-                        // {
-                        //     cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[2].x, 2 * circle_center2d.y - cur_armor.apex2d[2].x),
-                        //     cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[3].x, 2 * circle_center2d.y - cur_armor.apex2d[3].x),
-                        //     cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[0].x, 2 * circle_center2d.y - cur_armor.apex2d[0].x),
-                        //     cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[1].x, 2 * circle_center2d.y - cur_armor.apex2d[1].x)
-                        // };
-                        // std::vector<Point2f> points_pic(opposite_armor2d_apex, opposite_armor2d_apex + 4);
-                        // RotatedRect opposite_rrect = minAreaRect(points_pic); 
-                        // cv::Rect bbox = opposite_rrect.boundingRect();
-                        // double x = bbox.x - 0.5 * bbox.width * (detector_params_.armor_roi_expand_ratio_width - 1);
-                        // double y = bbox.y - 0.5 * bbox.height * (detector_params_.armor_roi_expand_ratio_height - 1);
-                        // (*iter).second.opposite_armor_ = cur_armor;
-                        // (*iter).second.opposite_armor_.armor3d_world = opposite_armor3d_world;
-                        // (*iter).second.opposite_armor_.armor3d_cam = opposite_armor3d_cam;
-                        // (*iter).second.rotation_center = {circle_center_ave.x, circle_center_ave.y, circle_center_ave.z};
-
-                        // Eigen::Vector3d euler = rotationMatrixToEulerAngles((*iter).second.new_armor.rmat);
-                        // RCLCPP_WARN_THROTTLE(
-                        //     logger_, 
-                        //     steady_clock_, 
-                        //     10, 
-                        //     "Relative angle sum:%.2f size:%d Rotation period:%.2fs circle_center_ave:(%.3f, %.3f %.3f)\n rAngle:{%.2f %.2f %.2f}",
-                        //     relative_angle_sum,
-                        //     (int)(*iter).second.history_info_.size() - 1,
-                        //     period,
-                        //     circle_center_ave.x,
-                        //     circle_center_ave.y,
-                        //     circle_center_ave.z,
-                        //     euler[0] * (180 / CV_PI),
-                        //     euler[1] * (180 / CV_PI),
-                        //     euler[2] * (180 / CV_PI)
-                        // );
                     }
                 }
                 else
@@ -566,12 +408,6 @@ namespace armor_detector
 
             if ((int)final_armors.size() == 0)
             {
-                target_info.aiming_point_cam.x = 0;
-                target_info.aiming_point_cam.y = 0;
-                target_info.aiming_point_cam.z = 0;
-                target_info.aiming_point_world.x = 0;
-                target_info.aiming_point_world.y = 0;
-                target_info.aiming_point_world.z = 0;
                 target_info.is_target_lost = true;
                 lost_cnt_++;
                 is_last_target_exists_ = false;
@@ -584,64 +420,6 @@ namespace armor_detector
             if(cnt == 1)
             {
                 auto candidate = spinning_detector_.spinning_map_.spinning_x_map.find(target_key);
-                // auto t = ((*candidate).second.new_timestamp - (*candidate).second.last_timestamp_) / 1e9;
-                // auto relative_rmat = ((*candidate).second.new_rmat.transpose()) * ((*candidate).second.last_rmat);
-                // auto angle_axisd = Eigen::AngleAxisd(relative_rmat);
-                // auto angle = angle_axisd.angle();
-                
-                // w = (angle / t);
-                // period = ((2 * CV_PI) / w / 4.0);
-                //TODO:此处角速度计算误差较大，可尝试通过PnP解算的位姿计算角速度
-                // auto w = (2 * M_PI) / (4 * t);
-                // cur_period_ = t;
-                // if(last_period_ == 0)
-                // {
-                //     last_period_ = cur_period_;
-                // }
-
-                // if(history_period_.size() < 3)
-                // {
-                //     history_period_.emplace_back(cur_period_);
-                // }
-                // // std::cout << std::endl;
-                // // std::cout << "period:" << cur_period_ << std::endl;
-                // double per_sum = 0;
-
-                // last_ave_period_ = cur_ave_period_;
-                // if(history_period_.size() >= 3)
-                // {
-                //     for(auto &per : history_period_)
-                //     {
-                //         per_sum += per;
-                //     }
-                    
-                //     cur_ave_period_ = (per_sum / history_period_.size());
-                    
-                //     // std::cout << std::endl;
-                //     // std::cout << " T:" << cur_ave_period_ << std::endl;
-                //     // std::cout << std::endl;
-
-                //     if(abs(cur_ave_period_ - cur_period_) < 0.05)
-                //     {
-                //         last_period_ = cur_period_;
-                //         if(history_period_.size() < 9)
-                //         {
-                //             history_period_.emplace_back(cur_period_);
-                //         }
-                //         else
-                //         {
-                //             history_period_.pop_front();
-                //         }
-                //     }
-                // }
-
-                // if(last_ave_period_ == cur_ave_period_) 
-                //     target_info.period = last_ave_period_;
-                // else if(last_ave_period_ != cur_ave_period_ != 0)
-                //     target_info.period = cur_ave_period_;
-
-                // target_info.w = w;
-                // RCLCPP_INFO(logger_, "Target spinning angular_spd:%lfrad/s Angle:%lfrad\n w1:%lfrad/s period1:%lfs period2:%lfs", w, angle, w1, t, ((2 * CV_PI / w1) / 4.0));
                 
                 if(new_period_deq_.size() > 1)
                 {
@@ -654,40 +432,20 @@ namespace armor_detector
                             per_sum += per;
                             idx++;
                         }
-                        // else
-                        // {
-                        //     RCLCPP_ERROR(logger_, "Rotation period error value:%lfs", per);
-                        // }
                     }
                     if(idx != 0)
                     {
                         double ave_per = (per_sum / idx);
-                        target_info.period = ave_per;
+                        target_info.spinning_period = ave_per;
                         RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "ave_per:%lfs", ave_per);
                     }
                     else
-                        target_info.period = period;
+                        target_info.spinning_period = period;
                 }
 
                 double delta_x_back = abs((*candidate).second.new_x_back - (*candidate).second.last_x_back);
                 double delta_x_font = abs((*candidate).second.new_x_font - (*candidate).second.last_x_font);
                 double ave_x_3d = (delta_x_back + delta_x_font) / 2;
-                // double delta_y_back = abs((*candidate).second.new_y_back - (*candidate).second.last_y_back);
-                // double delta_y_font = abs((*candidate).second.new_y_font - (*candidate).second.last_y_font);
-                // double ave_y_3d = (delta_y_back + delta_y_font) / 2;
-                // ave_y_3d = delta_y_back > delta_y_font ? delta_y_back : delta_y_font;
-
-                // std::cout << std::endl;
-                // std::cout << "delta_x_back: " << delta_x_back << std::endl;
-                // std::cout << "delta_x_font: " << delta_x_font << std::endl;
-                // std::cout << "x_ave: " << ave_x_3d << std::endl;
-                // std::cout << std::endl;
-
-                // std::cout << std::endl;
-                // // std::cout << "delta_y_back: " << delta_y_back << std::endl;
-                // // std::cout << "delta_y_font: " << delta_y_font << std::endl;
-                // std::cout << "y_ave: " << ave_y_3d << std::endl;
-                // std::cout << std::endl;
                 
                 if(ave_x_3d > spinning_detector_.gyro_params_.delta_x_3d_high_thresh)
                 {
@@ -721,11 +479,11 @@ namespace armor_detector
                 last_status_ = cur_status_;
                 cur_status_ = SINGER;
 
+                final_armors[0].is_front = true;
                 target = final_armors.at(0);
             }
-            //若存在两块装甲板
             else if (final_armors.size() == 2)
-            {   
+            {   //若存在两块装甲板
                 last_last_status_ = last_status_;
                 last_status_ = cur_status_;
                 cur_status_ = DOUBLE;
@@ -738,22 +496,18 @@ namespace armor_detector
                 if (spin_status == CLOCKWISE)
                 {       
                     target_info.clockwise = CLOCKWISE;
+                    final_armors[1].is_front = true;
                     target = final_armors.at(1);
                 }
                 else if (spin_status == COUNTER_CLOCKWISE)
                 {   // 若逆时针旋转选取左侧装甲板更新
                     target_info.clockwise = false;
+                    final_armors[0].is_front = true;
                     target = final_armors.at(0);
                 }   
             }
             else
             {
-                target_info.aiming_point_cam.x = 0;
-                target_info.aiming_point_cam.y = 0;
-                target_info.aiming_point_cam.z = 0;
-                target_info.aiming_point_world.x = 0;
-                target_info.aiming_point_world.y = 0;
-                target_info.aiming_point_world.z = 0;
                 target_info.is_target_lost = true;
                 lost_cnt_++;
                 is_last_target_exists_ = false;
@@ -763,18 +517,11 @@ namespace armor_detector
             }
 
             //判断装甲板是否切换，若切换将变量置1
-            // auto delta_t = now_ - prev_timestamp_;
-            // auto delta_dist = (target.armor3d_world - last_armor_.armor3d_world).norm();
-            // auto velocity = (delta_dist / delta_t) * 1e9;
             if ((target.id != last_armor_.id || !last_armor_.roi.contains((target.center2d))) &&
                 !is_last_target_exists_)
                 target_info.spinning_switched = true;
             else
                 target_info.spinning_switched = false;
-            
-            // auto angle_axisd = Eigen::AngleAxisd(target.rmat);
-            // double angle = angle_axisd.angle();
-            // RCLCPP_INFO(logger_, "rotate angle:%lf", angle * (180 / CV_PI));
         }
         else
         {
@@ -783,12 +530,12 @@ namespace armor_detector
             last_last_status_ = last_status_ = cur_status_ = NONE;
             history_period_.clear();
             new_period_deq_.clear();
-
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
-                // final_armors.emplace_back((*iter).second.new_armor);
+                final_armors.emplace_back((*iter).second.new_armor);
                 final_trackers.emplace_back(&(*iter).second);
             }
+
             //进行目标选择
             auto tracker = chooseTargetTracker(src, final_trackers);
             tracker->last_selected_timestamp = now_;
@@ -796,11 +543,10 @@ namespace armor_detector
             target = tracker->new_armor;
             
             //判断装甲板是否切换，若切换将变量置1
-            // auto delta_t = now_ - prev_timestamp_;
-            // auto delta_dist = (target.armor3d_world - last_armor_.armor3d_world).norm();
-            // auto velocity = (delta_dist / delta_t) * 1e9;
-            if ((target.id != last_armor_.id || !last_armor_.roi.contains((target.center2d))) && !is_last_target_exists_)
+            double delta_dist = (target.armor3d_world - last_armor_.armor3d_world).norm();
+            if (target.id != last_armor_.id || delta_dist >= 1.0)
             {
+                cout << "target_switched..." << endl;
                 is_target_switched_ = true;
                 target_info.target_switched = true;
             }
@@ -811,59 +557,95 @@ namespace armor_detector
             }
 
             double x_2d_dis = abs(last_armor_.center2d.x - target.center2d.x);
-            if (target_id != last_armor_.id || !last_armor_.roi.contains(target.center2d) || (x_2d_dis > 250))
+            if (target_id != last_armor_.id || (!last_armor_.roi.contains(target.center2d) && (x_2d_dis >= 250 || delta_dist >= 0.35)))
             {
+                cout << "spinning_switched" << endl;
                 target_info.spinning_switched = true;
-                // cout << "spinning_switched" << endl;
             }
-            // cout << "x_dis:" << x_2d_dis << endl;
+        }
+
+        if ((int)final_armors.size() > 0)
+        {
+            target_info.armors.clear();
+            ArmorMsg armor_msg;
+            armor_msg.key = target.key;
+            for (int ii = 0; ii < 4; ii++)
+            {
+                armor_msg.point2d[ii].x = target.apex2d[ii].x; 
+                armor_msg.point2d[ii].y = target.apex2d[ii].y; 
+            }
+            armor_msg.point3d_cam.x = target.armor3d_cam[0];
+            armor_msg.point3d_cam.y = target.armor3d_cam[1];
+            armor_msg.point3d_cam.z = target.armor3d_cam[2];
+            armor_msg.point3d_world.x = target.armor3d_world[0];
+            armor_msg.point3d_world.y = target.armor3d_world[1];
+            armor_msg.point3d_world.z = target.armor3d_world[2];
+            armor_msg.is_last_exists = false;
+            for (auto last_armor : last_armors_)
+            {
+                if (last_armor.id == target.id && last_armor.roi.contains(target.center2d))
+                {
+                    armor_msg.is_last_exists = true;
+                }
+            }
+            armor_msg.is_front = target.is_front;
+            armor_msg.rangle = target.rangle;
+            // armor_msg.rangle = 0.0;
+            // cout << "armor_rangle:" << armor_msg.rangle << endl;
+
+            target_info.armors.emplace_back(armor_msg);
+
+            // for (auto armor : final_armors)
+            // {
+            //     armor_msg.key = armor.key;
+            //     for (int ii = 0; ii < 4; ii++)
+            //     {
+            //         armor_msg.point2d.x = armor.apex2d[ii].x; 
+            //         armor_msg.point2d.y = armor.apex2d[ii].y; 
+            //     }
+            //     armor_msg.point3d_cam.x = armor.armor3d_cam[0];
+            //     armor_msg.point3d_cam.y = armor.armor3d_cam[1];
+            //     armor_msg.point3d_cam.z = armor.armor3d_cam[2];
+            //     armor_msg.point3d_world.x = armor.armor3d_world[0];
+            //     armor_msg.point3d_world.y = armor.armor3d_world[1];
+            //     armor_msg.point3d_world.z = armor.armor3d_world[2];
+            //     armor_msg.is_last_exists = false;
+            //     for (auto last_armor : last_armors_)
+            //     {
+            //         if (last_armor.id == armor.id && last_armor.roi.contains(armor.center2d))
+            //         {
+            //             armor_msg.is_last_exists = true;
+            //         }
+            //     }
+            //     armor_msg.is_front = armor.is_front;
+            //     // target_info.armors.emplace_back(armor_msg);
+            // }
+
+        }
+        else
+        {
+            target_info.is_target_lost = true;
+            return false;
         }
 
         if(last_status_ == SINGER && cur_status_ == DOUBLE)
             target_info.spinning_switched = true;
         
         int target_hp = car_id_map_[target.key];
-        target_info.key = target.key;
-        target_info.hp = target_hp;
-        target_info.point2d[0].x = target.apex2d[0].x;
-        target_info.point2d[0].y = target.apex2d[0].y;
-        target_info.point2d[1].x = target.apex2d[1].x;
-        target_info.point2d[1].y = target.apex2d[1].y;
-        target_info.point2d[2].x = target.apex2d[2].x;
-        target_info.point2d[2].y = target.apex2d[2].y;
-        target_info.point2d[3].x = target.apex2d[3].x;
-        target_info.point2d[3].y = target.apex2d[3].y;
-        target_info.aiming_point_world.x = target.armor3d_world[0];
-        target_info.aiming_point_world.y = target.armor3d_world[1];
-        target_info.aiming_point_world.z = target.armor3d_world[2];
-        target_info.aiming_point_cam.x = target.armor3d_cam[0];
-        target_info.aiming_point_cam.y = target.armor3d_cam[1];
-        target_info.aiming_point_cam.z = target.armor3d_cam[2];
-        target_info.timestamp = now_;
+        target_info.vehicle_id = target.key;
+        target_info.vehicle_hp = target_hp;
         target_info.is_target_lost = false;
-        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
+        
+        RCLCPP_INFO_THROTTLE(
+            logger_, 
+            steady_clock_, 
+            200, 
+            "xyz: %lf %lf %lf", 
+            target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z
+        );
 
-        if (spinning_detector_.is_dead_)
-        {
-            dead_buffer_cnt_ = 0;
-            RCLCPP_WARN(logger_, "dead_buffer_cnt: %d", dead_buffer_cnt_);
-            spinning_detector_.is_dead_ = false;
-        }
-
-        if (target.color == 2)
-        {
-            RCLCPP_WARN(logger_, "dead_buffer_cnt: %d", dead_buffer_cnt_);
-            dead_buffer_cnt_++;
-        }
-        else
-        {
-            dead_buffer_cnt_ = 0;
-        }
-
-        // cout << 1 << endl;
         //获取装甲板中心与装甲板面积以下一次ROI截取使用
         // last_roi_center_ = Point2i(512,640);
-        // prev_timestamp_ = now_;
         last_roi_center_ = target.center2d;
         last_armor_ = target;
         lost_cnt_ = 0;
@@ -876,11 +658,9 @@ namespace armor_detector
         // RCLCPP_WARN_THROTTLE(
         //     logger_, 
         //     steady_clock_, 
-        //     10, 
-        //     "rAngle:{%.2f %.2f %.2f}",
-        //     euler[0] * (180 / CV_PI),
-        //     euler[1] * (180 / CV_PI),
-        //     euler[2] * (180 / CV_PI)
+        //     50, 
+        //     "rAngle:{%.3f %.3f %.3f}",
+        //     euler(0), euler(1), euler(2)
         // );
 
         if(debug_params_.show_aim_cross)
@@ -902,14 +682,6 @@ namespace armor_detector
             line(src.img, cv::Point2f(armor_center.x, armor_center.y - 30), cv::Point2f(armor_center.x, armor_center.y + 30), {0, 0, 255}, 1);
             line(src.img, cv::Point2f(armor_center.x - 25, armor_center.y), cv::Point2f(armor_center.x + 25, armor_center.y), {0, 0, 255}, 1);
             line(src.img, cv::Point2f(armor_center.x, armor_center.y - 30), cv::Point2f(armor_center.x, armor_center.y + 30), {0, 0, 255}, 1);
-        }
-        
-        auto angle = coordsolver_.getAngle(target.armor3d_cam, rmat_imu_);
-        // 若预测出错则直接世界坐标系下坐标作为击打点
-        if (!isAngleSolverValidataion(angle))
-        {
-            angle = coordsolver_.getAngle(target.armor3d_world, rmat_imu_);
-            RCLCPP_ERROR(logger_, "Error while solving angle: %.2f %.2f", angle[0], angle[1]);
         }
         
         auto time_predict = steady_clock_.now();
@@ -957,7 +729,6 @@ namespace armor_detector
      */
     void Detector::showArmors(TaskData& src)
     {
-        // cout << "armor_size:" << (int)new_armors_.size() << endl;
         for (auto armor : new_armors_)
         {
             char ch[10];
@@ -975,7 +746,10 @@ namespace armor_detector
             if (armor.color == 3)
                 putText(src.img, "P" + id_str, armor.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 255}, 2);
             for(int i = 0; i < 4; i++)
+            {
+                putText(src.img, to_string(i), armor.apex2d[i % 4], FONT_HERSHEY_SIMPLEX, 1, {255, 100, 0}, 2);
                 line(src.img, armor.apex2d[i % 4], armor.apex2d[(i + 1) % 4], {0,255,0}, 1);
+            }
             rectangle(src.img, armor.roi, {255, 0, 255}, 1);
             // auto armor_center = coordsolver_.reproject(armor.armor3d_cam);
             // circle(src.img, armor_center, 4, {0, 0, 255}, 2);
@@ -984,16 +758,20 @@ namespace armor_detector
         }
     }
 
-    int Detector::chooseTargetID(TaskData &src, std::vector<Armor>& armors, ObjHPMsg hps)
+    int Detector::chooseTargetID(TaskData &src, std::vector<Armor>& armors, ObjHPMsg hps, DecisionMsg decision_msg)
     {
         std::vector<Armor> new_armors;
         cv::Point2d img_center = cv::Point2d(src.img.size().width / 2, src.img.size().height / 2);
-        if (src.mode == SENTRY_NORMAL)
+        if (src.mode == SENTRY_NORMAL && decision_msg.mode == AUTOAIM)
         {
             for (auto& armor : armors)
             {
                 int id = car_id_map_[armor.key];
-                if (hps.hp[id] < 50 && id < 10 && armor.armor3d_world.norm() <= detector_params_.fire_zone)
+                if (armor.id == decision_msg.decision_id && armor.armor3d_world.norm() <= detector_params_.fire_zone)
+                {
+                    return armor.id;
+                }
+                else if (hps.hp[id] < 50 && id < 10 && armor.armor3d_world.norm() <= detector_params_.fire_zone)
                 {   //检测到目标且血量过低，且在开火范围内
                     //TODO:将此目标作为待击打目标
                     // new_armors.emplace_back(armor);
@@ -1003,7 +781,7 @@ namespace armor_detector
                 {   //检测到英雄机器人且在危险距离内，直接作为待打击目标
                     return armor.id;
                 }
-                else if (armor.id == last_armor_.id && (now_ - last_timestamp_) / 1e6 <= 35 && armor.armor3d_world.norm() <= detector_params_.fire_zone)
+                else if (armor.id == last_armor_.id && (now_ - last_timestamp_) / 1e6 <= 100 && armor.armor3d_world.norm() <= detector_params_.fire_zone)
                 {   //若存在上帧目标且目标在开火范围内，则直接返回
                     return armor.id;
                 }
@@ -1146,7 +924,7 @@ namespace armor_detector
         float max_score = 0;
         int target_idx = 0;
         int last_target_idx = -1;
-        for (int i = 0; i < trackers.size(); i++)
+        for (int i = 0; i < (int)(trackers.size()); i++)
         {
             //计算tracker的切换打击分数,由装甲板旋转角度,距离,面积大小决定
             if ((trackers[i]->now / 1e9) == (now_ / 1e9))
@@ -1215,11 +993,12 @@ namespace armor_detector
             )
             && abs(armor.area - last_armor_.area) / (float)armor.area < 0.40
             && abs(now_ - last_timestamp_) / 1e6 <= 100
-            && !(16.0 <= abs(rrangle) <= 74.0))
+            && (abs(rrangle) <= 16.0 || abs(rrangle) >= 74.0))
             {
                 armor.id = last_armor_.id;
                 is_last_id_exists = true;
                 target_id = armor.id;
+                break;
             }
             else if (abs(rrangle) >= 13.0 && abs(rrangle) <= 77.0)
             {

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="wheel_joint_effort" value="6"/>
+    <xacro:property name="wheel_joint_velocity" value="76"/>
+
+    <xacro:macro name="reaction_wheel"
+                 params="connected_to wheel_x_offset wheel_y_offset wheel_z_offset mechanical_reduction">
+        <!--  link  -->
+        <link name="reaction_wheel">
+            <visual>
+                <geometry>
+                    <mesh filename="package://robot_description/meshes/balance/reaction_wheel.stl"
+                          scale="0.001 0.001 0.001"/>
+                </geometry>
+            </visual>
+            <inertial>
+                <mass value="0.534802"/>
+                <origin xyz="-0.000004 0 -0.000001"/>
+                <inertia ixx="6.823e-3" ixy="2.316e-18" ixz="26.918e-9" iyy="1.369e-3" iyz="1.098e-17" izz="6.823e-3"/>
+            </inertial>
+        </link>
+
+        <joint name="reaction_wheel_joint" type="revolute">
+            <axis xyz="0 1 0"/>
+            <origin xyz="${wheel_x_offset} ${wheel_y_offset} ${wheel_z_offset}" rpy="0 0 0"/>
+            <parent link="${connected_to}"/>
+            <child link="reaction_wheel"/>
+            <dynamics damping="0.0" friction="0.05"/>
+            <limit effort="${wheel_joint_effort}" velocity="${wheel_joint_velocity}" lower="-1e16" upper="1e16"/>
+        </joint>
+
+        <!-- transmission -->
+        <transmission name="reaction_wheel_joint_trans">
+            <type>transmission_interface/SimpleTransmission</type>
+            <actuator name="reaction_wheel_joint_motor">
+                <mechanicalReduction>${mechanical_reduction}</mechanicalReduction>
+            </actuator>
+            <joint name="reaction_wheel_joint">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            </joint>
+        </transmission>
+
+    </xacro:macro>
+
+</robot>

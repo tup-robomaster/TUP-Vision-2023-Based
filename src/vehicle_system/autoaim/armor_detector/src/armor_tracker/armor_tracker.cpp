@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-04-09 16:45:17
+ * @LastEditTime: 2023-04-14 02:25:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_tracker/armor_tracker.cpp
  */
 #include "../../include/armor_tracker/armor_tracker.hpp"
@@ -66,7 +66,7 @@ namespace armor_detector
      */
     bool ArmorTracker::update(Armor new_add_armor, int64_t new_timestamp)
     {
-        if (history_info_.size() <= max_history_len)
+        if ((int)history_info_.size() <= max_history_len)
         {   // 若历史队列装甲板信息小于给定阈值，直接将当前目标信息放入队列
             history_info_.push_back(new_add_armor);
         }
@@ -76,14 +76,23 @@ namespace armor_detector
             history_info_.push_back(new_add_armor);
         }
 
-        this->last_timestamp = this->now; //上一帧目标装甲板对应的时间戳信息
-        this->now = new_timestamp;  //当前装甲板对应的时间戳信息
-        this->last_armor = this->new_armor;         //上一帧目标装甲板信息
-        this->new_armor = new_add_armor;          //当前装甲板信息
+        this->last_timestamp = this->now;   //上一帧目标装甲板对应的时间戳信息
+        this->now = new_timestamp;          //当前装甲板对应的时间戳信息
+        this->last_armor = this->new_armor; //上一帧目标装甲板信息
+        this->new_armor = new_add_armor;    //当前装甲板信息
+
+        if (new_add_armor.color == GRAY)
+        {
+            ++gray_armor_cnt_;
+            cout << "gray_cnt:" <<gray_armor_cnt_ << endl;
+            if (gray_armor_cnt_ >= max_gray_armor_cnt_)
+            {
+                is_dead_ = true;
+            }
+        }
 
         this->calcTargetScore();  //计算装甲板分数，作为打击目标切换判据，防止随意切换造成云台乱抖
         this->is_initialized = true;
-        // cout << "update_dt:" << new_timestamp / 1e6 << endl;
         return true;
     }
 
