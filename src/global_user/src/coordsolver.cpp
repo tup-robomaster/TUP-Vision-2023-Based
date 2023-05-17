@@ -155,9 +155,7 @@ namespace coordsolver
         if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, true, SOLVEPNP_ITERATIVE))
         {
             RCLCPP_WARN(logger_, "Optimize camera pose failed...");
-        }
-
-        // RCLCPP_INFO(
+        }        // RCLCPP_INFO(
         //     logger_, 
         //     "rvec:[%.3f %.3f %.3f] rangle:%.3f", 
         //     rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2), 

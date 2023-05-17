@@ -113,6 +113,7 @@ namespace armor_detector
         objects_.clear();
         new_armors_.clear();
         
+        // rclcpp::Time st = steady_clock_.now();
         if (!armor_detector_.detect(input, objects_))
         {   //若未检测到目标
             if (debug_params_.show_aim_cross)
@@ -124,6 +125,10 @@ namespace armor_detector
             lost_cnt_++;
             is_last_target_exists_ = false;
             last_target_area_ = 0.0;
+
+            // rclcpp::Time end = steady_clock_.now();
+            // RCLCPP_WARN(logger_, "infer_time: %.3fms", (end - st).nanoseconds() / 1e6);
+
             return false;
         }
 
