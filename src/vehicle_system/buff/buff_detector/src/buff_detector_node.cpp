@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-03-20 10:06:49
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
+ * @LastEditTime: 2023-05-18 18:13:36
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
 
@@ -36,38 +36,42 @@ namespace buff_detector
 
         // QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
-        // qos.best_effort();
+        qos.keep_last(5);
         qos.reliable();
         qos.durability();
-        qos.durability_volatile();
+        // qos.durability_volatile();
+        // qos.best_effort();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
 
+        // tf2
+        tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+        tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+
         // buff info pub.
         buff_info_pub_ = this->create_publisher<BuffMsg>("/buff_detector/buff_msg", qos);
 
-        if(debug_param_.using_imu)
+        if(debug_param_.use_serial)
         {
             RCLCPP_INFO(this->get_logger(), "Using imu...");
-            serial_msg_.imu.header.frame_id = "imu_link";
-            serial_msg_.bullet_speed = this->declare_parameter<double>("bullet_speed", 28.0);
-            serial_msg_.mode = this->declare_parameter<int>("buff_mode", 3);
+            this->declare_parameter<double>("bullet_speed", 28.0);
+            serial_msg_.bullet_speed = this->get_parameter("bullet_speed").as_double();
+            
+            this->declare_parameter<int>("buff_mode", 3);
+            serial_msg_.mode = this->get_parameter("buff_mode").as_int();
+            
             // imu msg sub.
-            serial_msg_sub_ = this->create_subscription<SerialMsg>("/serial_msg", rclcpp::SensorDataQoS(),
+            imu_info_sub_ = this->create_subscription<SerialMsg>("/serial_msg", rclcpp::SensorDataQoS(),
                 std::bind(&BuffDetectorNode::sensorMsgCallback, this, _1));
         }
 
-        this->declare_parameter<int>("camera_type", DaHeng);
-        int camera_type = this->get_parameter("camera_type").as_int();
-        std::string transport = "raw";
-        
-        image_size_ = image_info_.image_size_map[camera_type];
+        std::string transport_type = "raw";
+        std::string image_topic = "/image";
+
         // image sub.
-        std::string camera_topic = image_info_.camera_topic_map[camera_type];
-        img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic,
-            std::bind(&BuffDetectorNode::imageCallback, this, _1), transport, rmw_qos));
+        img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, image_topic,
+            std::bind(&BuffDetectorNode::imageCallback, this, _1), transport_type, rmw_qos));
 
         bool debug = false;
         this->declare_parameter<bool>("debug", true);
@@ -87,100 +91,132 @@ namespace buff_detector
     void BuffDetectorNode::sensorMsgCallback(const SerialMsg& serial_msg)
     {
         serial_mutex_.lock();
-        serial_msg_.imu.header.stamp = this->get_clock()->now();
-        if(serial_msg.bullet_speed > 10)
-            serial_msg_.bullet_speed = serial_msg.bullet_speed;
-        if(serial_msg.mode == 3 || serial_msg.mode == 4)
-            serial_msg_.mode = serial_msg.mode;
-        serial_msg_.imu = serial_msg.imu;
+        serial_msg_ = serial_msg;
+        serial_msg_.header.stamp = this->get_clock()->now();
         serial_mutex_.unlock();
 
         RCLCPP_INFO(this->get_logger(), "bullet speed: %lfm/s mode: %d", serial_msg_.bullet_speed, serial_msg_.mode);
         return;
     }
     
-    void BuffDetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
+    void BuffDetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {   
         // RCLCPP_INFO(this->get_logger(), "Image callback...");
-        TaskData src;
-        if(!img_info)
+        rclcpp::Time time = img_msg->header.stamp;
+        rclcpp::Time now = this->get_clock()->now();
+        double dura = (now.nanoseconds() - time.nanoseconds()) / 1e6;
+        if ((dura) > 20.0)
             return;
-        auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
-        img.copyTo(src.img);
-        
-        rclcpp::Time time_img_sub = detector_->steady_clock_.now();
-        src.timestamp = (time_img_sub - time_start_).nanoseconds();
 
-        TargetInfo target_info;
+        TaskData src;
         BuffMsg buff_msg;
+        Eigen::Vector3d translation = {0.0, 0.0, 0.0};
+        Eigen::Quaterniond quat_gimbal;
+        Eigen::Matrix3d rmat_gimbal;
+        double bullet_speed = 0.0;
+        double shoot_delay = 0.0;
+        rclcpp::Time serial_msg_stamp;
 
-        serial_mutex_.lock();
-        if(debug_param_.using_imu)
+        src.img = cv_bridge::toCvShare(img_msg, "bgr8")->image;
+        rclcpp::Time stamp = img_msg->header.stamp;
+        src.timestamp = stamp.nanoseconds();
+
+        // compute transformations
+        std::string fromFrameRel = "camera_link";
+        std::string toFrameRel = "base_link";
+
+        // Look up for the transformation between target_frame and turtle2 frames
+        // and send velocity commands for turtle2 to reach target_frame
+        geometry_msgs::msg::TransformStamped t;
+        try 
         {
-            double dt = (this->get_clock()->now() - serial_msg_.imu.header.stamp).nanoseconds();
-            if(abs(dt / 1e9) > 0.1)
-            {
-                detector_->debug_param_.using_imu = false;
-                Eigen::Quaterniond q = Eigen::Quaterniond::Identity();
-                buff_msg.quat_imu.w = q.w();
-                buff_msg.quat_imu.x = q.x();
-                buff_msg.quat_imu.y = q.y();
-                buff_msg.quat_imu.z = q.z();
-                RCLCPP_WARN(this->get_logger(), "latency: %lf", dt);
-            }
-            else
-            {
-                src.bullet_speed = serial_msg_.bullet_speed;
-                src.mode = serial_msg_.mode;
-                src.quat.w() = serial_msg_.imu.orientation.w;
-                src.quat.x() = serial_msg_.imu.orientation.x;
-                src.quat.y() = serial_msg_.imu.orientation.y;
-                src.quat.z() = serial_msg_.imu.orientation.z;
-                buff_msg.quat_imu = serial_msg_.imu.orientation;
-                detector_->debug_param_.using_imu = true;
-            }
+            t = tf_buffer_->lookupTransform(toFrameRel, fromFrameRel, tf2::TimePointZero);
+        } 
+        catch (const tf2::TransformException & ex) 
+        {
+            RCLCPP_INFO(
+                this->get_logger(), 
+                "Could not transform %s to %s: %s",
+                toFrameRel.c_str(), 
+                fromFrameRel.c_str(), 
+                ex.what()
+            );
+            return;
         }
-        serial_mutex_.unlock();
         
-        if(!debug_param_.using_imu)
+        quat_gimbal.x() = t.transform.rotation.x;
+        quat_gimbal.y() = t.transform.rotation.y;
+        quat_gimbal.z() = t.transform.rotation.z;
+        quat_gimbal.w() = t.transform.rotation.w;
+        // rotation
+        rmat_gimbal = quat_gimbal.toRotationMatrix();
+        // translation
+        translation = {t.transform.translation.x, t.transform.translation.y, t.transform.translation.z};
+        
+        src.rmat_gimbal = rmat_gimbal;
+        src.translation = translation;
+        
+       if (debug_param_.use_serial)
         {
-            //debug
-            buff_msg.mode = this->get_parameter("debug_mode").as_int(); //小符
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000, "debug mode is: %d", (int)buff_msg.mode);
+            serial_mutex_.lock();
+            src.mode = serial_msg_.mode;
+            bullet_speed = serial_msg_.bullet_speed;
+            shoot_delay = serial_msg_.shoot_delay;
+            serial_msg_stamp = serial_msg_.header.stamp;
+            serial_mutex_.unlock(); 
         }
-
+        
+        TargetInfo buff_info;
         param_mutex_.lock();
-        if(detector_->run(src, target_info))
+        if(detector_->run(src, buff_info))
         {
-            param_mutex_.unlock();
-            buff_msg.header.frame_id = "gimbal_link";
-            buff_msg.header.stamp = this->get_clock()->now();
-            buff_msg.r_center.x = target_info.r_center[0];
-            buff_msg.r_center.y = target_info.r_center[1];
-            buff_msg.r_center.z = target_info.r_center[2];
+            buff_msg.r_center.x = buff_info.r_center[0];
+            buff_msg.r_center.y = buff_info.r_center[1];
+            buff_msg.r_center.z = buff_info.r_center[2];
             buff_msg.timestamp = src.timestamp;
-            buff_msg.rotate_speed = target_info.rotate_speed;
-            buff_msg.target_switched = target_info.target_switched;
-            Eigen::Quaterniond quat(target_info.rmat);
-            buff_msg.quat_cam.w = quat.w();
-            buff_msg.quat_cam.x = quat.x();
-            buff_msg.quat_cam.y = quat.y();
-            buff_msg.quat_cam.z = quat.z();
-            buff_msg.armor3d_world.x = target_info.armor3d_world[0];
-            buff_msg.armor3d_world.y = target_info.armor3d_world[1];
-            buff_msg.armor3d_world.z = target_info.armor3d_world[2];
-            
-            // publish buff info.
-            buff_info_pub_->publish(std::move(buff_msg));
-        }
-        else
-            param_mutex_.unlock();
+            buff_msg.angle = buff_info.angle;
+            buff_msg.angle_offset = buff_info.angle_offset;
+            buff_msg.target_switched = buff_info.target_switched;
+            buff_msg.delta_angle = buff_info.delta_angle;
 
-        bool show_img;
-        this->get_parameter("show_img", show_img);
-        if(show_img)
+            buff_msg.quat_cam.w = buff_info.quat_cam.w();
+            buff_msg.quat_cam.x = buff_info.quat_cam.x();
+            buff_msg.quat_cam.y = buff_info.quat_cam.y();
+            buff_msg.quat_cam.z = buff_info.quat_cam.z();
+            
+            buff_msg.armor3d_world.x = buff_info.armor3d_world[0];
+            buff_msg.armor3d_world.y = buff_info.armor3d_world[1];
+            buff_msg.armor3d_world.z = buff_info.armor3d_world[2];
+            buff_msg.armor3d_cam.x = buff_info.armor3d_cam[0];
+            buff_msg.armor3d_cam.y = buff_info.armor3d_cam[1];
+            buff_msg.armor3d_cam.z = buff_info.armor3d_cam[2];
+            
+            buff_msg.points2d[0].x = buff_info.points2d[0].x;
+            buff_msg.points2d[0].y = buff_info.points2d[0].y;
+            buff_msg.points2d[1].x = buff_info.points2d[1].x;
+            buff_msg.points2d[1].y = buff_info.points2d[1].y;
+            buff_msg.points2d[2].x = buff_info.points2d[2].x;
+            buff_msg.points2d[2].y = buff_info.points2d[2].y;
+            buff_msg.points2d[3].x = buff_info.points2d[3].x;
+            buff_msg.points2d[3].y = buff_info.points2d[3].y;
+            buff_msg.points2d[4].x = buff_info.points2d[4].x;
+            buff_msg.points2d[4].y = buff_info.points2d[4].y;
+        }
+        param_mutex_.unlock();
+
+        //Publish buff msg.
+        buff_msg.header.frame_id = "gimbal_link1";
+        buff_msg.header.stamp = this->get_clock()->now();
+        buff_msg.bullet_speed = bullet_speed;
+        buff_msg.shoot_delay = shoot_delay;
+        buff_msg.transform_gimbal = t;
+        buff_msg.is_target_lost = buff_info.find_target ? false : true;
+        buff_info_pub_->publish(std::move(buff_msg));
+
+        bool show_img = this->get_parameter("show_img").as_bool();
+        if (show_img)
         {
-            cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
+            cv::namedWindow("dst", cv::WINDOW_NORMAL);
             cv::imshow("dst", src.img);
             cv::waitKey(1);
         }
@@ -196,7 +232,7 @@ namespace buff_detector
         detector_->buff_param_ = this->buff_param_;
         detector_->debug_param_ = this->debug_param_;
         param_mutex_.unlock();
-
+        
         return result;
     }
 
@@ -224,24 +260,29 @@ namespace buff_detector
         this->path_param_.network_path = pkg_share_pth[1] + this->get_parameter("network_path").as_string();
         this->path_param_.path_prefix = pkg_share_pth[2] + this->get_parameter("path_prefix").as_string();
 
-        this->declare_parameter<int>("debug_mode", 3);
         this->declare_parameter<bool>("assist_label", false);
         this->declare_parameter<bool>("detect_red", true);
-        this->declare_parameter<bool>("prinf_latency", false);
+        this->declare_parameter<bool>("print_latency", false);
         this->declare_parameter<bool>("print_target_info", false);
         this->declare_parameter<bool>("show_all_fans", true);
         this->declare_parameter<bool>("show_fps", true);
-        this->declare_parameter<bool>("using_imu", false);
-        this->declare_parameter<bool>("using_roi", false);
+        this->declare_parameter<bool>("use_serial", false);
+        this->declare_parameter<bool>("use_roi", false);
         this->declare_parameter<bool>("show_img", false);
 
         bool success = updateParam();
         if(success)
             RCLCPP_INFO(this->get_logger(), "Update param!");
-
+       
         return std::make_unique<Detector>(buff_param_, path_param_, debug_param_);
     }
 
+    /**
+     * @brief 更新参数
+     * 
+     * @return true 
+     * @return false 
+     */
     bool BuffDetectorNode::updateParam()
     {
         //Buff param.
@@ -254,13 +295,14 @@ namespace buff_detector
         //Debug param.
         this->get_parameter("assist_label", this->debug_param_.assist_label);
         this->get_parameter("detect_red", this->debug_param_.detect_red);
-        this->get_parameter("prinf_latency", this->debug_param_.prinf_latency);
+        this->get_parameter("print_latency", this->debug_param_.prinf_latency);
         this->get_parameter("print_target_info", this->debug_param_.print_target_info);
         this->get_parameter("show_all_fans", this->debug_param_.show_all_fans);
         this->get_parameter("show_fps", this->debug_param_.show_fps);
-        this->get_parameter("using_imu", this->debug_param_.using_imu);
-        this->get_parameter("using_roi", this->debug_param_.using_roi);
+        this->get_parameter("use_serial", this->debug_param_.use_serial);
+        this->get_parameter("use_roi", this->debug_param_.use_roi);
         this->get_parameter("show_img", this->debug_param_.show_img);
+
         return true;
     }
 } // namespace buff_detector

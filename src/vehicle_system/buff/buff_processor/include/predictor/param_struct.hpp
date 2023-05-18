@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-20 19:46:36
- * @LastEditTime: 2023-03-20 21:29:10
+ * @LastEditTime: 2023-05-18 18:49:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/predictor/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -27,6 +27,17 @@ namespace buff_processor
         Eigen::Matrix3d rmat_imu;
         bool target_switched;
         int buff_mode;
+    };
+
+    struct BuffInfo
+    {
+        // double dist;
+        bool is_switched;
+        double abs_angle;
+        double relative_angle;
+        double delta_angle;
+        double angle_offset;
+        double timestamp;
     };
 
     struct PredictStatus

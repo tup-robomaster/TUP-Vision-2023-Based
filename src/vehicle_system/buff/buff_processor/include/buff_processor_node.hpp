@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:10:59
- * @LastEditTime: 2023-03-17 19:25:41
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/buff_processor_node.hpp
+ * @LastEditTime: 2023-05-18 18:56:27
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/buff_processor_node.hpp
  */
 #ifndef BUFF_PROCESSOR_NODE_HPP_
 #define BUFF_PROCESSOR_NODE_HPP_
@@ -19,7 +19,6 @@
 #include <image_transport/subscriber_filter.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
-
 //c++
 #include <mutex>
 #include <thread>
@@ -47,29 +46,28 @@ namespace buff_processor
         ~BuffProcessorNode();
     
     private:
-        void targetMsgCallback(const BuffMsg& target_info);
-
-        // 订阅目标信息
-        rclcpp::Subscription<BuffMsg>::SharedPtr target_info_sub_;
+        rclcpp::Subscription<BuffMsg>::SharedPtr buff_msg_sub_;
+        void buffMsgCallback(const BuffMsg& buff_msg);
 
         // 云台偏转角度（pitch、yaw）
-        rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
+        rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_msg_pub_;
 
         // 预测点位置发布
-        rclcpp::Publisher<BuffMsg>::SharedPtr predict_info_pub_;
+        rclcpp::Publisher<BuffMsg>::SharedPtr predict_msg_pub_;
     
     private:
         std::unique_ptr<Processor> buff_processor_;
         std::unique_ptr<Processor> initBuffProcessor();
     
     private:
+        Mutex image_mutex_;
         ImageInfo image_info_;
         ImageSize image_size_;
-        std::shared_ptr<image_transport::Subscriber> img_sub_;
-        Eigen::Vector3d pred_point3d_;
-        Mutex image_mutex_;
-
-        void imageCallback(const ImageMsg::ConstSharedPtr &img_info);
+        cv::Point2f apex2d[5];
+        cv::Mat src_;
+        
+        std::shared_ptr<image_transport::Subscriber> img_msg_sub_;
+        void imageCallback(const ImageMsg::ConstSharedPtr &img_msg);
         
     public:
         Mutex param_mutex_;
