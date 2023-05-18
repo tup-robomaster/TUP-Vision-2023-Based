@@ -30,7 +30,7 @@ def generate_launch_description():
     camera_type = 'daheng' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_name = 'KE0200110074'
     use_serial = True
-    use_imu = False
+    use_imu = True
     shoot_delay = 200
     bullet_speed = 12.7
     #------------------------------------------------------------------------------------------
@@ -165,6 +165,8 @@ def generate_launch_description():
         respawn=True,
         respawn_delay=1,
     )
+
+    #infantry3
     tf_static_node = Node(package='tf2_ros',
                             executable='static_transform_publisher',
                             output='screen',

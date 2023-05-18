@@ -164,6 +164,11 @@ namespace armor_processor
         {   //更新弹速
             processor_->coordsolver_.setBulletSpeed(target_info.bullet_speed);
         }
+
+        if (target_info.shoot_delay > 20)
+        {
+            processor_->predict_param_.shoot_delay = target_info.shoot_delay;
+        }
         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "rec_bullet_speed:%.3f cur_bullet_speed:%.3f", target_info.bullet_speed, processor_->coordsolver_.getBulletSpeed());
         
         if(debug_param_.use_serial)
@@ -222,7 +227,7 @@ namespace armor_processor
                         double armor3d_dist = armor_point3d_world.norm();
                         int scale = armor_point3d_world(3) / (2 * CV_PI);
                         double rangle = armor_point3d_world(3) - scale * (2 * CV_PI);
-                        if (armor3d_dist < min_dist && rangle >= 1.35 && rangle <= 1.55)
+                        if (armor3d_dist < min_dist && rangle >= -0.25 && rangle <= 0.35)
                         {
                             min_dist = armor3d_dist;
                             flag = idx;

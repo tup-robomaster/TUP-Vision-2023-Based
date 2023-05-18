@@ -80,7 +80,7 @@
     show_fps: true
     print_delay: false
     sync_transport: false
-    show_marker: false
+    show_marker: true
  
   # Camera params.
     camera_param_path: "/config/camera.yaml"

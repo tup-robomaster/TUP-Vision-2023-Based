@@ -138,6 +138,9 @@ namespace armor_detector
         //     return;
 
         TaskData src;
+        AutoaimMsg target_info;
+        bool is_target_lost = true;
+
         // Convert the image to opencv format.
         // cv_bridge::CvImagePtr cv_ptr;
         try
@@ -145,6 +148,7 @@ namespace armor_detector
             src.img = cv_bridge::toCvShare(img_msg, "bgr8")->image;
             src.timestamp = img_msg->header.stamp.nanosec;
             src.bullet_speed = serial_msg->bullet_speed;
+            target_info.shoot_delay = serial_msg->shoot_delay;
             src.mode = serial_msg->mode;
             src.quat.w() = serial_msg->imu.orientation.w;
             src.quat.x() = serial_msg->imu.orientation.x;
@@ -157,8 +161,6 @@ namespace armor_detector
             return;
         }
         
-        AutoaimMsg target_info;
-        bool is_target_lost = true;
         try
         {
             param_mutex_.lock();
@@ -202,12 +204,17 @@ namespace armor_detector
 
     void DetectorNode::detect(TaskData& src, rclcpp::Time stamp)
     {
+        AutoaimMsg target_info;
+        Eigen::Vector2d tracking_angle = {0.0, 0.0};
+        Eigen::Matrix3d rmat_imu = Eigen::Matrix3d::Identity();
+       
         rclcpp::Time now = this->get_clock()->now();
         if (debug_.use_serial)
         {
             serial_msg_mutex_.lock();
             src.mode = serial_msg_.mode;
             src.bullet_speed = serial_msg_.bullet_speed;
+            target_info.shoot_delay = serial_msg_.shoot_delay;
             if (debug_.use_imu)
             {
                 src.quat.w() = serial_msg_.imu.orientation.w;
@@ -231,10 +238,6 @@ namespace armor_detector
             src.quat = Eigen::Quaterniond(rmat);
         }
         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "mode:%d bulletSpd:%.2f", src.mode, src.bullet_speed);
-
-        AutoaimMsg target_info;
-        Eigen::Vector2d tracking_angle = {0.0, 0.0};
-        Eigen::Matrix3d rmat_imu = Eigen::Matrix3d::Identity();
         
         param_mutex_.lock();
         if (detector_->armor_detect(src, target_info.is_target_lost))
@@ -266,7 +269,7 @@ namespace armor_detector
         target_info.quat_imu.x = src.quat.x();
         target_info.quat_imu.y = src.quat.y();
         target_info.quat_imu.z = src.quat.z();
-        target_info.bullet_speed = src.bullet_speed;
+        target_info.bullet_speed = detector_->coordsolver_.getBulletSpeed();
         // RCLCPP_INFO(this->get_logger(), "timestamp:%.8f", target_info.timestamp / 1e9);
 
         // if (target_info.spinning_switched)
