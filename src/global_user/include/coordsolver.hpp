@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:13
- * @LastEditTime: 2023-05-17 13:50:11
+ * @LastEditTime: 2023-05-18 23:44:10
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/coordsolver.hpp
  */
 
@@ -40,6 +40,7 @@ namespace coordsolver
         Eigen::Matrix3d rmat;
         Eigen::Quaterniond quat_cam;
         double rangle;
+        bool is_solver_success;
     };
 
     class CoordSolver

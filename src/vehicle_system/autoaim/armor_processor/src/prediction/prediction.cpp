@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-10 17:28:51
+ * @LastEditTime: 2023-05-18 23:52:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -98,6 +98,7 @@ namespace armor_processor
 
         // Eigen::Vector4d meas = {target.xyz(1), -target.xyz(0), target.xyz(2), (target.rangle > 0 ? (target.rangle - CV_PI / 2) : (CV_PI * 1.5 + target.rangle ))};
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
+        cout << "target_world:" << meas(0) << " " << meas(1) << " " <<  meas(2) << " " <<  meas(3) << endl;
         
         if ((last_spin_state_ == UNKNOWN && spin_state != UNKNOWN) || (last_spin_state_ != UNKNOWN && spin_state == UNKNOWN))
         {
@@ -124,6 +125,8 @@ namespace armor_processor
         else
         {
             Vector6d post_state = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+            meas = {meas(0), meas(1), meas(2), meas(3)};
+
             if (predictBasedUniformModel(target.is_target_lost, spin_state, meas, dt, pred_dt, target.period, post_state))
             {
                 // Eigen::Vector4d circle_center3d = {post_state(0), post_state(1), post_state(2), 0.0};

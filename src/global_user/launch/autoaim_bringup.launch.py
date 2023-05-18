@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-05-17 03:50:15
+LastEditTime: 2023-05-18 23:48:48
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -28,7 +28,7 @@ def generate_launch_description():
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
     
-    camera_type = 'mvs' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type = 'daheng' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_name = 'KE0200110074'
     use_serial = True
     shoot_delay = 150.0
@@ -56,7 +56,7 @@ def generate_launch_description():
     with open(autoaim_param_file, 'r') as f:
         armor_processor_params = yaml.safe_load(f)['/armor_processor']['ros__parameters']
     
-    # 哨兵
+    # sentry
     tf_static_node = Node(
         package='tf2_ros',
         executable='static_transform_publisher',

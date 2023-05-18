@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-05-17 13:52:02
+ * @LastEditTime: 2023-05-18 23:43:55
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -98,6 +98,7 @@ namespace coordsolver
     PnPInfo CoordSolver::pnp(const std::vector<cv::Point2f> &points_pic, const Eigen::Matrix3d& rmat_gimbal, const Eigen::Vector3d& translation, enum TargetType type, int method = cv::SOLVEPNP_IPPE)
     {
         std::vector<cv::Point3d> points_world;
+        PnPInfo result;
 
         //长度为4进入装甲板模式
         //大于长宽比阈值使用大装甲板世界坐标
@@ -151,16 +152,17 @@ namespace coordsolver
         
         // 1.首先使用SOLVEPNP_IPPE来初始化相机位姿;
         // 2.然后通过非线性优化算法(SOLVEPNP_ITERATIVE)（如Levenberg-Marquardt算法等）对相机位姿进行优化，以达到更精确的结果。
+        result.is_solver_success = true;
         if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, SOLVEPNP_IPPE))
         {   
+            result.is_solver_success = false;
             RCLCPP_WARN(logger_, "Initialize camera pose failed...");
         }
         if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, true, SOLVEPNP_ITERATIVE))
         {
+            result.is_solver_success = false;
             RCLCPP_WARN(logger_, "Optimize camera pose failed...");
         }
-
-        PnPInfo result;
 
         // Pc = R * Pw + T
         Rodrigues(rvec, rmat);

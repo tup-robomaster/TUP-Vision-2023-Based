@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-05-17 15:24:04
+ * @LastEditTime: 2023-05-18 23:45:21
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -210,12 +210,20 @@ namespace armor_detector
 
             // 单目PnP
             PnPInfo pnp_result = coordsolver_.pnp(points_pic, rmat_gimbal, translation, target_type, SOLVEPNP_IPPE);
+            if (!pnp_result.is_solver_success)
+            {
+                continue;
+            }
 
             //防止装甲板类型出错导致解算问题，首先尝试切换装甲板类型，若仍无效则直接跳过该装甲板
             if (!isPnpSolverValidation(pnp_result.armor_cam))
             {
                 target_type = (target_type == SMALL) ? BIG : SMALL;
                 pnp_result = coordsolver_.pnp(points_pic, rmat_gimbal, translation, target_type, SOLVEPNP_IPPE);
+                if (!pnp_result.is_solver_success)
+                {
+                    continue;
+                }
                 if (!isPnpSolverValidation(pnp_result.armor_cam))
                 {
                     continue;
