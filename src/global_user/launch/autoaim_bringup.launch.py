@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-05-18 23:48:48
+LastEditTime: 2023-05-19 00:07:14
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -57,13 +57,24 @@ def generate_launch_description():
         armor_processor_params = yaml.safe_load(f)['/armor_processor']['ros__parameters']
     
     # sentry
+    # tf_static_node = Node(
+    #     package='tf2_ros',
+    #     executable='static_transform_publisher',
+    #     output='screen',
+    #     arguments=[
+    #         #      x            y               z            yaw           pitch       roll    parent_frame  child_frame
+    #         '-0.00197128', '-0.00937364', '0.00107134', '1.6545464', '-1.5638996', '-3.062463', 'imu_link', 'camera_link'
+    #     ],
+    # )
+    
+    # infantry3
     tf_static_node = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
         output='screen',
         arguments=[
             #      x            y               z            yaw           pitch       roll    parent_frame  child_frame
-            '-0.00197128', '-0.00937364', '0.00107134', '1.6545464', '-1.5638996', '-3.062463', 'imu_link', 'camera_link'
+            '-0.03410782', '-0.00340863', '0.01676429', '1.3145651', '-1.3590434', '2.9736881', 'imu_link', 'camera_link'
         ],
     )
     
@@ -75,7 +86,7 @@ def generate_launch_description():
                             output='screen', # log/screen/both
                             emulate_tty=True,
                             parameters=[{
-                                'using_port': False,
+                                'using_port': True,
                                 'tracking_target': True,
                                 'print_serial_info': False,
                                 'print_referee_info': False
