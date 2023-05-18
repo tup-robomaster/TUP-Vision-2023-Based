@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-05-05 00:04:36
+ * @LastEditTime: 2023-05-19 00:14:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -162,8 +162,9 @@ namespace armor_processor
 
         for (auto armor : target_msg.armors)
         {
-            // cout << "armor.point3d_world:" << armor.point3d_world.x << " " << armor.point3d_world.y << " " << armor.point3d_world.z << endl;
             Eigen::Vector3d xyz = {armor.point3d_world.x, armor.point3d_world.y, armor.point3d_world.z};
+            cout << "armor_point3d_world:" << xyz(0) << " " << xyz(1) << " " << xyz(2) << endl;
+            
             double pred_dt = xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
             Eigen::VectorXd state = armor_predictor_.uniform_ekf_.x();
             Eigen::Vector3d center_xyz = {state(0), state(1), state(2)};

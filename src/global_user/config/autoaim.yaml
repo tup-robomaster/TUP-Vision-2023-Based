@@ -73,7 +73,7 @@
 
   # Debug params.
     debug: true
-    show_img: false
+    show_img: true
     draw_predict: true
     show_predict: true
     show_aim_cross: true
