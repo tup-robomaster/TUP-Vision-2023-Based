@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-18 23:52:18
+ * @LastEditTime: 2023-05-19 01:07:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -98,7 +98,8 @@ namespace armor_processor
 
         // Eigen::Vector4d meas = {target.xyz(1), -target.xyz(0), target.xyz(2), (target.rangle > 0 ? (target.rangle - CV_PI / 2) : (CV_PI * 1.5 + target.rangle ))};
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
-        cout << "target_world:" << meas(0) << " " << meas(1) << " " <<  meas(2) << " " <<  meas(3) << endl;
+        pred_point3d = {meas(0), meas(1), meas(2)};
+        // cout << "target_world:" << meas(0) << " " << meas(1) << " " <<  meas(2) << " " <<  meas(3) << endl;
         
         if ((last_spin_state_ == UNKNOWN && spin_state != UNKNOWN) || (last_spin_state_ != UNKNOWN && spin_state == UNKNOWN))
         {
@@ -108,6 +109,7 @@ namespace armor_processor
         last_meas_ = meas;
         last_rangle = target.rangle;
         last_spin_state_ = spin_state;
+
         if (!target.is_spinning)
         {
             Eigen::Vector3d armor3d = {meas(0), meas(1), meas(2)};
@@ -125,7 +127,10 @@ namespace armor_processor
         else
         {
             Vector6d post_state = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-            meas = {meas(0), meas(1), meas(2), meas(3)};
+            double trans_rangle = (meas(3) > 0 ? (meas(3) - CV_PI / 2) : (CV_PI * 1.5 + meas(3)));
+            meas = {-meas(1), meas(0), meas(2), trans_rangle};
+
+            // cout << "target_trans_meas_world:" << meas(0) << " " << meas(1) << " " <<  meas(2) << " " <<  meas(3) << endl;
 
             if (predictBasedUniformModel(target.is_target_lost, spin_state, meas, dt, pred_dt, target.period, post_state))
             {
@@ -137,7 +142,9 @@ namespace armor_processor
                 double pred_rangle = post_state(4);
                 if (predictBasedSinger(target.is_target_lost, center3d, pred_point3d, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, dt, pred_dt))
                 {
-                    Eigen::Vector4d circle_center3d = {pred_point3d(0), pred_point3d(1), pred_point3d(2), 0.0};
+                    Eigen::Vector4d circle_center3d = {pred_point3d(1), -pred_point3d(0), pred_point3d(2), 0.0};
+                    // cout << "target_trans_center3d_world:" << circle_center3d(0) << " " << circle_center3d(1) << " " <<  circle_center3d(2) << " " <<  circle_center3d(3) << endl;
+
                     armor3d_vec.emplace_back(circle_center3d);
                     
                     for (int ii = 0; ii < 4; ii++)
@@ -155,7 +162,9 @@ namespace armor_processor
                             pred_y = pred_point3d(1) - pred_radius * cos(pred_next_rangle);
                             pred_z = (ii % 2 == 0) ? pred_point3d(2) : history_switched_state_vec_.front()(2);
                         }
-                        armor3d = {pred_x, pred_y, pred_z, pred_next_rangle};
+                        armor3d = {pred_y, -pred_x, pred_z, pred_next_rangle};
+                        // cout << "armor3d_trans_world:" << armor3d(0) << " " << armor3d(1) << " " <<  armor3d(2) << " " <<  armor3d(3) << endl;
+
                         armor3d_vec.emplace_back(armor3d);
                     }
                 }

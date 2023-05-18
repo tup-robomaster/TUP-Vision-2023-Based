@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-05-19 00:11:50
+ * @LastEditTime: 2023-05-19 00:44:57
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -66,14 +66,16 @@ namespace serialport
         // tf2
         // Initialize the transform broadcaster
         tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-        receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
 
         if (using_port_)
         {
             serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", qos);
-            // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
             watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
+            // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
         }
+        
+        receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
+        
     }
 
     SerialPortNode::~SerialPortNode()
@@ -103,9 +105,9 @@ namespace serialport
      */
     void SerialPortNode::receiveData()
     {
-        vector<float> vehicle_pos_info;
         while (1)
         {
+            // cout << 1 << endl;
             if (!using_port_)
             {
                 geometry_msgs::msg::TransformStamped t;
@@ -128,9 +130,12 @@ namespace serialport
 
                 // Send the transformation
                 tf_broadcaster_->sendTransform(t);
+                // cout << 2 << endl;
             }
             else
             {
+                // cout << 3 << endl;
+
                 // 若串口离线则跳过数据发送
                 if (!serial_port_->serial_data_.is_initialized)
                 {
@@ -149,12 +154,15 @@ namespace serialport
                     {
                         RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
                         // usleep(1000);
+                        continue;
                     }
                 }
                 
                 uchar flag = serial_port_->serial_data_.rdata[0];
                 uchar mode = serial_port_->serial_data_.rdata[1];
                 mode_ = mode;
+
+                // cout << 5 << endl;
 
                 // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
                 if (flag == 0xA5)
@@ -189,6 +197,8 @@ namespace serialport
                     serial_msg.bullet_speed = bullet_speed;
                     serial_msg.shoot_delay = shoot_delay;
                     
+                    // cout << 6 << endl;
+
                     geometry_msgs::msg::TransformStamped t;
                     // Read message content and assign it to corresponding tf variables
                     t.header.stamp = this->get_clock()->now();
