@@ -15,9 +15,7 @@
     armor_conf_high_thres: 0.92
 
   # Spinning params.
-    shoot_delay: 225
-    bullet_speed: 14.8
-    max_dead_buffer: 5
+    max_dead_buffer: 10
     max_delta_dist: 0.5
     switch_max_dt: 2000.0
     anti_spin_max_r_multiple: 4.5
@@ -34,16 +32,9 @@
     delta_y_3d_lower_thresh: 0.05
 
   # Camera config params.
-    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_param_path: "/config/camera.yaml"
-    # camera_name: "00J90630561" 
-    camera_name: "KE0200110076" #FIXME:根据相机序列号修改
 
   # Network model path.
-    # network_path: "/model/opt-0527-002.xml"
-    # network_path: "/model/1106-333.xml"
-    # network_path: "/model/yolox.xml"
-    # network_path: "/model/opt-1208-001.xml"
     network_path: "/model/opt-0127-001.xml"
   
   # Data saving.
@@ -52,10 +43,10 @@
     save_dataset: false
   
   # Debug params.
-    debug: true
     detect_red: true # red: true / blue: false
-    use_serial: true
     use_roi: true
+    
+    debug: true
     show_img: false
     show_crop_img: false
     show_fps: true
@@ -65,17 +56,15 @@
     print_letency: false
     sync_transport: false
     print_target_info: false
- 
-/armor_processor:
+
+/armor_processor:        
   ros__parameters:
   # Predict params.
-    shoot_delay: 225
-    bullet_speed: 14.8
-    max_v: 8
     max_dt: 1000
     max_cost: 10
     window_size: 3
     min_fitting_lens: 5
+    window_size: 3
     max_offset_value: 0.45
     reserve_factor: 500.0 # 储备系数(>=1)
     # rotation_yaw: 0.0
@@ -84,30 +73,26 @@
 
   # Debug params.
     debug: true
-    use_serial: true
-    show_img: false
+    show_img: true
     draw_predict: true
     show_predict: true
     show_aim_cross: true
-    show_fps: true
+    show_fps: false
     print_delay: false
     sync_transport: false
-    show_marker: true
+    show_marker: false
  
   # Camera params.
-    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_param_path: "/config/camera.yaml"
-    # camera_name: "00J90630561" 
-    camera_name: "KE0200110076" #FIXME:根据相机序列号修改
     
   # Filter params.
     filter_param_path: "/config/filter_param.yaml"
   
   # uniform model
     #----------------------------------Xc------Yc----Zc-----r---theta--omega
-    uniform_ekf_process_noise_param: [0.02, 0.001, 0.002, 0.001, 0.005, 0.002]
+    uniform_ekf_process_noise_param: [0.01, 0.0001, 0.002, 0.0005, 0.002, 0.001]
     #----------------------------------X----Y---Z---theta
-    uniform_ekf_measure_noise_param: [5.0, 0.5, 1.0, 1.0]
+    uniform_ekf_measure_noise_param: [5.0, 1.0, 1.0, 1.0]
     
   # Singer model
     # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)

@@ -62,7 +62,6 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME} SHARED
-  src/filter/particle_filter.cpp 
   src/filter/kalman_filter.cpp
   src/filter/motion_model.cpp 
   src/filter/imm.cpp 

@@ -75,7 +75,6 @@ namespace armor_processor
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
         rclcpp::Publisher<AutoaimMsg>::SharedPtr predict_info_pub_;
-        // rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
         
         // message_filter
         MySyncPolicy my_sync_policy_;
@@ -89,6 +88,8 @@ namespace armor_processor
         rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_pub_;
         uint64 shape_ = visualization_msgs::msg::Marker::SPHERE;
         bool show_marker_ = false;
+        void pubMarkerArray(vector<Eigen::Vector4d> armor3d_vec, bool is_clockwise, int flag);
+        
         int count_ = 0;
         bool shoot_flag_ = false;
 
