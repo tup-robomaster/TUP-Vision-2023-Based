@@ -134,8 +134,8 @@ namespace buff_detector
             }
             
             std::vector<Point2f> points_pic(fan.apex2d, fan.apex2d + 5);
-            std::vector<cv::Point2f> points_rect;
-            cv::Point2f center_r;
+            std::vector<cv::Point2d> points_rect;
+            cv::Point2d center_r;
             for(int ii = 0; ii < 5; ii++)
             {
                 if(ii == 0)

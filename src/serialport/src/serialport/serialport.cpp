@@ -47,6 +47,10 @@ namespace serialport
      */
     bool SerialPort::receiveData(int lens)
     {
+        // timestamp_ = this->steady_clock_.now();
+        // rclcpp::Time now = this->steady_clock_.now();
+        // cout << "rec_delay:" << (now.nanoseconds() - timestamp_.nanoseconds()) / 1e6 << "ms" << endl;
+        
         int bytes;
         char *name = ttyname(serial_data_.fd);
         if (name == NULL)
@@ -59,21 +63,37 @@ namespace serialport
         if (result == -1)
         {
             serial_data_.is_initialized = false;
-            return false;
+            // return false;
         }
-        if (bytes == 0)
-        {
-            return false;
-        }
+        // if (bytes == 0)
+        // {
+        //     return false;
+        // }
         
+        // rclcpp::Time st = this->steady_clock_.now();
+        // timestamp_ = this->steady_clock_.now();
         bytes = read(serial_data_.fd, serial_data_.rdata, (size_t)(lens));
-        timestamp_ = this->steady_clock_.now();
+        // rclcpp::Time now = this->steady_clock_.now();
+
+        // cout << "rec_delay1:" << (now.nanoseconds() - timestamp_.nanoseconds()) / 1e6 << "ms" << endl;
+        // timestamp_ = now;
+
+        // bytes = read(serial_data_.fd, serial_data_.rdata, (size_t)(lens));
+        // now = this->steady_clock_.now();
+
+        // cout << "rec_delay2:" << (now.nanoseconds() - timestamp_.nanoseconds()) / 1e6 << "ms" << endl;
+
+        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 100, "rec_delay:%.3fms", (now.nanoseconds() - timestamp_.nanoseconds()) / 1e6);
+
 
         if ((serial_data_.rdata[0] == 0xA5 || serial_data_.rdata[0] == 0xB5 || serial_data_.rdata[0] == 0xC5)
             && crc_check_.Verify_CRC8_Check_Sum(serial_data_.rdata, 3)
             && crc_check_.Verify_CRC16_Check_Sum(serial_data_.rdata, (uint32_t)(lens)))
         {
             // cout << 1 << endl;
+            // rclcpp::Time now = this->steady_clock_.now();
+            // cout << "rec_delay:" << (now.nanoseconds() - timestamp_.nanoseconds()) / 1e6 << "ms" << endl;
+            // timestamp_ = now;
             return true;
         }
 

@@ -9,7 +9,7 @@
 
 namespace global_user
 {
-    float calcTriangleArea(cv::Point2f pts[3])
+    float calcTriangleArea(cv::Point2d pts[3])
     {
         /**
          * @brief caculate the areas of triangle
@@ -24,7 +24,7 @@ namespace global_user
         return sqrt(p * (p - a) * (p - b) * (p - c));
     }
 
-    float calcTetragonArea(cv::Point2f pts[4])
+    float calcTetragonArea(cv::Point2d pts[4])
     {
         return calcTriangleArea(&pts[0]) + calcTriangleArea(&pts[1]);
     }
@@ -221,7 +221,7 @@ namespace global_user
         return tree;
     }
 
-    float calcDistance(cv::Point2f& p1, cv::Point2f& p2)
+    float calcDistance(cv::Point2d& p1, cv::Point2d& p2)
     {
         return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
     }
@@ -290,7 +290,7 @@ namespace global_user
         return true;
     }
 
-    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_prefix, int64_t &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size)
+    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_prefix, int64_t &timestamp, int &id, int &color, vector<cv::Point2d> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size)
     {
         if(!is_init)
         {
@@ -360,8 +360,8 @@ namespace global_user
 
     void drawAimCrossCurve(cv::Mat& src)
     {
-        line(src, cv::Point2f(src.size().width / 2, 0), cv::Point2f(src.size().width / 2, src.size().height), {0,255,0}, 1);
-        line(src, cv::Point2f(0, src.size().height / 2), cv::Point2f(src.size().width, src.size().height / 2), {0,255,0}, 1);
+        line(src, cv::Point2d(src.size().width / 2, 0), cv::Point2d(src.size().width / 2, src.size().height), {0,255,0}, 1);
+        line(src, cv::Point2d(0, src.size().height / 2), cv::Point2d(src.size().width, src.size().height / 2), {0,255,0}, 1);
     }
 
     //新息序列不等式

@@ -11,7 +11,8 @@ namespace armor_processor
 {
     Processor::Processor(const PredictParam& predict_param, vector<double>* uniform_ekf_param,
         vector<double>* singer_ekf_param, const DebugParam& debug_param)
-    : logger_(rclcpp::get_logger("armor_processor")), predict_param_(predict_param), debug_param_(debug_param)  
+    : logger_(rclcpp::get_logger("armor_processor")), predict_param_(predict_param), debug_param_(debug_param),
+    armor_predictor_(predict_param, debug_param)
     {
         //初始化预测器
         armor_predictor_.initPredictor(uniform_ekf_param, singer_ekf_param);
