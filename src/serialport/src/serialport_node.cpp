@@ -71,9 +71,6 @@ namespace serialport
             // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
             watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
         }
-        
-        // tf2
-        // Initialize the transform broadcaster
         receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
     }
 
@@ -107,6 +104,10 @@ namespace serialport
         vector<float> vehicle_pos_info;
         while (1)
         {
+            // stamp_ = this->get_clock()->now();
+            // rclcpp::Time now = this->get_clock()->now();
+            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "rec_delay:%.3fms", (now.nanoseconds() - stamp_.nanoseconds()) / 1e6);
+
             if (!using_port_)
             {
                 geometry_msgs::msg::TransformStamped t;
@@ -150,8 +151,8 @@ namespace serialport
                     if(!is_receive_data)
                     {
                         RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
+                        // continue;
                         // usleep(1000);
-                        continue;
                     }
                 }
                 
@@ -239,7 +240,13 @@ namespace serialport
                     // RCLCPP_WARN(this->get_logger(), "serial_msg_pub:%.3fs", now.nanoseconds() / 1e9);
                 }
             }
+
+            // stamp_ = now;
+            // rclcpp::Time now = this->get_clock()->now();        
+            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "rec_delay:%.3fms", (now.nanoseconds() - stamp_.nanoseconds()) / 1e6);
+
         }
+
     }
 
     /**

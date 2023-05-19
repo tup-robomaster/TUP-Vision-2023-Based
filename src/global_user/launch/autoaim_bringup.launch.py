@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-05-19 15:00:44
+LastEditTime: 2023-05-20 03:49:32
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -31,8 +31,9 @@ def generate_launch_description():
     camera_name = 'KE0200110074'
     use_serial = True
     use_imu = True
-    shoot_delay = 125.0
-    bullet_speed = 16.8
+    shoot_delay = 125.0 # 发弹延迟
+    bullet_speed = 16.8 # 弹速
+    delay_coeff = 2.5   # 延迟系数（放大时间提前量，缓解云台跟随滞后问题
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
 
@@ -69,6 +70,13 @@ def generate_launch_description():
                             }],
                             respawn=True,
                             respawn_delay=1)
+        
+    #---------------------------tf2_static_publisher------------------------------------------
+    tf_static_node = Node(package='tf2_ros',
+                            executable='static_transform_publisher',
+                            output='screen',
+                            arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373',
+                                        '-1.5249719', '1.408214', 'imu_link', 'camera_link'])
     #---------------------------------Detector Node--------------------------------------------
     camera_params = []
     camera_plugin = ""
@@ -155,6 +163,7 @@ def generate_launch_description():
                     'use_imu': use_imu,
                     'shoot_delay': shoot_delay,
                     'bullet_speed': bullet_speed,
+                    'delay_coeff': delay_coeff
                 }],
                 remappings = camera_remappings,
                 extra_arguments=[{
@@ -165,14 +174,7 @@ def generate_launch_description():
         respawn=True,
         respawn_delay=1,
     )
-
-    #infantry3
-    tf_static_node = Node(package='tf2_ros',
-                            executable='static_transform_publisher',
-                            output='screen',
-                            arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373',
-                                        '-1.5249719', '1.408214', 'imu_link', 'camera_link'])
-
+    
     ld = LaunchDescription()
     if use_serial:
         ld.add_action(serial_node)

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-05-19 02:37:46
+ * @LastEditTime: 2023-05-20 03:51:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -11,7 +11,8 @@ namespace armor_processor
 {
     Processor::Processor(const PredictParam& predict_param, vector<double>* uniform_ekf_param,
         vector<double>* singer_ekf_param, const DebugParam& debug_param)
-    : logger_(rclcpp::get_logger("armor_processor")), predict_param_(predict_param), debug_param_(debug_param)  
+    : logger_(rclcpp::get_logger("armor_processor")), predict_param_(predict_param), debug_param_(debug_param),
+    armor_predictor_(predict_param, debug_param)
     {
         //初始化预测器
         armor_predictor_.initPredictor(uniform_ekf_param, singer_ekf_param);
@@ -170,6 +171,8 @@ namespace armor_processor
             Eigen::VectorXd state = armor_predictor_.uniform_ekf_.x();
             Eigen::Vector3d center_xyz = {state(0), state(1), state(2)};
 
+            // cout << "armor_point3d_world:" << xyz(0) << " " << xyz(1) << " " << xyz(2) << endl;
+
             TargetInfo target = 
             { 
                 std::move(xyz),
@@ -219,7 +222,7 @@ namespace armor_processor
                 // target_period_ = target.period;
                 armor_predictor_.predictor_state_ = PREDICTING;
 
-                // Eigen::Vector4d meas = {target.xyz(1), -target.xyz(0), target.xyz(2), (target.rangle > 0 ? (target.rangle - CV_PI / 2) : (CV_PI * 1.5 + target.rangle ))};
+                // Eigen::Vector4d meas = {xyz(1), -xyz(0), xyz(2), (rangle > 0 ? (rangle - CV_PI / 2) : (CV_PI * 1.5 + rangle))};
                 Eigen::Vector4d meas = {xyz(0), xyz(1), xyz(2), rangle};
                 armor_predictor_.updatePredictor(target.is_spinning, meas);
                 is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);

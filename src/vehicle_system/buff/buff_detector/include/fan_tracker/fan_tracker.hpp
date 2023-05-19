@@ -30,6 +30,7 @@ namespace buff_detector
         double angle;
         Point2f apex2d[5];
         Eigen::Vector3d centerR3d_cam;
+        // Eigen::Quaterniond quat_cam;
         Eigen::Vector3d centerR3d_world;
     };
 

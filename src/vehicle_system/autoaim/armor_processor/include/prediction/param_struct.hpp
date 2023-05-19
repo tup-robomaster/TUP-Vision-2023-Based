@@ -79,7 +79,8 @@ namespace armor_processor
     struct PredictParam
     {
         double bullet_speed;    //弹速
-        double shoot_delay;        //射击延迟
+        double shoot_delay;     //射击延迟
+        double delay_coeff;     //延迟系数（放大时间提前量，缓解云台跟随滞后问题）
         int max_dt;             //最大时间跨度，大于该值则重置预测器(ms)
         int max_cost;           //回归函数最大cost
         int max_v;              //

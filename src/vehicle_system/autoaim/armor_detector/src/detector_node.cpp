@@ -209,14 +209,15 @@ namespace armor_detector
         Eigen::Matrix3d rmat_imu = Eigen::Matrix3d::Identity();
 
         rclcpp::Time now = this->get_clock()->now();
+        serial_msg_mutex_.lock();
         if (debug_.use_serial)
         {
-            serial_msg_mutex_.lock();
             src.mode = serial_msg_.mode;
             src.bullet_speed = serial_msg_.bullet_speed;
             target_info.shoot_delay = serial_msg_.shoot_delay;
             if (debug_.use_imu)
             {
+                RCLCPP_WARN_THROTTLE(get_logger(), *this->get_clock(), 500, "Using imu data...");
                 src.quat.w() = serial_msg_.imu.orientation.w;
                 src.quat.x() = serial_msg_.imu.orientation.x;
                 src.quat.y() = serial_msg_.imu.orientation.y;
@@ -226,19 +227,22 @@ namespace armor_detector
             }
             else
             {
+                RCLCPP_WARN_THROTTLE(get_logger(), *this->get_clock(), 500, "Not use imu data...");
                 Eigen::Matrix3d rmat = Eigen::Matrix3d::Identity();
                 src.quat = Eigen::Quaterniond(rmat);
             }
-            serial_msg_mutex_.unlock(); 
             
             auto dt = (now - serial_msg_.imu.header.stamp).nanoseconds() / 1e6;
             putText(src.img, "IMU_DELAY:" + to_string(dt) + "ms", cv::Point2i(50, 80), cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "using serial...");
         }
         else 
         {
             Eigen::Matrix3d rmat = Eigen::Matrix3d::Identity();
             src.quat = Eigen::Quaterniond(rmat);
         }
+        serial_msg_mutex_.unlock(); 
+
         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 100, "mode:%d bulletSpd:%.2f", src.mode, src.bullet_speed);
         
         param_mutex_.lock();

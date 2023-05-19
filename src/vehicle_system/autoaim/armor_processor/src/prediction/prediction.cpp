@@ -2,13 +2,20 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-19 04:30:09
+ * @LastEditTime: 2023-05-20 03:52:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
 
 namespace armor_processor
 {
+    ArmorPredictor::ArmorPredictor(const PredictParam& predict_param, const DebugParam& debug_param)
+    : logger_(rclcpp::get_logger("armor_prediction"))
+    {
+        predict_param_ = predict_param;
+        debug_param_ = debug_param;
+    }
+
     ArmorPredictor::ArmorPredictor()
     : logger_(rclcpp::get_logger("armor_prediction"))
     {
@@ -98,9 +105,7 @@ namespace armor_processor
         SpinHeading spin_state = target.is_spinning ? (target.is_clockwise ? CLOCKWISE : COUNTER_CLOCKWISE) : UNKNOWN;
         // Eigen::Vector4d meas = {target.xyz(1), -target.xyz(0), target.xyz(2), (target.rangle > 0 ? (target.rangle - CV_PI / 2) : (CV_PI * 1.5 + target.rangle ))};
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
-        pred_point3d = {meas(0), meas(1), meas(2)};
-        cout << "meas_point3d_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
-        
+        cout << "meas_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
         
         if ((last_spin_state_ == UNKNOWN && spin_state != UNKNOWN) || (last_spin_state_ != UNKNOWN && spin_state == UNKNOWN))
         {
@@ -114,12 +119,16 @@ namespace armor_processor
         {
             Eigen::Vector3d armor3d = {meas(0), meas(1), meas(2)};
             Eigen::Vector3d post_state = {0.0, 0.0, 0.0};
+
+            pred_dt = predict_param_.delay_coeff * pred_dt;
+            RCLCPP_WARN_ONCE(logger_, "delay_coeff:%.3f", predict_param_.delay_coeff);
             if (predictBasedSinger(target.is_target_lost, armor3d, post_state, {0, 0, 0}, {0, 0, 0}, dt, pred_dt))
             {
                 pred_point3d = post_state;
             }
             else
             {
+                RCLCPP_WARN(logger_, "KF based singer model prediction failed!!!");
                 pred_point3d = armor3d;
                 return false;
             }
@@ -127,8 +136,8 @@ namespace armor_processor
         else
         {
             Vector6d post_state = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-            // double trans_rangle = (meas(3) > 0 ? (meas(3) - CV_PI / 2) : (CV_PI * 1.5 + meas(3)));
-            // Eigen::Vector4d meas = {-meas(1), meas(0), meas(2), trans_rangle};
+            meas = {-meas(0), -meas(1), meas(2), -meas(3)};
+            // cout << "meas_trans_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
 
             if (predictBasedUniformModel(target.is_target_lost, spin_state, meas, dt, pred_dt, target.period, post_state))
             {
@@ -139,37 +148,36 @@ namespace armor_processor
                 pred_point3d = center3d;
                 double radius = post_state(3);
                 double pred_rangle = post_state(4);
-                if (predictBasedSinger(target.is_target_lost, center3d, pred_point3d, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, dt, pred_dt))
+                if (!predictBasedSinger(target.is_target_lost, center3d, pred_point3d, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, dt, pred_dt))
                 {
-                    Eigen::Vector4d circle_center3d = {pred_point3d(0), pred_point3d(1), meas(2), 0.0};
-                    armor3d_vec.emplace_back(circle_center3d);
-                    
-                    for (int ii = 0; ii < 4; ii++)
-                    {
-                        Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
-                        double pred_radius = radius;
-                        double pred_next_rangle = (pred_rangle + CV_PI / 2 * ii);
-                        double pred_x = pred_point3d(0) + pred_radius * sin(pred_next_rangle);
-                        double pred_y = pred_point3d(1) - pred_radius * cos(pred_next_rangle);
-                        double pred_z = meas(2);
-                        if (history_switched_state_vec_.size() > 0)
-                        {
-                            pred_radius = (ii % 2 == 0) ? radius : history_switched_state_vec_.front()(3);
-                            pred_x = pred_point3d(0) + pred_radius * sin(pred_next_rangle);
-                            pred_y = pred_point3d(1) - pred_radius * cos(pred_next_rangle);
-                            pred_z = (ii % 2 == 0) ? pred_z : history_switched_state_vec_.front()(2);
-                        }
-                        armor3d = {pred_x, pred_y, pred_z, pred_next_rangle};
-                        armor3d_vec.emplace_back(armor3d);
-                    }
+                    RCLCPP_WARN(logger_, "KF based singer model prediction failed!!!");
                 }
-                else
+                pred_point3d(2) = meas(2);
+
+                Eigen::Vector4d circle_center3d = {-pred_point3d(0), -pred_point3d(1), pred_point3d(2), 0.0};
+                // cout << "center3d_world:" << circle_center3d(0) << " " << circle_center3d(1) << " " << circle_center3d(2) << " " << circle_center3d(3) << endl;
+                armor3d_vec.emplace_back(circle_center3d);
+                
+                for (int ii = 0; ii < 4; ii++)
                 {
-                    return false;
+                    Eigen::Vector4d armor3d = {0.0, 0.0, 0.0, 0.0};
+                    double pred_radius = radius;
+                    double pred_next_rangle = (pred_rangle + CV_PI / 2 * ii);
+                    double pred_x = pred_point3d(0) + pred_radius * sin(pred_next_rangle);
+                    double pred_y = pred_point3d(1) - pred_radius * cos(pred_next_rangle);
+                    double pred_z = pred_point3d(2);
+                    if (history_switched_state_vec_.size() > 0)
+                    {
+                        pred_radius = (ii % 2 == 0) ? radius : history_switched_state_vec_.front()(3);
+                        pred_x = pred_point3d(0) + pred_radius * sin(pred_next_rangle);
+                        pred_y = pred_point3d(1) - pred_radius * cos(pred_next_rangle);
+                        pred_z = (ii % 2 == 0) ? pred_point3d(2) : history_switched_state_vec_.front()(2);
+                    }
+                    armor3d = {-pred_x, -pred_y, pred_z, pred_next_rangle};
+                    armor3d_vec.emplace_back(armor3d);
                 }
             }
         }
-
         return true;
     }
 
@@ -203,7 +211,15 @@ namespace armor_processor
             
             // int count = 0;
             double dis_diff = (pred_pos - cur_pos).norm();
-            if (dis_diff > 0.30)
+            if (dis_diff >= 0.60)
+            {
+                is_singer_init_ = false;
+                is_ekf_init_ = false;
+                post_state = {meas(0), meas(1), meas(2), radius, rangle, omega};
+                predictor_state_ = TRACKING;
+                return false;
+            }
+            else if (dis_diff >= 0.30)
             {
                 predictor_state_ = TRACKING;
                 // uniform_ekf_.x_(0) = cur_pos(0) - radius * sin(meas(3));
@@ -217,14 +233,6 @@ namespace armor_processor
                 // circle_center_sum(0) += cur_pos(0) - radius * sin(meas(3));
                 // circle_center_sum(1) += cur_pos(1) + radius * cos(meas(3));
                 // ++count;
-            }
-            else if (dis_diff > 0.60)
-            {
-                is_singer_init_ = false;
-                is_ekf_init_ = false;
-                post_state = {meas(0), meas(1), meas(2), radius, rangle, omega};
-                predictor_state_ = TRACKING;
-                return false;
             }
 
             // Eigen::Vector2d circle3d = calcCircleCenter(meas);
@@ -364,86 +372,99 @@ namespace armor_processor
     bool ArmorPredictor::predictBasedSinger(bool is_target_lost, Eigen::Vector3d meas, Eigen::Vector3d& result, Eigen::Vector3d target_vel, Eigen::Vector3d target_acc, double dt, double pred_dt)
     {
         bool is_available;
+        if (!is_singer_init_)
+        {
+            singer_ekf_.x_ << meas(0), meas(1), meas(2), 0, 0, 0, 0, 0, 0;
+            result = meas;
+            is_singer_init_ = true;
+            is_available = true;
+            return is_available;
+        }
+
+        // 预测
+        singer_ekf_.updateF(singer_ekf_.F_, dt);
+        singer_ekf_.updateJf();
+        singer_ekf_.updateQ(dt);
+        singer_ekf_.Predict(dt);
         if (!is_target_lost)
         {
-            if (!is_singer_init_)
+            // 如果预测量偏离观测量较大，则修正状态量
+            Eigen::VectorXd statePre = singer_ekf_.x();
+            // Eigen::MatrixXd stateCovPre = singer_ekf_.P();
+
+            Eigen::Vector3d pred_center3d = {statePre(0), statePre(1), statePre(2)};
+            double pos_diff = (pred_center3d - meas).norm();
+            if (pos_diff >= 0.60)
             {
-                singer_ekf_.x_ << meas(0), meas(1), meas(2), 0, 0, 0, 0, 0, 0;
+                result = meas;
+                is_singer_init_ = false;
                 is_available = false;
-                is_singer_init_ = true;
+                return is_available;
             }
-            else
+            else if (pos_diff >= 0.30)
             {
-                singer_ekf_.updateF(singer_ekf_.F_, dt);
-                singer_ekf_.updateJf();
-                singer_ekf_.updateQ(dt);
-                singer_ekf_.Predict(dt);
-                // Eigen::MatrixXd stateCovPre = singer_ekf_.P();
-                // Eigen::MatrixXd statePre = singer_ekf_.x();
-                
-                Eigen::VectorXd measurement = Eigen::VectorXd(3);
-                measurement << meas(0), meas(1), meas(2);
-                singer_ekf_.updateH(singer_ekf_.H_, dt);
-                singer_ekf_.updateJh();
-                singer_ekf_.Update(measurement);
-
-                // Eigen::MatrixXd predictState(9, 1);
-                Eigen::VectorXd State = singer_ekf_.x();
-                result = {State(0), State(1), State(2)};
-
-                updateVel({State(3), State(4), State(5)});
-                updateAcc({State(6), State(7), State(8)});
-
-                // if (history_acc_[0] == 0.0)
-                //     singer_ekf_.setQ(target_acc);
-                // else
-                //     singer_ekf_.setQ(State[2]);
-
-                //超前预测
-                Eigen::MatrixXd F(9, 9);
-                singer_ekf_.updateF(F, pred_dt);
-                Eigen::MatrixXd Control(9, 3);
-                singer_ekf_.updateC(Control, pred_dt);
-
-                Eigen::Vector3d acc = {State(6), State(7), State(8)};
-                VectorXd x_pred = F * State + Control * acc;
-                result = {x_pred(0), x_pred(1), x_pred(2)};
-
-                // if (checkDivergence(statePre, stateCovPre, singer_ekf_.H_, singer_ekf_.R_, measurement) || abs(result - meas) > 0.85)
-                // {
-                //     RCLCPP_WARN(logger_, "Filter is diverging...");
-                //     // singer_kf_->P_ = singer_ekf_.P();
-                //     // is_singer_init_ = false;
-                //     is_available = false;
-                // }
-                // else if (abs(result - meas) > 0.85)
-                // {
-                //     result = meas;
-                //     is_available = true;
-                // }
-                // else
-                // {
-                //     result = post_pos;
-                //     is_available = true;
-                // }
-
-                // if (abs(result - meas) > 0.75)
-                // {
-                //     is_singer_init_ = false;
-                //     result = meas;
-                // }
-                is_available = true;
+                singer_ekf_.x_(0) = meas(0);
+                singer_ekf_.x_(1) = meas(1);
+                singer_ekf_.x_(2) = meas(2);
             }
-            return is_available;
+        }
+
+        if (is_singer_init_ && !is_target_lost)
+        {
+            // 更新
+            singer_ekf_.updateH(singer_ekf_.H_, dt);
+            singer_ekf_.updateJh();
+            singer_ekf_.Update(meas);
+
+            // Eigen::MatrixXd predictState(9, 1);
+            Eigen::VectorXd State = singer_ekf_.x();
+            result = {State(0), State(1), State(2)};
+
+            updateVel({State(3), State(4), State(5)});
+            updateAcc({State(6), State(7), State(8)});
+
+            // if (history_acc_[0] == 0.0)
+            //     singer_ekf_.setQ(target_acc);
+            // else
+            //     singer_ekf_.setQ(State[2]);
+
+            //超前预测
+            Eigen::MatrixXd F(9, 9);
+            singer_ekf_.updateF(F, pred_dt);
+            Eigen::MatrixXd Control(9, 3);
+            singer_ekf_.updateC(Control, pred_dt);
+
+            Eigen::Vector3d acc = {State(6), State(7), State(8)};
+            VectorXd x_pred = F * State + Control * acc;
+            result = {x_pred(0), x_pred(1), x_pred(2)};
+
+            // if (checkDivergence(statePre, stateCovPre, singer_ekf_.H_, singer_ekf_.R_, measurement) || abs(result - meas) > 0.85)
+            // {
+            //     RCLCPP_WARN(logger_, "Filter is diverging...");
+            //     // singer_kf_->P_ = singer_ekf_.P();
+            //     // is_singer_init_ = false;
+            //     is_available = false;
+            // }
+            // else if (abs(result - meas) > 0.85)
+            // {
+            //     result = meas;
+            //     is_available = true;
+            // }
+            // else
+            // {
+            //     result = post_pos;
+            //     is_available = true;
+            // }
+
+            // if (abs(result - meas) > 0.75)
+            // {
+            //     is_singer_init_ = false;
+            //     result = meas;
+            // }
+            is_available = true;
         }
         else if (predictor_state_ == LOSTING)
         {
-            //对目标可能出现的位置进行预测
-            singer_ekf_.updateF(singer_ekf_.F_, dt);
-            singer_ekf_.updateJf();
-            singer_ekf_.updateQ(dt);
-            singer_ekf_.Predict(dt);
-
             Eigen::VectorXd State = singer_ekf_.x();
             result = {State(0), State(1), State(2)};
            

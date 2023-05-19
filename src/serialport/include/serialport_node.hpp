@@ -78,6 +78,8 @@ namespace serialport
         // rclcpp::TimerBase::SharedPtr receive_timer_;
         queue<VisionAimData> vision_data_queue_;
 
+        rclcpp::Time stamp_;
+
         //tf2
         std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
         
