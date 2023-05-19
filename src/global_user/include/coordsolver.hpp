@@ -38,6 +38,7 @@ namespace coordsolver
         Eigen::Vector3d euler;
         Eigen::Matrix3d rmat;
         double rangle;
+        bool is_solver_success;
     };
 
     class CoordSolver
@@ -50,7 +51,7 @@ namespace coordsolver
 
         double dynamicCalcPitchOffset(Eigen::Vector3d &xyz);
         
-        PnPInfo pnp(const std::vector<cv::Point2d> &points_pic, const Eigen::Matrix3d &rmat_imu, enum ::global_user::TargetType type, int method);
+        PnPInfo pnp(const std::vector<cv::Point2f> &points_pic, const Eigen::Matrix3d &rmat_imu, enum ::global_user::TargetType type, int method);
         
         Eigen::Vector3d camToWorld(const Eigen::Vector3d &point_camera,const Eigen::Matrix3d &rmat);
         Eigen::Vector3d worldToCam(const Eigen::Vector3d &point_world,const Eigen::Matrix3d &rmat);

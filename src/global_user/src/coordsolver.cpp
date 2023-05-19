@@ -92,9 +92,10 @@ namespace coordsolver
      * @param method PnP解算方法
      * @return PnPInfo 
      */
-    PnPInfo CoordSolver::pnp(const std::vector<cv::Point2d> &points_pic, const Eigen::Matrix3d &rmat_imu, enum TargetType type, int method = cv::SOLVEPNP_IPPE)
+    PnPInfo CoordSolver::pnp(const std::vector<cv::Point2f> &points_pic, const Eigen::Matrix3d &rmat_imu, enum TargetType type, int method = cv::SOLVEPNP_IPPE)
     {
         std::vector<cv::Point3d> points_world;
+        PnPInfo result;
 
         //长度为4进入装甲板模式
         //大于长宽比阈值使用大装甲板世界坐标
@@ -148,12 +149,15 @@ namespace coordsolver
         
         // 1.首先使用SOLVEPNP_IPPE来初始化相机位姿;
         // 2.然后通过非线性优化算法(SOLVEPNP_ITERATIVE)（如Levenberg-Marquardt算法等）对相机位姿进行优化，以达到更精确的结果。
+        result.is_solver_success = true;
         if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, SOLVEPNP_IPPE))
         {   
+            result.is_solver_success = false;
             RCLCPP_WARN(logger_, "Initialize camera pose failed...");
         }
         if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, true, SOLVEPNP_ITERATIVE))
         {
+            result.is_solver_success = false;
             RCLCPP_WARN(logger_, "Optimize camera pose failed...");
         }
 
@@ -164,7 +168,6 @@ namespace coordsolver
         //     sqrt(rvec.at<double>(0) * rvec.at<double>(0) + rvec.at<double>(1) * rvec.at<double>(1) + rvec.at<double>(2) * rvec.at<double>(2))
         // );
 
-        PnPInfo result;
         //Pc = R * Pw + T
         Rodrigues(rvec, rmat);
         cv2eigen(rmat, rmat_eigen);

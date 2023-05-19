@@ -37,6 +37,7 @@ namespace armor_processor
         typedef Vector<double, 6> Vector6d;
         
     public:
+        ArmorPredictor(const PredictParam& predict_param, const DebugParam& debug_param);
         ArmorPredictor();
         ~ArmorPredictor();
         // ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, const DebugParam& debug_param);

@@ -66,7 +66,6 @@ namespace serialport
         // tf2
         // Initialize the transform broadcaster
         tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-        receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
 
         if (using_port_)
         {
@@ -74,6 +73,7 @@ namespace serialport
             // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
             watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
         }
+        receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
     }
 
     SerialPortNode::~SerialPortNode()

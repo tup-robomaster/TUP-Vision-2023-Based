@@ -332,23 +332,23 @@ namespace armor_processor
         }
 
         // 云台单发限制
-        if (shoot_flag_)
-        {
-            if (count_ <= 40)
-            {
-                is_shooting = false;
-                count_++;
-            }
-            else
-            {
-                shoot_flag_ = false;
-                count_ = 0;
-            }
-        }
-        if (is_shooting)
-        {
-            shoot_flag_ = true;
-        }
+        // if (shoot_flag_)
+        // {
+        //     if (count_ <= 40)
+        //     {
+        //         is_shooting = false;
+        //         count_++;
+        //     }
+        //     else
+        //     {
+        //         shoot_flag_ = false;
+        //         count_ = 0;
+        //     }
+        // }
+        // if (is_shooting)
+        // {
+        //     shoot_flag_ = true;
+        // }
 
         RCLCPP_WARN_EXPRESSION(this->get_logger(), is_shooting, "Shooting...");
         

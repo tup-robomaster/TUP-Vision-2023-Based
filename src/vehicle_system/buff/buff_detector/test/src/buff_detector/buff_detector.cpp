@@ -127,9 +127,9 @@ namespace buff_detector
             memcpy(fan.apex2d, object.apex, 5 * sizeof(cv::Point2f));
             for(int i = 0; i < 5; i++)
             {
-                fan.apex2d[i] += Point2d((float)roi_offset_.x, (float)roi_offset_.y);
+                fan.apex2d[i] += Point2f((float)roi_offset_.x, (float)roi_offset_.y);
             }
-            std::vector<Point2d> points_pic(fan.apex2d, fan.apex2d + 5);
+            std::vector<Point2f> points_pic(fan.apex2d, fan.apex2d + 5);
             std::vector<cv::Point2d> points_rect;
             cv::Point2d center_r;
             for(int ii = 0; ii < 5; ii++)
