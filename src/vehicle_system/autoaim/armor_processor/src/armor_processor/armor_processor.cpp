@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-05-20 03:51:50
+ * @LastEditTime: 2023-05-20 04:32:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -164,6 +164,7 @@ namespace armor_processor
         for (auto armor : target_msg.armors)
         {
             double rangle = armor.rangle;
+            // rangle = rangle > 0 ? (rangle - CV_PI / 2) : (CV_PI * 1.5 + rangle);
             Eigen::Vector3d xyz = {armor.point3d_world.x, armor.point3d_world.y, armor.point3d_world.z};
             // cout << "armor_point3d_world:" << xyz(0) << " " << xyz(1) << " " << xyz(2) << endl;
             
@@ -176,7 +177,7 @@ namespace armor_processor
             TargetInfo target = 
             { 
                 std::move(xyz),
-                armor.rangle,
+                rangle,
                 xyz.norm(),
                 dt,
                 target_msg.spinning_period,

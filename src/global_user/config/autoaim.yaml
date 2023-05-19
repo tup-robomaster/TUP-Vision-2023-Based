@@ -47,7 +47,7 @@
     use_roi: true
      
     debug: true
-    show_img: true
+    show_img: false
     show_crop_img: false
     show_fps: true
     show_aim_cross: true
@@ -64,7 +64,6 @@
     max_cost: 10
     window_size: 3
     min_fitting_lens: 5
-    window_size: 3
     max_offset_value: 0.45
     reserve_factor: 500.0 # 储备系数(>=1)
     # rotation_yaw: 0.0
@@ -73,7 +72,7 @@
 
   # Debug params.
     debug: true
-    show_img: false
+    show_img: true
     draw_predict: true
     show_predict: true
     show_aim_cross: true
@@ -96,7 +95,7 @@
     
   # Singer model
     # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)
-    singer_model_process_param: [1.05, 1.05, 1.05, 1.5, 1.65, 1.5]
+    singer_model_process_param: [1.0, 1.0, 1.0, 5.65, 15.45, 5.65]
     # r:观测协方差系数(r1/r2/r3)
     singer_model_measure_param: [1.0, 1.0, 1.0]
 

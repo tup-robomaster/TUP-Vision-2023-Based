@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-20 03:52:09
+ * @LastEditTime: 2023-05-20 04:57:20
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -105,7 +105,7 @@ namespace armor_processor
         SpinHeading spin_state = target.is_spinning ? (target.is_clockwise ? CLOCKWISE : COUNTER_CLOCKWISE) : UNKNOWN;
         // Eigen::Vector4d meas = {target.xyz(1), -target.xyz(0), target.xyz(2), (target.rangle > 0 ? (target.rangle - CV_PI / 2) : (CV_PI * 1.5 + target.rangle ))};
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
-        cout << "meas_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
+        // cout << "meas_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
         
         if ((last_spin_state_ == UNKNOWN && spin_state != UNKNOWN) || (last_spin_state_ != UNKNOWN && spin_state == UNKNOWN))
         {
@@ -136,7 +136,7 @@ namespace armor_processor
         else
         {
             Vector6d post_state = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-            meas = {-meas(0), -meas(1), meas(2), -meas(3)};
+            // meas = {meas(0), meas(1), meas(2), meas(3)};
             // cout << "meas_trans_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
 
             if (predictBasedUniformModel(target.is_target_lost, spin_state, meas, dt, pred_dt, target.period, post_state))
@@ -154,7 +154,7 @@ namespace armor_processor
                 }
                 pred_point3d(2) = meas(2);
 
-                Eigen::Vector4d circle_center3d = {-pred_point3d(0), -pred_point3d(1), pred_point3d(2), 0.0};
+                Eigen::Vector4d circle_center3d = {pred_point3d(0), pred_point3d(1), pred_point3d(2), 0.0};
                 // cout << "center3d_world:" << circle_center3d(0) << " " << circle_center3d(1) << " " << circle_center3d(2) << " " << circle_center3d(3) << endl;
                 armor3d_vec.emplace_back(circle_center3d);
                 
@@ -173,7 +173,7 @@ namespace armor_processor
                         pred_y = pred_point3d(1) - pred_radius * cos(pred_next_rangle);
                         pred_z = (ii % 2 == 0) ? pred_point3d(2) : history_switched_state_vec_.front()(2);
                     }
-                    armor3d = {-pred_x, -pred_y, pred_z, pred_next_rangle};
+                    armor3d = {pred_x, pred_y, pred_z, pred_next_rangle};
                     armor3d_vec.emplace_back(armor3d);
                 }
             }
