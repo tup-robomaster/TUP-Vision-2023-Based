@@ -244,13 +244,13 @@ namespace serialport
                 tf2::Transform trans_base_to_virt;
                 tf_lock_.lock();
                 trans_base_to_virt = trans_imu * virtual_heading_;
-                tf_lock_.unlock();
-
                 double r,p,y;
                 tf2::Quaternion q;
                 trans_base_to_virt.getBasis().getRPY(r,p,y);
                 q.setRPY(0,0,y);
                 trans_base_to_virt.setRotation(q);
+                tf_lock_.unlock();
+
                 geometry_msgs::msg::TransformStamped trans_base_to_virt_msg;
                 geometry_msgs::msg::Transform trans_base_to_virt_msg_nostamp;
                 trans_base_to_virt_msg.transform = tf2::toMsg(trans_base_to_virt);
@@ -439,56 +439,75 @@ namespace serialport
         rclcpp::Time t0(last_twist_.header.stamp);
         double dt = (t1.nanoseconds() - t0.nanoseconds()) * 1e-9;
         double dtheta = (twist.twist.angular.z + last_twist_.twist.angular.z) / 2 * dt;
-        // std::cout<<"DT:"<<dt<<", DTHETA:"<<dtheta<<std::endl;
 
         if (dt > 0.1)
         {
             last_twist_ = twist;
             return;
         }
+        else
+        {
+            tf2::Transform transform;
+            geometry_msgs::msg::TransformStamped tf_msg;
+            try
+            {
+                tf_msg = tf_buffer_->lookupTransform("base_link",
+                                                        "virt_heading_frame",
+                                                        t0,
+                                                        rclcpp::Duration::from_seconds(0.02));
+                tf2::convert(tf_msg.transform, transform);
+            }
+            catch (const tf2::TransformException &ex)
+            {
+                RCLCPP_ERROR(this->get_logger(), "%s",ex.what());
+                return;
+            }
+
+
+            tf2::Transform trans;
+            tf2::Quaternion q;
+            q.setRPY(0,0,dtheta);
+            trans.setRotation(q);
+
+            tf2::Vector3 virt_vel(msg->linear.x,msg->linear.y,1);
+            tf2::Vector3 base_vel = transform * virt_vel;
+
+            tf_lock_.lock();
+            virtual_heading_ = virtual_heading_ * trans;
+            tf_lock_.unlock();
+            int mode = mode_;
+            // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
+            VisionNavData vision_data;
+            vision_data.linear_velocity[0] = base_vel[0];
+            vision_data.linear_velocity[1] = base_vel[1];
+
+            double delta_yaw = tf2::getYaw(transform.getRotation());
+            //Rotate base_link while delta_yaw is too big
+            if (abs(delta_yaw) < 0.8)
+            {
+                vision_data.angular_velocity[2] = 0;
+            }
+            else 
+            {
+                vision_data.angular_velocity[2] = msg->angular.z * 0.003;
+            }
+
+
+            // vision_data.linear_velocity[2] = msg->linear.z;
+            // vision_data.angular_velocity[0] = msg->angular.x;
+            // vision_data.angular_velocity[1] = msg->angular.y;
+            // vision_data.angular_velocity[2] = msg->angular.z * 0.003;
+
+            last_twist_ = twist;
+            //根据不同mode进行对应的数据转换
+            data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
+            //数据发送
+            mutex_.lock();
+            serial_port_->sendData();
+            mutex_.unlock();
+
+        }
         
-        tf2::Transform trans;
-        tf2::Quaternion q;
-        q.setRPY(0,0,dtheta);
-        trans.setRotation(q);
-        tf_lock_.lock();
-        virtual_heading_ = virtual_heading_ * trans;
-        tf_lock_.unlock();
-
-        tf2::Transform transform;
-        geometry_msgs::msg::TransformStamped tf_msg;
-        try
-        {
-            tf_msg = tf_buffer_->lookupTransform("base_link",
-                                                    "virt_heading_frame",
-                                                    t0,
-                                                    rclcpp::Duration::from_seconds(0.02));
-            tf2::convert(tf_msg.transform, transform);
-        }
-        catch (const tf2::TransformException &ex)
-        {
-            RCLCPP_ERROR(this->get_logger(), "%s",ex.what());
-            return;
-        }
-        tf2::Vector3 virt_vel(msg->linear.x,msg->linear.y,1);
-        tf2::Vector3 base_vel = transform * virt_vel;
-        int mode = mode_;
-        // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
-        VisionNavData vision_data;
-        vision_data.linear_velocity[0] = base_vel[0];
-        vision_data.linear_velocity[1] = base_vel[1];
-        // vision_data.linear_velocity[2] = msg->linear.z;
-        // vision_data.angular_velocity[0] = msg->angular.x;
-        // vision_data.angular_velocity[1] = msg->angular.y;
-        // vision_data.angular_velocity[2] = msg->angular.z * 0.003;
-
-        last_twist_ = twist;
-        //根据不同mode进行对应的数据转换
-        data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
-        //数据发送
-        mutex_.lock();
-        serial_port_->sendData();
-        mutex_.unlock();
     }
 
     /**
