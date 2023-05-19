@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-05-19 00:44:57
+ * @LastEditTime: 2023-05-20 03:06:23
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -73,9 +73,8 @@ namespace serialport
             watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
             // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
         }
-        
         receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
-        
+        transform_timer_ = this->create_wall_timer(10ms, std::bind(&SerialPortNode::pubCam2ImuTransform, this));
     }
 
     SerialPortNode::~SerialPortNode()
@@ -98,6 +97,28 @@ namespace serialport
         }
     }
 
+    void SerialPortNode::pubCam2ImuTransform()
+    {
+        geometry_msgs::msg::TransformStamped t;
+        transform_mutex_.lock();
+        t = cam2imu_transform_;
+        transform_mutex_.unlock();
+
+        rclcpp::Time now = this->get_clock()->now();
+        rclcpp::Time transform_stamp = t.header.stamp;
+        double dt = (now.nanoseconds() - transform_stamp.nanoseconds()) / 1e6;
+
+        if (dt >= 50)
+        {
+            RCLCPP_WARN(this->get_logger(), "Imu data is timeout...");
+        }
+        else
+        {
+            // Send the transformation
+            tf_broadcaster_->sendTransform(t);
+        }
+    }
+
     /**
      * @brief 数据发送线程
      * @details 标志位为0xA5的package包含模式位、陀螺仪数据、弹速以及上一发弹丸的发弹延迟
@@ -110,6 +131,7 @@ namespace serialport
             // cout << 1 << endl;
             if (!using_port_)
             {
+
                 geometry_msgs::msg::TransformStamped t;
 
                 // Read message content and assign it to corresponding tf variables
@@ -128,9 +150,12 @@ namespace serialport
                 t.transform.rotation.z = 0.0;
                 t.transform.rotation.w = 1.0;
 
+                transform_mutex_.lock();
+                cam2imu_transform_ = t;
+                transform_mutex_.unlock();
+
                 // Send the transformation
-                tf_broadcaster_->sendTransform(t);
-                // cout << 2 << endl;
+                // tf_broadcaster_->sendTransform(t);
             }
             else
             {
@@ -216,8 +241,12 @@ namespace serialport
                     t.transform.rotation.y = quat[2];
                     t.transform.rotation.z = quat[3];
 
-                    // Send the transformation
-                    tf_broadcaster_->sendTransform(t);
+                    transform_mutex_.lock();
+                    cam2imu_transform_ = t;
+                    transform_mutex_.unlock();
+
+                    // // Send the transformation
+                    // tf_broadcaster_->sendTransform(t);
 
                     // Pub serial msg
                     serial_msg_pub_->publish(std::move(serial_msg));

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-05-14 16:04:52
+ * @LastEditTime: 2023-05-20 03:01:52
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -79,8 +79,12 @@ namespace serialport
         queue<VisionAimData> vision_data_queue_;
 
         //tf2
+        Mutex transform_mutex_;
         std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-        
+        geometry_msgs::msg::TransformStamped cam2imu_transform_;
+        void pubCam2ImuTransform();
+        rclcpp::TimerBase::SharedPtr transform_timer_;
+
     public:
         rclcpp::Subscription<GimbalMsg>::SharedPtr autoaim_info_sub_;
         rclcpp::Subscription<GimbalMsg>::SharedPtr autoaim_tracking_sub_;

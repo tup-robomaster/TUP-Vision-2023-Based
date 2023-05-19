@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-19 01:06:24
+ * @LastEditTime: 2023-05-17 15:17:56
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -92,8 +92,6 @@ namespace armor_processor
     {
         double sleep_time = 0.0;
         AutoaimMsg target = std::move(autoaim_msg);
-        // target.is_spinning = true;
-        
         Eigen::Vector2d angle = {0.0, 0.0};
         Eigen::Vector2d tracking_angle = {0.0, 0.0};
         Eigen::Vector3d aiming_point_world = {0.0, 0.0, 0.0};
@@ -174,7 +172,7 @@ namespace armor_processor
                             double armor3d_dist = armor_point3d_world.norm();
                             int scale = armor_point3d_world(3) / (2 * CV_PI);
                             double rangle = armor_point3d_world(3) - scale * (2 * CV_PI);
-                            if (armor3d_dist < min_dist && rangle >= 1.35 && rangle <= 1.65)
+                            if (armor3d_dist < min_dist && rangle >= 1.35 && rangle <= 1.55)
                             {
                                 min_dist = armor3d_dist;
                                 flag = idx;
