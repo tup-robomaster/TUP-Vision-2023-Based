@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-02-09 18:07:33
+ * @LastEditTime: 2023-05-04 23:50:55
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -80,6 +80,7 @@ namespace coordsolver
         initMatrix(mat_ci,read_vector);
         transform_ci = mat_ci;
 
+        // cout << "angle_offset:" << angle_offset[0] << " " << angle_offset[1] << endl;
         return true;
     }
 
@@ -96,7 +97,6 @@ namespace coordsolver
         std::vector<cv::Point3d> points_world;
 
         //长度为4进入装甲板模式
-
         //大于长宽比阈值使用大装甲板世界坐标
         if (type == BIG)
         {
@@ -123,11 +123,11 @@ namespace coordsolver
         {
             points_world = 
             {
-                {-0.1125, 0.027, 0},
-                {-0.1125, -0.027, 0},
                 {0, -0.7, -0.05},
                 {0.1125, -0.027, 0},
-                {0.1125, 0.027, 0}
+                {0.1125, 0.027, 0},
+                {-0.1125, 0.027, 0},
+                {-0.1125, -0.027, 0}
             };
             // points_world = {
             // {-0.1125,0.027,0},
@@ -144,7 +144,7 @@ namespace coordsolver
         Eigen::Vector3d tvec_eigen;
         Eigen::Vector3d coord_camera;
 
-        RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Armor type: %d", (int)(type));
+        // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Armor type: %d", (int)(type));
         solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, method);
             
         PnPInfo result;
@@ -161,9 +161,11 @@ namespace coordsolver
             Eigen::Matrix3d rmat_eigen_world = rmat_imu * (transform_ic.block(0, 0, 3, 3) * rmat_eigen);
             result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;
-            auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
-            double angle = angle_axisd.angle();
-            RCLCPP_INFO(logger_, "rotate angle:%lf", angle * (180 / CV_PI));
+            result.rangle = result.euler(0);
+            // auto angle_axisd = Eigen::AngleAxisd(rmat_eigen_world);
+            // double angle = angle_axisd.angle();
+            // result.axis_angle = angle;
+            // RCLCPP_INFO(logger_, "euler:[%.3f %.3f %.3f]", result.euler(0), result.euler(1), result.euler(2));
         }
         else
         {
@@ -177,6 +179,8 @@ namespace coordsolver
             result.euler = rotationMatrixToEulerAngles(rmat_eigen_world);
             result.rmat = rmat_eigen_world;
         }
+
+        // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 40, "armor_cam: %.4f %.4f %.4f", result.armor_cam[0], result.armor_cam[1], result.armor_cam[2]);
         return result;
     }
 
@@ -190,13 +194,10 @@ namespace coordsolver
     Eigen::Vector2d CoordSolver::getAngle(Eigen::Vector3d &xyz_cam, Eigen::Matrix3d &rmat)
     {
         auto xyz_offseted = staticCoordOffset(xyz_cam);
-
-        rmat = Eigen::Matrix3d::Identity();
         auto xyz_world = camToWorld(xyz_offseted, rmat);
         auto angle_cam = calcYawPitch(xyz_cam);
         // auto dist = xyz_offseted.norm();
         // auto pitch_offset = 6.457e04 * pow(dist,-2.199);
-        
         auto pitch_offset = dynamicCalcPitchOffset(xyz_world);
         angle_cam[1] = angle_cam[1] + pitch_offset;
         auto angle_offseted = staticAngleOffset(angle_cam);
@@ -212,7 +213,6 @@ namespace coordsolver
      */
     cv::Point2f CoordSolver::reproject(Eigen::Vector3d &xyz)
     {
-
         Eigen::Matrix3d mat_intrinsic;
         cv2eigen(intrinsic, mat_intrinsic);
         //(u,v,1)^T = (1/Z) * K * (X,Y,Z)^T
@@ -330,8 +330,8 @@ namespace coordsolver
                 u += (delta_x / 6) * (k1_u + 2 * k2_u + 2 * k3_u + k4_u);
                 p += (delta_x / 6) * (k1_p + 2 * k2_p + 2 * k3_p + k4_p);
                 
-                x+=delta_x;
-                y+=p * delta_x;
+                x += delta_x;
+                y += p * delta_x;
             }
             //评估迭代结果,若小于迭代精度需求则停止迭代
             auto error = dist_vertical - y;
@@ -367,6 +367,14 @@ namespace coordsolver
         point_imu_tmp = transform_ic * point_camera_tmp;
         point_imu << point_imu_tmp[0], point_imu_tmp[1], point_imu_tmp[2];
         point_imu -= t_iw;
+
+        // Eigen::Matrix3d rrmat = rmat;
+        // auto vec = rotationMatrixToEulerAngles(rrmat);
+        // cout<<"Euler : "<<vec[0] * 180.f / CV_PI<<" "<<vec[1] * 180.f / CV_PI<<" "<<vec[2] * 180.f / CV_PI<<endl;
+        // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Euler: %lf %lf %lf", vec[0] * 180 / CV_PI, vec[1] * 180 / CV_PI, vec[2] * 180 / CV_PI);
+        // cout << "rmat:" << rmat(0,0) << " " << rmat(0,1) << " " << rmat(0,2) << endl
+        // << rmat(1,0) << " " << rmat(1,1) << " " << rmat(1,2) << endl
+        // << rmat(2,0) << " " << rmat(2,1) << " " << rmat(2,2) << endl;   
         return rmat * point_imu;
     }
 
@@ -398,6 +406,17 @@ namespace coordsolver
         return true;
     }
 
+    double CoordSolver::getBulletSpeed()
+    {
+        return bullet_speed;
+    }
+    
+    bool CoordSolver::setStaticAngleOffset(const Eigen::Vector2d& static_angle_offset)
+    {
+        angle_offset = static_angle_offset;
+        RCLCPP_WARN(logger_, "angle_offset:[%.3f %.3f]", angle_offset[0], angle_offset[1]);
+        return true;
+    }
 } // namespace coordsolver
 
 

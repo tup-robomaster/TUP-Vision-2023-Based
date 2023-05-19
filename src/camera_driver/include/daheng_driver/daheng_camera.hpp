@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-09 12:12:19
- * @LastEditTime: 2023-02-26 12:09:42
+ * @LastEditTime: 2023-04-14 02:47:12
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/daheng_driver/daheng_camera.hpp
  */
 //daheng
@@ -18,6 +18,8 @@
 
 //ros
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/image_encodings.hpp>
+#include <sensor_msgs/msg/image.hpp>
 
 #include "../../global_user/include/global_user/global_user.hpp"
 
@@ -55,6 +57,8 @@ namespace camera_driver
         int64_t             nColorCorrectionParam;
         VxInt16             nSaturation;
 
+        // char *pRGB24Buf;
+
     public:
         //构造函数，初始化库
         DaHengCam(CameraParam daheng_param);
@@ -63,48 +67,54 @@ namespace camera_driver
         ~DaHengCam();
         
     public:
+        bool init();
         bool open();
+        bool close();
     
     private:
         //打开设备
-        int StartDevice(int serial_number);
+        int startDevice(int serial_number);
         //使设备开始采集
-        bool SetStreamOn();
+        bool setStreamOn();
         //设置分辨率，支持1:1(最大1280*1024),1:2,2:1,2:2(最小640*512),默认1:1
-        bool SetResolution(int width_scale = 1, int height_scale = 1);
+        bool setResolution(int width_scale = 1, int height_scale = 1);
         //设置自动白平衡,0表示关闭，1表示开启
-        bool Set_BALANCE_AUTO(int value);
+        bool setBalanceAuto(int value);
         //Color_Correct
-        bool Color_Correct(bool value);
+        bool colorCorrect(bool value);
         // Set Gamma
-        bool Set_Gamma(bool set_status,double dGammaParam);
+        bool setGamma(bool set_status,double dGammaParam);
         // Set Contrast
-        bool Set_Contrast(bool set_status,int dContrastParam);
+        bool setContrast(bool set_status,int dContrastParam);
         // Set_Saturation
-        bool Set_Saturation(bool set_status,int dSaturationParam);
+        bool setSaturation(bool set_status,int dSaturationParam);
     
     public:
         //手动设置曝光值,单位us,正常大小应在2000至8000
-        bool SetExposureTime(int ExposureTime);
+        bool setExposureTime(int ExposureTime);
         
         //设置曝光增益
-        bool SetGAIN(int value, int ExpGain);
+        bool setGain(int value, int ExpGain);
 
         //手动设置白平衡,value表示平衡通道，value_number表示具体值,0、1、2对应B、G、R，value_number范围为10到80,10表示正常
-        bool Set_BALANCE(int value, float value_number);
+        bool setBalance(int value, float value_number);
         
         //采集一次图像,更新时间戳
-        bool UpdateTimestampOffset(std::chrono::_V2::steady_clock::time_point time_start);
+        bool updateTimestampOffset(std::chrono::_V2::steady_clock::time_point time_start);
         
         //读取相机时间戳
-        int Get_TIMESTAMP();
-    
+        int getTimestamp();
+
         //采集图像
-        bool get_frame(cv::Mat &Src);
+        bool getImage(cv::Mat &Src, sensor_msgs::msg::Image& image_msg);
+        
+        //设备复位
+        bool deviceReset();
 
     public:
-        CameraParam daheng_cam_param_;
+        CameraParam cam_param_;
         rclcpp::Logger logger_;
+        bool is_initialized_;
     };
 
 }

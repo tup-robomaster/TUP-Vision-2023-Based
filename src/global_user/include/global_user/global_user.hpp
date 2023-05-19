@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-02-26 13:31:27
+ * @LastEditTime: 2023-05-03 17:42:18
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -44,6 +44,7 @@
 #define MVS_IMAGE_HEIGHT 1024
 
 using namespace std;
+using namespace Eigen;
 namespace global_user
 {   
     /**
@@ -70,6 +71,7 @@ namespace global_user
         double balance_r;
         bool using_video;
         string video_path;
+        string config_path = "src/camera_driver/config/daheng_cam_param.ini";
 
         CameraParam()
         {
@@ -147,13 +149,42 @@ namespace global_user
         BUFF
     };
 
+    enum SpinHeading
+    {
+        UNKNOWN,
+        CLOCKWISE, 
+        COUNTER_CLOCKWISE
+    };
+
+    /**
+     * @brief 模式选择（取消视觉，自瞄，英雄吊射，小符，大符，哨兵）
+     * 
+     */
+    enum MODE
+    {
+        CLOSE_VISION,
+        AUTOAIM,
+        HERO_SLING,
+        SMALL_BUFF,
+        BIG_BUFF,
+        OUTPOST_ROTATION_MODE,
+        SENTRY_NORMAL
+    };
+
     struct TaskData
     {
         int mode;
         double bullet_speed;
         cv::Mat img;
         Eigen::Quaterniond quat;
-        double timestamp; 
+        int64_t timestamp; 
+        
+        TaskData()
+        {
+            mode = 1;
+            bullet_speed = 16.0;
+            timestamp = 0;
+        }
     };
 
     struct GridAndStride
@@ -245,17 +276,24 @@ namespace global_user
     std::vector<std::string> generatePathTree(std::string path);
 
     Eigen::Vector3d rotationMatrixToEulerAngles(Eigen::Matrix3d &R);
-
     Eigen::Vector3d calcDeltaEuler(Eigen::Vector3d euler1, Eigen::Vector3d euler2);
     Eigen::AngleAxisd eulerToAngleAxisd(Eigen::Vector3d euler);
     Eigen::Matrix3d eulerToRotationMatrix(Eigen::Vector3d &theta);
     float calcDistance(cv::Point2f& p1, cv::Point2f& p2);
 
-    void videoRecorder(VideoRecordParam& video_param, cv::Mat* src = nullptr);  
     bool setSharedMemory(SharedMemoryParam& shared_memory_param, int id, int image_width = 1280, int image_height = 1024);
     bool getSharedMemory(SharedMemoryParam& shared_memory_param, int id);
     bool destorySharedMemory(SharedMemoryParam& shared_memory_param);
-    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_name, double &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size);
+    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_name, int64_t &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size);
+
+    bool isPnpSolverValidation(Eigen::Vector3d& point3d);
+    bool isAngleSolverValidataion(Eigen::Vector2d& angle2d);
+    void drawAimCrossCurve(cv::Mat& src);
+
+    // bool checkDivergence(const MatrixXd& residual, const MatrixXd& S, double threshold);
+    // bool checkDivergence(double residual, double threshold, vector<double>& variances, int window_size);
+    // bool checkDivergence(const MatrixXd& F, const MatrixXd& P, const MatrixXd& H, const MatrixXd& R);
+    bool checkDivergence(const MatrixXd& statePre, const MatrixXd& stateCovPre, const MatrixXd& H, const MatrixXd& R, const VectorXd& measurement);
 } // namespace global_user
 
 #endif

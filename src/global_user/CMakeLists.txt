@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 project(global_user)
 
+set(CMAKE_BUILD_TYPE=Release)
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -11,18 +12,10 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(tf2_ros REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rclpy REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(laser_geometry REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_sensor_msgs REQUIRED)
-find_package(visualization_msgs REQUIRED)
-find_package(angles REQUIRED)
 find_package(robot_state_publisher REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED COMPONENTS EigenSparse)
@@ -31,15 +24,8 @@ find_package(yaml-cpp REQUIRED)
 set(dependencies
   geometry_msgs
   rclcpp
-  rclcpp_lifecycle
   sensor_msgs
   std_msgs
-  tf2
-  tf2_geometry_msgs
-  tf2_ros
-  tf2_sensor_msgs
-  visualization_msgs
-  angles
   OpenCV
   Eigen3
   Ceres
@@ -61,15 +47,9 @@ add_library(${PROJECT_NAME} SHARED
 # 用于代替传统的target_link_libraries
 ament_target_dependencies(${PROJECT_NAME}
   ${dependencies}
-  # yaml-cpp.so
+  yaml-cpp
 )
 
-# target_link_libraries(${PROJECT_NAME}
-  # ${OpenCV_LIBRARIES}
-  # yaml-cpp.so
-  # fmt.so 
-# )
-      
 # 添加头文件地址
 # target_include_directories(${PROJECT_NAME} PUBLIC
 #   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -83,7 +63,6 @@ ament_target_dependencies(${PROJECT_NAME}
 # ament_export_dependencies(
 #   ${dependencies}
 # )
-
 
 # 注册 导出头文件
 install(
@@ -104,6 +83,7 @@ install(
 install(DIRECTORY
   launch
   config 
+  data
   DESTINATION share/${PROJECT_NAME}
 )
 
@@ -128,24 +108,3 @@ ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(${dependencies})
 ament_package()
-        
-
-# cmake_minimum_required (VERSION 3.5)
-# project(global_user)
-
-# find_package (ament_cmake_auto REQUIRED) 
-# ament_auto_find_build_dependencies ()
-
-# ament_auto_add_library ( ${PROJECT_NAME} SHARED 
-#   include/global_user/global_user.hpp
-#   include/coordsolver.hpp
-#   src/global_user.cpp
-#   src/coordsolver.cpp
-# )
-
-# ament_auto_package(
-#   INSTALL_TO_SHARE
-#   # config
-#   # launch
-#   # DESTINATION share/${PROJECT_NAME}
-# )

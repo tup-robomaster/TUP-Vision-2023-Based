@@ -10,22 +10,17 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  <depend>rclpy</depend>
   <depend>rclcpp_components</depend>
   <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>message_filters</depend>
-  <depend>tf2</depend>
-  <depend>tf2_sensor_msgs</depend>
   <depend>OpenCV</depend>
   <depend>Eigen3</depend>
   <depend>Ceres</depend>
   <depend>yaml-cpp</depend>
   <depend>image_transport</depend>
   <depend>cv_bridge</depend>
-  <!-- <depend>fmt</depend> -->
-  <!-- <depend>glog</depend> -->
   <depend>global_interface</depend>
   <depend>global_user</depend>
   <depend>filter</depend>

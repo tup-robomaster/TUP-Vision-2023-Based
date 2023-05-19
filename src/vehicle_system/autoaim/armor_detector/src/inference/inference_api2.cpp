@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-01-26 16:36:45
+ * @LastEditTime: 2023-04-05 16:02:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -79,7 +79,8 @@ namespace armor_detector
             {
                 for (int g0 = 0; g0 < num_grid_w; g0++)
                 {
-                    grid_strides.push_back((GridAndStride){g0, g1, stride});
+                    GridAndStride grid_stride = {g0, g1, stride};
+                    grid_strides.emplace_back(grid_stride);
                 }
             }
         }
@@ -104,7 +105,6 @@ namespace armor_detector
             const int grid0 = grid_strides[anchor_idx].grid0;
             const int grid1 = grid_strides[anchor_idx].grid1;
             const int stride = grid_strides[anchor_idx].stride;
-
             const int basic_pos = anchor_idx * (9 + NUM_COLORS + NUM_CLASSES);
 
             // yolox/models/yolo_head.py decode logic
@@ -123,13 +123,10 @@ namespace armor_detector
             int box_class = argmax(feat_ptr + basic_pos + 9 + NUM_COLORS, NUM_CLASSES);
 
             float box_objectness = (feat_ptr[basic_pos + 8]);
-            
-            float color_conf = (feat_ptr[basic_pos + 9 + box_color]);
-            float cls_conf = (feat_ptr[basic_pos + 9 + NUM_COLORS + box_class]);
-
+            // float color_conf = (feat_ptr[basic_pos + 9 + box_color]);
+            // float cls_conf = (feat_ptr[basic_pos + 9 + NUM_COLORS + box_class]);
             // float box_prob = (box_objectness + cls_conf + color_conf) / 3.0;
             float box_prob = box_objectness;
-
             if (box_prob >= prob_threshold)
             {
                 ArmorObject obj;
@@ -158,7 +155,6 @@ namespace armor_detector
 
                 objects.push_back(obj);
             }
-
         } // point anchor loop
     }
 
@@ -192,25 +188,24 @@ namespace armor_detector
             {
                 // swap
                 std::swap(faceobjects[i], faceobjects[j]);
-
                 i++;
                 j--;
             }
         }
-
-        #pragma omp parallel sections
-        {
-            #pragma omp section
-            {
-                if (left < j) qsort_descent_inplace(faceobjects, left, j);
-            }
-            #pragma omp section
-            {
-                if (i < right) qsort_descent_inplace(faceobjects, i, right);
-            }
-        }
+        // #pragma omp parallel sections
+        // {
+        //     #pragma omp section
+        //     {
+        //         if (left < j) qsort_descent_inplace(faceobjects, left, j);
+        //     }
+        //     #pragma omp section
+        //     {
+        //         if (i < right) qsort_descent_inplace(faceobjects, i, right);
+        //     }
+        // }
+        if (left < j) qsort_descent_inplace(faceobjects, left, j);
+        if (i < right) qsort_descent_inplace(faceobjects, i, right);
     }
-
 
     static void qsort_descent_inplace(std::vector<ArmorObject>& objects)
     {
@@ -237,12 +232,10 @@ namespace armor_detector
         for (int i = 0; i < n; i++)
         {
             ArmorObject& a = faceobjects[i];
-
             int keep = 1;
             for (int j = 0; j < (int)picked.size(); j++)
             {
                 ArmorObject& b = faceobjects[picked[j]];
-
                 // intersection over union
                 float inter_area = intersection_area(a, b);
                 float union_area = areas[i] + areas[picked[j]] - inter_area;
@@ -262,7 +255,6 @@ namespace armor_detector
                     // cout<<b.pts_x.size()<<endl;
                 }
             }
-
             if (keep)
                 picked.push_back(i);
         }
@@ -275,28 +267,25 @@ namespace armor_detector
      * @param img_w Width of Image.
      * @param img_h Height of Image.
      */
-    static void decodeOutputs(const float* prob, std::vector<ArmorObject>& objects,
-                                Eigen::Matrix<float,3,3> &transform_matrix, const int img_w, const int img_h)
+    static void decodeOutputs(const float* prob, std::vector<ArmorObject>& objects, Eigen::Matrix<float, 3, 3> &transform_matrix)
     {
-            std::vector<ArmorObject> proposals;
-            std::vector<int> strides = {8, 16, 32};
-            std::vector<GridAndStride> grid_strides;
+        std::vector<ArmorObject> proposals;
+        std::vector<int> strides = {8, 16, 32};
+        std::vector<GridAndStride> grid_strides;
 
-            generate_grids_and_stride(INPUT_W, INPUT_H, strides, grid_strides);
-            generateYoloxProposals(grid_strides, prob, transform_matrix, BBOX_CONF_THRESH, proposals);
-            qsort_descent_inplace(proposals);
-
-            if (proposals.size() >= TOPK) 
-                proposals.resize(TOPK);
-            std::vector<int> picked;
-            nms_sorted_bboxes(proposals, picked, NMS_THRESH);
-            int count = picked.size();
-            objects.resize(count);
-
-            for (int i = 0; i < count; i++)
-            {
-                objects[i] = proposals[picked[i]];
-            }
+        generate_grids_and_stride(INPUT_W, INPUT_H, strides, grid_strides);
+        generateYoloxProposals(grid_strides, prob, transform_matrix, BBOX_CONF_THRESH, proposals);
+        qsort_descent_inplace(proposals);
+        if (proposals.size() >= TOPK) 
+            proposals.resize(TOPK);
+        std::vector<int> picked;
+        nms_sorted_bboxes(proposals, picked, NMS_THRESH);
+        int count = picked.size();
+        objects.resize(count);
+        for (int i = 0; i < count; i++)
+        {
+            objects[i] = proposals[picked[i]];
+        }
     }
 
     float calcTriangleArea(cv::Point2f pts[3])
@@ -310,9 +299,7 @@ namespace armor_detector
         auto a = sqrt(pow((pts[0] - pts[1]).x, 2) + pow((pts[0] - pts[1]).y, 2));
         auto b = sqrt(pow((pts[1] - pts[2]).x, 2) + pow((pts[1] - pts[2]).y, 2));
         auto c = sqrt(pow((pts[2] - pts[0]).x, 2) + pow((pts[2] - pts[0]).y, 2));
-
         auto p = (a + b + c) / 2.f;
-
         return sqrt(p * (p - a) * (p - b) * (p - c));
     }
 
@@ -327,10 +314,8 @@ namespace armor_detector
         return calcTriangleArea(&pts[0]) + calcTriangleArea(&pts[1]);
     }
 
-
     ArmorDetector::ArmorDetector()
     {
-
     }
 
     ArmorDetector::~ArmorDetector()
@@ -356,25 +341,22 @@ namespace armor_detector
         ppp.input().tensor().set_element_type(ov::element::f32);
         // ppp.input().tensor().set_element_type(ov::element::u8);
 
-        //set output precision
+        // Set output precision
         ppp.output().tensor().set_element_type(ov::element::f32);
         // ppp.output().tensor().set_element_type(ov::element::u8);
         
         //将预处理融入原始模型
         ppp.build(); 
 
-        // std::cout << 5 << std::endl;
         //Step 2. Compile the model
         compiled_model = core.compile_model(
             model,
-            "GPU",
+            "CPU",
             ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
             // "AUTO:GPU,CPU", 
             // ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
             // ov::hint::inference_precision(ov::element::u8)
-            );
-
-        // std::cout << 6 << std::endl;
+        );
 
         // compiled_model.set_property(ov::device::priorities("GPU"));
 
@@ -413,7 +395,6 @@ namespace armor_detector
     {
         if (src.empty())
         {
-            // fmt::print(fmt::fg(fmt::color::red), "[DETECT] ERROR: 传入了空的src\n");
             return false;
         }
 
@@ -452,22 +433,22 @@ namespace armor_detector
         // // 转换图像数据为ov::Tensor
         // input_tensor = ov::Tensor(input_type, input_shape, input_data_ptr);
 
+        // auto st = std::chrono::steady_clock::now();
         // 推理
         infer_request.infer();
+        // auto end = std::chrono::steady_clock::now();
+        // double infer_dt = std::chrono::duration<double,std::milli>(end - st).count();
+        // cout << "infer_time:" << infer_dt << endl;
         
         // 处理推理结果
         ov::Tensor output_tensor = infer_request.get_output_tensor();
         float* output = output_tensor.data<float_t>();
         // u_int8_t* output = output_tensor.data<u_int8_t>();
-
         // std::cout << &output << std::endl;
 
-        int img_w = src.cols;
-        int img_h = src.rows;
-
-        decodeOutputs(output, objects, transfrom_matrix, img_w, img_h);
-
-        // std::cout << 15 << std::endl;
+        // int img_w = src.cols;
+        // int img_h = src.rows;
+        decodeOutputs(output, objects, transfrom_matrix);
         for (auto object = objects.begin(); object != objects.end(); ++object)
         {
             //对候选框预测角点进行平均,降低误差
@@ -475,8 +456,7 @@ namespace armor_detector
             {
                 auto N = (*object).pts.size();
                 cv::Point2f pts_final[4];
-
-                for (int i = 0; i < N; i++)
+                for (int i = 0; i < (int)N; i++)
                 {
                     pts_final[i % 4]+=(*object).pts[i];
                 }
@@ -492,8 +472,6 @@ namespace armor_detector
                 (*object).apex[2] = pts_final[2];
                 (*object).apex[3] = pts_final[3];
             }
-
-            // 
             // cv::Point2f pts_final[4];
             // for(int ii = 0; ii < 4; ii++)
             // {
