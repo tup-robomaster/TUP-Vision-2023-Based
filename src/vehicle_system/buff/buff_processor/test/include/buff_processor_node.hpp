@@ -46,17 +46,14 @@ namespace buff_processor
         ~BuffProcessorNode();
     
     private:
-        rclcpp::Subscription<BuffMsg>::SharedPtr target_fitting_sub_;
-        void targetFittingCallback(const BuffMsg& target_info);
-
-        rclcpp::Subscription<BuffMsg>::SharedPtr target_predictor_sub_;
-        void targetPredictorCallback(const BuffMsg& target_info);
+        rclcpp::Subscription<BuffMsg>::SharedPtr buff_msg_sub_;
+        void predictorCallback(const BuffMsg& buff_msg);
 
         // 云台偏转角度（pitch、yaw）
-        rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
+        rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_msg_pub_;
 
         // 预测点位置发布
-        rclcpp::Publisher<BuffMsg>::SharedPtr predict_info_pub_;
+        rclcpp::Publisher<BuffMsg>::SharedPtr predict_msg_pub_;
     
     private:
         std::unique_ptr<Processor> buff_processor_;
@@ -67,11 +64,10 @@ namespace buff_processor
         ImageInfo image_info_;
         ImageSize image_size_;
         cv::Point2f apex2d[5];
-        Eigen::Vector3d pred_point3d_;
-        std::shared_ptr<image_transport::Subscriber> img_sub_;
+        std::shared_ptr<image_transport::Subscriber> img_msg_sub_;
         cv::Mat src_;
         
-        void imageCallback(const ImageMsg::ConstSharedPtr &img_info);
+        void imageCallback(const ImageMsg::ConstSharedPtr &img_msg);
         
     public:
         Mutex param_mutex_;

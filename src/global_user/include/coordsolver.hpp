@@ -39,6 +39,7 @@ namespace coordsolver
         Eigen::Matrix3d rmat;
         double rangle;
         bool is_solver_success;
+        // Eigen::Quaterniond quat_cam;
     };
 
     class CoordSolver

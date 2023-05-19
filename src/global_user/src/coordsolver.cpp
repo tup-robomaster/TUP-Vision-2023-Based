@@ -124,9 +124,9 @@ namespace coordsolver
         {
             points_world = 
             {
-                {0, -0.7, -0.05},
                 {0.1125, -0.027, 0},
                 {0.1125, 0.027, 0},
+                {0, -0.7, -0.05},
                 {-0.1125, 0.027, 0},
                 {-0.1125, -0.027, 0}
             };
@@ -150,15 +150,22 @@ namespace coordsolver
         // 1.首先使用SOLVEPNP_IPPE来初始化相机位姿;
         // 2.然后通过非线性优化算法(SOLVEPNP_ITERATIVE)（如Levenberg-Marquardt算法等）对相机位姿进行优化，以达到更精确的结果。
         result.is_solver_success = true;
-        if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, SOLVEPNP_IPPE))
-        {   
-            result.is_solver_success = false;
-            RCLCPP_WARN(logger_, "Initialize camera pose failed...");
-        }
-        if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, true, SOLVEPNP_ITERATIVE))
+        if (type != BUFF)
         {
-            result.is_solver_success = false;
-            RCLCPP_WARN(logger_, "Optimize camera pose failed...");
+            if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, SOLVEPNP_IPPE))
+            {   
+                result.is_solver_success = false;
+                RCLCPP_WARN(logger_, "Initialize camera pose failed...");
+            }
+            if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, true, SOLVEPNP_ITERATIVE))
+            {
+                result.is_solver_success = false;
+                RCLCPP_WARN(logger_, "Optimize camera pose failed...");
+            }
+        }
+        else
+        {
+            solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, SOLVEPNP_ITERATIVE);
         }
 
         // RCLCPP_INFO(
@@ -198,6 +205,7 @@ namespace coordsolver
         else
         {
             result.armor_cam = tvec_eigen;
+            // result.quat_cam = Eigen::Quaterniond(rmat_eigen);
             result.armor_world = camToWorld(result.armor_cam, rmat_imu);
             result.R_cam = (rmat_eigen * R_center_world) + tvec_eigen;
             result.R_world = camToWorld(result.R_cam, rmat_imu);
