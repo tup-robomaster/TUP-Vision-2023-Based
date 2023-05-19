@@ -41,7 +41,7 @@
     # network_path: "/model/1106-333.xml"
     # network_path: "/model/yolox.xml"
     # network_path: "/model/opt-1208-001.xml"
-    network_path: "/model/opt-0127-001.xml"
+    network_path: "/model/vgg.onnx"
 
   # Data saving.
     save_data: false
@@ -52,14 +52,14 @@
     debug: true
     detect_red: true # red: true / blue: false
     use_serial: false
-    use_roi: true
+    use_roi: false
     show_img: false
     show_crop_img: false
     show_fps: false
     show_aim_cross: false
-    show_all_armors: false
+    show_all_armors: true
     auto_label: false
-    print_letency: false
+    print_latency: false
     sync_transport: false
     print_target_info: false
 

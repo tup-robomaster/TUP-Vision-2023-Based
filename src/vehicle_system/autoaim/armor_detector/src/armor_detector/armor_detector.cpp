@@ -22,18 +22,24 @@ namespace armor_detector
         int postfix_idx = onnx_path.find(".onnx");
         if (postfix_idx == onnx_path.npos)
         {
-            RCLCPP_ERROR("Invalid onnx path");
-            throw(std::exception);
+            RCLCPP_ERROR(logger_, "Invalid weight file,please");
+            throw std::exception();
         }
-        std::string trt_path = onnx_path.replace(onnx_path.begin()+postfix_idx, 5, ".engine");
+        std::string trt_path = onnx_path;
+        trt_path.replace(trt_path.begin()+postfix_idx, trt_path.begin()+postfix_idx+5, ".engine");
         if (!TRTinfer_.initMoudle(trt_path, 1, 4, 8, 8, 128))
         {
-            RCLCPP_WARN("Invalid trt file, attempting to convert onnx to trt.");
+            RCLCPP_WARN(logger_,"Invalid trt file, attempting to convert onnx to trt.");
             nvinfer1::IHostMemory *data = TRTinfer_.createEngine(onnx_path, 1, 416, 416);
+            RCLCPP_INFO(logger_,"TRT Engine successfully converted");
             TRTinfer_.saveEngineFile(data, trt_path);
+            RCLCPP_INFO(logger_,"TRT Engine successfully saved to %s", trt_path.c_str());
             TRTinfer_.initMoudle(trt_path, 1, 4, 8, 8, 128);
         }
-        // std::string engine_path = onnx_path.replace()
+        else
+        {
+            RCLCPP_WARN(logger_,"Using cached TRT engine file,do remember to delete it before you use different onnx.");
+        }
 
         //初始化clear
         lost_cnt_ = 0;
@@ -134,8 +140,10 @@ namespace armor_detector
 
         objects_.clear();
         new_armors_.clear();
-        
-        if (!armor_detector_.detect(input, objects_))
+        std::vector<cv::Mat> inputs;
+        inputs.push_back(input);
+        objects_ = TRTinfer_.doInference(inputs,0.1,0.3)[0];
+        if (objects_.empty())
         {   //若未检测到目标
             if (debug_params_.show_aim_cross)
             {
@@ -152,7 +160,7 @@ namespace armor_detector
         time_infer_ = steady_clock_.now();
         
         //将对象排序，保留面积较大的对象
-        sort(objects_.begin(), objects_.end(), [](ArmorObject& prev, ArmorObject& next)
+        sort(objects_.begin(), objects_.end(), [](DetectObject& prev, DetectObject& next)
         {
             return prev.area > next.area;
         });
@@ -167,26 +175,26 @@ namespace armor_detector
             //TODO:加入紫色装甲板限制通过条件
             if (detector_params_.color == RED)
             {
-                if (object.color == BLUE || object.color == PURPLE)
+                if (object.color / 2 == BLUE || object.color / 2 == PURPLE)
                     continue;
             }
             else if (detector_params_.color == BLUE)
             {
-                if (object.color == RED || object.color == PURPLE)
+                if (object.color / 2 == RED || object.color / 2 == PURPLE)
                     continue;
             }
    
             Armor armor;
             armor.id = object.cls;
-            armor.color = object.color;
+            armor.color = object.color / 2;
             armor.conf = object.prob;
-            if (object.color == 0)
+            if (armor.color == 0)
                 armor.key = "B" + to_string(object.cls);
-            else if (object.color == 1)
+            else if (armor.color == 1)
                 armor.key = "R" + to_string(object.cls);
-            else if (object.color == 2)
+            else if (armor.color == 2)
                 armor.key = "N" + to_string(object.cls);
-            else if (object.color == 3)
+            else if (armor.color == 3)
                 armor.key = "P" + to_string(object.cls);
             
             memcpy(armor.apex2d, object.apex, 4 * sizeof(cv::Point2f));
@@ -989,7 +997,7 @@ namespace armor_detector
             putText(src.img, fps_str, {10, 25}, FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
         }
 
-        if(debug_params_.print_letency)
+        if(debug_params_.print_latency)
         {
             RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 20, "-----------TIME------------");
             RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 20, "Crop:  %lfms", (dr_crop_ns / 1e6));

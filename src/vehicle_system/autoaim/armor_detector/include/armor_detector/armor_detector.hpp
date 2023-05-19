@@ -7,6 +7,7 @@
  */
 //ros
 #include <rclcpp/rclcpp.hpp>
+#include <string>
 #include <angles/angles.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
@@ -26,6 +27,7 @@
 using namespace global_user;
 using namespace coordsolver;
 using namespace angles;
+using namespace TRTInferV1;
 namespace armor_detector
 {
     class Detector
@@ -65,7 +67,7 @@ namespace armor_detector
 
     private:
         Armor last_armor_;
-        std::vector<ArmorObject> objects_;
+        std::vector<DetectObject> objects_;
         // std::vector<Armor> same_armors_;
 
         std::vector<ArmorTracker> trackers_;

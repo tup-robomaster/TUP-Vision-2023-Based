@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.22)
 project(armor_detector  LANGUAGES CXX CUDA)
 
 option(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
@@ -6,8 +6,11 @@ add_compile_options(-std=c++17)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,stack-size=16000000")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -O3  -Wall -fopenmp")
-set(CUDA_GEN_CODE "-gencode=arch=compute_86,code=sm_86")
-set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}  -std=c++17 -O3 -Xcompiler -fPIC -g -w ${CUDA_GEN_CODE}")
+set(CUDA_STANDARD 14)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+set(CUDA_GEN_CODE "-gencode=arch=compute_75,code=sm_75")
+set(CMAKE_CUDA_ARCHITECTURES 75)
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}  -std=c++14 -O3 -Xcompiler -fPIC -g -w ${CUDA_GEN_CODE}")
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -36,6 +39,8 @@ find_package(global_interface REQUIRED)
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/include
+  ${CUDA_INCLUDE_DIRS}
+  ${CUDNN_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
 )
@@ -48,8 +53,8 @@ set(dependencies
   message_filters 
   image_transport
   sensor_msgs
-  OpenVINO
-  Ceres
+  CUDA
+  CUDNN
   Eigen3
   angles
   cv_bridge
@@ -58,20 +63,27 @@ set(dependencies
   global_user
 )
   
-add_library(${PROJECT_NAME} SHARED
-  src/inference/inference_api2.cpp
+cuda_add_library(${PROJECT_NAME} SHARED 
   src/armor_tracker/armor_tracker.cpp 
   src/spinning_detector/spinning_detector.cpp 
   src/armor_detector/armor_detector.cpp
+  src/TRTInfer/Inference.cpp
+  src/TRTInfer//preprocess.cu
   src/detector_node.cpp
 )
   
 ament_target_dependencies(${PROJECT_NAME}
-  ${dependencies} 
+  ${dependencies}
 )
 
 target_link_libraries(${PROJECT_NAME}
-  openvino::runtime 
+  ${OpenCV_LIBRARIES}
+  ${Eigen3_LIBRARIES}
+  ${CUDA_LIBRARIES}
+  ${CUDNN_LIBRARIES}
+  nvinfer
+  cudart
+  nvonnxparser
   yaml-cpp
 )
 
@@ -83,26 +95,32 @@ target_compile_definitions(${PROJECT_NAME}
 # target_compile_definitions(${PROJECT_NAME}
 # PRIVATE "COMPOSITION_BUILDING_DLL")
   
-add_executable(armor_detector_node
+cuda_add_executable(${PROJECT_NAME}_node
   src/armor_tracker/armor_tracker.cpp 
   src/armor_detector/armor_detector.cpp 
   src/spinning_detector/spinning_detector.cpp
   src/TRTInfer/Inference.cpp
+  src/TRTInfer//preprocess.cu
   src/detector_node.cpp 
 )
-ament_target_dependencies(armor_detector_node
+set_target_properties(PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+ament_target_dependencies(${PROJECT_NAME}_node
   ${dependencies}
 )
-target_link_libraries(armor_detector_node
+target_link_libraries(${PROJECT_NAME}_node
   ${OpenCV_LIBRARIES}
-  openvino::runtime 
   ${Eigen3_LIBRARIES}
+  ${CUDA_LIBRARIES}
+  ${CUDNN_LIBRARIES}
+  nvinfer
+  cudart
+  nvonnxparser
   yaml-cpp
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME}
   PLUGIN "armor_detector::DetectorNode"
-  # EXECUTABLE armor_detector_node
+  EXECUTABLE ${PROJECT_NAME}_node
 )
 
 install(TARGETS 
@@ -114,7 +132,7 @@ install(TARGETS
 )
 
 install(TARGETS 
-  armor_detector_node
+  ${PROJECT_NAME}_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
