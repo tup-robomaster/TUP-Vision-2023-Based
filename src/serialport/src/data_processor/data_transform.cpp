@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 02:02:10
- * @LastEditTime: 2023-05-17 05:50:06
+ * @LastEditTime: 2023-04-03 19:57:14
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/data_processor/data_transform.cpp
  */
 #include "../../include/data_processor/data_transform.hpp"
@@ -87,24 +87,6 @@ namespace serialport
         crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
     }
 
-    void DataTransform::getTimeInfo(uchar flag, uchar* raw_data, ushort& remainning_time)
-    {
-        if (flag == 0xD5)
-        {
-            remainning_time = ucharRaw2Int16(raw_data);
-        }
-    }
-        
-    void DataTransform::getGameProgress(uchar flag, uchar* raw_data, uint8_t& game_stage)
-    {
-        if (flag == 0xD5)
-        {
-            uint8_t uint8_data;
-            uint8_data = *((uint8_t*)&raw_data[0]);
-            game_stage = uint8_data;
-        }
-    }
-
     void DataTransform::getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle)
     {
         if (flag == 0xA5)
@@ -142,6 +124,16 @@ namespace serialport
         return;
     }
 
+    void DataTransform::getGameInfo(uchar flag, uchar* raw_data, ushort& timestamp, uchar& gamestate)
+    {
+        if (flag == 0xC5)
+        {
+            timestamp = ucharRaw2Int16(raw_data);
+            gamestate = raw_data[2];
+        }
+        return;
+    }
+    
     /**
      * @brief 获取四元数
      * 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 01:45:19
- * @LastEditTime: 2023-05-17 05:49:24
+ * @LastEditTime: 2023-04-14 14:37:59
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/data_processor/data_transform.hpp
  */
 #ifndef DATA_TRANSFORM_HPP_
@@ -69,20 +69,16 @@ namespace serialport
         void transformData(int mode, const VisionAimData &data, uchar* trans_data);
         void transformData(int mode, const VisionNavData &data, uchar* trans_data);
         void transformData(int mode, const VisionDecisionData &data, uchar* trans_data); 
-        
         void getQuatData(uchar* raw_data, vector<float>& quat);
         void getGyroData(uchar* raw_data, vector<float>& gyro);
         void getAccData(uchar* raw_data, vector<float>& acc);
         void getBulletSpeed(uchar* raw_data, float& bullet_speed);
         void getThetaAngle(uchar* raw_data, float& theta);
-        void getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle);
-        void getPitchAngle(uchar flag, uchar* raw_data, float& pitch_angle);
-        
         void getPosInfo(uchar flag, uchar* raw_data, vector<float>& pos);
         void getHPInfo(uchar flag, uchar* raw_data, vector<ushort>& hp);
-        
-        void getTimeInfo(uchar flag, uchar* raw_data, ushort& remainning_time);
-        void getGameProgress(uchar flag, uchar* raw_data, uint8_t& game_stage);
+        void getGameInfo(uchar flag, uchar* raw_data, ushort& timestamp, uchar& gamestage);
+        void getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle);
+        void getPitchAngle(uchar flag, uchar* raw_data, float& pitch_angle);
 
         int mode_;     
         rclcpp::Logger logger_;  

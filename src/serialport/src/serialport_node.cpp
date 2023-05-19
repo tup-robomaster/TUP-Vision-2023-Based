@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-05-17 05:50:59
+ * @LastEditTime: 2023-04-27 20:52:55
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -157,7 +157,6 @@ namespace serialport
     void SerialPortNode::receiveData()
     {
         vector<float> vehicle_pos_info;
-        vector<ushort> hp;
         while (1)
         {
             // 若串口离线则跳过数据发送
@@ -215,11 +214,11 @@ namespace serialport
                 // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "pitch_angle:%.2f", pitch_angle);
                 if (print_serial_info_)
                 {
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 50, "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 50, "gyro:[%f %f %f]", gyro[0], gyro[1], gyro[2]);
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 50, "acc:[%f %f %f]", acc[0], acc[1], acc[2]);
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 50, "bullet_speed::%f", bullet_speed);
+                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1500, "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
+                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "gyro:[%f %f %f]", gyro[0], gyro[1], gyro[2]);
+                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "acc:[%f %f %f]", acc[0], acc[1], acc[2]);
                 }
+                RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "bullet_speed::%f", bullet_speed);
 
                 rclcpp::Time now = this->get_clock()->now();
                 SerialMsg serial_msg;
@@ -277,47 +276,31 @@ namespace serialport
             }
             else if (flag == 0xC5)
             {
-                data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
-                data_transform_->getHPInfo(flag, &serial_port_->serial_data_.rdata[43], hp);
-            }
-            else if (flag == 0xD5)
-            {    
+                vector<ushort> hp;
+                uchar gamestage;
                 ushort timestamp;
-                uint8_t game_stage;
+                data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
+                data_transform_->getHPInfo(flag, &serial_port_->serial_data_.rdata[27], hp);
+                data_transform_->getGameInfo(flag, &serial_port_->serial_data_.rdata[47], timestamp, gamestage);
 
-                data_transform_->getHPInfo(flag, &serial_port_->serial_data_.rdata[3], hp);
-                data_transform_->getTimeInfo(flag, &serial_port_->serial_data_.rdata[17], timestamp);
-                data_transform_->getGameProgress(flag, &serial_port_->serial_data_.rdata[19], game_stage);
-                // game_stage = serial_port_->serial_data_.rdata[19];
-                
                 CarPosMsg car_pos_msg;
                 ObjHPMsg obj_hp_msg;
                 GameMsg game_msg;
-                for(int ii = 0; ii < 24; ii+=2)
+
+                for(int ii = 0; ii < 20; ii+=2)
                 {
                     car_pos_msg.pos[ii].x = vehicle_pos_info[ii];
                     car_pos_msg.pos[ii].y = vehicle_pos_info[ii+1];
-                }
-
-                for (int ii = 0; ii < 16; ii++)
-                {
-                    obj_hp_msg.hp[ii] = hp[ii];
+                    obj_hp_msg.hp[ii/2] = hp[ii/2];
                 }
 
                 if (print_referee_info_)
                 {
-                    // cout << "Pos:";
-                    // for(int ii = 0; ii < 24; ii++)
-                    //     cout << " " << vehicle_pos_info[ii];
-                    // cout << endl;
-                    // cout << "HP:";
-                    // for(int ii = 0; ii < 16; ii++)
-                    //     cout << " " << hp[ii];
-                    // cout << endl;
-                    
-                    // cout << "timestamp:" << timestamp << endl;
-                    // cout << "game_stage:" << game_stage << endl;
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "game_stage:%d", game_stage);
+                    for(int ii = 0; ii < 20; ii++)
+                        RCLCPP_INFO(this->get_logger(), "Pos:%.2f", vehicle_pos_info[ii]);
+                    for(int ii = 0; ii < 10; ii++)
+                        RCLCPP_INFO(this->get_logger(), "HP:%.2d", hp[ii]);
+                    RCLCPP_INFO(this->get_logger(), "timestamp:%.2d, Stage:%d", timestamp, gamestage);
                 }
 
                 rclcpp::Time now = this->get_clock()->now();
@@ -332,11 +315,10 @@ namespace serialport
                 game_msg.header.frame_id = "";
                 game_msg.header.stamp = now;
                 game_msg.timestamp = timestamp;
-                game_msg.game_stage = game_stage;
+                game_msg.game_stage = (int)gamestage;
                 game_msg_pub_->publish(move(game_msg));
 
                 vehicle_pos_info.clear();
-                hp.clear();
             }
         }
     }
