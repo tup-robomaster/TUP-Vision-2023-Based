@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-05-14 16:18:50
+ * @LastEditTime: 2023-05-19 01:45:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -207,7 +207,7 @@ namespace armor_detector
         AutoaimMsg target_info;
         Eigen::Vector2d tracking_angle = {0.0, 0.0};
         Eigen::Matrix3d rmat_imu = Eigen::Matrix3d::Identity();
-       
+
         rclcpp::Time now = this->get_clock()->now();
         if (debug_.use_serial)
         {
@@ -237,14 +237,14 @@ namespace armor_detector
             Eigen::Matrix3d rmat = Eigen::Matrix3d::Identity();
             src.quat = Eigen::Quaterniond(rmat);
         }
-        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "mode:%d bulletSpd:%.2f", src.mode, src.bullet_speed);
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 100, "mode:%d bulletSpd:%.2f", src.mode, src.bullet_speed);
         
         param_mutex_.lock();
         if (detector_->armor_detect(src, target_info.is_target_lost))
         {   
             if (detector_->gyro_detector(src, target_info))
             {
-                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 200, "Spinning detecting...");
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Spinning detecting...");
                 rmat_imu = src.quat.toRotationMatrix();
                 Eigen::Vector3d armor_3d_cam = {target_info.armors.front().point3d_cam.x, target_info.armors.front().point3d_cam.y, target_info.armors.front().point3d_cam.z};
                 tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_imu);
@@ -275,7 +275,7 @@ namespace armor_detector
         // if (target_info.spinning_switched)
             // cout << "spinning_switched" << endl;
         rclcpp::Time end = this->get_clock()->now();
-        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 200, "detect_delay:%.2fms", (end - now).nanoseconds() / 1e6);
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 100, "detect_delay:%.2fms", (end - now).nanoseconds() / 1e6);
 
         armor_info_pub_->publish(std::move(target_info));
 

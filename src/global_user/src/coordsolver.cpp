@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-05-11 20:16:01
+ * @LastEditTime: 2023-05-15 23:13:25
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -145,17 +145,24 @@ namespace coordsolver
         Eigen::Vector3d coord_camera;
 
         // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Armor type: %d", (int)(type));
-        if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, method))
+        
+        // 1.首先使用SOLVEPNP_IPPE来初始化相机位姿;
+        // 2.然后通过非线性优化算法(SOLVEPNP_ITERATIVE)（如Levenberg-Marquardt算法等）对相机位姿进行优化，以达到更精确的结果。
+        if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, SOLVEPNP_IPPE))
+        {   
+            RCLCPP_WARN(logger_, "Initialize camera pose failed...");
+        }
+        if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, true, SOLVEPNP_ITERATIVE))
         {
-            RCLCPP_WARN(logger_, "Pnp solver failed...");
+            RCLCPP_WARN(logger_, "Optimize camera pose failed...");
         }
 
-        RCLCPP_INFO(
-            logger_, 
-            "rvec:[%.3f %.3f %.3f] rangle:%.3f", 
-            rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2), 
-            sqrt(rvec.at<double>(0) * rvec.at<double>(0) + rvec.at<double>(1) * rvec.at<double>(1) + rvec.at<double>(2) * rvec.at<double>(2))
-        );
+        // RCLCPP_INFO(
+        //     logger_, 
+        //     "rvec:[%.3f %.3f %.3f] rangle:%.3f", 
+        //     rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2), 
+        //     sqrt(rvec.at<double>(0) * rvec.at<double>(0) + rvec.at<double>(1) * rvec.at<double>(1) + rvec.at<double>(2) * rvec.at<double>(2))
+        // );
 
         PnPInfo result;
         //Pc = R * Pw + T
@@ -183,7 +190,7 @@ namespace coordsolver
             // double angle = angle_axisd.angle();
             // result.axis_angle = angle;
             // RCLCPP_INFO(logger_, "euler2:[%.3f %.3f %.3f]", euler_angle(0), euler_angle(1), euler_angle(2));
-            RCLCPP_INFO(logger_, "type:%d euler:[%.3f %.3f %.3f]", (int)type, result.euler(0), result.euler(1), result.euler(2));
+            // RCLCPP_INFO(logger_, "type:%d euler:[%.3f %.3f %.3f]", (int)type, result.euler(0), result.euler(1), result.euler(2));
         }
         else
         {

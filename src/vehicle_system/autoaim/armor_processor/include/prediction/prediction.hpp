@@ -47,6 +47,7 @@ namespace armor_processor
         void initPredictor(const vector<double>* uniform_ekf_param, const vector<double>* singer_ekf_param);
         bool resetPredictor();
         bool updatePredictor(Eigen::VectorXd meas);
+        bool updatePredictor(bool is_spinning, Eigen::VectorXd meas);
         bool predict(TargetInfo target, double dt, double pred_dt, double& delay_time, Eigen::Vector3d& pred_point3d, vector<Eigen::Vector4d>& armor3d_vec, cv::Mat* src = nullptr);
 
     public:
@@ -76,12 +77,14 @@ namespace armor_processor
         bool is_ekf_init_;
         UniformModel uniform_ekf_;
 
-        // singer ekf
+        // singer kf
         bool is_singer_init_;
         SingerModel singer_ekf_;
         
         PredictorState predictor_state_ = LOST;
         Vector6d last_state_;
+        Vector4d last_meas_;
+        SpinHeading last_spin_state_;
         deque<Vector6d> history_switched_state_vec_;
         // deque<Vector6d> history_state_vec_;
 
@@ -110,7 +113,7 @@ namespace armor_processor
         bool predictBasedSinger(bool is_target_lost, Eigen::Vector3d meas, Eigen::Vector3d& result, Eigen::Vector3d target_vel, Eigen::Vector3d target_acc, double dt, double pred_dt);
 
         // Uniform Model.
-        bool predictBasedUniformModel(bool is_target_lost, SpinHeading spin_state, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector4d>& armor3d_vec);
+        bool predictBasedUniformModel(bool is_target_lost, SpinHeading spin_state, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Vector6d& post_state);
         
         // 前哨站旋转装甲板曲线拟合预测函数    
         bool spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int64_t timestamp);

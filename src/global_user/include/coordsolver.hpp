@@ -26,6 +26,7 @@
 #include "global_user/global_user.hpp"
 
 using namespace global_user;
+using namespace cv;
 namespace coordsolver
 {
     struct PnPInfo
