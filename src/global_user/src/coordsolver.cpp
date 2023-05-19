@@ -80,7 +80,7 @@ namespace coordsolver
         initMatrix(mat_ci,read_vector);
         transform_ci = mat_ci;
 
-        // cout << "angle_offset:" << angle_offset[0] << " " << angle_offset[1] << endl;
+        cout << "angle_offset:" << angle_offset[0] << " " << angle_offset[1] << endl;
         return true;
     }
 
@@ -92,7 +92,7 @@ namespace coordsolver
      * @param method PnP解算方法
      * @return PnPInfo 
      */
-    PnPInfo CoordSolver::pnp(const std::vector<cv::Point2f> &points_pic, const Eigen::Matrix3d &rmat_imu, enum TargetType type, int method = cv::SOLVEPNP_IPPE)
+    PnPInfo CoordSolver::pnp(const std::vector<cv::Point2d> &points_pic, const Eigen::Matrix3d &rmat_imu, enum TargetType type, int method = cv::SOLVEPNP_IPPE)
     {
         std::vector<cv::Point3d> points_world;
 
@@ -136,9 +136,9 @@ namespace coordsolver
             // {0.1125,-0.027,0},
             // {0.1125,0.027,0}};
         }
-        cv::Mat rvec;
-        cv::Mat rmat;
-        cv::Mat tvec;
+        cv::Mat rvec = cv::Mat(1, 3, CV_64FC1);
+        cv::Mat rmat = cv::Mat(3, 3, CV_64FC1);
+        cv::Mat tvec = cv::Mat(1, 3, CV_64FC1);
         Eigen::Matrix3d rmat_eigen;
         Eigen::Vector3d R_center_world = {0, -0.7, -0.05};
         Eigen::Vector3d tvec_eigen;

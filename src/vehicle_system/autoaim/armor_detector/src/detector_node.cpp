@@ -54,7 +54,7 @@ namespace armor_detector
         // qos.durability();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 5;
+        rmw_qos.depth = 1;
 
         time_start_ = detector_->steady_clock_.now();
 
@@ -70,6 +70,7 @@ namespace armor_detector
             serial_msg_.imu.header.frame_id = "imu_link";
             this->declare_parameter<double>("bullet_speed", 28.0);
             this->get_parameter("bullet_speed", serial_msg_.bullet_speed);
+            detector_->coordsolver_.setBulletSpeed(serial_msg_.bullet_speed);
             serial_msg_.mode = this->declare_parameter<int>("autoaim_mode", 1);
 
             if (!sync_transport)
@@ -234,25 +235,30 @@ namespace armor_detector
     void DetectorNode::detect(TaskData& src, rclcpp::Time stamp)
     {
         rclcpp::Time now = this->get_clock()->now();
+        serial_msg_mutex_.lock();
         if (debug_.use_serial)
         {
-            serial_msg_mutex_.lock();
             src.mode = serial_msg_.mode;
             src.bullet_speed = serial_msg_.bullet_speed;
-            src.quat.w() = serial_msg_.imu.orientation.w;
-            src.quat.x() = serial_msg_.imu.orientation.x;
-            src.quat.y() = serial_msg_.imu.orientation.y;
-            src.quat.z() = serial_msg_.imu.orientation.z;
-            serial_msg_mutex_.unlock(); 
+            // src.quat.w() = serial_msg_.imu.orientation.w;
+            // src.quat.x() = serial_msg_.imu.orientation.x;
+            // src.quat.y() = serial_msg_.imu.orientation.y;
+            // src.quat.z() = serial_msg_.imu.orientation.z;
             
+            Eigen::Matrix3d rmat = Eigen::Matrix3d::Identity();
+            src.quat = Eigen::Quaterniond(rmat);
+
             auto dt = (now - serial_msg_.imu.header.stamp).nanoseconds() / 1e6;
             putText(src.img, "IMU_DELAY:" + to_string(dt) + "ms", cv::Point2i(50, 80), cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "using serial...");
         }
         else 
         {
             Eigen::Matrix3d rmat = Eigen::Matrix3d::Identity();
             src.quat = Eigen::Quaterniond(rmat);
         }
+        serial_msg_mutex_.unlock(); 
+        
         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "mode:%d bulletSpd:%.2f", src.mode, src.bullet_speed);
 
         AutoaimMsg target_info;
@@ -329,6 +335,7 @@ namespace armor_detector
         target_info.quat_imu.x = src.quat.x();
         target_info.quat_imu.y = src.quat.y();
         target_info.quat_imu.z = src.quat.z();
+        target_info.bullet_speed = src.bullet_speed;
         // RCLCPP_INFO(this->get_logger(), "timestamp:%.8f", target_info.timestamp / 1e9);
 
         // if (target_info.spinning_switched)
@@ -467,8 +474,8 @@ namespace armor_detector
         this->declare_parameter<double>("armor_roi_expand_ratio_width", 1.1);
         this->declare_parameter<double>("armor_roi_expand_ratio_height", 1.5);
         this->declare_parameter<double>("armor_conf_high_thres", 0.82);
-        this->declare_parameter<double>("yaw_angle_offset", 0.0);
-        this->declare_parameter<double>("pitch_angle_offset", 0.0);
+        // this->declare_parameter<double>("yaw_angle_offset", 0.0);
+        // this->declare_parameter<double>("pitch_angle_offset", 0.0);
         
         //TODO:Set by your own path.
         this->declare_parameter("camera_name", "KE0200110075"); //相机型号

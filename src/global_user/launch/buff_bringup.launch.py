@@ -67,6 +67,14 @@ def generate_launch_description():
         declare_use_serial,
         declare_debug_pred,
 
+        # balance
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            output='screen',
+            arguments=['-0.00001424', '0.00268454', '0.0007016', '2.6461098', '1.5426969', '2.1362692', 'imu_link', 'camera_link']
+        ),
+
         Node(
             package='serialport',
             executable='serialport_node',

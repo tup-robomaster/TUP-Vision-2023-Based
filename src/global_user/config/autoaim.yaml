@@ -12,12 +12,12 @@
     full_crop_ratio: 0.0001
     armor_roi_expand_ratio_width: 1.2
     armor_roi_expand_ratio_height: 1.8
-    armor_conf_high_thres: 0.82
+    armor_conf_high_thres: 0.92
 
   # Spinning params.
-    shoot_delay: 75
-    bullet_speed: 12.7
-    max_dead_buffer: 10
+    shoot_delay: 225
+    bullet_speed: 14.8
+    max_dead_buffer: 5
     max_delta_dist: 0.5
     switch_max_dt: 2000.0
     anti_spin_max_r_multiple: 4.5
@@ -34,10 +34,10 @@
     delta_y_3d_lower_thresh: 0.05
 
   # Camera config params.
-    camera_type: 2 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_param_path: "/config/camera.yaml"
     # camera_name: "00J90630561" 
-    camera_name: "KE0200110074" #FIXME:根据相机序列号修改
+    camera_name: "KE0200110076" #FIXME:根据相机序列号修改
 
   # Network model path.
     # network_path: "/model/opt-0527-002.xml"
@@ -54,28 +54,28 @@
   # Debug params.
     debug: true
     detect_red: true # red: true / blue: false
-    use_serial: false
+    use_serial: true
     use_roi: true
     show_img: false
     show_crop_img: false
-    show_fps: false
-    show_aim_cross: false
-    show_all_armors: false
+    show_fps: true
+    show_aim_cross: true
+    show_all_armors: true
     auto_label: false
     print_letency: false
     sync_transport: false
     print_target_info: false
-
+ 
 /armor_processor:
   ros__parameters:
   # Predict params.
-    bullet_speed: 12.7
+    shoot_delay: 225
+    bullet_speed: 14.8
+    max_v: 8
     max_dt: 1000
     max_cost: 10
-    max_v: 8
-    min_fitting_lens: 5
-    shoot_delay: 150 
     window_size: 3
+    min_fitting_lens: 5
     max_offset_value: 0.45
     reserve_factor: 500.0 # 储备系数(>=1)
     # rotation_yaw: 0.0
@@ -84,8 +84,8 @@
 
   # Debug params.
     debug: true
-    use_serial: false
-    show_img: true
+    use_serial: true
+    show_img: false
     draw_predict: true
     show_predict: true
     show_aim_cross: true
@@ -95,19 +95,19 @@
     show_marker: true
  
   # Camera params.
-    camera_type: 2 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type: 0 #(daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_param_path: "/config/camera.yaml"
     # camera_name: "00J90630561" 
-    camera_name: "KE0200110074" #FIXME:根据相机序列号修改
+    camera_name: "KE0200110076" #FIXME:根据相机序列号修改
     
   # Filter params.
     filter_param_path: "/config/filter_param.yaml"
   
   # uniform model
     #----------------------------------Xc------Yc----Zc-----r---theta--omega
-    uniform_ekf_process_noise_param: [0.02, 0.001, 0.002, 0.005, 0.1, 0.002]
+    uniform_ekf_process_noise_param: [0.02, 0.001, 0.002, 0.001, 0.005, 0.002]
     #----------------------------------X----Y---Z---theta
-    uniform_ekf_measure_noise_param: [5.0, 0.2, 1.0, 1.0]
+    uniform_ekf_measure_noise_param: [5.0, 0.5, 1.0, 1.0]
     
   # Singer model
     # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)

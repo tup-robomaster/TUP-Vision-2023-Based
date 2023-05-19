@@ -39,7 +39,7 @@ def generate_launch_description():
 
     declare_camera_type = DeclareLaunchArgument(
         name='camera_type',
-        default_value='mvs',
+        default_value='daheng',
         description='hik daheng mvs usb'
     )
 
@@ -98,9 +98,9 @@ def generate_launch_description():
             output='screen', # log/screen/both
             emulate_tty=True,
             parameters=[{
-                'using_port': False,
-                'tracking_target': False,
-                'print_serial_info': False,
+                'using_port': True,
+                'tracking_target': True,
+                'print_serial_info': True,
                 'print_referee_info': False
             }],
             respawn=True,
@@ -137,13 +137,23 @@ def generate_launch_description():
         #     # arguments=['-d', rviz2_config_path]
         # ),
 
+        # balance
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',
             output='screen',
-            arguments=['-0.01680645', '0.06407996', '0.04546766', '2.3101486', '-1.5109296', '-2.3492247', 'imu_link', 'camera_link']
+            arguments=['-0.00001424', '0.00268454', '0.0007016', '2.6461098', '1.5426969', '2.1362692', 'imu_link', 'camera_link']
         ),
+
+        # hero
+        # Node(
+        #     package='tf2_ros',
+        #     executable='static_transform_publisher',
+        #     output='screen',
+        #     arguments=['-0.01680645', '0.06407996', '0.04546766', '2.3101486', '-1.5109296', '-2.3492247', 'imu_link', 'camera_link']
+        # ),
         
+        # 3infantry
         # Node(
         #     package='tf2_ros',
         #     executable='static_transform_publisher',

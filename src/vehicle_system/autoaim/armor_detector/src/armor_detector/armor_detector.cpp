@@ -101,7 +101,7 @@ namespace armor_detector
             if (src.mode == 2)
             {
                 input(Range(600,1024),Range(432,848)).copyTo(input);
-                roi_offset_ = Point2f((float)432, (float)600);
+                roi_offset_ = cv::Point2d((float)432, (float)600);
             }
             else
             {
@@ -113,6 +113,7 @@ namespace armor_detector
 
         objects_.clear();
         new_armors_.clear();
+        // cout << 5 << endl;
         
         if (!armor_detector_.detect(input, objects_))
         {   //若未检测到目标
@@ -127,6 +128,7 @@ namespace armor_detector
             last_target_area_ = 0.0;
             return false;
         }
+        // cout << 1 << endl;
 
         time_infer_ = steady_clock_.now();
         
@@ -168,12 +170,14 @@ namespace armor_detector
             else if (object.color == 3)
                 armor.key = "P" + to_string(object.cls);
             
+            // cout << 2 << endl;
+
             memcpy(armor.apex2d, object.apex, 4 * sizeof(cv::Point2f));
             for(int i = 0; i < 4; i++)
-                armor.apex2d[i] += Point2f((float)roi_offset_.x,(float)roi_offset_.y);
-            Point2f apex_sum;
+                armor.apex2d[i] += cv::Point2f((float)roi_offset_.x,(float)roi_offset_.y);
+            cv::Point2f apex_sum;
             for(auto apex : armor.apex2d)
-                apex_sum +=apex;
+                apex_sum += apex;
             armor.center2d = apex_sum / 4.f;
             //若装甲板置信度小于高阈值，需要相同位置存在过装甲板才放行
             if (armor.conf < this->detector_params_.armor_conf_high_thres)
@@ -207,12 +211,18 @@ namespace armor_detector
                     continue;
                 }
             }
+            
+            // cout << 3 << endl;
 
             //生成装甲板旋转矩形和ROI
             std::vector<Point2f> points_pic(armor.apex2d, armor.apex2d + 4);
             RotatedRect points_pic_rrect = minAreaRect(points_pic); 
+            // cout << 6 << endl;
+
             armor.rrect = points_pic_rrect;
             auto bbox = points_pic_rrect.boundingRect();
+            // cout << 7 << endl;
+            
             auto x = bbox.x - 0.5 * bbox.width * (detector_params_.armor_roi_expand_ratio_width - 1);
             auto y = bbox.y - 0.5 * bbox.height * (detector_params_.armor_roi_expand_ratio_height - 1);
             armor.roi = Rect(
@@ -221,6 +231,7 @@ namespace armor_detector
                 bbox.width * detector_params_.armor_roi_expand_ratio_width,
                 bbox.height * detector_params_.armor_roi_expand_ratio_height
             );
+            // cout << 4 << endl;
 
             //进行PnP，目标较少时采取迭代法，较多时采用IPPE
             int pnp_method = ((int)objects_.size() <= 2) ? SOLVEPNP_ITERATIVE : SOLVEPNP_IPPE;
@@ -240,13 +251,19 @@ namespace armor_detector
             // 单目PnP
             // PnPInfo pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
             // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
-            auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
+            vector<cv::Point2d> image_pts(4);
+            for (int ii = 0; ii < 4; ii++)
+            {
+                image_pts.at(ii).x = points_pic.at(ii).x;
+                image_pts.at(ii).y = points_pic.at(ii).y;
+            }
+            auto pnp_result = coordsolver_.pnp(image_pts, rmat_imu_, target_type, SOLVEPNP_IPPE);
             
             //防止装甲板类型出错导致解算问题，首先尝试切换装甲板类型，若仍无效则直接跳过该装甲板
             if (!isPnpSolverValidation(pnp_result.armor_cam))
             {
                 target_type = (target_type == SMALL) ? BIG : SMALL;
-                pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
+                pnp_result = coordsolver_.pnp(image_pts, rmat_imu_, target_type, SOLVEPNP_IPPE);
                 if (!isPnpSolverValidation(pnp_result.armor_cam))
                 {
                     continue;
@@ -303,7 +320,7 @@ namespace armor_detector
                 bool is_init = false;
                 for(auto armor : new_armors_)
                 {
-                    vector<cv::Point2f> cornor_points(armor.apex2d, armor.apex2d + 4);
+                    vector<cv::Point2d> cornor_points(armor.apex2d, armor.apex2d + 4);
                     autoLabel(is_init, src.img, file_, path_prefix_, now_,
                         armor.id, armor.color, cornor_points, roi_offset_, input_size_);
                 }
@@ -500,17 +517,17 @@ namespace armor_detector
                         // Eigen::Vector3d opposite_euler = {cur_euler[0], cur_euler[1], cur_euler[2] + CV_PI};
                         // Eigen::Vector3d opposite_armor3d_world = {2 * circle_center_ave.x - cur_armor.armor3d_world[1], 2 * circle_center_ave.y - cur_armor.armor3d_world[0], circle_center_ave.z};
                         // Eigen::Vector3d opposite_armor3d_cam = coordsolver_.worldToCam(opposite_armor3d_world, rmat_imu_);
-                        // cv::Point2f opposite_armor_center2d = coordsolver_.reproject(opposite_armor3d_cam);
-                        // cv::Point2f circle_center2d = {(opposite_armor_center2d.x + cur_armor.center2d.x) / 2.0, (opposite_armor_center2d.y + cur_armor.center2d.y) / 2.0};
-                        // cv::Point2f reproject_circle_center2d = coordsolver_.reproject(circle_center_ave);
-                        // cv::Point2f opposite_armor2d_apex[4] = 
+                        // cv::Point2d opposite_armor_center2d = coordsolver_.reproject(opposite_armor3d_cam);
+                        // cv::Point2d circle_center2d = {(opposite_armor_center2d.x + cur_armor.center2d.x) / 2.0, (opposite_armor_center2d.y + cur_armor.center2d.y) / 2.0};
+                        // cv::Point2d reproject_circle_center2d = coordsolver_.reproject(circle_center_ave);
+                        // cv::Point2d opposite_armor2d_apex[4] = 
                         // {
-                        //     cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[2].x, 2 * circle_center2d.y - cur_armor.apex2d[2].x),
-                        //     cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[3].x, 2 * circle_center2d.y - cur_armor.apex2d[3].x),
-                        //     cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[0].x, 2 * circle_center2d.y - cur_armor.apex2d[0].x),
-                        //     cv::Point2f(2 * circle_center2d.x - cur_armor.apex2d[1].x, 2 * circle_center2d.y - cur_armor.apex2d[1].x)
+                        //     cv::Point2d(2 * circle_center2d.x - cur_armor.apex2d[2].x, 2 * circle_center2d.y - cur_armor.apex2d[2].x),
+                        //     cv::Point2d(2 * circle_center2d.x - cur_armor.apex2d[3].x, 2 * circle_center2d.y - cur_armor.apex2d[3].x),
+                        //     cv::Point2d(2 * circle_center2d.x - cur_armor.apex2d[0].x, 2 * circle_center2d.y - cur_armor.apex2d[0].x),
+                        //     cv::Point2d(2 * circle_center2d.x - cur_armor.apex2d[1].x, 2 * circle_center2d.y - cur_armor.apex2d[1].x)
                         // };
-                        // std::vector<Point2f> points_pic(opposite_armor2d_apex, opposite_armor2d_apex + 4);
+                        // std::vector<cv::Point2d> points_pic(opposite_armor2d_apex, opposite_armor2d_apex + 4);
                         // RotatedRect opposite_rrect = minAreaRect(points_pic); 
                         // cv::Rect bbox = opposite_rrect.boundingRect();
                         // double x = bbox.x - 0.5 * bbox.width * (detector_params_.armor_roi_expand_ratio_width - 1);
@@ -1025,8 +1042,8 @@ namespace armor_detector
             rectangle(src.img, armor.roi, {255, 0, 255}, 1);
             // auto armor_center = coordsolver_.reproject(armor.armor3d_cam);
             // circle(src.img, armor_center, 4, {0, 0, 255}, 2);
-            // line(src.img, cv::Point2f(armor_center.x - 25, armor_center.y), cv::Point2f(armor_center.x + 25, armor_center.y), {0, 0, 255}, 1);
-            // line(src.img, cv::Point2f(armor_center.x, armor_center.y - 30), cv::Point2f(armor_center.x, armor_center.y + 30), {0, 0, 255}, 1);
+            // line(src.img, cv::Point2d(armor_center.x - 25, armor_center.y), cv::Point2d(armor_center.x + 25, armor_center.y), {0, 0, 255}, 1);
+            // line(src.img, cv::Point2d(armor_center.x, armor_center.y - 30), cv::Point2d(armor_center.x, armor_center.y + 30), {0, 0, 255}, 1);
         }
     }
 

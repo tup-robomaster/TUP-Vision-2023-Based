@@ -88,6 +88,8 @@ namespace serialport
         queue<VisionAimData> vision_data_queue_;
         // vector<float> vehicle_pos_info;
 
+        rclcpp::Time stamp_;
+
         //tf2
         std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
         

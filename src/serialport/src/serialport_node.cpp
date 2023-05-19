@@ -140,6 +140,10 @@ namespace serialport
         vector<float> vehicle_pos_info;
         while (1)
         {
+            // stamp_ = this->get_clock()->now();
+            // rclcpp::Time now = this->get_clock()->now();
+            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "rec_delay:%.3fms", (now.nanoseconds() - stamp_.nanoseconds()) / 1e6);
+
             if (!using_port_)
             {
                 geometry_msgs::msg::TransformStamped t;
@@ -183,7 +187,8 @@ namespace serialport
                     if(!is_receive_data)
                     {
                         RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
-                        usleep(1000);
+                        // continue;
+                        // usleep(1000);
                     }
                 }
                 
@@ -218,11 +223,12 @@ namespace serialport
                     // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "pitch_angle:%.2f", pitch_angle);
                     if (print_serial_info_)
                     {
-                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1500, "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "mode:%d", mode);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "quat:[%f %f %f %f]", quat[0], quat[1], quat[2], quat[3]);
                         RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "gyro:[%f %f %f]", gyro[0], gyro[1], gyro[2]);
-                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "acc:[%f %f %f]", acc[0], acc[1], acc[2]);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "acc:[%f %f %f]", acc[0], acc[1], acc[2]);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "bullet_speed::%f", bullet_speed);
                     }
-                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "bullet_speed::%f", bullet_speed);
 
                     rclcpp::Time now = this->get_clock()->now();
                     SerialMsg serial_msg;
@@ -326,7 +332,13 @@ namespace serialport
                     vehicle_pos_info.clear();
                 }
             }
+
+            // stamp_ = now;
+            // rclcpp::Time now = this->get_clock()->now();        
+            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "rec_delay:%.3fms", (now.nanoseconds() - stamp_.nanoseconds()) / 1e6);
+
         }
+
     }
 
     /**

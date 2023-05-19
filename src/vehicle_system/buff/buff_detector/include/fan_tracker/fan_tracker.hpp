@@ -28,7 +28,7 @@ namespace buff_detector
         double dx;
         double dz;
         double angle;
-        Point2f apex2d[5];
+        Point2d apex2d[5];
         Eigen::Vector3d centerR3d_cam;
         Eigen::Vector3d centerR3d_world;
     };
