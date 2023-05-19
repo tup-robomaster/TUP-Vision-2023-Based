@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-04-16 18:11:16
+ * @LastEditTime: 2023-05-11 17:52:25
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -35,6 +35,7 @@
 #include "../usb_driver/usb_cam.hpp"
 #include "../hik_driver/hik_camera.hpp"
 #include "../daheng_driver/daheng_camera.hpp"
+#include "../mvs_driver/mvs_camera.hpp"
 #include "../../global_user/include/global_user/global_user.hpp"
 #include "global_interface/msg/decision.hpp"
 #include "global_interface/msg/serial.hpp"
@@ -82,6 +83,8 @@ namespace camera_driver
         std::unique_ptr<T> cam_driver_;
         rclcpp::TimerBase::SharedPtr camera_watcher_timer_;
         rclcpp::TimerBase::SharedPtr img_callback_timer_;
+        std::thread img_callback_thread_;
+
         std::map<std::string, int> param_map_;
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
         rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_;
@@ -128,7 +131,7 @@ namespace camera_driver
 
         //QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(5);
         qos.best_effort();
         qos.durability();
         // qos.reliable();
@@ -136,10 +139,10 @@ namespace camera_driver
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 5;
 
         // Camera type.
-        this->declare_parameter<int>("camera_type", DaHeng);
+        this->declare_parameter<int>("camera_type", MVSCam);
         camera_type_ = this->get_parameter("camera_type").as_int();
 
         // Subscriptions transport type.
@@ -190,8 +193,9 @@ namespace camera_driver
 
         image_msg_.header.frame_id = camera_topic_;
         image_msg_.encoding = "bgr8";
-        img_callback_timer_ = this->create_wall_timer(1ms, std::bind(&CameraBaseNode::imageCallback, this));
         camera_watcher_timer_ = rclcpp::create_timer(this, this->get_clock(), 100ms, std::bind(&CameraBaseNode::cameraWatcher, this));
+        img_callback_timer_ = this->create_wall_timer(1ms, std::bind(&CameraBaseNode::imageCallback, this));
+        // img_callback_thread_ = std::thread(std::bind(&CameraBaseNode::imageCallback, this));
 
         this->declare_parameter("using_port", false);
         use_serial_ = this->get_parameter("using_port").as_bool();
@@ -256,61 +260,64 @@ namespace camera_driver
     template<class T>
     void CameraBaseNode<T>::imageCallback()
     {
-        if (use_serial_)
-        {
-            if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
+        // while (1)
+        // {
+            if (use_serial_)
             {
+                if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
+                {
+                    return;
+                }
+            }
+
+            if (!cam_driver_->getImage(frame_, image_msg_))
+            {
+                RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
+                is_cam_open_ = false;
                 return;
             }
-        }
 
-        if (!cam_driver_->getImage(frame_, image_msg_))
-        {
-            RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
-            is_cam_open_ = false;
-            return;
-        }
-
-        rclcpp::Time now = this->get_clock()->now();
-        image_msg_.header.stamp = now;
-        camera_info_msg_.header = image_msg_.header;
-        image_msg_.width = this->image_size_.width;
-        image_msg_.height = this->image_size_.height;
-        camera_pub_.publish(image_msg_, camera_info_msg_);
-            
-        if (save_video_)
-        {   // Video recorder.
-            ++frame_cnt_;
-            if (frame_cnt_ % 50 == 0)
-            {
-                sensor_msgs::msg::Image image_msg = image_msg_;
-                auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
-                auto serialized_msg = rclcpp::SerializedMessage();
-                serializer.serialize_message(&image_msg, &serialized_msg);
-                auto bag_msg = std::make_shared<rosbag2_storage::SerializedBagMessage>();
-                bag_msg->serialized_data = std::shared_ptr<rcutils_uint8_array_t>(
-                    new rcutils_uint8_array_t,
-                    [this](rcutils_uint8_array_t* msg)
-                    {
-                        if (rcutils_uint8_array_fini(msg) != RCUTILS_RET_OK)
+            rclcpp::Time now = this->get_clock()->now();
+            image_msg_.header.stamp = now;
+            camera_info_msg_.header = image_msg_.header;
+            image_msg_.width = this->image_size_.width;
+            image_msg_.height = this->image_size_.height;
+            camera_pub_.publish(image_msg_, camera_info_msg_);
+                
+            if (save_video_)
+            {   // Video recorder.
+                ++frame_cnt_;
+                if (frame_cnt_ % 50 == 0)
+                {
+                    sensor_msgs::msg::Image image_msg = image_msg_;
+                    auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
+                    auto serialized_msg = rclcpp::SerializedMessage();
+                    serializer.serialize_message(&image_msg, &serialized_msg);
+                    auto bag_msg = std::make_shared<rosbag2_storage::SerializedBagMessage>();
+                    bag_msg->serialized_data = std::shared_ptr<rcutils_uint8_array_t>(
+                        new rcutils_uint8_array_t,
+                        [this](rcutils_uint8_array_t* msg)
                         {
-                            RCLCPP_ERROR(this->get_logger(), "RCUTILS_RET_INVALID_ARGUMENT OR RCUTILS_RET_ERROR");
+                            if (rcutils_uint8_array_fini(msg) != RCUTILS_RET_OK)
+                            {
+                                RCLCPP_ERROR(this->get_logger(), "RCUTILS_RET_INVALID_ARGUMENT OR RCUTILS_RET_ERROR");
+                            }
+                            delete msg;
                         }
-                        delete msg;
-                    }
-                );
-                *bag_msg->serialized_data = serialized_msg.release_rcl_serialized_message();
-                bag_msg->topic_name = camera_topic_;
-                bag_msg->time_stamp = now.nanoseconds();
-                writer_->write(bag_msg);
+                    );
+                    *bag_msg->serialized_data = serialized_msg.release_rcl_serialized_message();
+                    bag_msg->topic_name = camera_topic_;
+                    bag_msg->time_stamp = now.nanoseconds();
+                    writer_->write(bag_msg);
+                }
             }
-        }
-        if (show_img_)
-        {
-            cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
-            cv::imshow("frame", frame_);
-            cv::waitKey(1);
-        }
+            if (show_img_)
+            {
+                cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
+                cv::imshow("frame", frame_);
+                cv::waitKey(1);
+            }
+        // }
     }
 
     template<class T>
@@ -344,6 +351,7 @@ namespace camera_driver
         this->declare_parameter("fps", 30);
         this->declare_parameter("video_path", "/config/camera_ros.yaml");
         this->declare_parameter<bool>("save_video", false);
+        this->declare_parameter<string>("config_path", "/config/daheng_cam_param.ini");
 
         camera_params_.cam_id = this->get_parameter("cam_id").as_int();
         camera_params_.image_width = this->get_parameter("image_width").as_int();
@@ -361,6 +369,12 @@ namespace camera_driver
         camera_params_.balance_r = this->get_parameter("balance_r").as_double();
         camera_params_.using_video = this->get_parameter("using_video").as_bool();
         camera_params_.fps = this->get_parameter("fps").as_int();
+        
+        string pkg_prefix = get_package_share_directory("camera_driver");
+        string param_config_path = this->get_parameter("config_path").as_string();
+        string param_full_path = pkg_prefix + param_config_path;
+        camera_params_.config_path = param_full_path;
+        
         show_img_ = this->get_parameter("show_img").as_bool();
         save_video_ = this->get_parameter("save_video").as_bool();
 

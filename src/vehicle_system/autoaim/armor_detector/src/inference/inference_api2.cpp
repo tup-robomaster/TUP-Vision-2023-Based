@@ -61,7 +61,7 @@ namespace armor_detector
     }
 
     /**
-     * @brief Generate grids and stride.
+     * @brief 
      * @param target_w Width of input.
      * @param target_h Height of input.
      * @param strides A vector of stride.
@@ -433,8 +433,12 @@ namespace armor_detector
         // // 转换图像数据为ov::Tensor
         // input_tensor = ov::Tensor(input_type, input_shape, input_data_ptr);
 
+        // auto st = std::chrono::steady_clock::now();
         // 推理
         infer_request.infer();
+        // auto end = std::chrono::steady_clock::now();
+        // double infer_dt = std::chrono::duration<double,std::milli>(end - st).count();
+        // cout << "infer_time:" << infer_dt << endl;
         
         // 处理推理结果
         ov::Tensor output_tensor = infer_request.get_output_tensor();

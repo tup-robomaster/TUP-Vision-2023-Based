@@ -65,9 +65,6 @@ namespace camera_driver
             RCLCPP_ERROR(logger_, "相机库初始化失败!");
             return false;
         }
-
-        // logger initializes.
-        RCLCPP_INFO(logger_, "[CAMERA] Initializing...");
         return true;
     }
 
@@ -78,6 +75,12 @@ namespace camera_driver
         if(status != GX_STATUS_SUCCESS)
             return false;
         
+        status = GXExportConfigFile(hDevice, this->cam_param_.config_path.c_str());
+        if (status != GX_STATUS_SUCCESS)
+        {
+            RCLCPP_ERROR(logger_, "Export Config File Failed! Error: [%d]", status);
+        }
+
         // status = deviceReset();
         // if(status != GX_STATUS_SUCCESS)
         //     return false;
@@ -101,49 +104,57 @@ namespace camera_driver
         /**
          * @brief 外部调用接口
         */
+        // logger initializes.
+        RCLCPP_INFO(logger_, "[CAMERA] Initializing...");
+
         if(startDevice(cam_param_.cam_id) == -1)
         {
             RCLCPP_ERROR(logger_, "Start device failed...");
             return false;
         }
-        
-        // 设置分辨率
-        if(!setResolution(cam_param_.width_scale, cam_param_.height_scale))
+
+        status = GXImportConfigFile(hDevice, this->cam_param_.config_path.c_str());
+        if (status != GX_STATUS_SUCCESS)
         {
-            RCLCPP_ERROR(logger_, "Set resolution failed...");
-            return false;
-        }      
+            RCLCPP_ERROR(logger_, "Export Config File Failed! Error: [%d]", status);
+        }
+        
+        // // 设置分辨率
+        // if(!setResolution(cam_param_.width_scale, cam_param_.height_scale))
+        // {
+        //     RCLCPP_ERROR(logger_, "Set resolution failed...");
+        //     return false;
+        // }      
 
-        //更新时间戳，设置时间戳偏移量
-        // UpdateTimestampOffset(time_start);
+        // //更新时间戳，设置时间戳偏移量
+        // // UpdateTimestampOffset(time_start);
 
+        // // 设置曝光事件
+        // if(!setExposureTime(cam_param_.exposure_time))
+        // {
+        //     RCLCPP_WARN(logger_, "Set exposure time failed...");
+        //     return false;
+        // }
+
+        // // 设置1
+        // if(!setGain(3, cam_param_.exposure_gain))
+        // {
+        //     RCLCPP_WARN(logger_, "Set gain failed...");
+        //     return false;
+        // }
+        
+        // // 是否启用自动白平衡7
+        // // manual白平衡 BGR->012
+        // setBalance(0, cam_param_.balance_b);
+        // setBalance(1, cam_param_.balance_g);
+        // setBalance(2, cam_param_.balance_r);
+        
         // 开始采集帧
         if(!setStreamOn())
         {
             RCLCPP_ERROR(logger_, "Set stream on failed...");
             return false;
         }
-
-        // 设置曝光事件
-        if(!setExposureTime(cam_param_.exposure_time))
-        {
-            RCLCPP_WARN(logger_, "Set exposure time failed...");
-            return false;
-        }
-
-        // 设置1
-        if(!setGain(3, cam_param_.exposure_gain))
-        {
-            RCLCPP_WARN(logger_, "Set gain failed...");
-            return false;
-        }
-        
-        // 是否启用自动白平衡7
-        // manual白平衡 BGR->012
-        setBalance(0, cam_param_.balance_b);
-        setBalance(1, cam_param_.balance_g);
-        setBalance(2, cam_param_.balance_r);
-
         return true;
     }
 

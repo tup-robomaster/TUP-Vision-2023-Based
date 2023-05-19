@@ -55,18 +55,6 @@ namespace armor_processor
         SystemModel system_model;
     };
 
-    struct PredictStatus
-    {
-        bool xyz_status[3];
-
-        PredictStatus()
-        {
-            xyz_status[0] = false;
-            xyz_status[1] = false;
-            xyz_status[2] = false;
-        }
-    };
-
     /**
      * @brief 预测器状态
      * 
@@ -91,72 +79,60 @@ namespace armor_processor
     struct PredictParam
     {
         double bullet_speed;    //弹速
-        int max_delta_time;     //最大时间跨度，大于该值则重置预测器
+        double shoot_delay;        //射击延迟
+        int max_dt;             //最大时间跨度，大于该值则重置预测器(ms)
         int max_cost;           //回归函数最大cost
         int max_v;              //
         int min_fitting_lens;   //最短队列长度
-        int shoot_delay;        //射击延迟
         int window_size;        //滑窗大小
         KFParam kf_param;       //卡尔曼滤波参数
         FilterModelParam filter_model_param; //滤波模型参数
         SystemModel system_model;
         double reserve_factor;
         double max_offset_value;
-        double rotation_yaw;
-        double rotation_pitch;
-        double rotation_roll;
-        Eigen::Vector2d angle_offset;
+        // double rotation_yaw;
+        // double rotation_pitch;
+        // double rotation_roll;
         
         PredictParam()
         {
             bullet_speed = 28;    
-            max_delta_time = 1000;     
+            shoot_delay = 100.0;       
+            max_dt = 1000;     
             max_cost = 509;           
             max_v = 8;              
             min_fitting_lens = 10;   
-            shoot_delay = 100;       
             window_size = 3;     
             system_model = CSMODEL;   
             reserve_factor = 15.0;
             max_offset_value = 0.25;
-            rotation_yaw = 0.0;
-            rotation_pitch = 0.0;
-            rotation_roll = 0.0;
-            angle_offset = {0.0, 0.0};
+            // rotation_yaw = 0.0;
+            // rotation_pitch = 0.0;
+            // rotation_roll = 0.0;
         }
     };
 
     struct DebugParam
     {
         bool show_img;
-        bool using_imu;
+        bool use_serial;
+        bool use_imu;
         bool draw_predict;
         bool show_predict;
         bool print_delay;
-        bool x_axis_filter;
-        bool y_axis_filter;
-        bool z_axis_filter;
-        bool disable_filter;
-        bool disable_fitting;
-        bool show_transformed_info;
         bool show_aim_cross;
         bool show_fps;
 
         DebugParam()
         {
+            use_imu = true;
+            use_serial = true;
             show_img = false;
-            using_imu = false;
-            draw_predict = true;
+            show_fps = false;
+            draw_predict = false;
             show_predict = false;
             print_delay = false;
-            x_axis_filter = true;
-            y_axis_filter = false;
-            z_axis_filter = false;
-            disable_filter = false;
-            disable_fitting = false;
-            show_transformed_info = true;
-            show_aim_cross = true;
-            show_fps = true;
+            show_aim_cross = false;
         }
     };
 
@@ -167,9 +143,9 @@ namespace armor_processor
         std::string filter_path;
         PathParam()
         {
-            coord_path = "src/global_user/config/camera.yaml";
+            coord_path = "/config/camera.yaml";
             coord_name = "KE0200110075";
-            filter_path = "src/global_user/config/filter_param.yaml";
+            filter_path = "/config/filter_param.yaml";
         }
     };
 
