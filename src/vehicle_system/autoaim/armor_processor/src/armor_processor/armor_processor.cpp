@@ -162,11 +162,13 @@ namespace armor_processor
 
         for (auto armor : target_msg.armors)
         {
-            // cout << "armor.point3d_world:" << armor.point3d_world.x << " " << armor.point3d_world.y << " " << armor.point3d_world.z << endl;
+            double rangle = armor.rangle;
             Eigen::Vector3d xyz = {armor.point3d_world.x, armor.point3d_world.y, armor.point3d_world.z};
             double pred_dt = xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
             Eigen::VectorXd state = armor_predictor_.uniform_ekf_.x();
             Eigen::Vector3d center_xyz = {state(0), state(1), state(2)};
+
+            // cout << "armor_point3d_world:" << xyz(0) << " " << xyz(1) << " " << xyz(2) << endl;
 
             TargetInfo target = 
             { 
@@ -217,8 +219,8 @@ namespace armor_processor
                 // target_period_ = target.period;
                 armor_predictor_.predictor_state_ = PREDICTING;
 
-                // Eigen::Vector4d meas = {target.xyz(1), -target.xyz(0), target.xyz(2), (target.rangle > 0 ? (target.rangle - CV_PI / 2) : (CV_PI * 1.5 + target.rangle ))};
-                Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
+                // Eigen::Vector4d meas = {xyz(1), -xyz(0), xyz(2), (rangle > 0 ? (rangle - CV_PI / 2) : (CV_PI * 1.5 + rangle))};
+                Eigen::Vector4d meas = {xyz(0), xyz(1), xyz(2), rangle};
                 armor_predictor_.updatePredictor(target.is_spinning, meas);
                 is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
             }
