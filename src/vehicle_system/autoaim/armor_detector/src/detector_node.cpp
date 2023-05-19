@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-05-19 01:45:18
+ * @LastEditTime: 2023-05-19 02:44:14
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -221,6 +221,8 @@ namespace armor_detector
                 src.quat.x() = serial_msg_.imu.orientation.x;
                 src.quat.y() = serial_msg_.imu.orientation.y;
                 src.quat.z() = serial_msg_.imu.orientation.z;
+
+                // std::cout << 111 << std::endl;
             }
             else
             {

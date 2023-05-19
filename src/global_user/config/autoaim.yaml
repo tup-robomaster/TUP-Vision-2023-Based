@@ -45,7 +45,7 @@
   # Debug params.
     detect_red: true # red: true / blue: false
     use_roi: true
-    
+     
     debug: true
     show_img: true
     show_crop_img: false
@@ -73,7 +73,7 @@
 
   # Debug params.
     debug: true
-    show_img: true
+    show_img: false
     draw_predict: true
     show_predict: true
     show_aim_cross: true
@@ -96,7 +96,7 @@
     
   # Singer model
     # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)
-    singer_model_process_param: [1.05, 1.05, 1.05, 4.5, 5.65, 4.5]
+    singer_model_process_param: [1.05, 1.05, 1.05, 1.5, 1.65, 1.5]
     # r:观测协方差系数(r1/r2/r3)
     singer_model_measure_param: [1.0, 1.0, 1.0]
 

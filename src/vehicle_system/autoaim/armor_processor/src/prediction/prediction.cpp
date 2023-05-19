@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-10 17:28:51
+ * @LastEditTime: 2023-05-19 04:30:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -80,6 +80,7 @@ namespace armor_processor
             //     uniform_ekf_.x_(0) = circle3d(0);
             //     uniform_ekf_.x_(1) = circle3d(1);
             // }
+            
             uniform_ekf_.x_(2) = meas(2);
             uniform_ekf_.x_(4) = meas(3);
             // uniform_ekf_.x_(5) = 0.0;
@@ -95,9 +96,11 @@ namespace armor_processor
     bool ArmorPredictor::predict(TargetInfo target, double dt, double pred_dt, double &delay_time, Eigen::Vector3d &pred_point3d, vector<Eigen::Vector4d> &armor3d_vec, cv::Mat *src)
     {
         SpinHeading spin_state = target.is_spinning ? (target.is_clockwise ? CLOCKWISE : COUNTER_CLOCKWISE) : UNKNOWN;
-
         // Eigen::Vector4d meas = {target.xyz(1), -target.xyz(0), target.xyz(2), (target.rangle > 0 ? (target.rangle - CV_PI / 2) : (CV_PI * 1.5 + target.rangle ))};
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
+        pred_point3d = {meas(0), meas(1), meas(2)};
+        cout << "meas_point3d_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
+        
         
         if ((last_spin_state_ == UNKNOWN && spin_state != UNKNOWN) || (last_spin_state_ != UNKNOWN && spin_state == UNKNOWN))
         {
@@ -124,17 +127,21 @@ namespace armor_processor
         else
         {
             Vector6d post_state = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+            // double trans_rangle = (meas(3) > 0 ? (meas(3) - CV_PI / 2) : (CV_PI * 1.5 + meas(3)));
+            // Eigen::Vector4d meas = {-meas(1), meas(0), meas(2), trans_rangle};
+
             if (predictBasedUniformModel(target.is_target_lost, spin_state, meas, dt, pred_dt, target.period, post_state))
             {
                 // Eigen::Vector4d circle_center3d = {post_state(0), post_state(1), post_state(2), 0.0};
                 // armor3d_vec.emplace_back(circle_center3d);
 
                 Eigen::Vector3d center3d = {post_state(0), post_state(1), post_state(2)}; 
+                pred_point3d = center3d;
                 double radius = post_state(3);
                 double pred_rangle = post_state(4);
                 if (predictBasedSinger(target.is_target_lost, center3d, pred_point3d, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, dt, pred_dt))
                 {
-                    Eigen::Vector4d circle_center3d = {pred_point3d(0), pred_point3d(1), pred_point3d(2), 0.0};
+                    Eigen::Vector4d circle_center3d = {pred_point3d(0), pred_point3d(1), meas(2), 0.0};
                     armor3d_vec.emplace_back(circle_center3d);
                     
                     for (int ii = 0; ii < 4; ii++)
@@ -144,13 +151,13 @@ namespace armor_processor
                         double pred_next_rangle = (pred_rangle + CV_PI / 2 * ii);
                         double pred_x = pred_point3d(0) + pred_radius * sin(pred_next_rangle);
                         double pred_y = pred_point3d(1) - pred_radius * cos(pred_next_rangle);
-                        double pred_z = pred_point3d(2);
+                        double pred_z = meas(2);
                         if (history_switched_state_vec_.size() > 0)
                         {
                             pred_radius = (ii % 2 == 0) ? radius : history_switched_state_vec_.front()(3);
                             pred_x = pred_point3d(0) + pred_radius * sin(pred_next_rangle);
                             pred_y = pred_point3d(1) - pred_radius * cos(pred_next_rangle);
-                            pred_z = (ii % 2 == 0) ? pred_point3d(2) : history_switched_state_vec_.front()(2);
+                            pred_z = (ii % 2 == 0) ? pred_z : history_switched_state_vec_.front()(2);
                         }
                         armor3d = {pred_x, pred_y, pred_z, pred_next_rangle};
                         armor3d_vec.emplace_back(armor3d);

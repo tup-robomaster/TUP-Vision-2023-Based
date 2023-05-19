@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 21:39:01
- * @LastEditTime: 2023-05-14 14:14:20
+ * @LastEditTime: 2023-05-19 03:13:20
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/spinning_detector/spinning_detector.cpp
  */
 #include "../../include/spinning_detector/spinning_detector.hpp"
@@ -23,7 +23,7 @@ namespace armor_detector
         this->gyro_params_.anti_spin_judge_low_thres = 2e3;
         this->gyro_params_.anti_spin_max_r_multiple = 3;
         last_timestamp_ = 0.0;
-        max_hop_period_ = 1000.0;
+        max_hop_period_ = 2000.0;
         // normal_gyro_status_counter_ = 0;
         // switch_gyro_status_counter_ = 0;
         // last_yaw_diff_ = 0.0;
@@ -44,7 +44,7 @@ namespace armor_detector
         this->gyro_params_.anti_spin_judge_low_thres = gyro_params.anti_spin_judge_low_thres;
         this->gyro_params_.anti_spin_max_r_multiple = gyro_params.anti_spin_max_r_multiple;
         last_timestamp_ = 0.0;
-        max_hop_period_ = 1000.0;
+        max_hop_period_ = 2000.0;
         // normal_gyro_status_counter_ = 0;
         // switch_gyro_status_counter_ = 0;
         // last_yaw_diff_ = 0.0;
@@ -551,7 +551,7 @@ namespace armor_detector
                 || 
                 // (spinning_map_.spin_counter_map[tracker.first].normal_gyro_status_counter >= 10
                 // && 
-                abs(spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter >= 3))
+                abs(spinning_map_.spin_counter_map[tracker.first].switch_gyro_status_counter >= 1))
                 // )
                 {
                     SpinHeading spin_status = UNKNOWN;

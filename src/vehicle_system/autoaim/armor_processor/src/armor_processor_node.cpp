@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-19 01:45:32
+ * @LastEditTime: 2023-05-19 03:10:30
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -230,7 +230,7 @@ namespace armor_processor
                             double armor3d_dist = armor_point3d_world.norm();
                             int scale = armor_point3d_world(3) / (2 * CV_PI);
                             double rangle = armor_point3d_world(3) - scale * (2 * CV_PI);
-                            if (armor3d_dist < min_dist && rangle >= 1.35 && rangle <= 1.55)
+                            if (armor3d_dist < min_dist && rangle >= 1.35 && rangle <= 1.45)
                             {
                                 min_dist = armor3d_dist;
                                 flag = idx;
@@ -301,24 +301,24 @@ namespace armor_processor
             is_shooting = false;
         }
 
-        // if (shoot_flag_)
-        // {
-        //     if (count_ <= 40)
-        //     {
-        //         is_shooting = false;
-        //         count_++;
-        //     }
-        //     else
-        //     {
-        //         shoot_flag_ = false;
-        //         count_ = 0;
-        //     }
-        // }
+        if (shoot_flag_)
+        {
+            if (count_ <= 20)
+            {
+                is_shooting = false;
+                count_++;
+            }
+            else
+            {
+                shoot_flag_ = false;
+                count_ = 0;
+            }
+        }
 
-        // if (is_shooting)
-        // {
-        //     shoot_flag_ = true;
-        // }
+        if (is_shooting)
+        {
+            shoot_flag_ = true;
+        }
 
         RCLCPP_WARN_EXPRESSION(this->get_logger(), is_shooting, "Shooting...");
         
