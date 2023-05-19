@@ -135,6 +135,8 @@ namespace serialport
      */
     void SerialPortNode::serialWatcher()
     {
+        if (!this->using_port_)
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 10, "You've disabled using_port...");
         if (access(serial_port_->serial_data_.device.path.c_str(), F_OK) == -1 || !serial_port_->serial_data_.is_initialized)
         {
             serial_port_->serial_data_.is_initialized = true;
@@ -143,6 +145,7 @@ namespace serialport
                 RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Port open failed!!!");
             }
         }
+
     }
 
     /**
@@ -381,7 +384,9 @@ namespace serialport
             return true;
         }
         else
+        {
             return false;
+        }
     }
 
     /**
@@ -477,6 +482,7 @@ namespace serialport
         VisionNavData vision_data;
         vision_data.linear_velocity[0] = base_vel[0];
         vision_data.linear_velocity[1] = base_vel[1];
+        vision_data.angular_velocity[2] = msg->angular.z * 0.0003;
         // vision_data.linear_velocity[2] = msg->linear.z;
         // vision_data.angular_velocity[0] = msg->angular.x;
         // vision_data.angular_velocity[1] = msg->angular.y;

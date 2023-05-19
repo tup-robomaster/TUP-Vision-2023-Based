@@ -180,10 +180,9 @@ namespace armor_processor
         if (debug_param_.show_img)
         {
             image_mutex_.lock();
-            if(!src_.empty() && image_flag_)
+            if(!src_.empty())
             {
                 src_.copyTo(dst);
-                image_flag_ = false;
             }         
             image_mutex_.unlock();
         }
@@ -582,7 +581,6 @@ namespace armor_processor
         
         image_mutex_.lock();
         src_ = cv_bridge::toCvShare(img_msg, "bgr8")->image;
-        image_flag_ = true;
         image_mutex_.unlock();
     }
 

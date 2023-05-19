@@ -70,7 +70,6 @@ namespace armor_processor
         bool is_aimed_ = false;
         bool is_pred_ = false;
         map<int, string> state_map_;
-        atomic<bool> image_flag_ = false;
         
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
