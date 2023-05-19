@@ -150,6 +150,10 @@ namespace coordsolver
         // 2.然后通过非线性优化算法(SOLVEPNP_ITERATIVE)（如Levenberg-Marquardt算法等）对相机位姿进行优化，以达到更精确的结果。
         if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, SOLVEPNP_IPPE))
         {   
+            if (type == SMALL || type == BIG)
+            {
+                
+            }
             RCLCPP_WARN(logger_, "Initialize camera pose failed...");
         }
         if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, true, SOLVEPNP_ITERATIVE))

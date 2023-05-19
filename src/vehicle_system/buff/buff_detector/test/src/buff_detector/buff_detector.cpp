@@ -111,24 +111,28 @@ namespace buff_detector
         for (auto object : objects)
         {
             if(debug_param_.detect_red)
-                if (object.color != 2 && object.color != 3)
+                if (object.color != 1)
                     continue;
             if(!debug_param_.detect_red)
-                if (object.color != 0 && object.color != 1)
+                if (object.color != 0)
                     continue;
+
             Fan fan;
             fan.id = object.cls;
             fan.color = object.color;
             fan.conf = object.prob;
-            if (object.color == 0 || object.color == 1)
-                fan.key = "B" + string(object.cls == 1 ? "Activated" : "Target");
-            if (object.color == 2 || object.color == 3)
-                fan.key = "R" + string(object.cls == 1 ? "Activated" : "Target");
+
+            if (object.color == 1)
+                fan.key = "R" + string(object.cls == 1 ? "Target" : "Activated");
+            if (object.color == 0)
+                fan.key = "B" + string(object.cls == 1 ? "Target" : "Activated");
+
             memcpy(fan.apex2d, object.apex, 5 * sizeof(cv::Point2f));
             for(int i = 0; i < 5; i++)
             {
                 fan.apex2d[i] += Point2f((float)roi_offset_.x, (float)roi_offset_.y);
             }
+            
             std::vector<Point2f> points_pic(fan.apex2d, fan.apex2d + 5);
             std::vector<cv::Point2f> points_rect;
             cv::Point2f center_r;
@@ -674,7 +678,7 @@ namespace buff_detector
             char ch[20];
             sprintf(ch, "%.2f", fan.conf);
             std::string conf_str = ch;
-            putText(src.img, conf_str, fan.apex2d[2], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
+            putText(src.img, conf_str, fan.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
 
             if (fan.color == 0 || fan.color == 1 || fan.color == 2 || fan.color == 3)
                 putText(src.img, fan.key, fan.apex2d[3], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
@@ -696,7 +700,7 @@ namespace buff_detector
         int target_fan_cnt = 0;
         for (auto fan : fans)
         {
-            if (fan.id == 0)
+            if (fan.id == 1)
             {
                 target = fan;
                 target_fan_cnt++;
