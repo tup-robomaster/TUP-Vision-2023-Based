@@ -244,15 +244,16 @@ namespace serialport
                 tf2::Transform trans_imu;
                 trans_imu.setRotation(tf2::Quaternion(quat[1], quat[2], quat[3], quat[0]));
                 
+                double r,p,y;
                 tf2::Transform trans_base_to_virt;
                 tf_lock_.lock();
-                trans_base_to_virt = trans_imu * virtual_heading_;
-                double r,p,y;
+                trans_base_to_virt = trans_imu.inverse() * virtual_heading_;
                 tf2::Quaternion q;
                 trans_base_to_virt.getBasis().getRPY(r,p,y);
                 q.setRPY(0,0,y);
                 trans_base_to_virt.setRotation(q);
                 tf_lock_.unlock();
+
 
                 geometry_msgs::msg::TransformStamped trans_base_to_virt_msg;
                 geometry_msgs::msg::Transform trans_base_to_virt_msg_nostamp;
@@ -483,18 +484,21 @@ namespace serialport
             int mode = mode_;
             // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
             VisionNavData vision_data;
-            vision_data.linear_velocity[0] = base_vel[0];
-            vision_data.linear_velocity[1] = base_vel[1];
 
             double delta_yaw = tf2::getYaw(transform.getRotation());
             //Rotate base_link while delta_yaw is too big
-            if (abs(delta_yaw) < 0.8)
+            if (abs(delta_yaw) < 0.7)
             {
+                vision_data.linear_velocity[0] = base_vel[0];
+                vision_data.linear_velocity[1] = base_vel[1];
                 vision_data.angular_velocity[2] = 0;
             }
             else 
             {
-                vision_data.angular_velocity[2] = msg->angular.z * 0.003;
+                RCLCPP_INFO(this->get_logger(), "Current delta_yaw: %f, attempting rotating...", delta_yaw);
+                vision_data.linear_velocity[0] = base_vel[0] * 0.1;
+                vision_data.linear_velocity[1] = base_vel[1] * 0.1;
+                vision_data.angular_velocity[2] = delta_yaw > 0 ? 0.007 : -0.007;
             }
 
 
