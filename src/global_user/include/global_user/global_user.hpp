@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-05-03 17:42:18
+ * @LastEditTime: 2023-05-21 23:29:21
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -174,7 +174,6 @@ namespace global_user
     struct TaskData
     {
         int mode;
-        double bullet_speed;
         cv::Mat img;
         Eigen::Quaterniond quat;
         int64_t timestamp; 
@@ -182,7 +181,6 @@ namespace global_user
         TaskData()
         {
             mode = 1;
-            bullet_speed = 14.5;
             timestamp = 0;
         }
     };
