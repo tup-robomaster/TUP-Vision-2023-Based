@@ -88,15 +88,21 @@ namespace buff_processor
         GimbalMsg gimbal_msg;
         bool is_shooting = false;
 
-        // rclcpp::Time stamp = buff_msg.header.stamp;
-        // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "dt:%.8fs", stamp.nanoseconds() / 1e9);
-
         if (buff_msg.bullet_speed >= 10.0)
         {   //更新弹速
-            buff_processor_->coordsolver_.setBulletSpeed(buff_msg.bullet_speed);
+            double cur_bullet_speed = buff_processor_->coordsolver_.getBulletSpeed();
+            if (abs(buff_msg.bullet_speed - cur_bullet_speed) <= 0.5)
+            {
+                cur_bullet_speed = (buff_msg.bullet_speed + cur_bullet_speed) / 2.0;
+            }
+            else
+            {
+                cur_bullet_speed = buff_msg.bullet_speed;
+            }
+            buff_processor_->coordsolver_.setBulletSpeed(cur_bullet_speed);
         }
 
-        if (buff_msg.shoot_delay >= 50)
+        if (buff_msg.shoot_delay >= 50 && buff_msg.shoot_delay <= 300)
         {
             buff_processor_->predictor_param_.shoot_delay = (buff_processor_->predictor_param_.shoot_delay + buff_msg.shoot_delay) / 2.0;
         }
@@ -122,17 +128,17 @@ namespace buff_processor
                 if (debug_param_.show_predict)
                 {
                     BuffMsg predict_msg;
-                    predict_msg.header.frame_id = "camera_link";
+                    predict_msg.header.frame_id = "camera_link1";
                     predict_msg.header.stamp = buff_msg.header.stamp;
 
                     // predict_msg.header.stamp.nanosec += (500 * 1e6);
                     // predict_msg.predict_point.x = predict_info.hit_point_cam[0];
                     // predict_msg.predict_point.y = predict_info.hit_point_cam[1];
                     // predict_msg.predict_point.z = predict_info.hit_point_cam[2];
+                    
                     predict_msg.predict_point.x = predict_info.hit_point_world[0];
                     predict_msg.predict_point.y = predict_info.hit_point_world[1];
                     predict_msg.predict_point.z = predict_info.hit_point_world[2];
-                
                     predict_msg_pub_->publish(std::move(predict_msg));
                 }
 
@@ -153,8 +159,18 @@ namespace buff_processor
                             r_center.x = buff_msg.points2d[ii].x;
                             r_center.y = buff_msg.points2d[ii].y;
                         }
-                        // cv::line(dst, cv::Point2i(buff_msg.points2d[ii % 5].x, buff_msg.points2d[ii % 5].y),
-                        //     cv::Point2i(buff_msg.points2d[(ii + 1) % 5].x, buff_msg.points2d[(ii + 1) % 5].y), {0, 0, 255}, 1);
+
+                        cv::line(
+                            dst, 
+                            cv::Point2i(
+                                buff_msg.points2d[ii % 5].x, 
+                                buff_msg.points2d[ii % 5].y), 
+                                cv::Point2i(buff_msg.points2d[(ii + 1) % 5].x, 
+                                buff_msg.points2d[(ii + 1) % 5].y
+                            ), 
+                            {0, 0, 255}, 
+                            1
+                        );
                     }
                     armor_center = (vertex_sum / 4.0);
                     cv::Point2f point_2d = buff_processor_->coordsolver_.reproject(predict_info.hit_point_cam);

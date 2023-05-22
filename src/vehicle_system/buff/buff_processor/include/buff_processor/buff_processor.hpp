@@ -37,6 +37,7 @@ namespace buff_processor
     
     private:
         rclcpp::Logger logger_;
+        rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
 
     public:
         // Mutex mutex_;

@@ -72,7 +72,7 @@ namespace buff_processor
         queue<PredInfo> pred_info_queue_;
 
         double base_angle_;
-        atomic<int> sign_;
+        int sign_;
         double angle_offset_;
         bool is_switched_;
         double last_angle_offset_;

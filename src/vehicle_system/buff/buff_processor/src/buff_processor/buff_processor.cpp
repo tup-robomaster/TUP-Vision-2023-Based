@@ -55,7 +55,13 @@ namespace buff_processor
 
                 // 计算云台偏转角度（pitch、yaw）
                 Eigen::Vector2d angle = coordsolver_.getAngle(hit_point_cam, rmat_imu_);
-                RCLCPP_INFO(logger_, "Yaw: %lf Pitch: %lf", angle[0], angle[1]);
+                RCLCPP_INFO_THROTTLE(
+                    logger_, 
+                    steady_clock_,
+                    50,
+                    "Yaw: %lf Pitch: %lf", 
+                    angle(0), angle(1)
+                );
 
                 buff_info.angle = angle;
                 buff_info.armor3d_world = armor3d_world;
@@ -64,15 +70,21 @@ namespace buff_processor
                 buff_info.armor3d_cam = hit_point_cam;
                 buff_info.target_switched = buff_msg.target_switched;
 
-                RCLCPP_WARN(logger_, "Predictor failed...");
+                RCLCPP_WARN(
+                    logger_, 
+                    "Predictor failed..."
+                );
                 return true;
             }
             else
             {
-                // RCLCPP_INFO(
-                //     logger_, 
-                //     "Angle offset: %lf", theta_offset
-                // );
+                RCLCPP_INFO_THROTTLE(
+                    logger_, 
+                    steady_clock_,
+                    50,
+                    "Angle offset: %.4f", 
+                    theta_offset
+                );
                 
                 // 计算击打点世界坐标
                 Eigen::Vector3d hit_point_world = {sin(theta_offset) * this->predictor_param_.fan_length, (cos(theta_offset) - 1) * this->predictor_param_.fan_length, 0};
@@ -97,15 +109,27 @@ namespace buff_processor
 
                 hit_point_world = rmat * hit_point_world + armor3d_world;
                 
-                // RCLCPP_INFO(logger_, "hit_point_world: %lf %lf %lf", (rmat * hit_point_world)[0], (rmat * hit_point_world)[1], (rmat * hit_point_world)[2]);
-                // RCLCPP_INFO(logger_, "armor3d_world: %lf %lf %lf", armor3d_world[0], armor3d_world[1], armor3d_world[2]);
-                // RCLCPP_INFO(logger_, "hit_point: %lf %lf %lf", hit_point_world[0], hit_point_world[1], hit_point_world[2]);
+                RCLCPP_INFO_THROTTLE(
+                    logger_, 
+                    steady_clock_,
+                    50,
+                    "armor3d_world: (%lf, %lf, %lf) hit_point_world: (%lf, %lf, %lf)", 
+                    armor3d_world(0), armor3d_world(1), armor3d_world(2),
+                    hit_point_world(0), hit_point_world(1), hit_point_world(2)
+                );
 
                 // 转换到相机系
                 Eigen::Vector3d hit_point_cam = coordsolver_.worldToCam(hit_point_world, rmat_imu_);
                 // 计算云台偏转角度（pitch、yaw）
                 Eigen::Vector2d angle = coordsolver_.getAngle(hit_point_cam, rmat_imu_);
-                RCLCPP_INFO(logger_, "Yaw: %lf Pitch: %lf", angle[0], angle[1]);
+                
+                RCLCPP_INFO_THROTTLE(
+                    logger_, 
+                    steady_clock_,
+                    50,
+                    "Yaw: %lf Pitch: %lf", 
+                    angle(0), angle(1)
+                );
 
                 buff_info.angle = angle;
                 buff_info.armor3d_world = armor3d_world;
@@ -120,8 +144,8 @@ namespace buff_processor
         {
             RCLCPP_INFO_THROTTLE(
                 logger_, 
-                buff_predictor_.steady_clock_, 
-                500, 
+                steady_clock_, 
+                50, 
                 "Not buff mode... Current mode: %d", 
                 buff_msg.mode
             );

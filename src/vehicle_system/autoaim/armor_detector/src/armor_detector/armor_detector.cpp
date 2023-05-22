@@ -138,8 +138,6 @@ namespace armor_detector
             else if (object.color == 3)
                 armor.key = "P" + to_string(object.cls);
             
-            // cout << 2 << endl;
-
             memcpy(armor.apex2d, object.apex, 4 * sizeof(cv::Point2f));
             for(int i = 0; i < 4; i++)
                 armor.apex2d[i] += cv::Point2f((float)roi_offset_.x,(float)roi_offset_.y);
@@ -201,11 +199,11 @@ namespace armor_detector
             TargetType target_type = SMALL;
             //计算长宽比,确定装甲板类型
             auto apex_wh_ratio = max(points_pic_rrect.size.height, points_pic_rrect.size.width) / min(points_pic_rrect.size.height, points_pic_rrect.size.width);
-            if (object.cls == 1 || object.cls == 0 || apex_wh_ratio > detector_params_.armor_type_wh_thres)
+            if (object.cls == 1 || apex_wh_ratio > detector_params_.armor_type_wh_thres)
             {   //若大于长宽阈值或为哨兵、英雄装甲板
                 target_type = BIG;
             }
-            else if (object.cls == 2 || object.cls == 3 || object.cls == 4 || object.cls == 5 || object.cls == 6)
+            else if (object.cls == 0 || object.cls == 2 || object.cls == 3 || object.cls == 4 || object.cls == 5 || object.cls == 6)
             {   //FIXME：若存在平衡步兵需要对此处步兵装甲板类型进行修改
                 target_type = SMALL;
             }

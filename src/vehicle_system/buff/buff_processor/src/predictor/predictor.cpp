@@ -157,24 +157,23 @@ namespace buff_processor
         {
             for (auto delta_angle : delta_angle_vec_)
             {
-                // cout << "dAngle:" << delta_angle << " ";
                 if (delta_angle > 0)
                     dir_cnt += 1;
                 else if (delta_angle < 0)
                     dir_cnt -= 1;
             }
-            // cout << endl;
             sign_ = (dir_cnt > 0) ? -1 : 1;
             // if (delta_angle_vec_.size() > 300)
             //     is_direction_confirmed_ = true;
         }
 
-        // RCLCPP_INFO_THROTTLE(
-        //     logger_, 
-        //     steady_clock_, 
-        //     500, 
-        //     "mode: %d", mode_
-        // );
+        RCLCPP_INFO_THROTTLE(
+            logger_, 
+            steady_clock_, 
+            500, 
+            "mode: %d",
+            mode_
+        );
 
         //曲线拟合
         if (mode_ == 3)
@@ -182,11 +181,13 @@ namespace buff_processor
             params_[3] = rotate_speed_ave;  //TODO:小能量机关转速10RPM
             is_params_confirmed_ = true;
             
-            // RCLCPP_INFO(
-            //     logger_, 
-            //     "Average rotate speed: %lf", 
-            //     rotate_speed_ave
-            // );
+            RCLCPP_INFO_THROTTLE(
+                logger_, 
+                steady_clock_,
+                100,
+                "Average rotate speed: %.3f", 
+                rotate_speed_ave
+            );
         }
         else if (mode_ == 4)
         {
@@ -337,10 +338,13 @@ namespace buff_processor
                 else if(sign_ == -1)
                     result = -abs(params_[3] * (pred_dt / 1e3));
                 
-                // RCLCPP_INFO(
-                //     logger_, 
-                //     "rotate_direction: %d", direction
-                // );
+                RCLCPP_INFO_THROTTLE(
+                    logger_, 
+                    steady_clock_,
+                    500,
+                    "rotate_direction: %d", 
+                    sign_
+                );
             }
             else if (mode_ == 4)
             {
@@ -367,19 +371,23 @@ namespace buff_processor
                 if (error >= 0.05)
                     error_cnt_++;
 
-                // RCLCPP_INFO(
-                //     logger_, 
-                //     "last_pred_angle:%lf cur_pred_angle:%lf\n delta_meas_angle:%lf delta_pre_angle:%lf error:%lf", 
-                //     last_pred_angle_, cur_pred_angle_, delta_meas_angle, delta_pre_angle, error
-                // );
+                RCLCPP_INFO_THROTTLE(
+                    logger_, 
+                    steady_clock_,
+                    50,
+                    "last_pred_angle: %.3f cur_pred_angle: %.3f delta_pre_angle: %.3f error:%.3f", 
+                    last_pred_angle_, cur_pred_angle_, delta_pre_angle, error
+                );
 
-                // RCLCPP_WARN(
-                //     logger_, 
-                //     "Prediction error cnt:%d", 
-                //     error_cnt_
-                // );
+                RCLCPP_WARN_THROTTLE(
+                    logger_, 
+                    steady_clock_,
+                    50,
+                    "Prediction error cnt: %d", 
+                    error_cnt_
+                );
 
-                if (error_cnt_ >= 5 || error >= 0.1)
+                if (error_cnt_ >= 5 || error >= 0.2)
                 {
                     is_params_confirmed_ = false;
                     is_direction_confirmed_ = false;
@@ -448,6 +456,7 @@ namespace buff_processor
             error = abs(delta_pred_angle - delta_meas_angle);
             last_pred_angle = pred;
             last_meas_angle = measure;
+
             //角度误差大于1度超过10帧即认为拟合失败
             if(error > 5.5)
             {
@@ -458,8 +467,10 @@ namespace buff_processor
                     is_params_confirmed_ = false;
                     return 1e2;
                 }
-                RCLCPP_INFO(
+                RCLCPP_INFO_THROTTLE(
                     logger_, 
+                    steady_clock_,
+                    50,
                     "t: %.3f delta_pred_angle: %.3f delta_meas_angle: %.3f error: %.3f", 
                     t, delta_pred_angle, delta_meas_angle, error
                 );
