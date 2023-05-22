@@ -12,7 +12,7 @@ using namespace std::placeholders;
 namespace armor_detector
 {
     DetectorNode::DetectorNode(const rclcpp::NodeOptions& options)
-    : Node("armor_detector", options), my_sync_policy_(MySyncPolicy(3))
+    : Node("armor_detector", options)
     {
         RCLCPP_WARN(this->get_logger(), "Starting detector node...");
 
@@ -108,10 +108,6 @@ namespace armor_detector
     {
     }
 
-    void DetectorNode::detect(TaskData& src, rclcpp::Time stamp)
-    {
-    }
-
     /**
      * @brief 传感器消息回调（目前是陀螺仪数据）
      * 
@@ -156,7 +152,6 @@ namespace armor_detector
         Eigen::Matrix3d rmat_imu = Eigen::Matrix3d::Identity();
         src.quat = Eigen::Quaterniond(rmat_imu);
 
-        rclcpp::Time now = this->get_clock()->now();
         if (debug_.use_serial)
         {
             serial_msg_mutex_.lock();
@@ -207,7 +202,7 @@ namespace armor_detector
                 *this->get_clock(), 
                 500, 
                 "armor3d_cam: (%.3f %.3f %.3f) armor3d_world: (%.3f %.3f %.3f)", 
-                armor_msg.armors.front().point3d_cam.x, armor_msg.armors.front().point3d_cam.y, armor_msg.armors.front().point3d_cam.z
+                armor_msg.armors.front().point3d_cam.x, armor_msg.armors.front().point3d_cam.y, armor_msg.armors.front().point3d_cam.z,
                 armor_msg.armors.front().point3d_world.x, armor_msg.armors.front().point3d_world.y, armor_msg.armors.front().point3d_world.z
             );
         }
@@ -308,8 +303,8 @@ namespace armor_detector
         this->declare_parameter("show_crop_img", false);
         this->declare_parameter("show_aim_cross", false);
         this->declare_parameter("show_fps", false);
-        this->declare_parameter("print_letency", false);
-        this->declare_parameter("print_armor_msg", false);
+        this->declare_parameter("print_latency", false);
+        this->declare_parameter("print_target_info", false);
         this->declare_parameter("show_all_armors", false);
         this->declare_parameter("save_data", false);
         this->declare_parameter("save_dataset", false);
@@ -358,8 +353,8 @@ namespace armor_detector
         debug_.show_crop_img = this->get_parameter("show_crop_img").as_bool();
         debug_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
         debug_.show_fps = this->get_parameter("show_fps").as_bool();
-        debug_.print_letency = this->get_parameter("print_letency").as_bool();
-        debug_.print_armor_msg = this->get_parameter("print_armor_msg").as_bool();
+        debug_.print_latency = this->get_parameter("print_latency").as_bool();
+        debug_.print_target_info = this->get_parameter("print_target_info").as_bool();
         debug_.show_all_armors = this->get_parameter("show_all_armors").as_bool();
         debug_.save_data = this->get_parameter("save_data").as_bool();
         debug_.save_dataset = this->get_parameter("save_dataset").as_bool();

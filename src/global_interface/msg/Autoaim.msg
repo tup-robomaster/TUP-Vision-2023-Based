@@ -9,7 +9,7 @@ uint16 vehicle_hp
 float64 spinning_period
 float32 bullet_speed
 float32 shoot_delay
-bool clockwise
+bool is_clockwise
 bool target_switched
 bool is_spinning
 bool spinning_switched

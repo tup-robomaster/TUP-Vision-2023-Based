@@ -53,7 +53,7 @@
     show_aim_cross: true
     show_all_armors: true
     auto_label: false
-    print_letency: false
+    print_latency: false
     sync_transport: false
     print_target_info: false
 

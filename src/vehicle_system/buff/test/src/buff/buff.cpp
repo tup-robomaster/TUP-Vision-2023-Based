@@ -113,33 +113,8 @@ namespace buff
         vector<Fan> fans;
         auto input = src.img;
 
-        if(!is_init_)
-        {
-            detector.initModel(path_param_.network_path);
-            coordsolver.loadParam(path_param_.camera_param_path, path_param_.camera_name);
-            is_init_ = true;
-        }
-
-        if(!debug_param_.debug_without_com)
-        {
-            if (src.bullet_speed > 10)
-            {
-                double bullet_speed;
-                if (abs(src.bullet_speed - last_bullet_speed) < 0.5 || abs(src.bullet_speed - last_bullet_speed) > 1.5)
-                {
-                    bullet_speed = src.bullet_speed;
-                    predictor.setBulletSpeed(bullet_speed);
-                    coordsolver.setBulletSpeed(bullet_speed);
-                    last_bullet_speed = bullet_speed;
-                }
-            }
-        }
-
-        if(debug_param_.using_imu)
-            rmat_imu_ = src.quat.toRotationMatrix();
-        else
-            rmat_imu_= Eigen::Matrix3d::Identity();
-
+        rmat_imu_ = src.quat.toRotationMatrix();
+        
         //TODO:修复ROI
         if(debug_param_.using_roi)
         {
@@ -162,13 +137,6 @@ namespace buff
                 line(src.img, Point2f(0, src.img.size().height / 2), Point2f(src.img.size().width, src.img.size().height / 2), Scalar(0,255,0), 1);
             }
 
-            // if(debug_param_.show_img)
-            // {
-            //     namedWindow("dst",0);
-            //     imshow("dst",src.img);
-            //     waitKey(1);
-            // }
-            
             lost_cnt++;
             is_last_target_exists = false;
             last_target_area = 0;

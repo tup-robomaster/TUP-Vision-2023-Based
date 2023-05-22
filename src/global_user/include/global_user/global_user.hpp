@@ -142,6 +142,14 @@ namespace global_user
         USBCam,
     };
 
+    enum Color 
+    {
+        BLUE,
+        RED,
+        GRAY,
+        PURPLE
+    };
+
     enum TargetType 
     {  
         SMALL, 

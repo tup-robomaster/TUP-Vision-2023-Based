@@ -185,7 +185,7 @@ namespace armor_processor
                 target_msg.target_switched,
                 target_msg.is_spinning,
                 target_msg.spinning_switched,
-                target_msg.clockwise,
+                target_msg.is_clockwise,
                 false,
                 (SpinningStatus)(target_msg.is_still_spinning),
                 predict_param_.system_model

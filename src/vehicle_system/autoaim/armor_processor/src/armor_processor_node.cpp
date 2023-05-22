@@ -375,7 +375,7 @@ namespace armor_processor
             
             if (!target.is_target_lost && show_marker_)
             {
-                pubMarkerArray(armor3d_vec, target.clockwise, flag);
+                pubMarkerArray(armor3d_vec, target.is_clockwise, flag);
             }
         }
 

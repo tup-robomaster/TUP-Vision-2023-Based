@@ -291,11 +291,11 @@ namespace armor_detector
      * @brief 车辆小陀螺状态检测
      * 
      * @param src 图像数据结构体
-     * @param target_info 目标装甲板message
+     * @param autoaim_msg 目标装甲板message
      * @return true 
      * @return false 
      */
-    bool Detector::gyro_detector(TaskData &src, global_interface::msg::Autoaim& target_info, ObjHPMsg hp, DecisionMsg decision_msg)
+    bool Detector::gyro_detector(TaskData &src, global_interface::msg::Autoaim& autoaim_msg, ObjHPMsg hp, DecisionMsg decision_msg)
     {
         //Create ArmorTracker for new armors 
         spinning_detector_.createArmorTracker(trackers_map_, new_armors_, new_armors_cnt_map_, now_);
@@ -311,9 +311,9 @@ namespace armor_detector
         //未检索到有效车辆ID，直接退出
         if(target_id == -1)
         {
-            target_info.is_target_lost = true;
-            target_info.target_switched = true;
-            target_info.is_spinning = false;
+            autoaim_msg.is_target_lost = true;
+            autoaim_msg.target_switched = true;
+            autoaim_msg.is_spinning = false;
             return false;
         }
 
@@ -349,7 +349,7 @@ namespace armor_detector
                 showArmors(src);
             }
 
-            target_info.is_target_lost = true;
+            autoaim_msg.is_target_lost = true;
             lost_cnt_++;
             is_last_target_exists_ = false;
             RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "No available tracker exists!");
@@ -370,7 +370,7 @@ namespace armor_detector
         {   //若未确定打击车辆的陀螺状态
             spin_status = UNKNOWN;
             is_target_spinning = false;
-            target_info.is_spinning = false;
+            autoaim_msg.is_spinning = false;
         }
         else
         {   //若确定打击车辆的陀螺状态
@@ -378,12 +378,12 @@ namespace armor_detector
             if (spin_status != UNKNOWN)
             {
                 is_target_spinning = true;
-                target_info.is_spinning = true;
+                autoaim_msg.is_spinning = true;
             }
             else
             {
                 is_target_spinning = false;
-                target_info.is_spinning = false;
+                autoaim_msg.is_spinning = false;
             }
         }
 
@@ -639,14 +639,14 @@ namespace armor_detector
         }
 
         if(last_status_ == SINGER && cur_status_ == DOUBLE)
-            target_info.spinning_switched = true;
+            autoaim_msg.spinning_switched = true;
         
         int target_hp = car_id_map_[target.key];
-        target_info.vehicle_id = target.key;
-        target_info.vehicle_hp = target_hp;
-        // target_info.timestamp = now_;
-        target_info.is_target_lost = false;
-        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", target_info.aiming_point_cam.x, target_info.aiming_point_cam.y, target_info.aiming_point_cam.z);
+        autoaim_msg.vehicle_id = target.key;
+        autoaim_msg.vehicle_hp = target_hp;
+        // autoaim_msg.timestamp = now_;
+        autoaim_msg.is_target_lost = false;
+        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", autoaim_msg.aiming_point_cam.x, autoaim_msg.aiming_point_cam.y, autoaim_msg.aiming_point_cam.z);
 
         //获取装甲板中心与装甲板面积以下一次ROI截取使用
         // last_roi_center_ = Point2i(512,640);
@@ -699,7 +699,7 @@ namespace armor_detector
             putText(src.img, fps_str, {10, 25}, FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
         }
 
-        if(debug_params_.print_letency)
+        if(debug_params_.print_latency)
         {
             RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 20, "-----------TIME------------");
             RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 20, "Crop:  %lfms", (dr_crop_ns / 1e6));
