@@ -21,7 +21,7 @@ namespace buff_detector
     static constexpr int NUM_COLORS = 2;       // Number of color
     static constexpr int TOPK = 128;           // TopK
     static constexpr float NMS_THRESH  = 0.1;
-    static constexpr float BBOX_CONF_THRESH = 0.20;
+    static constexpr float BBOX_CONF_THRESH = 0.60;
     static constexpr float MERGE_CONF_ERROR = 0.15;
     static constexpr float MERGE_MIN_IOU = 0.2;
 

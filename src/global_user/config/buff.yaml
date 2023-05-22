@@ -9,20 +9,22 @@
 
   # Paths.
     camera_type: 3
-    camera_name: "KE0200110074"
+    camera_name: "KE0200110075"
     camera_param_path: "/config/camera.yaml"
     path_prefix: "/recorder/dataset/"
-    # network_path: "/model/buff.xml"
+    network_path: "/model/buff.xml"
     # network_path: "/model/yolox.xml"
-    network_path: "/model/yolox-03-17.xml"
+    # network_path: "/model/yolox-03-17.xml"
 
   # Debug.
+    debug_mode: 4
     using_imu: false
     using_roi: true
-    detect_red: false
+    detect_red: true
+
     show_img: false
-    show_all_fans: false
-    show_fps: false
+    show_all_fans: true
+    show_fps: true
     print_target_info: false 
     prinf_latency: false
     assist_label: false
@@ -43,7 +45,8 @@
     window_size: 2
 
   # Paths.
-    camera_name: "KE0200110074"
+    camera_type: 3
+    camera_name: "KE0200110075"
     pf_path: "/config/filter_param.yaml"
     camera_param_path: "/config/camera.yaml"
 

@@ -34,7 +34,7 @@ namespace camera_driver
         // qos.transient_local();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 5;
 
         image_msg_pub_ = this->create_publisher<sensor_msgs::msg::Image>("usb_img", qos);
         
@@ -162,11 +162,11 @@ namespace camera_driver
         std_msgs::msg::Header header;
         sensor_msgs::msg::Image ros_image;
 
-        if(frame.rows != usb_cam_params_.image_width || frame.cols != usb_cam_params_.image_height)
-        { 
-            cv::resize(frame, frame, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
-            RCLCPP_INFO(this->get_logger(), "Resize frame...");
-        }
+        // if(frame.rows != usb_cam_params_.image_width || frame.cols != usb_cam_params_.image_height)
+        // { 
+        //     cv::resize(frame, frame, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
+        //     RCLCPP_INFO(this->get_logger(), "Resize frame...");
+        // }
 
         ros_image.header.frame_id = "usb_camera_link";
         ros_image.header.stamp = this->get_clock()->now();
@@ -232,14 +232,15 @@ namespace camera_driver
             cap_ >> frame_;
             auto now = this->get_clock()->now();
             auto dt = (now.nanoseconds() - last_time_.nanoseconds()) / 1e9;
-            if(!frame_.empty() && dt > (1 / usb_cam_params_.fps))
+            if(!frame_.empty())
             {
                 last_time_ = now;
-                if(frame_.rows != usb_cam_params_.image_width || frame_.cols != usb_cam_params_.image_height)
-                { 
-                    cv::resize(frame_, frame_, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
-                    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Resize frame...");
-                }
+                
+                // if(frame_.rows != usb_cam_params_.image_width || frame_.cols != usb_cam_params_.image_height)
+                // { 
+                //     cv::resize(frame_, frame_, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
+                //     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Resize frame...");
+                // }
                 // if(!is_filpped)
                 // {
                 //     RCLCPP_INFO(this->get_logger(), "is_filpped...");
@@ -318,8 +319,8 @@ namespace camera_driver
             cv::waitKey(2000);
         }
 
-        if(using_video_)
-            usleep(2000);
+        // if(using_video_)
+        //     usleep(2000);
     }
 
     bool UsbCamNode::setParam(rclcpp::Parameter param)

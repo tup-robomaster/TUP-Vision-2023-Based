@@ -16,8 +16,19 @@ namespace buff_processor
         double angle_offset;
     };
 
+    struct BuffAngleInfo
+    {
+        // double dist;
+        bool is_switched;
+        double abs_angle;
+        double relative_angle;
+        double delta_angle;
+        double angle_offset;
+        int64_t timestamp;
+    };
+
     //目标信息
-    struct TargetInfo
+    struct BuffInfo
     {   
         Eigen::Vector3d armor3d_world;
         Eigen::Vector3d hit_point_world;
@@ -47,6 +58,7 @@ namespace buff_processor
         int history_deque_len_uniform;  //小符转速求解队列长度
         double delay_small;             //小符发弹延迟
         double delay_big;               //大符发弹延迟
+        double shoot_delay;             
         int window_size;                //滑动窗口大小
         double fan_length;              //能量机关旋转半径
         int max_error_cnt;              //预测误差帧数

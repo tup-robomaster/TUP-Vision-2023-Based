@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-05-03 17:42:18
+ * @LastEditTime: 2023-05-21 23:29:21
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -174,7 +174,6 @@ namespace global_user
     struct TaskData
     {
         int mode;
-        double bullet_speed;
         cv::Mat img;
         Eigen::Quaterniond quat;
         int64_t timestamp; 
@@ -182,7 +181,6 @@ namespace global_user
         TaskData()
         {
             mode = 1;
-            bullet_speed = 16.0;
             timestamp = 0;
         }
     };
@@ -263,8 +261,8 @@ namespace global_user
         return true;
     }
 
-    float calcTriangleArea(cv::Point2f pts[3]);
-    float calcTetragonArea(cv::Point2f pts[4]);
+    float calcTriangleArea(cv::Point2d pts[3]);
+    float calcTetragonArea(cv::Point2d pts[4]);
     double rangedAngleRad(double &angle);
 
     std::string symbolicToReal(std::string path);
@@ -279,12 +277,12 @@ namespace global_user
     Eigen::Vector3d calcDeltaEuler(Eigen::Vector3d euler1, Eigen::Vector3d euler2);
     Eigen::AngleAxisd eulerToAngleAxisd(Eigen::Vector3d euler);
     Eigen::Matrix3d eulerToRotationMatrix(Eigen::Vector3d &theta);
-    float calcDistance(cv::Point2f& p1, cv::Point2f& p2);
+    float calcDistance(cv::Point2d& p1, cv::Point2d& p2);
 
     bool setSharedMemory(SharedMemoryParam& shared_memory_param, int id, int image_width = 1280, int image_height = 1024);
     bool getSharedMemory(SharedMemoryParam& shared_memory_param, int id);
     bool destorySharedMemory(SharedMemoryParam& shared_memory_param);
-    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_name, int64_t &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size);
+    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_name, int64_t &timestamp, int &id, int &color, vector<cv::Point2d> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size);
 
     bool isPnpSolverValidation(Eigen::Vector3d& point3d);
     bool isAngleSolverValidataion(Eigen::Vector2d& angle2d);

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-05-14 16:11:32
+ * @LastEditTime: 2023-05-19 16:52:21
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -63,10 +63,7 @@ namespace serialport
             std::bind(&SerialPortNode::buffMsgCallback, this, _1)
         );
 
-        // tf2
-        // Initialize the transform broadcaster
         tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-        receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
 
         if (using_port_)
         {
@@ -74,6 +71,7 @@ namespace serialport
             // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
             watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
         }
+        receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
     }
 
     SerialPortNode::~SerialPortNode()
@@ -106,6 +104,10 @@ namespace serialport
         vector<float> vehicle_pos_info;
         while (1)
         {
+            // stamp_ = this->get_clock()->now();
+            // rclcpp::Time now = this->get_clock()->now();
+            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "rec_delay:%.3fms", (now.nanoseconds() - stamp_.nanoseconds()) / 1e6);
+
             if (!using_port_)
             {
                 geometry_msgs::msg::TransformStamped t;
@@ -149,7 +151,8 @@ namespace serialport
                     if(!is_receive_data)
                     {
                         RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
-                        usleep(1000);
+                        // continue;
+                        // usleep(1000);
                     }
                 }
                 
@@ -237,7 +240,13 @@ namespace serialport
                     // RCLCPP_WARN(this->get_logger(), "serial_msg_pub:%.3fs", now.nanoseconds() / 1e9);
                 }
             }
+
+            // stamp_ = now;
+            // rclcpp::Time now = this->get_clock()->now();        
+            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "rec_delay:%.3fms", (now.nanoseconds() - stamp_.nanoseconds()) / 1e6);
+
         }
+
     }
 
     /**

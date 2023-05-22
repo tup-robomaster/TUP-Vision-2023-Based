@@ -15,6 +15,7 @@ namespace buff_detector
 {
     struct DebugParam
     {
+        int debug_mode;
         bool using_imu;
         bool using_roi;
         bool detect_red;
@@ -27,6 +28,7 @@ namespace buff_detector
 
         DebugParam()
         {
+            debug_mode = 3;
             using_imu = false;
             using_roi = false;
             detect_red = true;
@@ -89,6 +91,7 @@ namespace buff_detector
         Eigen::Vector3d armor3d_cam;
         Eigen::Vector3d armor3d_world;
         Eigen::Matrix3d rmat;
+        Eigen::Quaterniond quat_cam;
         cv::Point2f points2d[5];
         TargetInfo()
         {

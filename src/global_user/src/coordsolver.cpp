@@ -80,7 +80,7 @@ namespace coordsolver
         initMatrix(mat_ci,read_vector);
         transform_ci = mat_ci;
 
-        // cout << "angle_offset:" << angle_offset[0] << " " << angle_offset[1] << endl;
+        cout << "angle_offset:" << angle_offset[0] << " " << angle_offset[1] << endl;
         return true;
     }
 
@@ -95,6 +95,7 @@ namespace coordsolver
     PnPInfo CoordSolver::pnp(const std::vector<cv::Point2f> &points_pic, const Eigen::Matrix3d &rmat_imu, enum TargetType type, int method = cv::SOLVEPNP_IPPE)
     {
         std::vector<cv::Point3d> points_world;
+        PnPInfo result;
 
         //长度为4进入装甲板模式
         //大于长宽比阈值使用大装甲板世界坐标
@@ -123,9 +124,9 @@ namespace coordsolver
         {
             points_world = 
             {
-                {0, -0.7, -0.05},
                 {0.1125, -0.027, 0},
                 {0.1125, 0.027, 0},
+                {0, -0.7, -0.05},
                 {-0.1125, 0.027, 0},
                 {-0.1125, -0.027, 0}
             };
@@ -148,21 +149,32 @@ namespace coordsolver
         
         // 1.首先使用SOLVEPNP_IPPE来初始化相机位姿;
         // 2.然后通过非线性优化算法(SOLVEPNP_ITERATIVE)（如Levenberg-Marquardt算法等）对相机位姿进行优化，以达到更精确的结果。
-        if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, SOLVEPNP_IPPE))
-        {   
-            RCLCPP_WARN(logger_, "Initialize camera pose failed...");
-        }
-        if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, true, SOLVEPNP_ITERATIVE))
+        result.is_solver_success = true;
+        if (type != BUFF)
         {
-            RCLCPP_WARN(logger_, "Optimize camera pose failed...");
-        }        // RCLCPP_INFO(
+            if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, SOLVEPNP_IPPE))
+            {   
+                result.is_solver_success = false;
+                RCLCPP_WARN(logger_, "Initialize camera pose failed...");
+            }
+            if (!solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, true, SOLVEPNP_ITERATIVE))
+            {
+                result.is_solver_success = false;
+                RCLCPP_WARN(logger_, "Optimize camera pose failed...");
+            }
+        }
+        else
+        {
+            solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, SOLVEPNP_ITERATIVE);
+        }
+
+        // RCLCPP_INFO(
         //     logger_, 
         //     "rvec:[%.3f %.3f %.3f] rangle:%.3f", 
         //     rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2), 
         //     sqrt(rvec.at<double>(0) * rvec.at<double>(0) + rvec.at<double>(1) * rvec.at<double>(1) + rvec.at<double>(2) * rvec.at<double>(2))
         // );
 
-        PnPInfo result;
         //Pc = R * Pw + T
         Rodrigues(rvec, rmat);
         cv2eigen(rmat, rmat_eigen);
@@ -193,6 +205,7 @@ namespace coordsolver
         else
         {
             result.armor_cam = tvec_eigen;
+            // result.quat_cam = Eigen::Quaterniond(rmat_eigen);
             result.armor_world = camToWorld(result.armor_cam, rmat_imu);
             result.R_cam = (rmat_eigen * R_center_world) + tvec_eigen;
             result.R_world = camToWorld(result.R_cam, rmat_imu);

@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-05-11 17:52:25
+ * @LastEditTime: 2023-05-19 17:04:53
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -139,7 +139,7 @@ namespace camera_driver
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 5;
+        rmw_qos.depth = 1;
 
         // Camera type.
         this->declare_parameter<int>("camera_type", MVSCam);
@@ -194,8 +194,8 @@ namespace camera_driver
         image_msg_.header.frame_id = camera_topic_;
         image_msg_.encoding = "bgr8";
         camera_watcher_timer_ = rclcpp::create_timer(this, this->get_clock(), 100ms, std::bind(&CameraBaseNode::cameraWatcher, this));
-        img_callback_timer_ = this->create_wall_timer(1ms, std::bind(&CameraBaseNode::imageCallback, this));
-        // img_callback_thread_ = std::thread(std::bind(&CameraBaseNode::imageCallback, this));
+        // img_callback_timer_ = this->create_wall_timer(1ms, std::bind(&CameraBaseNode::imageCallback, this));
+        img_callback_thread_ = std::thread(std::bind(&CameraBaseNode::imageCallback, this));
 
         this->declare_parameter("using_port", false);
         use_serial_ = this->get_parameter("using_port").as_bool();
@@ -260,15 +260,15 @@ namespace camera_driver
     template<class T>
     void CameraBaseNode<T>::imageCallback()
     {
-        // while (1)
-        // {
-            if (use_serial_)
-            {
-                if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
-                {
-                    return;
-                }
-            }
+        while (1)
+        {
+            // if (use_serial_)
+            // {
+            //     if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
+            //     {
+            //         return;
+            //     }
+            // }
 
             if (!cam_driver_->getImage(frame_, image_msg_))
             {
@@ -317,7 +317,7 @@ namespace camera_driver
                 cv::imshow("frame", frame_);
                 cv::waitKey(1);
             }
-        // }
+        }
     }
 
     template<class T>

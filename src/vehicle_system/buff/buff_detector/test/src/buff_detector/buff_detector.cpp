@@ -47,12 +47,12 @@ namespace buff_detector
         auto input = src.img;
 
         // TODO:放在节点类初始化时加载
-        if(!is_initialized_)
-        {
-            buff_detector_.initModel(path_param_.network_path);
-            coordsolver_.loadParam(path_param_.camera_param_path, path_param_.camera_name);
-            is_initialized_ = true;
-        }
+        // if(!is_initialized_)
+        // {
+        //     buff_detector_.initModel(path_param_.network_path);
+        //     coordsolver_.loadParam(path_param_.camera_param_path, path_param_.camera_name);
+        //     is_initialized_ = true;
+        // }
 
         if (!debug_param_.using_imu && src.bullet_speed > 10)
         {
@@ -111,27 +111,31 @@ namespace buff_detector
         for (auto object : objects)
         {
             if(debug_param_.detect_red)
-                if (object.color != 2 && object.color != 3)
+                if (object.color != 1)
                     continue;
             if(!debug_param_.detect_red)
-                if (object.color != 0 && object.color != 1)
+                if (object.color != 0)
                     continue;
+
             Fan fan;
             fan.id = object.cls;
             fan.color = object.color;
             fan.conf = object.prob;
-            if (object.color == 0 || object.color == 1)
-                fan.key = "B" + string(object.cls == 1 ? "Activated" : "Target");
-            if (object.color == 2 || object.color == 3)
-                fan.key = "R" + string(object.cls == 1 ? "Activated" : "Target");
+
+            if (object.color == 1)
+                fan.key = "R" + string(object.cls == 1 ? "Target" : "Activated");
+            if (object.color == 0)
+                fan.key = "B" + string(object.cls == 1 ? "Target" : "Activated");
+
             memcpy(fan.apex2d, object.apex, 5 * sizeof(cv::Point2f));
             for(int i = 0; i < 5; i++)
             {
                 fan.apex2d[i] += Point2f((float)roi_offset_.x, (float)roi_offset_.y);
             }
+            
             std::vector<Point2f> points_pic(fan.apex2d, fan.apex2d + 5);
-            std::vector<cv::Point2f> points_rect;
-            cv::Point2f center_r;
+            std::vector<cv::Point2d> points_rect;
+            cv::Point2d center_r;
             for(int ii = 0; ii < 5; ii++)
             {
                 if(ii == 0)
@@ -142,6 +146,7 @@ namespace buff_detector
             center_vec.push_back(center_r);
             cv::RotatedRect r_rect = cv::minAreaRect(points_pic);
             // cv::RotatedRect armor_rect = cv::minAreaRect(points_rect);
+
             // if(debug_param_.show_img)
             // {
             //     // last_angle_ = cur_angle_;
@@ -162,7 +167,13 @@ namespace buff_detector
             // TODO:迭代法进行PnP解算
             TargetType target_type = BUFF;
             auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
-            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
+
+            // cout << "points_pic:";
+            // for (auto pts : points_pic)
+            // {
+            //     cout << "(" << pts.x << ", " << pts.y << ")";
+            // }
+            // cout << endl;
 
             fan.armor3d_cam = pnp_result.armor_cam;
             fan.armor3d_world = pnp_result.armor_world;
@@ -555,11 +566,10 @@ namespace buff_detector
             delta_angle = angle_sum / (int)(delta_angle_vec_.size());
         }
         delta_angle_vec_.clear();
-        RCLCPP_INFO(logger_, "delta_angle: %lf", delta_angle);
 
         if (!is_switched)
         {
-            if(abs(delta_angle) > buff_param_.max_angle)
+            if (abs(delta_angle) > buff_param_.max_angle)
                 is_switched = true;
         }
         
@@ -601,8 +611,19 @@ namespace buff_detector
         target_info.armor3d_world = target.armor3d_world;
         target_info.armor3d_cam = target.armor3d_cam;
         
+        // auto armor_cam = coordsolver_.worldToCam(target_info.armor3d_world, rmat_imu_);
+        // cv::Point2f armor2d_cam = coordsolver_.reproject(armor_cam);
+        // cv::Point2f armor2d_cam = coordsolver_.reproject(target_info.armor3d_cam);
+
+        // cv::circle(src.img, armor2d_cam, 6, {255, 0, 0}, 4);
+
         // RCLCPP_INFO(logger_, "Target's angle: %lf", target_info.angle);
+        // RCLCPP_INFO(logger_, "r_center:(%.3f, %.3f, %.3f)", mean_r_center(0), mean_r_center(1), mean_r_center(2));
+        // RCLCPP_INFO(logger_, "target.armor3d_cam:(%.3f, %.3f, %.3f)", target.armor3d_cam(0), target.armor3d_cam(1), target.armor3d_cam(2));
+        // RCLCPP_INFO(logger_, "target_info.armor3d_world:(%.3f, %.3f, %.3f)", target_info.armor3d_world(0), target_info.armor3d_world(1), target_info.armor3d_world(2));
+        
         // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "Target is switched: %d", (int)(is_switched));
+        // RCLCPP_INFO(logger_, "delta_angle: %lf", delta_angle);
 
         lost_cnt_ = 0;
         last_roi_center_ = center2d_src;
@@ -674,12 +695,15 @@ namespace buff_detector
             char ch[20];
             sprintf(ch, "%.2f", fan.conf);
             std::string conf_str = ch;
-            putText(src.img, conf_str, fan.apex2d[2], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
+            putText(src.img, conf_str, fan.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
 
             if (fan.color == 0 || fan.color == 1 || fan.color == 2 || fan.color == 3)
                 putText(src.img, fan.key, fan.apex2d[3], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
             for (int i = 0; i < 5; i++)
+            {
                 line(src.img, fan.apex2d[i % 5], fan.apex2d[(i + 1) % 5], Scalar(125, 0, 255), 2);
+                putText(src.img, to_string(i), fan.apex2d[i], FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 0), 1);
+            }
             auto fan_armor_center = coordsolver_.reproject(fan.armor3d_cam);
             
             if (fan.id == 1)
@@ -696,7 +720,7 @@ namespace buff_detector
         int target_fan_cnt = 0;
         for (auto fan : fans)
         {
-            if (fan.id == 0)
+            if (fan.id == 1)
             {
                 target = fan;
                 target_fan_cnt++;
