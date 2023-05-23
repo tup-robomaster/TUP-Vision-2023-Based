@@ -66,6 +66,7 @@ namespace buff_detector
 
         // Buff msgs pub.
         rclcpp::Publisher<BuffMsg>::SharedPtr buff_msg_pub_; 
+        int mode_ = 1;
     
     protected:
         // Params callback.

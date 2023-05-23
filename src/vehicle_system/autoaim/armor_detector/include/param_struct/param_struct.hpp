@@ -192,8 +192,6 @@ namespace armor_detector
 
     struct DebugParam
     {
-        bool detect_red;
-        bool use_serial;
         bool use_imu;
         bool use_roi;
         bool show_aim_cross;
@@ -208,8 +206,6 @@ namespace armor_detector
 
         DebugParam()
         {
-            detect_red = true;
-            use_serial = true;
             use_imu = true;
             use_roi = false;
             show_img = false;

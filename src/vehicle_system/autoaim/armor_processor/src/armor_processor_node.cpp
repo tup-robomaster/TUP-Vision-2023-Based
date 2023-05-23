@@ -112,6 +112,9 @@ namespace armor_processor
         int idx = 0, flag = -1;
         bool is_shooting = false;
 
+        quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
+        rmat_imu = quat_imu.toRotationMatrix();
+
         if (target.bullet_speed >= 10.0)
         {   //更新弹速
             double cur_bullet_speed = processor_->coordsolver_.getBulletSpeed();
@@ -138,23 +141,6 @@ namespace armor_processor
             "rec_bullet_speed:%.3f cur_bullet_speed:%.3f cur_shoot_delay:%.3f", 
             target_info.bullet_speed, processor_->coordsolver_.getBulletSpeed(), processor_->predict_param_.shoot_delay
         );
-        
-        if(debug_param_.use_serial)
-        {
-            if (debug_param_.use_imu)
-            {
-                quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
-                rmat_imu = quat_imu.toRotationMatrix();
-            }
-            else
-            {
-                rmat_imu = Eigen::Matrix3d::Identity();
-            }
-        }
-        else
-        {
-            rmat_imu = Eigen::Matrix3d::Identity();
-        }
                                      
         cv::Mat dst;
         if (debug_param_.show_img)
@@ -546,8 +532,6 @@ namespace armor_processor
         this->declare_parameter<double>("reserve_factor", 15.0);
 
         // Declare debug params.
-        this->declare_parameter("use_serial", true);
-        this->declare_parameter("use_imu", true);
         this->declare_parameter("show_img", false);
         this->declare_parameter("draw_predict", false);
         this->declare_parameter("show_predict", true);
@@ -654,13 +638,8 @@ namespace armor_processor
         predict_param_.window_size = this->get_parameter("window_size").as_int();
         predict_param_.max_offset_value = this->get_parameter("max_offset_value").as_double();
         predict_param_.reserve_factor = this->get_parameter("reserve_factor").as_double();
-        // predict_param_.rotation_yaw = this->get_parameter("rotation_yaw").as_double();
-        // predict_param_.rotation_pitch = this->get_parameter("rotation_pitch").as_double();
-        // predict_param_.rotation_roll = this->get_parameter("rotation_roll").as_double();
 
         //Debug param.
-        debug_param_.use_serial = this->get_parameter("use_serial").as_bool();
-        debug_param_.use_imu = this->get_parameter("use_imu").as_bool();
         debug_param_.show_img = this->get_parameter("show_img").as_bool();
         debug_param_.draw_predict = this->get_parameter("draw_predict").as_bool();
         debug_param_.show_predict = this->get_parameter("show_predict").as_bool();

@@ -70,6 +70,7 @@ namespace armor_detector
         GyroParam gyro_params_;
         PathParam path_params_;
         DebugParam debug_;
+        int mode_ = 1;
 
         std::unique_ptr<Detector> detector_;
         std::unique_ptr<Detector> initDetector();

@@ -27,7 +27,7 @@ def generate_launch_description():
     
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
-    camera_type = 'usb' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type = 'mvs' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_name = 'KE0200110073'
     use_serial = True
     use_imu = False
@@ -137,7 +137,6 @@ def generate_launch_description():
                 parameters=[buff_detector_params,
                 {
                     'camera_name': camera_name,
-                    'use_serial': use_serial,
                     'use_imu': use_imu
                 }], 
                 remappings = camera_remappings,
@@ -185,6 +184,7 @@ def generate_launch_description():
     #             {
     #                 'camera_name': camera_name,
     #                 'use_serial': use_serial,
+    #                 'use_imu': use_imu,
     #                 'bullet_speed': bullet_speed,
     #                 'shoot_delay': shoot_delay,
     #             }],

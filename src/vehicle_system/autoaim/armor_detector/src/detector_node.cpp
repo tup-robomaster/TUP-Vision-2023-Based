@@ -63,26 +63,19 @@ namespace armor_detector
         serial_msg_.imu.header.frame_id = "imu_link";
         this->declare_parameter<int>("mode", 1);
         serial_msg_.mode = this->get_parameter("mode").as_int();
+        serial_msg_.bullet_speed = 0.0;
+        serial_msg_.shoot_delay = 0.0;
         
-        this->declare_parameter<double>("bullet_speed", 28.0);
-        serial_msg_.bullet_speed = this->get_parameter("bullet_speed").as_double();
-        
-        if (debug_.use_serial)
-        {
-            RCLCPP_INFO(this->get_logger(), "Using serial...");
-
-            // serial msg sub.
-            serial_msg_sub_ = this->create_subscription<SerialMsg>(
-                "/serial_msg",
-                qos,
-                std::bind(&DetectorNode::sensorMsgCallback, this, _1)
-            );
-        }
+        // serial msg sub.
+        serial_msg_sub_ = this->create_subscription<SerialMsg>(
+            "/serial_msg",
+            qos,
+            std::bind(&DetectorNode::sensorMsgCallback, this, _1)
+        );
 
         // Subscriptions transport type.
         std::string transport_type = "raw";
         std::string camera_topic = "/image";
-
         img_msg_sub_ = std::make_shared<image_transport::Subscriber>(
             image_transport::create_subscription(
                 this, 
@@ -119,6 +112,8 @@ namespace armor_detector
         serial_msg_ = serial_msg;
         serial_msg_.header.stamp = this->get_clock()->now();
         serial_msg_mutex_.unlock();
+        mode_ = serial_msg.mode;
+
         return;
     }
 
@@ -129,10 +124,15 @@ namespace armor_detector
      */
     void DetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {
-        if(!img_msg)
+        if(!img_msg || (mode_ != AUTOAIM && mode_ != HERO_SLING))
             return;
 
-        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "image callback...");
+        RCLCPP_INFO_THROTTLE(
+            this->get_logger(),
+            *this->get_clock(),
+            200, 
+            "Autoaim mode..."
+        );
 
         rclcpp::Time img_stamp = img_msg->header.stamp;
         rclcpp::Time now = this->get_clock()->now();
@@ -152,32 +152,21 @@ namespace armor_detector
         Eigen::Matrix3d rmat_imu = Eigen::Matrix3d::Identity();
         src.quat = Eigen::Quaterniond(rmat_imu);
 
-        if (debug_.use_serial)
+        serial_msg_mutex_.lock();
+        rclcpp::Time serial_stamp = serial_msg_.header.stamp;
+        src.mode = serial_msg_.mode;
+        bullet_speed = serial_msg_.bullet_speed;
+        shoot_delay = serial_msg_.shoot_delay;
+        if (debug_.use_imu)
         {
-            serial_msg_mutex_.lock();
-            src.mode = serial_msg_.mode;
-            bullet_speed = serial_msg_.bullet_speed;
-            shoot_delay = serial_msg_.shoot_delay;
-            if (debug_.use_imu)
-            {
-                RCLCPP_WARN_THROTTLE(get_logger(), *this->get_clock(), 500, "Using imu data...");
-                src.quat.w() = serial_msg_.imu.orientation.w;
-                src.quat.x() = serial_msg_.imu.orientation.x;
-                src.quat.y() = serial_msg_.imu.orientation.y;
-                src.quat.z() = serial_msg_.imu.orientation.z;
-            }
-            serial_msg_mutex_.unlock(); 
+            src.quat.w() = serial_msg_.imu.orientation.w;
+            src.quat.x() = serial_msg_.imu.orientation.x;
+            src.quat.y() = serial_msg_.imu.orientation.y;
+            src.quat.z() = serial_msg_.imu.orientation.z;
             
-            double dt = (now - serial_msg_.imu.header.stamp).nanoseconds() / 1e6;
-            putText(src.img, "IMU_DELAY:" + to_string(dt) + "ms", cv::Point2i(50, 80), cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
-            
-            RCLCPP_WARN_THROTTLE(
-                this->get_logger(), 
-                *this->get_clock(), 
-                500, 
-                "Using serial..."
-            );
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Using imu data...");
         }
+        serial_msg_mutex_.unlock(); 
 
         RCLCPP_WARN_THROTTLE(
             this->get_logger(), 
@@ -241,6 +230,9 @@ namespace armor_detector
             std::string angle_str2 = ch2;
             putText(src.img, angle_str2, {src.img.size().width / 2 + 50, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
 
+            double dt = (now.nanoseconds() - serial_stamp.nanoseconds()) / 1e6;
+            putText(src.img, "IMU_DELAY:" + to_string(dt) + "ms", cv::Point2i(50, 80), cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
+
             cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
             cv::imshow("dst", src.img);
             cv::waitKey(1);
@@ -295,8 +287,6 @@ namespace armor_detector
         this->declare_parameter("save_path", "/data/info.txt");
         
         //Debug.
-        this->declare_parameter("detect_red", true);
-        this->declare_parameter("use_serial", true);
         this->declare_parameter("use_imu", true);
         this->declare_parameter("use_roi", true);
         this->declare_parameter("show_img", false);
@@ -345,8 +335,6 @@ namespace armor_detector
         detector_params_.armor_roi_expand_ratio_width = this->get_parameter("armor_roi_expand_ratio_width").as_double();
         detector_params_.armor_roi_expand_ratio_height = this->get_parameter("armor_roi_expand_ratio_height").as_double();
 
-        debug_.detect_red = this->get_parameter("detect_red").as_bool();
-        debug_.use_serial = this->get_parameter("use_serial").as_bool();
         debug_.use_imu = this->get_parameter("use_imu").as_bool();
         debug_.use_roi = this->get_parameter("use_roi").as_bool();
         debug_.show_img = this->get_parameter("show_img").as_bool();

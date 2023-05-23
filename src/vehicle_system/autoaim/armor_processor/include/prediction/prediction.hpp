@@ -40,10 +40,7 @@ namespace armor_processor
         ArmorPredictor(const PredictParam& predict_param, const DebugParam& debug_param);
         ArmorPredictor();
         ~ArmorPredictor();
-        // ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, const DebugParam& debug_param);
-        // Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
-        // PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
-
+        
         void initPredictor();
         void initPredictor(const vector<double>* uniform_ekf_param, const vector<double>* singer_ekf_param);
         bool resetPredictor();
@@ -56,10 +53,10 @@ namespace armor_processor
         DebugParam debug_param_;
 
     private:
-        int history_deque_lens_ = 50; //历史队列长度
-        std::deque<TargetInfo> history_info_; //历史测量信息
-        std::deque<TargetInfo> history_pred_; //历史预测信息
-        std::deque<TargetInfo> history_losting_pred_; //历史目标losting后预测信息
+        // int history_deque_lens_ = 50; //历史队列长度
+        // std::deque<TargetInfo> history_info_; //历史测量信息
+        // std::deque<TargetInfo> history_pred_; //历史预测信息
+        // std::deque<TargetInfo> history_losting_pred_; //历史目标losting后预测信息
         
     private:
         double evalRMSE(double* params);
@@ -88,6 +85,7 @@ namespace armor_processor
         SpinHeading last_spin_state_;
         deque<Vector6d> history_switched_state_vec_;
         // deque<Vector6d> history_state_vec_;
+        deque<Vector4d> pred_state_vec_;
 
     public:
         double now_ = 0.0;

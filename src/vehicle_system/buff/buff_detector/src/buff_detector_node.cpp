@@ -46,17 +46,19 @@ namespace buff_detector
         // buff info pub.
         buff_msg_pub_ = this->create_publisher<BuffMsg>("/buff_detector/buff_msg", qos);
 
-        serial_msg_.mode = buff_param_.buff_mode;
-        if(debug_param_.using_imu)
-        {
-            RCLCPP_INFO(this->get_logger(), "Using imu...");
-            serial_msg_.imu.header.frame_id = "imu_link2";
-            serial_msg_.bullet_speed = 0.0;
+        // initialize serial msg. 
+        serial_msg_.imu.header.frame_id = "imu_link2";
+        this->declare_parameter<int>("buff_mode", 3);
+        serial_msg_.mode = this->get_parameter("buff_mode").as_int();
+        serial_msg_.bullet_speed = 0.0;
+        serial_msg_.shoot_delay = 0.0;
 
-            // imu msg sub.
-            serial_msg_sub_= this->create_subscription<SerialMsg>("/serial_msg", rclcpp::SensorDataQoS(),
-                std::bind(&BuffDetectorNode::sensorMsgCallback, this, _1));
-        }
+        // serial msg sub.
+        serial_msg_sub_= this->create_subscription<SerialMsg>(
+            "/serial_msg", 
+            rclcpp::SensorDataQoS(),
+            std::bind(&BuffDetectorNode::sensorMsgCallback, this, _1)
+        );
 
         std::string transport_type = "raw";
         std::string image_topic = "/image";
@@ -93,6 +95,7 @@ namespace buff_detector
         serial_msg_ = serial_msg;
         serial_msg_.header.stamp = this->get_clock()->now();
         serial_mutex_.unlock();
+        mode_ = serial_msg.mode;
 
         return;
     }
@@ -101,9 +104,16 @@ namespace buff_detector
     {   
         // RCLCPP_INFO(this->get_logger(), "Image callback...");
 
-        if(!img_msg)
+        if(!img_msg || (mode_ != SMALL_BUFF && mode_ != BIG_BUFF))
             return;
-            
+        
+        RCLCPP_INFO_THROTTLE(
+            this->get_logger(),
+            *this->get_clock(),
+            200, 
+            "Buff mode..."
+        );
+
         TaskData src;
         auto img = cv_bridge::toCvShare(img_msg, "bgr8")->image;
         img.copyTo(src.img);
@@ -216,11 +226,10 @@ namespace buff_detector
 
     std::unique_ptr<Detector> BuffDetectorNode::initDetector()
     {
-        this->declare_parameter<int>("buff_mode", 3);
         this->declare_parameter<int>("color", 1);
+        this->declare_parameter<int>("max_lost_cnt", 4);
         this->declare_parameter<double>("fan_length", 0.7);
         this->declare_parameter<double>("max_delta_t", 100.0);
-        this->declare_parameter<int>("max_lost_cnt", 4);
         this->declare_parameter<double>("max_v", 4.0);
         this->declare_parameter<double>("no_crop_thres", 2e-3);
 
@@ -240,8 +249,8 @@ namespace buff_detector
         this->path_param_.network_path = pkg_share_pth[1] + this->get_parameter("network_path").as_string();
         this->path_param_.path_prefix = pkg_share_pth[2] + this->get_parameter("path_prefix").as_string();
 
-        this->declare_parameter<bool>("using_imu", false);
-        this->declare_parameter<bool>("using_roi", false);
+        this->declare_parameter<bool>("use_imu", false);
+        this->declare_parameter<bool>("use_roi", false);
         this->declare_parameter<bool>("show_img", false);
         this->declare_parameter<bool>("show_all_fans", true);
         this->declare_parameter<bool>("show_fps", true);
@@ -265,7 +274,6 @@ namespace buff_detector
     bool BuffDetectorNode::updateParam()
     {
         //Buff param.
-        this->get_parameter("buff_mode", this->buff_param_.buff_mode);
         this->get_parameter("color", this->buff_param_.color);
         this->get_parameter("max_v", this->buff_param_.max_v);
         this->get_parameter("fan_length", this->buff_param_.fan_length);
@@ -274,8 +282,8 @@ namespace buff_detector
         this->get_parameter("no_crop_thres", this->buff_param_.no_crop_thres);
 
         //Debug param.
-        this->get_parameter("using_imu", this->debug_param_.using_imu);
-        this->get_parameter("using_roi", this->debug_param_.using_roi);
+        this->get_parameter("use_imu", this->debug_param_.using_imu);
+        this->get_parameter("use_roi", this->debug_param_.using_roi);
         this->get_parameter("show_img", this->debug_param_.show_img);
         this->get_parameter("show_all_fans", this->debug_param_.show_all_fans);
         this->get_parameter("show_fps", this->debug_param_.show_fps);

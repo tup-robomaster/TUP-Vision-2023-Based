@@ -107,6 +107,14 @@ namespace buff_processor
             buff_processor_->predictor_param_.shoot_delay = (buff_processor_->predictor_param_.shoot_delay + buff_msg.shoot_delay) / 2.0;
         }
 
+        RCLCPP_WARN_THROTTLE(
+            this->get_logger(), 
+            *this->get_clock(), 
+            100, 
+            "rec_bullet_speed:%.3f cur_bullet_speed:%.3f cur_shoot_delay:%.3f", 
+            buff_msg.bullet_speed, buff_processor_->coordsolver_.getBulletSpeed(), buff_processor_->predictor_param_.shoot_delay
+        );
+
         if (debug_param_.show_predict)
         {
             image_mutex_.lock();
@@ -233,8 +241,7 @@ namespace buff_processor
     {
         //Prediction param.
         this->get_parameter("bullet_speed", predict_param_.bullet_speed);
-        this->get_parameter("delay_big", predict_param_.delay_big);
-        this->get_parameter("delay_small", predict_param_.delay_small);
+        this->get_parameter("shoot_delay", predict_param_.shoot_delay);
         this->get_parameter("history_deque_len_cos", predict_param_.history_deque_len_cos);
         this->get_parameter("history_deque_len_phase", predict_param_.history_deque_len_phase);
         this->get_parameter("history_deque_len_uniform", predict_param_.history_deque_len_uniform);
@@ -245,9 +252,12 @@ namespace buff_processor
         this->get_parameter("pf_path", predict_param_.pf_path);
         this->get_parameter("window_size", predict_param_.window_size);
         
+        // this->get_parameter("delay_big", predict_param_.delay_big);
+        // this->get_parameter("delay_small", predict_param_.delay_small);
+
         //Debug param.
+        this->get_parameter("use_imu", this->debug_param_.using_imu);
         this->get_parameter("show_predict", this->debug_param_.show_predict);
-        this->get_parameter("using_imu", this->debug_param_.using_imu);
 
         return true;
     }
@@ -256,8 +266,7 @@ namespace buff_processor
     {
         //Prediction param.
         this->declare_parameter<double>("bullet_speed", 28.0);
-        this->declare_parameter<double>("delay_big", 175.0);
-        this->declare_parameter<double>("delay_small", 100.0);
+        this->declare_parameter<double>("shoot_delay", 100.0);
         this->declare_parameter<int>("history_deque_len_cos", 250);
         this->declare_parameter<int>("history_deque_len_phase", 100);
         this->declare_parameter<int>("history_deque_len_uniform", 100);
@@ -266,6 +275,9 @@ namespace buff_processor
         this->declare_parameter<double>("max_timespan", 20000.0);
         this->declare_parameter<double>("max_v", 3.0);
         this->declare_parameter<int>("window_size", 2);
+
+        // this->declare_parameter<double>("delay_big", 175.0);
+        // this->declare_parameter<double>("delay_small", 100.0);
 
         //Path param.
         this->declare_parameter<std::string>("camera_name", "KE0200110075");

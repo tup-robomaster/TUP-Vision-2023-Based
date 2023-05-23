@@ -39,7 +39,6 @@ namespace buff_detector
 
     struct BuffParam
     {
-        int buff_mode;
         int color;
         int max_lost_cnt;           // 最大丢失目标帧数
         double max_v;                  // 最大旋转速度(rad/s)
@@ -50,7 +49,6 @@ namespace buff_detector
 
         BuffParam()
         {
-            buff_mode = 3;
             color = 1;
             max_lost_cnt = 4; 
             max_v = 4.0;   
