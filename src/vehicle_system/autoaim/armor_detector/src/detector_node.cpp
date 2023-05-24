@@ -185,15 +185,16 @@ namespace armor_detector
                 rmat_imu = src.quat.toRotationMatrix();
                 Eigen::Vector3d armor_3d_cam = {armor_msg.armors.front().point3d_cam.x, armor_msg.armors.front().point3d_cam.y, armor_msg.armors.front().point3d_cam.z};
                 tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_imu);
+                
+                RCLCPP_INFO_THROTTLE(
+                    this->get_logger(), 
+                    *this->get_clock(), 
+                    500, 
+                    "armor3d_cam: (%.3f %.3f %.3f) armor3d_world: (%.3f %.3f %.3f)", 
+                    armor_msg.armors.front().point3d_cam.x, armor_msg.armors.front().point3d_cam.y, armor_msg.armors.front().point3d_cam.z,
+                    armor_msg.armors.front().point3d_world.x, armor_msg.armors.front().point3d_world.y, armor_msg.armors.front().point3d_world.z
+                );
             }
-            RCLCPP_INFO_THROTTLE(
-                this->get_logger(), 
-                *this->get_clock(), 
-                500, 
-                "armor3d_cam: (%.3f %.3f %.3f) armor3d_world: (%.3f %.3f %.3f)", 
-                armor_msg.armors.front().point3d_cam.x, armor_msg.armors.front().point3d_cam.y, armor_msg.armors.front().point3d_cam.z,
-                armor_msg.armors.front().point3d_world.x, armor_msg.armors.front().point3d_world.y, armor_msg.armors.front().point3d_world.z
-            );
         }
         param_mutex_.unlock();
 

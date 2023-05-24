@@ -87,14 +87,17 @@ namespace armor_processor
         // deque<Vector6d> history_state_vec_;
         deque<Vector4d> pred_state_vec_;
 
+        bool is_outpost_mode_ = false;
+        const double outpost_angular_speed_ = (0.8 * CV_PI);
+
     public:
         double now_ = 0.0;
         bool is_init_;
         bool is_imm_init_;
-        bool fitting_disabled_; // 是否禁用曲线拟合
-        bool filter_disabled_;  // 是否禁用滤波
+
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         rclcpp::Logger logger_;
+        
         TargetInfo final_target_;  //最终击打目标信息
         int lost_cnt_ = 0;
         int spin_switch_cnt_ = 0;
