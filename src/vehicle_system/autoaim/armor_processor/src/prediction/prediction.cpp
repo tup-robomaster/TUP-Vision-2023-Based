@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-26 22:32:24
+ * @LastEditTime: 2023-05-27 02:38:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -127,7 +127,8 @@ namespace armor_processor
         // Eigen::Vector4d meas = {target.xyz(1), -target.xyz(0), target.xyz(2), (target.rangle > 0 ? (target.rangle - CV_PI / 2) : (CV_PI * 1.5 + target.rangle ))};
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
         bool is_target_lost = target.is_target_lost;
-        is_outpost_mode_ = target.is_outpost_mode;
+        is_outpost_mode_ = target.is_outpost_mode = true;
+        outpost_angular_speed_ = spin_state == CLOCKWISE ? -outpost_angular_speed_ : outpost_angular_speed_;
 
         // cout << "meas_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
         
@@ -160,6 +161,7 @@ namespace armor_processor
         else
         {
             Vector6d post_state = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+            // updatePredictor(meas);
             // meas = {meas(0), meas(1), meas(2), meas(3)};
             // cout << "meas_trans_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
 
@@ -383,7 +385,7 @@ namespace armor_processor
                 steady_clock_, 
                 100, 
                 "circle_center:(%.3f, %.3f %.3f) radius:%.3f theta:%.3f omega:%.3f",
-                state(0), state(1), state(2), state(3), state(4), state(5)
+                state(0), state(1), state(2), radius, rangle, omega 
             );
             is_pred_success = true;
         }
@@ -419,7 +421,8 @@ namespace armor_processor
 
             if (is_outpost_mode_)
             {
-                if (abs(omega - outpost_angular_speed_) >= 0.1)
+                // cout << "is_outpost_mode" << endl;
+                if (abs(omega - outpost_angular_speed_) >= 0.50)
                 {
                     uniform_ekf_.x_(5) = outpost_angular_speed_;
                 }
@@ -428,6 +431,9 @@ namespace armor_processor
                     uniform_ekf_.x_(5) = (omega + outpost_angular_speed_) / 2.0;
                 }
             }
+            // cout << "omega1:" << uniform_ekf_.x_(5) << endl;
+            state = uniform_ekf_.x();
+
 
             Eigen::Vector3d circle_center3d = {state(0), state(1), state(2)};
             pred_state_vec_.clear();
@@ -485,13 +491,14 @@ namespace armor_processor
             post_state = {state(0), state(1), state(2), radius, rangle, omega};
             // Eigen::Vector4d circle_center3d = {post_state(0), post_state(1), post_state(2), 0.0};
             // armor3d_vec.emplace_back(circle_center3d);
+            // cout << "omega2:" << uniform_ekf_.x_(5) << endl;
             
             RCLCPP_WARN_THROTTLE(
                 logger_, 
                 steady_clock_, 
                 100, 
                 "circle_center:(%.3f, %.3f %.3f) radius:%.3f theta:%.3f omega:%.3f \n meas:(%.3f, %.3f %.3f %.3f)",
-                state(0), state(1), state(2), state(3), state(4), state(5),
+                state(0), state(1), state(2), radius, rangle, omega,
                 meas(0), meas(1), meas(2), meas(3)
             );
             is_pred_success = true;

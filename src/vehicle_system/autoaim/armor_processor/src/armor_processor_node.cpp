@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-26 22:30:36
+ * @LastEditTime: 2023-05-27 01:57:16
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -95,7 +95,17 @@ namespace armor_processor
     {
         double sleep_time = 0.0;
         AutoaimMsg target = std::move(target_info);
-        // target.is_spinning = true;
+
+        target.mode = 2;
+        target.is_spinning = true;
+        target.target_switched = false;
+        if (!target.spinning_switched && !target.is_target_lost)
+        {
+            if (abs(last_rangle - target.armors.front().rangle) > 0.5)
+            {
+                target.is_target_lost = true;
+            }
+        }
 
         Eigen::Vector2d angle = {0.0, 0.0};
         Eigen::Vector2d tracking_angle = {0.0, 0.0};
@@ -359,7 +369,7 @@ namespace armor_processor
             tracking_msg.is_prediction = is_pred_;
             tracking_msg_pub_->publish(std::move(tracking_msg));
             
-            if (!target.is_target_lost && show_marker_)
+            if (show_marker_)
             {
                 pubMarkerArray(armor3d_vec, target.is_spinning, target.is_clockwise, flag);
             }
@@ -367,6 +377,7 @@ namespace armor_processor
 
         if (!target.is_target_lost)
         {
+            last_rangle = target.armors.front().rangle;
             processor_->is_last_exists_ = true;
         }
         else

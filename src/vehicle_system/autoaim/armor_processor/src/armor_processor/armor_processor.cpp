@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-05-20 04:32:13
+ * @LastEditTime: 2023-05-27 01:23:40
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -148,7 +148,7 @@ namespace armor_processor
         {
             double pred_dt = last_target_.xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
             last_target_.is_target_lost = true;
-            int max_losting_cnt = (target_msg.mode == HERO_SLING ? 25 : 5);
+            int max_losting_cnt = (target_msg.mode == HERO_SLING ? 35 : 5);
             
             if (lost_cnt_ <= max_losting_cnt)
             {

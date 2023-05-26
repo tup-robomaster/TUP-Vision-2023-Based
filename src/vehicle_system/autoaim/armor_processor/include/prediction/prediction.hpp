@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-05-14 14:08:42
+ * @LastEditTime: 2023-05-27 02:39:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -78,7 +78,7 @@ namespace armor_processor
         deque<Vector4d> pred_state_vec_;
 
         bool is_outpost_mode_ = false;
-        const double outpost_angular_speed_ = (0.8 * CV_PI);
+        double outpost_angular_speed_ = (0.8 * CV_PI);
 
     public:
         double now_ = 0.0;

@@ -13,7 +13,7 @@
     full_crop_ratio: 0.0001
     armor_roi_expand_ratio_width: 1.2
     armor_roi_expand_ratio_height: 1.8
-    armor_conf_high_thres: 0.92
+    armor_conf_high_thres: 0.82
 
   # Spinning params.
     max_dead_buffer: 10
