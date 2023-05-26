@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-20 04:55:04
+ * @LastEditTime: 2023-05-24 17:41:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -164,7 +164,7 @@ namespace armor_processor
             processor_->coordsolver_.setBulletSpeed(target.bullet_speed);
         }
 
-        if (target.shoot_delay >= 50)
+        if (target.shoot_delay >= 50 && target.shoot_delay <= 200)
         {
             processor_->predict_param_.shoot_delay = (processor_->predict_param_.shoot_delay + target.shoot_delay) / 2.0;
         }
@@ -234,7 +234,7 @@ namespace armor_processor
                             double armor3d_dist = armor_point3d_world.norm();
                             int scale = armor_point3d_world(3) / (2 * CV_PI);
                             double rangle = armor_point3d_world(3) - scale * (2 * CV_PI);
-                            if (armor3d_dist < min_dist && rangle >= 1.95 && rangle <= 2.15)
+                            if (armor3d_dist < min_dist && rangle >= 1.65 && rangle <= 1.70)
                             {
                                 min_dist = armor3d_dist;
                                 flag = idx;
@@ -289,6 +289,11 @@ namespace armor_processor
             tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
         }
 
+        if (processor_->armor_predictor_.predictor_state_ != PREDICTING)
+        {
+            is_shooting = false;
+        }
+
         // 此处为机动目标的自动开火判据
         if (!target.is_spinning && !target.is_target_lost)
         {
@@ -297,20 +302,35 @@ namespace armor_processor
             {
                 if (!iszero(angle(0)) && !iszero(angle(1)))
                 {   
-                    // 针对纵向机动目标
-                    if ((tracking_angle(0) / angle(0) > 0) && abs(tracking_angle(1) - angle(1) <= 1.0))
+                    // 针对横向机动目标
+                    if ((tracking_angle(0) / angle(0) > 0)
+                        && 
+                        // (abs(tracking_angle(0)) < abs(angle(0))) &&
+                        // abs(tracking_angle(0)) - abs(angle(0)) >= 0.25 && 
+                        abs(tracking_angle(0)) - abs(angle(0)) <= 5.0
+                        &&
+                        abs(tracking_angle(1)) - abs(angle(1)) <= 2.0
+                    )
                     {
                         is_shooting = true;
                     }
-                    // 针对横向机动目标
-                    if ((tracking_angle(1) / angle(1) > 0) && abs(tracking_angle(0) - angle(0) <= 1.0))
+
+                    // 针对纵向机动目标
+                    if ((tracking_angle(1) / angle(1) > 0) 
+                        // &&
+                        // (abs(tracking_angle(1)) < abs(angle(1))) 
+                        &&
+                        // abs(tracking_angle(1)) - abs(angle(1)) >= 0.25 && 
+                        abs(tracking_angle(1)) - abs(angle(1)) <= 5.0 &&
+                        abs(tracking_angle(0)) - abs(angle(0)) <= 2.0
+                    )
                     {
                         is_shooting = true;
                     }
                 }
 
                 // 针对静止目标
-                if (abs(tracking_angle(0) - angle(0)) <= 1.0 && abs(tracking_angle(1) - angle(1)) <= 1.0)
+                if (abs(tracking_angle(0) - angle(0)) <= 1.05 && abs(tracking_angle(1) - angle(1)) <= 1.05)
                 {
                     is_shooting = true;
                 }
@@ -328,29 +348,27 @@ namespace armor_processor
             is_pred_ = true;
         }
 
-        if (processor_->armor_predictor_.predictor_state_ != PREDICTING)
-        {
-            is_shooting = false;
-        }
 
+        // is_shooting = false;
+        
         // 云台单发限制
-        if (shoot_flag_)
-        {
-            if (count_ <= 40)
-            {
-                is_shooting = false;
-                count_++;
-            }
-            else
-            {
-                shoot_flag_ = false;
-                count_ = 0;
-            }
-        }
-        if (is_shooting)
-        {
-            shoot_flag_ = true;
-        }
+        // if (shoot_flag_)
+        // {
+        //     if (count_ <= 40)
+        //     {
+        //         is_shooting = false;
+        //         count_++;
+        //     }
+        //     else
+        //     {
+        //         shoot_flag_ = false;
+        //         count_ = 0;
+        //     }
+        // }
+        // if (is_shooting)
+        // {
+        //     shoot_flag_ = true;
+        // }
 
         RCLCPP_WARN_EXPRESSION(this->get_logger(), is_shooting, "Shooting...");
         

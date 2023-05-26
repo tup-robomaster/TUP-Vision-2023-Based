@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-05-19 17:04:53
+ * @LastEditTime: 2023-05-25 23:38:24
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -85,6 +85,7 @@ namespace camera_driver
         rclcpp::TimerBase::SharedPtr img_callback_timer_;
         std::thread img_callback_thread_;
 
+        Mutex cam_mutex_;
         std::map<std::string, int> param_map_;
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
         rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_;
@@ -92,7 +93,7 @@ namespace camera_driver
         sensor_msgs::msg::CameraInfo camera_info_msg_;
         sensor_msgs::msg::Image image_msg_;
         cv::Mat frame_;
-        bool is_cam_open_;
+        atomic<bool> is_cam_open_;
         int camera_type_;
         string camera_topic_;
 
@@ -139,7 +140,7 @@ namespace camera_driver
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 3;
 
         // Camera type.
         this->declare_parameter<int>("camera_type", MVSCam);
@@ -187,9 +188,14 @@ namespace camera_driver
 
         // Open camera.
         if(!cam_driver_->open())
+        {
             RCLCPP_ERROR(this->get_logger(), "Open failed!");
+            is_cam_open_ = false;
+        }
         else
+        {
             is_cam_open_ = true;
+        }
 
         image_msg_.header.frame_id = camera_topic_;
         image_msg_.encoding = "bgr8";
@@ -243,6 +249,7 @@ namespace camera_driver
     {
         if (!is_cam_open_)
         {
+            cam_mutex_.lock();
             // Reopen camera.
             auto status = cam_driver_->close();
             status = cam_driver_->init();
@@ -252,8 +259,10 @@ namespace camera_driver
             }
             else
             {
+                RCLCPP_INFO(this->get_logger(), "Open Success!");
                 is_cam_open_ = true;
             }
+            cam_mutex_.unlock();
         }
     }
 
@@ -266,15 +275,18 @@ namespace camera_driver
             // {
             //     if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
             //     {
-            //         return;
+            //         continue;
             //     }
             // }
-
-            if (!cam_driver_->getImage(frame_, image_msg_))
+            
+            cam_mutex_.lock();
+            is_cam_open_ = cam_driver_->getImage(frame_, image_msg_);
+            cam_mutex_.unlock();
+            if (!is_cam_open_)
             {
                 RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
-                is_cam_open_ = false;
-                return;
+                sleep(1);
+                continue;
             }
 
             rclcpp::Time now = this->get_clock()->now();
