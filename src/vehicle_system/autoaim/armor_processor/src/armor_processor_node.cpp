@@ -105,12 +105,11 @@ namespace armor_processor
         Eigen::Matrix3d rmat_imu;
         Eigen::Quaterniond quat_imu;
         vector<Eigen::Vector4d> armor3d_vec;
-        Eigen::Vector3d vehicle_center3d_cam = {0.0, 0.0, 0.0};
-        Eigen::Vector4d vehicle_center3d_world = {0.0, 0.0, 0.0, 0.0};
         cv::Point2f point_2d = {0, 0};
         double min_dist = 1e2;
         int idx = 0, flag = -1;
         bool is_shooting = false;
+        ShootingMode shoot_mode = BLOCKING;
 
         quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
         rmat_imu = quat_imu.toRotationMatrix();
@@ -216,6 +215,12 @@ namespace armor_processor
                     }
                     aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
                     angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
+
+                    if (!target.is_spinning)
+                    {
+                        Eigen::Vector4d pred_point3d = {aiming_point_world(0), aiming_point_world(1), aiming_point_world(2), 0.0};
+                        armor3d_vec.emplace_back(pred_point3d);
+                    }
                 }
 
                 if (abs(tracking_angle[0]) < 6.50 && abs(tracking_angle[1]) < 6.50)
@@ -242,38 +247,35 @@ namespace armor_processor
         {
             tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
             tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
+
+            if (!target.is_spinning)
+            {
+                Eigen::Vector4d tracking_point3d = {target_info.armors[0].point3d_world.x, target_info.armors[0].point3d_world.y, target_info.armors[0].point3d_world.z, 0.0};
+                armor3d_vec.emplace_back(tracking_point3d);
+            }
         }
 
         // 此处为机动目标的自动开火判据
         if (!target.is_spinning && !target.is_target_lost)
         {
-            // 将开火范围限制在6m以内
-            if (aiming_point_world.norm() <= 6.0)
+            // 将开火范围限制在7m以内(开火范围内不同距离给与不同射频)
+            double fire_dis = aiming_point_world.norm();
+            if (fire_dis <= 7.0)
             {
-                if (!iszero(angle(0)) && !iszero(angle(1)))
-                {   
-                    // 针对横向机动目标
-                    if ((tracking_angle(0) / angle(0) > 0) && (abs(tracking_angle(0)) < abs(angle(0))) &&
-                        abs(tracking_angle(0) - angle(0)) >= 0.5 && abs(tracking_angle(0) - angle(0)) <= 8.0 &&
-                        abs(tracking_angle(1) - angle(1)) <= 0.25
-                    )
-                    {
-                        is_shooting = true;
+                if (judgeShooting(tracking_angle, angle))
+                {   // 开火时机成熟
+                    if (fire_dis <= 2.0 && fire_dis >= 0.5)
+                    {   // 2m以内给与最高射频
+                        shoot_mode = CONTINUOUS;
                     }
-
-                    // 针对纵向机动目标
-                    if ((tracking_angle(1) / angle(1) > 0) && (abs(tracking_angle(1)) < abs(angle(1))) &&
-                        abs(tracking_angle(1) - angle(1)) >= 0.5 && abs(tracking_angle(1) - angle(1)) <= 8.0 &&
-                        abs(tracking_angle(0) - angle(0)) <= 0.25
-                    )
-                    {
-                        is_shooting = true;
+                    else if (fire_dis <= 4.0)
+                    {   // 5m以内给与射频限制
+                        shoot_mode = LIMITED;
                     }
-                }
-
-                // 针对静止目标
-                if (abs(tracking_angle(0) - angle(0)) <= 0.15 && abs(tracking_angle(1) - angle(1)) <= 0.15)
-                {
+                    else
+                    {   // 5米以外开启单连发模式
+                        shoot_mode = SINGLE;
+                    }
                     is_shooting = true;
                 }
             }
@@ -294,25 +296,29 @@ namespace armor_processor
         {
             is_shooting = false;
         }
-
-        // 云台单发限制
-        // if (shoot_flag_)
-        // {
-        //     if (count_ <= 40)
-        //     {
-        //         is_shooting = false;
-        //         count_++;
-        //     }
-        //     else
-        //     {
-        //         shoot_flag_ = false;
-        //         count_ = 0;
-        //     }
-        // }
-        // if (is_shooting)
-        // {
-        //     shoot_flag_ = true;
-        // }
+        
+        // 云台发弹限制
+        int limit_frame = (shoot_mode == LIMITED ? 5 : 40);
+        if (shoot_mode == LIMITED || shoot_mode == SINGLE)
+        {
+            if (shoot_flag_)
+            {
+                if (count_ <= limit_frame)
+                {
+                    is_shooting = false;
+                    count_++;
+                }
+                else
+                {
+                    shoot_flag_ = false;
+                    count_ = 0;
+                }
+            }
+            if (is_shooting)
+            {
+                shoot_flag_ = true;
+            }
+        }
 
         RCLCPP_WARN_EXPRESSION(this->get_logger(), is_shooting, "Shooting...");
         
@@ -361,7 +367,7 @@ namespace armor_processor
             
             if (!target.is_target_lost && show_marker_)
             {
-                pubMarkerArray(armor3d_vec, target.is_clockwise, flag);
+                pubMarkerArray(armor3d_vec, target.is_spinning, target.is_clockwise, flag);
             }
         }
 
@@ -383,7 +389,7 @@ namespace armor_processor
                     cv::line(dst, cv::Point2f(target_info.armors.front().point2d[i % 4].x, target_info.armors.front().point2d[i % 4].y),
                         cv::Point2f(target_info.armors.front().point2d[(i + 1) % 4].x, target_info.armors.front().point2d[(i + 1) % 4].y), {125, 0, 255}, 1);
                 cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
-                cv::Point2f armor_center = processor_->coordsolver_.reproject(tracking_point_cam);
+                // cv::Point2f armor_center = processor_->coordsolver_.reproject(tracking_point_cam);
                 cv::circle(dst, point_2d, 18, {255, 0, 125}, 3);
             }
             if (debug_param_.show_aim_cross)
@@ -395,9 +401,9 @@ namespace armor_processor
             if (debug_param_.draw_predict)
             {
                 // Draw vel and acc curve.
-                processor_->curveDrawer(0, dst, processor_->armor_predictor_.history_vel_[0], cv::Point2i(260, 120));
-                processor_->curveDrawer(1, dst, processor_->armor_predictor_.history_vel_[1], cv::Point2i(260, 200));
-                processor_->curveDrawer(2, dst, processor_->armor_predictor_.history_vel_[2], cv::Point2i(260, 280));
+                processor_->curveDrawer(0, dst, processor_->armor_predictor_.predict_vel_[0], cv::Point2i(260, 120));
+                processor_->curveDrawer(1, dst, processor_->armor_predictor_.predict_vel_[1], cv::Point2i(260, 200));
+                processor_->curveDrawer(2, dst, processor_->armor_predictor_.predict_vel_[2], cv::Point2i(260, 280));
             }
 
             char ch[40];
@@ -417,7 +423,46 @@ namespace armor_processor
         return;
     }
 
-    void ArmorProcessorNode::pubMarkerArray(vector<Eigen::Vector4d> armor3d_vec, bool is_clockwise, int flag)
+    bool ArmorProcessorNode::judgeShooting(Eigen::Vector2d tracking_angle, Eigen::Vector2d pred_angle)
+    {
+        bool is_shooting_time = false;
+        if (!iszero(pred_angle(0)) && !iszero(pred_angle(1)))
+        {   
+            // 针对横向机动目标
+            if (
+                (tracking_angle(0) / pred_angle(0) > 0) && 
+                abs(tracking_angle(0)) < abs(pred_angle(0)) &&
+                // abs(tracking_angle(0) - pred_angle(0)) > 1.0 && 
+                abs(tracking_angle(0) - pred_angle(0)) <= 8.0 &&
+                abs(tracking_angle(1) - pred_angle(1)) <= 1.0
+            )
+            {
+                is_shooting_time = true;
+            }
+
+            // 针对纵向机动目标
+            if (
+                (tracking_angle(1) / pred_angle(1) > 0) && 
+                abs(tracking_angle(1)) < abs(pred_angle(1)) &&
+                // abs(tracking_angle(1) - pred_angle(1)) > 1.0 && 
+                abs(tracking_angle(1) - pred_angle(1)) <= 8.0 &&
+                abs(tracking_angle(0) - pred_angle(0)) <= 1.0
+            )
+            {
+                is_shooting_time = true;
+            }
+        }
+
+        // 针对静止目标
+        if (abs(tracking_angle(0) - pred_angle(0)) <= 0.5 && abs(tracking_angle(1) - pred_angle(1)) <= 0.5)
+        {
+            is_shooting_time = true;
+        }
+
+        return is_shooting_time;
+    }
+
+    void ArmorProcessorNode::pubMarkerArray(vector<Eigen::Vector4d> armor3d_vec, bool is_spinning, bool is_clockwise, int flag)
     {
         visualization_msgs::msg::MarkerArray marker_array;
         visualization_msgs::msg::Marker marker;
@@ -442,44 +487,78 @@ namespace armor_processor
         marker.action = visualization_msgs::msg::Marker::ADD;
 
         marker.lifetime = rclcpp::Duration::from_nanoseconds((rcl_duration_value_t)5e3);
-        
-        int idx = 0;
-        for (auto armor3d : armor3d_vec)
+
+        if (is_spinning)
         {
-            marker.id = marker_id;
-            
-            tf2::Quaternion q;
-            q.setRPY(CV_PI, -CV_PI / 2, 0);
-            // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-            marker.pose.position.x = armor3d(0);
-            marker.pose.position.y = armor3d(1);
-            marker.pose.position.z = armor3d(2);
-
-            marker.type = (marker.id == 0 || flag == idx) ? visualization_msgs::msg::Marker::ARROW : shape_;
-            if (flag == idx)
+            int idx = 0;
+            for (auto armor3d : armor3d_vec)
             {
-                q.setRPY(0, 0, armor3d(3));
+                marker.id = marker_id;
+                
+                tf2::Quaternion q;
+                q.setRPY(CV_PI, -CV_PI / 2, 0);
+                // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+                marker.pose.position.x = armor3d(0);
+                marker.pose.position.y = armor3d(1);
+                marker.pose.position.z = armor3d(2);
+
+                marker.type = (marker.id == 0 || flag == idx) ? visualization_msgs::msg::Marker::ARROW : shape_;
+                if (flag == idx)
+                {
+                    q.setRPY(0, 0, armor3d(3));
+                }
+                
+                marker.pose.orientation.x = q.x();
+                marker.pose.orientation.y = q.y();
+                marker.pose.orientation.z = q.z();
+                marker.pose.orientation.w = q.w();
+
+                // Set the scale of the marker -- 1x1x1 here means 1m on a side
+                marker.scale.x = marker.id == 0 ? armor3d(2) : (flag == idx ? (is_clockwise ? -0.25 : 0.25) : 0.060);
+                marker.scale.y = marker.id == 0 ? 0.010 : (flag == idx ? 0.040 : 0.060);
+                marker.scale.z = marker.scale.y;
+
+                // Set the color -- be sure to set alpha to something non-zero!
+                marker.color.r = marker.id == 1 ? 1.0f : 0.5f;
+                marker.color.g = marker.id == 0 ? 1.0f : (marker.id == 1 ? 0.0f : 0.5f);
+                marker.color.b = marker.id == 0 ? 0.0f : (marker.id == 1 ? 0.0f : 1.0f);
+                marker.color.a = 1.0;
+
+                marker_array.markers.emplace_back(marker);                     
+                ++marker_id;
+                ++idx;
             }
-            
-            marker.pose.orientation.x = q.x();
-            marker.pose.orientation.y = q.y();
-            marker.pose.orientation.z = q.z();
-            marker.pose.orientation.w = q.w();
+        }
+        else
+        {
+            for (auto armor3d : armor3d_vec)
+            {
+                marker.id = marker_id;
 
-            // Set the scale of the marker -- 1x1x1 here means 1m on a side
-            marker.scale.x = marker.id == 0 ? armor3d(2) : (flag == idx ? (is_clockwise ? -0.25 : 0.25) : 0.060);
-            marker.scale.y = marker.id == 0 ? 0.010 : (flag == idx ? 0.040 : 0.060);
-            marker.scale.z = marker.scale.y;
+                tf2::Quaternion q;
+                q.setRPY(0, 0, 0);
 
-            // Set the color -- be sure to set alpha to something non-zero!
-            marker.color.r = marker.id == 1 ? 1.0f : 0.5f;
-            marker.color.g = marker.id == 0 ? 1.0f : (marker.id == 1 ? 0.0f : 0.5f);
-            marker.color.b = marker.id == 0 ? 0.0f : (marker.id == 1 ? 0.0f : 1.0f);
-            marker.color.a = 1.0;
+                marker.pose.position.x = armor3d(0);
+                marker.pose.position.y = armor3d(1);
+                marker.pose.position.z = armor3d(2);
+                
+                marker.pose.orientation.w = q.w();
+                marker.pose.orientation.x = q.x();
+                marker.pose.orientation.y = q.y();
+                marker.pose.orientation.z = q.z();
 
-            marker_array.markers.emplace_back(marker);                     
-            ++marker_id;
-            ++idx;
+                marker.scale.x = 0.1;
+                marker.scale.y = 0.1;
+                marker.scale.z = 0.1;
+
+                marker.color.r = marker_id == 0 ? 1.0f : 0.5f;
+                marker.color.g = marker_id == 0 ? 0.0f : 0.5f;
+                marker.color.b = marker_id == 0 ? 0.5f : 1.0f;
+                marker.color.a = 1.0;
+
+                marker_array.markers.emplace_back(marker);   
+                ++marker_id;
+            }
         }
         // Publish the marker_array
         marker_array_pub_->publish(marker_array);

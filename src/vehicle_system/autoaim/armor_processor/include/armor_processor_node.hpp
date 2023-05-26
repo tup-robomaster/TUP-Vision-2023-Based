@@ -74,13 +74,14 @@ namespace armor_processor
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_msg_pub_;
         
         // visualization_msgs::Marker
-        void pubMarkerArray(vector<Eigen::Vector4d> armor3d_vec, bool is_clockwise, int flag);
+        void pubMarkerArray(vector<Eigen::Vector4d> armor3d_vec, bool is_spinning, bool is_clockwise, int flag);
         rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_pub_;
         uint64 shape_ = visualization_msgs::msg::Marker::SPHERE;
         bool show_marker_ = false;
         
         int count_ = 0;
         bool shoot_flag_ = false;
+        bool judgeShooting(Eigen::Vector2d tracking_angle, Eigen::Vector2d pred_angle);
 
     private:
         std::unique_ptr<Processor> processor_;

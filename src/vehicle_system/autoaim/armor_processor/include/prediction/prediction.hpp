@@ -53,20 +53,10 @@ namespace armor_processor
         DebugParam debug_param_;
 
     private:
-        // int history_deque_lens_ = 50; //历史队列长度
-        // std::deque<TargetInfo> history_info_; //历史测量信息
-        // std::deque<TargetInfo> history_pred_; //历史预测信息
-        // std::deque<TargetInfo> history_losting_pred_; //历史目标losting后预测信息
-        
-    private:
-        double evalRMSE(double* params);
-        double calcError();
         void updateVel(Eigen::Vector3d vel_3d);
         void updateAcc(Eigen::Vector3d acc_3d);
 
     public:
-        double history_vel_[3][4] = {{0}};
-        double history_acc_[3][4] = {{0}};
         double predict_vel_[3][4] = {{0}};
         double predict_acc_[3][4] = {{0}};
     
@@ -128,6 +118,14 @@ namespace armor_processor
 
         // 计算车辆半径
         double calcCircleRadius(Eigen::Vector3d p1, Eigen::Vector3d p2);
+    
+    private:
+        // int history_deque_lens_ = 50; //历史队列长度
+        // std::deque<TargetInfo> history_info_; //历史测量信息
+        // std::deque<TargetInfo> history_pred_; //历史预测信息
+        // std::deque<TargetInfo> history_losting_pred_; //历史目标losting后预测信息
+        // double evalRMSE(double* params);
+        // double calcError();
     };
 } //namespace armor_processor
 

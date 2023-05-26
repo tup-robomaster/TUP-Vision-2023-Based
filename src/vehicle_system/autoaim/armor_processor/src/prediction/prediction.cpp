@@ -563,7 +563,7 @@ namespace armor_processor
             updateVel({State(3), State(4), State(5)});
             updateAcc({State(6), State(7), State(8)});
 
-            // if (history_acc_[0] == 0.0)
+            // if (predict_acc_[0] == 0.0)
             //     singer_ekf_.setQ(target_acc);
             // else
             //     singer_ekf_.setQ(State[2]);
@@ -663,6 +663,50 @@ namespace armor_processor
         return is_available;
     }
 
+    void ArmorPredictor::updateVel(Eigen::Vector3d vel_3d)
+    {
+        // X-AXIS
+        predict_vel_[0][3] = predict_vel_[0][2];
+        predict_vel_[0][2] = predict_vel_[0][1];
+        predict_vel_[0][1] = predict_vel_[0][0];
+        predict_vel_[0][0] = vel_3d[0];
+
+        // Y-AXIS
+        predict_vel_[1][3] = predict_vel_[1][2];
+        predict_vel_[1][2] = predict_vel_[1][1];
+        predict_vel_[1][1] = predict_vel_[1][0];
+        predict_vel_[1][0] = vel_3d[1];
+
+        // Z-AXIS
+        predict_vel_[2][3] = predict_vel_[2][2];
+        predict_vel_[2][2] = predict_vel_[2][1];
+        predict_vel_[2][1] = predict_vel_[2][0];
+        predict_vel_[2][0] = vel_3d[2];
+        return;
+    }
+
+    void ArmorPredictor::updateAcc(Eigen::Vector3d acc_3d)
+    {
+        // X-AXIS
+        predict_acc_[0][3] = predict_acc_[0][2];
+        predict_acc_[0][2] = predict_acc_[0][1];
+        predict_acc_[0][1] = predict_acc_[0][0];
+        predict_acc_[0][0] = acc_3d[0] > 5.0 ? 0.0 : acc_3d[0];
+
+        // Y-AXIS
+        predict_acc_[1][3] = predict_acc_[1][2];
+        predict_acc_[1][2] = predict_acc_[1][1];
+        predict_acc_[1][1] = predict_acc_[1][0];
+        predict_acc_[1][0] = acc_3d[1] > 5.0 ? 0.0 : acc_3d[1];
+
+        // Z-AXIS
+        predict_acc_[2][3] = predict_acc_[2][2];
+        predict_acc_[2][2] = predict_acc_[2][1];
+        predict_acc_[2][1] = predict_acc_[2][0];
+        predict_acc_[2][0] = acc_3d[2] > 5.0 ? 0.0 : acc_3d[2];
+        return;
+    }
+
     // /**
     //  * @brief 计算RMSE指标
     //  *
@@ -739,49 +783,6 @@ namespace armor_processor
     // }
 
 
-    void ArmorPredictor::updateVel(Eigen::Vector3d vel_3d)
-    {
-        // X-AXIS
-        history_vel_[0][3] = history_vel_[0][2];
-        history_vel_[0][2] = history_vel_[0][1];
-        history_vel_[0][1] = history_vel_[0][0];
-        history_vel_[0][0] = vel_3d[0];
-
-        // Y-AXIS
-        history_vel_[1][3] = history_vel_[1][2];
-        history_vel_[1][2] = history_vel_[1][1];
-        history_vel_[1][1] = history_vel_[1][0];
-        history_vel_[1][0] = vel_3d[1];
-
-        // Z-AXIS
-        history_vel_[2][3] = history_vel_[2][2];
-        history_vel_[2][2] = history_vel_[2][1];
-        history_vel_[2][1] = history_vel_[2][0];
-        history_vel_[2][0] = vel_3d[2];
-        return;
-    }
-
-    void ArmorPredictor::updateAcc(Eigen::Vector3d acc_3d)
-    {
-        // X-AXIS
-        history_acc_[0][3] = history_acc_[0][2];
-        history_acc_[0][2] = history_acc_[0][1];
-        history_acc_[0][1] = history_acc_[0][0];
-        history_acc_[0][0] = acc_3d[0] > 5.0 ? 0.0 : acc_3d[0];
-
-        // Y-AXIS
-        history_acc_[1][3] = history_acc_[1][2];
-        history_acc_[1][2] = history_acc_[1][1];
-        history_acc_[1][1] = history_acc_[1][0];
-        history_acc_[1][0] = acc_3d[1] > 5.0 ? 0.0 : acc_3d[1];
-
-        // Z-AXIS
-        history_acc_[2][3] = history_acc_[2][2];
-        history_acc_[2][2] = history_acc_[2][1];
-        history_acc_[2][1] = history_acc_[2][0];
-        history_acc_[2][0] = acc_3d[2] > 5.0 ? 0.0 : acc_3d[2];
-        return;
-    }
 
     // /**
     //  * @brief 前哨站旋转预测函数

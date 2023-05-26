@@ -103,11 +103,6 @@ namespace camera_driver
         int frame_cnt_;
         std::unique_ptr<rosbag2_cpp::writers::SequentialWriter> writer_;
 
-        void decisionMsgCallback(DecisionMsg::SharedPtr msg);
-        rclcpp::Subscription<DecisionMsg>::SharedPtr decision_msg_sub_; 
-        DecisionMsg decision_msg_;
-        mutex decision_mutex_;
-
         void serialMsgCallback(SerialMsg::SharedPtr msg);
         rclcpp::Subscription<SerialMsg>::SharedPtr serial_msg_sub_; 
         SerialMsg serial_msg_;
@@ -201,13 +196,6 @@ namespace camera_driver
         use_serial_ = this->get_parameter("using_port").as_bool();
         if (use_serial_)
         {
-            //决策消息订阅
-            decision_msg_sub_ = this->create_subscription<DecisionMsg>(
-                "robot_decision/decision",
-                qos,
-                std::bind(&CameraBaseNode::decisionMsgCallback, this, _1)
-            );
-
             //串口消息订阅
             serial_msg_sub_ = this->create_subscription<SerialMsg>(
                 "/serial_msg",
@@ -222,14 +210,6 @@ namespace camera_driver
     {
     }
     
-    template<class T>
-    void CameraBaseNode<T>::decisionMsgCallback(DecisionMsg::SharedPtr msg)
-    {
-        decision_mutex_.lock();
-        decision_msg_ = *msg;
-        decision_mutex_.unlock();
-    }
-
     template<class T>
     void CameraBaseNode<T>::serialMsgCallback(SerialMsg::SharedPtr msg)
     {
@@ -262,19 +242,12 @@ namespace camera_driver
     {
         while (1)
         {
-            // if (use_serial_)
-            // {
-            //     if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
-            //     {
-            //         return;
-            //     }
-            // }
-
             if (!cam_driver_->getImage(frame_, image_msg_))
             {
                 RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
                 is_cam_open_ = false;
-                return;
+                sleep(1);
+                continue;
             }
 
             rclcpp::Time now = this->get_clock()->now();

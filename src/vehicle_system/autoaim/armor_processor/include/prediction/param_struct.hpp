@@ -67,6 +67,14 @@ namespace armor_processor
         LOST        //丢失
     };
 
+    enum ShootingMode
+    {
+        BLOCKING,  // 阻塞
+        SINGLE,    // 单发模式
+        LIMITED,   // 连发限制模式
+        CONTINUOUS // 连发模式
+    };
+
     struct FilterModelParam
     {
         vector<double> imm_model_trans_prob_params;

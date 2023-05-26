@@ -200,7 +200,7 @@ namespace armor_detector
             //计算长宽比,确定装甲板类型
             auto apex_wh_ratio = max(points_pic_rrect.size.height, points_pic_rrect.size.width) / min(points_pic_rrect.size.height, points_pic_rrect.size.width);
             if (object.cls == 1 || apex_wh_ratio > detector_params_.armor_type_wh_thres)
-            {   //若大于长宽阈值或为哨兵、英雄装甲板
+            {   //若大于长宽阈值或为英雄装甲板
                 target_type = BIG;
             }
             else if (object.cls == 0 || object.cls == 2 || object.cls == 3 || object.cls == 4 || object.cls == 5 || object.cls == 6)
