@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-05-25 20:09:12
+LastEditTime: 2023-05-26 22:31:42
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -27,7 +27,7 @@ def generate_launch_description():
     
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
-    camera_type = 'daheng' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type = 'mvs' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_name = 'KE0200110074'
     use_serial = True
     use_imu = True
@@ -131,9 +131,7 @@ def generate_launch_description():
                 parameters=[armor_detector_params,
                 {
                     'camera_name': camera_name,
-                    'use_serial': use_serial,
                     'use_imu': use_imu,
-                    'bullet_speed': bullet_speed,
                 }],
                 remappings = camera_remappings,
                 extra_arguments=[{
@@ -146,7 +144,7 @@ def generate_launch_description():
     )
     #---------------------------------Processor Node--------------------------------------------
     processor_container = ComposableNodeContainer(
-        name='serial_processor_container',
+        name='armor_processor_container',
         package='rclcpp_components',
         executable='component_container',
         namespace='',
@@ -159,8 +157,6 @@ def generate_launch_description():
                 parameters=[armor_processor_params,
                 {
                     'camera_name': camera_name,
-                    'use_serial': use_serial,
-                    'use_imu': use_imu,
                     'shoot_delay': shoot_delay,
                     'bullet_speed': bullet_speed,
                     'delay_coeff': delay_coeff

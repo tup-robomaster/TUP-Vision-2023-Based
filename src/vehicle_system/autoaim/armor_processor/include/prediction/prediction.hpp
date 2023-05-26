@@ -40,10 +40,7 @@ namespace armor_processor
         ArmorPredictor(const PredictParam& predict_param, const DebugParam& debug_param);
         ArmorPredictor();
         ~ArmorPredictor();
-        // ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, const DebugParam& debug_param);
-        // Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
-        // PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
-
+        
         void initPredictor();
         void initPredictor(const vector<double>* uniform_ekf_param, const vector<double>* singer_ekf_param);
         bool resetPredictor();
@@ -56,20 +53,10 @@ namespace armor_processor
         DebugParam debug_param_;
 
     private:
-        int history_deque_lens_ = 50; //历史队列长度
-        std::deque<TargetInfo> history_info_; //历史测量信息
-        std::deque<TargetInfo> history_pred_; //历史预测信息
-        std::deque<TargetInfo> history_losting_pred_; //历史目标losting后预测信息
-        
-    private:
-        double evalRMSE(double* params);
-        double calcError();
         void updateVel(Eigen::Vector3d vel_3d);
         void updateAcc(Eigen::Vector3d acc_3d);
 
     public:
-        double history_vel_[3][4] = {{0}};
-        double history_acc_[3][4] = {{0}};
         double predict_vel_[3][4] = {{0}};
         double predict_acc_[3][4] = {{0}};
     
@@ -88,15 +75,19 @@ namespace armor_processor
         SpinHeading last_spin_state_;
         deque<Vector6d> history_switched_state_vec_;
         // deque<Vector6d> history_state_vec_;
+        deque<Vector4d> pred_state_vec_;
+
+        bool is_outpost_mode_ = false;
+        const double outpost_angular_speed_ = (0.8 * CV_PI);
 
     public:
         double now_ = 0.0;
         bool is_init_;
         bool is_imm_init_;
-        bool fitting_disabled_; // 是否禁用曲线拟合
-        bool filter_disabled_;  // 是否禁用滤波
+
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         rclcpp::Logger logger_;
+        
         TargetInfo final_target_;  //最终击打目标信息
         int lost_cnt_ = 0;
         int spin_switch_cnt_ = 0;
@@ -127,6 +118,14 @@ namespace armor_processor
 
         // 计算车辆半径
         double calcCircleRadius(Eigen::Vector3d p1, Eigen::Vector3d p2);
+    
+    private:
+        // int history_deque_lens_ = 50; //历史队列长度
+        // std::deque<TargetInfo> history_info_; //历史测量信息
+        // std::deque<TargetInfo> history_pred_; //历史预测信息
+        // std::deque<TargetInfo> history_losting_pred_; //历史目标losting后预测信息
+        // double evalRMSE(double* params);
+        // double calcError();
     };
 } //namespace armor_processor
 

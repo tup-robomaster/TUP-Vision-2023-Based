@@ -48,17 +48,21 @@ namespace buff_processor
     struct PredictorParam
     {
         string pf_path;
-        double bullet_speed;
+        double bullet_speed;            //弹速
+        double shoot_delay;             //发弹延迟
+        
         double max_timespan;            //最大时间跨度，大于该时间重置预测器(ms)
         double max_rmse;                //TODO:回归函数最大Cost
         double max_v;                   //设置最大速度,单位rad/s
         double max_a;                   //设置最大角加速度,单位rad/s^2
+        
         int history_deque_len_cos;      //大符全部参数拟合队列长度
         int history_deque_len_phase;    //大符相位参数拟合队列长度
         int history_deque_len_uniform;  //小符转速求解队列长度
-        double delay_small;             //小符发弹延迟
-        double delay_big;               //大符发弹延迟
-        double shoot_delay;             
+        
+        // double delay_small;             //小符发弹延迟
+        // double delay_big;               //大符发弹延迟
+
         int window_size;                //滑动窗口大小
         double fan_length;              //能量机关旋转半径
         int max_error_cnt;              //预测误差帧数
@@ -73,15 +77,19 @@ namespace buff_processor
         {
             pf_path = "src/global_user/config/filter_param.yaml";
             bullet_speed = 28.0;
+            shoot_delay = 100.0;
+
             max_timespan = 50000;       
             max_rmse = 2.0;
             max_v = 3.0;
             max_a = 8.0;
+            
             history_deque_len_cos = 250;
             history_deque_len_phase = 100;
             history_deque_len_uniform = 100;
-            delay_small = 175.0;
-            delay_big = 100.0;
+            // delay_small = 175.0;
+            // delay_big = 100.0;
+            
             window_size = 2;
             fan_length = 0.7;
             max_error_cnt = 5;

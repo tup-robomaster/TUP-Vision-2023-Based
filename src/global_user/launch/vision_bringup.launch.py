@@ -19,9 +19,13 @@ def generate_launch_description():
     
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
-    camera_type = 'daheng' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type = 'mvs' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_name = 'KE0200110073'
-    use_serial = True
+    use_serial = False
+    use_imu = False
+    shoot_delay = 125.0 # 发弹延迟
+    bullet_speed = 16.8 # 弹速
+    delay_coeff = 1.15   # 延迟系数（放大时间提前量，缓解云台跟随滞后问题
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
     
@@ -96,7 +100,7 @@ def generate_launch_description():
     else:
         raise BaseException("Invalid Cam Type!!!") 
     detector_container = ComposableNodeContainer(
-        name='armor_detector_container',
+        name='detector_container',
         namespace='',
         output='screen',
         package='rclcpp_components',
@@ -118,6 +122,9 @@ def generate_launch_description():
                 parameters=[armor_detector_params,
                 {
                     'camera_name': camera_name,
+                    'use_serial': use_serial,
+                    'use_imu': use_imu,
+                    'bullet_speed': bullet_speed,
                 }],
                 remappings= camera_remappings,
                 extra_arguments=[{
@@ -126,11 +133,14 @@ def generate_launch_description():
             ),
             ComposableNode(
                 package='buff_detector',
-                plugin='buff_detector::DetectorNode',
+                plugin='buff_detector::BuffDetectorNode',
                 name='buff_detector',
-                parameters=[armor_detector_params,
+                parameters=[buff_detector_params,
                 {
                     'camera_name': camera_name,
+                    'use_serial': use_serial,
+                    'use_imu': use_imu,
+                    'bullet_speed': bullet_speed,
                 }],
                 remappings= camera_remappings,
                 extra_arguments=[{
@@ -143,7 +153,7 @@ def generate_launch_description():
     )
     #---------------------------------Processor Node--------------------------------------------
     processor_container = ComposableNodeContainer(
-        name='serial_processor_container',
+        name='processor_container',
         package='rclcpp_components',
         executable='component_container',
         namespace='',
@@ -156,6 +166,11 @@ def generate_launch_description():
                 parameters=[armor_processor_params,
                 {
                     'camera_name': camera_name,
+                    'use_serial': use_serial,
+                    'use_imu': use_imu,
+                    'shoot_delay': shoot_delay,
+                    'bullet_speed': bullet_speed,
+                    'delay_coeff': delay_coeff
                 }],
                 remappings = camera_remappings,
                 extra_arguments=[{
@@ -163,16 +178,21 @@ def generate_launch_description():
                 }]
             ),
             ComposableNode(
-                package='buff_detector',
-                plugin='buff_detector::DetectorNode',
-                name='buff_detector',
-                parameters=[buff_detector_params,
+                package='buff_processor',
+                plugin='buff_processor::BuffProcessorNode',
+                name='buff_processor',
+                parameters=[buff_processor_params,
                 {
                     'camera_name': camera_name,
+                    'use_serial': use_serial,
+                    'use_imu': use_imu,
+                    'bullet_speed': bullet_speed,
+                    'shoot_delay': shoot_delay,
+                    'delay_coeff': delay_coeff
                 }],
                 remappings = camera_remappings,
                 extra_arguments=[{
-                    'use_intra_process_comms':True
+                    'use_intra_process_comms': True
                 }]
             ),
         ],

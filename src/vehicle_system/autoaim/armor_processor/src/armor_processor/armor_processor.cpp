@@ -133,7 +133,7 @@ namespace armor_processor
 
         double dt = (stamp.nanoseconds() - last_timestamp_.nanoseconds()) / 1e9;
         double bullet_speed = coordsolver_.getBulletSpeed();
-        if (dt > 0.1)
+        if (dt > 1.5)
             dt = 0.015;
 
         RCLCPP_WARN_THROTTLE(
@@ -148,7 +148,9 @@ namespace armor_processor
         {
             double pred_dt = last_target_.xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
             last_target_.is_target_lost = true;
-            if (lost_cnt_ <= 5)
+            int max_losting_cnt = (target_msg.mode == HERO_SLING ? 25 : 5);
+            
+            if (lost_cnt_ <= max_losting_cnt)
             {
                 //进入预测追踪阶段
                 is_success = armor_predictor_.predict(last_target_, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
@@ -159,6 +161,14 @@ namespace armor_processor
                 armor_predictor_.predictor_state_ = LOST;
                 lost_cnt_ = 0;
             }
+
+            RCLCPP_WARN_THROTTLE(
+                logger_,
+                steady_clock_,
+                50,
+                "Losting: %d",
+                lost_cnt_
+            );
         }
 
         for (auto armor : target_msg.armors)
@@ -185,26 +195,20 @@ namespace armor_processor
                 target_msg.target_switched,
                 target_msg.is_spinning,
                 target_msg.spinning_switched,
-                target_msg.clockwise,
-                false,
+                target_msg.is_clockwise,
+                (target_msg.mode == HERO_SLING ? true : false),
                 (SpinningStatus)(target_msg.is_still_spinning),
                 predict_param_.system_model
             };
             
-            if(target.is_outpost_mode)
-            {
-                is_filter_ = false;
-                is_fitting_ = true;
-            }
-            else
-            {
-                is_filter_ = true;
-                is_fitting_ = false;
-            }
-
             if (!target.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
             {   //目标丢失后又重新出现
                 armor_predictor_.predictor_state_ = PREDICTING;
+                if (target.is_spinning_switched)
+                {
+                    Eigen::Vector4d meas = {xyz(0), xyz(1), xyz(2), rangle};
+                    armor_predictor_.updatePredictor(target.is_spinning, meas);
+                }
                 is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
                 lost_cnt_ = 0;
             }

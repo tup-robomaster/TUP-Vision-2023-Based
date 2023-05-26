@@ -47,6 +47,7 @@ namespace camera_driver
         status = CameraIsOpened(&tCameraEnumList, &is_opened);
         if (is_opened) {
             RCLCPP_ERROR(logger_, "Camera is opened in other process ...");
+            return false;
         } 
 
         status = CameraInit(&tCameraEnumList, -1, -1, &hCamera);
@@ -54,6 +55,7 @@ namespace camera_driver
             RCLCPP_INFO(logger_, "Camera init SUCCESS...");
         } else {
             RCLCPP_FATAL(logger_, "Camera init FAILED! Error code:%d", status);
+            return false;
         }
         
         status = CameraGetCapability(hCamera, &tCapability);
@@ -74,10 +76,16 @@ namespace camera_driver
         if (status != CAMERA_STATUS_SUCCESS)
         {
             RCLCPP_ERROR(logger_, "Camera Offline! Error code: [%d]", status);
+            if (!init())
+            {
+                RCLCPP_FATAL(logger_, "Camera initializing failed...");
+            }
+            
             status = CameraReConnect(hCamera);
             if (status != CAMERA_STATUS_SUCCESS)
             {
                 RCLCPP_FATAL(logger_, "Camera ReConnect Failed! Error code: [%d]", status);
+                return false;
             }
         }
 
@@ -151,6 +159,7 @@ namespace camera_driver
         if (status != CAMERA_STATUS_SUCCESS)
         {
             RCLCPP_WARN(logger_, "Save Cam Param failed! Error code: [%d]", status);
+            return false;
         }
 
         status = CameraStop(hCamera);
@@ -158,11 +167,13 @@ namespace camera_driver
         if (status != CAMERA_STATUS_SUCCESS)
         {
             RCLCPP_WARN(logger_, "Camera Close failed! Error code: [%d]", status);
+            return false;
         }
         CameraAlignFree(g_pRgbBuffer);
         if (status != CAMERA_STATUS_SUCCESS)
         {
             RCLCPP_WARN(logger_, "Free Align image buffer failed! Error code: [%d]", status);
+            return false;
         }
 
         return true;

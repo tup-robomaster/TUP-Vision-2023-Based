@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-04-28 15:05:06
+ * @LastEditTime: 2023-05-21 22:48:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -53,16 +53,14 @@ namespace armor_processor
         typedef global_interface::msg::ObjHP ObjHPMsg;
         typedef global_interface::msg::CarPos CarPosMsg;
         typedef global_interface::msg::GameInfo GameMsg;
-        typedef sync_policies::ApproximateTime<sensor_msgs::msg::Image, AutoaimMsg> MySyncPolicy;
 
     public:
         explicit ArmorProcessorNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         ~ArmorProcessorNode();
 
     private:
-        rclcpp::Subscription<AutoaimMsg>::SharedPtr target_info_sub_;
-        void targetMsgCallback(const AutoaimMsg& target_info);
-        bool processTargetMsg(const AutoaimMsg& target_info, cv::Mat* src = nullptr);
+        rclcpp::Subscription<AutoaimMsg>::SharedPtr armor_msg_sub_;
+        void targetMsgCallback(const AutoaimMsg& armor_msg);
 
         cv::Mat src_;
         mutex debug_mutex_;
@@ -72,41 +70,29 @@ namespace armor_processor
         map<int, string> state_map_;
         atomic<bool> image_flag_ = false;
         
-        rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
-        rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
-        rclcpp::Publisher<AutoaimMsg>::SharedPtr predict_info_pub_;
+        rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_msg_pub_;
+        rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_msg_pub_;
         
-        // message_filter
-        MySyncPolicy my_sync_policy_;
-        std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image>> img_msg_sync_sub_;
-        std::shared_ptr<message_filters::Subscriber<AutoaimMsg>> target_msg_sync_sub_;
-        std::shared_ptr<message_filters::Synchronizer<MySyncPolicy>> sync_;
-        void syncCallback(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg, const AutoaimMsg::ConstSharedPtr& target_msg);
-        bool sync_transport_ = false;
-
         // visualization_msgs::Marker
+        void pubMarkerArray(vector<Eigen::Vector4d> armor3d_vec, bool is_spinning, bool is_clockwise, int flag);
         rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_pub_;
         uint64 shape_ = visualization_msgs::msg::Marker::SPHERE;
         bool show_marker_ = false;
-        void pubMarkerArray(vector<Eigen::Vector4d> armor3d_vec, bool is_clockwise, int flag);
         
         int count_ = 0;
         bool shoot_flag_ = false;
+        bool judgeShooting(Eigen::Vector2d tracking_angle, Eigen::Vector2d pred_angle);
 
     private:
         std::unique_ptr<Processor> processor_;
         std::unique_ptr<Processor> initArmorProcessor();
 
     protected:
-        ImageSize image_size_;
-        ImageInfo image_info_;
-
         // Image callback.
-        void imageProcessor(cv::Mat& img);
-        void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
+        void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg);
         
         // Sub image.
-        std::shared_ptr<image_transport::Subscriber> img_sub_;
+        std::shared_ptr<image_transport::Subscriber> img_msg_sub_;
     
     public:
         mutex param_mutex_;

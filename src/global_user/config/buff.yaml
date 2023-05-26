@@ -1,6 +1,8 @@
 /buff_detector:
   ros__parameters:
   # Detector params.
+    buff_mode: 3
+    color: 1 # 0: blue / 1: red
     max_lost_cnt: 4 
     max_v: 4.0  
     max_delta_t: 100.0
@@ -8,21 +10,17 @@
     no_crop_thres: 0.002
 
   # Paths.
-    camera_type: 3
-    camera_name: "KE0200110075"
     camera_param_path: "/config/camera.yaml"
     path_prefix: "/recorder/dataset/"
+    
     network_path: "/model/buff.xml"
     # network_path: "/model/yolox.xml"
     # network_path: "/model/yolox-03-17.xml"
 
   # Debug.
-    debug_mode: 4
-    using_imu: false
-    using_roi: true
-    detect_red: true
+    use_roi: true
 
-    show_img: false
+    show_img: true
     show_all_fans: true
     show_fps: true
     print_target_info: false 
@@ -32,7 +30,6 @@
 /buff_processor:
   ros__parameters:
   # Predict params.
-    bullet_speed: 28.0
     max_timespan: 20000.0       
     max_rmse: 3.5
     max_v: 3.0
@@ -40,17 +37,14 @@
     history_deque_len_cos: 100
     history_deque_len_phase: 50
     history_deque_len_uniform: 50
-    delay_small: 175.0
-    delay_big: 100.0
     window_size: 2
+    # delay_small: 175.0
+    # delay_big: 100.0
 
   # Paths.
-    camera_type: 3
-    camera_name: "KE0200110075"
     pf_path: "/config/filter_param.yaml"
     camera_param_path: "/config/camera.yaml"
 
   # Debug.
     debug: true
-    using_imu: false
-    show_predict: true
+    show_predict: false
