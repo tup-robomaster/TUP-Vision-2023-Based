@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-27 02:38:18
+ * @LastEditTime: 2023-05-27 02:49:20
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -127,7 +127,7 @@ namespace armor_processor
         // Eigen::Vector4d meas = {target.xyz(1), -target.xyz(0), target.xyz(2), (target.rangle > 0 ? (target.rangle - CV_PI / 2) : (CV_PI * 1.5 + target.rangle ))};
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
         bool is_target_lost = target.is_target_lost;
-        is_outpost_mode_ = target.is_outpost_mode = true;
+        is_outpost_mode_ = target.is_outpost_mode;
         outpost_angular_speed_ = spin_state == CLOCKWISE ? -outpost_angular_speed_ : outpost_angular_speed_;
 
         // cout << "meas_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
