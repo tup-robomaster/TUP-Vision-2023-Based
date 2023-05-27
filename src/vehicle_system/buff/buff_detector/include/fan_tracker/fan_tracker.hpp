@@ -52,13 +52,14 @@ namespace buff_detector
         double rotate_speed;                    //角速度
         double delta_angle;
         int max_history_len = 2;          //队列长度
-        double prev_timestamp;                     //上次装甲板时间戳
-        double last_timestamp;                     //本次装甲板时间戳
+        
+        uint64_t prev_timestamp;                     //上次装甲板时间戳
+        uint64_t last_timestamp;                     //本次装甲板时间戳
 
         std::deque<Fan> history_info;//目标队列
 
-        FanTracker(Fan src, double src_timestamp);
-        bool update(Fan new_fan, double new_timestamp);
+        FanTracker(Fan src, uint64_t src_timestamp);
+        bool update(Fan new_fan, uint64_t new_timestamp);
     };
 
 } //namespace buff_detector

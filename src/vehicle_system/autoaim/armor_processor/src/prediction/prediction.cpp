@@ -124,12 +124,11 @@ namespace armor_processor
     bool ArmorPredictor::predict(TargetInfo target, double dt, double pred_dt, double &delay_time, Eigen::Vector3d &pred_point3d, vector<Eigen::Vector4d> &armor3d_vec, cv::Mat *src)
     {
         SpinHeading spin_state = target.is_spinning ? (target.is_clockwise ? CLOCKWISE : COUNTER_CLOCKWISE) : UNKNOWN;
-        // Eigen::Vector4d meas = {target.xyz(1), -target.xyz(0), target.xyz(2), (target.rangle > 0 ? (target.rangle - CV_PI / 2) : (CV_PI * 1.5 + target.rangle ))};
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
         bool is_target_lost = target.is_target_lost;
+        
         is_outpost_mode_ = target.is_outpost_mode;
         outpost_angular_speed_ = spin_state == CLOCKWISE ? -outpost_angular_speed_ : outpost_angular_speed_;
-
         // cout << "meas_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
         
         if ((last_spin_state_ == UNKNOWN && spin_state != UNKNOWN) || (last_spin_state_ != UNKNOWN && spin_state == UNKNOWN))
@@ -167,9 +166,6 @@ namespace armor_processor
 
             if (predictBasedUniformModel(is_target_lost, spin_state, meas, dt, pred_dt, target.period, post_state))
             {
-                // Eigen::Vector4d circle_center3d = {post_state(0), post_state(1), post_state(2), 0.0};
-                // armor3d_vec.emplace_back(circle_center3d);
-
                 Eigen::Vector3d center3d = {post_state(0), post_state(1), post_state(2)}; 
                 pred_point3d = center3d;
                 double radius = post_state(3);
@@ -184,9 +180,7 @@ namespace armor_processor
                 pred_point3d(2) = meas(2);
 
                 Eigen::Vector4d circle_center3d = {pred_point3d(0), pred_point3d(1), pred_point3d(2), 0.0};
-                // cout << "center3d_world:" << circle_center3d(0) << " " << circle_center3d(1) << " " << circle_center3d(2) << " " << circle_center3d(3) << endl;
                 armor3d_vec.emplace_back(circle_center3d);
-                
                 if (!is_outpost_mode_)
                 {
                     for (int ii = 0; ii < 4; ii++)
@@ -255,7 +249,6 @@ namespace armor_processor
             double rangle = uniform_ekf_.x_(4);
             double omega = uniform_ekf_.x_(5);
             
-            // int count = 0;
             double dis_diff = (pred_pos - cur_pos).norm();
             if (dis_diff >= 0.60)
             {
@@ -274,27 +267,7 @@ namespace armor_processor
                 uniform_ekf_.x_(1) = center2d(1);
                 uniform_ekf_.x_(2) = (uniform_ekf_.x_(2) + last_state_(2)) / 2.0;
                 uniform_ekf_.x_(4) = meas(3);
-
-                // is_predictor_update_ = true;
-                // circle_center_sum(0) += cur_pos(0) - radius * sin(meas(3));
-                // circle_center_sum(1) += cur_pos(1) + radius * cos(meas(3));
-                // ++count;
             }
-
-            // Eigen::Vector2d circle3d = calcCircleCenter(meas);
-            // Eigen::Vector2d pred_circle3d = {uniform_ekf_.x_(0), uniform_ekf_.x_(1)};
-            // if ((pred_circle3d - circle3d).norm() > 0.35)
-            // {
-            //     circle_center_sum(0) += circle3d(0);
-            //     circle_center_sum(1) += circle3d(1);
-            //     ++count;
-            // }
-            // if (count)
-            // {
-            //     Eigen::Vector2d circle_center_ave = (circle_center_sum / count);
-            //     uniform_ekf_.x_(0) = circle_center_ave(0);
-            //     uniform_ekf_.x_(1) = circle_center_ave(1);
-            // }
         }
 
         if (is_target_lost && predictor_state_ == LOSTING)

@@ -241,6 +241,7 @@ namespace camera_driver
                 //     cv::resize(frame_, frame_, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
                 //     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Resize frame...");
                 // }
+
                 // if(!is_filpped)
                 // {
                 //     RCLCPP_INFO(this->get_logger(), "is_filpped...");
@@ -316,7 +317,7 @@ namespace camera_driver
         {
             cv::namedWindow("raw_image", cv::WINDOW_AUTOSIZE);
             cv::imshow("raw_image", frame_);
-            cv::waitKey(2000);
+            cv::waitKey(1);
         }
 
         // if(using_video_)

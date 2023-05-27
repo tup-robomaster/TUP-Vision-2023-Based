@@ -59,7 +59,6 @@ namespace armor_processor
         try
         {
             auto success = coordsolver_.loadParam(coord_path, coord_name);
-            // success = coordsolver_.setStaticAngleOffset(predict_param_.angle_offset);
             is_param_initialized_ = true;
         }
         catch(const std::exception& e)
@@ -67,55 +66,6 @@ namespace armor_processor
             RCLCPP_ERROR(logger_, "Error while initializing: %s", e.what());
         }
     }
-
-    // /**
-    //  * @brief 自动发弹逻辑函数
-    //  * 
-    //  * @param armor 目标装甲信息
-    //  * @param hp 车辆血量信息
-    //  * @return true 
-    //  * @return false 
-    //  */2
-    //     {
-    //         post_process_info.find_target = true;
-    //         post_process_info.is_shooting = true;
-    //         post_process_info.switch_target = false;    
-    //     } 
-    //     else if (post_process_info.track_3d_pos.norm() <= 4.5 && post_process_info.hp <= 200)
-    //     {
-    //         post_process_info.find_target = true;
-    //         post_process_info.is_shooting = true;
-    //         post_process_info.switch_target = false;
-    //     }
-    //     else if (post_process_info.track_3d_pos.norm() <= 2.5 && post_process_info.hp <= 500)
-    //     {
-    //         post_process_info.find_target = true;
-    //         post_process_info.is_shooting = true;
-    //         post_process_info.switch_target = false;
-    //     }
-    //     else
-    //     {
-    //         return false;
-    //     }
-    //     PostProcessInfo post_info = PostProcessInfo();
-    //     double sleep_time = 0.0;
-    //     post_info.track_3d_pos = {armor.aiming_point_world.x, armor.aiming_point_world.y, armor.aiming_point_world.z};
-    //     post_info.pred_3d_pos = *(predictor(armor, sleep_time));
-    //     if (post_process_info.track_3d_pos.norm() <= 4.5)
-    //     {
-    //         post_info.find_target = true;
-    //         post_info.is_shooting = true;
-    //         post_info.switch_target = false;
-    //     }
-    //     else
-    //     {
-    //         post_info.find_target = true;
-    //         post_info.is_shooting = false;
-    //         post_info.switch_target = true;
-    //     }
-
-    //     return true;
-    // }
 
     /**
      * @brief 对目标装甲板的位置进行预测
@@ -174,15 +124,12 @@ namespace armor_processor
         for (auto armor : target_msg.armors)
         {
             double rangle = armor.rangle;
-            // rangle = rangle > 0 ? (rangle - CV_PI / 2) : (CV_PI * 1.5 + rangle);
             Eigen::Vector3d xyz = {armor.point3d_world.x, armor.point3d_world.y, armor.point3d_world.z};
             // cout << "armor_point3d_world:" << xyz(0) << " " << xyz(1) << " " << xyz(2) << endl;
             
             double pred_dt = xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
             Eigen::VectorXd state = armor_predictor_.uniform_ekf_.x();
             Eigen::Vector3d center_xyz = {state(0), state(1), state(2)};
-
-            // cout << "armor_point3d_world:" << xyz(0) << " " << xyz(1) << " " << xyz(2) << endl;
 
             TargetInfo target = 
             { 

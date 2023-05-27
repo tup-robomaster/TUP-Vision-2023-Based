@@ -52,6 +52,7 @@ namespace buff_detector
         serial_msg_.mode = this->get_parameter("buff_mode").as_int();
         serial_msg_.bullet_speed = 0.0;
         serial_msg_.shoot_delay = 0.0;
+        mode_ = serial_msg_.mode;
 
         // serial msg sub.
         serial_msg_sub_= this->create_subscription<SerialMsg>(
@@ -96,24 +97,22 @@ namespace buff_detector
         serial_msg_.header.stamp = this->get_clock()->now();
         serial_mutex_.unlock();
         mode_ = serial_msg.mode;
-
         return;
     }
     
     void BuffDetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {   
-        // RCLCPP_INFO(this->get_logger(), "Image callback...");
-
-        if(!img_msg || (mode_ != SMALL_BUFF && mode_ != BIG_BUFF))
-            return;
-        
         RCLCPP_INFO_THROTTLE(
             this->get_logger(),
             *this->get_clock(),
             200, 
-            "Buff mode..."
+            "mode: %d",
+            mode_
         );
 
+        if(!img_msg || (mode_ != SMALL_BUFF && mode_ != BIG_BUFF))
+            return;
+        
         TaskData src;
         auto img = cv_bridge::toCvShare(img_msg, "bgr8")->image;
         img.copyTo(src.img);
@@ -135,6 +134,7 @@ namespace buff_detector
             src.quat.x() = serial_msg_.imu.orientation.x;
             src.quat.y() = serial_msg_.imu.orientation.y;
             src.quat.z() = serial_msg_.imu.orientation.z;
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Using imu...");
         }
         else
         {
@@ -142,8 +142,6 @@ namespace buff_detector
             src.quat = Eigen::Quaterniond(rmat);
         }
         serial_mutex_.unlock();
-
-        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Using imu...");
         
         TargetInfo target_info;
         param_mutex_.lock();

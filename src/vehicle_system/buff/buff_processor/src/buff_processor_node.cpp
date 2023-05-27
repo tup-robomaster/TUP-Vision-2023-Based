@@ -41,7 +41,7 @@ namespace buff_processor
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 3;
 
         // 发布云台转动信息（pitch、yaw角度）
         gimbal_msg_pub_ = this->create_publisher<GimbalMsg>("/buff_processor/gimbal_msg", qos);
@@ -139,10 +139,10 @@ namespace buff_processor
                     predict_msg.header.frame_id = "camera_link1";
                     predict_msg.header.stamp = buff_msg.header.stamp;
 
-                    // predict_msg.header.stamp.nanosec += (500 * 1e6);
-                    // predict_msg.predict_point.x = predict_info.hit_point_cam[0];
-                    // predict_msg.predict_point.y = predict_info.hit_point_cam[1];
-                    // predict_msg.predict_point.z = predict_info.hit_point_cam[2];
+                    predict_msg.header.stamp.nanosec += (500 * 1e6);
+                    predict_msg.predict_point.x = predict_info.hit_point_cam[0];
+                    predict_msg.predict_point.y = predict_info.hit_point_cam[1];
+                    predict_msg.predict_point.z = predict_info.hit_point_cam[2];
                     
                     predict_msg.predict_point.x = predict_info.hit_point_world[0];
                     predict_msg.predict_point.y = predict_info.hit_point_world[1];

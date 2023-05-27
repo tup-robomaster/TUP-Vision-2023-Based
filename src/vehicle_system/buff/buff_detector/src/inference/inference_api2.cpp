@@ -13,15 +13,15 @@ namespace buff_detector
     /**
      * @brief Define names based depends on Unicode path support
      */
-    // static constexpr int INPUT_W = 640;     // Width of input
-    // static constexpr int INPUT_H = 384;     // Height of input
-    static constexpr int INPUT_W = 416;        // Width of input
-    static constexpr int INPUT_H = 416;        // Height of input
+    static constexpr int INPUT_W = 640;     // Width of input
+    static constexpr int INPUT_H = 640;     // Height of input
+    // static constexpr int INPUT_W = 416;        // Width of input
+    // static constexpr int INPUT_H = 416;        // Height of input
     static constexpr int NUM_CLASSES = 2;      // Number of classes
     static constexpr int NUM_COLORS = 2;       // Number of color
     static constexpr int TOPK = 128;           // TopK
     static constexpr float NMS_THRESH  = 0.1;
-    static constexpr float BBOX_CONF_THRESH = 0.85;
+    static constexpr float BBOX_CONF_THRESH = 0.60;
     static constexpr float MERGE_CONF_ERROR = 0.15;
     static constexpr float MERGE_MIN_IOU = 0.2;
 
@@ -426,7 +426,7 @@ namespace buff_detector
     {
         if (src.empty())
         {
-            // fmt::print(fmt::fg(fmt::color::red), "[DETECT] ERROR: 传入了空的src\n");
+            cout << "[DETECT] ERROR: 传入了空的src";
             return false;
         }
 
