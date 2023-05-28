@@ -212,10 +212,6 @@ namespace buff_detector
                             else if (delta_angle > 0)
                                 delta_angle = -abs(delta_angle);
                         }
-
-                        // 目前扇叶到上一次扇叶的旋转矩阵
-                        auto relative_rmat = (*iter).prev_fan.rmat.transpose() * (*fan).rmat;
-                        angle_axisd = Eigen::AngleAxisd(relative_rmat);
                     }
                     else
                     {
@@ -233,14 +229,9 @@ namespace buff_detector
                             else if (delta_angle > 0)
                                 delta_angle = -abs(delta_angle);
                         }
-
-                        auto relative_rmat = (*iter).last_fan.rmat.transpose() * (*fan).rmat;
-                        angle_axisd = Eigen::AngleAxisd(relative_rmat);
                     }
 
                     delta_t = ((src.timestamp - (*iter).last_timestamp) / 1e6);
-                    // rotation_angle = angle_axisd.angle();
-                    // RCLCPP_INFO(logger_, "Rotation angle:%lf", rotation_angle);
                     if (abs(delta_angle) <= abs(min_angle) && abs(delta_angle) < buff_param_.max_angle && delta_t <= min_last_delta_t)
                     {
                         min_last_delta_t = delta_t;

@@ -45,8 +45,9 @@ namespace buff_detector
     private:
         bool is_last_target_exists_;
         int lost_cnt_;
-        double last_last_timestamp_;
-        double last_timestamp_;
+        uint64_t last_last_timestamp_;
+        uint64_t last_timestamp_;
+
         double last_target_area_;
         double last_bullet_speed_;
         Point2i last_roi_center_;
@@ -56,11 +57,13 @@ namespace buff_detector
         // vector<BuffObject> objects_;
         std::vector<FanTracker> trackers_;
         Fan last_fan_;
+        
         double last_last_delta_angle_;
         double last_delta_angle_;
-        Eigen::Matrix3d rmat_imu_;
         float last_angle_;
         float cur_angle_;
+        
+        Eigen::Matrix3d rmat_imu_;
 
         bool chooseTarget(std::vector<Fan> &fans, Fan &target);
         cv::Point2i cropImageByROI(cv::Mat &img); //roi裁剪
