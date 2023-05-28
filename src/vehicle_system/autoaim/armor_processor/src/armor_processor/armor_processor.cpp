@@ -59,7 +59,6 @@ namespace armor_processor
         try
         {
             auto success = coordsolver_.loadParam(coord_path, coord_name);
-            // success = coordsolver_.setStaticAngleOffset(predict_param_.angle_offset);
             is_param_initialized_ = true;
         }
         catch(const std::exception& e)
@@ -125,15 +124,12 @@ namespace armor_processor
         for (auto armor : target_msg.armors)
         {
             double rangle = armor.rangle;
-            // rangle = rangle > 0 ? (rangle - CV_PI / 2) : (CV_PI * 1.5 + rangle);
             Eigen::Vector3d xyz = {armor.point3d_world.x, armor.point3d_world.y, armor.point3d_world.z};
             // cout << "armor_point3d_world:" << xyz(0) << " " << xyz(1) << " " << xyz(2) << endl;
             
             double pred_dt = xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
             Eigen::VectorXd state = armor_predictor_.uniform_ekf_.x();
             Eigen::Vector3d center_xyz = {state(0), state(1), state(2)};
-
-            // cout << "armor_point3d_world:" << xyz(0) << " " << xyz(1) << " " << xyz(2) << endl;
 
             TargetInfo target = 
             { 

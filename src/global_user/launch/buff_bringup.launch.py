@@ -27,9 +27,9 @@ def generate_launch_description():
     
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
-    camera_type = 'mvs' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type = 'usb' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_name = 'KE0200110073'
-    use_serial = True
+    use_serial = False
     use_imu = False
     shoot_delay = 150.0
     bullet_speed = 12.7

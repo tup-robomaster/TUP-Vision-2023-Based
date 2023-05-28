@@ -125,10 +125,10 @@ namespace coordsolver
             points_world = 
             {
                 {0, -0.7, -0.05},
-                {0.11, -0.11, 0.0},
-                {0.11, 0.11, 0.0},
-                {-0.11, 0.11, 0.0},
                 {-0.11, -0.11, 0.0},
+                {-0.11, 0.11, 0.0},
+                {0.11, 0.11, 0.0},
+                {0.11, -0.11, 0.0},
             };
 
             // points_world = 
@@ -177,7 +177,8 @@ namespace coordsolver
         }
         else
         {
-            solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, SOLVEPNP_ITERATIVE);
+            solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, SOLVEPNP_EPNP);
+            solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, true, SOLVEPNP_ITERATIVE);
         }
 
         //Pc = R * Pw + T
@@ -212,7 +213,6 @@ namespace coordsolver
         //     "euler: (%.3f %.3f %.3f)", 
         //     result.euler(0), result.euler(1), result.euler(2)
         // );
-
         return result;
     }
 
