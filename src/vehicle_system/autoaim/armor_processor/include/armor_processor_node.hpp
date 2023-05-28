@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-05-27 01:33:37
+ * @LastEditTime: 2023-05-29 06:12:11
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -70,8 +70,6 @@ namespace armor_processor
         map<int, string> state_map_;
         atomic<bool> image_flag_ = false;
 
-        double last_rangle = 0.0;
-        
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_msg_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_msg_pub_;
         

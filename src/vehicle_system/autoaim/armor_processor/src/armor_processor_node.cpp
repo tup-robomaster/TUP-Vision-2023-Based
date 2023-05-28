@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-27 02:46:32
+ * @LastEditTime: 2023-05-29 06:14:46
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -151,7 +151,7 @@ namespace armor_processor
             *this->get_clock(), 
             100, 
             "rec_bullet_speed:%.3f cur_bullet_speed:%.3f cur_shoot_delay:%.3f", 
-            target_info.bullet_speed, processor_->coordsolver_.getBulletSpeed(), processor_->predict_param_.shoot_delay
+            target.bullet_speed, processor_->coordsolver_.getBulletSpeed(), processor_->predict_param_.shoot_delay
         );
                                      
         cv::Mat dst;
@@ -217,23 +217,43 @@ namespace armor_processor
                             aiming_point_world = {armor3d_vec.at(flag)(0), armor3d_vec.at(flag)(1), armor3d_vec.at(flag)(2)};
                             is_shooting = true;
                         }
-                        else
-                        {
-                            is_shooting = false;
-                        }
                     }
                     else
-                    {   //机动目标下自动开火判据(TODO)
+                    {   
+                        Eigen::Vector4d tracking_point3d = {target.armors[0].point3d_world.x, target.armors[0].point3d_world.y, target.armors[0].point3d_world.z, 0.0};
+                        armor3d_vec.emplace_back(tracking_point3d);
 
-                    }
-                    aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
-                    angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
-
-                    if (!target.is_spinning)
-                    {
                         Eigen::Vector4d pred_point3d = {aiming_point_world(0), aiming_point_world(1), aiming_point_world(2), 0.0};
                         armor3d_vec.emplace_back(pred_point3d);
+                        
+                        // 机动目标下自动开火判据
+                        // 将开火范围限制在6m以内(开火范围内不同距离给与不同射频)
+                        double fire_dis = aiming_point_world.norm();
+                        if (fire_dis <= 6.0)
+                        {
+                            if (judgeShooting(tracking_angle, angle))
+                            {   // 开火时机成熟
+                                if (fire_dis <= 3.5 && fire_dis >= 0.5)
+                                {   // 2m以内给与最高射频
+                                    shoot_mode = CONTINUOUS;
+                                }
+                                else if (fire_dis <= 4.5)
+                                {   // 4.5m以内给与射频限制
+                                    shoot_mode = LIMITED;
+                                }
+                                else
+                                {   // 4.5米以外开启单连发模式
+                                    shoot_mode = SINGLE;
+                                }
+                                is_shooting = true;
+                            }
+                        }
                     }
+                    tracking_point_cam = {target.armors[0].point3d_cam.x, target.armors[0].point3d_cam.y, target.armors[0].point3d_cam.z};
+                    tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
+
+                    aiming_point_cam = processor_->coordsolver_.worldToCam(aiming_point_world, rmat_imu);
+                    angle = processor_->coordsolver_.getAngle(aiming_point_cam, rmat_imu);
                 }
 
                 if (abs(tracking_angle[0]) < 6.50 && abs(tracking_angle[1]) < 6.50)
@@ -256,37 +276,6 @@ namespace armor_processor
             param_mutex_.unlock();
         }
 
-        if (!target_info.is_target_lost)
-        {
-            tracking_point_cam = {target_info.armors[0].point3d_cam.x, target_info.armors[0].point3d_cam.y, target_info.armors[0].point3d_cam.z};
-            tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
-        }
-
-        // 此处为机动目标的自动开火判据
-        if (!target.is_spinning && !target.is_target_lost)
-        {
-            // 将开火范围限制在7m以内(开火范围内不同距离给与不同射频)
-            double fire_dis = aiming_point_world.norm();
-            if (fire_dis <= 7.0)
-            {
-                if (judgeShooting(tracking_angle, angle))
-                {   // 开火时机成熟
-                    if (fire_dis <= 2.0 && fire_dis >= 0.5)
-                    {   // 2m以内给与最高射频
-                        shoot_mode = CONTINUOUS;
-                    }
-                    else if (fire_dis <= 4.0)
-                    {   // 5m以内给与射频限制
-                        shoot_mode = LIMITED;
-                    }
-                    else
-                    {   // 5米以外开启单连发模式
-                        shoot_mode = SINGLE;
-                    }
-                    is_shooting = true;
-                }
-            }
-        }
         
         if (!is_aimed_)
         {
@@ -305,7 +294,7 @@ namespace armor_processor
         }
         
         // 云台发弹限制
-        int limit_frame = (shoot_mode == LIMITED ? 5 : 40);
+        int limit_frame = (shoot_mode == LIMITED ? 5 : 20);
         if (shoot_mode == LIMITED || shoot_mode == SINGLE)
         {
             if (shoot_flag_)
@@ -332,9 +321,9 @@ namespace armor_processor
         // Gimbal msg pub.
         GimbalMsg gimbal_msg;
         gimbal_msg.header.frame_id = "barrel_link";
-        gimbal_msg.header.stamp = target_info.header.stamp;
-        gimbal_msg.pitch = abs(angle[1]) >= 45.0 ? 0.0 : angle[1];
-        gimbal_msg.yaw = abs(angle[0]) >= 45.0 ? 0.0 : angle[0];
+        gimbal_msg.header.stamp = target.header.stamp;
+        gimbal_msg.pitch = abs(angle[1]) >= 45.0 ? tracking_angle[1] : angle[1];
+        gimbal_msg.yaw = abs(angle[0]) >= 45.0 ? tracking_angle[0] : angle[0];
         gimbal_msg.pred_point_cam.x = aiming_point_cam[0];
         gimbal_msg.pred_point_cam.y = aiming_point_cam[1];
         gimbal_msg.pred_point_cam.z = aiming_point_cam[2];
@@ -342,10 +331,10 @@ namespace armor_processor
         gimbal_msg.meas_point_cam.y = tracking_point_cam[1];
         gimbal_msg.meas_point_cam.z = tracking_point_cam[2];
         gimbal_msg.distance = aiming_point_cam.norm();
-        gimbal_msg.is_target = !target_info.is_target_lost;
-        gimbal_msg.is_switched = target_info.target_switched;
-        gimbal_msg.is_spinning = target_info.is_spinning;
-        gimbal_msg.is_spinning_switched = target_info.spinning_switched;
+        gimbal_msg.is_target = !target.is_target_lost;
+        gimbal_msg.is_switched = target.target_switched;
+        gimbal_msg.is_spinning = target.is_spinning;
+        gimbal_msg.is_spinning_switched = target.spinning_switched;
         gimbal_msg.is_shooting = is_shooting;
         gimbal_msg.is_prediction = is_pred_; 
         gimbal_msg_pub_->publish(std::move(gimbal_msg));
@@ -354,7 +343,7 @@ namespace armor_processor
         {
             GimbalMsg tracking_msg;
             tracking_msg.header.frame_id = "barrel_link1";
-            tracking_msg.header.stamp = target_info.header.stamp;
+            tracking_msg.header.stamp = target.header.stamp;
             tracking_msg.pitch = abs(tracking_angle[1]) >= 45.0 ? 0.0 : tracking_angle[1];
             tracking_msg.yaw = abs(tracking_angle[0]) >= 45.0 ? 0.0 : tracking_angle[0];
             tracking_msg.meas_point_cam.x = tracking_point_cam[0];
@@ -364,10 +353,10 @@ namespace armor_processor
             tracking_msg.pred_point_cam.y = aiming_point_cam[1];
             tracking_msg.pred_point_cam.z = aiming_point_cam[2];
             tracking_msg.distance = tracking_point_cam.norm();
-            tracking_msg.is_target = !target_info.is_target_lost;
-            tracking_msg.is_switched = target_info.target_switched;
-            tracking_msg.is_spinning = target_info.is_spinning;
-            tracking_msg.is_spinning_switched = target_info.spinning_switched;
+            tracking_msg.is_target = !target.is_target_lost;
+            tracking_msg.is_switched = target.target_switched;
+            tracking_msg.is_spinning = target.is_spinning;
+            tracking_msg.is_spinning_switched = target.spinning_switched;
             tracking_msg.is_shooting = is_shooting;
             tracking_msg.is_prediction = is_pred_;
             tracking_msg_pub_->publish(std::move(tracking_msg));
@@ -378,15 +367,7 @@ namespace armor_processor
             }
         }
 
-        if (!target.is_target_lost)
-        {
-            last_rangle = target.armors.front().rangle;
-            processor_->is_last_exists_ = true;
-        }
-        else
-        {
-            processor_->is_last_exists_ = false;
-        }
+        processor_->is_last_exists_ = !target.is_target_lost;
         
         if (debug_param_.show_img && !dst.empty()) 
         {
@@ -394,10 +375,16 @@ namespace armor_processor
             {
                 // Draw target 2d rectangle.
                 for(int i = 0; i < 4; i++)
-                    cv::line(dst, cv::Point2f(target_info.armors.front().point2d[i % 4].x, target_info.armors.front().point2d[i % 4].y),
-                        cv::Point2f(target_info.armors.front().point2d[(i + 1) % 4].x, target_info.armors.front().point2d[(i + 1) % 4].y), {125, 0, 255}, 1);
+                {
+                    cv::line(
+                        dst, 
+                        cv::Point2f(target.armors.front().point2d[i % 4].x, target.armors.front().point2d[i % 4].y),
+                        cv::Point2f(target.armors.front().point2d[(i + 1) % 4].x, target.armors.front().point2d[(i + 1) % 4].y), 
+                        {125, 0, 255}, 
+                        1
+                    );
+                }
                 cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
-                // cv::Point2f armor_center = processor_->coordsolver_.reproject(tracking_point_cam);
                 cv::circle(dst, point_2d, 18, {255, 0, 125}, 3);
             }
             if (debug_param_.show_aim_cross)
