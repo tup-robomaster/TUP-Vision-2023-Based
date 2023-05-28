@@ -1,6 +1,7 @@
 /armor_detector:
   ros__parameters:
   # Detector params.
+    mode: 1
     color: 1 # red: 1 / blue: 0
     max_delta_t: 50
     max_lost_cnt: 5
@@ -43,17 +44,16 @@
     save_dataset: false
   
   # Debug params.
-    detect_red: true # red: true / blue: false
     use_roi: true
     
     debug: true
-    show_img: false
+    show_img: true
     show_crop_img: false
     show_fps: true
     show_aim_cross: true
     show_all_armors: true
     auto_label: false
-    print_letency: false
+    print_latency: false
     sync_transport: false
     print_target_info: false
 
@@ -62,14 +62,10 @@
   # Predict params.
     max_dt: 1000
     max_cost: 10
-    max_v: 8
-    min_fitting_lens: 5
     window_size: 3
+    min_fitting_lens: 5
     max_offset_value: 0.45
     reserve_factor: 500.0 # 储备系数(>=1)
-    # rotation_yaw: 0.0
-    # rotation_pitch: 0.0
-    # rotation_roll: 0.0
 
   # Debug params.
     debug: true
@@ -77,10 +73,10 @@
     draw_predict: true
     show_predict: true
     show_aim_cross: true
-    show_fps: true
+    show_fps: false
     print_delay: false
     sync_transport: false
-    show_marker: false
+    show_marker: true
  
   # Camera params.
     camera_param_path: "/config/camera.yaml"
@@ -90,13 +86,13 @@
   
   # uniform model
     #----------------------------------Xc------Yc----Zc-----r---theta--omega
-    uniform_ekf_process_noise_param: [0.01, 0.001, 0.002, 0.0005, 0.005, 0.0005]
+    uniform_ekf_process_noise_param: [0.00005, 0.0001, 0.002, 0.0005, 0.002, 0.001]
     #----------------------------------X----Y---Z---theta
-    uniform_ekf_measure_noise_param: [5.0, 5.0, 1.0, 1.0]
+    uniform_ekf_measure_noise_param: [5.0, 12.0, 1.0, 1.0]
     
   # Singer model
     # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)
-    singer_model_process_param: [1.05, 1.05, 1.05, 4.5, 5.65, 4.5]
+    singer_model_process_param: [1.00, 1.00, 1.0, 2.65, 30.45, 2.65]
     # r:观测协方差系数(r1/r2/r3)
     singer_model_measure_param: [1.0, 1.0, 1.0]
 

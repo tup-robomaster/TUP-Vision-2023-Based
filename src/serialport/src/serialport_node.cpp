@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-05-14 16:11:32
+ * @LastEditTime: 2023-05-19 16:52:21
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -63,14 +63,15 @@ namespace serialport
             std::bind(&SerialPortNode::buffMsgCallback, this, _1)
         );
 
-        // tf2
-        // Initialize the transform broadcaster
         tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
-        serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", qos);
+        if (using_port_)
+        {
+            serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", qos);
+            // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
+            watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
+        }
         receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
-        // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
-        watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
     }
 
     SerialPortNode::~SerialPortNode()
@@ -103,6 +104,10 @@ namespace serialport
         vector<float> vehicle_pos_info;
         while (1)
         {
+            // stamp_ = this->get_clock()->now();
+            // rclcpp::Time now = this->get_clock()->now();
+            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "rec_delay:%.3fms", (now.nanoseconds() - stamp_.nanoseconds()) / 1e6);
+
             if (!using_port_)
             {
                 geometry_msgs::msg::TransformStamped t;
@@ -146,7 +151,8 @@ namespace serialport
                     if(!is_receive_data)
                     {
                         RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
-                        usleep(1000);
+                        // continue;
+                        // usleep(1000);
                     }
                 }
                 
@@ -180,11 +186,11 @@ namespace serialport
                     // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "pitch_angle:%.2f", pitch_angle);
                     if (print_serial_info_)
                     {
-                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "quat:[%.3f %.3f %.3f %.3f]", quat[0], quat[1], quat[2], quat[3]);
-                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "gyro:[%.3f %.3f %.3f]", gyro[0], gyro[1], gyro[2]);
-                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "acc:[%.3f %.3f %.3f]", acc[0], acc[1], acc[2]);
-                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "bullet_speed::%.3f", bullet_speed);
-                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "shoot_delay:%.3f", shoot_delay);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "quat:[%.3f %.3f %.3f %.3f]", quat[0], quat[1], quat[2], quat[3]);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "gyro:[%.3f %.3f %.3f]", gyro[0], gyro[1], gyro[2]);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "acc:[%.3f %.3f %.3f]", acc[0], acc[1], acc[2]);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "bullet_speed::%.3f", bullet_speed);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "shoot_delay:%.3f", shoot_delay);
                     }
 
                     rclcpp::Time now = this->get_clock()->now();
@@ -234,7 +240,13 @@ namespace serialport
                     // RCLCPP_WARN(this->get_logger(), "serial_msg_pub:%.3fs", now.nanoseconds() / 1e9);
                 }
             }
+
+            // stamp_ = now;
+            // rclcpp::Time now = this->get_clock()->now();        
+            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "rec_delay:%.3fms", (now.nanoseconds() - stamp_.nanoseconds()) / 1e6);
+
         }
+
     }
 
     /**
@@ -396,16 +408,16 @@ namespace serialport
         };
 
         this->declare_parameter<std::string>("port_id", "483/5740/200");
-        this->get_parameter("port_id", id_);
+        this->get_parameter("port_id", this->id_);
 
         this->declare_parameter<int>("baud", 115200);
-        this->get_parameter("baud", baud_);
+        this->get_parameter("baud", this->baud_);
 
         this->declare_parameter<bool>("using_port", true);
-        this->get_parameter("using_port", using_port_);
+        this->get_parameter("using_port", this->using_port_);
 
         this->declare_parameter<bool>("tracking_target", false);
-        this->get_parameter("tracking_target", tracking_target_);
+        this->get_parameter("tracking_target", this->tracking_target_);
 
         this->declare_parameter("print_serial_info", false);
         this->get_parameter("print_serial_info", this->print_serial_info_);

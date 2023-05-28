@@ -14,7 +14,7 @@ namespace buff_detector
      * 
      * @param src Armor对象
      */
-    FanTracker::FanTracker(Fan src, double src_timestamp)
+    FanTracker::FanTracker(Fan src, uint64_t src_timestamp)
     {
         last_fan = src;
         last_timestamp = src_timestamp;
@@ -23,7 +23,7 @@ namespace buff_detector
         history_info.push_back(src);
     }
 
-    bool FanTracker::update(Fan new_fan, double new_timestamp)
+    bool FanTracker::update(Fan new_fan, uint64_t new_timestamp)
     {
         is_last_fan_exists = true;
         if (history_info.size() < max_history_len)

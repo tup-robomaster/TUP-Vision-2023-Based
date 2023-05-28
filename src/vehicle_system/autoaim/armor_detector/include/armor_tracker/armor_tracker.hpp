@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-04-30 17:58:29
+ * @LastEditTime: 2023-05-11 21:55:35
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_tracker/armor_tracker.hpp
  */
 #ifndef ARMOR_TRACKER_HPP_
@@ -38,7 +38,7 @@ namespace armor_detector
         Rect rect;
         Point2f apex2d[4];
         RotatedRect rrect;
-        cv::Point2d center2d;
+        cv::Point2f center2d;
         TargetType type;
         bool is_front;
         double rangle;

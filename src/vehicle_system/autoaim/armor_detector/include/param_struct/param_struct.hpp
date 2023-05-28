@@ -49,14 +49,6 @@ namespace armor_detector
         DOUBLE
     };
     
-    enum Color 
-    {
-        BLUE,
-        RED,
-        GRAY,
-        PURPLE
-    };
-
     struct GyroParam
     {
         int max_dead_buffer;  //允许因击打暂时熄灭的装甲板的出现次数  
@@ -200,8 +192,6 @@ namespace armor_detector
 
     struct DebugParam
     {
-        bool detect_red;
-        bool use_serial;
         bool use_imu;
         bool use_roi;
         bool show_aim_cross;
@@ -209,15 +199,13 @@ namespace armor_detector
         bool show_crop_img;
         bool show_all_armors;
         bool show_fps;
-        bool print_letency;
+        bool print_latency;
         bool print_target_info;
         bool save_data;
         bool save_dataset;
 
         DebugParam()
         {
-            detect_red = true;
-            use_serial = true;
             use_imu = true;
             use_roi = false;
             show_img = false;
@@ -225,7 +213,7 @@ namespace armor_detector
             save_data = false;
             save_dataset = false;
             show_crop_img = false;
-            print_letency = false;
+            print_latency = false;
             show_aim_cross = false;
             show_all_armors = false;
             print_target_info = false; 

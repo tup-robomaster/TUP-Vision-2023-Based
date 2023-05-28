@@ -27,9 +27,12 @@ def generate_launch_description():
     
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
-    camera_type = 'daheng' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_type = 'usb' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_name = 'KE0200110073'
-    use_serial = True
+    use_serial = False
+    use_imu = False
+    shoot_delay = 150.0
+    bullet_speed = 12.7
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
     
@@ -51,6 +54,18 @@ def generate_launch_description():
         buff_detector_params = yaml.safe_load(f)['/buff_detector']['ros__parameters']
     with open(buff_param_file, 'r') as f:
         buff_processor_params = yaml.safe_load(f)['/buff_processor']['ros__parameters']
+        
+    # 哨兵
+    tf_static_node = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        output='screen',
+        arguments=[
+            #      x            y               z            yaw           pitch       roll    parent_frame  child_frame
+            '-0.00197128', '-0.00937364', '0.00107134', '1.6545464', '-1.5638996', '-3.062463', 'imu_link', 'camera_link'
+        ],
+    )
+    
     #---------------------------------Serial Node--------------------------------------------
     if use_serial:
         serial_node = Node(package='serialport',
@@ -71,6 +86,7 @@ def generate_launch_description():
     camera_plugin = ""
     camera_node = ""
     camera_remappings = []
+    
     if camera_type == "daheng":
         camera_params = daheng_cam_params
         camera_plugin = "camera_driver::DahengCamNode"
@@ -97,8 +113,9 @@ def generate_launch_description():
 
     else:
         raise BaseException("Invalid Cam Type!!!") 
+    
     detector_container = ComposableNodeContainer(
-        name='armor_detector_container',
+        name='buff_detector_container',
         namespace='',
         output='screen',
         package='rclcpp_components',
@@ -114,56 +131,81 @@ def generate_launch_description():
                 }]
             ),
             ComposableNode(
-                package='buff_processor',
-                plugin='buff_processor::BuffDetectorNode',
-                name='buff_processor',
-                parameters=[buff_processor_params], 
+                package='buff_detector',
+                plugin='buff_detector::BuffDetectorNode',
+                name='buff_detector',
+                parameters=[buff_detector_params,
+                {
+                    'camera_name': camera_name,
+                    'use_imu': use_imu
+                }], 
+                remappings = camera_remappings,
                 extra_arguments=[{
-                    'use_intra_process_comms':True
+                    'use_intra_process_comms': True
                 }]
             ),
         ],
         respawn=True,
         respawn_delay=1,
     )
-    #---------------------------------Processor Node--------------------------------------------
-    processor_container = ComposableNodeContainer(
-        name='serial_processor_container',
-        package='rclcpp_components',
-        executable='component_container',
-        namespace='',
-        output='screen',
-        composable_node_descriptions=[
-            ComposableNode(
-                package='buff_processor',
-                plugin='buff_processor::BuffProcessorNode',
-                name='buff_processor',
-                parameters=[buff_processor_params,
-                {
-                    'camera_name': camera_name,
-                }],
-                remappings = camera_remappings,
-                extra_arguments=[{
-                    'use_intra_process_comms':True
-                }]
-            ),
-        ],
-        respawn=True,
-        respawn_delay=1,
-    ),
     
-    tf_static_node = Node(package='tf2_ros',
-                            executable='static_transform_publisher',
-                            output='screen',
-                            arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373',
-                                        '-1.5249719', '1.408214', 'imu_link', 'camera_link'])
-
+    # #---------------------------------Processor Node--------------------------------------------
+    processor_node = Node(
+        package='buff_processor',
+        executable='buff_processor_node',
+        name='buff_processor',
+        output='screen', # log/screen/both
+        emulate_tty=True,
+        parameters=[buff_processor_params,
+        {
+            'camera_name': camera_name,
+            'use_serial': use_serial,
+            'use_imu': use_imu,
+            'bullet_speed': bullet_speed,
+            'shoot_delay': shoot_delay,
+        }],
+        remappings = camera_remappings,
+        respawn=True,
+        respawn_delay=1
+    )
+    
+    # processor_node = ComposableNodeContainer(
+    #     name='buff_processor_container',
+    #     package='rclcpp_components',
+    #     executable='component_container',
+    #     namespace='',
+    #     output='screen',
+    #     composable_node_descriptions=[
+    #         ComposableNode(
+    #             package='buff_processor',
+    #             plugin='buff_processor::BuffProcessorNode',
+    #             name='buff_processor',
+    #             parameters=[buff_processor_params,
+    #             {
+    #                 'camera_name': camera_name,
+    #                 'use_serial': use_serial,
+    #                 'use_imu': use_imu,
+    #                 'bullet_speed': bullet_speed,
+    #                 'shoot_delay': shoot_delay,
+    #             }],
+    #             remappings = camera_remappings,
+    #             extra_arguments=[{
+    #                 'use_intra_process_comms': True
+    #             }]
+    #         ),
+    #     ],
+    #     respawn=True,
+    #     respawn_delay=1,
+    # ),
+    
     ld = LaunchDescription()
+    
+    ld.add_action(tf_static_node)
+    
     if use_serial:
         ld.add_action(serial_node)
     
     ld.add_action(detector_container)
     ld.add_action(processor_node)
-    ld.add_action(tf_static_node)
 
     return ld

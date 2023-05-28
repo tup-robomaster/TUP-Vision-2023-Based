@@ -15,7 +15,7 @@ static constexpr int NUM_CLASSES = 8;  // Number of classes
 static constexpr int NUM_COLORS = 4;   // Number of color
 static constexpr int TOPK = 128;       // TopK
 static constexpr float NMS_THRESH = 0.3;
-static constexpr float BBOX_CONF_THRESH = 0.75;
+static constexpr float BBOX_CONF_THRESH = 0.85;
 static constexpr float MERGE_CONF_ERROR = 0.15;
 static constexpr float MERGE_MIN_IOU = 0.9;
 
@@ -99,6 +99,10 @@ namespace armor_detector
     {
 
         const int num_anchors = grid_strides.size();
+
+        // cout << "num_anchors:" << num_anchors << endl;
+        // auto st = std::chrono::steady_clock::now();
+
         //Travel all the anchors
         for (int anchor_idx = 0; anchor_idx < num_anchors; anchor_idx++)
         {
@@ -156,6 +160,10 @@ namespace armor_detector
                 objects.push_back(obj);
             }
         } // point anchor loop
+
+        // auto end = std::chrono::steady_clock::now();
+        // double infer_dt = std::chrono::duration<double,std::milli>(end - st).count();
+        // cout << "infer_dt: " << infer_dt << "ms" << endl;
     }
 
     /**
@@ -273,8 +281,15 @@ namespace armor_detector
         std::vector<int> strides = {8, 16, 32};
         std::vector<GridAndStride> grid_strides;
 
+        // auto st = std::chrono::steady_clock::now();
+
         generate_grids_and_stride(INPUT_W, INPUT_H, strides, grid_strides);
         generateYoloxProposals(grid_strides, prob, transform_matrix, BBOX_CONF_THRESH, proposals);
+
+        // auto end = std::chrono::steady_clock::now();
+        // double infer_dt = std::chrono::duration<double,std::milli>(end - st).count();
+        // cout << "infer_dt: " << infer_dt << "ms" << endl;
+
         qsort_descent_inplace(proposals);
         if (proposals.size() >= TOPK) 
             proposals.resize(TOPK);

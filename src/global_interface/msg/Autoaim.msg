@@ -7,8 +7,9 @@ bool is_target_lost
 string vehicle_id
 uint16 vehicle_hp
 float64 spinning_period
-float64 bullet_speed
-bool clockwise
+float32 bullet_speed
+float32 shoot_delay
+bool is_clockwise
 bool target_switched
 bool is_spinning
 bool spinning_switched

@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-05-14 15:39:27
+LastEditTime: 2023-05-26 22:38:06
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -30,9 +30,10 @@ def generate_launch_description():
     camera_type = 'daheng' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
     camera_name = 'KE0200110074'
     use_serial = True
-    use_imu = False
-    shoot_delay = 200
-    bullet_speed = 12.7
+    use_imu = True
+    shoot_delay = 120.0 # 发弹延迟
+    bullet_speed = 14.5 # 弹速
+    delay_coeff = 1.0   # 延迟系数（放大时间提前量，缓解云台跟随滞后问题
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
 
@@ -63,12 +64,19 @@ def generate_launch_description():
                             emulate_tty=True,
                             parameters=[{
                                 'using_port': True,
-                                'tracking_target': True,
+                                'tracking_target': False,
                                 'print_serial_info': False,
                                 'print_referee_info': False
                             }],
                             respawn=True,
                             respawn_delay=1)
+        
+    #---------------------------tf2_static_publisher------------------------------------------
+    tf_static_node = Node(package='tf2_ros',
+                            executable='static_transform_publisher',
+                            output='screen',
+                            arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373',
+                                        '-1.5249719', '1.408214', 'imu_link', 'camera_link'])
     #---------------------------------Detector Node--------------------------------------------
     camera_params = []
     camera_plugin = ""
@@ -123,9 +131,7 @@ def generate_launch_description():
                 parameters=[armor_detector_params,
                 {
                     'camera_name': camera_name,
-                    'use_serial': use_serial,
                     'use_imu': use_imu,
-                    'bullet_speed': bullet_speed,
                 }],
                 remappings = camera_remappings,
                 extra_arguments=[{
@@ -138,7 +144,7 @@ def generate_launch_description():
     )
     #---------------------------------Processor Node--------------------------------------------
     processor_container = ComposableNodeContainer(
-        name='serial_processor_container',
+        name='armor_processor_container',
         package='rclcpp_components',
         executable='component_container',
         namespace='',
@@ -151,10 +157,9 @@ def generate_launch_description():
                 parameters=[armor_processor_params,
                 {
                     'camera_name': camera_name,
-                    'use_serial': use_serial,
-                    'use_imu': use_imu,
                     'shoot_delay': shoot_delay,
                     'bullet_speed': bullet_speed,
+                    'delay_coeff': delay_coeff
                 }],
                 remappings = camera_remappings,
                 extra_arguments=[{
@@ -165,12 +170,7 @@ def generate_launch_description():
         respawn=True,
         respawn_delay=1,
     )
-    tf_static_node = Node(package='tf2_ros',
-                            executable='static_transform_publisher',
-                            output='screen',
-                            arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373',
-                                        '-1.5249719', '1.408214', 'imu_link', 'camera_link'])
-
+    
     ld = LaunchDescription()
     if use_serial:
         ld.add_action(serial_node)
