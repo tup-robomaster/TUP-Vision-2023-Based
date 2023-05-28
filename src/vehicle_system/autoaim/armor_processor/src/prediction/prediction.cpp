@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-27 02:49:20
+ * @LastEditTime: 2023-05-28 20:46:58
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -297,8 +297,8 @@ namespace armor_processor
             }
 
             Eigen::Vector3d circle_center3d = {state(0), state(1), state(2)};
-            pred_state_vec_.clear();
             
+            pred_state_vec_.clear();
             if (!is_outpost_mode_)
             {
                 for (int ii = 0; ii < 4; ii++)
@@ -406,7 +406,6 @@ namespace armor_processor
             }
             // cout << "omega1:" << uniform_ekf_.x_(5) << endl;
             state = uniform_ekf_.x();
-
 
             Eigen::Vector3d circle_center3d = {state(0), state(1), state(2)};
             pred_state_vec_.clear();
