@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-27 02:49:20
+ * @LastEditTime: 2023-05-28 20:53:43
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -255,7 +255,6 @@ namespace armor_processor
             double rangle = uniform_ekf_.x_(4);
             double omega = uniform_ekf_.x_(5);
             
-            // int count = 0;
             double dis_diff = (pred_pos - cur_pos).norm();
             if (dis_diff >= 0.60)
             {
@@ -274,27 +273,7 @@ namespace armor_processor
                 uniform_ekf_.x_(1) = center2d(1);
                 uniform_ekf_.x_(2) = (uniform_ekf_.x_(2) + last_state_(2)) / 2.0;
                 uniform_ekf_.x_(4) = meas(3);
-
-                // is_predictor_update_ = true;
-                // circle_center_sum(0) += cur_pos(0) - radius * sin(meas(3));
-                // circle_center_sum(1) += cur_pos(1) + radius * cos(meas(3));
-                // ++count;
             }
-
-            // Eigen::Vector2d circle3d = calcCircleCenter(meas);
-            // Eigen::Vector2d pred_circle3d = {uniform_ekf_.x_(0), uniform_ekf_.x_(1)};
-            // if ((pred_circle3d - circle3d).norm() > 0.35)
-            // {
-            //     circle_center_sum(0) += circle3d(0);
-            //     circle_center_sum(1) += circle3d(1);
-            //     ++count;
-            // }
-            // if (count)
-            // {
-            //     Eigen::Vector2d circle_center_ave = (circle_center_sum / count);
-            //     uniform_ekf_.x_(0) = circle_center_ave(0);
-            //     uniform_ekf_.x_(1) = circle_center_ave(1);
-            // }
         }
 
         if (is_target_lost && predictor_state_ == LOSTING)
@@ -323,6 +302,7 @@ namespace armor_processor
                 state(2) = uniform_ekf_.x_(2);
             }
 
+            state = uniform_ekf_.x();
             Eigen::Vector3d circle_center3d = {state(0), state(1), state(2)};
             pred_state_vec_.clear();
             
@@ -433,7 +413,6 @@ namespace armor_processor
             }
             // cout << "omega1:" << uniform_ekf_.x_(5) << endl;
             state = uniform_ekf_.x();
-
 
             Eigen::Vector3d circle_center3d = {state(0), state(1), state(2)};
             pred_state_vec_.clear();

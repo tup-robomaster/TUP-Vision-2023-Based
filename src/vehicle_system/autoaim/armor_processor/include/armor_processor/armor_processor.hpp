@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-17 00:27:33
- * @LastEditTime: 2023-04-26 22:03:50
+ * @LastEditTime: 2023-05-28 20:53:22
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor/armor_processor.hpp
  */
 #ifndef ARMOR_PRECESSOR_HPP_
@@ -28,17 +28,10 @@ namespace armor_processor
         Processor(const PredictParam& predict_param, vector<double>* uniform_ekf_param, vector<double>* singer_ekf_param, const DebugParam& debug_param);
         ~Processor();
 
-        // std::unique_ptr<Eigen::Vector3d> predictor(cv::Mat& src, AutoaimMsg& Autoaim, double& sleep_time);
-        // void loadParam(std::string filter_param_path);
-
         //预测(接收armor_detector节点发布的目标信息进行预测)
-        CoordSolver coordsolver_;
         void init(std::string coord_path, std::string coord_name);
         bool predictor(AutoaimMsg& Autoaim, Eigen::Vector3d& pred_result, vector<Eigen::Vector4d>& armor3d_vec, double& sleep_time);
-
         void curveDrawer(int axis, cv::Mat& src, double* params, cv::Point2i start_pos);
-        // bool autoShootingLogic(AutoaimMsg& armor, PostProcessInfo& post_process_info);
-        // bool setBulletSpeed(double speed);
     
         int lost_cnt_ = 0;
         bool is_filter_ = true;
@@ -51,6 +44,7 @@ namespace armor_processor
         
         //预测器
         ArmorPredictor armor_predictor_;
+        CoordSolver coordsolver_;
 
         PredictParam predict_param_;
         DebugParam debug_param_;

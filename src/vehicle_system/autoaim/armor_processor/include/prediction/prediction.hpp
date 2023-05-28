@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-05-27 02:39:41
+ * @LastEditTime: 2023-05-28 20:55:01
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -70,8 +70,8 @@ namespace armor_processor
         SingerModel singer_ekf_;
         
         PredictorState predictor_state_ = LOST;
-        Vector6d last_state_;
-        Vector4d last_meas_;
+        Vector6d last_state_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; 
+        Vector4d last_meas_ = {0.0, 0.0, 0.0, 0.0};
         SpinHeading last_spin_state_;
         deque<Vector6d> history_switched_state_vec_;
         // deque<Vector6d> history_state_vec_;

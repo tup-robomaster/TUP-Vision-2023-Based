@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-05-27 01:23:40
+ * @LastEditTime: 2023-05-28 20:53:08
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -67,55 +67,6 @@ namespace armor_processor
             RCLCPP_ERROR(logger_, "Error while initializing: %s", e.what());
         }
     }
-
-    // /**
-    //  * @brief 自动发弹逻辑函数
-    //  * 
-    //  * @param armor 目标装甲信息
-    //  * @param hp 车辆血量信息
-    //  * @return true 
-    //  * @return false 
-    //  */2
-    //     {
-    //         post_process_info.find_target = true;
-    //         post_process_info.is_shooting = true;
-    //         post_process_info.switch_target = false;    
-    //     } 
-    //     else if (post_process_info.track_3d_pos.norm() <= 4.5 && post_process_info.hp <= 200)
-    //     {
-    //         post_process_info.find_target = true;
-    //         post_process_info.is_shooting = true;
-    //         post_process_info.switch_target = false;
-    //     }
-    //     else if (post_process_info.track_3d_pos.norm() <= 2.5 && post_process_info.hp <= 500)
-    //     {
-    //         post_process_info.find_target = true;
-    //         post_process_info.is_shooting = true;
-    //         post_process_info.switch_target = false;
-    //     }
-    //     else
-    //     {
-    //         return false;
-    //     }
-    //     PostProcessInfo post_info = PostProcessInfo();
-    //     double sleep_time = 0.0;
-    //     post_info.track_3d_pos = {armor.aiming_point_world.x, armor.aiming_point_world.y, armor.aiming_point_world.z};
-    //     post_info.pred_3d_pos = *(predictor(armor, sleep_time));
-    //     if (post_process_info.track_3d_pos.norm() <= 4.5)
-    //     {
-    //         post_info.find_target = true;
-    //         post_info.is_shooting = true;
-    //         post_info.switch_target = false;
-    //     }
-    //     else
-    //     {
-    //         post_info.find_target = true;
-    //         post_info.is_shooting = false;
-    //         post_info.switch_target = true;
-    //     }
-
-    //     return true;
-    // }
 
     /**
      * @brief 对目标装甲板的位置进行预测
@@ -281,53 +232,4 @@ namespace armor_processor
             RCLCPP_ERROR(logger_, "Error while drawing curve: %s", e.what());
         }
     }
-    
-    // /**
-    //  * @brief 设置弹速
-    //  * 
-    //  * @param speed 
-    //  * @return true 
-    //  * @return false 
-    //  */
-    // bool Processor::setBulletSpeed(double speed)
-    // {
-    //     predict_param_.bullet_speed = speed;
-    //     return true;
-    // }
-
-
-    // /**
-    //  * @brief 加载滤波参数
-    //  * 
-    //  * @param filter_param_path 滤波参数文件路径
-    //  */
-    // void Processor::loadParam(std::string filter_param_path)
-    // {
-    //     if(!is_init_)
-    //     {
-    //         config_ = YAML::LoadFile(filter_param_path_);
-    //         pf_pos.initParam(config_, "pos");
-    //         pf_v.initParam(config_, "v");
-    //         is_init_ = true;
-    //     }
-    // }
-    
-    // /**
-    //  * @brief 同上
-    //  * 
-    //  * @param src 传入图像信息，方便可视化
-    //  * @param target 
-    //  * @param sleep_time 
-    //  * @return std::unique_ptr<Eigen::Vector3d> 
-    //  */
-    // std::unique_ptr<Eigen::Vector3d> Processor::predictor(cv::Mat& src, AutoaimMsg& target, double& sleep_time)
-    // {
-    //     if(target.target_switched)
-    //     {
-
-    //     }
-
-    //     auto hit_point = predict(target, target.timestamp, sleep_time, &src);
-    //     return std::make_unique<Eigen::Vector3d>(hit_point);
-    // }
 } // armor_processor

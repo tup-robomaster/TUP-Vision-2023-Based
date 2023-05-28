@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-27 02:46:32
+ * @LastEditTime: 2023-05-28 20:25:25
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -141,7 +141,7 @@ namespace armor_processor
             processor_->coordsolver_.setBulletSpeed(cur_bullet_speed);
         }
 
-        if (target.shoot_delay >= 50 && target.shoot_delay <= 300)
+        if (target.shoot_delay >= 10 && target.shoot_delay <= 300)
         {
             processor_->predict_param_.shoot_delay = (processor_->predict_param_.shoot_delay + target.shoot_delay) / 2.0;
         }
@@ -201,7 +201,7 @@ namespace armor_processor
                             double armor3d_dist = armor_point3d_world.norm();
                             int scale = armor_point3d_world(3) / (2 * CV_PI);
                             double rangle = armor_point3d_world(3) - scale * (2 * CV_PI);
-                            if (armor3d_dist < min_dist && rangle >= 1.65 && rangle <= 1.70)
+                            if (armor3d_dist < min_dist && rangle >= 1.70 && rangle <= 1.75)
                             {
                                 min_dist = armor3d_dist;
                                 flag = idx;
@@ -305,27 +305,27 @@ namespace armor_processor
         }
         
         // 云台发弹限制
-        int limit_frame = (shoot_mode == LIMITED ? 5 : 40);
-        if (shoot_mode == LIMITED || shoot_mode == SINGLE)
-        {
-            if (shoot_flag_)
-            {
-                if (count_ <= limit_frame)
-                {
-                    is_shooting = false;
-                    count_++;
-                }
-                else
-                {
-                    shoot_flag_ = false;
-                    count_ = 0;
-                }
-            }
-            if (is_shooting)
-            {
-                shoot_flag_ = true;
-            }
-        }
+        // int limit_frame = (shoot_mode == LIMITED ? 5 : 40);
+        // if (shoot_mode == LIMITED || shoot_mode == SINGLE)
+        // {
+        //     if (shoot_flag_)
+        //     {
+        //         if (count_ <= limit_frame)
+        //         {
+        //             is_shooting = false;
+        //             count_++;
+        //         }
+        //         else
+        //         {
+        //             shoot_flag_ = false;
+        //             count_ = 0;
+        //         }
+        //     }
+        //     if (is_shooting)
+        //     {
+        //         shoot_flag_ = true;
+        //     }
+        // }
 
         RCLCPP_WARN_EXPRESSION(this->get_logger(), is_shooting, "Shooting...");
         
