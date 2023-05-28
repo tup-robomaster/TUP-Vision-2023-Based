@@ -36,7 +36,7 @@ namespace buff_detector
 
         // QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(5);
         // qos.best_effort();
         qos.reliable();
         qos.durability();
