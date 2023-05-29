@@ -2,11 +2,14 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-20 19:46:36
- * @LastEditTime: 2023-05-29 18:30:09
+ * @LastEditTime: 2023-05-29 22:43:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
 #define PARAM_STRUCT_HPP_
+
+#include "../../../filter/include/particle_filter.hpp"
+#include "../../../filter/include/motion_model.hpp"
 
 namespace buff_processor
 {

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-05-29 17:12:30
+ * @LastEditTime: 2023-05-29 22:26:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -16,9 +16,6 @@
 //opencv
 #include <opencv2/opencv.hpp>
 
-//IMM Model(CV、CA、CT)
-#include "../filter/model_generator.hpp"
-
 #include "./param_struct.hpp"
 #include "./curve_fitting.hpp"
 
@@ -29,6 +26,7 @@
 using namespace global_user;
 using namespace coordsolver;
 using namespace Eigen;
+using namespace filter;
 namespace armor_processor
 {
     class ArmorPredictor

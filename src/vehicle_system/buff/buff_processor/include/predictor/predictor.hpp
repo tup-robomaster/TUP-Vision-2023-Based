@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2023-03-20 19:58:46
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/predictor/predictor.hpp
+ * @LastEditTime: 2023-05-29 23:03:17
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
 #define PREDICTOR_HPP_
@@ -32,13 +32,11 @@
 //ros
 #include <rclcpp/rclcpp.hpp>
 
-#include "../../../filter/include/particle_filter.hpp"
 #include "../../../../global_user/include/global_user/global_user.hpp"
 #include "global_interface/msg/buff.hpp"
 #include "./param_struct.hpp"
 
 using namespace std;
-using namespace cv;
 using namespace filter;
 using namespace global_user;
 using namespace global_interface;
@@ -51,6 +49,7 @@ namespace buff_processor
         BuffPredictor();
         ~BuffPredictor();
         
+        void initPredictor(const vector<double>* kf_params);
         bool curveFitting(BuffMsg& buff_msg);
         bool predict(BuffMsg buff_msg, double dist, double &result);
         double calPreAngle(double* params, double timestamp);
@@ -63,6 +62,8 @@ namespace buff_processor
         bool is_params_confirmed_;
         
         ParticleFilter pf_;
+        KalmanFilter kf_;
+
         BuffAngleInfo last_target_;              //最后目标
         ParticleFilter pf_param_loader_;
         PredictorParam predictor_param_;

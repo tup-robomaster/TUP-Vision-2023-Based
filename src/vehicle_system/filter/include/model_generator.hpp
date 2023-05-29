@@ -2,15 +2,15 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 17:45:11
- * @LastEditTime: 2023-02-01 23:24:48
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/model_generator.hpp
+ * @LastEditTime: 2023-05-29 22:32:41
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/model_generator.hpp
  */
 #ifndef MODEL_GENERATOR_HPP_
 #define MODEL_GENERATOR_HPP_
 
 #include "./imm.hpp"
 
-namespace armor_processor
+namespace filter
 {
     class ModelGenerator
     {
@@ -35,6 +35,6 @@ namespace armor_processor
     //                                                               0.5, 0.4, 0.05, 0.05,
     //                                                               0.1, 0.1, 0.75, 0.05,
     //                                                               0.1, 0.1, 0.05, 0.75}, vector<double>{0.4, 0.3, 0.15, 0.15}};
-} //armor_processor
+} //filter
 
 #endif

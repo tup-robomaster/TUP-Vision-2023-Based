@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:47:32
- * @LastEditTime: 2023-05-29 16:56:36
+ * @LastEditTime: 2023-05-29 23:07:58
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor/buff_processor.cpp
  */
 #include "../../include/buff_processor/buff_processor.hpp"
@@ -15,12 +15,14 @@ namespace buff_processor
         is_initialized_ = false;
     }
 
-    Processor::Processor(const PredictorParam& predict_param, const PathParam& path_param, const DebugParam& debug_param)
-    : predictor_param_(predict_param), path_param_(path_param), debug_param_(debug_param),
+    Processor::Processor(const PredictorParam& predict_param, vector<double>* kf_params, const DebugParam& debug_param)
+    : predictor_param_(predict_param), debug_param_(debug_param),
     logger_(rclcpp::get_logger("buff_processor"))
     {
         is_initialized_ = false;
+        
         buff_predictor_.predictor_param_ = predict_param;
+        buff_predictor_.initPredictor(kf_params);
     }
 
     Processor::~Processor()

@@ -41,6 +41,10 @@
     pf_path: "/config/filter_param.yaml"
     camera_param_path: "/config/camera.yaml"
 
+  # Filter params.
+    kf_process_noise: [1.0]
+    kf_measure_noise: [1.0]
+
   # Debug.
     debug: true
     show_img: false

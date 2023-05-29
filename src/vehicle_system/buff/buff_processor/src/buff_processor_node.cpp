@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-05-29 18:41:56
+ * @LastEditTime: 2023-05-29 23:11:24
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -345,6 +345,20 @@ namespace buff_processor
         this->predict_param_.pf_path = pkg_share_pth + this->get_parameter("pf_path").as_string();
         this->path_param_.camera_param_path = pkg_share_pth + this->get_parameter("camera_param_path").as_string();
 
+        vector<double> kf_process_noise_params = {1.0};
+        this->declare_parameter("kf_process_noise", kf_process_noise_params);
+        kf_process_noise_params = this->get_parameter("kf_process_noise").as_double_array();
+
+        vector<double> kf_measure_noise_params = {1.0};
+        this->declare_parameter("kf_measure_noise", kf_process_noise_params);
+        kf_measure_noise_params = this->get_parameter("kf_measure_noise").as_double_array();
+
+        vector<double> kf_params[2] = 
+        {
+            kf_process_noise_params,
+            kf_measure_noise_params
+        };
+
         //Debug param.
         this->declare_parameter<bool>("show_img", false);
         this->declare_parameter<bool>("show_marker", false);
@@ -353,7 +367,7 @@ namespace buff_processor
         if(success)
             RCLCPP_INFO(this->get_logger(), "Update param!");
 
-        return std::make_unique<Processor>(predict_param_, path_param_, debug_param_);
+        return std::make_unique<Processor>(predict_param_, kf_params, debug_param_);
     }
 } //namespace buff_processor
 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-05-29 16:49:46
+ * @LastEditTime: 2023-05-29 23:21:29
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -21,11 +21,18 @@ namespace buff_processor
         rmse_error_cnt_ = 0;
         last_pred_angle_ = 0.0;
         
-        params_[0] = 0;
-        params_[1] = 0; 
-        params_[2] = 0; 
-        params_[3] = 0;
+        params_[0] = 0.0;
+        params_[1] = 0.0; 
+        params_[2] = 0.0; 
+        params_[3] = 0.0;
+    }
 
+    BuffPredictor::~BuffPredictor()
+    {
+    }
+
+    void BuffPredictor::initPredictor(const vector<double>* kf_params)
+    {
         try
         {
             YAML::Node config = YAML::LoadFile(predictor_param_.pf_path);
@@ -35,10 +42,12 @@ namespace buff_processor
         {
             RCLCPP_ERROR(logger_, "Error while initializing pf param: %s", e.what());
         }
-    }
 
-    BuffPredictor::~BuffPredictor()
-    {
+        kf_ = KalmanFilter(KFParam{kf_params[0], kf_params[1]});
+        kf_.Init(1, 1, 0);
+        kf_.F_ << 1.0;
+        kf_.Q_ << kf_params[0][0];
+        kf_.R_ << kf_params[1][0];
     }
 
     bool BuffPredictor::curveFitting(BuffMsg& buff_msg)
@@ -87,6 +96,20 @@ namespace buff_processor
         }
 
         //输入数据前进行滤波
+        if (!is_params_confirmed_)
+        {
+            kf_.x_ << buff_msg.delta_angle;
+        }
+        else
+        {
+            kf_.Predict();
+
+            Eigen::VectorXd meas(1);
+            meas << buff_msg.delta_angle;
+            kf_.Update(meas);
+            target.delta_angle = kf_.x_(0);
+        }
+        
         // auto is_ready = pf_.is_ready;
         // Eigen::VectorXd measure(1);
         // measure << buff_msg.delta_angle;
@@ -97,7 +120,8 @@ namespace buff_processor
         //     auto predict = pf_.predict();
         //     target.delta_angle = predict[0];
         // }
-        // target.delta_angle = (target.delta_angle / buff_msg.delta_angle > 0) ? target.delta_angle : buff_msg.delta_angle;
+
+        target.delta_angle = (target.delta_angle / buff_msg.delta_angle > 0) ? target.delta_angle : buff_msg.delta_angle;
         // cout << "target.delta_angle: " << target.delta_angle << endl;
 
         int fitting_lens = 50;
