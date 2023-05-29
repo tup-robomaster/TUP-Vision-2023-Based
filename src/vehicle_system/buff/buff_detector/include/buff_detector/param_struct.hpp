@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:35:11
- * @LastEditTime: 2023-03-20 11:38:52
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/include/buff_detector/param_struct.hpp
+ * @LastEditTime: 2023-05-29 18:14:01
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/param_struct.hpp
  */
 //c++
 #include <future>
@@ -23,6 +23,7 @@ namespace buff_detector
         bool print_target_info;
         bool assist_label;
         bool prinf_latency;
+        bool show_marker;
 
         DebugParam()
         {
@@ -34,6 +35,7 @@ namespace buff_detector
             print_target_info = false; 
             prinf_latency = false;
             assist_label = false;
+            show_marker = false;
         }
     };
 

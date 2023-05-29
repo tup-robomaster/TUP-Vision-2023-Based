@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-29 06:14:46
+ * @LastEditTime: 2023-05-29 16:55:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -96,14 +96,14 @@ namespace armor_processor
         double sleep_time = 0.0;
         AutoaimMsg target = std::move(target_info);
 
-        // target.mode = 2;
-        // target.is_spinning = true;
-        // target.target_switched = false;
+        // target.mode = HERO_SLING;
         if (target.mode == HERO_SLING)
         {
+            target.is_spinning = true;
+            target.target_switched = false;
             if (!target.spinning_switched && !target.is_target_lost)
             {
-                if (abs(last_rangle - target.armors.front().rangle) > 0.5)
+                if (abs(last_rangle_ - target.armors.front().rangle) > 0.5)
                 {
                     target.is_target_lost = true;
                 }
@@ -368,6 +368,7 @@ namespace armor_processor
         }
 
         processor_->is_last_exists_ = !target.is_target_lost;
+        last_rangle_ = target.armors.front().rangle;
         
         if (debug_param_.show_img && !dst.empty()) 
         {
@@ -596,7 +597,8 @@ namespace armor_processor
         // Declare prediction params.
         this->declare_parameter<double>("bullet_speed", 28.0);
         this->declare_parameter<double>("shoot_delay", 100.0);
-        this->declare_parameter<double>("delay_coeff", 2.5);
+        this->declare_parameter<double>("delay_coeff", 1.0);
+        
         this->declare_parameter<int>("max_dt", 1000);
         this->declare_parameter<int>("max_cost", 509);
         this->declare_parameter<int>("max_v", 8);

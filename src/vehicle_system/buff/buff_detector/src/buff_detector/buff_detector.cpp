@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-03-20 12:16:22
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
+ * @LastEditTime: 2023-05-29 18:21:58
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
 
@@ -38,7 +38,7 @@ namespace buff_detector
 
     }
 
-    bool Detector::run(TaskData& src, TargetInfo& target_info)
+    bool Detector::run(TaskData& src, TargetInfo& target_info, vector<geometry_msgs::msg::Transform>& armor3d_transform_vec, int& flag)
     {
         auto time_start = steady_clock_.now();
 
@@ -174,8 +174,27 @@ namespace buff_detector
         // 分配或创建扇叶追踪器（fan tracker）
         // TODO:增加防抖
         std::vector<FanTracker> trackers_tmp;
+        int idx = 0;
         for (auto fan = fans_.begin(); fan != fans_.end(); ++fan)
         {
+            geometry_msgs::msg::Transform t;
+            t.translation.x = fan.armor3d_world(0);
+            t.translation.y = fan.armor3d_world(1);
+            t.translation.z = fan.armor3d_world(2);
+            
+            Eigen::Quaterniond quat_world = Eigen::Quaterniond(fan.rmat);
+            t.rotation.w = quat_world.w();
+            t.rotation.x = quat_world.x();
+            t.rotation.y = quat_world.y();
+            t.rotation.z = quat_world.z();
+
+            armor3d_transform_vec.emplace_back(t);
+
+            if (fan->id == 0)
+            {
+                flag = idx;
+            }
+
             if (trackers_.size() == 0)
             {
                 FanTracker fan_tracker((*fan), src.timestamp);
@@ -254,9 +273,14 @@ namespace buff_detector
                     trackers_tmp.push_back(fan_tracker);
                 }
             }
+
+            ++idx;
         }
+
         for (auto new_tracker : trackers_tmp)
-            trackers_.push_back(new_tracker);
+        {
+            trackers_.emplace_back(new_tracker);
+        }
         
         // 检查待激活扇叶是否存在
         Fan target;
@@ -311,6 +335,20 @@ namespace buff_detector
         mean_delta_angle = delta_angle_sum / avail_tracker_cnt;
         mean_r_center = r_center_sum / avail_tracker_cnt;
 
+        // pub msg for marker visualization
+        geometry_msgs::msg::Transform t;
+        t.translation.x = mean_r_center(0);
+        t.translation.y = mean_r_center(1);
+        t.translation.z = mean_r_center(2);
+
+        t.rotation.w = 1.0;
+        t.rotation.x = 0.0;
+        t.rotation.y = 0.0;
+        t.rotation.z = 0.0;
+
+        armor3d_transform_vec.emplace_back(t);
+
+        // transform to cam frame
         auto r_center_cam = coordsolver_.worldToCam(target.centerR3d_world, rmat_imu_);
         auto center2d_src = coordsolver_.reproject(r_center_cam);
 

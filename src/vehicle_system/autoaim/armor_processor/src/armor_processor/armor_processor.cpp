@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-05-27 01:23:40
+ * @LastEditTime: 2023-05-29 17:11:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -158,6 +158,13 @@ namespace armor_processor
                 }
                 is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
                 lost_cnt_ = 0;
+
+                RCLCPP_INFO_THROTTLE(
+                    logger_,
+                    steady_clock_,
+                    50,
+                    "Losting appearing..."  
+                );
             }
             else if (target.is_target_switched && !target.is_target_lost)
             {
@@ -174,7 +181,6 @@ namespace armor_processor
                 // target_period_ = target.period;
                 armor_predictor_.predictor_state_ = PREDICTING;
 
-                // Eigen::Vector4d meas = {xyz(1), -xyz(0), xyz(2), (rangle > 0 ? (rangle - CV_PI / 2) : (CV_PI * 1.5 + rangle))};
                 Eigen::Vector4d meas = {xyz(0), xyz(1), xyz(2), rangle};
                 armor_predictor_.updatePredictor(target.is_spinning, meas);
                 is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
@@ -228,53 +234,4 @@ namespace armor_processor
             RCLCPP_ERROR(logger_, "Error while drawing curve: %s", e.what());
         }
     }
-    
-    // /**
-    //  * @brief 设置弹速
-    //  * 
-    //  * @param speed 
-    //  * @return true 
-    //  * @return false 
-    //  */
-    // bool Processor::setBulletSpeed(double speed)
-    // {
-    //     predict_param_.bullet_speed = speed;
-    //     return true;
-    // }
-
-
-    // /**
-    //  * @brief 加载滤波参数
-    //  * 
-    //  * @param filter_param_path 滤波参数文件路径
-    //  */
-    // void Processor::loadParam(std::string filter_param_path)
-    // {
-    //     if(!is_init_)
-    //     {
-    //         config_ = YAML::LoadFile(filter_param_path_);
-    //         pf_pos.initParam(config_, "pos");
-    //         pf_v.initParam(config_, "v");
-    //         is_init_ = true;
-    //     }
-    // }
-    
-    // /**
-    //  * @brief 同上
-    //  * 
-    //  * @param src 传入图像信息，方便可视化
-    //  * @param target 
-    //  * @param sleep_time 
-    //  * @return std::unique_ptr<Eigen::Vector3d> 
-    //  */
-    // std::unique_ptr<Eigen::Vector3d> Processor::predictor(cv::Mat& src, AutoaimMsg& target, double& sleep_time)
-    // {
-    //     if(target.target_switched)
-    //     {
-
-    //     }
-
-    //     auto hit_point = predict(target, target.timestamp, sleep_time, &src);
-    //     return std::make_unique<Eigen::Vector3d>(hit_point);
-    // }
 } // armor_processor

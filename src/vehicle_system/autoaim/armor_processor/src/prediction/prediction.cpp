@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-29 05:55:20
+ * @LastEditTime: 2023-05-29 17:11:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -281,7 +281,12 @@ namespace armor_processor
 
         if (is_target_lost && predictor_state_ == LOSTING)
         {   
-            // cout << "losting..." << endl;
+            RCLCPP_INFO_THROTTLE(
+                logger_,
+                steady_clock_,
+                50,
+                "Losting"  
+            );
             
             Eigen::VectorXd state = uniform_ekf_.x();
             double radius = state(3);
@@ -403,7 +408,6 @@ namespace armor_processor
 
             if (is_outpost_mode_)
             {
-                // cout << "is_outpost_mode" << endl;
                 if (abs(omega - outpost_angular_speed_) >= 0.50)
                 {
                     uniform_ekf_.x_(5) = outpost_angular_speed_;
@@ -412,6 +416,13 @@ namespace armor_processor
                 {
                     uniform_ekf_.x_(5) = (omega + outpost_angular_speed_) / 2.0;
                 }
+                
+                RCLCPP_WARN_THROTTLE(
+                    logger_,
+                    steady_clock_,
+                    50,
+                    "Outpost sling mode..."
+                );
             }
 
             state = uniform_ekf_.x();

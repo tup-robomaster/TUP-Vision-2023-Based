@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-05-24 15:54:23
+ * @LastEditTime: 2023-05-29 17:53:11
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -119,6 +119,7 @@ namespace coordsolver
                 {0.066, 0.027, 0}
             };
         }
+        
         //长度为5进入大符模式
         else if (type == BUFF)
         {

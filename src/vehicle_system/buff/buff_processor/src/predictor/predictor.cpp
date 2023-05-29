@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-03-22 16:11:23
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/predictor/predictor.cpp
+ * @LastEditTime: 2023-05-29 16:49:46
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
 
@@ -313,9 +313,10 @@ namespace buff_processor
 
     bool BuffPredictor::predict(BuffMsg buff_msg, double dist, double &result)
     {
-        // double delay = (mode_ == 3 ? predictor_param_.delay_small : predictor_param_.delay_big);
-        // double pred_dt = ((double)dist / predictor_param_.bullet_speed) * 1e3 + delay;
         double pred_dt = ((double)dist / predictor_param_.bullet_speed) * 1e3 + predictor_param_.shoot_delay;
+        pred_dt *= predictor_param_.delay_coeff;
+        
+        // 调试使用，实测需注释掉
         pred_dt = 500;
         
         curveFitting(buff_msg);

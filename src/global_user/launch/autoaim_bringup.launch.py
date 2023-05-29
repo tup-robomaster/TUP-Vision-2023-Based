@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-05-26 22:38:06
+LastEditTime: 2023-05-29 16:44:37
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -28,11 +28,11 @@ def generate_launch_description():
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
     camera_type = 'daheng' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
-    camera_name = 'KE0200110074'
+    camera_name = 'KE0200110076'
     use_serial = True
     use_imu = True
-    shoot_delay = 120.0 # 发弹延迟
     bullet_speed = 14.5 # 弹速
+    shoot_delay = 120.0 # 发弹延迟
     delay_coeff = 1.0   # 延迟系数（放大时间提前量，缓解云台跟随滞后问题
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
