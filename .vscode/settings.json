@@ -107,15 +107,11 @@
         "buffer": "cpp",
         "netfwd": "cpp",
         "dense": "cpp",
-<<<<<<< HEAD
-        "specialfunctions": "cpp"
-=======
         "compare": "cpp",
         "concepts": "cpp",
         "ranges": "cpp",
         "stop_token": "cpp",
         "span": "cpp"
->>>>>>> origin/develop
     },
     "python.autoComplete.extraPaths": [
         "/opt/ros/galactic/lib/python3.8/site-packages"
