@@ -226,7 +226,7 @@ namespace buff_detector
 
         this->declare_parameter<int>("debug_mode", 3);
         this->declare_parameter<bool>("assist_label", false);
-        this->declare_parameter<bool>("detect_red", true);
+        this->declare_parameter<bool>("enemy_red", true);
         this->declare_parameter<bool>("prinf_latency", false);
         this->declare_parameter<bool>("print_target_info", false);
         this->declare_parameter<bool>("show_all_fans", true);
@@ -253,7 +253,7 @@ namespace buff_detector
 
         //Debug param.
         this->get_parameter("assist_label", this->debug_param_.assist_label);
-        this->get_parameter("detect_red", this->debug_param_.detect_red);
+        this->get_parameter("enemy_red", this->debug_param_.enemy_red);
         this->get_parameter("prinf_latency", this->debug_param_.prinf_latency);
         this->get_parameter("print_target_info", this->debug_param_.print_target_info);
         this->get_parameter("show_all_fans", this->debug_param_.show_all_fans);

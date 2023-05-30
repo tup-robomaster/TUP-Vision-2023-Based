@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-04-27 20:45:02
+ * @LastEditTime: 2023-05-14 16:04:52
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -73,10 +73,8 @@ namespace serialport
         void serialWatcher();
 
         void decisionMsgCallback(DecisionMsg::SharedPtr msg);
-        rclcpp::Subscription<DecisionMsg>::SharedPtr decision_msg_sub_; 
         DecisionMsg decision_msg_;
         mutex decision_mutex_;
-
     private:
         int baud_;
         std::string id_;
@@ -101,7 +99,8 @@ namespace serialport
         rclcpp::TimerBase::SharedPtr send_timer_;
         // rclcpp::TimerBase::SharedPtr receive_timer_;
         queue<VisionAimData> vision_data_queue_;
-        // vector<float> vehicle_pos_info;
+
+        rclcpp::Time stamp_;
 
         //tf2    
         std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
@@ -109,23 +108,18 @@ namespace serialport
         std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
         
     public:
-        /**
-         * @brief 哨兵和其他车辆的msg不同，此处订阅者和发布者视兵种而定
-         * 
-         */
         rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
         rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sentry_twist_sub_;
         rclcpp::Publisher<CarPosMsg>::SharedPtr car_pos_pub_;
         rclcpp::Publisher<ObjHPMsg>::SharedPtr obj_hp_pub_;
         rclcpp::Publisher<GameMsg>::SharedPtr game_msg_pub_;
 
-        // 其他兵种
         rclcpp::Subscription<GimbalMsg>::SharedPtr autoaim_info_sub_;
         rclcpp::Subscription<GimbalMsg>::SharedPtr autoaim_tracking_sub_;
         rclcpp::Subscription<GimbalMsg>::SharedPtr buff_info_sub_;
-
+        rclcpp::Subscription<DecisionMsg>::SharedPtr decision_msg_sub_;
+        
         rclcpp::Publisher<SerialMsg>::SharedPtr serial_msg_pub_;
-
     private:
         std::unique_ptr<SerialPort> serial_port_;
         std::unique_ptr<SerialPort> initSerialPort();

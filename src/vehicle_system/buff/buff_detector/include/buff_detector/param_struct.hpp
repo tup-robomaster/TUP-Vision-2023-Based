@@ -14,7 +14,7 @@ namespace buff_detector
     {
         bool using_imu;
         bool using_roi;
-        bool detect_red;
+        bool enemy_red;
         bool show_img;
         bool show_all_fans;
         bool show_fps;
@@ -26,7 +26,7 @@ namespace buff_detector
         {
             using_imu = false;
             using_roi = false;
-            detect_red = true;
+            enemy_red = true;
             show_img = true;
             show_all_fans = true;
             show_fps = true;

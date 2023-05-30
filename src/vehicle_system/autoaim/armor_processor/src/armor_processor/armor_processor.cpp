@@ -11,7 +11,8 @@ namespace armor_processor
 {
     Processor::Processor(const PredictParam& predict_param, vector<double>* uniform_ekf_param,
         vector<double>* singer_ekf_param, const DebugParam& debug_param)
-    : logger_(rclcpp::get_logger("armor_processor")), predict_param_(predict_param), debug_param_(debug_param)  
+    : logger_(rclcpp::get_logger("armor_processor")), predict_param_(predict_param), debug_param_(debug_param),
+    armor_predictor_(predict_param, debug_param)
     {
         //初始化预测器
         armor_predictor_.initPredictor(uniform_ekf_param, singer_ekf_param);
@@ -58,7 +59,6 @@ namespace armor_processor
         try
         {
             auto success = coordsolver_.loadParam(coord_path, coord_name);
-            // success = coordsolver_.setStaticAngleOffset(predict_param_.angle_offset);
             is_param_initialized_ = true;
         }
         catch(const std::exception& e)
@@ -66,55 +66,6 @@ namespace armor_processor
             RCLCPP_ERROR(logger_, "Error while initializing: %s", e.what());
         }
     }
-
-    // /**
-    //  * @brief 自动发弹逻辑函数
-    //  * 
-    //  * @param armor 目标装甲信息
-    //  * @param hp 车辆血量信息
-    //  * @return true 
-    //  * @return false 
-    //  */2
-    //     {
-    //         post_process_info.find_target = true;
-    //         post_process_info.is_shooting = true;
-    //         post_process_info.switch_target = false;    
-    //     } 
-    //     else if (post_process_info.track_3d_pos.norm() <= 4.5 && post_process_info.hp <= 200)
-    //     {
-    //         post_process_info.find_target = true;
-    //         post_process_info.is_shooting = true;
-    //         post_process_info.switch_target = false;
-    //     }
-    //     else if (post_process_info.track_3d_pos.norm() <= 2.5 && post_process_info.hp <= 500)
-    //     {
-    //         post_process_info.find_target = true;
-    //         post_process_info.is_shooting = true;
-    //         post_process_info.switch_target = false;
-    //     }
-    //     else
-    //     {
-    //         return false;
-    //     }
-    //     PostProcessInfo post_info = PostProcessInfo();
-    //     double sleep_time = 0.0;
-    //     post_info.track_3d_pos = {armor.aiming_point_world.x, armor.aiming_point_world.y, armor.aiming_point_world.z};
-    //     post_info.pred_3d_pos = *(predictor(armor, sleep_time));
-    //     if (post_process_info.track_3d_pos.norm() <= 4.5)
-    //     {
-    //         post_info.find_target = true;
-    //         post_info.is_shooting = true;
-    //         post_info.switch_target = false;
-    //     }
-    //     else
-    //     {
-    //         post_info.find_target = true;
-    //         post_info.is_shooting = false;
-    //         post_info.switch_target = true;
-    //     }
-
-    //     return true;
-    // }
 
     /**
      * @brief 对目标装甲板的位置进行预测
@@ -128,11 +79,10 @@ namespace armor_processor
         bool is_success = false;
         rclcpp::Time stamp = target_msg.header.stamp;
         armor_predictor_.now_ = stamp.nanoseconds() / 1e9;
-        // cout << "now:" << armor_predictor_.now_ << endl;
 
         double dt = (stamp.nanoseconds() - last_timestamp_.nanoseconds()) / 1e9;
         double bullet_speed = coordsolver_.getBulletSpeed();
-        if (dt > 0.1)
+        if (dt > 0.2)
             dt = 0.015;
 
         RCLCPP_WARN_THROTTLE(
@@ -147,7 +97,7 @@ namespace armor_processor
         {
             double pred_dt = last_target_.xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
             last_target_.is_target_lost = true;
-            if (lost_cnt_ <= 5)
+            if (lost_cnt_ <= 20)
             {
                 //进入预测追踪阶段
                 is_success = armor_predictor_.predict(last_target_, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
@@ -162,27 +112,13 @@ namespace armor_processor
 
         for (auto armor : target_msg.armors)
         {
-            // cout << "armor.point3d_world:" << armor.point3d_world.x << " " << armor.point3d_world.y << " " << armor.point3d_world.z << endl;
+            double rangle = armor.rangle;
             Eigen::Vector3d xyz = {armor.point3d_world.x, armor.point3d_world.y, armor.point3d_world.z};
             double pred_dt = xyz.norm() / bullet_speed + predict_param_.shoot_delay / 1e3;
             Eigen::VectorXd state = armor_predictor_.uniform_ekf_.x();
             Eigen::Vector3d center_xyz = {state(0), state(1), state(2)};
 
-            // cout << "rangle:" << armor.rangle << endl;
-            // RCLCPP_WARN_THROTTLE(
-            //     logger_,
-            //     steady_clock_,
-            //     100, 
-            //     "xyz:【%.3f %.3f %.3f] center_norm:[%.3f %.3f %.3f]",
-            //     xyz(0), xyz(1), xyz(2), center_xyz(0), center_xyz(1), center_xyz(2)
-            // );
-            // RCLCPP_WARN_THROTTLE(
-            //     logger_,
-            //     steady_clock_, 
-            //     100, 
-            //     "radius:%.3f theta:%.3f omega:%.3f vx:%.3f vy:%.3f vz:%.3f", 
-            //     state(3), state(4), state(5), state(6), state(7), state(8)
-            // );
+            pred_result = xyz;
 
             TargetInfo target = 
             { 
@@ -201,20 +137,21 @@ namespace armor_processor
                 predict_param_.system_model
             };
             
-            if(target.is_outpost_mode)
-            {
-                is_filter_ = false;
-                is_fitting_ = true;
-            }
-            else
-            {
-                is_filter_ = true;
-                is_fitting_ = false;
-            }
-
             if (!target.is_target_lost && armor_predictor_.predictor_state_ == LOSTING)
             {   //目标丢失后又重新出现
                 armor_predictor_.predictor_state_ = PREDICTING;
+                if(target.is_target_switched)
+                {
+                    if (armor_predictor_.resetPredictor())
+                    {
+                        RCLCPP_WARN(logger_, "Reset predictor...");
+                    }
+                }
+                else if (target.is_spinning_switched)
+                {
+                    Eigen::Vector4d meas = {xyz(0), xyz(1), xyz(2), rangle};
+                    is_success = armor_predictor_.updatePredictor(target.is_spinning, meas);
+                }
                 is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
                 lost_cnt_ = 0;
             }
@@ -230,10 +167,11 @@ namespace armor_processor
             else if (target.is_spinning_switched && !target.is_target_lost)
             {
                 RCLCPP_WARN(logger_, "Update predictor...");
-                // target_period_ = target.period;
+
                 armor_predictor_.predictor_state_ = PREDICTING;
-                Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
-                armor_predictor_.updatePredictor(meas);
+
+                Eigen::Vector4d meas = {xyz(0), xyz(1), xyz(2), rangle};
+                armor_predictor_.updatePredictor(target.is_spinning, meas);
                 is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
             }
             else if (!target.is_target_lost)
@@ -285,53 +223,4 @@ namespace armor_processor
             RCLCPP_ERROR(logger_, "Error while drawing curve: %s", e.what());
         }
     }
-    
-    // /**
-    //  * @brief 设置弹速
-    //  * 
-    //  * @param speed 
-    //  * @return true 
-    //  * @return false 
-    //  */
-    // bool Processor::setBulletSpeed(double speed)
-    // {
-    //     predict_param_.bullet_speed = speed;
-    //     return true;
-    // }
-
-
-    // /**
-    //  * @brief 加载滤波参数
-    //  * 
-    //  * @param filter_param_path 滤波参数文件路径
-    //  */
-    // void Processor::loadParam(std::string filter_param_path)
-    // {
-    //     if(!is_init_)
-    //     {
-    //         config_ = YAML::LoadFile(filter_param_path_);
-    //         pf_pos.initParam(config_, "pos");
-    //         pf_v.initParam(config_, "v");
-    //         is_init_ = true;
-    //     }
-    // }
-    
-    // /**
-    //  * @brief 同上
-    //  * 
-    //  * @param src 传入图像信息，方便可视化
-    //  * @param target 
-    //  * @param sleep_time 
-    //  * @return std::unique_ptr<Eigen::Vector3d> 
-    //  */
-    // std::unique_ptr<Eigen::Vector3d> Processor::predictor(cv::Mat& src, AutoaimMsg& target, double& sleep_time)
-    // {
-    //     if(target.target_switched)
-    //     {
-
-    //     }
-
-    //     auto hit_point = predict(target, target.timestamp, sleep_time, &src);
-    //     return std::make_unique<Eigen::Vector3d>(hit_point);
-    // }
 } // armor_processor

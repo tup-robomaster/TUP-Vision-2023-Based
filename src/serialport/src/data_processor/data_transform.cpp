@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-02-07 02:02:10
- * @LastEditTime: 2023-04-03 19:57:14
+ * @LastEditTime: 2023-05-14 16:10:27
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/data_processor/data_transform.cpp
  */
 #include "../../include/data_processor/data_transform.hpp"
@@ -39,8 +39,8 @@ namespace serialport
         trans_data[15] = vision_data.isSwitched;
         trans_data[16] = vision_data.isFindTarget;
         trans_data[17] = vision_data.isSpinning;
-        trans_data[18] = vision_data.isShooting;
-        trans_data[19] = vision_data.isPrediction;
+        trans_data[18] = vision_data.isPrediction;
+        trans_data[19] = vision_data.isShooting;
 
         //目标位置信息
         float float_3d_data[] = {(float)vision_data.meas_tracking_point[0], (float)vision_data.meas_tracking_point[1], (float)vision_data.meas_tracking_point[2],
@@ -87,6 +87,12 @@ namespace serialport
         crc_check_.Append_CRC16_Check_Sum(trans_data, 64);
     }
 
+    void DataTransform::getShootDelay(uchar* raw_data, float& shoot_delay)
+    {
+        shoot_delay = ucharRaw2Float(raw_data);
+        return;
+    }
+
     void DataTransform::getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle)
     {
         if (flag == 0xA5)
@@ -105,21 +111,29 @@ namespace serialport
         return;
     }
 
-    void DataTransform::getPosInfo(uchar flag, uchar* raw_data, vector<float>& pos)
+    void DataTransform::getPosInfo(uchar flag, uchar* raw_data, vector<ushort>& pos)
     {
+        // if (flag == 0xB5)
+        //     if (!ucharRaw2FloatVector(raw_data, 56, pos))
+        //         RCLCPP_ERROR(logger_, "Get Pos data failed!!!");
+        // else if (flag == 0xC5)
+        //     if (!ucharRaw2FloatVector(raw_data, 24, pos))
+        //         RCLCPP_ERROR(logger_, "Get Pos data failed!!!");
+        // return;
+
         if (flag == 0xB5)
-            if (!ucharRaw2FloatVector(raw_data, 56, pos))
+            if (!ucharRaw2UShortVector(raw_data, 48, pos))
                 RCLCPP_ERROR(logger_, "Get Pos data failed!!!");
-        else if (flag == 0xC5)
-            if (!ucharRaw2FloatVector(raw_data, 24, pos))
-                RCLCPP_ERROR(logger_, "Get Pos data failed!!!");
+        // else if (flag == 0xC5)
+        //     if (!ucharRaw2UShortVector(raw_data, 24, pos))
+        //         RCLCPP_ERROR(logger_, "Get Pos data failed!!!");
         return;
     }
 
     void DataTransform::getHPInfo(uchar flag, uchar* raw_data, vector<ushort>& hp)
     {
         if (flag == 0xC5)
-            if (!ucharRaw2Int16Vector(raw_data, 20, hp))
+            if (!ucharRaw2Int16Vector(raw_data, 32, hp))
                 RCLCPP_ERROR(logger_, "Get HP data failed!!!");
         return;
     }
@@ -224,6 +238,19 @@ namespace serialport
     };
 
     /**
+     * @brief 将4个uchar转换为unsigned short
+     * @param data data首地址指针
+     * @return
+     */
+    ushort DataTransform::ucharRaw2UShort(uchar *data)
+    {
+        ushort ushort_data;
+        ushort_data = *((ushort*)data);
+        // memcpy(&float_data, data, sizeof(float));
+        return ushort_data;
+    };
+
+    /**
      * @brief float转uchar
      * 
      * @param float_data float型数据
@@ -249,6 +276,23 @@ namespace serialport
         {
             float float_data = ucharRaw2Float(&data[i]);
             vec.push_back(float_data);
+        }
+        return true;
+    }
+
+     /**
+     * @brief uchar原始数据转换为usigned short vector
+     * @param data 首地址指针
+     * @param bytes 字节数
+     * @param vec float vector地址
+     */
+    bool DataTransform::ucharRaw2UShortVector(uchar *data, int bytes, std::vector<ushort> &vec)
+    {
+        assert(bytes % 2 == 0);
+        for(int i = 0; i < bytes; i += 2)
+        {
+            ushort ushort_data = ucharRaw2UShort(&data[i]);
+            vec.push_back(ushort_data);
         }
         return true;
     }

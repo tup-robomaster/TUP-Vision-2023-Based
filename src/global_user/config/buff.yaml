@@ -4,25 +4,27 @@
     max_lost_cnt: 4 
     max_v: 4.0  
     max_delta_t: 100.0
+    enemy_red: true
     fan_length: 0.7
     no_crop_thres: 0.002
 
   # Paths.
-    camera_type: 3
-    # network_path: "/model/buff.xml"
-    # network_path: "/model/yolox.xml"
-    network_path: "/model/yolox-03-17.xml"
+    camera_name: "KE0200110075"
     camera_param_path: "/config/camera.yaml"
     camera_name: "KE0200110075"
     path_prefix: "/recorder/dataset/"
+    network_path: "/model/buff.xml"
+    # network_path: "/model/yolox.xml"
+    # network_path: "/model/yolox-03-17.xml"
 
   # Debug.
+    debug_mode: 4
     using_imu: false
     using_roi: true
-    detect_red: false
+
     show_img: false
-    show_all_fans: false
-    show_fps: false
+    show_all_fans: true
+    show_fps: true
     print_target_info: false 
     prinf_latency: false
     assist_label: false

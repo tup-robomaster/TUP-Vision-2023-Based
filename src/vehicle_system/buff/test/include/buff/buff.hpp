@@ -34,7 +34,7 @@ namespace buff
         bool using_roi;
         bool show_aim_cross;
         bool show_img;
-        bool detect_red;
+        bool enemy_red;
         bool show_all_fans;
         bool show_fps;
         bool print_latency;
@@ -52,7 +52,7 @@ namespace buff
             using_roi = false;
             show_aim_cross = false;
             show_img = false;
-            detect_red = true;
+            enemy_red = true;
             show_all_fans = true;
             show_fps = true;
             print_target_info = false; 

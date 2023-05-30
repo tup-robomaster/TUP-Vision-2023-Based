@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-05-09 21:58:19
+ * @LastEditTime: 2023-05-11 17:52:25
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -35,6 +35,7 @@
 #include "../usb_driver/usb_cam.hpp"
 #include "../hik_driver/hik_camera.hpp"
 #include "../daheng_driver/daheng_camera.hpp"
+#include "../mvs_driver/mvs_camera.hpp"
 #include "../../global_user/include/global_user/global_user.hpp"
 #include "global_interface/msg/decision.hpp"
 #include "global_interface/msg/serial.hpp"
@@ -88,8 +89,10 @@ namespace camera_driver
         sensor_msgs::msg::CameraInfo camera_info_msg_;
         sensor_msgs::msg::Image image_msg_;
         cv::Mat frame_;
-        bool is_cam_open_;
+        atomic<bool> is_cam_open_;
         string camera_topic_;
+
+        mutex camera_mutex_;
 
         // 图像保存
         bool save_video_;
@@ -97,13 +100,6 @@ namespace camera_driver
         bool using_ros2bag_;
         int frame_cnt_;
         std::unique_ptr<rosbag2_cpp::writers::SequentialWriter> writer_;
-
-        DecisionMsg decision_msg_;
-        mutex decision_mutex_;
-
-        SerialMsg serial_msg_;
-        mutex serial_mutex_;
-        // bool use_serial_;
     };
 
     template<class T>
@@ -162,10 +158,8 @@ namespace camera_driver
         }
         else
             RCLCPP_WARN_ONCE(this->get_logger(), "No save video...");
-
         // Create img publisher.
         this->camera_pub_ = image_transport::create_camera_publisher(this, camera_topic_, rmw_qos);
-
         // Open camera.
         if(!cam_driver_->open())
             RCLCPP_ERROR(this->get_logger(), "Open failed!");
@@ -175,10 +169,7 @@ namespace camera_driver
         image_msg_.header.frame_id = "camera_frame";
         image_msg_.encoding = "bgr8";
         camera_watcher_timer_ = rclcpp::create_timer(this, this->get_clock(), 100ms, std::bind(&CameraBaseNode::cameraWatcher, this));
-
         img_pub_thread_ = std::make_unique<std::thread>(&CameraBaseNode::imagePublisher, this);
-        // this->declare_parameter("using_port", false);
-        // use_serial_ = this->get_parameter("using_port").as_bool();
     }
 
     template<class T>
@@ -192,6 +183,7 @@ namespace camera_driver
         if (!is_cam_open_)
         {
             // Reopen camera.
+            camera_mutex_.lock();
             auto status = cam_driver_->close();
             status = cam_driver_->init();
             if (!cam_driver_->open() && !status)
@@ -202,6 +194,7 @@ namespace camera_driver
             {
                 is_cam_open_ = true;
             }
+            camera_mutex_.unlock();
         }
     }
     template<class T>
@@ -209,19 +202,14 @@ namespace camera_driver
     {
         while (rclcpp::ok())
         {
-            // if (use_serial_)
-            // {
-            //     if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
-            //     {
-            //         return;
-            //     }
-            // }
+            camera_mutex_.lock();
+            is_cam_open_ = cam_driver_->getImage(frame_, image_msg_);
+            camera_mutex_.unlock();
 
-            if (!cam_driver_->getImage(frame_, image_msg_))
+            if (!is_cam_open_)
             {
                 RCLCPP_ERROR(this->get_logger(), "Get frame failed!");
-                is_cam_open_ = false;
-                usleep(2e3);
+                usleep(1e5);
                 continue;
             }
 
@@ -235,7 +223,7 @@ namespace camera_driver
             if (save_video_)
             {   // Video recorder.
                 ++frame_cnt_;
-                if (frame_cnt_ % 50 == 0)
+                if (frame_cnt_ % 25 == 0)
                 {
                     sensor_msgs::msg::Image image_msg = image_msg_;
                     auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();
@@ -259,14 +247,13 @@ namespace camera_driver
                     writer_->write(bag_msg);
                 }
             }
-
+            
             if (show_img_)
             {
                 cv::namedWindow("frame", cv::WINDOW_AUTOSIZE);
                 cv::imshow("frame", frame_);
                 cv::waitKey(1);
             }
-            usleep(2e3);
         }
     }
     
@@ -302,6 +289,7 @@ namespace camera_driver
         this->declare_parameter("fps", 30);
         this->declare_parameter("video_path", "/config/camera_ros.yaml");
         this->declare_parameter<bool>("save_video", false);
+        this->declare_parameter<string>("config_path", "");
 
         camera_params_.cam_id = this->get_parameter("cam_id").as_int();
         camera_params_.image_width = this->get_parameter("image_width").as_int();
@@ -319,7 +307,6 @@ namespace camera_driver
         camera_params_.balance_r = this->get_parameter("balance_r").as_double();
         camera_params_.using_video = this->get_parameter("using_video").as_bool();
         camera_params_.fps = this->get_parameter("fps").as_int();
-
         camera_topic_ = this->get_parameter("camera_topic").as_string();
         show_img_ = this->get_parameter("show_img").as_bool();
         save_video_ = this->get_parameter("save_video").as_bool();

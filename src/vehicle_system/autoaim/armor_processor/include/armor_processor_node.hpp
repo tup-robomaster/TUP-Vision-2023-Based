@@ -62,8 +62,7 @@ namespace armor_processor
     private:
         rclcpp::Subscription<AutoaimMsg>::SharedPtr target_info_sub_;
         void targetMsgCallback(const AutoaimMsg& target_info);
-        bool processTargetMsg(const AutoaimMsg& target_info, cv::Mat* src = nullptr);
-
+        
         cv::Mat src_;
         mutex debug_mutex_;
         mutex image_mutex_;
@@ -73,23 +72,16 @@ namespace armor_processor
         
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_info_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_info_pub_;
-        rclcpp::Publisher<AutoaimMsg>::SharedPtr predict_info_pub_;
-        // rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
         
-        // message_filter
-        MySyncPolicy my_sync_policy_;
-        std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image>> img_msg_sync_sub_;
-        std::shared_ptr<message_filters::Subscriber<AutoaimMsg>> target_msg_sync_sub_;
-        std::shared_ptr<message_filters::Synchronizer<MySyncPolicy>> sync_;
-        void syncCallback(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg, const AutoaimMsg::ConstSharedPtr& target_msg);
-        bool sync_transport_ = false;
-
         // visualization_msgs::Marker
         rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_pub_;
         uint64 shape_ = visualization_msgs::msg::Marker::SPHERE;
         bool show_marker_ = false;
+        void pubMarkerArray(vector<Eigen::Vector4d> armor3d_vec, bool is_spinning, bool is_clockwise, int flag);
+        
         int count_ = 0;
         bool shoot_flag_ = false;
+        bool judgeShooting(Eigen::Vector2d tracking_angle, Eigen::Vector2d pred_angle);
 
     private:
         std::unique_ptr<Processor> processor_;
@@ -100,7 +92,6 @@ namespace armor_processor
         ImageInfo image_info_;
 
         // Image callback.
-        void imageProcessor(cv::Mat& img);
         void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
         
         // Sub image.

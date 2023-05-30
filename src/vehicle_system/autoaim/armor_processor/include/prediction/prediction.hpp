@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-04-30 19:34:38
+ * @LastEditTime: 2023-05-14 14:08:42
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -20,7 +20,6 @@
 #include "../filter/model_generator.hpp"
 
 #include "./param_struct.hpp"
-#include "../filter/particle_filter.hpp"
 #include "./curve_fitting.hpp"
 
 #include "global_interface/msg/autoaim.hpp"
@@ -38,16 +37,15 @@ namespace armor_processor
         typedef Vector<double, 6> Vector6d;
         
     public:
+        ArmorPredictor(const PredictParam& predict_param, const DebugParam& debug_param);
         ArmorPredictor();
         ~ArmorPredictor();
-        // ArmorPredictor(const PredictParam& predict_param, vector<double>* singer_param, const DebugParam& debug_param);
-        // Eigen::Vector3d predict(TargetInfo target, uint64_t timestamp, double& delay_time, cv::Mat* src = nullptr);
-        // PostProcessInfo&& postProcess(AutoaimMsg& target_msg);
-
+        
         void initPredictor();
         void initPredictor(const vector<double>* uniform_ekf_param, const vector<double>* singer_ekf_param);
         bool resetPredictor();
         bool updatePredictor(Eigen::VectorXd meas);
+        bool updatePredictor(bool is_spinning, Eigen::VectorXd meas);
         bool predict(TargetInfo target, double dt, double pred_dt, double& delay_time, Eigen::Vector3d& pred_point3d, vector<Eigen::Vector4d>& armor3d_vec, cv::Mat* src = nullptr);
 
     public:
@@ -55,20 +53,16 @@ namespace armor_processor
         DebugParam debug_param_;
 
     private:
-        int history_deque_lens_; //历史队列长度
-        std::deque<TargetInfo> history_info_; //历史测量信息
-        std::deque<TargetInfo> history_pred_; //历史预测信息
-        std::deque<TargetInfo> history_losting_pred_; //历史目标losting后预测信息
+        // int history_deque_lens_ = 50; //历史队列长度
+        // std::deque<TargetInfo> history_info_; //历史测量信息
+        // std::deque<TargetInfo> history_pred_; //历史预测信息
+        // std::deque<TargetInfo> history_losting_pred_; //历史目标losting后预测信息
         
     private:
-        double evalRMSE(double* params);
-        double calcError();
         void updateVel(Eigen::Vector3d vel_3d);
         void updateAcc(Eigen::Vector3d acc_3d);
 
     public:
-        double history_vel_[3][4] = {{0}};
-        double history_acc_[3][4] = {{0}};
         double predict_vel_[3][4] = {{0}};
         double predict_acc_[3][4] = {{0}};
     
@@ -77,15 +71,17 @@ namespace armor_processor
         bool is_ekf_init_;
         UniformModel uniform_ekf_;
 
-        // singer ekf
+        // singer kf
         bool is_singer_init_;
         SingerModel singer_ekf_;
         
         PredictorState predictor_state_ = LOST;
-        bool is_predictor_update_ = false;
-        Vector6d last_state_;
+        Vector6d last_state_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        Vector4d last_meas_ = {0.0, 0.0, 0.0, 0.0};
+        SpinHeading last_spin_state_;
         deque<Vector6d> history_switched_state_vec_;
-        deque<Vector6d> history_state_vec_;
+        deque<Vector4d> pred_state_vec_;
+        // deque<Vector6d> history_state_vec_;
 
     public:
         double now_ = 0.0;
@@ -108,24 +104,16 @@ namespace armor_processor
         bool predictBasedImm(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector3d target_vel, Eigen::Vector3d target_acc, int64_t timestamp);
         
         // CS Model.
-        // PredictStatus predictBasedSinger(TargetInfo target, Eigen::Vector3d& result, Eigen::Vector2d target_vel, Eigen::Vector2d target_acc, int64_t timestamp);
         bool predictBasedSinger(bool is_target_lost, Eigen::Vector3d meas, Eigen::Vector3d& result, Eigen::Vector3d target_vel, Eigen::Vector3d target_acc, double dt, double pred_dt);
 
         // Uniform Model.
-        bool predictBasedUniformModel(bool is_target_lost, SpinHeading spin_state, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Eigen::Vector3d& result, vector<Eigen::Vector4d>& armor3d_vec);
-        
-        // 前哨站旋转装甲板曲线拟合预测函数    
-        bool spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int64_t timestamp);
-        
-        // 滑窗滤波
-        Eigen::Vector3d shiftWindowFilter(int start_idx);
+        bool predictBasedUniformModel(bool is_target_lost, SpinHeading spin_state, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Vector6d& post_state);
 
+        // 计算车辆中心
         Eigen::Vector2d calcCircleCenter(Eigen::VectorXd meas);
 
+        // 计算车辆半径
         double calcCircleRadius(Eigen::Vector3d p1, Eigen::Vector3d p2);
-
-        // PredictStatus uncoupleFittingPredict(Eigen::Vector3d& result, int64_t timestamp);
-        // PredictStatus coupleFittingPredict(bool is_still_spinning, TargetInfo target, Eigen::Vector3d& result, int64_t timestamp);
     };
 } //namespace armor_processor
 

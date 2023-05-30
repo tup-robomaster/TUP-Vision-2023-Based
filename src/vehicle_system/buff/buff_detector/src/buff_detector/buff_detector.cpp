@@ -112,10 +112,10 @@ namespace buff_detector
         // 创建扇叶对象
         for (auto object : objects)
         {
-            if(debug_param_.detect_red)
+            if(debug_param_.enemy_red)
                 if (object.color != 1)
                     continue;
-            if(!debug_param_.detect_red)
+            if(!debug_param_.enemy_red)
                 if (object.color != 0)
                     continue;
             Fan fan;

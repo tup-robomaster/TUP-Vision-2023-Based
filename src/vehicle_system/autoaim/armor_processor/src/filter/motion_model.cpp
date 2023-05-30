@@ -523,42 +523,6 @@ namespace armor_processor
                 0,     0,     z_q13, 0,     0,     z_q23, 0,     0,     z_q33;
         }
     }
-
-    // void SingerModel::updateQ(const double& dt, const double& alpha, const double& acc, MatrixXd* Q)
-    // {
-    //     double q11 = 1 / (2 * pow(alpha, 5)) * (1 - exp(-2 * alpha * dt) + 2 * alpha * dt + 2 * pow(alpha * dt, 3) / 3 - 2 * pow(alpha * dt, 2) - 4 * alpha * dt * exp(-alpha * dt));
-    //     double q12 = 1 / (2 * pow(alpha, 4)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt) + 2 * alpha * dt * exp(-alpha * dt) - 2 * alpha * dt + pow(alpha * dt, 2));
-    //     double q13 = 1 / (2 * pow(alpha, 3)) * (1 - exp(-2 * alpha * dt) - 2 * alpha * dt * exp(-alpha * dt));
-    //     double q22 = 1 / (2 * pow(alpha, 3)) * (4 * exp(-alpha * dt) - 3 - exp(-2 * alpha * dt) + 2 * alpha * dt);
-    //     double q23 = 1 / (2 * pow(alpha, 2)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt));
-    //     double q33 = 1 / (2 * alpha) * (1 - exp(-2 * alpha * dt));
-    //     double sigma = kf_param_.process_noise_params[5];
-    //     if(acc > 0)
-    //     {
-    //         sigma = ((4 - M_PI) / M_PI) * pow(kf_param_.process_noise_params[1] - acc, 2);
-    //     }
-    //     else
-    //     {
-    //         sigma = ((4 - M_PI) / M_PI) * pow(kf_param_.process_noise_params[1] + acc, 2);
-    //     }
-    //     *Q << 2 * pow(sigma, 2) * alpha * q11, 2 * pow(sigma, 2) * alpha * q12, 2 * pow(sigma, 2) * alpha* q13,
-    //         2 * pow(sigma, 2) * alpha* q12, 2 * pow(sigma, 2) * alpha* q22, 2 * pow(sigma, 2) * alpha* q23,
-    //         2 * pow(sigma, 2) * alpha* q13, 2 * pow(sigma, 2) * alpha* q23, 2 * pow(sigma, 2) * alpha* q33;
-    //     return;
-    // }
-
-    // void SingerModel::updateQ(const double acc)
-    // {
-    //     double dt = kf_param_.process_noise_params[4];
-    //     double alpha = kf_param_.process_noise_params[0];
-    //     updateQ(dt, alpha, acc, &this->Q_);
-    //     return;
-    // }
-
-    // void SingerModel::updateQ(const double& dt, const double& alpha, const double& acc)
-    // {
-    //     updateQ(dt, alpha, acc, &this->Q_);
-    // }
     
     UniformModel::UniformModel()
     {
@@ -588,85 +552,6 @@ namespace armor_processor
     {
 
     }
-
-    // void UniformModel::init()
-    // {
-    //     double alpha = kf_param_.singer_params[0];
-    //     double sigma = kf_param_.singer_params[5];
-
-    //     this->x_.resize(9);
-    //     this->P_.setIdentity(9, 9);
-    //     this->F_.resize(9, 9);
-    //     this->C_.resize(9, 3);
-    //     this->z_.resize(4);
-    //     this->H_.resize(4, 9);
-    //     this->R_.resize(4, 4);
-    //     double r[4] = {
-    //         this->kf_param_.measure_noise_params[0],
-    //         this->kf_param_.measure_noise_params[1],
-    //         this->kf_param_.measure_noise_params[2],
-    //         this->kf_param_.measure_noise_params[3],
-    //     };
-    //     this->R_ << r[0],    0,    0,    0,   
-    //                 0, r[1],    0,    0,    
-    //                 0,    0, r[2],    0,    
-    //                 0,    0,    0, r[3];
-    //     this->Q_.setIdentity(9, 9);
-    //     double q11 = 1 / (2 * pow(alpha, 5)) * (1 - exp(-2 * alpha * dt) + 2 * alpha * dt + 2 * pow(alpha * dt, 3) / 3 - 2 * pow(alpha * dt, 2) - 4 * alpha * dt * exp(-alpha * dt));
-    //     double q12 = 1 / (2 * pow(alpha, 4)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt) + 2 * alpha * dt * exp(-alpha * dt) - 2 * alpha * dt + pow(alpha * dt, 2));
-    //     double q13 = 1 / (2 * pow(alpha, 3)) * (1 - exp(-2 * alpha * dt) - 2 * alpha * dt * exp(-alpha * dt));
-    //     double q22 = 1 / (2 * pow(alpha, 3)) * (4 * exp(-alpha * dt) - 3 - exp(-2 * alpha * dt) + 2 * alpha * dt);
-    //     double q23 = 1 / (2 * pow(alpha, 2)) * (exp(-2 * alpha * dt) + 1 - 2 * exp(-alpha * dt));
-    //     double q33 = 1 / (2 * alpha) * (1 - exp(-2 * alpha * dt));
-    //     this->Q_ << q[0], 0   , 0   , 0   , 0   , 0   , 0   , 0   , 0   ,  
-    //                 0   , q[1], 0   , 0   , 0   , 0   , 0   , 0   , 0   ,    
-    //                 0   , 0   , q[2], 0   , 0   , 0   , 0   , 0   , 0   ,  
-    //                 0   , 0   , 0   , q[3], 0   , 0   , 0   , 0   , 0   , 
-    //                 0   , 0   , 0   , 0   , q[4], 0   , 0   , 0   , 0   , 
-    //                 0   , 0   , 0   , 0   , 0   , q[5], 0   , 0   , 0   , 
-    //                 0   , 0   , 0   , 0   , 0   , 0   , q[6], 0   , 0   ,  
-    //                 0   , 0   , 0   , 0   , 0   , 0   , 0   , q[7], 0   ,
-    //                 0   , 0   , 0   , 0   , 0   , 0   , 0   , 0   , q[8];
-
-    //     this->x_.resize(11);
-    //     // this->dt_ = dt;
-    //     this->P_.setIdentity(11, 11);
-    //     this->F_.resize(11, 11);
-    //     this->C_.resize(11, 3);
-    //     /*
-    //                 // Xc--Yc--Zc--r--theta-omega-vx--vy--vz----------------ax---------------ay-----------------az
-    //                 Xc--Yc--Zc--r--theta--vx--vy--vz------------------------ax-------------------------------------------------------------------------------ay---------------------------------------------------az
-    //     */
-    //     // this->F_ << 1,  0,  0,  0,  0,    dt,  0,  0, (alpha * dt - 1 + exp(-alpha * dt)) / alpha / alpha,                                                   0,                                                   0,
-    //     //             0,  1,  0,  0,  0,     0, dt,  0,                                                   0, (alpha * dt - 1 + exp(-alpha * dt)) / alpha / alpha,                                                   0,
-    //     //             0,  0,  1,  0,  0,     0,  0, dt,                                                   0,                                                   0, (alpha * dt - 1 + exp(-alpha * dt)) / alpha / alpha,
-    //     //             0,  0,  0,  1,  0,     0,  0,  0,                                                   0,                                                   0,                                                   0,
-    //     //             0,  0,  0,  0,  1,     0,  0,  0,                                                   0,                                                   0,                                                   0,
-    //     //             0,  0,  0,  0,  0,     1,  0,  0,                      (1 - exp(-alpha * dt)) / alpha,                                                   0,                                                   0,
-    //     //             0,  0,  0,  0,  0,     0,  1,  0,                                                   0,                      (1 - exp(-alpha * dt)) / alpha,                                                   0,
-    //     //             0,  0,  0,  0,  0,     0,  0,  1,                                                   0,                                                   0,                      (1 - exp(-alpha * dt)) / alpha,
-    //     //             0,  0,  0,  0,  0,     0,  0,  0,                                    exp(-alpha * dt),                                                   0,                                                   0,
-    //     //             0,  0,  0,  0,  0,     0,  0,  0,                                                   0,                                    exp(-alpha * dt),                                                   0,
-    //     //             0,  0,  0,  0,  0,     0,  0,  0,                                                   0,                                                   0,                                    exp(-alpha * dt);
-        
-    //     this->z_.resize(4);
-    //     this->H_.resize(4, 11);
-    //     this->R_.resize(4, 4);
-    //     double r[4] = {
-    //         this->kf_param_.measure_noise_params[0],
-    //         this->kf_param_.measure_noise_params[1],
-    //         this->kf_param_.measure_noise_params[2],
-    //         this->kf_param_.measure_noise_params[3],
-    //     };
-    //     this->R_ << r[0],    0,    0,    0,   
-    //                    0, r[1],    0,    0,    
-    //                    0,    0, r[2],    0,    
-    //                    0,    0,    0, r[3];
-
-    //     this->Q_.setIdentity(11, 11);
-
-    //     setKF(this->dt_);
-    // }
 
     void UniformModel::init()
     {

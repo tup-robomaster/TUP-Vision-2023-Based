@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-05-09 22:09:24
+LastEditTime: 2023-05-14 15:39:27
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -35,7 +35,7 @@ def generate_launch_description():
     #--------------------------------------Configs----------------------------------------------
     camera_type = 'daheng'
     camera_name = 'KE0200110075'
-    use_serial = False
+    use_serial = True
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
     
@@ -66,7 +66,7 @@ def generate_launch_description():
                             emulate_tty=True,
                             parameters=[{
                                 'using_port': True,
-                                'tracking_target': True,
+                                'tracking_target': False,
                                 'print_serial_info': False,
                                 'print_referee_info': False
                             }],
@@ -103,6 +103,7 @@ def generate_launch_description():
 
     else:
         raise BaseException("Invalid Cam Type!!!") 
+    
     detector_container = ComposableNodeContainer(
         name='armor_detector_container',
         namespace='',
@@ -126,6 +127,7 @@ def generate_launch_description():
                 parameters=[armor_detector_params,
                 {
                     'camera_name': camera_name,
+                    'use_serial': use_serial,
                 }],
                 remappings= camera_remappings,
                 extra_arguments=[{
@@ -138,7 +140,7 @@ def generate_launch_description():
     )
     #---------------------------------Processor Node--------------------------------------------
     processor_container = ComposableNodeContainer(
-        name='serial_processor_container',
+        name='processor_container',
         package='rclcpp_components',
         executable='component_container',
         namespace='',
@@ -151,6 +153,7 @@ def generate_launch_description():
                 parameters=[armor_processor_params,
                 {
                     'camera_name': camera_name,
+                    'use_serial': use_serial,
                 }],
                 remappings = camera_remappings
             ),

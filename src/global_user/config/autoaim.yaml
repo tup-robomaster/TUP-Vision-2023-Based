@@ -1,8 +1,7 @@
 /armor_detector:
   ros__parameters:
   # Detector params.
-    color: 1 # red: 1 / blue: 0
-    max_delta_t: 50
+    max_delta_t: 5
     max_lost_cnt: 5
     max_armors_cnt: 8
     hero_danger_zone: 4
@@ -15,7 +14,7 @@
     armor_conf_high_thres: 0.82
 
   # Spinning params.
-    shoot_delay: 75
+    shoot_delay: 140.0
     bullet_speed: 28.0
     max_dead_buffer: 10
     max_delta_dist: 0.5
@@ -41,7 +40,7 @@
     # network_path: "/model/1106-333.xml"
     # network_path: "/model/yolox.xml"
     # network_path: "/model/opt-1208-001.xml"
-    network_path: "/model/vgg.onnx"
+    network_path: "/model/vgg_640.onnx"
 
   # Data saving.
     save_data: false
@@ -49,41 +48,38 @@
     save_dataset: false
   
   # Debug params.
+    enemy_red: false # red: true / blue: false
+    use_roi: true
     debug: true
-    detect_red: true # red: true / blue: false
-    use_serial: false
-    use_roi: false
-    show_img: false
+
+    show_img: true
     show_crop_img: false
     show_fps: false
-    show_aim_cross: false
+    show_aim_cross: true
     show_all_armors: true
     auto_label: false
     print_latency: false
     sync_transport: false
     print_target_info: false
 
-/armor_processor:
+/armor_processor:        
   ros__parameters:
   # Predict params.
     bullet_speed: 28.0
     max_dt: 1000
     max_cost: 10
-    max_v: 8
+    window_size: 3
     min_fitting_lens: 5
-    shoot_delay: 150 
+    shoot_delay: 140.0
+    delay_coeff: 0.8
     window_size: 3
     max_offset_value: 0.45
     reserve_factor: 500.0 # 储备系数(>=1)
-    # rotation_yaw: 0.0
-    # rotation_pitch: 0.0
-    # rotation_roll: 0.0
 
   # Debug params.
     debug: true
-    use_serial: false
-    show_img: true
-    draw_predict: true
+    show_img: false
+    draw_predict_curve: true
     show_predict: true
     show_aim_cross: true
     show_fps: true
@@ -99,13 +95,13 @@
   
   # uniform model
     #----------------------------------Xc------Yc----Zc-----r---theta--omega
-    uniform_ekf_process_noise_param: [0.02, 0.001, 0.002, 0.005, 0.1, 0.002]
+    uniform_ekf_process_noise_param: [0.01, 0.0001, 0.002, 0.0005, 0.002, 0.001]
     #----------------------------------X----Y---Z---theta
-    uniform_ekf_measure_noise_param: [5.0, 0.2, 1.0, 1.0]
+    uniform_ekf_measure_noise_param: [5.0, 1.0, 1.0, 1.0]
     
   # Singer model
     # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)
-    singer_model_process_param: [1.05, 1.05, 1.05, 4.5, 5.65, 4.5]
+    singer_model_process_param: [1.00, 1.00, 1.0, 2.0, 5.0, 2.0]
     # r:观测协方差系数(r1/r2/r3)
     singer_model_measure_param: [1.0, 1.0, 1.0]
 

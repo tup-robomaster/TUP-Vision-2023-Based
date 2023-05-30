@@ -83,17 +83,6 @@ namespace armor_detector
         rclcpp::Subscription<DecisionMsg>::SharedPtr decision_msg_sub_;
         void decisionMsgCallback(const DecisionMsg& decision_msg);
 
-        // Subscribe img and serial msgs synchronously.
-        std::shared_ptr<message_filters::Subscriber<SerialMsg>> serial_msg_sync_sub_;
-        std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image>> img_msg_sync_sub_;
-        // std::shared_ptr<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, SerialMsg>> sync_;
-        MySyncPolicy my_sync_policy_;
-        std::shared_ptr<Synchronizer<MySyncPolicy>> sync_;
-        void syncCallback(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg, const SerialMsg::ConstSharedPtr& serial_msg);
-
-        // tf2
-        // std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-
     public:
         Mutex param_mutex_;
         DetectorParam detector_params_;
