@@ -345,9 +345,11 @@ namespace serialport
                 game_msg.game_stage = (int)gamestage;
                 game_msg_pub_->publish(move(game_msg));
                 mode_set_msg.header.frame_id = "";
+                mode_set_msg.header.stamp = now;
                 mode_set_msg.mode = (int)mode_set_mode;
                 mode_set_msg.x = mode_set_pos[0];
                 mode_set_msg.y = mode_set_pos[1];
+                mode_set_msg_pub_->publish(move(mode_set_msg));
             }
         }
 
