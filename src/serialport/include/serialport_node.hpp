@@ -42,8 +42,8 @@
 #include "global_interface/msg/obj_hp.hpp"
 #include "global_interface/msg/game_info.hpp"
 #include "global_interface/msg/decision.hpp"
+#include "global_interface/msg/mode_set.hpp"
 #include "../../global_user/include/coordsolver.hpp"
-#include "global_interface/msg/decision.hpp"
 
 using namespace global_user;
 using namespace coordsolver;
@@ -58,6 +58,7 @@ namespace serialport
         typedef global_interface::msg::CarPos CarPosMsg;
         typedef global_interface::msg::GameInfo GameMsg;
         typedef global_interface::msg::Decision DecisionMsg;
+        typedef global_interface::msg::ModeSet ModeSetMsg;
 
     public:
         SerialPortNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
@@ -113,6 +114,7 @@ namespace serialport
         rclcpp::Publisher<CarPosMsg>::SharedPtr car_pos_pub_;
         rclcpp::Publisher<ObjHPMsg>::SharedPtr obj_hp_pub_;
         rclcpp::Publisher<GameMsg>::SharedPtr game_msg_pub_;
+        rclcpp::Publisher<ModeSetMsg>::SharedPtr mode_set_msg_pub_;
 
         rclcpp::Subscription<GimbalMsg>::SharedPtr autoaim_info_sub_;
         rclcpp::Subscription<GimbalMsg>::SharedPtr autoaim_tracking_sub_;

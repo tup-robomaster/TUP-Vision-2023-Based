@@ -147,6 +147,17 @@ namespace serialport
         }
         return;
     }
+
+    void DataTransform::getModeSet(uchar flag, uchar* raw_data, vector<float>& pos, uchar& mode_set)
+    {
+        if (flag == 0xC5)
+        {
+            pos.emplace_back(ucharRaw2Float(raw_data));
+            pos.emplace_back(ucharRaw2Float(&raw_data[4]));
+            mode_set = raw_data[8];
+        }
+        return;
+    }
     
     /**
      * @brief 获取四元数

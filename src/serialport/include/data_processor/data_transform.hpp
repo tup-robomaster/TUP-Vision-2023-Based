@@ -77,6 +77,7 @@ namespace serialport
         void getPosInfo(uchar flag, uchar* raw_data, vector<ushort>& pos);
         void getHPInfo(uchar flag, uchar* raw_data, vector<ushort>& hp);
         void getGameInfo(uchar flag, uchar* raw_data, ushort& timestamp, uchar& gamestage);
+        void getModeSet(uchar flag, uchar* raw_data, vector<float>& pos, uchar& mode_set);
         void getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle);
         void getPitchAngle(uchar flag, uchar* raw_data, float& pitch_angle);
         void getShootDelay(uchar* raw_data, float& shoot_delay);
