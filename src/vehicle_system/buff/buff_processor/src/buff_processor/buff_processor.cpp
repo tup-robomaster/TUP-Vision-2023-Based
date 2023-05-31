@@ -36,7 +36,7 @@ namespace buff_processor
         int mode = buff_msg.mode;
         buff_predictor_.mode_ = mode;
         
-        if (mode == 3 || mode == 4)
+        if (mode == SMALL_BUFF || mode == BIG_BUFF)
         {   // 进入能量机关预测模式
             double theta_offset = 0.0;
             Eigen::Vector3d r_center = {buff_msg.r_center.x, buff_msg.r_center.y, buff_msg.r_center.z};

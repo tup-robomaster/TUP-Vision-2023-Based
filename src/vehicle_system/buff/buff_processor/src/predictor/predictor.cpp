@@ -199,7 +199,7 @@ namespace buff_processor
         );
 
         //曲线拟合
-        if (mode_ == 3)
+        if (mode_ == SMALL_BUFF)
         {   //小符，计算平均角度差
             params_[3] = rotate_speed_ave;  //TODO:小能量机关转速10RPM
             is_params_confirmed_ = true;
@@ -212,7 +212,7 @@ namespace buff_processor
                 rotate_speed_ave
             );
         }
-        else if (mode_ == 4)
+        else if (mode_ == BIG_BUFF)
         {
             if(!is_params_confirmed_)
             {
@@ -346,7 +346,7 @@ namespace buff_processor
         curveFitting(buff_msg);
         if (is_params_confirmed_)
         {
-            if (mode_ == 3)
+            if (mode_ == SMALL_BUFF)
             {
                 if(sign_ == 1)
                     result = abs(params_[3] * (pred_dt / 1e3));
@@ -361,7 +361,7 @@ namespace buff_processor
                     sign_
                 );
             }
-            else if (mode_ == 4)
+            else if (mode_ == BIG_BUFF)
             {
                 double timespan = (buff_msg.timestamp - history_info_.front().timestamp) / 1e6;
 
