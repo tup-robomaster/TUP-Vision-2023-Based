@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-05-31 17:46:06
+ * @LastEditTime: 2023-05-31 21:44:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -77,7 +77,7 @@ namespace buff_processor
             }
 
             // marker pub.
-            marker_array_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/visualization_marker_array", 1);
+            marker_array_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/buff_processor/visualization_marker_array", 1);
             shape_ = visualization_msgs::msg::Marker::SPHERE;
 
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffProcessorNode::paramsCallback, this, _1));
@@ -310,7 +310,6 @@ namespace buff_processor
         this->get_parameter("max_rmse", predict_param_.max_rmse);
         this->get_parameter("max_timespan", predict_param_.max_timespan);
         this->get_parameter("max_v", predict_param_.max_v);
-        this->get_parameter("pf_path", predict_param_.pf_path);
         this->get_parameter("window_size", predict_param_.window_size);
 
         //Debug param.
@@ -342,9 +341,10 @@ namespace buff_processor
         this->declare_parameter<std::string>("pf_path", "/config/filter_param.yaml");
         
         string pkg_share_pth = get_package_share_directory("global_user");
+
         this->path_param_.camera_name = this->get_parameter("camera_name").as_string();
-        this->predict_param_.pf_path = pkg_share_pth + this->get_parameter("pf_path").as_string();
         this->path_param_.camera_param_path = pkg_share_pth + this->get_parameter("camera_param_path").as_string();
+        this->predict_param_.pf_path = pkg_share_pth + this->get_parameter("pf_path").as_string();
 
         vector<double> kf_process_noise_params = {1.0};
         this->declare_parameter("kf_process_noise", kf_process_noise_params);
@@ -365,7 +365,7 @@ namespace buff_processor
         this->declare_parameter<bool>("show_marker", false);
 
         auto success = updateParam();
-        if(success)
+        if (success)
             RCLCPP_INFO(this->get_logger(), "Update param!");
 
         return std::make_unique<Processor>(predict_param_, kf_params, debug_param_);

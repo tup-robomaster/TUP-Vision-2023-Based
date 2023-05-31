@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-05-31 17:44:21
+ * @LastEditTime: 2023-05-31 20:11:57
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -125,8 +125,13 @@ namespace armor_detector
      */
     void DetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {
-        if(!img_msg || (mode_ != AUTOAIM && mode_ != HERO_SLING))
+        if(!img_msg || (mode_ != AUTOAIM_NORMAL && mode_ != AUTOAIM_SLING &&
+            mode_ != AUTOAIM_TRACKING && mode_ != OUTPOST_ROTATION_MODE &&
+            mode_ != SENTRY_NORMAL
+        ))
+        {
             return;
+        }
 
         RCLCPP_INFO_THROTTLE(
             this->get_logger(),
@@ -235,8 +240,8 @@ namespace armor_detector
             double dt = (now.nanoseconds() - serial_stamp.nanoseconds()) / 1e6;
             putText(src.img, "IMU_DELAY:" + to_string(dt) + "ms", cv::Point2i(50, 80), cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
 
-            cv::namedWindow("amor_dst", cv::WINDOW_AUTOSIZE);
-            cv::imshow("amor_dst", src.img);
+            cv::namedWindow("armor_dst", cv::WINDOW_AUTOSIZE);
+            cv::imshow("armor_dst", src.img);
             cv::waitKey(1);
         }
     }

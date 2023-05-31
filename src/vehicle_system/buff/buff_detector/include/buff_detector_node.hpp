@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2023-05-29 18:39:04
+ * @LastEditTime: 2023-05-31 20:04:40
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector_node.hpp
  */
 #ifndef BUFF_DETECTOR_NODE_HPP_
@@ -75,7 +75,7 @@ namespace buff_detector
         int mode_ = 1;
 
         // visualization_msgs::Marker
-        void pubMarkerArray(vector<Eigen::Vector4d> armor3d_vec, int flag, rclcpp::Time stamp);
+        void pubMarkerArray(vector<geometry_msgs::msg::Transform> armor3d_transform_vec, int flag, rclcpp::Time stamp);
         rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_pub_;
         uint64 shape_ = visualization_msgs::msg::Marker::CUBE;
     

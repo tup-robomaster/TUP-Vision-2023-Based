@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-31 17:44:38
+ * @LastEditTime: 2023-05-31 21:53:00
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -56,7 +56,7 @@ namespace armor_processor
             RCLCPP_INFO(this->get_logger(), "debug...");
             
             // marker pub.
-            marker_array_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/visualization_marker_array", 1);
+            marker_array_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/armor_processor/visualization_marker_array", 1);
             shape_ = visualization_msgs::msg::Marker::SPHERE;
 
             if (debug_param_.show_img)
@@ -95,21 +95,6 @@ namespace armor_processor
     {
         double sleep_time = 0.0;
         AutoaimMsg target = std::move(target_info);
-
-        // target.mode = HERO_SLING;
-        if (target.mode == AUTOAIM_SLING)
-        {
-            target.is_spinning = true;
-            target.target_switched = false;
-            if (!target.spinning_switched && !target.is_target_lost)
-            {
-                if (abs(last_rangle_ - target.armors.front().rangle) > 0.5)
-                {
-                    target.is_target_lost = true;
-                }
-            }
-        }
-
         Eigen::Vector2d angle = {0.0, 0.0};
         Eigen::Vector2d tracking_angle = {0.0, 0.0};
         Eigen::Vector3d aiming_point_world = {0.0, 0.0, 0.0};
@@ -123,6 +108,20 @@ namespace armor_processor
         int idx = 0, flag = -1;
         bool is_shooting = false;
         ShootingMode shoot_mode = BLOCKING;
+
+        // target.mode = AUTOAIM_SLING;
+        if (target.mode == AUTOAIM_SLING)
+        {
+            target.is_spinning = true;
+            target.target_switched = false;
+            if (!target.spinning_switched && !target.is_target_lost)
+            {
+                if (abs(last_rangle_ - target.armors.front().rangle) > 0.5)
+                {
+                    target.is_target_lost = true;
+                }
+            }
+        }
 
         quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
         rmat_imu = quat_imu.toRotationMatrix();
@@ -276,7 +275,6 @@ namespace armor_processor
             param_mutex_.unlock();
         }
 
-        
         if (!is_aimed_)
         {
             angle = tracking_angle;
@@ -349,7 +347,7 @@ namespace armor_processor
         gimbal_msg_pub_->publish(std::move(gimbal_msg));
 
         processor_->is_last_exists_ = !target.is_target_lost;
-        last_rangle_ = target.armors.front().rangle;
+        last_rangle_ = target.is_target_lost ? 0.0 : target.armors.front().rangle;
         if (debug_param_.show_img && !dst.empty()) 
         {
             if (show_marker_)
@@ -398,8 +396,8 @@ namespace armor_processor
             putText(dst, angle_str1, {dst.size().width / 2 + 5, 65}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
             putText(dst, state_map_[(int)(processor_->armor_predictor_.predictor_state_)], {5, 80}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
             
-            cv::namedWindow("amor_pred", cv::WINDOW_AUTOSIZE);
-            cv::imshow("amor_pred", dst);
+            cv::namedWindow("armor_pred", cv::WINDOW_AUTOSIZE);
+            cv::imshow("armor_pred", dst);
             cv::waitKey(1);
         }
     }

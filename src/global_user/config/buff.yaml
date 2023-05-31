@@ -17,7 +17,7 @@
   # Debug.
     use_roi: false
 
-    show_img: false
+    show_img: true
     show_all_fans: true
     show_fps: true
     print_target_info: false 
@@ -42,8 +42,8 @@
     camera_param_path: "/config/camera.yaml"
 
   # Filter params.
-    kf_process_noise: [1.0]
-    kf_measure_noise: [1.0]
+    kf_process_noise: [2.0]
+    kf_measure_noise: [2.0]
 
   # Debug.
     debug: true
