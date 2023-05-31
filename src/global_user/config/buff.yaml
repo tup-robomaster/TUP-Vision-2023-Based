@@ -1,24 +1,21 @@
 /buff_detector:
   ros__parameters:
   # Detector params.
-    buff_mode: 3
+    buff_mode: 4
     color: 1 # 0: blue / 1: red
     max_lost_cnt: 4 
     max_v: 4.0  
-    max_delta_t: 100.0
+    max_delta_t: 200.0
     fan_length: 0.7
     no_crop_thres: 0.002
 
   # Paths.
     camera_param_path: "/config/camera.yaml"
     path_prefix: "/recorder/dataset/"
-    
-    network_path: "/model/buff.xml"
-    # network_path: "/model/yolox.xml"
-    # network_path: "/model/yolox-03-17.xml"
+    network_path: "/model/buff-05-28-01.xml"
 
   # Debug.
-    use_roi: true
+    use_roi: false
 
     show_img: true
     show_all_fans: true
@@ -26,6 +23,7 @@
     print_target_info: false 
     prinf_latency: false
     assist_label: false
+    show_marker: true
 
 /buff_processor:
   ros__parameters:
@@ -38,13 +36,16 @@
     history_deque_len_phase: 50
     history_deque_len_uniform: 50
     window_size: 2
-    # delay_small: 175.0
-    # delay_big: 100.0
 
   # Paths.
     pf_path: "/config/filter_param.yaml"
     camera_param_path: "/config/camera.yaml"
 
+  # Filter params.
+    kf_process_noise: [2.0]
+    kf_measure_noise: [2.0]
+
   # Debug.
     debug: true
-    show_predict: false
+    show_img: false
+    show_marker: true

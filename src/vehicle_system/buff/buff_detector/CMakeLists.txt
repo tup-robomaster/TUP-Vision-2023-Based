@@ -38,6 +38,9 @@ find_package(yaml-cpp REQUIRED)
 find_package(filter REQUIRED)
 find_package(global_user REQUIRED)
 find_package(global_interface REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 include_directories(include 
   ${OpenCV_INCLUDE_DIRS}
@@ -60,6 +63,9 @@ set(dependencies
   global_user
   global_interface
   filter
+  visualization_msgs
+  tf2_geometry_msgs
+  tf2_ros
 )
 
 add_library(${PROJECT_NAME} SHARED

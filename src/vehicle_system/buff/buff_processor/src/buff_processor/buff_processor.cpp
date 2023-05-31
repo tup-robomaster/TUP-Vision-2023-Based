@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:47:32
- * @LastEditTime: 2023-03-20 16:21:59
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor/buff_processor.cpp
+ * @LastEditTime: 2023-05-31 20:59:46
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor/buff_processor.cpp
  */
 #include "../../include/buff_processor/buff_processor.hpp"
 
@@ -15,12 +15,14 @@ namespace buff_processor
         is_initialized_ = false;
     }
 
-    Processor::Processor(const PredictorParam& predict_param, const PathParam& path_param, const DebugParam& debug_param)
-    : predictor_param_(predict_param), path_param_(path_param), debug_param_(debug_param),
+    Processor::Processor(const PredictorParam& predict_param, vector<double>* kf_params, const DebugParam& debug_param)
+    : predictor_param_(predict_param), debug_param_(debug_param),
     logger_(rclcpp::get_logger("buff_processor"))
     {
         is_initialized_ = false;
+        
         buff_predictor_.predictor_param_ = predict_param;
+        buff_predictor_.initPredictor(kf_params);
     }
 
     Processor::~Processor()
@@ -34,7 +36,7 @@ namespace buff_processor
         int mode = buff_msg.mode;
         buff_predictor_.mode_ = mode;
         
-        if (mode == 3 || mode == 4)
+        if (mode == SMALL_BUFF || mode == BIG_BUFF)
         {   // 进入能量机关预测模式
             double theta_offset = 0.0;
             Eigen::Vector3d r_center = {buff_msg.r_center.x, buff_msg.r_center.y, buff_msg.r_center.z};
@@ -42,13 +44,8 @@ namespace buff_processor
             if (!buff_predictor_.predict(buff_msg, armor_center.norm(), theta_offset))
             {
                 Eigen::Vector3d armor3d_world = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
-                if (debug_param_.using_imu)
-                {
-                    Eigen::Quaterniond imu_quat = {buff_msg.quat_imu.w, buff_msg.quat_imu.x, buff_msg.quat_imu.y, buff_msg.quat_imu.z};
-                    rmat_imu_ = imu_quat.toRotationMatrix();
-                }
-                else
-                    rmat_imu_ = Eigen::Matrix3d::Identity();
+                Eigen::Quaterniond imu_quat = {buff_msg.quat_imu.w, buff_msg.quat_imu.x, buff_msg.quat_imu.y, buff_msg.quat_imu.z};
+                rmat_imu_ = imu_quat.toRotationMatrix();
                 
                 // 转换到相机系
                 Eigen::Vector3d hit_point_cam = coordsolver_.worldToCam(armor3d_world, rmat_imu_);
@@ -97,17 +94,12 @@ namespace buff_processor
                 quat_world.x() = buff_msg.quat_world.x; 
                 quat_world.y() = buff_msg.quat_world.y;
                 quat_world.z() = buff_msg.quat_world.z;
-                Eigen::Matrix3d rmat = quat_world.toRotationMatrix();
+                Eigen::Matrix3d rmat_world = quat_world.toRotationMatrix();
 
-                if (debug_param_.using_imu)
-                {
-                    Eigen::Quaterniond imu_quat = {buff_msg.quat_imu.w, buff_msg.quat_imu.x, buff_msg.quat_imu.y, buff_msg.quat_imu.z};
-                    rmat_imu_ = imu_quat.toRotationMatrix();
-                }
-                else
-                    rmat_imu_ = Eigen::Matrix3d::Identity();
+                Eigen::Quaterniond imu_quat = {buff_msg.quat_imu.w, buff_msg.quat_imu.x, buff_msg.quat_imu.y, buff_msg.quat_imu.z};
+                rmat_imu_ = imu_quat.toRotationMatrix();
 
-                hit_point_world = rmat * hit_point_world + armor3d_world;
+                hit_point_world = rmat_world * hit_point_world + armor3d_world;
                 
                 RCLCPP_INFO_THROTTLE(
                     logger_, 

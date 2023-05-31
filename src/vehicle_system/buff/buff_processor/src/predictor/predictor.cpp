@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-03-22 16:11:23
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/predictor/predictor.cpp
+ * @LastEditTime: 2023-05-31 20:59:50
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
 
@@ -21,11 +21,18 @@ namespace buff_processor
         rmse_error_cnt_ = 0;
         last_pred_angle_ = 0.0;
         
-        params_[0] = 0;
-        params_[1] = 0; 
-        params_[2] = 0; 
-        params_[3] = 0;
+        params_[0] = 0.0;
+        params_[1] = 0.0; 
+        params_[2] = 0.0; 
+        params_[3] = 0.0;
+    }
 
+    BuffPredictor::~BuffPredictor()
+    {
+    }
+
+    void BuffPredictor::initPredictor(const vector<double>* kf_params)
+    {
         try
         {
             YAML::Node config = YAML::LoadFile(predictor_param_.pf_path);
@@ -35,10 +42,12 @@ namespace buff_processor
         {
             RCLCPP_ERROR(logger_, "Error while initializing pf param: %s", e.what());
         }
-    }
 
-    BuffPredictor::~BuffPredictor()
-    {
+        kf_ = KalmanFilter(KFParam{kf_params[0], kf_params[1]});
+        kf_.Init(1, 1, 0);
+        kf_.F_ << 1.0;
+        kf_.Q_ << kf_params[0][0];
+        kf_.R_ << kf_params[1][0];
     }
 
     bool BuffPredictor::curveFitting(BuffMsg& buff_msg)
@@ -87,6 +96,20 @@ namespace buff_processor
         }
 
         //输入数据前进行滤波
+        if (!is_params_confirmed_)
+        {
+            kf_.x_ << buff_msg.delta_angle;
+        }
+        else
+        {
+            kf_.Predict();
+
+            Eigen::VectorXd meas(1);
+            meas << buff_msg.delta_angle;
+            kf_.Update(meas);
+            target.delta_angle = kf_.x_(0);
+        }
+        
         // auto is_ready = pf_.is_ready;
         // Eigen::VectorXd measure(1);
         // measure << buff_msg.delta_angle;
@@ -97,10 +120,11 @@ namespace buff_processor
         //     auto predict = pf_.predict();
         //     target.delta_angle = predict[0];
         // }
-        // target.delta_angle = (target.delta_angle / buff_msg.delta_angle > 0) ? target.delta_angle : buff_msg.delta_angle;
+
+        target.delta_angle = (target.delta_angle / buff_msg.delta_angle > 0) ? target.delta_angle : buff_msg.delta_angle;
         // cout << "target.delta_angle: " << target.delta_angle << endl;
 
-        int fitting_lens = 45;
+        int fitting_lens = 50;
         if (!is_direction_confirmed_)
         {
             if ((int)delta_angle_vec_.size() < 200)
@@ -113,7 +137,6 @@ namespace buff_processor
 
         if((int)(history_info_.size()) < fitting_lens)
         {
-            
             target.relative_angle = history_info_.back().relative_angle + abs(target.delta_angle);
             history_info_.push_back(target);
             last_target_ = target;
@@ -162,7 +185,7 @@ namespace buff_processor
                 else if (delta_angle < 0)
                     dir_cnt -= 1;
             }
-            sign_ = (dir_cnt > 0) ? -1 : 1;
+            sign_ = (dir_cnt > 0) ? 1 : -1;
             // if (delta_angle_vec_.size() > 300)
             //     is_direction_confirmed_ = true;
         }
@@ -285,8 +308,6 @@ namespace buff_processor
                 }
 
                 //设置上下限
-                // problem.SetParameterLowerBound(&omega, 0, 0.2); //w(1.884~2.000)
-                // problem.SetParameterUpperBound(&omega, 0, 2.9);
                 // problem.SetParameterUpperBound(&phase, 0, 2 * CV_PI);
                 // problem.SetParameterLowerBound(&phase, 0, -(2 * CV_PI));
 
@@ -294,22 +315,15 @@ namespace buff_processor
 
                 // mutex_.lock();
                 double params__new[4] = {params_[0], params_[1], phase, params_[3]};
-                // std::cout << "omega:" << omega << " phase:" << phase << std::endl;
                 
-                // auto old_rmse = evalRMSE(params_);
-                auto new_rmse = evalRMSE(params__new);
-                // if(new_rmse < old_rmse)
-                // if(new_rmse < 5.5)
-                // {   
-                    // params_[1] = omega;
-                    params_[2] = phase;
-                    phase_ = phase;
-                    // std::cout << "phase:" << phase << " const_term:" << const_term << " new_rmse:" << new_rmse << std::endl;
-                    // std::cout << "omega:" << omega << " phase:" << phase << " new_rmse:" << new_rmse << std::endl;
-                    std::cout << "phase:" << phase << " new_rmse:" << new_rmse << std::endl;
-                // }
-                // else
-                //     is_params_confirmed_ = false;
+                double old_rmse = evalRMSE(params_);
+                double new_rmse = evalRMSE(params__new);
+                std::cout << "phase:" << phase << " new_rmse:" << new_rmse << " old_rmse:" << old_rmse << std::endl;
+               
+                params_[2] = phase;
+                phase_ = phase;
+                // is_params_confirmed_ = false;
+                
                 // mutex_.unlock();
             }
         }
@@ -323,15 +337,16 @@ namespace buff_processor
 
     bool BuffPredictor::predict(BuffMsg buff_msg, double dist, double &result)
     {
-        // double delay = (mode_ == 3 ? predictor_param_.delay_small : predictor_param_.delay_big);
-        // double pred_dt = ((double)dist / predictor_param_.bullet_speed) * 1e3 + delay;
-        // pred_dt = 500;
         double pred_dt = ((double)dist / predictor_param_.bullet_speed) * 1e3 + predictor_param_.shoot_delay;
+        pred_dt *= predictor_param_.delay_coeff;
+        
+        // 调试使用，实测需注释掉
+        pred_dt = 500;
         
         curveFitting(buff_msg);
         if (is_params_confirmed_)
         {
-            if (mode_ == 3)
+            if (mode_ == SMALL_BUFF)
             {
                 if(sign_ == 1)
                     result = abs(params_[3] * (pred_dt / 1e3));
@@ -346,7 +361,7 @@ namespace buff_processor
                     sign_
                 );
             }
-            else if (mode_ == 4)
+            else if (mode_ == BIG_BUFF)
             {
                 double timespan = (buff_msg.timestamp - history_info_.front().timestamp) / 1e6;
 
@@ -368,7 +383,7 @@ namespace buff_processor
                         error = abs(pred_v - meas_v);
                     }
                 }
-                if (error >= 0.05)
+                if (error >= 0.1)
                     error_cnt_++;
 
                 RCLCPP_INFO_THROTTLE(
@@ -387,7 +402,7 @@ namespace buff_processor
                     error_cnt_
                 );
 
-                if (error_cnt_ >= 5 || error >= 0.2)
+                if (error_cnt_ >= 10 || error >= 0.25)
                 {
                     is_params_confirmed_ = false;
                     is_direction_confirmed_ = false;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-05-21 23:48:24
+ * @LastEditTime: 2023-05-31 19:53:35
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -200,7 +200,7 @@ namespace armor_detector
             //计算长宽比,确定装甲板类型
             auto apex_wh_ratio = max(points_pic_rrect.size.height, points_pic_rrect.size.width) / min(points_pic_rrect.size.height, points_pic_rrect.size.width);
             if (object.cls == 1 || apex_wh_ratio > detector_params_.armor_type_wh_thres)
-            {   //若大于长宽阈值或为哨兵、英雄装甲板
+            {   //若大于长宽阈值或为英雄装甲板
                 target_type = BIG;
             }
             else if (object.cls == 0 || object.cls == 2 || object.cls == 3 || object.cls == 4 || object.cls == 5 || object.cls == 6)
@@ -760,7 +760,7 @@ namespace armor_detector
     {
         std::vector<Armor> new_armors;
         cv::Point2d img_center = cv::Point2d(src.img.size().width / 2, src.img.size().height / 2);
-        if (src.mode == SENTRY_NORMAL && decision_msg.mode == AUTOAIM)
+        if (src.mode == SENTRY_NORMAL)
         {
             for (auto& armor : armors)
             {
@@ -818,7 +818,7 @@ namespace armor_detector
             else
                 return -1;
         }
-        else if (src.mode == AUTOAIM || src.mode == HERO_SLING)
+        else if (src.mode == AUTOAIM_TRACKING || src.mode == AUTOAIM_NORMAL || src.mode == AUTOAIM_SLING)
         {
             return chooseTargetID(src, armors);
         }
@@ -947,7 +947,7 @@ namespace armor_detector
             float rrangle = armor.rrect.angle;
             double dist_3d = armor.armor3d_world.norm();
 
-            if (armor.id == 6 && src.mode == HERO_SLING)
+            if (armor.id == 6 && src.mode == AUTOAIM_SLING)
             {
                 return armor.id;
             }

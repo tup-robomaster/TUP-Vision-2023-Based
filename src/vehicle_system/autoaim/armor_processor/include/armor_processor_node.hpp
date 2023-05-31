@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:56:35
- * @LastEditTime: 2023-05-21 22:48:45
+ * @LastEditTime: 2023-05-29 16:53:31
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor_node.hpp
  */
 #ifndef ARMOR_PROCESSOR_NODE_HPP_
@@ -69,18 +69,21 @@ namespace armor_processor
         bool is_pred_ = false;
         map<int, string> state_map_;
         atomic<bool> image_flag_ = false;
-        
+
+        double last_rangle_ = 0.0;
+
         rclcpp::Publisher<GimbalMsg>::SharedPtr gimbal_msg_pub_;
         rclcpp::Publisher<GimbalMsg>::SharedPtr tracking_msg_pub_;
         
         // visualization_msgs::Marker
-        void pubMarkerArray(vector<Eigen::Vector4d> armor3d_vec, bool is_clockwise, int flag);
+        void pubMarkerArray(vector<Eigen::Vector4d> armor3d_vec, bool is_spinning, bool is_clockwise, int flag);
         rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_pub_;
         uint64 shape_ = visualization_msgs::msg::Marker::SPHERE;
         bool show_marker_ = false;
         
         int count_ = 0;
         bool shoot_flag_ = false;
+        bool judgeShooting(Eigen::Vector2d tracking_angle, Eigen::Vector2d pred_angle);
 
     private:
         std::unique_ptr<Processor> processor_;

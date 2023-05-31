@@ -2,12 +2,12 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 17:45:26
- * @LastEditTime: 2023-02-05 00:57:44
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/model_generator.cpp
+ * @LastEditTime: 2023-05-29 22:23:13
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/src/model_generator.cpp
  */
-#include "../../include/filter/model_generator.hpp"
+#include "../include/model_generator.hpp"
 
-namespace armor_processor
+namespace filter
 {
     vector<double> trans_prob_params = {0.6, 0.3, 0.05, 0.05,
                                         0.5, 0.4, 0.05, 0.05,
@@ -110,4 +110,4 @@ namespace armor_processor
         return ct_ptr;
     }
 
-} //armor_processor
+} //filter

@@ -2,11 +2,14 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-20 19:46:36
- * @LastEditTime: 2023-03-20 21:29:10
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/predictor/param_struct.hpp
+ * @LastEditTime: 2023-05-29 22:43:27
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
 #define PARAM_STRUCT_HPP_
+
+#include "../../../filter/include/particle_filter.hpp"
+#include "../../../filter/include/motion_model.hpp"
 
 namespace buff_processor
 {
@@ -50,6 +53,7 @@ namespace buff_processor
         string pf_path;
         double bullet_speed;            //弹速
         double shoot_delay;             //发弹延迟
+        double delay_coeff;             //延迟系数
         
         double max_timespan;            //最大时间跨度，大于该时间重置预测器(ms)
         double max_rmse;                //TODO:回归函数最大Cost
@@ -60,9 +64,6 @@ namespace buff_processor
         int history_deque_len_phase;    //大符相位参数拟合队列长度
         int history_deque_len_uniform;  //小符转速求解队列长度
         
-        // double delay_small;             //小符发弹延迟
-        // double delay_big;               //大符发弹延迟
-
         int window_size;                //滑动窗口大小
         double fan_length;              //能量机关旋转半径
         int max_error_cnt;              //预测误差帧数
@@ -75,9 +76,10 @@ namespace buff_processor
 
         PredictorParam()
         {
-            pf_path = "src/global_user/config/filter_param.yaml";
+            pf_path = "/config/filter_param.yaml";
             bullet_speed = 28.0;
             shoot_delay = 100.0;
+            delay_coeff = 1.0;
 
             max_timespan = 50000;       
             max_rmse = 2.0;
@@ -87,8 +89,6 @@ namespace buff_processor
             history_deque_len_cos = 250;
             history_deque_len_phase = 100;
             history_deque_len_uniform = 100;
-            // delay_small = 175.0;
-            // delay_big = 100.0;
             
             window_size = 2;
             fan_length = 0.7;
@@ -108,19 +108,19 @@ namespace buff_processor
         string camera_name;
         PathParam()
         {
-            camera_name = "KE0200110075";
-            camera_param_path = "src/global_user/config/camera.yaml";
+            camera_name = "KE0200110076";
+            camera_param_path = "/config/camera.yaml";
         }
     };
 
     struct DebugParam
     {
-        bool using_imu;
-        bool show_predict;
+        bool show_img;
+        bool show_marker;
         DebugParam()
         {
-            using_imu = false;
-            show_predict = true;
+            show_img = false;
+            show_marker = false;
         }
     };
 

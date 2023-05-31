@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-03-17 19:55:31
+ * @LastEditTime: 2023-05-31 22:18:30
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -13,15 +13,15 @@ namespace buff_detector
     /**
      * @brief Define names based depends on Unicode path support
      */
-    // static constexpr int INPUT_W = 640;     // Width of input
-    // static constexpr int INPUT_H = 384;     // Height of input
-    static constexpr int INPUT_W = 416;        // Width of input
-    static constexpr int INPUT_H = 416;        // Height of input
+    static constexpr int INPUT_W = 640;     // Width of input
+    static constexpr int INPUT_H = 640;     // Height of input
+    // static constexpr int INPUT_W = 416;        // Width of input
+    // static constexpr int INPUT_H = 416;        // Height of input
     static constexpr int NUM_CLASSES = 2;      // Number of classes
     static constexpr int NUM_COLORS = 2;       // Number of color
     static constexpr int TOPK = 128;           // TopK
     static constexpr float NMS_THRESH  = 0.1;
-    static constexpr float BBOX_CONF_THRESH = 0.85;
+    static constexpr float BBOX_CONF_THRESH = 0.60;
     static constexpr float MERGE_CONF_ERROR = 0.15;
     static constexpr float MERGE_MIN_IOU = 0.2;
 
@@ -382,12 +382,12 @@ namespace buff_detector
         // Step 2. Compile the model
         compiled_model = core.compile_model(
             model,
-            "CPU",
+            "GPU",
             ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
             // "AUTO:GPU,CPU", 
             // ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
             // ov::hint::inference_precision(ov::element::u8)
-            );
+        );
 
         // compiled_model.set_property(ov::device::priorities("GPU"));
 
@@ -426,7 +426,7 @@ namespace buff_detector
     {
         if (src.empty())
         {
-            // fmt::print(fmt::fg(fmt::color::red), "[DETECT] ERROR: 传入了空的src\n");
+            cout << "[DETECT] ERROR: 传入了空的src";
             return false;
         }
 
@@ -463,8 +463,12 @@ namespace buff_detector
         // // 转换图像数据为ov::Tensor
         // input_tensor = ov::Tensor(input_type, input_shape, input_data_ptr);
 
+        // auto st = std::chrono::steady_clock::now();
         // 推理
         infer_request.infer();
+        // auto end = std::chrono::steady_clock::now();
+        // double infer_dt = std::chrono::duration<double,std::milli>(end - st).count();
+        // cout << "infer_time:" << infer_dt << endl;
         
         // 处理推理结果
         ov::Tensor output_tensor = infer_request.get_output_tensor();

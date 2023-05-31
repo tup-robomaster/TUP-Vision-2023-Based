@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-09 22:50:31
- * @LastEditTime: 2023-04-30 17:55:22
+ * @LastEditTime: 2023-05-29 22:31:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -22,8 +22,12 @@
 
 #include "../../global_user/include/global_user/global_user.hpp"
 
+//IMM Model(CV、CA、CT)
+#include "../../../filter/include/model_generator.hpp"
+
 using namespace std;
 using namespace global_user;
+using namespace filter;
 namespace armor_processor
 {
     typedef enum SpinningStatus
@@ -65,6 +69,14 @@ namespace armor_processor
         PREDICTING, //预测
         LOSTING,    //丢失预测中
         LOST        //丢失
+    };
+
+    enum ShootingMode
+    {
+        BLOCKING,  // 阻塞
+        SINGLE,    // 单发模式
+        LIMITED,   // 连发限制模式
+        CONTINUOUS // 连发模式
     };
 
     struct FilterModelParam

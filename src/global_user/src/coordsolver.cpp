@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 03:13:35
- * @LastEditTime: 2023-05-15 23:13:25
+ * @LastEditTime: 2023-05-29 17:53:11
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/src/coordsolver.cpp
  */
 #include "../include/coordsolver.hpp"
@@ -119,16 +119,17 @@ namespace coordsolver
                 {0.066, 0.027, 0}
             };
         }
+        
         //长度为5进入大符模式
         else if (type == BUFF)
         {
             points_world = 
             {
                 {0, -0.7, -0.05},
-                {0.11, -0.11, 0.0},
-                {0.11, 0.11, 0.0},
-                {-0.11, 0.11, 0.0},
                 {-0.11, -0.11, 0.0},
+                {-0.11, 0.11, 0.0},
+                {0.11, 0.11, 0.0},
+                {0.11, -0.11, 0.0},
             };
 
             // points_world = 
@@ -177,7 +178,8 @@ namespace coordsolver
         }
         else
         {
-            solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, SOLVEPNP_ITERATIVE);
+            solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, false, SOLVEPNP_EPNP);
+            solvePnP(points_world, points_pic, intrinsic, dis_coeff, rvec, tvec, true, SOLVEPNP_ITERATIVE);
         }
 
         //Pc = R * Pw + T
@@ -212,7 +214,6 @@ namespace coordsolver
         //     "euler: (%.3f %.3f %.3f)", 
         //     result.euler(0), result.euler(1), result.euler(2)
         // );
-
         return result;
     }
 

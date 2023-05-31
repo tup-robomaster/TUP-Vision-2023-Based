@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-05-19 16:52:21
+ * @LastEditTime: 2023-05-31 17:42:16
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -37,24 +37,11 @@ namespace serialport
         rmw_qos.depth = 5;
         
         //自瞄msg订阅
-        if (!tracking_target_)
-        {   //预测信息订阅
-            RCLCPP_WARN(this->get_logger(), "Prediciton!!!");
-            autoaim_info_sub_ = this->create_subscription<GimbalMsg>(
-                "/armor_processor/gimbal_msg", 
-                qos,
-                std::bind(&SerialPortNode::armorMsgCallback, this, _1)
-            );
-        }
-        else
-        {   //跟踪信息订阅
-            RCLCPP_WARN(this->get_logger(), "Tracking!!!");
-            autoaim_tracking_sub_ = this->create_subscription<GimbalMsg>(
-                "/armor_processor/tracking_msg", 
-                qos,
-                std::bind(&SerialPortNode::armorMsgCallback, this, _1)
-            );
-        }
+        autoaim_info_sub_ = this->create_subscription<GimbalMsg>(
+            "/armor_processor/gimbal_msg", 
+            qos,
+            std::bind(&SerialPortNode::armorMsgCallback, this, _1)
+        );
         
         //能量机关msg订阅
         buff_info_sub_ = this->create_subscription<GimbalMsg>(
@@ -64,12 +51,17 @@ namespace serialport
         );
 
         tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-
         if (using_port_)
         {
             serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", qos);
             // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
-            watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
+            
+            watch_timer_ = rclcpp::create_timer(
+                this, 
+                this->get_clock(), 
+                500ms, 
+                std::bind(&SerialPortNode::serialWatcher, this)
+            );
         }
         receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
     }
@@ -104,10 +96,6 @@ namespace serialport
         vector<float> vehicle_pos_info;
         while (1)
         {
-            // stamp_ = this->get_clock()->now();
-            // rclcpp::Time now = this->get_clock()->now();
-            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "rec_delay:%.3fms", (now.nanoseconds() - stamp_.nanoseconds()) / 1e6);
-
             if (!using_port_)
             {
                 geometry_msgs::msg::TransformStamped t;
@@ -151,34 +139,39 @@ namespace serialport
                     if(!is_receive_data)
                     {
                         RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "CHECKSUM FAILED OR NO DATA RECVIED!!!");
-                        // continue;
-                        // usleep(1000);
+                        usleep(1000);
+                        continue;
                     }
                 }
                 
                 uchar flag = serial_port_->serial_data_.rdata[0];
                 uchar mode = serial_port_->serial_data_.rdata[1];
                 mode_ = mode;
-                // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
-                // RCLCPP_INFO(this->get_logger(), "mode:%d", mode);
+
+                RCLCPP_INFO_THROTTLE(
+                    this->get_logger(), 
+                    *this->get_clock(), 
+                    100,
+                    "mode:%d", 
+                    mode
+                );
                 
                 if (flag == 0xA5)
                 {
-                    // RCLCPP_INFO_THROTTLE(this->get_logger(), this->serial_port_->steady_clock_, 1000, "mode:%d", mode);
                     std::vector<float> quat;
                     std::vector<float> gyro;
                     std::vector<float> acc;
                     float bullet_speed = 0.0;
                     float shoot_delay = 0.0;
                     
-                    //Process IMU Datas
+                    // Process IMU Datas.
                     data_transform_->getQuatData(&serial_port_->serial_data_.rdata[3], quat);
                     data_transform_->getGyroData(&serial_port_->serial_data_.rdata[19], gyro);
                     data_transform_->getAccData(&serial_port_->serial_data_.rdata[31], acc);
                     data_transform_->getBulletSpeed(&serial_port_->serial_data_.rdata[43], bullet_speed);
                     data_transform_->getShootDelay(&serial_port_->serial_data_.rdata[47], shoot_delay);
                     
-                    // Gimbal angle
+                    // Gimbal angle.
                     // float yaw_angle = 0.0, pitch_angle = 0.0;
                     // data_transform_->getYawAngle(flag, &serial_port_->serial_data_.rdata[55], yaw_angle);
                     // data_transform_->getPitchAngle(flag, &serial_port_->serial_data_.rdata[59], pitch_angle);
@@ -236,17 +229,9 @@ namespace serialport
 
                     // Pub serial msg
                     serial_msg_pub_->publish(std::move(serial_msg));
-
-                    // RCLCPP_WARN(this->get_logger(), "serial_msg_pub:%.3fs", now.nanoseconds() / 1e9);
                 }
             }
-
-            // stamp_ = now;
-            // rclcpp::Time now = this->get_clock()->now();        
-            // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "rec_delay:%.3fms", (now.nanoseconds() - stamp_.nanoseconds()) / 1e6);
-
         }
-
     }
 
     /**
@@ -259,14 +244,23 @@ namespace serialport
     bool SerialPortNode::sendData(GimbalMsg::SharedPtr target_info)
     {
         int mode = mode_;
-        // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
+        RCLCPP_WARN_THROTTLE(
+            this->get_logger(), 
+            *this->get_clock(),
+            100,
+            "sending_mode: %d", 
+            mode
+        );
+
         if (this->using_port_)
         {   
             VisionAimData vision_data;
-            if (mode == AUTOAIM || mode == HERO_SLING || mode == OUTPOST_ROTATION_MODE
-            || mode == SMALL_BUFF || mode == BIG_BUFF || mode == SENTRY_NORMAL)
+            if (mode == AUTOAIM_TRACKING || mode == AUTOAIM_NORMAL ||
+                mode == AUTOAIM_SLING || mode == SMALL_BUFF || 
+                mode == BIG_BUFF || mode == OUTPOST_ROTATION_MODE ||
+                mode == SENTRY_NORMAL
+            )
             {
-                // RCLCPP_WARN(this->get_logger(), "Sub autoaim msg!!!");
                 vision_data = 
                 {
                     (serial_port_->steady_clock_.now().nanoseconds() / 1e6),
@@ -281,63 +275,101 @@ namespace serialport
                     {target_info->meas_point_cam.x, target_info->meas_point_cam.y, target_info->meas_point_cam.z},
                     {target_info->pred_point_cam.x, target_info->pred_point_cam.y, target_info->pred_point_cam.z}
                 };
-                RCLCPP_WARN_EXPRESSION(this->get_logger(), (target_info->is_switched || target_info->is_spinning_switched), "Target switched!!!");
+                
+                RCLCPP_WARN_THROTTLE(
+                    this->get_logger(),
+                    *this->get_clock(), 
+                    50,
+                    "is_target_switched: %d",
+                    (target_info->is_switched || target_info->is_spinning_switched)
+                );
             }
             else 
+            {
+                RCLCPP_WARN_THROTTLE(
+                    this->get_logger(), 
+                    *this->get_clock(),
+                    100,
+                    "Error mode: %d", 
+                    mode
+                );
                 return false;
+            }
 
-            //根据不同mode进行对应的数据转换
+            // 根据不同mode进行对应的数据转换
             data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
             
             // Time of entire loop.
             rclcpp::Time now = this->get_clock()->now();
             rclcpp::Time start = target_info->header.stamp;
-            // builtin_interfaces::msg::Time now_timestamp = now;
-            // double dura = (now_timestamp.nanosec - target_info->header.stamp.nanosec) / 1e6;
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "All_delay:%.2fms", (now.nanoseconds() - start.nanoseconds()) / 1e6);
+            double duration = (now.nanoseconds() - start.nanoseconds()) / 1e6;
             
-            //数据发送
+            RCLCPP_WARN_THROTTLE(
+                this->get_logger(), 
+                *this->get_clock(), 
+                100, 
+                "All_delay:%.2fms", 
+                duration
+            );
+            
+            // 数据发送
             mutex_.lock();
             serial_port_->sendData();
             mutex_.unlock();
             return true;
         }
         else
+        {
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Not use port...");
             return false;
+        }
     }
 
     /**
      * @brief 自瞄消息订阅回调函数
      * 
-     * @param target_info 目标信息
+     * @param gimbal_msg 云台转动消息
      */
-    void SerialPortNode::armorMsgCallback(GimbalMsg::SharedPtr target_info) 
+    void SerialPortNode::armorMsgCallback(GimbalMsg::SharedPtr gimbal_msg) 
     {
         int mode = mode_;
-        if (mode == AUTOAIM || mode == HERO_SLING)
+        if (mode == AUTOAIM_TRACKING || mode == AUTOAIM_NORMAL ||
+            mode == AUTOAIM_SLING || mode == OUTPOST_ROTATION_MODE ||
+            mode == SENTRY_NORMAL
+        )
         {
-            if (!sendData(target_info))
+            if (!sendData(gimbal_msg))
             {   // Debug without com.
-                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub autoaim msg...");
+                RCLCPP_WARN_THROTTLE(
+                    this->get_logger(), 
+                    *this->get_clock(), 
+                    500, 
+                    "Sub autoaim msg..."
+                );
             }
         }
-        return;
     }
 
     /**
      * @brief 能量机关消息订阅回调函数
      * 
-     * @param target_info 目标信息
+     * @param gimbal_msg 云台转动消息
      */
-    void SerialPortNode::buffMsgCallback(GimbalMsg::SharedPtr target_info) 
+    void SerialPortNode::buffMsgCallback(GimbalMsg::SharedPtr gimbal_msg) 
     {
         int mode = mode_;
         if (mode == SMALL_BUFF || mode == BIG_BUFF)
         {
-            if (!sendData(target_info))
-                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub buff msg...");
+            if (!sendData(gimbal_msg))
+            {
+                RCLCPP_WARN_THROTTLE(
+                    this->get_logger(), 
+                    *this->get_clock(), 
+                    500, 
+                    "Sub buff msg..."
+                );
+            }
         }
-        return;
     }
 
     /**
