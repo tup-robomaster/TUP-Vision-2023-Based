@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-05-31 17:46:06
+ * @LastEditTime: 2023-05-31 18:10:35
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -36,9 +36,6 @@ namespace buff_processor
         qos.keep_last(1);
         qos.reliable();
         qos.durability();
-        // qos.best_effort();
-        // qos.transient_local();
-        // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 3;

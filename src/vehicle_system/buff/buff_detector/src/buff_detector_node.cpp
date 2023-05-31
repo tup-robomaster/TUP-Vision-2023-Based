@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-05-31 17:45:24
+ * @LastEditTime: 2023-05-31 18:10:23
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -37,9 +37,6 @@ namespace buff_detector
         qos.keep_last(5);
         qos.reliable();
         qos.durability();
-        // qos.best_effort();
-        // qos.durability_volatile();
-        // qos.best_effort();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
