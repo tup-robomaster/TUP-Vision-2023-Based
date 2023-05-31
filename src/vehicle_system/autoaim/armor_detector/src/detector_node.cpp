@@ -113,6 +113,7 @@ namespace armor_detector
         serial_msg_.header.stamp = this->get_clock()->now();
         serial_msg_mutex_.unlock();
         mode_ = serial_msg.mode;
+        // cout << "mode:" << mode_ << endl;
 
         return;
     }
@@ -124,15 +125,17 @@ namespace armor_detector
      */
     void DetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {
-        if(!img_msg || (mode_ != AUTOAIM && mode_ != HERO_SLING))
-            return;
-
         RCLCPP_INFO_THROTTLE(
             this->get_logger(),
             *this->get_clock(),
             200, 
-            "Autoaim mode..."
+            "Autoaim mode... mode: %d",
+            mode_
         );
+        mode_ = 1;
+
+        if(!img_msg || (mode_ != AUTOAIM && mode_ != HERO_SLING))
+            return;
 
         rclcpp::Time img_stamp = img_msg->header.stamp;
         rclcpp::Time now = this->get_clock()->now();
@@ -185,15 +188,16 @@ namespace armor_detector
                 rmat_imu = src.quat.toRotationMatrix();
                 Eigen::Vector3d armor_3d_cam = {armor_msg.armors.front().point3d_cam.x, armor_msg.armors.front().point3d_cam.y, armor_msg.armors.front().point3d_cam.z};
                 tracking_angle = detector_->coordsolver_.getAngle(armor_3d_cam, rmat_imu);
+            
+                RCLCPP_INFO_THROTTLE(
+                    this->get_logger(), 
+                    *this->get_clock(), 
+                    500, 
+                    "armor3d_cam: (%.3f %.3f %.3f) armor3d_world: (%.3f %.3f %.3f)", 
+                    armor_msg.armors.front().point3d_cam.x, armor_msg.armors.front().point3d_cam.y, armor_msg.armors.front().point3d_cam.z,
+                    armor_msg.armors.front().point3d_world.x, armor_msg.armors.front().point3d_world.y, armor_msg.armors.front().point3d_world.z
+                );
             }
-            RCLCPP_INFO_THROTTLE(
-                this->get_logger(), 
-                *this->get_clock(), 
-                500, 
-                "armor3d_cam: (%.3f %.3f %.3f) armor3d_world: (%.3f %.3f %.3f)", 
-                armor_msg.armors.front().point3d_cam.x, armor_msg.armors.front().point3d_cam.y, armor_msg.armors.front().point3d_cam.z,
-                armor_msg.armors.front().point3d_world.x, armor_msg.armors.front().point3d_world.y, armor_msg.armors.front().point3d_world.z
-            );
         }
         param_mutex_.unlock();
 

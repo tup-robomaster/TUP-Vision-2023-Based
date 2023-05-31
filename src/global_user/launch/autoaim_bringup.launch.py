@@ -27,13 +27,13 @@ def generate_launch_description():
     
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
-    camera_type = 'mvs' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
-    camera_name = 'KE0200110074'
+    camera_type = 'daheng' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_name = 'KE0200110076'
     use_serial = True
-    use_imu = False
-    shoot_delay = 125.0 # 发弹延迟
-    bullet_speed = 16.8 # 弹速
-    delay_coeff = 1.15   # 延迟系数（放大时间提前量，缓解云台跟随滞后问题
+    use_imu = True
+    shoot_delay = 100.0 # 发弹延迟
+    bullet_speed = 14.5 # 弹速
+    delay_coeff = 0.80   # 延迟系数（放大时间提前量，缓解云台跟随滞后问题)
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ def generate_launch_description():
                             output='screen', # log/screen/both
                             emulate_tty=True,
                             parameters=[{
-                                'using_port': False,
+                                'using_port': True,
                                 'tracking_target': True,
                                 'print_serial_info': False,
                                 'print_referee_info': False

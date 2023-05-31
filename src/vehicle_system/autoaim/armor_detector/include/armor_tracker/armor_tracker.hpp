@@ -65,7 +65,7 @@ namespace armor_detector
         Armor new_armor;                       //本次装甲板
         int gray_armor_cnt_ = 0;
         bool is_dead_ = false;
-        int max_gray_armor_cnt_ = 5;
+        int max_gray_armor_cnt_ = 20;
         
         int64_t now = 0.0;                       //本次装甲板时间戳
         int64_t last_timestamp = 0.0;            //上次装甲板时间戳

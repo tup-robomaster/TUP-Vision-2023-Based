@@ -94,7 +94,6 @@ namespace armor_processor
                 Eigen::VectorXd pred_state = pred_state_vec_.back();
                 int scale = pred_state(3) / (2 * CV_PI);
                 double pred_rangle = pred_state(3) - scale * (2 * CV_PI);
-                
                 uniform_ekf_.x_(2) = pred_state(2);
                 uniform_ekf_.x_(4) = pred_rangle;
 
@@ -108,7 +107,7 @@ namespace armor_processor
             }
 
             Eigen::VectorXd singer_state = singer_ekf_.x();
-            singer_ekf_.x_ << singer_state(0), singer_state(1), uniform_ekf_.x_(2),
+            singer_ekf_.x_ << uniform_ekf_.x_(0), uniform_ekf_.x_(1), uniform_ekf_.x_(2),
                               singer_state(3), singer_state(4), singer_state(5),
                               singer_state(6), singer_state(7), singer_state(8);
         }
@@ -118,7 +117,6 @@ namespace armor_processor
     bool ArmorPredictor::predict(TargetInfo target, double dt, double pred_dt, double &delay_time, Eigen::Vector3d &pred_point3d, vector<Eigen::Vector4d> &armor3d_vec, cv::Mat *src)
     {
         SpinHeading spin_state = target.is_spinning ? (target.is_clockwise ? CLOCKWISE : COUNTER_CLOCKWISE) : UNKNOWN;
-        // Eigen::Vector4d meas = {target.xyz(1), -target.xyz(0), target.xyz(2), (target.rangle > 0 ? (target.rangle - CV_PI / 2) : (CV_PI * 1.5 + target.rangle ))};
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
         // cout << "meas_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
         
@@ -140,6 +138,10 @@ namespace armor_processor
             if (predictBasedSinger(target.is_target_lost, armor3d, post_state, {0, 0, 0}, {0, 0, 0}, dt, pred_dt))
             {
                 pred_point3d = post_state;
+                if (target.xyz.norm() >= 4.0)
+                {
+                    pred_point3d(0) = armor3d(0);
+                }
             }
             else
             {
@@ -156,9 +158,6 @@ namespace armor_processor
 
             if (predictBasedUniformModel(target.is_target_lost, spin_state, meas, dt, pred_dt, target.period, post_state))
             {
-                // Eigen::Vector4d circle_center3d = {post_state(0), post_state(1), post_state(2), 0.0};
-                // armor3d_vec.emplace_back(circle_center3d);
-
                 Eigen::Vector3d center3d = {post_state(0), post_state(1), post_state(2)}; 
                 pred_point3d = center3d;
                 double radius = post_state(3);
@@ -167,10 +166,13 @@ namespace armor_processor
                 {
                     RCLCPP_WARN(logger_, "KF based singer model prediction failed!!!");
                 }
+                if (target.xyz.norm() >= 4.0)
+                {
+                    pred_point3d(0) = meas(0);
+                }
                 pred_point3d(2) = meas(2);
 
                 Eigen::Vector4d circle_center3d = {pred_point3d(0), pred_point3d(1), pred_point3d(2), 0.0};
-                // cout << "center3d_world:" << circle_center3d(0) << " " << circle_center3d(1) << " " << circle_center3d(2) << " " << circle_center3d(3) << endl;
                 armor3d_vec.emplace_back(circle_center3d);
                 
                 for (int ii = 0; ii < 4; ii++)
@@ -224,7 +226,6 @@ namespace armor_processor
             double rangle = uniform_ekf_.x_(4);
             double omega = uniform_ekf_.x_(5);
             
-            // int count = 0;
             double dis_diff = (pred_pos - cur_pos).norm();
             if (dis_diff >= 0.60)
             {
@@ -243,27 +244,7 @@ namespace armor_processor
                 uniform_ekf_.x_(1) = center2d(1);
                 uniform_ekf_.x_(2) = (uniform_ekf_.x_(2) + last_state_(2)) / 2.0;
                 uniform_ekf_.x_(4) = meas(3);
-
-                // is_predictor_update_ = true;
-                // circle_center_sum(0) += cur_pos(0) - radius * sin(meas(3));
-                // circle_center_sum(1) += cur_pos(1) + radius * cos(meas(3));
-                // ++count;
             }
-
-            // Eigen::Vector2d circle3d = calcCircleCenter(meas);
-            // Eigen::Vector2d pred_circle3d = {uniform_ekf_.x_(0), uniform_ekf_.x_(1)};
-            // if ((pred_circle3d - circle3d).norm() > 0.35)
-            // {
-            //     circle_center_sum(0) += circle3d(0);
-            //     circle_center_sum(1) += circle3d(1);
-            //     ++count;
-            // }
-            // if (count)
-            // {
-            //     Eigen::Vector2d circle_center_ave = (circle_center_sum / count);
-            //     uniform_ekf_.x_(0) = circle_center_ave(0);
-            //     uniform_ekf_.x_(1) = circle_center_ave(1);
-            // }
         }
 
         if (is_target_lost && predictor_state_ == LOSTING)
@@ -291,7 +272,8 @@ namespace armor_processor
                 uniform_ekf_.x_(2) = (state(2) + last_state_(2)) / 2.0;
                 state(2) = uniform_ekf_.x_(2);
             }
-
+            state = uniform_ekf_.x();
+            
             Eigen::Vector3d circle_center3d = {state(0), state(1), state(2)};
             pred_state_vec_.clear();
             for (int ii = 0; ii < 4; ii++)
@@ -369,6 +351,7 @@ namespace armor_processor
                 uniform_ekf_.x_(2) = (state(2) + last_state_(2)) / 2.0;
                 state(2) = uniform_ekf_.x_(2);
             }
+            state = uniform_ekf_.x();
 
             Eigen::Vector3d circle_center3d = {state(0), state(1), state(2)};
             pred_state_vec_.clear();
@@ -535,14 +518,14 @@ namespace armor_processor
             updateVel({State(3), State(4), State(5)});
             updateAcc({State(6), State(7), State(8)});
             
-            // Eigen::MatrixXd F(9, 9);
-            // singer_ekf_.updateF(F, pred_dt);
-            // Eigen::MatrixXd Control(9, 3);
-            // singer_ekf_.updateC(Control, pred_dt);
+            Eigen::MatrixXd F(9, 9);
+            singer_ekf_.updateF(F, pred_dt);
+            Eigen::MatrixXd Control(9, 3);
+            singer_ekf_.updateC(Control, pred_dt);
 
-            // Eigen::Vector3d acc = {State(6), State(7), State(8)};
-            // VectorXd x_pred = F * State + Control * acc;
-            // result = {x_pred(0), x_pred(1), x_pred(2)};
+            Eigen::Vector3d acc = {State(6), State(7), State(8)};
+            VectorXd x_pred = F * State + Control * acc;
+            result = {x_pred(0), x_pred(1), x_pred(2)};
             is_available = true;
         }
         return is_available;

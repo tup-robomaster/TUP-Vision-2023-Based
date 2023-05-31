@@ -350,6 +350,7 @@ namespace armor_detector
             autoaim_msg.is_target_lost = true;
             lost_cnt_++;
             is_last_target_exists_ = false;
+            last_target_area_ = 0;
             RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "No available tracker exists!");
             return false;
         }

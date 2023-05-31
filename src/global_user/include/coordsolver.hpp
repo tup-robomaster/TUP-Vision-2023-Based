@@ -84,10 +84,11 @@ namespace coordsolver
         Eigen::Matrix4d transform_ci;
 
         double bullet_speed = 16.0;   
-        // const double k = 0.01903;                //25°C,1atm,小弹丸
-        const double k = 0.00556;                //25°C,1atm,大弹丸
-        // const double k = 0.00530;                //25°C,1atm,发光大弹丸
+        const double k = 0.01903;                //25°C,1atm,小弹丸
         const double g = 9.781;
+
+        // const double k = 0.00556;                //25°C,1atm,大弹丸
+        // const double k = 0.00530;                //25°C,1atm,发光大弹丸
        
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
         rclcpp::Logger logger_;

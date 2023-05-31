@@ -253,18 +253,24 @@ namespace armor_processor
                 if (!iszero(angle(0)) && !iszero(angle(1)))
                 {   
                     // 针对横向机动目标
-                    if ((tracking_angle(0) / angle(0) > 0) && (abs(tracking_angle(0)) < abs(angle(0))) &&
-                        abs(tracking_angle(0) - angle(0)) >= 0.5 && abs(tracking_angle(0) - angle(0)) <= 8.0 &&
-                        abs(tracking_angle(1) - angle(1)) <= 0.25
+                    if ( 
+                        (tracking_angle(0) / angle(0) > 0) && 
+                    (abs(tracking_angle(0)) < abs(angle(0))) &&
+                        // abs(tracking_angle(0)) - abs(angle(0)) >= 0.5 && 
+                        abs(tracking_angle(0)) - abs(angle(0)) <= 8.0 &&
+                        abs(tracking_angle(1)) - abs(angle(1)) <= 1.5
                     )
                     {
                         is_shooting = true;
                     }
 
                     // 针对纵向机动目标
-                    if ((tracking_angle(1) / angle(1) > 0) && (abs(tracking_angle(1)) < abs(angle(1))) &&
-                        abs(tracking_angle(1) - angle(1)) >= 0.5 && abs(tracking_angle(1) - angle(1)) <= 8.0 &&
-                        abs(tracking_angle(0) - angle(0)) <= 0.25
+                    if (
+                        (tracking_angle(1) / angle(1) > 0) && 
+                    (abs(tracking_angle(1)) < abs(angle(1))) &&
+                        // abs(tracking_angle(1)) - abs(angle(1)) >= 0.5 && 
+                        abs(tracking_angle(1)) - abs(angle(1)) <= 8.0 &&
+                        abs(tracking_angle(0)) - abs(angle(0)) <= 1.5
                     )
                     {
                         is_shooting = true;
@@ -272,7 +278,7 @@ namespace armor_processor
                 }
 
                 // 针对静止目标
-                if (abs(tracking_angle(0) - angle(0)) <= 0.15 && abs(tracking_angle(1) - angle(1)) <= 0.15)
+                if (abs(tracking_angle(0) - angle(0)) <= 1.0 && abs(tracking_angle(1) - angle(1)) <= 1.0)
                 {
                     is_shooting = true;
                 }
@@ -294,6 +300,8 @@ namespace armor_processor
         {
             is_shooting = false;
         }
+
+        // is_shooting = false;
 
         // 云台单发限制
         // if (shoot_flag_)
@@ -320,8 +328,8 @@ namespace armor_processor
         GimbalMsg gimbal_msg;
         gimbal_msg.header.frame_id = "barrel_link";
         gimbal_msg.header.stamp = target_info.header.stamp;
-        gimbal_msg.pitch = abs(angle[1]) >= 45.0 ? 0.0 : angle[1];
-        gimbal_msg.yaw = abs(angle[0]) >= 45.0 ? 0.0 : angle[0];
+        gimbal_msg.pitch = abs(angle[1]) >= 45.0 ? tracking_angle[1] : angle[1];
+        gimbal_msg.yaw = abs(angle[0]) >= 45.0 ? tracking_angle[0] : angle[0];
         gimbal_msg.pred_point_cam.x = aiming_point_cam[0];
         gimbal_msg.pred_point_cam.y = aiming_point_cam[1];
         gimbal_msg.pred_point_cam.z = aiming_point_cam[2];

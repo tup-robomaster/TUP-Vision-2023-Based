@@ -13,7 +13,7 @@
     full_crop_ratio: 0.0001
     armor_roi_expand_ratio_width: 1.2
     armor_roi_expand_ratio_height: 1.8
-    armor_conf_high_thres: 0.92
+    armor_conf_high_thres: 0.82
 
   # Spinning params.
     max_dead_buffer: 10
@@ -47,7 +47,7 @@
     use_roi: true
      
     debug: true
-    show_img: false
+    show_img: true
     show_crop_img: false
     show_fps: true
     show_aim_cross: true
@@ -69,7 +69,7 @@
 
   # Debug params.
     debug: true
-    show_img: true
+    show_img: false
     draw_predict: true
     show_predict: true
     show_aim_cross: true
@@ -92,7 +92,7 @@
     
   # Singer model
     # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)
-    singer_model_process_param: [1.0, 1.0, 1.0, 5.65, 15.45, 5.65]
+    singer_model_process_param: [1.0, 1.0, 1.0, 10.5, 25.0, 10.5]
     # r:观测协方差系数(r1/r2/r3)
     singer_model_measure_param: [1.0, 1.0, 1.0]
 
