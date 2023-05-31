@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:47:32
- * @LastEditTime: 2023-05-29 23:07:58
+ * @LastEditTime: 2023-05-31 16:13:50
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor/buff_processor.cpp
  */
 #include "../../include/buff_processor/buff_processor.hpp"
@@ -36,7 +36,7 @@ namespace buff_processor
         int mode = buff_msg.mode;
         buff_predictor_.mode_ = mode;
         
-        if (mode == 3 || mode == 4)
+        if (mode == SMALL_BUFF || mode == BIG_BUFF)
         {   // 进入能量机关预测模式
             double theta_offset = 0.0;
             Eigen::Vector3d r_center = {buff_msg.r_center.x, buff_msg.r_center.y, buff_msg.r_center.z};

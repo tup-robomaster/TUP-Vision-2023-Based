@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-05-29 23:11:24
+ * @LastEditTime: 2023-05-31 17:46:06
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -63,6 +63,7 @@ namespace buff_processor
                 // 图像的传输方式
                 std::string transport_type = "raw";
                 std::string camera_topic = "/image";
+
                 // image sub.
                 img_msg_sub_ = std::make_shared<image_transport::Subscriber>(
                     image_transport::create_subscription(
@@ -261,8 +262,8 @@ namespace buff_processor
 
         if (debug_param_.show_img && !dst.empty())
         {
-            cv::namedWindow("pred_img", cv::WINDOW_NORMAL);
-            cv::imshow("pred_img", dst);
+            cv::namedWindow("buff_pred_img", cv::WINDOW_NORMAL);
+            cv::imshow("buff_pred_img", dst);
             cv::waitKey(1);
         }
     }

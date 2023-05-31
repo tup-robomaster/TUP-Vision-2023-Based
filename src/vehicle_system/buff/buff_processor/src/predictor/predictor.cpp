@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-05-29 23:21:29
+ * @LastEditTime: 2023-05-31 16:12:47
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -346,7 +346,7 @@ namespace buff_processor
         curveFitting(buff_msg);
         if (is_params_confirmed_)
         {
-            if (mode_ == 3)
+            if (mode_ == SMALL_BUFF)
             {
                 if(sign_ == 1)
                     result = abs(params_[3] * (pred_dt / 1e3));
@@ -361,7 +361,7 @@ namespace buff_processor
                     sign_
                 );
             }
-            else if (mode_ == 4)
+            else if (mode_ == BIG_BUFF)
             {
                 double timespan = (buff_msg.timestamp - history_info_.front().timestamp) / 1e6;
 

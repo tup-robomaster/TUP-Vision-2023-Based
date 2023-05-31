@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-05-29 18:28:26
+ * @LastEditTime: 2023-05-31 17:45:24
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -215,8 +215,8 @@ namespace buff_detector
         bool show_img = this->get_parameter("show_img").as_bool();
         if (show_img)
         {
-            cv::namedWindow("dst", cv::WINDOW_NORMAL);
-            cv::imshow("dst", src.img);
+            cv::namedWindow("buff_dst", cv::WINDOW_NORMAL);
+            cv::imshow("buff_dst", src.img);
             cv::waitKey(1);
         }
     }

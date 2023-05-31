@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-05-26 22:31:59
+ * @LastEditTime: 2023-05-31 17:44:21
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -76,6 +76,7 @@ namespace armor_detector
         // Subscriptions transport type.
         std::string transport_type = "raw";
         std::string camera_topic = "/image";
+
         img_msg_sub_ = std::make_shared<image_transport::Subscriber>(
             image_transport::create_subscription(
                 this, 
@@ -234,8 +235,8 @@ namespace armor_detector
             double dt = (now.nanoseconds() - serial_stamp.nanoseconds()) / 1e6;
             putText(src.img, "IMU_DELAY:" + to_string(dt) + "ms", cv::Point2i(50, 80), cv::FONT_HERSHEY_SIMPLEX, 1, {0, 255, 255});
 
-            cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
-            cv::imshow("dst", src.img);
+            cv::namedWindow("amor_dst", cv::WINDOW_AUTOSIZE);
+            cv::imshow("amor_dst", src.img);
             cv::waitKey(1);
         }
     }

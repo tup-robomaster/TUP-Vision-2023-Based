@@ -19,13 +19,13 @@ def generate_launch_description():
     
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
-    camera_type = 'mvs' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
-    camera_name = 'KE0200110073'
-    use_serial = False
-    use_imu = False
-    shoot_delay = 125.0 # 发弹延迟
-    bullet_speed = 16.8 # 弹速
-    delay_coeff = 1.15   # 延迟系数（放大时间提前量，缓解云台跟随滞后问题
+    camera_type = 'daheng' # (daheng/hik/mvs/usb)
+    camera_name = 'KE0200110076'
+    use_serial = True
+    use_imu = True
+    bullet_speed = 25.5 # 弹速
+    shoot_delay = 120.0 # 发弹延迟
+    delay_coeff = 1.0   # 延迟系数（放大时间提前量，缓解云台跟随滞后问题
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
     
@@ -53,6 +53,13 @@ def generate_launch_description():
     with open(buff_param_file, 'r') as f:
         buff_processor_params = yaml.safe_load(f)['/buff_processor']['ros__parameters']
         
+    # tf2 node    
+    tf_static_node = Node(package='tf2_ros',
+                            executable='static_transform_publisher',
+                            output='screen',
+                            arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373',
+                                        '-1.5249719', '1.408214', 'imu_link', 'camera_link'])
+    
     #---------------------------------Serial Node--------------------------------------------
     if use_serial:
         serial_node = Node(package='serialport',
@@ -61,44 +68,53 @@ def generate_launch_description():
                             output='screen', # log/screen/both
                             emulate_tty=True,
                             parameters=[{
-                                'using_port': False,
-                                'tracking_target': True,
+                                'using_port': True,
+                                'tracking_target': False,
                                 'print_serial_info': False,
                                 'print_referee_info': False
                             }],
                             respawn=True,
                             respawn_delay=1)
+
+    
     #---------------------------------Detector Node--------------------------------------------
     camera_params = []
     camera_plugin = ""
     camera_node = ""
-    camera_remappings = []
+
+    armor_camera_remappings = []
+    buff_camera_remappings = []
     if camera_type == "daheng":
         camera_params = daheng_cam_params
         camera_plugin = "camera_driver::DahengCamNode"
         camera_node = "daheng_driver"
-        camera_remappings = [("/image", "/daheng_img")]
+        armor_camera_remappings = [("/image", "/daheng_img_armor_node")]
+        buff_camera_remappings = [("/image", "/daheng_img_buff_node")]
 
     elif camera_type == "usb":
         camera_params = usb_cam_params
         camera_plugin = "camera_driver::UsbCamNode"
         camera_node = "usb_driver"
-        camera_remappings = [("/image", "/usb_img")]
+        armor_camera_remappings = [("/image", "/usb_img_armor_node")]
+        buff_camera_remappings = [("/image", "/usb_img_buff_node")]
 
     elif camera_type == "mvs":
         camera_params = mvs_cam_params
         camera_plugin = "camera_driver::MvsCamNode"
         camera_node = "mvs_driver"
-        camera_remappings = [("/image", "/mvs_img")]
+        armor_camera_remappings = [("/image", "/mvs_img_armor_node")]
+        buff_camera_remappings = [("/image", "/mvs_img_buff_node")]
 
     elif camera_type == "hik":
         camera_params = hik_cam_params
         camera_plugin = "camera_driver::HikCamNode"
         camera_node = "hik_driver"
-        camera_remappings = [("/image", "/hik_img")]
+        armor_camera_remappings = [("/image", "/hik_img_armor_node")]
+        buff_camera_remappings = [("/image", "/hik_img_buff_node")]
 
     else:
         raise BaseException("Invalid Cam Type!!!") 
+    
     detector_container = ComposableNodeContainer(
         name='detector_container',
         namespace='',
@@ -126,7 +142,7 @@ def generate_launch_description():
                     'use_imu': use_imu,
                     'bullet_speed': bullet_speed,
                 }],
-                remappings= camera_remappings,
+                remappings= armor_camera_remappings,
                 extra_arguments=[{
                     'use_intra_process_comms': True
                 }]
@@ -142,7 +158,7 @@ def generate_launch_description():
                     'use_imu': use_imu,
                     'bullet_speed': bullet_speed,
                 }],
-                remappings= camera_remappings,
+                remappings= buff_camera_remappings,
                 extra_arguments=[{
                     'use_intra_process_comms': True
                 }]
@@ -172,7 +188,7 @@ def generate_launch_description():
                     'bullet_speed': bullet_speed,
                     'delay_coeff': delay_coeff
                 }],
-                remappings = camera_remappings,
+                remappings = armor_camera_remappings,
                 extra_arguments=[{
                     'use_intra_process_comms':True
                 }]
@@ -190,7 +206,7 @@ def generate_launch_description():
                     'shoot_delay': shoot_delay,
                     'delay_coeff': delay_coeff
                 }],
-                remappings = camera_remappings,
+                remappings = buff_camera_remappings,
                 extra_arguments=[{
                     'use_intra_process_comms': True
                 }]
@@ -199,11 +215,6 @@ def generate_launch_description():
         respawn=True,
         respawn_delay=1,
     )
-    tf_static_node = Node(package='tf2_ros',
-                            executable='static_transform_publisher',
-                            output='screen',
-                            arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373',
-                                        '-1.5249719', '1.408214', 'imu_link', 'camera_link'])
 
     ld = LaunchDescription()
     if use_serial:

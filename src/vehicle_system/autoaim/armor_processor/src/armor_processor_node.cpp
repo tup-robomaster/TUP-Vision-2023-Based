@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-29 16:55:36
+ * @LastEditTime: 2023-05-31 17:44:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -63,8 +63,8 @@ namespace armor_processor
             {
                 RCLCPP_WARN_ONCE(this->get_logger(), "Img subscribing...");
                 
-                std::string camera_topic = "/image";
-                std::string transport = "raw";
+                string transport = "raw";
+                string camera_topic = "/image";
 
                 // image sub.
                 img_msg_sub_ = std::make_shared<image_transport::Subscriber>(
@@ -97,7 +97,7 @@ namespace armor_processor
         AutoaimMsg target = std::move(target_info);
 
         // target.mode = HERO_SLING;
-        if (target.mode == HERO_SLING)
+        if (target.mode == AUTOAIM_SLING)
         {
             target.is_spinning = true;
             target.target_switched = false;
@@ -322,56 +322,41 @@ namespace armor_processor
         GimbalMsg gimbal_msg;
         gimbal_msg.header.frame_id = "barrel_link";
         gimbal_msg.header.stamp = target.header.stamp;
-        gimbal_msg.pitch = abs(angle[1]) >= 45.0 ? tracking_angle[1] : angle[1];
-        gimbal_msg.yaw = abs(angle[0]) >= 45.0 ? tracking_angle[0] : angle[0];
-        gimbal_msg.pred_point_cam.x = aiming_point_cam[0];
-        gimbal_msg.pred_point_cam.y = aiming_point_cam[1];
-        gimbal_msg.pred_point_cam.z = aiming_point_cam[2];
         gimbal_msg.meas_point_cam.x = tracking_point_cam[0];
         gimbal_msg.meas_point_cam.y = tracking_point_cam[1];
         gimbal_msg.meas_point_cam.z = tracking_point_cam[2];
-        gimbal_msg.distance = aiming_point_cam.norm();
+        gimbal_msg.pred_point_cam.x = aiming_point_cam[0];
+        gimbal_msg.pred_point_cam.y = aiming_point_cam[1];
+        gimbal_msg.pred_point_cam.z = aiming_point_cam[2];
         gimbal_msg.is_target = !target.is_target_lost;
         gimbal_msg.is_switched = target.target_switched;
         gimbal_msg.is_spinning = target.is_spinning;
         gimbal_msg.is_spinning_switched = target.spinning_switched;
         gimbal_msg.is_shooting = is_shooting;
         gimbal_msg.is_prediction = is_pred_; 
+        if (target.mode == AUTOAIM_NORMAL || target.mode == AUTOAIM_SLING)
+        {
+            gimbal_msg.pitch = abs(angle[1]) >= 45.0 ? tracking_angle[1] : angle[1];
+            gimbal_msg.yaw = abs(angle[0]) >= 45.0 ? tracking_angle[0] : angle[0];
+            gimbal_msg.distance = aiming_point_cam.norm();
+        }
+        else if (target.mode == AUTOAIM_TRACKING)
+        {
+            gimbal_msg.pitch = abs(tracking_angle[1]) >= 45.0 ? 0.0 : tracking_angle[1];
+            gimbal_msg.yaw = abs(tracking_angle[0]) >= 45.0 ? 0.0 : tracking_angle[0];
+            gimbal_msg.distance = tracking_point_cam.norm();
+        }
         gimbal_msg_pub_->publish(std::move(gimbal_msg));
 
-        if (this->debug_)
+        processor_->is_last_exists_ = !target.is_target_lost;
+        last_rangle_ = target.armors.front().rangle;
+        if (debug_param_.show_img && !dst.empty()) 
         {
-            GimbalMsg tracking_msg;
-            tracking_msg.header.frame_id = "barrel_link1";
-            tracking_msg.header.stamp = target.header.stamp;
-            tracking_msg.pitch = abs(tracking_angle[1]) >= 45.0 ? 0.0 : tracking_angle[1];
-            tracking_msg.yaw = abs(tracking_angle[0]) >= 45.0 ? 0.0 : tracking_angle[0];
-            tracking_msg.meas_point_cam.x = tracking_point_cam[0];
-            tracking_msg.meas_point_cam.y = tracking_point_cam[1];
-            tracking_msg.meas_point_cam.z = tracking_point_cam[2];
-            tracking_msg.pred_point_cam.x = aiming_point_cam[0];
-            tracking_msg.pred_point_cam.y = aiming_point_cam[1];
-            tracking_msg.pred_point_cam.z = aiming_point_cam[2];
-            tracking_msg.distance = tracking_point_cam.norm();
-            tracking_msg.is_target = !target.is_target_lost;
-            tracking_msg.is_switched = target.target_switched;
-            tracking_msg.is_spinning = target.is_spinning;
-            tracking_msg.is_spinning_switched = target.spinning_switched;
-            tracking_msg.is_shooting = is_shooting;
-            tracking_msg.is_prediction = is_pred_;
-            tracking_msg_pub_->publish(std::move(tracking_msg));
-            
             if (show_marker_)
             {
                 pubMarkerArray(armor3d_vec, target.is_spinning, target.is_clockwise, flag);
             }
-        }
 
-        processor_->is_last_exists_ = !target.is_target_lost;
-        last_rangle_ = target.armors.front().rangle;
-        
-        if (debug_param_.show_img && !dst.empty()) 
-        {
             if (!target.is_target_lost)
             {
                 // Draw target 2d rectangle.
@@ -388,6 +373,7 @@ namespace armor_processor
                 cv::Point2f point_2d = processor_->coordsolver_.reproject(aiming_point_cam);
                 cv::circle(dst, point_2d, 18, {255, 0, 125}, 3);
             }
+            
             if (debug_param_.show_aim_cross)
             {
                 line(dst, cv::Point2f(dst.size().width / 2, 0), cv::Point2f(dst.size().width / 2, dst.size().height), {0, 255, 0}, 1);
@@ -412,11 +398,10 @@ namespace armor_processor
             putText(dst, angle_str1, {dst.size().width / 2 + 5, 65}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
             putText(dst, state_map_[(int)(processor_->armor_predictor_.predictor_state_)], {5, 80}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
             
-            cv::namedWindow("pred", cv::WINDOW_AUTOSIZE);
-            cv::imshow("pred", dst);
+            cv::namedWindow("amor_pred", cv::WINDOW_AUTOSIZE);
+            cv::imshow("amor_pred", dst);
             cv::waitKey(1);
         }
-        return;
     }
 
     bool ArmorProcessorNode::judgeShooting(Eigen::Vector2d tracking_angle, Eigen::Vector2d pred_angle)

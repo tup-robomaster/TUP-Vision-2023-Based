@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-29 17:11:18
+ * @LastEditTime: 2023-05-31 18:05:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -81,14 +81,6 @@ namespace armor_processor
             history_switched_state_vec_.clear();
             history_switched_state_vec_.emplace_front(switched_state);
 
-            // Eigen::Vector2d circle3d = calcCircleCenter(meas);
-            // Eigen::Vector2d pred_circle3d = {uniform_ekf_.x_(0), uniform_ekf_.x_(1)};
-            // if ((pred_circle3d - circle3d).norm() > 0.15)
-            // {
-            //     uniform_ekf_.x_(0) = circle3d(0);
-            //     uniform_ekf_.x_(1) = circle3d(1);
-            // }
-            
             if ((int)pred_state_vec_.size() > 0)
             {
                 Eigen::VectorXd pred_state = pred_state_vec_.back();
@@ -110,7 +102,6 @@ namespace armor_processor
             {
                 uniform_ekf_.x_(2) = meas(2);
                 uniform_ekf_.x_(4) = meas(3);
-                // uniform_ekf_.x_(5) = 0.0;
             }
 
             Eigen::VectorXd singer_state = singer_ekf_.x();
@@ -126,10 +117,17 @@ namespace armor_processor
         SpinHeading spin_state = target.is_spinning ? (target.is_clockwise ? CLOCKWISE : COUNTER_CLOCKWISE) : UNKNOWN;
         Eigen::Vector4d meas = {target.xyz(0), target.xyz(1), target.xyz(2), target.rangle};
         bool is_target_lost = target.is_target_lost;
-        
+       
+        pred_point3d = {meas(0), meas(1), meas(2)};
         is_outpost_mode_ = target.is_outpost_mode;
         outpost_angular_speed_ = spin_state == CLOCKWISE ? -outpost_angular_speed_ : outpost_angular_speed_;
+
         // cout << "meas_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
+        RCLCPP_WARN_ONCE(
+            logger_, 
+            "delay_coeff:%.3f", 
+            predict_param_.delay_coeff
+        );
         
         if ((last_spin_state_ == UNKNOWN && spin_state != UNKNOWN) || (last_spin_state_ != UNKNOWN && spin_state == UNKNOWN))
         {
@@ -145,11 +143,10 @@ namespace armor_processor
             Eigen::Vector3d post_state = {0.0, 0.0, 0.0};
 
             pred_dt = predict_param_.delay_coeff * pred_dt;
-            RCLCPP_WARN_ONCE(logger_, "delay_coeff:%.3f", predict_param_.delay_coeff);
             if (predictBasedSinger(is_target_lost, armor3d, post_state, {0, 0, 0}, {0, 0, 0}, dt, pred_dt))
             {
                 pred_point3d = post_state;
-                if (target.xyz.norm() >= 4.0)
+                if (target.xyz.norm() >= 5.0)
                 {
                     pred_point3d(0) = meas(0);
                     pred_point3d(2) = meas(2);
@@ -158,16 +155,12 @@ namespace armor_processor
             else
             {
                 RCLCPP_WARN(logger_, "KF based singer model prediction failed!!!");
-                pred_point3d = armor3d;
                 return false;
             }
         }
         else
         {
             Vector6d post_state = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-            // meas = {meas(0), meas(1), meas(2), meas(3)};
-            // cout << "meas_trans_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
-
             if (predictBasedUniformModel(is_target_lost, spin_state, meas, dt, pred_dt, target.period, post_state))
             {
                 Eigen::Vector3d center3d = {post_state(0), post_state(1), post_state(2)}; 
@@ -176,17 +169,25 @@ namespace armor_processor
                 double pred_rangle = post_state(4);
                 if (!is_outpost_mode_)
                 {
-                    if (!predictBasedSinger(is_target_lost, center3d, pred_point3d, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, dt, pred_dt))
+                    if (predictBasedSinger(is_target_lost, center3d, pred_point3d, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, dt, pred_dt))
+                    {
+                        if (target.xyz.norm() >= 4.0)
+                        {
+                            pred_point3d(0) = post_state(0);
+                            pred_point3d(1) = post_state(1);
+                            pred_point3d(2) = post_state(2);        
+                        }
+                        else if (target.xyz.norm() >= 3.0)
+                        {
+                            pred_point3d(0) = post_state(0);
+                            pred_point3d(2) = post_state(2);        
+                        }
+                    }
+                    else
                     {
                         RCLCPP_WARN(logger_, "KF based singer model prediction failed!!!");
                     }
-
-                    if (target.xyz.norm() >= 4.0)
-                    {
-                        pred_point3d(0) = meas(0);
-                    }
                 }
-                pred_point3d(2) = meas(2);
 
                 Eigen::Vector4d circle_center3d = {pred_point3d(0), pred_point3d(1), pred_point3d(2), 0.0};
                 armor3d_vec.emplace_back(circle_center3d);
@@ -252,7 +253,6 @@ namespace armor_processor
         {
             Eigen::Vector3d cur_pos = {meas(0), meas(1), meas(2)};
             Eigen::Vector3d pred_pos = {uniform_ekf_.x_(0) + uniform_ekf_.x_(3) * sin(uniform_ekf_.x_(4)), uniform_ekf_.x_(1) - uniform_ekf_.x_(3) * cos(uniform_ekf_.x_(4)), uniform_ekf_.x_(2)};
-            Eigen::Vector2d circle_center_sum = {0.0, 0.0};
             Eigen::Vector2d center2d = calcCircleCenter(meas);
             double radius = uniform_ekf_.x_(3);
             double rangle = uniform_ekf_.x_(4);
@@ -270,8 +270,6 @@ namespace armor_processor
             else if (dis_diff >= 0.30)
             {
                 predictor_state_ = TRACKING;
-                // uniform_ekf_.x_(0) = cur_pos(0) - radius * sin(meas(3));
-                // uniform_ekf_.x_(1) = cur_pos(1) + radius * cos(meas(3));
                 uniform_ekf_.x_(0) = center2d(0);
                 uniform_ekf_.x_(1) = center2d(1);
                 uniform_ekf_.x_(2) = (uniform_ekf_.x_(2) + last_state_(2)) / 2.0;
@@ -313,7 +311,6 @@ namespace armor_processor
 
             state = uniform_ekf_.x();
             Eigen::Vector3d circle_center3d = {state(0), state(1), state(2)};
-            
             pred_state_vec_.clear();
             if (!is_outpost_mode_)
             {
@@ -505,7 +502,8 @@ namespace armor_processor
 
     bool ArmorPredictor::predictBasedSinger(bool is_target_lost, Eigen::Vector3d meas, Eigen::Vector3d& result, Eigen::Vector3d target_vel, Eigen::Vector3d target_acc, double dt, double pred_dt)
     {
-        bool is_available;
+        Eigen::VectorXd statePre;
+        bool is_available = false;
         if (!is_singer_init_)
         {
             singer_ekf_.x_ << meas(0), meas(1), meas(2), 0, 0, 0, 0, 0, 0;
@@ -524,8 +522,6 @@ namespace armor_processor
         {
             // 如果预测量偏离观测量较大，则修正状态量
             Eigen::VectorXd statePre = singer_ekf_.x();
-            // Eigen::MatrixXd stateCovPre = singer_ekf_.P();
-
             Eigen::Vector3d pred_center3d = {statePre(0), statePre(1), statePre(2)};
             double pos_diff = (pred_center3d - meas).norm();
             if (pos_diff >= 0.60)
@@ -550,17 +546,11 @@ namespace armor_processor
             singer_ekf_.updateJh();
             singer_ekf_.Update(meas);
 
-            // Eigen::MatrixXd predictState(9, 1);
             Eigen::VectorXd State = singer_ekf_.x();
             result = {State(0), State(1), State(2)};
 
             updateVel({State(3), State(4), State(5)});
             updateAcc({State(6), State(7), State(8)});
-
-            // if (predict_acc_[0] == 0.0)
-            //     singer_ekf_.setQ(target_acc);
-            // else
-            //     singer_ekf_.setQ(State[2]);
 
             //超前预测
             Eigen::MatrixXd F(9, 9);

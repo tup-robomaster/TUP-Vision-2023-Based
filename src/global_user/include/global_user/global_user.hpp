@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-05-21 23:29:21
+ * @LastEditTime: 2023-05-31 17:00:22
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -165,14 +165,14 @@ namespace global_user
     };
 
     /**
-     * @brief 模式选择（取消视觉，自瞄，英雄吊射，小符，大符，哨兵）
+     * @brief 模式选择（自瞄跟随，自瞄预测，自瞄吊射，小符，大符，前哨站旋转装甲吊射，哨兵自瞄）
      * 
      */
     enum MODE
     {
-        CLOSE_VISION,
-        AUTOAIM,
-        HERO_SLING,
+        AUTOAIM_TRACKING,
+        AUTOAIM_NORMAL,
+        AUTOAIM_SLING,
         SMALL_BUFF,
         BIG_BUFF,
         OUTPOST_ROTATION_MODE,
