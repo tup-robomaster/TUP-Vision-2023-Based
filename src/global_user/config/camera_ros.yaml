@@ -8,6 +8,7 @@
     save_path: "/recorder/video/"
     config_path: "/config/daheng_cam_param.ini" #加载参数配置文件路径
     use_port: true
+    show_img: false
 
 /mvs_cam_driver: # 配置文件在camera_driver包的config目录下
   ros__parameters:
@@ -18,6 +19,7 @@
     save_path: "/recorder/video/"
     config_path: "/config/mvs_cam_param.config" #加载参数配置文件路径
     use_port: true
+    show_img: false
     
 /usb_cam_driver:
   ros__parameters:
@@ -34,6 +36,7 @@
     save_video: false
     save_path: "/recorder/video/"
     use_port: true
+    show_img: false
     
 /hik_cam_driver:
   ros__parameters:
@@ -54,3 +57,5 @@
     save_video: false
     save_path: "/recorder/video/"
     use_port: true
+    show_img: false
+

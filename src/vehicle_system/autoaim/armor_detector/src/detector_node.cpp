@@ -7,7 +7,6 @@
  */
 #include "../include/detector_node.hpp"
 
-using namespace message_filters;
 using namespace std::placeholders;
 namespace armor_detector
 {
@@ -38,10 +37,6 @@ namespace armor_detector
             detector_->is_init_ = true;
         }
         
-        // 同步通信/异步通信
-        this->declare_parameter<bool>("sync_transport", false);
-        bool sync_transport = this->get_parameter("sync_transport").as_bool();
-
         // QoS    
         rclcpp::QoS qos(0);
         qos.keep_last(5);
@@ -114,8 +109,6 @@ namespace armor_detector
         serial_msg_.header.stamp = this->get_clock()->now();
         serial_msg_mutex_.unlock();
         mode_ = serial_msg.mode;
-        // cout << "mode:" << mode_ << endl;
-
         return;
     }
 
@@ -126,6 +119,14 @@ namespace armor_detector
      */
     void DetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {
+        RCLCPP_INFO_THROTTLE(
+            this->get_logger(),
+            *this->get_clock(),
+            200, 
+            "Autoaim mode: %d",
+            mode_
+        );
+
         if(!img_msg || (mode_ != AUTOAIM_NORMAL && mode_ != AUTOAIM_SLING &&
             mode_ != AUTOAIM_TRACKING && mode_ != OUTPOST_ROTATION_MODE &&
             mode_ != SENTRY_NORMAL
@@ -133,18 +134,6 @@ namespace armor_detector
         {
             return;
         }
-
-        RCLCPP_INFO_THROTTLE(
-            this->get_logger(),
-            *this->get_clock(),
-            200, 
-            "Autoaim mode... mode: %d",
-            mode_
-        );
-        mode_ = 1;
-
-        if(!img_msg || (mode_ != AUTOAIM && mode_ != HERO_SLING))
-            return;
 
         rclcpp::Time img_stamp = img_msg->header.stamp;
         rclcpp::Time now = this->get_clock()->now();
@@ -187,7 +176,7 @@ namespace armor_detector
             "mode:%d bulletSpd:%.2f shoot_delay:%.2f",
             src.mode, bullet_speed, shoot_delay
         );
-        
+
         param_mutex_.lock();
         if (detector_->armor_detect(src, armor_msg.is_target_lost))
         {   
@@ -227,7 +216,6 @@ namespace armor_detector
             "detect_delay:%.2fms",
             (end - now).nanoseconds() / 1e6
         );
-
         armor_msg_pub_->publish(std::move(armor_msg));
 
         debug_.show_img = this->get_parameter("show_img").as_bool();

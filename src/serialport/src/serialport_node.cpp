@@ -59,10 +59,11 @@ namespace serialport
             watch_timer_ = rclcpp::create_timer(
                 this, 
                 this->get_clock(), 
-                500ms, 
+                100ms, 
                 std::bind(&SerialPortNode::serialWatcher, this)
             );
         }
+
         receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
     }
 
