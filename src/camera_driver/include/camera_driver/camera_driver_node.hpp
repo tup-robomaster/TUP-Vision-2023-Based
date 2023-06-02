@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-05-31 17:06:50
+ * @LastEditTime: 2023-05-31 22:03:22
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -201,8 +201,8 @@ namespace camera_driver
             std::bind(&CameraBaseNode::imageCallback, this)
         );
 
-        this->declare_parameter("using_port", false);
-        use_serial_ = this->get_parameter("using_port").as_bool();
+        this->declare_parameter("use_port", false);
+        use_serial_ = this->get_parameter("use_port").as_bool();
         serial_msg_.mode = AUTOAIM_NORMAL;
         if (use_serial_)
         {
@@ -290,7 +290,7 @@ namespace camera_driver
             if (save_video_)
             {   // Video recorder.
                 ++frame_cnt_;
-                if (frame_cnt_ % 50 == 0)
+                if (frame_cnt_ % 25 == 0)
                 {
                     sensor_msgs::msg::Image image_msg = image_msg_;
                     auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();

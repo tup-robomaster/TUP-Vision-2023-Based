@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-05-31 18:10:23
+ * @LastEditTime: 2023-06-01 02:26:39
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -81,7 +81,7 @@ namespace buff_detector
             RCLCPP_INFO(this->get_logger(), "debug...");
             
             // marker pub.
-            marker_array_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/visualization_marker_array", 1);
+            marker_array_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/buff_detector/visualization_marker_array", 1);
             shape_ = visualization_msgs::msg::Marker::CUBE;
             
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffDetectorNode::paramsCallback, this, _1));
@@ -105,15 +105,21 @@ namespace buff_detector
     
     void BuffDetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {   
+        if(!img_msg || (mode_ != SMALL_BUFF && mode_ != BIG_BUFF))
+            return;
+
         RCLCPP_INFO_THROTTLE(
             this->get_logger(),
             *this->get_clock(),
-            200, 
-            "mode: %d",
+            100, 
+            "buff_mode: %d",
             mode_
         );
 
-        if(!img_msg || (mode_ != SMALL_BUFF && mode_ != BIG_BUFF))
+        rclcpp::Time img_stamp = img_msg->header.stamp;
+        rclcpp::Time now = this->get_clock()->now();
+        double duration = (now.nanoseconds() - img_stamp.nanoseconds()) / 1e6;
+        if (duration > 20.0)
             return;
         
         TaskData src;
@@ -207,7 +213,22 @@ namespace buff_detector
         buff_msg.is_target_lost = target_info.find_target ? false : true;
         buff_msg_pub_->publish(std::move(buff_msg));
 
-        // RCLCPP_WARN(this->get_logger(), "mode: %d", buff_msg.mode);
+        rclcpp::Time end = this->get_clock()->now();
+        RCLCPP_WARN_THROTTLE(
+            this->get_logger(), 
+            *this->get_clock(), 
+            100, 
+            "detect_delay:%.2fms",
+            (end - now).nanoseconds() / 1e6
+        );
+
+        RCLCPP_WARN_THROTTLE(
+            this->get_logger(), 
+            *this->get_clock(), 
+            200,
+            "buff_mode: %d", 
+            buff_msg.mode
+        );
         
         bool show_img = this->get_parameter("show_img").as_bool();
         if (show_img)

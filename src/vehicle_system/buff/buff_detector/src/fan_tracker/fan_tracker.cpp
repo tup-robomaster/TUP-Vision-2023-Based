@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:54:32
- * @LastEditTime: 2023-01-03 21:15:35
+ * @LastEditTime: 2023-05-31 19:51:30
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/fan_tracker/fan_tracker.cpp
  */
 #include "../../include/fan_tracker/fan_tracker.hpp"
@@ -26,7 +26,7 @@ namespace buff_detector
     bool FanTracker::update(Fan new_fan, uint64_t now)
     {
         is_last_fan_exists_ = true;
-        if (history_info_.size() < max_history_len)
+        if (history_info_.size() < max_history_len_)
         {
             history_info_.push_back(new_fan);
         }

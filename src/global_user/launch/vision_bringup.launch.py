@@ -20,18 +20,20 @@ def generate_launch_description():
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
     camera_type = 'daheng' # (daheng/hik/mvs/usb)
-    camera_name = 'KE0200110076'
+    camera_name = 'KE0200110074'
     use_serial = True
     use_imu = True
     bullet_speed = 25.5 # 弹速
-    shoot_delay = 120.0 # 发弹延迟
+    shoot_delay = 80.0 # 发弹延迟
     delay_coeff = 1.0   # 延迟系数（放大时间提前量，缓解云台跟随滞后问题
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
     
     serial_node = []
     detector_container = []
-    processor_container = []
+    # processor_container = []
+    armor_processor_node = []
+    buff_processor_node = []
     tf_static_node = []
 
     with open(camera_param_file, 'r') as f:
@@ -168,52 +170,40 @@ def generate_launch_description():
         respawn_delay=1,
     )
     #---------------------------------Processor Node--------------------------------------------
-    processor_container = ComposableNodeContainer(
-        name='processor_container',
-        package='rclcpp_components',
-        executable='component_container',
-        namespace='',
+    armor_processor_node = Node(
+        package='armor_processor',
+        executable='armor_processor_node',
+        name='armor_processor',
         output='screen',
-        composable_node_descriptions=[
-            ComposableNode(
-                package='armor_processor',
-                plugin='armor_processor::ArmorProcessorNode',
-                name='armor_processor',
-                parameters=[armor_processor_params,
-                {
-                    'camera_name': camera_name,
-                    'use_serial': use_serial,
-                    'use_imu': use_imu,
-                    'shoot_delay': shoot_delay,
-                    'bullet_speed': bullet_speed,
-                    'delay_coeff': delay_coeff
-                }],
-                remappings = armor_camera_remappings,
-                extra_arguments=[{
-                    'use_intra_process_comms':True
-                }]
-            ),
-            ComposableNode(
-                package='buff_processor',
-                plugin='buff_processor::BuffProcessorNode',
-                name='buff_processor',
-                parameters=[buff_processor_params,
-                {
-                    'camera_name': camera_name,
-                    'use_serial': use_serial,
-                    'use_imu': use_imu,
-                    'bullet_speed': bullet_speed,
-                    'shoot_delay': shoot_delay,
-                    'delay_coeff': delay_coeff
-                }],
-                remappings = buff_camera_remappings,
-                extra_arguments=[{
-                    'use_intra_process_comms': True
-                }]
-            ),
-        ],
+        emulate_tty=True,
+        parameters=[armor_processor_params,
+        {
+            'camera_name': camera_name,
+            'bullet_speed': bullet_speed,
+            'shoot_delay': shoot_delay,
+            'delay_coeff': delay_coeff,
+        }],
+        remappings = armor_camera_remappings,
         respawn=True,
-        respawn_delay=1,
+        respawn_delay=1
+    )
+    
+    buff_processor_node = Node(
+        package='buff_processor',
+        executable='buff_processor_node',
+        name='buff_processor',
+        output='screen', # log/screen/both
+        emulate_tty=True,
+        parameters=[buff_processor_params,
+        {
+            'camera_name': camera_name,
+            'bullet_speed': bullet_speed,
+            'shoot_delay': shoot_delay,
+            'delay_coeff': delay_coeff,
+        }],
+        remappings = buff_camera_remappings,
+        respawn=True,
+        respawn_delay=1
     )
 
     ld = LaunchDescription()
@@ -221,7 +211,10 @@ def generate_launch_description():
         ld.add_action(serial_node)
     
     ld.add_action(detector_container)
-    ld.add_action(processor_container)
+    # ld.add_action(processor_container)
+    
+    ld.add_action(armor_processor_node)
+    ld.add_action(buff_processor_node)
     ld.add_action(tf_static_node)
 
     return ld

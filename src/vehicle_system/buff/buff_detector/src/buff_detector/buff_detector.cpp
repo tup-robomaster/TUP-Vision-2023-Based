@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-05-29 18:21:58
+ * @LastEditTime: 2023-05-31 20:02:05
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -163,7 +163,7 @@ namespace buff_detector
             {
                 //删除元素后迭代器会失效，需先行获取下一元素
                 auto next = iter;
-                if (((src.timestamp - (*iter).last_timestamp) / 1e6) > buff_param_.max_delta_t)
+                if (((src.timestamp - (*iter).last_timestamp_) / 1e6) > buff_param_.max_delta_t)
                     next = trackers_.erase(iter);
                 else
                     ++next;
@@ -178,11 +178,11 @@ namespace buff_detector
         for (auto fan = fans_.begin(); fan != fans_.end(); ++fan)
         {
             geometry_msgs::msg::Transform t;
-            t.translation.x = fan.armor3d_world(0);
-            t.translation.y = fan.armor3d_world(1);
-            t.translation.z = fan.armor3d_world(2);
+            t.translation.x = (*fan).armor3d_world[0];
+            t.translation.y = (*fan).armor3d_world[1];
+            t.translation.z = (*fan).armor3d_world[2];
             
-            Eigen::Quaterniond quat_world = Eigen::Quaterniond(fan.rmat);
+            Eigen::Quaterniond quat_world = Eigen::Quaterniond((*fan).rmat);
             t.rotation.w = quat_world.w();
             t.rotation.x = quat_world.x();
             t.rotation.y = quat_world.y();
@@ -215,15 +215,15 @@ namespace buff_detector
                     int sign = 0;
                     //----------------------------计算角度,求解转速----------------------------
                     // 若该扇叶完成初始化,且隔一帧时间较短
-                    if ((*iter).is_initialized && (src.timestamp - (*iter).prev_timestamp) / 1e6 < buff_param_.max_delta_t)
+                    if ((*iter).is_initialized_ && (src.timestamp - (*iter).last_timestamp_) / 1e6 < buff_param_.max_delta_t)
                     {
-                        delta_t = src.timestamp - (*iter).prev_timestamp;
-                        bool flag = (((*fan).dz / (*iter).prev_fan.dz) > 0 && (*fan).dx / (*iter).prev_fan.dx > 0) ? 1 : 0; 
+                        delta_t = src.timestamp - (*iter).last_timestamp_;
+                        bool flag = (((*fan).dz / (*iter).last_fan_.dz) > 0 && (*fan).dx / (*iter).last_fan_.dx > 0) ? 1 : 0; 
                         if (!flag)
                             continue;
 
                         // 当前扇叶与上一帧扇叶的角度差值
-                        delta_angle = (*fan).angle - (*iter).prev_fan.angle;
+                        delta_angle = (*fan).angle - (*iter).last_fan_.angle;
                         if (((*fan).dx > 0 && (*fan).dz > 0) || ((*fan).dx < 0 && (*fan).dz < 0))
                         {
                             if (delta_angle < 0)
@@ -234,13 +234,13 @@ namespace buff_detector
                     }
                     else
                     {
-                        delta_t = src.timestamp - (*iter).last_timestamp;
-                        bool flag = (((*fan).dz / (*iter).last_fan.dz) > 0 && (*fan).dx / (*iter).last_fan.dx > 0) ? 1 : 0; 
+                        delta_t = src.timestamp - (*iter).last_timestamp_;
+                        bool flag = (((*fan).dz / (*iter).last_fan_.dz) > 0 && (*fan).dx / (*iter).last_fan_.dx > 0) ? 1 : 0; 
                         if (!flag)
                             continue;
 
                         // 目前扇叶到上一次扇叶的旋转矩阵
-                        delta_angle = (*fan).angle - (*iter).last_fan.angle;
+                        delta_angle = (*fan).angle - (*iter).last_fan_.angle;
                         if (((*fan).dx > 0 && (*fan).dz > 0) || ((*fan).dx < 0 && (*fan).dz < 0))
                         {
                             if (delta_angle < 0)
@@ -250,7 +250,7 @@ namespace buff_detector
                         }
                     }
 
-                    delta_t = ((src.timestamp - (*iter).last_timestamp) / 1e6);
+                    delta_t = ((src.timestamp - (*iter).last_timestamp_) / 1e6);
                     if (abs(delta_angle) <= abs(min_angle) && abs(delta_angle) < buff_param_.max_angle && delta_t <= min_last_delta_t)
                     {
                         min_last_delta_t = delta_t;
@@ -263,7 +263,7 @@ namespace buff_detector
                 if (is_best_candidate_exist)
                 {
                     (*best_candidate).update((*fan), src.timestamp);
-                    (*best_candidate).delta_angle = min_angle;
+                    (*best_candidate).delta_angle_ = min_angle;
                     delta_angle_vec_.push_back(min_angle);
                     // RCLCPP_INFO(logger_, "delta angle:%lf", min_angle * (180 / CV_PI));
                 }
@@ -310,10 +310,10 @@ namespace buff_detector
         // 计算平均转速与平均R字中心坐标
         for (auto tracker : trackers_)
         {
-            if (tracker.is_last_fan_exists && tracker.last_timestamp == src.timestamp)
+            if (tracker.is_last_fan_exists_ && tracker.last_timestamp_ == src.timestamp)
             {
-                delta_angle_sum += tracker.delta_angle;
-                r_center_sum += tracker.last_fan.centerR3d_world;
+                delta_angle_sum += tracker.delta_angle_;
+                r_center_sum += tracker.last_fan_.centerR3d_world;
                 avail_tracker_cnt++;
             }
         }

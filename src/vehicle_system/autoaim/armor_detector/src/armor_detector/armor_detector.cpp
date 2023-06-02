@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-05-21 23:48:24
+ * @LastEditTime: 2023-05-31 19:53:35
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -759,7 +759,7 @@ namespace armor_detector
     {
         std::vector<Armor> new_armors;
         cv::Point2d img_center = cv::Point2d(src.img.size().width / 2, src.img.size().height / 2);
-        if (src.mode == SENTRY_NORMAL && decision_msg.mode == AUTOAIM)
+        if (src.mode == SENTRY_NORMAL)
         {
             for (auto& armor : armors)
             {
@@ -817,7 +817,7 @@ namespace armor_detector
             else
                 return -1;
         }
-        else if (src.mode == AUTOAIM || src.mode == HERO_SLING)
+        else if (src.mode == AUTOAIM_TRACKING || src.mode == AUTOAIM_NORMAL || src.mode == AUTOAIM_SLING)
         {
             return chooseTargetID(src, armors);
         }
@@ -946,7 +946,7 @@ namespace armor_detector
             float rrangle = armor.rrect.angle;
             double dist_3d = armor.armor3d_world.norm();
 
-            if (armor.id == 6 && src.mode == HERO_SLING)
+            if (armor.id == 6 && src.mode == AUTOAIM_SLING)
             {
                 return armor.id;
             }
