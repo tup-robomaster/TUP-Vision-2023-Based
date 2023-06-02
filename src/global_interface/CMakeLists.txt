@@ -29,6 +29,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Detection.msg"
   "msg/DetectionArray.msg"
   "msg/Decision.msg"
+  "msg/ModeSet.msg"
   # "srv/*.srv"
   # "action/*.action"
   DEPENDENCIES

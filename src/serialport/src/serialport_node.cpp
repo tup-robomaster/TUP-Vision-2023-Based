@@ -93,6 +93,7 @@ namespace serialport
                 car_pos_pub_ = this->create_publisher<CarPosMsg>("/car_pos", qos);
                 obj_hp_pub_ = this->create_publisher<ObjHPMsg>("/obj_hp", qos);
                 game_msg_pub_ = this->create_publisher<GameMsg>("/game_info", qos);
+                mode_set_msg_pub_ = this->create_publisher<ModeSetMsg>("/mode_set", qos);
                 joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", qos);
 
 
@@ -320,12 +321,15 @@ namespace serialport
                 vector<float> goal_pos;
                 uchar gamestage;
                 ushort timestamp;
+                vector<float> mode_set_pos;
+                uchar mode_set_mode;
                 // data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
                 data_transform_->getHPInfo(&serial_port_->serial_data_.rdata[3], hp);
                 data_transform_->getGameInfo(&serial_port_->serial_data_.rdata[35], timestamp, gamestage);
-                data_transform_->getGoalPosXY(&serial_port_->serial_data_.rdata[37], goal_pos);
+                data_transform_->getModeSet(&serial_port_->serial_data_.rdata[37], goal_pos);
                 ObjHPMsg obj_hp_msg;
                 GameMsg game_msg;
+                ModeSetMsg mode_set_msg;
 
                 for(int ii = 0; ii < 16; ii++)
                 {
@@ -349,6 +353,12 @@ namespace serialport
 
                 obj_hp_pub_->publish(move(obj_hp_msg));
                 game_msg_pub_->publish(move(game_msg));
+                mode_set_msg.header.frame_id = "";
+                mode_set_msg.header.stamp = now;
+                mode_set_msg.mode = (int)mode_set_mode;
+                mode_set_msg.x = mode_set_pos[0];
+                mode_set_msg.y = mode_set_pos[1];
+                mode_set_msg_pub_->publish(move(mode_set_msg));
             }
         }
 
