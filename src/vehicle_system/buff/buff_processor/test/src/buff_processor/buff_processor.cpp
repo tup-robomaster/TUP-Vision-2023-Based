@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:47:32
- * @LastEditTime: 2023-03-20 16:21:59
+ * @LastEditTime: 2023-06-02 22:19:38
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor/buff_processor.cpp
  */
 #include "../../include/buff_processor/buff_processor.hpp"
@@ -114,8 +114,8 @@ namespace buff_processor
                 // RCLCPP_INFO(logger_, "hit_point_world: %lf %lf %lf", hit_point_world[0], hit_point_world[1], hit_point_world[2]);
 
                 Eigen::Vector3d armor3d_world = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
-                Eigen::Quaterniond quat = {buff_msg.quat_cam.w, buff_msg.quat_cam.x, buff_msg.quat_cam.y, buff_msg.quat_cam.z};
-                Eigen::Matrix3d rmat = quat.toRotationMatrix();
+                Eigen::Quaterniond quat_world = {buff_msg.quat_world.w, buff_msg.quat_world.x, buff_msg.quat_world.y, buff_msg.quat_world.z};
+                Eigen::Matrix3d rmat = quat_world.toRotationMatrix();
                 if (debug_param_.using_imu)
                 {
                     Eigen::Quaterniond imu_quat = {buff_msg.quat_imu.w, buff_msg.quat_imu.x, buff_msg.quat_imu.y, buff_msg.quat_imu.z};

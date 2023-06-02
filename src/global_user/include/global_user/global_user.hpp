@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 03:24:50
- * @LastEditTime: 2023-04-16 23:18:02
+ * @LastEditTime: 2023-06-02 21:56:20
  * @FilePath: /TUP-Vision-2023-Based/src/global_user/include/global_user/global_user.hpp
  */
 #ifndef GLOBAL_USER_HPP_
@@ -45,7 +45,6 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace Eigen;
 namespace global_user
 {   
     /**
@@ -72,7 +71,7 @@ namespace global_user
         double balance_r;
         bool using_video;
         string video_path;
-        string config_path;
+        string config_path = "src/camera_driver/config/daheng_cam_param.ini";
 
         CameraParam()
         {
@@ -143,6 +142,14 @@ namespace global_user
         USBCam,
     };
 
+    enum EnemyColor 
+    {
+        BLUE,
+        RED,
+        GRAY,
+        PURPLE
+    };
+
     enum TargetType 
     {  
         SMALL, 
@@ -150,15 +157,22 @@ namespace global_user
         BUFF
     };
 
+    enum SpinHeading
+    {
+        UNKNOWN,
+        CLOCKWISE, 
+        COUNTER_CLOCKWISE
+    };
+
     /**
-     * @brief 模式选择（取消视觉，自瞄，英雄吊射，小符，大符，哨兵）
+     * @brief 模式选择（自瞄跟随，自瞄预测，自瞄吊射，小符，大符，前哨站旋转装甲吊射，哨兵自瞄）
      * 
      */
     enum MODE
     {
-        CLOSE_VISION,
-        AUTOAIM,
-        HERO_SLING,
+        AUTOAIM_TRACKING,
+        AUTOAIM_NORMAL,
+        AUTOAIM_SLING,
         SMALL_BUFF,
         BIG_BUFF,
         OUTPOST_ROTATION_MODE,
@@ -168,7 +182,6 @@ namespace global_user
     struct TaskData
     {
         int mode;
-        double bullet_speed;
         cv::Mat img;
         Eigen::Quaterniond quat;
         int64_t timestamp; 
@@ -176,7 +189,6 @@ namespace global_user
         TaskData()
         {
             mode = 1;
-            bullet_speed = 16.0;
             timestamp = 0;
         }
     };
@@ -257,8 +269,8 @@ namespace global_user
         return true;
     }
 
-    float calcTriangleArea(cv::Point2f pts[3]);
-    float calcTetragonArea(cv::Point2f pts[4]);
+    float calcTriangleArea(cv::Point2d pts[3]);
+    float calcTetragonArea(cv::Point2d pts[4]);
     double rangedAngleRad(double &angle);
 
     std::string symbolicToReal(std::string path);
@@ -273,12 +285,12 @@ namespace global_user
     Eigen::Vector3d calcDeltaEuler(Eigen::Vector3d euler1, Eigen::Vector3d euler2);
     Eigen::AngleAxisd eulerToAngleAxisd(Eigen::Vector3d euler);
     Eigen::Matrix3d eulerToRotationMatrix(Eigen::Vector3d &theta);
-    float calcDistance(cv::Point2f& p1, cv::Point2f& p2);
+    float calcDistance(cv::Point2d& p1, cv::Point2d& p2);
 
     bool setSharedMemory(SharedMemoryParam& shared_memory_param, int id, int image_width = 1280, int image_height = 1024);
     bool getSharedMemory(SharedMemoryParam& shared_memory_param, int id);
     bool destorySharedMemory(SharedMemoryParam& shared_memory_param);
-    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_name, int64_t &timestamp, int &id, int &color, vector<cv::Point2f> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size);
+    bool autoLabel(bool& is_init, cv::Mat &img, ofstream &file, string &path_name, int64_t &timestamp, int &id, int &color, vector<cv::Point2d> &apex2d, cv::Point2i &roi_offset, cv::Size2i &input_size);
 
     bool isPnpSolverValidation(Eigen::Vector3d& point3d);
     bool isAngleSolverValidataion(Eigen::Vector2d& angle2d);

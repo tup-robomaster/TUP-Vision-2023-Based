@@ -34,6 +34,10 @@ find_package(cv_bridge REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(global_interface REQUIRED)
 find_package(global_user REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(filter REQUIRED)
 
 set(dependencies 
   rclcpp
@@ -48,6 +52,10 @@ set(dependencies
   yaml-cpp
   global_interface
   global_user
+  visualization_msgs
+  tf2_geometry_msgs
+  tf2_ros 
+  filter
 )
 
 include_directories(
@@ -56,15 +64,11 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME} SHARED
-  src/filter/particle_filter.cpp 
-  src/filter/kalman_filter.cpp
-  src/filter/motion_model.cpp 
-  src/filter/model_generator.cpp 
-  src/filter/imm.cpp 
   src/prediction/prediction.cpp 
   src/${PROJECT_NAME}/${PROJECT_NAME}.cpp
   src/${PROJECT_NAME}_node.cpp  
 )
+
 ament_target_dependencies(${PROJECT_NAME} 
   ${dependencies} 
 )

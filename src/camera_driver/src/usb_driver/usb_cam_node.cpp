@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2023-04-28 15:24:56
+ * @LastEditTime: 2023-06-02 22:54:12
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -34,9 +34,9 @@ namespace camera_driver
         // qos.transient_local();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 5;
 
-        image_msg_pub_ = this->create_publisher<sensor_msgs::msg::Image>("usb_img", qos);
+        image_msg_pub_ = this->create_publisher<sensor_msgs::msg::Image>("usb_img_armor_node", qos);
         
         // rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_sensor_data;
         // camera_info_pub = image_transport::create_camera_publisher(this, "image");
@@ -162,11 +162,11 @@ namespace camera_driver
         std_msgs::msg::Header header;
         sensor_msgs::msg::Image ros_image;
 
-        if(frame.rows != usb_cam_params_.image_width || frame.cols != usb_cam_params_.image_height)
-        { 
-            cv::resize(frame, frame, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
-            RCLCPP_INFO(this->get_logger(), "Resize frame...");
-        }
+        // if(frame.rows != usb_cam_params_.image_width || frame.cols != usb_cam_params_.image_height)
+        // { 
+        //     cv::resize(frame, frame, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
+        //     RCLCPP_INFO(this->get_logger(), "Resize frame...");
+        // }
 
         ros_image.header.frame_id = "usb_camera_link";
         ros_image.header.stamp = this->get_clock()->now();
@@ -232,14 +232,15 @@ namespace camera_driver
             cap_ >> frame_;
             auto now = this->get_clock()->now();
             auto dt = (now.nanoseconds() - last_time_.nanoseconds()) / 1e9;
-            if(!frame_.empty() && dt > (1 / usb_cam_params_.fps))
+            if(!frame_.empty())
             {
                 last_time_ = now;
-                if(frame_.rows != usb_cam_params_.image_width || frame_.cols != usb_cam_params_.image_height)
-                { 
-                    cv::resize(frame_, frame_, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
-                    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Resize frame...");
-                }
+                
+                // if(frame_.rows != usb_cam_params_.image_width || frame_.cols != usb_cam_params_.image_height)
+                // { 
+                //     cv::resize(frame_, frame_, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
+                //     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Resize frame...");
+                // }
                 // if(!is_filpped)
                 // {
                 //     RCLCPP_INFO(this->get_logger(), "is_filpped...");
@@ -308,6 +309,7 @@ namespace camera_driver
         msg->encoding = "bgr8";
         
         // camera_info_pub.publish(image_msg, camera_info_msg);
+        cout << "pub2armor..." << endl;
         image_msg_pub_->publish(std::move(msg));
 
         bool show_img = this->get_parameter("show_img").as_bool();
@@ -315,11 +317,11 @@ namespace camera_driver
         {
             cv::namedWindow("raw_image", cv::WINDOW_AUTOSIZE);
             cv::imshow("raw_image", frame_);
-            cv::waitKey(2000);
+            cv::waitKey(1);
         }
 
-        if(using_video_)
-            usleep(2000);
+        // if(using_video_)
+        //     usleep(2000);
     }
 
     bool UsbCamNode::setParam(rclcpp::Parameter param)

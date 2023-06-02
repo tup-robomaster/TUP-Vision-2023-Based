@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-04-20 21:52:46
+ * @LastEditTime: 2023-03-17 18:53:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/inference/inference_api2.hpp
  */
 #ifndef INFERENCE_API2_HPP_
@@ -28,14 +28,11 @@
 #include "../../global_user/include/global_user/global_user.hpp"
 
 using namespace global_user;
-using namespace InferenceEngine;
-using namespace ov;
 namespace armor_detector
 {
     struct ArmorObject : Object
     {
         int area;
-        int size;
         cv::Point2f apex[4];
     };
 

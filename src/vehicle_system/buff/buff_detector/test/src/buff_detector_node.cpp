@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-03-20 12:13:43
+ * @LastEditTime: 2023-06-02 22:18:12
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -103,51 +103,39 @@ namespace buff_detector
     {   
         // RCLCPP_INFO(this->get_logger(), "Image callback...");
 
-        TaskData src;
         if(!img_info)
             return;
+
+        TaskData src;
+        BuffMsg buff_msg;
+        double shoot_delay = 0.0;
+        double bullet_speed = 0.0;
+
         auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
         img.copyTo(src.img);
-        
-        rclcpp::Time time_img_sub = detector_->steady_clock_.now();
-        src.timestamp = (time_img_sub - time_start_).nanoseconds();
 
-        BuffMsg buff_msg;
+        rclcpp::Time stamp = img_info->header.stamp;
+        src.timestamp = stamp.nanoseconds();
+        
         serial_mutex_.lock();
+        src.mode = serial_msg_.mode;
+        bullet_speed = serial_msg_.bullet_speed;
+        shoot_delay = serial_msg_.shoot_delay;
         if(debug_param_.using_imu)
         {
-            double dt = (this->get_clock()->now() - serial_msg_.imu.header.stamp).nanoseconds();
-            if(abs(dt / 1e6) > 200)
-            {
-                detector_->debug_param_.using_imu = false;
-                Eigen::Quaterniond q = Eigen::Quaterniond::Identity();
-                buff_msg.quat_imu.w = q.w();
-                buff_msg.quat_imu.x = q.x();
-                buff_msg.quat_imu.y = q.y();
-                buff_msg.quat_imu.z = q.z();
-                RCLCPP_WARN(this->get_logger(), "latency: %lf", dt);
-            }
-            else
-            {
-                src.bullet_speed = serial_msg_.bullet_speed;
-                src.mode = serial_msg_.mode;
-                src.quat.w() = serial_msg_.imu.orientation.w;
-                src.quat.x() = serial_msg_.imu.orientation.x;
-                src.quat.y() = serial_msg_.imu.orientation.y;
-                src.quat.z() = serial_msg_.imu.orientation.z;
-                buff_msg.quat_imu = serial_msg_.imu.orientation;
-                detector_->debug_param_.using_imu = true;
-            }
+            src.quat.w() = serial_msg_.imu.orientation.w;
+            src.quat.x() = serial_msg_.imu.orientation.x;
+            src.quat.y() = serial_msg_.imu.orientation.y;
+            src.quat.z() = serial_msg_.imu.orientation.z;
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Using imu...");
+        }
+        else
+        {
+            Eigen::Matrix3d rmat = Eigen::Matrix3d::Identity();
+            src.quat = Eigen::Quaterniond(rmat);
         }
         serial_mutex_.unlock();
         
-        if (!debug_param_.using_imu)
-        {
-            //debug
-            buff_msg.mode = this->get_parameter("debug_mode").as_int(); //小符
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000, "debug mode is: %d", (int)buff_msg.mode);
-        }
-
         TargetInfo target_info;
         param_mutex_.lock();
         if(detector_->run(src, target_info))
@@ -162,11 +150,13 @@ namespace buff_detector
             buff_msg.angle_offset = target_info.angle_offset;
             buff_msg.bullet_speed = target_info.bullet_speed;
             buff_msg.target_switched = target_info.target_switched;
-            Eigen::Quaterniond quat(target_info.rmat);
-            buff_msg.quat_cam.w = quat.w();
-            buff_msg.quat_cam.x = quat.x();
-            buff_msg.quat_cam.y = quat.y();
-            buff_msg.quat_cam.z = quat.z();
+            
+            Eigen::Quaterniond quat_world(target_info.rmat);
+            buff_msg.quat_world.w = quat_world.w();
+            buff_msg.quat_world.x = quat_world.x();
+            buff_msg.quat_world.y = quat_world.y();
+            buff_msg.quat_world.z = quat_world.z();
+
             buff_msg.armor3d_world.x = target_info.armor3d_world[0];
             buff_msg.armor3d_world.y = target_info.armor3d_world[1];
             buff_msg.armor3d_world.z = target_info.armor3d_world[2];
@@ -187,8 +177,16 @@ namespace buff_detector
         param_mutex_.unlock();
 
         //Publish buff msg.
-        buff_msg.header.frame_id = "gimbal_link";
-        buff_msg.header.stamp = this->get_clock()->now();
+        buff_msg.header.frame_id = "gimbal_link2";
+        buff_msg.header.stamp = img_info->header.stamp;
+        buff_msg.mode = src.mode;
+        buff_msg.timestamp = src.timestamp;
+        buff_msg.bullet_speed = bullet_speed;
+        buff_msg.shoot_delay = shoot_delay;
+        buff_msg.quat_imu.w = src.quat.w();
+        buff_msg.quat_imu.x = src.quat.x();
+        buff_msg.quat_imu.y = src.quat.y();
+        buff_msg.quat_imu.z = src.quat.z();
         buff_msg.is_target_lost = target_info.find_target ? false : true;
         buff_info_pub_->publish(std::move(buff_msg));
 

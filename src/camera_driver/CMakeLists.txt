@@ -120,6 +120,7 @@ rclcpp_components_register_nodes(${PROJECT_NAME}
   PLUGIN "camera_driver::DahengCamNode"
   EXECUTABLE daheng_cam_driver_node
 )
+
 rclcpp_components_register_nodes(${PROJECT_NAME}
   PLUGIN "camera_driver::MvsCamNode"
   EXECUTABLE mvs_cam_driver_node

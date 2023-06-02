@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-06-02 21:30:03
+ * @LastEditTime: 2023-06-02 22:08:06
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -23,13 +23,24 @@
 //eigen
 #include <Eigen/Core>
 
+#include "../../global_user/include/global_user/global_user.hpp"
+
+using namespace global_user;
+#include "../../global_user/include/global_user/global_user.hpp"
+
+using namespace global_user;
 namespace armor_detector
 {
-    enum SpinHeading
+    enum ArmorType
     {
-        UNKNOWN,
-        CLOCKWISE, 
-        COUNTER_CLOCKWISE
+        BLUE_SMALL,
+        BLUE_BIG,
+        RED_SMALL,
+        RED_BIG,
+        GRAY_SMALL,
+        GRAY_BIG,
+        PURPLE_SMALL,
+        PURPLE_BIG
     };
 
     struct SpinState
@@ -50,18 +61,6 @@ namespace armor_detector
         DOUBLE
     };
     
-    enum Color 
-    {
-        BLUE_SMALL,
-        BLUE_BIG,
-        RED_SMALL,
-        RED_BIG,
-        GRAY_SMALL,
-        GRAY_BIG,
-        PURPLE_SMALL,
-        PURPLE_BIG
-    };
-
     struct GyroParam
     {
         int max_dead_buffer;  //允许因击打暂时熄灭的装甲板的出现次数  
@@ -160,10 +159,8 @@ namespace armor_detector
 
     struct SpinningMap
     {
-        std::map<std::string, SpinState> spin_status_map; //反小陀螺，记录该车小陀螺状态
+        std::map<std::string, SpinState> spin_status_map;    //反小陀螺，记录该车小陀螺状态
         std::map<std::string, SpinCounter> spin_counter_map; //记录装甲板旋转帧数，大于0为逆时针旋转，小于0为顺时针
-        // std::map<std::string, double> spin_score_map;       //反小陀螺，记录各装甲板小陀螺可能性分数，大于0为逆时针旋转，小于0为顺时针旋转
-        // std::map<std::string, SpinHeading> spin_status_map;
 
         std::multimap<std::string, TimeInfo> spinning_time_map;
         std::multimap<std::string, GyroInfo> spinning_x_map;
@@ -171,11 +168,13 @@ namespace armor_detector
 
     struct DetectorParam
     {
-        double armor_type_wh_high_thres; //大小装甲板长宽比高阈值
-        double armor_type_wh_low_thres; //大小装甲板长宽比低阈值
+        int color;
+        double armor_type_wh_high_thresh; //大小装甲板长宽比高阈值
+        double armor_type_wh_low_thresh;  //大小装甲板长宽比低阈值
+        double armor_type_wh_thresh;  //大小装甲板长宽比阈值
+
         int max_lost_cnt;        //最大丢失目标帧数
         int max_armors_cnt;    //视野中最多装甲板数
-        int max_v;         //两次预测间最大速度(m/s)
 
         double no_crop_thres; //禁用ROI裁剪的装甲板占图像面积最大面积比值
         double hero_danger_zone; //英雄危险距离阈值，检测到有小于该距离的英雄直接开始攻击
@@ -187,20 +186,16 @@ namespace armor_detector
         double armor_roi_expand_ratio_width;
         double armor_roi_expand_ratio_height;
         double armor_conf_high_thres;
-        
-        int color;
-        Eigen::Vector2d angle_offset;
-        int shoot_delay;
-        double bullet_speed;
 
         DetectorParam()
         {
-            color = 1;
-            armor_type_wh_high_thres = 3.0;
-            armor_type_wh_low_thres = 2.5;
+            color = 1; //(Red:1/Blue:0)
+            armor_type_wh_thresh = 3.0;
+            armor_type_wh_high_thresh = 3.0;
+            armor_type_wh_low_thresh = 2.5;  
+             
             max_lost_cnt = 5;
             max_armors_cnt = 8;
-            max_v = 0;
             no_crop_thres = 2e-3;
             no_crop_ratio = 2e-3;
             full_crop_ratio = 1e-4;
@@ -210,10 +205,6 @@ namespace armor_detector
             armor_roi_expand_ratio_width = 1.1;
             armor_roi_expand_ratio_height = 1.5;
             armor_conf_high_thres = 0.82;
-
-            angle_offset = {0.0, 0.0};
-            shoot_delay = 0;
-            bullet_speed = 0;
         }
     };
 
@@ -224,30 +215,26 @@ namespace armor_detector
         bool show_aim_cross;
         bool show_img;
         bool show_crop_img;
-        bool detect_red;
         bool show_all_armors;
         bool show_fps;
         bool print_latency;
         bool print_target_info;
         bool save_data;
         bool save_dataset;
-        bool show_spinning_img;
 
         DebugParam()
         {
-            use_imu = false;
+            use_imu = true;
             use_roi = false;
-            show_aim_cross = false;
-            show_img = true;
-            show_crop_img = true;
-            detect_red = true;
-            show_all_armors = true;
-            show_fps = true;
-            print_latency = false;
-            print_target_info = true; 
+            show_img = false;
+            show_fps = false;
             save_data = false;
             save_dataset = false;
-            show_spinning_img = false;
+            show_crop_img = false;
+            print_latency = false;
+            show_aim_cross = false;
+            show_all_armors = false;
+            print_target_info = false; 
         }
     };
     

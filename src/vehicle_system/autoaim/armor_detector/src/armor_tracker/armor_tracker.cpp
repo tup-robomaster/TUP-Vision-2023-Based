@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-04-16 23:02:47
+ * @LastEditTime: 2023-04-14 02:25:36
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_tracker/armor_tracker.cpp
  */
 #include "../../include/armor_tracker/armor_tracker.hpp"
@@ -81,7 +81,7 @@ namespace armor_detector
         this->last_armor = this->new_armor; //上一帧目标装甲板信息
         this->new_armor = new_add_armor;    //当前装甲板信息
 
-        if (new_add_armor.color == GRAY_SMALL || new_add_armor.color == GRAY_BIG)
+        if (new_add_armor.color == GRAY)
         {
             ++gray_armor_cnt_;
             cout << "gray_cnt:" <<gray_armor_cnt_ << endl;

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-06-02 21:33:59
+ * @LastEditTime: 2023-06-02 22:05:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -127,6 +127,7 @@ namespace armor_detector
             armor.id = object.cls;
             armor.color = object.color;
             armor.conf = object.prob;
+            
             TargetType target_type = SMALL;
             if (object.color == BLUE_SMALL)
             {
@@ -227,22 +228,21 @@ namespace armor_detector
             //进行PnP，目标较少时采取迭代法，较多时采用IPPE
             int pnp_method = ((int)objects_.size() <= 2) ? SOLVEPNP_ITERATIVE : SOLVEPNP_IPPE;
 
-            TargetType target_type = SMALL;
             //计算长宽比,确定装甲板类型
             auto apex_wh_ratio = max(points_pic_rrect.size.height, points_pic_rrect.size.width) / min(points_pic_rrect.size.height, points_pic_rrect.size.width);
             if (abs(armor.rrect.angle) > 80.0 || abs(armor.rrect.angle) < 10.0)
             {
-                if (apex_wh_ratio >= detector_params_.armor_type_wh_high_thres)
+                if (apex_wh_ratio >= detector_params_.armor_type_wh_high_thresh)
                 {
                     target_type = BIG;
                 }
-                else if (apex_wh_ratio <= detector_params_.armor_type_wh_high_thres)
+                else if (apex_wh_ratio <= detector_params_.armor_type_wh_high_thresh)
                 {
                     target_type = SMALL;
                 }
             }
             
-            // if (object.cls == 1 || apex_wh_ratio > detector_params_.armor_type_wh_thres)
+            // if (object.cls == 1 || apex_wh_ratio > detector_params_.armor_type_wh_thresh)
             // {   //若大于长宽阈值或为哨兵、英雄装甲板
             //     target_type = BIG;
             // }

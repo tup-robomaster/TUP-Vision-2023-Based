@@ -45,38 +45,6 @@ namespace buff_detector
         vector<BuffObject> objects;
         // vector<Fan> fans_;
         auto input = src.img;
-
-        // TODO:放在节点类初始化时加载
-        if(!is_initialized_)
-        {
-            buff_detector_.initModel(path_param_.network_path);
-            coordsolver_.loadParam(path_param_.camera_param_path, path_param_.camera_name);
-            is_initialized_ = true;
-        }
-
-        if (!debug_param_.using_imu && src.bullet_speed > 10)
-        {
-            double bullet_speed = 0.0;
-            if (abs(src.bullet_speed - last_bullet_speed_) < 0.5 || abs(src.bullet_speed - last_bullet_speed_) > 1.5)
-            {
-                bullet_speed = src.bullet_speed;
-                coordsolver_.setBulletSpeed(bullet_speed);
-                last_bullet_speed_ = bullet_speed;
-                target_info.bullet_speed = bullet_speed;
-                RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "bullet speed: %.2fm/s", bullet_speed);
-            }
-        }
-
-        if (debug_param_.using_imu)
-        {
-            rmat_imu_ = src.quat.toRotationMatrix();
-            RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 500, "Using imu...");
-        }
-        else
-        {
-            rmat_imu_= Eigen::Matrix3d::Identity();
-            RCLCPP_WARN_THROTTLE(logger_, this->steady_clock_, 500, "No imu...");
-        }
         
         // TODO:修复ROI
         if (debug_param_.using_roi)

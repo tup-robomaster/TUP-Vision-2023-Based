@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-06-02 21:39:31
+ * @LastEditTime: 2023-05-29 22:26:13
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -35,6 +35,7 @@ namespace armor_processor
         typedef Vector<double, 6> Vector6d;
         
     public:
+        ArmorPredictor(const PredictParam& predict_param, const DebugParam& debug_param);
         ArmorPredictor();
         ~ArmorPredictor();
         

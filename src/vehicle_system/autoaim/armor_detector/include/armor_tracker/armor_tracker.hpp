@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:48:07
- * @LastEditTime: 2023-04-18 20:00:34
+ * @LastEditTime: 2023-05-11 21:55:35
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/armor_tracker/armor_tracker.hpp
  */
 #ifndef ARMOR_TRACKER_HPP_
@@ -38,9 +38,15 @@ namespace armor_detector
         Rect rect;
         Point2f apex2d[4];
         RotatedRect rrect;
-        cv::Point2d center2d;
+        cv::Point2f center2d;
         TargetType type;
-        int64_t timestamp;
+        bool is_front;
+        double rangle;
+
+        Armor()
+        {
+            is_front = false;
+        }
     };
 
     class ArmorTracker
@@ -59,7 +65,7 @@ namespace armor_detector
         Armor new_armor;                       //本次装甲板
         int gray_armor_cnt_ = 0;
         bool is_dead_ = false;
-        int max_gray_armor_cnt_ = 5;
+        int max_gray_armor_cnt_ = 20;
         
         int64_t now = 0.0;                       //本次装甲板时间戳
         int64_t last_timestamp = 0.0;            //上次装甲板时间戳
