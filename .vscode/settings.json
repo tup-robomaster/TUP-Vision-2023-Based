@@ -119,9 +119,10 @@
     "python.autoComplete.extraPaths": [
         "/opt/ros/galactic/lib/python3.8/site-packages"
     ],
-    "cmake.sourceDirectory": "${workspaceFolder}/build/global_interface/global_interface__py",
+    "cmake.sourceDirectory": "${workspaceFolder}/src/vehicle_system/filter",
     "python.analysis.extraPaths": [
         "/opt/ros/galactic/lib/python3.8/site-packages"
     ],
-    "C_Cpp.errorSquiggles": "Disabled"
+    "C_Cpp.errorSquiggles": "Disabled",
+    "ros.distro": "galactic"
 }
