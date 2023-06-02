@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-05-31 20:59:50
+ * @LastEditTime: 2023-06-03 02:52:53
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -128,10 +128,13 @@ namespace buff_processor
         if (!is_direction_confirmed_)
         {
             if ((int)delta_angle_vec_.size() < 200)
+            {
                 delta_angle_vec_.push_back(target.delta_angle);
+            }
             else
             {
-                delta_angle_vec_.resize((int)(delta_angle_vec_.size() / 2));
+                delta_angle_vec_.pop_front();
+                delta_angle_vec_.push_back(target.delta_angle);
             }
         }
 
@@ -145,44 +148,53 @@ namespace buff_processor
         else
         {
             history_info_.pop_front();
-            double bAngle = history_info_[0].relative_angle;
-            for(auto &target_info : history_info_)
-                target_info.relative_angle -= bAngle;
+            // double bAngle = history_info_[0].relative_angle;
+            // for(auto &target_info : history_info_)
+            //     target_info.relative_angle -= bAngle;
             target.relative_angle = history_info_.back().relative_angle + abs(target.delta_angle);
             history_info_.push_back(target);
+            last_target_ = target;
         }
 
         double pe = phase_;
         last_phase_ = pe;
 
+        
+        int count = 0;
         double rotate_speed_sum = 0.0;
         double rotate_speed_ave = 0.0;
-        
-        BuffAngleInfo origin_target = history_info_.front();
-        int count = 0;
-        for (auto target_info : history_info_)
+        // BuffAngleInfo origin_target = history_info_.front();
+        if ((int)history_info_.size() > 1)
         {
-            double dAngle = (target_info.relative_angle - origin_target.relative_angle);
-            double dt = (target_info.timestamp - origin_target.timestamp) / 1e9;
-            if (!iszero(dAngle) && !iszero(dt))
+            for (int ii = 1; ii < (int)history_info_.size(); ii++)
             {
-                double rspeed = (dAngle / dt);
-                rotate_speed_sum += rspeed;
-                ++count;
+                double dAngle = history_info_[ii].relative_angle - history_info_[ii - 1].relative_angle;
+                double dt = (history_info_[ii].timestamp - history_info_[ii - 1].timestamp) / 1e9;
+                if (!iszero(dAngle) && !iszero(dt))
+                {
+                    double rspeed = (dAngle / dt);
+                    rotate_speed_sum += rspeed;
+                    ++count;
+                }
+                // origin_target = target_info;
+                rotate_speed_ave = rotate_speed_sum / count;
+                ave_speed_ = rotate_speed_ave;
             }
-            origin_target = target_info;
         }
-        rotate_speed_ave = rotate_speed_sum / count;
-        ave_speed_ = rotate_speed_ave;
+        else
+        {
+            last_target_ = target;
+            return false;
+        }
 
         int dir_cnt = 0;
         if (!is_direction_confirmed_)
         {
-            for (auto delta_angle : delta_angle_vec_)
+            for (int ii = 0; ii < (int)delta_angle_vec_.size(); ii++)
             {
-                if (delta_angle > 0)
+                if (delta_angle_vec_[ii] > 0.0)
                     dir_cnt += 1;
-                else if (delta_angle < 0)
+                else if (delta_angle_vec_[ii] < 0.0)
                     dir_cnt -= 1;
             }
             sign_ = (dir_cnt > 0) ? 1 : -1;
@@ -227,7 +239,7 @@ namespace buff_processor
 
                 double params_fitting[4] = {params_[0], params_[1], params_[2], params_[3]};
 
-                double origin_timestamp = history_info_.front().timestamp;
+                // double origin_timestamp = history_info_.front().timestamp;
                 // for(auto target_info : history_info_)
                 for(int ii = 0; ii < (int)(history_info_.size()); ii += 1)
                 {
@@ -238,7 +250,8 @@ namespace buff_processor
                         new ceres::AutoDiffCostFunction<CurveFittingCost, 1, 4>
                         (
                             // new CurveFittingCost(target_info.relative_angle, (target_info.timestamp - origin_timestamp) / 1e9)
-                            new CurveFittingCost(history_info_[ii].relative_angle, (history_info_[ii].timestamp - origin_timestamp) / 1e9)
+                            // new CurveFittingCost(history_info_[ii].relative_angle, (history_info_[ii].timestamp - origin_timestamp) / 1e9)
+                            new CurveFittingCost(history_info_[ii].relative_angle, history_info_[ii].timestamp / 1e9)
                         ),
                         new ceres::CauchyLoss(0.5),
                         params_fitting
@@ -265,14 +278,12 @@ namespace buff_processor
 
                 if (rmse < 5.5)
                 {
-                    // mutex_.lock();
                     memcpy(params_, params_fitting, sizeof(params_));
                     phase_ = params_fitting[2];
                     is_params_confirmed_ = true;
                     for (auto param : params_)
                         cout << param << " ";
                     std::cout << std::endl;
-                    // mutex_.unlock();
                 }
             }   
             else
@@ -288,7 +299,7 @@ namespace buff_processor
                 double phase = params_[2];
                 // double const_term = params_[4];
 
-                double origin_timestamp = history_info_.front().timestamp;
+                // double origin_timestamp = history_info_.front().timestamp;
                 // for (auto target_info : history_info_)
                 for(int ii = 0; ii < (int)history_info_.size(); ii += 1)
                 {
@@ -296,7 +307,8 @@ namespace buff_processor
                     // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致
                         new ceres::AutoDiffCostFunction<CURVE_FITTING_COST_PHASE, 1, 1> 
                         ( 
-                            new CURVE_FITTING_COST_PHASE(history_info_[ii].relative_angle, (history_info_[ii].timestamp - origin_timestamp) / 1e9,
+                            // new CURVE_FITTING_COST_PHASE(history_info_[ii].relative_angle, (history_info_[ii].timestamp - origin_timestamp) / 1e9,
+                            new CURVE_FITTING_COST_PHASE(history_info_[ii].relative_angle, history_info_[ii].timestamp / 1e9,
                             params_[0], 
                             params_[1],
                             params_[3])
@@ -308,23 +320,22 @@ namespace buff_processor
                 }
 
                 //设置上下限
-                // problem.SetParameterUpperBound(&phase, 0, 2 * CV_PI);
-                // problem.SetParameterLowerBound(&phase, 0, -(2 * CV_PI));
+                problem.SetParameterUpperBound(&phase, 0, 2 * CV_PI);
+                problem.SetParameterLowerBound(&phase, 0, -(2 * CV_PI));
 
                 ceres::Solve(options, &problem, &summary);
 
-                // mutex_.lock();
-                double params__new[4] = {params_[0], params_[1], phase, params_[3]};
+                double params_new[4] = {params_[0], params_[1], phase, params_[3]};
                 
                 double old_rmse = evalRMSE(params_);
-                double new_rmse = evalRMSE(params__new);
+                double new_rmse = evalRMSE(params_new);
                 std::cout << "phase:" << phase << " new_rmse:" << new_rmse << " old_rmse:" << old_rmse << std::endl;
-               
-                params_[2] = phase;
-                phase_ = phase;
-                // is_params_confirmed_ = false;
-                
-                // mutex_.unlock();
+
+                if (new_rmse < old_rmse)
+                {
+                    params_[2] = phase;
+                    phase_ = phase;
+                }
             }
         }
         else
@@ -363,7 +374,8 @@ namespace buff_processor
             }
             else if (mode_ == BIG_BUFF)
             {
-                double timespan = (buff_msg.timestamp - history_info_.front().timestamp) / 1e6;
+                // double timespan = (buff_msg.timestamp - history_info_.front().timestamp) / 1e6;
+                double timespan = buff_msg.timestamp / 1e6;
 
                 last_pred_angle_ = cur_pred_angle_;
                 double cur_pre_angle = calPreAngle(params_, timespan / 1e3);
@@ -383,23 +395,16 @@ namespace buff_processor
                         error = abs(pred_v - meas_v);
                     }
                 }
-                if (error >= 0.1)
+                
+                if (error >= 0.10)
                     error_cnt_++;
 
                 RCLCPP_INFO_THROTTLE(
                     logger_, 
                     steady_clock_,
                     50,
-                    "last_pred_angle: %.3f cur_pred_angle: %.3f delta_pre_angle: %.3f error:%.3f", 
-                    last_pred_angle_, cur_pred_angle_, delta_pre_angle, error
-                );
-
-                RCLCPP_WARN_THROTTLE(
-                    logger_, 
-                    steady_clock_,
-                    50,
-                    "Prediction error cnt: %d", 
-                    error_cnt_
+                    "last_pred_angle: %.3f cur_pred_angle: %.3f delta_pre_angle: %.3f error: %.3f error_cnt: %d", 
+                    last_pred_angle_, cur_pred_angle_, delta_pre_angle, error, error_cnt_
                 );
 
                 if (error_cnt_ >= 10 || error >= 0.25)
@@ -411,11 +416,8 @@ namespace buff_processor
                     last_pred_angle_ = 0.0;
                 }
 
-                // double meas_v = (delta_meas_angle / (180 / CV_PI)) / (history_info_.back().timestamp - history_info_[history_info_.size() - 2].timestamp) * 1e9;
-                // cout << "meas_v:" << meas_v << endl;
-                
                 double time_estimate = pred_dt + timespan;
-                double pre_dt = (time_estimate / 1e3);
+                double pre_dt = time_estimate / 1e3;
                 double pre_angle = calPreAngle(params_, pre_dt);
                 if (sign_ == 1)
                     result = abs(pre_angle - cur_pre_angle);
@@ -452,49 +454,57 @@ namespace buff_processor
     {
         double rmse_sum = 0;
         double rmse = 0;
-        double origin_timestamp = history_info_.front().timestamp;
-        double oriAngle = history_info_.front().relative_angle * (180 / CV_PI);
         double error = 0.0;
         error_cnt_ = 0;
+        // double origin_timestamp = history_info_.front().timestamp;
+        // double oriAngle = history_info_.front().relative_angle * (180 / CV_PI);
 
         double last_pred_angle = 0.0;
         double last_meas_angle = 0.0;
-        for(auto target_info : history_info_)
+        for(int ii = 0; ii < (int)history_info_.size(); ii++)
         {
-            auto t = (float)(target_info.timestamp - origin_timestamp) / 1e9;
-            auto pred = -(params_[0] / params_[1]) * cos(params_[1] * t + params_[2]) + params_[3] * t + (params_[0] / params_[1]) * cos(params_[2]);
+            // auto t = (float)(target_info.timestamp - origin_timestamp) / 1e9;
+            double dt = history_info_[ii].timestamp / 1e9;
+            auto pred = -(params_[0] / params_[1]) * cos(params_[1] * dt + params_[2]) + params_[3] * dt + (params_[0] / params_[1]) * cos(params_[2]);
             pred = pred * (180 / CV_PI);
-            auto measure = target_info.relative_angle * (180 / CV_PI);
-            
+            auto measure = history_info_[ii].relative_angle * (180 / CV_PI);
+            if (ii = 0)
+            {
+                last_pred_angle = pred;
+                last_meas_angle = measure;
+                continue;
+            }
+
             auto delta_pred_angle = abs(pred - last_pred_angle);
             auto delta_meas_angle = abs(measure - last_meas_angle);
             error = abs(delta_pred_angle - delta_meas_angle);
             last_pred_angle = pred;
             last_meas_angle = measure;
-
             //角度误差大于1度超过10帧即认为拟合失败
-            if(error > 5.5)
+            if(error >= 2.5)
             {
                 error_cnt_++;
-                if(error_cnt_ > 10)
-                {
-                    error_cnt_ = 0;
-                    is_params_confirmed_ = false;
-                    return 1e2;
-                }
+
                 RCLCPP_INFO_THROTTLE(
                     logger_, 
                     steady_clock_,
                     50,
-                    "t: %.3f delta_pred_angle: %.3f delta_meas_angle: %.3f error: %.3f", 
-                    t, delta_pred_angle, delta_meas_angle, error
+                    "dt: %.3f delta_pred_angle: %.3f delta_meas_angle: %.3f error: %.3f", 
+                    dt, delta_pred_angle, delta_meas_angle, error
                 );
+
+                if(error_cnt_ >= 10)
+                {
+                    error_cnt_ = 0;
+                    is_params_confirmed_ = false;
+                    return 1e3;
+                }
             }
             
             // rmse_sum += pow((pred - measure), 2);
             rmse_sum += pow(error, 2);
         }
-        rmse = sqrt(rmse_sum / (history_info_.size() - 1));
+        rmse = sqrt(rmse_sum / ((int)history_info_.size() - 1));
         return rmse;
     }
 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 16:51:24
- * @LastEditTime: 2023-04-14 02:49:20
+ * @LastEditTime: 2023-06-03 03:04:27
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/usb_driver/usb_cam.hpp
  */
 //ros
@@ -18,11 +18,16 @@ namespace camera_driver
 {
     struct UsbCamParam
     {
+        int debug_mode;
         std::string frame_id;
         int camera_id;
         int image_width;
         int image_height;
         int fps;
+        UsbCamParam()
+        {
+            debug_mode = 1;
+        }
     };
     
     class UsbCam

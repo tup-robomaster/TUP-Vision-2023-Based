@@ -37,6 +37,7 @@
     save_path: "/recorder/video/"
     use_port: true
     show_img: false
+    debug_mode: 3
     
 /hik_cam_driver:
   ros__parameters:

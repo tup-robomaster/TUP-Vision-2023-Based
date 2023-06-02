@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-05-31 21:44:03
+ * @LastEditTime: 2023-06-03 02:55:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -256,7 +256,7 @@ namespace buff_processor
             gimbal_msg.is_shooting = false;
         }
 
-        gimbal_msg.header.frame_id = "barrel_link";
+        gimbal_msg.header.frame_id = "barrel_link2";
         gimbal_msg.header.stamp = buff_msg.header.stamp;
         gimbal_msg_pub_->publish(std::move(gimbal_msg));
 
