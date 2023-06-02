@@ -119,7 +119,10 @@ namespace armor_detector
         new_armors_.clear();
         std::vector<cv::Mat> inputs;
         inputs.push_back(input);
+        auto st = std::chrono::steady_clock::now();
         objects_ = TRTinfer_.doInference(inputs,0.8,0.3)[0];
+        auto end = std::chrono::steady_clock::now();
+        double infer_dt = std::chrono::duration<double,std::milli>(end - st).count();
         if (objects_.empty())
         {   //若未检测到目标
             if (debug_params_.show_aim_cross)

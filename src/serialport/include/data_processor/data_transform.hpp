@@ -74,11 +74,12 @@ namespace serialport
         void getAccData(uchar* raw_data, vector<float>& acc);
         void getBulletSpeed(uchar* raw_data, float& bullet_speed);
         void getThetaAngle(uchar* raw_data, float& theta);
-        void getPosInfo(uchar flag, uchar* raw_data, vector<ushort>& pos);
-        void getHPInfo(uchar flag, uchar* raw_data, vector<ushort>& hp);
-        void getGameInfo(uchar flag, uchar* raw_data, ushort& timestamp, uchar& gamestage);
-        void getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle);
-        void getPitchAngle(uchar flag, uchar* raw_data, float& pitch_angle);
+        void getGoalPosXY(uchar* raw_data, std::vector<float>& xy);
+        void getPosInfo(uchar* raw_data, vector<ushort>& pos);
+        void getHPInfo(uchar* raw_data, vector<ushort>& hp);
+        void getGameInfo(uchar* raw_data, ushort& timestamp, uchar& gamestage);
+        void getYawAngle(uchar* raw_data, float& yaw_angle);
+        void getPitchAngle(uchar* raw_data, float& pitch_angle);
         void getShootDelay(uchar* raw_data, float& shoot_delay);
 
         int mode_;     

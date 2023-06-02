@@ -49,7 +49,7 @@ namespace armor_detector
         // qos.durability();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 2;
 
         // Create an image transport object.
         // auto it = image_transport::ImageTransport();
@@ -106,7 +106,10 @@ namespace armor_detector
         rclcpp::Time now = this->get_clock()->now();
         double duration = (now.nanoseconds() - img_stamp.nanoseconds()) / 1e6;
         if (duration > 20.0)
+        {
+            RCLCPP_WARN(this->get_logger(), "High img latency detected, skipping this img...");
             return;
+        }
 
         TaskData src;
         AutoaimMsg armor_msg;
@@ -194,11 +197,11 @@ namespace armor_detector
         armor_info_pub_->publish(std::move(armor_msg));
 
         rclcpp::Time end = this->get_clock()->now();
-        RCLCPP_WARN_THROTTLE(
+        RCLCPP_INFO_THROTTLE(
             this->get_logger(), 
             *this->get_clock(), 
             100, 
-            "detect_delay:%.2fms", 
+            "Inference Latency: %.2fms", 
             (end - now).nanoseconds() / 1e6
         );
 

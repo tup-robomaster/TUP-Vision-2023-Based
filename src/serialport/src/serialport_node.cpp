@@ -19,7 +19,6 @@ namespace serialport
         tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
 
         virtual_heading_.setRotation(tf2::Quaternion(0,0,0,1));
-
         RCLCPP_WARN(this->get_logger(), "Serialport node...");
         try
         {
@@ -286,9 +285,13 @@ namespace serialport
             }
             else if (flag == 0xB5)
             {
+                rclcpp::Time now = this->get_clock()->now();
+                //Slow down referee info pub freq.
+                double dt = (now.nanoseconds() - last_pub_referee_stamp_.nanoseconds()) * 1e-9;
+                if (dt < 0.5)
+                    continue;
                 CarPosMsg car_pos_msg;
-
-                data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
+                data_transform_->getPosInfo(&serial_port_->serial_data_.rdata[3], vehicle_pos_info);
 
                 for(int ii = 0; ii < 12; ii++)
                 {
@@ -296,48 +299,55 @@ namespace serialport
                     car_pos_msg.pos[ii].y = vehicle_pos_info[ii*2+1] / 10.0;
                 }
 
-                if (print_referee_info_)
-                {
-                    for(int ii = 0; ii < 12; ii++)
-                        RCLCPP_INFO(this->get_logger(), "Pos:%.2f, %.2f", car_pos_msg.pos[ii].x, car_pos_msg.pos[ii].y);
-                }
+                for(int ii = 0; ii < 12; ii++)
+                    RCLCPP_INFO(this->get_logger(), "Robot %i Pos: [%.2f, %.2f]",ii, car_pos_msg.pos[ii].x, car_pos_msg.pos[ii].y);
 
-                rclcpp::Time now = this->get_clock()->now();
                 car_pos_msg.header.frame_id = "";
                 car_pos_msg.header.stamp = now;
                 car_pos_pub_->publish(move(car_pos_msg));
             }
             else if (flag == 0xC5)
             {
+                rclcpp::Time now = this->get_clock()->now();
+                //Slow down referee info pub freq.
+                double dt = (now.nanoseconds() - last_pub_referee_stamp_.nanoseconds()) * 1e-9;
+                if (dt < 0.5)
+                    continue;
+                else
+                    last_pub_referee_stamp_ = now;
+                    
                 vector<ushort> hp;
+                vector<float> goal_pos;
                 uchar gamestage;
                 ushort timestamp;
                 // data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
-                data_transform_->getHPInfo(flag, &serial_port_->serial_data_.rdata[3], hp);
-                data_transform_->getGameInfo(flag, &serial_port_->serial_data_.rdata[35], timestamp, gamestage);
-
+                data_transform_->getHPInfo(&serial_port_->serial_data_.rdata[3], hp);
+                data_transform_->getGameInfo(&serial_port_->serial_data_.rdata[35], timestamp, gamestage);
+                data_transform_->getGoalPosXY(&serial_port_->serial_data_.rdata[37], goal_pos);
                 ObjHPMsg obj_hp_msg;
                 GameMsg game_msg;
 
                 for(int ii = 0; ii < 16; ii++)
-                    obj_hp_msg.hp[ii] = hp[ii];
-
-                if (print_referee_info_)
                 {
-                    for(int ii = 0; ii < 16; ii++)
-                        RCLCPP_INFO(this->get_logger(), "HP:%.2d", hp[ii]);
-                    RCLCPP_INFO(this->get_logger(), "timestamp:%.2d, Stage:%d", timestamp, gamestage);
+                    obj_hp_msg.hp[ii] = hp[ii];
+                    RCLCPP_INFO(this->get_logger(), "Robot %i HP:%.2f",ii ,hp[ii]);
                 }
 
-                rclcpp::Time now = this->get_clock()->now();
+                RCLCPP_INFO(this->get_logger(), "Current timestamp: %.2d, Stage: %d", timestamp, gamestage);
+                RCLCPP_INFO(this->get_logger(), "Current Nav Goal: [%.2f, %.2f]", goal_pos[0], goal_pos[1]);
+
                 
                 obj_hp_msg.header.frame_id = "";
                 obj_hp_msg.header.stamp = now;
-                obj_hp_pub_->publish(move(obj_hp_msg));
+
                 game_msg.header.frame_id = "";
                 game_msg.header.stamp = now;
                 game_msg.timestamp = timestamp;
                 game_msg.game_stage = (int)gamestage;
+                game_msg.goal.x = goal_pos[0];
+                game_msg.goal.y = goal_pos[1];
+
+                obj_hp_pub_->publish(move(obj_hp_msg));
                 game_msg_pub_->publish(move(game_msg));
             }
         }
@@ -508,8 +518,8 @@ namespace serialport
             else 
             {
                 RCLCPP_INFO(this->get_logger(), "Current delta_yaw: %f, attempting rotating...", delta_yaw);
-                vision_data.linear_velocity[0] = base_vel[0] * 0.3;
-                vision_data.linear_velocity[1] = base_vel[1] * 0.3;
+                vision_data.linear_velocity[0] = base_vel[0] * 0.35;
+                vision_data.linear_velocity[1] = base_vel[1] * 0.35;
                 vision_data.angular_velocity[2] = delta_yaw > 0 ? 0.007 : -0.007;
             }
 

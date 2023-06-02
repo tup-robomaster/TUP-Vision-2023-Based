@@ -93,58 +93,45 @@ namespace serialport
         return;
     }
 
-    void DataTransform::getYawAngle(uchar flag, uchar* raw_data, float& yaw_angle)
+    void DataTransform::getGoalPosXY(uchar* raw_data, std::vector<float>& xy)
     {
-        if (flag == 0xA5)
-        {
-            yaw_angle = ucharRaw2Float(raw_data);
-        }
+        auto x =ucharRaw2Int16(&raw_data[0]);
+        auto y =ucharRaw2Int16(&raw_data[2]);
+        xy.push_back(x / 10.0);
+        xy.push_back(y / 10.0);
         return;
     }
 
-    void DataTransform::getPitchAngle(uchar flag, uchar* raw_data, float& pitch_angle)
+    void DataTransform::getYawAngle(uchar* raw_data, float& yaw_angle)
     {
-        if (flag == 0xA5)
-        {
-            pitch_angle = ucharRaw2Float(raw_data);
-        }
+        yaw_angle = ucharRaw2Float(raw_data);
         return;
     }
 
-    void DataTransform::getPosInfo(uchar flag, uchar* raw_data, vector<ushort>& pos)
+    void DataTransform::getPitchAngle(uchar* raw_data, float& pitch_angle)
     {
-        // if (flag == 0xB5)
-        //     if (!ucharRaw2FloatVector(raw_data, 56, pos))
-        //         RCLCPP_ERROR(logger_, "Get Pos data failed!!!");
-        // else if (flag == 0xC5)
-        //     if (!ucharRaw2FloatVector(raw_data, 24, pos))
-        //         RCLCPP_ERROR(logger_, "Get Pos data failed!!!");
-        // return;
-
-        if (flag == 0xB5)
-            if (!ucharRaw2UShortVector(raw_data, 48, pos))
-                RCLCPP_ERROR(logger_, "Get Pos data failed!!!");
-        // else if (flag == 0xC5)
-        //     if (!ucharRaw2UShortVector(raw_data, 24, pos))
-        //         RCLCPP_ERROR(logger_, "Get Pos data failed!!!");
+        pitch_angle = ucharRaw2Float(raw_data);
         return;
     }
 
-    void DataTransform::getHPInfo(uchar flag, uchar* raw_data, vector<ushort>& hp)
+    void DataTransform::getPosInfo(uchar* raw_data, vector<ushort>& pos)
     {
-        if (flag == 0xC5)
-            if (!ucharRaw2Int16Vector(raw_data, 32, hp))
-                RCLCPP_ERROR(logger_, "Get HP data failed!!!");
+        if (!ucharRaw2UShortVector(raw_data, 48, pos))
+            RCLCPP_ERROR(logger_, "Get Pos data failed!!!");
         return;
     }
 
-    void DataTransform::getGameInfo(uchar flag, uchar* raw_data, ushort& timestamp, uchar& gamestate)
+    void DataTransform::getHPInfo(uchar* raw_data, vector<ushort>& hp)
     {
-        if (flag == 0xC5)
-        {
-            timestamp = ucharRaw2Int16(raw_data);
-            gamestate = raw_data[2];
-        }
+        if (!ucharRaw2Int16Vector(raw_data, 32, hp))
+            RCLCPP_ERROR(logger_, "Get HP data failed!!!");
+        return;
+    }
+
+    void DataTransform::getGameInfo(uchar* raw_data, ushort& timestamp, uchar& gamestate)
+    {
+        timestamp = ucharRaw2Int16(raw_data);
+        gamestate = raw_data[2];
         return;
     }
     
@@ -209,6 +196,7 @@ namespace serialport
     {
         ushort ushort_data;
         ushort_data = *((ushort*)data);
+        // std::cout<<std::hex<<data[0]<<std::hex<<data[1]<<std::endl;
         // memcpy(&ushort_data, data, sizeof(ushort));
         return ushort_data;
     }

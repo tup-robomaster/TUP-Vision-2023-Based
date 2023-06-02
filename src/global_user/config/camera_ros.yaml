@@ -5,7 +5,7 @@
     camera_topic: /daheng_img
     image_width: 1440
     image_height: 1080
-    exposure_time: 5000
+    exposure_time: 3000
     exposure_gain: 16
     exposure_gain_b: 0
     exposure_gain_g: 0
