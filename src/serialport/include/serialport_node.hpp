@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:15:03
- * @LastEditTime: 2023-05-05 00:50:32
+ * @LastEditTime: 2023-06-02 21:37:32
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/include/serialport_node.hpp
  */
 #ifndef SERIALPORT_NODE_HPP_
@@ -18,6 +18,9 @@
 #include <std_msgs/msg/float64.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <message_filters/subscriber.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 
 #include "./serialport/serialport.hpp"
 #include "./data_processor/data_transform.hpp"
@@ -40,28 +43,19 @@ namespace serialport
     {
         typedef global_interface::msg::Gimbal GimbalMsg;
         typedef global_interface::msg::Serial SerialMsg;
-        typedef global_interface::msg::Sentry SentryMsg;
-        typedef global_interface::msg::ObjHP ObjHPMsg;
-        typedef global_interface::msg::CarPos CarPosMsg;
-        typedef global_interface::msg::GameInfo GameMsg;
-        typedef global_interface::msg::Decision DecisionMsg;
 
     public:
         SerialPortNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         ~SerialPortNode();
 
     public:
-        // void sendingData();
+        void receiveData();
         bool sendData(GimbalMsg::SharedPtr msg);
         void armorMsgCallback(GimbalMsg::SharedPtr msg);
         void buffMsgCallback(GimbalMsg::SharedPtr msg);
-        void sentryNavCallback(geometry_msgs::msg::Twist::SharedPtr msg);
+        
         void serialWatcher();
-
-        void decisionMsgCallback(DecisionMsg::SharedPtr msg);
-        rclcpp::Subscription<DecisionMsg>::SharedPtr decision_msg_sub_; 
-        DecisionMsg decision_msg_;
-        mutex decision_mutex_;
+        rclcpp::Publisher<SerialMsg>::SharedPtr serial_msg_pub_;
 
     private:
         int baud_;
@@ -70,40 +64,23 @@ namespace serialport
         CoordSolver coordsolver_;
         bool print_serial_info_;
         bool print_referee_info_;
-
-        void receiveData();
-        mutex receive_mutex_;
         std::unique_ptr<std::thread> receive_thread_;
-        // rclcpp::TimerBase::SharedPtr receive_timer_;
         
         mutex mutex_;
         bool using_port_;
         bool tracking_target_;
         atomic<int> mode_;
         atomic<bool> flag_;
-        // VisionData vision_data_;
         rclcpp::TimerBase::SharedPtr watch_timer_;
         rclcpp::TimerBase::SharedPtr send_timer_;
-        queue<VisionAimData> vision_data_queue_;
-        // vector<float> vehicle_pos_info;
+        
+        //tf2
+        std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
         
     public:
-        /**
-         * @brief 哨兵和其他车辆的msg不同，此处订阅者和发布者视兵种而定
-         * 
-         */
-        rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
-        rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sentry_twist_sub_;
-        rclcpp::Publisher<CarPosMsg>::SharedPtr car_pos_pub_;
-        rclcpp::Publisher<ObjHPMsg>::SharedPtr obj_hp_pub_;
-        rclcpp::Publisher<GameMsg>::SharedPtr game_msg_pub_;
-
-        // 其他兵种
         rclcpp::Subscription<GimbalMsg>::SharedPtr autoaim_info_sub_;
         rclcpp::Subscription<GimbalMsg>::SharedPtr autoaim_tracking_sub_;
         rclcpp::Subscription<GimbalMsg>::SharedPtr buff_info_sub_;
-
-        rclcpp::Publisher<SerialMsg>::SharedPtr serial_msg_pub_;
 
     private:
         std::unique_ptr<SerialPort> serial_port_;

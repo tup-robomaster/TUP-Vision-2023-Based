@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-05-05 00:28:16
+ * @LastEditTime: 2023-06-02 21:30:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -219,15 +219,15 @@ namespace armor_detector
 
     struct DebugParam
     {
-        bool debug_without_com;
-        bool using_imu;
-        bool using_roi;
+        bool use_imu;
+        bool use_roi;
         bool show_aim_cross;
         bool show_img;
+        bool show_crop_img;
         bool detect_red;
         bool show_all_armors;
         bool show_fps;
-        bool print_letency;
+        bool print_latency;
         bool print_target_info;
         bool save_data;
         bool save_dataset;
@@ -235,15 +235,15 @@ namespace armor_detector
 
         DebugParam()
         {
-            debug_without_com = true;
-            using_imu = false;
-            using_roi = false;
+            use_imu = false;
+            use_roi = false;
             show_aim_cross = false;
             show_img = true;
+            show_crop_img = true;
             detect_red = true;
             show_all_armors = true;
             show_fps = true;
-            print_letency = false;
+            print_latency = false;
             print_target_info = true; 
             save_data = false;
             save_dataset = false;
