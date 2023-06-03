@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-05-31 20:59:50
+ * @LastEditTime: 2023-06-02 16:55:56
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -393,7 +393,7 @@ namespace buff_processor
                     "last_pred_angle: %.3f cur_pred_angle: %.3f delta_pre_angle: %.3f error:%.3f", 
                     last_pred_angle_, cur_pred_angle_, delta_pre_angle, error
                 );
-
+ 
                 RCLCPP_WARN_THROTTLE(
                     logger_, 
                     steady_clock_,
