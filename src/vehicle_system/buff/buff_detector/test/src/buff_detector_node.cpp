@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-06-01 18:30:39
+ * @LastEditTime: 2023-06-04 02:06:19
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -15,7 +15,6 @@ namespace buff_detector
     {
         RCLCPP_INFO(this->get_logger(), "buff detector node...");
         
-        cout << 111 << endl;
         try
         {
             detector_ = initDetector();
@@ -33,16 +32,14 @@ namespace buff_detector
             detector_->coordsolver_.loadParam(path_param_.camera_param_path, path_param_.camera_name);
             detector_->is_initialized_ = true;
         }
-        // cout << 222 << endl;
 
         // QoS    
         rclcpp::QoS qos(0);
         qos.keep_last(5);
-        // qos.best_effort();
         qos.reliable();
         qos.durability();
-        // qos.durability_volatile();
         // qos.best_effort();
+        // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
@@ -116,7 +113,6 @@ namespace buff_detector
 
         if(!img_msg || (mode_ != SMALL_BUFF && mode_ != BIG_BUFF))
             return;
-        // cout << 333 << endl;
         
         TaskData src;
         auto img = cv_bridge::toCvShare(img_msg, "bgr8")->image;
@@ -131,7 +127,6 @@ namespace buff_detector
 
         serial_mutex_.lock();
         src.mode = serial_msg_.mode;
-        src.mode = 4;
         bullet_speed = serial_msg_.bullet_speed;
         shoot_delay = serial_msg_.shoot_delay;
         if(debug_param_.using_imu)
@@ -149,8 +144,6 @@ namespace buff_detector
         }
         serial_mutex_.unlock();
         
-        // cout << 555 << endl;
-
         TargetInfo target_info;
         param_mutex_.lock();
         if(detector_->run(src, target_info))
@@ -158,7 +151,7 @@ namespace buff_detector
             buff_msg.r_center.x = target_info.r_center[0];
             buff_msg.r_center.y = target_info.r_center[1];
             buff_msg.r_center.z = target_info.r_center[2];
-            // buff_msg.timestamp = src.timestamp;
+            buff_msg.timestamp = src.timestamp;
             buff_msg.angle = target_info.angle;
             buff_msg.delta_angle = target_info.delta_angle;
             buff_msg.angle_offset = target_info.angle_offset;
@@ -204,8 +197,6 @@ namespace buff_detector
         }
         param_mutex_.unlock();
         
-        // cout << 444 << endl;
-
         //Publish buff msg.
         buff_msg.header.frame_id = "gimbal_link2";
         buff_msg.header.stamp = img_msg->header.stamp;
@@ -220,12 +211,14 @@ namespace buff_detector
         buff_msg.is_target_lost = target_info.find_target ? false : true;
         buff_msg_pub_->publish(std::move(buff_msg));
 
-        // RCLCPP_WARN(this->get_logger(), "mode: %d", buff_msg.mode);
         bool show_img = this->get_parameter("show_img").as_bool();
         if (show_img)
         {
-            putText(src.img, target_info.find_target ? "State:Detected" : "State:Lost" , {5, 55}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
-
+            putText(
+                src.img, 
+                target_info.find_target ? "State:Detected" : "State:Lost" , 
+                {5, 55}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0}
+            );
             cv::namedWindow("dst", cv::WINDOW_NORMAL);
             cv::imshow("dst", src.img);
             cv::waitKey(1);

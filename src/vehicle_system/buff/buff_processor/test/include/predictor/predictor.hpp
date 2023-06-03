@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2023-06-01 16:26:35
+ * @LastEditTime: 2023-06-04 02:07:18
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
@@ -24,6 +24,7 @@
 #include <Eigen/Core>
 
 #include <yaml-cpp/yaml.h>
+// #include <matplotlibcpp.h>
 
 //ros
 #include <rclcpp/rclcpp.hpp>
@@ -31,13 +32,22 @@
 #include "../../../filter/include/particle_filter.hpp"
 #include "../../../../global_user/include/global_user/global_user.hpp"
 #include "../../../include/predictor/param_struct.hpp"
+// namespace plt = matplotlibcpp;
 
 using namespace std;
 using namespace cv;
 using namespace filter;
-
+// using namespace plt;
 namespace buff_processor
 {
+    //目标信息
+    struct TargetInfo
+    {
+        double speed;
+        double dist;
+        uint64_t timestamp;
+    };
+
     class BuffPredictor
     {
     private:
@@ -79,13 +89,6 @@ namespace buff_processor
             const double _x, _t, _a, _omega, _dc;    // x,t数据
         };
 
-        //目标信息
-        struct TargetInfo
-        {
-            double speed;
-            double dist;
-            double timestamp;
-        };
 
         struct PredictStatus
         {
@@ -95,9 +98,9 @@ namespace buff_processor
     public:
         PredictorParam predictor_param_;
         std::deque<TargetInfo> history_info;                                    //目标队列
+        double params[4] = {0.01, 0.01, 0.01, 0.01};
     
     private:
-        double params[4] = {0.01, 0.01, 0.01, 0.01};
         rclcpp::Logger logger_;
 
     public:
@@ -110,7 +113,7 @@ namespace buff_processor
 
         BuffPredictor();
         ~BuffPredictor();
-        bool predict(double speed, double dist, double timestamp, double &result);
+        bool predict(double speed, double dist, uint64_t timestamp, double &result);
         double calcAimingAngleOffset(double params[4], double t0, double t1, int mode);
         double shiftWindowFilter(int start_idx);
         bool setBulletSpeed(double speed);

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:47:32
- * @LastEditTime: 2023-06-01 18:12:41
+ * @LastEditTime: 2023-06-04 02:06:58
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor/buff_processor.cpp
  */
 #include "../../include/buff_processor/buff_processor.hpp"
@@ -34,12 +34,10 @@ namespace buff_processor
         buff_predictor_.mode = buff_msg.mode;
         buff_predictor_.last_mode = buff_predictor_.mode;
 
-        cout << "rSpeed:" << buff_msg.rotate_speed << endl;
-
         double theta_offset = 0.0;
         if(buff_predictor_.mode != -1)
         {   // 进入能量机关预测模式
-            // std::cout << 6 << std::endl;
+
             if(buff_predictor_.mode == 3)
                 buff_predictor_.mode = 0;
             if(buff_predictor_.mode == 4)
@@ -51,7 +49,7 @@ namespace buff_processor
 
             Eigen::Vector3d r_center = {buff_msg.r_center.x, buff_msg.r_center.y, buff_msg.r_center.z};
             Eigen::Vector3d armor_center = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
-            if(!buff_predictor_.predict(buff_msg.rotate_speed, armor_center.norm(), buff_msg.header.stamp.nanosec, theta_offset))
+            if(!buff_predictor_.predict(buff_msg.rotate_speed, armor_center.norm(), buff_msg.timestamp, theta_offset))
                 return false;
             else
             {
@@ -69,7 +67,14 @@ namespace buff_processor
                 Eigen::Vector3d hit_point_cam = coordsolver_.worldToCam(hit_point_world, rmat_imu_);
                 // 计算云台偏转角度（pitch、yaw）
                 Eigen::Vector2d angle = coordsolver_.getAngle(hit_point_cam, rmat_imu_);
-                RCLCPP_INFO(logger_, "Yaw: %lf Pitch: %lf", angle[0], angle[1]);
+                
+                RCLCPP_INFO_THROTTLE(
+                    logger_,
+                    steady_clock_,
+                    100, 
+                    "Yaw: %lf Pitch: %lf", 
+                    angle[0], angle[1]
+                );
 
                 target_info.angle = angle;
                 target_info.armor3d_world = armor3d_world;

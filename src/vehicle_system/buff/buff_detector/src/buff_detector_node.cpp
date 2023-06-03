@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-06-01 13:48:51
+ * @LastEditTime: 2023-06-04 02:05:14
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -151,7 +151,7 @@ namespace buff_detector
             buff_msg.r_center.x = target_info.r_center[0];
             buff_msg.r_center.y = target_info.r_center[1];
             buff_msg.r_center.z = target_info.r_center[2];
-            // buff_msg.timestamp = src.timestamp;
+            buff_msg.timestamp = src.timestamp;
             buff_msg.angle = target_info.angle;
             buff_msg.delta_angle = target_info.delta_angle;
             buff_msg.angle_offset = target_info.angle_offset;

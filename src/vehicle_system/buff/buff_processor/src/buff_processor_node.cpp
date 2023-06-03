@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-06-03 23:22:59
+ * @LastEditTime: 2023-06-04 00:22:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -134,10 +134,8 @@ namespace buff_processor
                 gimbal_msg.yaw = predict_info.angle[0];
                 gimbal_msg.distance = predict_info.hit_point_cam.norm();
                 gimbal_msg.is_switched = predict_info.target_switched;
+                gimbal_msg.is_target = true;
                 is_predicted = true;
-
-
-
             }
         }
         else
@@ -145,6 +143,7 @@ namespace buff_processor
             gimbal_msg.pitch = 0.0;
             gimbal_msg.yaw = 0.0;
             gimbal_msg.is_shooting = false;
+            gimbal_msg.is_target = false;
         }
         gimbal_msg.header.frame_id = "barrel_link2";
         gimbal_msg.header.stamp = buff_msg.header.stamp;
@@ -203,45 +202,6 @@ namespace buff_processor
                 marker_array.markers.emplace_back(marker);                     
                 // Publish the marker_array
                 marker_array_pub_->publish(marker_array);
-            }
-
-            if (debug_param_.show_img && !dst.empty())
-            {
-                cv::Point2f r_center;
-                cv::Point2f vertex_sum;
-                cv::Point2f armor_center;
-                for (int ii = 0; ii < 5; ii++)
-                {
-                    if(ii != 0)
-                    {
-                        vertex_sum.x += buff_msg.points2d[ii].x;
-                        vertex_sum.y += buff_msg.points2d[ii].y;
-                    }
-                    else
-                    {
-                        r_center.x = buff_msg.points2d[ii].x;
-                        r_center.y = buff_msg.points2d[ii].y;
-                    }
-
-                    cv::line(
-                        dst, 
-                        cv::Point2i(
-                            buff_msg.points2d[ii % 5].x, 
-                            buff_msg.points2d[ii % 5].y), 
-                            cv::Point2i(buff_msg.points2d[(ii + 1) % 5].x, 
-                            buff_msg.points2d[(ii + 1) % 5].y
-                        ), 
-                        {0, 0, 255}, 
-                        1
-                    );
-                }
-                armor_center = (vertex_sum / 4.0);
-                cv::Point2f point_2d = buff_processor_->coordsolver_.reproject(predict_info.hit_point_cam);
-                
-                cv::line(dst, r_center, armor_center, {125, 0, 125}, 1);
-                cv::line(dst, armor_center, point_2d, {125, 125, 0}, 1);
-                cv::line(dst, r_center, point_2d, {0, 125, 125}, 1);
-                cv::circle(dst, point_2d, 8, {255, 0, 125}, 2);
             }
         }
 
@@ -309,6 +269,42 @@ namespace buff_processor
 
         if (debug_param_.show_img && !dst.empty())
         {
+            cv::Point2f r_center;
+            cv::Point2f vertex_sum;
+            cv::Point2f armor_center;
+            for (int ii = 0; ii < 5; ii++)
+            {
+                if(ii != 0)
+                {
+                    vertex_sum.x += buff_msg.points2d[ii].x;
+                    vertex_sum.y += buff_msg.points2d[ii].y;
+                }
+                else
+                {
+                    r_center.x = buff_msg.points2d[ii].x;
+                    r_center.y = buff_msg.points2d[ii].y;
+                }
+
+                cv::line(
+                    dst, 
+                    cv::Point2i(
+                        buff_msg.points2d[ii % 5].x, 
+                        buff_msg.points2d[ii % 5].y), 
+                        cv::Point2i(buff_msg.points2d[(ii + 1) % 5].x, 
+                        buff_msg.points2d[(ii + 1) % 5].y
+                    ), 
+                    {0, 0, 255}, 
+                    1
+                );
+            }
+            armor_center = (vertex_sum / 4.0);
+            cv::Point2f point_2d = buff_processor_->coordsolver_.reproject(predict_info.hit_point_cam);
+            
+            cv::line(dst, r_center, armor_center, {125, 0, 125}, 1);
+            cv::line(dst, armor_center, point_2d, {125, 125, 0}, 1);
+            cv::line(dst, r_center, point_2d, {0, 125, 125}, 1);
+            cv::circle(dst, point_2d, 8, {255, 0, 125}, 2);
+
             cv::namedWindow("pred_img", cv::WINDOW_NORMAL);
             cv::imshow("pred_img", dst);
             cv::waitKey(1);

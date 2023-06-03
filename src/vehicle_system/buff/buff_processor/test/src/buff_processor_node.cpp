@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-06-01 18:26:15
+ * @LastEditTime: 2023-06-04 01:55:40
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -57,10 +57,10 @@ namespace buff_processor
         bool debug = false;
         this->declare_parameter<bool>("debug", false);
         this->get_parameter("debug", debug);
-        if(debug)
+        if (debug)
         {
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffProcessorNode::paramsCallback, this, _1));
-            if(debug_param_.show_predict)
+            if (debug_param_.show_img)
             {
                 // 图像的传输方式
                 std::string transport_type = "raw";
@@ -77,10 +77,44 @@ namespace buff_processor
                 );
             }
         }
+
+        if (debug_param_.show_fitting_curve)
+        {
+            draw_curve_callback_timer_ = this->create_wall_timer(20ms, std::bind(&BuffProcessorNode::drawCurve, this));
+        }        
     }
 
     BuffProcessorNode::~BuffProcessorNode()
     {}
+
+    void BuffProcessorNode::drawCurve()
+    {
+        if (buff_processor_->buff_predictor_.is_params_confirmed)
+        {
+            std::vector<double> plt_time;
+            std::vector<double> plt_speed;
+            std::vector<double> plt_fitted;
+            double params[4] = {
+                buff_processor_->buff_predictor_.params[0], 
+                buff_processor_->buff_predictor_.params[1], 
+                buff_processor_->buff_predictor_.params[2], 
+                buff_processor_->buff_predictor_.params[3]
+            };
+            deque<TargetInfo> his_info(buff_processor_->buff_predictor_.history_info.cbegin(), buff_processor_->buff_predictor_.history_info.cend());
+
+            for (int ii = 0; ii < (int)his_info.size(); ii++)
+            {
+                auto t = (float)(his_info[ii].timestamp) / 1e3;
+                plt_time.push_back(t);
+                plt_speed.push_back(his_info[ii].speed);
+                plt_fitted.push_back(params[0] * sin (params[1] * t + params[2]) + params[3]);
+            }
+            // plt::clf();
+            // plt::plot(plt_time, plt_speed,"bx");
+            // plt::plot(plt_time, plt_fitted,"r-");
+            // plt::pause(0.001);
+        }
+    }
 
     void BuffProcessorNode::predictorCallback(const BuffMsg& buff_msg)
     {
@@ -89,7 +123,6 @@ namespace buff_processor
         GimbalMsg gimbal_msg;
         bool is_shooting = false;
 
-        
         if (buff_msg.bullet_speed >= 10.0)
         {   //更新弹速
             double cur_bullet_speed = buff_processor_->coordsolver_.getBulletSpeed();
@@ -117,20 +150,20 @@ namespace buff_processor
             buff_msg.bullet_speed, buff_processor_->coordsolver_.getBulletSpeed(), buff_processor_->predictor_param_.shoot_delay
         );
 
-        if (debug_param_.show_predict)
+        if (debug_param_.show_img)
         {
             image_mutex_.lock();
             src_.copyTo(dst);
             image_mutex_.unlock();
         }
         
-        debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
+        debug_param_.show_img = this->get_parameter("show_img").as_bool();
+        bool is_predicted = false;
         if (!buff_msg.is_target_lost)
         {
             if (buff_processor_->predictor(buff_msg, predict_info))
             {
                 RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "predict...");
-                gimbal_msg.is_target = true;
                 gimbal_msg.pitch = predict_info.angle[1];
                 gimbal_msg.yaw = predict_info.angle[0];
                 gimbal_msg.distance = predict_info.hit_point_cam.norm();
@@ -141,105 +174,128 @@ namespace buff_processor
                 gimbal_msg.pred_point_cam.x = predict_info.hit_point_cam(0);
                 gimbal_msg.pred_point_cam.y = predict_info.hit_point_cam(1);
                 gimbal_msg.pred_point_cam.z = predict_info.hit_point_cam(2);
-
-                // if (debug_param_.show_predict)
-                // {
-                    BuffMsg predict_msg;
-                    predict_msg.header.frame_id = "camera_link1";
-                    predict_msg.header.stamp = buff_msg.header.stamp;
-
-                    // predict_msg.header.stamp.nanosec += (500 * 1e6);
-                    predict_msg.predict_point.x = predict_info.hit_point_cam[0];
-                    predict_msg.predict_point.y = predict_info.hit_point_cam[1];
-                    predict_msg.predict_point.z = predict_info.hit_point_cam[2];
-                    
-                    predict_msg.predict_point.x = predict_info.hit_point_world[0];
-                    predict_msg.predict_point.y = predict_info.hit_point_world[1];
-                    predict_msg.predict_point.z = predict_info.hit_point_world[2];
-
-                    predict_msg.abs_pred_angle = predict_info.abs_pred_angle;
-                    predict_msg.abs_meas_angle = predict_info.abs_meas_angle;
-                    last_pred_angle_ = predict_msg.abs_pred_angle;
-                    last_meas_angle_ = predict_msg.abs_meas_angle;
-
-                    last_pred_point3d_(0) = predict_msg.predict_point.x;
-                    last_pred_point3d_(1) = predict_msg.predict_point.y;
-                    last_pred_point3d_(2) = predict_msg.predict_point.z;
-
-                    predict_msg_pub_->publish(std::move(predict_msg));
-                // }
-
-                if (debug_param_.show_predict && !dst.empty())
-                {
-                    cv::Point2f r_center;
-                    cv::Point2f vertex_sum;
-                    cv::Point2f armor_center;
-                    for (int ii = 0; ii < 5; ii++)
-                    {
-                        if(ii != 0)
-                        {
-                            vertex_sum.x += buff_msg.points2d[ii].x;
-                            vertex_sum.y += buff_msg.points2d[ii].y;
-                        }
-                        else
-                        {
-                            r_center.x = buff_msg.points2d[ii].x;
-                            r_center.y = buff_msg.points2d[ii].y;
-                        }
-
-                        cv::line(
-                            dst, 
-                            cv::Point2i(
-                                buff_msg.points2d[ii % 5].x, 
-                                buff_msg.points2d[ii % 5].y), 
-                                cv::Point2i(buff_msg.points2d[(ii + 1) % 5].x, 
-                                buff_msg.points2d[(ii + 1) % 5].y
-                            ), 
-                            {0, 0, 255}, 
-                            1
-                        );
-                    }
-                    armor_center = (vertex_sum / 4.0);
-                    cv::Point2f point_2d = buff_processor_->coordsolver_.reproject(predict_info.hit_point_cam);
-                    
-                    cv::line(dst, r_center, armor_center, {125, 0, 125}, 1);
-                    cv::line(dst, armor_center, point_2d, {125, 125, 0}, 1);
-                    cv::line(dst, r_center, point_2d, {0, 125, 125}, 1);
-                    cv::circle(dst, point_2d, 8, {255, 0, 125}, 2);
-                }
+                gimbal_msg.is_target = true;
+                is_predicted = true;
             }
         }
         else
         {
-            // cout << "111" << endl;
-            gimbal_msg.is_target = false;
             gimbal_msg.pitch = 0.0;
             gimbal_msg.yaw = 0.0;
             gimbal_msg.meas_point_cam.x = 0.0;
             gimbal_msg.meas_point_cam.y = 0.0;
             gimbal_msg.meas_point_cam.z = 0.0;
             gimbal_msg.is_shooting = false;
+            gimbal_msg.is_target = false;
+        }
+        gimbal_msg.header.frame_id = "barrel_link";
+        gimbal_msg.header.stamp = buff_msg.header.stamp;
+        // cout << "angle:" << gimbal_msg.pitch << " " << gimbal_msg.yaw << endl;
+        gimbal_msg_pub_->publish(std::move(gimbal_msg));
 
+        if (debug_param_.show_fitting_curve)
+        {
             BuffMsg predict_msg;
             predict_msg.header.frame_id = "camera_link1";
             predict_msg.header.stamp = buff_msg.header.stamp;
-            predict_msg.predict_point.x = last_pred_point3d_[0];
-            predict_msg.predict_point.y = last_pred_point3d_[1];
-            predict_msg.predict_point.z = last_pred_point3d_[2];
-            predict_msg.abs_pred_angle = last_pred_angle_;
-            predict_msg.abs_meas_angle = last_meas_angle_;
+            // predict_msg.header.stamp.nanosec += (500 * 1e6);
 
+            if (is_predicted)
+            {
+                predict_msg.armor3d_cam = buff_msg.armor3d_cam;
+                predict_msg.armor3d_world = buff_msg.armor3d_world;
+
+                predict_msg.predict_point3d_cam.x = predict_info.hit_point_cam(0);
+                predict_msg.predict_point3d_cam.y = predict_info.hit_point_cam(1);
+                predict_msg.predict_point3d_cam.z = predict_info.hit_point_cam(2);
+                
+                predict_msg.predict_point3d_world.x = predict_info.hit_point_world(0);
+                predict_msg.predict_point3d_world.y = predict_info.hit_point_world(1);
+                predict_msg.predict_point3d_world.z = predict_info.hit_point_world(2);
+
+                predict_msg.abs_pred_angle = predict_info.abs_pred_angle;
+                predict_msg.abs_meas_angle = predict_info.abs_meas_angle;
+                last_pred_angle_ = predict_msg.abs_pred_angle;
+                last_meas_angle_ = predict_msg.abs_meas_angle;
+
+                last_pred_point3d_cam_(0) = predict_msg.predict_point3d_cam.x;
+                last_pred_point3d_cam_(1) = predict_msg.predict_point3d_cam.y;
+                last_pred_point3d_cam_(2) = predict_msg.predict_point3d_cam.z;
+
+                last_pred_point3d_world_(0) = predict_msg.predict_point3d_world.x;
+                last_pred_point3d_world_(1) = predict_msg.predict_point3d_world.y;
+                last_pred_point3d_world_(2) = predict_msg.predict_point3d_world.z;
+
+                last_meas_point3d_cam_(0) = buff_msg.armor3d_cam.x;
+                last_meas_point3d_cam_(1) = buff_msg.armor3d_cam.y;
+                last_meas_point3d_cam_(2) = buff_msg.armor3d_cam.z;
+
+                last_meas_point3d_world_(0) = buff_msg.armor3d_world.x;
+                last_meas_point3d_world_(1) = buff_msg.armor3d_world.y;
+                last_meas_point3d_world_(2) = buff_msg.armor3d_world.z;
+            }
+            else
+            {
+                predict_msg.predict_point3d_cam.x = last_pred_point3d_cam_(0);
+                predict_msg.predict_point3d_cam.y = last_pred_point3d_cam_(1);
+                predict_msg.predict_point3d_cam.z = last_pred_point3d_cam_(2);
+
+                predict_msg.predict_point3d_world.x = last_pred_point3d_world_(0);
+                predict_msg.predict_point3d_world.y = last_pred_point3d_world_(1);
+                predict_msg.predict_point3d_world.z = last_pred_point3d_world_(2);
+
+                predict_msg.armor3d_cam.x = last_meas_point3d_cam_(0);
+                predict_msg.armor3d_cam.y = last_meas_point3d_cam_(1);
+                predict_msg.armor3d_cam.z = last_meas_point3d_cam_(2);
+
+                predict_msg.armor3d_world.x = last_meas_point3d_world_(0);
+                predict_msg.armor3d_world.y = last_meas_point3d_world_(1);
+                predict_msg.armor3d_world.z = last_meas_point3d_world_(2);
+
+                predict_msg.abs_pred_angle = last_pred_angle_;
+                predict_msg.abs_meas_angle = last_meas_angle_;
+            }
             predict_msg_pub_->publish(std::move(predict_msg));
         }
 
-        gimbal_msg.header.frame_id = "barrel_link";
-        gimbal_msg.header.stamp = buff_msg.header.stamp;
-        gimbal_msg_pub_->publish(std::move(gimbal_msg));
-
-        // cout << "angle:" << gimbal_msg.pitch << " " << gimbal_msg.yaw << endl;
-
-        if (debug_param_.show_predict && !dst.empty())
+        if (debug_param_.show_img && !dst.empty())
         {
+            cv::Point2f r_center;
+            cv::Point2f vertex_sum;
+            cv::Point2f armor_center;
+            for (int ii = 0; ii < 5; ii++)
+            {
+                if(ii != 0)
+                {
+                    vertex_sum.x += buff_msg.points2d[ii].x;
+                    vertex_sum.y += buff_msg.points2d[ii].y;
+                }
+                else
+                {
+                    r_center.x = buff_msg.points2d[ii].x;
+                    r_center.y = buff_msg.points2d[ii].y;
+                }
+
+                cv::line(
+                    dst, 
+                    cv::Point2i(
+                        buff_msg.points2d[ii % 5].x, 
+                        buff_msg.points2d[ii % 5].y), 
+                        cv::Point2i(buff_msg.points2d[(ii + 1) % 5].x, 
+                        buff_msg.points2d[(ii + 1) % 5].y
+                    ), 
+                    {0, 0, 255}, 
+                    1
+                );
+            }
+            armor_center = (vertex_sum / 4.0);
+            cv::Point2f point_2d = buff_processor_->coordsolver_.reproject(predict_info.hit_point_cam);
+            
+            cv::line(dst, r_center, armor_center, {125, 0, 125}, 1);
+            cv::line(dst, armor_center, point_2d, {125, 125, 0}, 1);
+            cv::line(dst, r_center, point_2d, {0, 125, 125}, 1);
+            cv::circle(dst, point_2d, 8, {255, 0, 125}, 2);
+
             cv::namedWindow("pred_img", cv::WINDOW_NORMAL);
             cv::imshow("pred_img", dst);
             cv::waitKey(1);
@@ -251,18 +307,14 @@ namespace buff_processor
         if(!img_msg)
             return;
 
-        // cout << 888 << endl;
         cv::Mat img;
         img = cv_bridge::toCvShare(std::move(img_msg), "bgr8")->image;
-
         if (!img.empty())
         {
             image_mutex_.lock();
             img.copyTo(src_);
             image_mutex_.unlock();
         }
-        // cout << 999 << endl;
-
     }
 
     rcl_interfaces::msg::SetParametersResult BuffProcessorNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
@@ -300,8 +352,9 @@ namespace buff_processor
         cout << "delay_small:" << predict_param_.delay_small << " delay_big:" << predict_param_.delay_big << endl;
 
         //Debug param.
-        this->get_parameter("use_imu", this->debug_param_.using_imu);
-        this->get_parameter("show_predict", this->debug_param_.show_predict);
+        this->get_parameter("show_img", this->debug_param_.show_img);
+        this->get_parameter("show_fitting_curve", this->debug_param_.show_fitting_curve);
+        this->get_parameter("show_marker", this->debug_param_.show_marker);
 
         return true;
     }
@@ -334,8 +387,9 @@ namespace buff_processor
         this->path_param_.camera_param_path = pkg_share_pth + this->get_parameter("camera_param_path").as_string();
 
         //Debug param.
-        this->declare_parameter<bool>("show_predict", true);
-        this->declare_parameter<bool>("using_imu", false);
+        this->declare_parameter<bool>("show_img", false);
+        this->declare_parameter<bool>("show_fitting_curve", false);
+        this->declare_parameter<bool>("show_marker", false);
 
         auto success = updateParam();
         if(success)

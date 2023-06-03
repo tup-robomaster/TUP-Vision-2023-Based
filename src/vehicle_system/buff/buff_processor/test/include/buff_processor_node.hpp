@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:10:59
- * @LastEditTime: 2023-06-01 16:23:01
+ * @LastEditTime: 2023-06-04 01:53:21
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/buff_processor_node.hpp
  */
 #ifndef BUFF_PROCESSOR_NODE_HPP_
@@ -24,15 +24,20 @@
 #include <thread>
 #include <atomic>
 
+// #include <matplotlibcpp.h>
+
 //opencv
 #include <opencv2/opencv.hpp>
 
 #include "global_interface/msg/buff.hpp"
 #include "global_interface/msg/gimbal.hpp"
 
+// namespace plt = matplotlibcpp;
+
 using namespace global_user;
 using namespace coordsolver;
 using namespace ament_index_cpp;
+// using namespace plt;
 namespace buff_processor
 {
     class BuffProcessorNode : public rclcpp::Node
@@ -62,14 +67,20 @@ namespace buff_processor
     private:
         Mutex image_mutex_;
         std::shared_ptr<image_transport::Subscriber> img_msg_sub_;
+        rclcpp::TimerBase::SharedPtr draw_curve_callback_timer_;
         cv::Mat src_;
-        Eigen::Vector3d last_pred_point3d_ = {0.0, 0.0, 0.0};
-        Eigen::Vector3d last_meas_point3d_ = {0.0, 0.0, 0.0};
+        
+        Eigen::Vector3d last_pred_point3d_cam_ = {0.0, 0.0, 0.0};
+        Eigen::Vector3d last_pred_point3d_world_ = {0.0, 0.0, 0.0};
+
+        Eigen::Vector3d last_meas_point3d_cam_ = {0.0, 0.0, 0.0};
+        Eigen::Vector3d last_meas_point3d_world_ = {0.0, 0.0, 0.0};
         double last_pred_angle_ = 0.0;
         double last_meas_angle_ = 0.0;
         
         void imageCallback(const ImageMsg::ConstSharedPtr &img_msg);
-        
+        void drawCurve();
+
     public:
         Mutex param_mutex_;
         PredictorParam predict_param_;

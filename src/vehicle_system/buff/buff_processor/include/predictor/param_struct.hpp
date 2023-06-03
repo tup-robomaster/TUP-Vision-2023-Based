@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-20 19:46:36
- * @LastEditTime: 2023-06-03 21:31:10
+ * @LastEditTime: 2023-06-04 00:47:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -68,9 +68,9 @@ namespace buff_processor
         string pf_path;
         double bullet_speed;            //弹速
         double shoot_delay;             //发弹延迟
+        double delay_small;             //小符发弹延迟
+        double delay_big;               //大符发弹延迟
         double delay_coeff;             //延迟系数
-        double delay_big;
-        double delay_small;
         
         double max_timespan;            //最大时间跨度，大于该时间重置预测器(ms)
         double max_rmse;                //TODO:回归函数最大Cost
@@ -80,9 +80,6 @@ namespace buff_processor
         int history_deque_len_cos;      //大符全部参数拟合队列长度
         int history_deque_len_phase;    //大符相位参数拟合队列长度
         int history_deque_len_uniform;  //小符转速求解队列长度
-        
-        double delay_small;             //小符发弹延迟
-        double delay_big;               //大符发弹延迟
 
         int window_size;                //滑动窗口大小
         double fan_length;              //能量机关旋转半径

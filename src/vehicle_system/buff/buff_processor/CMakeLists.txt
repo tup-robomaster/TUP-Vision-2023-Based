@@ -36,6 +36,7 @@ find_package(cv_bridge REQUIRED)
 find_package(global_interface REQUIRED)
 find_package(global_user REQUIRED)
 find_package(filter REQUIRED)
+find_package(matplotlib_cpp REQUIRED)
 
 include_directories(include 
   ${OpenCV_INCLUDE_DIRS}
@@ -56,6 +57,7 @@ set(dependencies
   global_user
   global_interface
   filter
+  # matplotlib_cpp
 )
   
 include_directories(include)
@@ -79,6 +81,7 @@ target_link_libraries(${PROJECT_NAME}
   yaml-cpp 
   ceres
   lapack
+  matplotlib_cpp::matplotlib_cpp
 )
   
 rclcpp_components_register_nodes(${PROJECT_NAME}
