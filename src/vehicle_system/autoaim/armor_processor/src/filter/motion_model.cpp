@@ -2,12 +2,12 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 12:36:22
- * @LastEditTime: 2023-05-29 22:23:00
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/src/motion_model.cpp
+ * @LastEditTime: 2023-05-04 02:27:32
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/motion_model.cpp
  */
-#include "../include/motion_model.hpp"
+#include "../../include/filter/motion_model.hpp"
 
-namespace filter
+namespace armor_processor
 {
     CV::CV()
     {
@@ -605,7 +605,6 @@ namespace filter
                     0,  0,  0,  0,  1,   dt_,     
                     0,  0,  0,  0,  0,     1;
     }
-    
     void UniformModel::updateF(Eigen::MatrixXd& Ft, double dt)
     {
         Ft << 1,  0,  0,  0,  0,     0,    
@@ -665,4 +664,4 @@ namespace filter
                0, 0, 1, 0          , 0                 ,  0,
                0, 0, 0, 0          , 1                 ,  0; 
     }
-} // filter
+} // armor_processor

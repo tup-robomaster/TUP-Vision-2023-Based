@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-03-10 13:45:03
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
+ * @LastEditTime: 2023-06-01 18:10:44
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
 
@@ -45,38 +45,38 @@ namespace buff_detector
         auto input = src.img;
 
         // TODO:放在节点类初始化时加载
-        if(!is_initialized_)
-        {
-            buff_detector_.initModel(path_param_.network_path);
-            coordsolver_.loadParam(path_param_.camera_param_path, path_param_.camera_name);
-            is_initialized_ = true;
-        }
+        // if(!is_initialized_)
+        // {
+        //     buff_detector_.initModel(path_param_.network_path);
+        //     coordsolver_.loadParam(path_param_.camera_param_path, path_param_.camera_name);
+        //     is_initialized_ = true;
+        // }
 
-        if(!debug_param_.using_imu)
-        {
-            if (src.bullet_speed > 10)
-            {
-                double bullet_speed = 0.0;
-                if (abs(src.bullet_speed - last_bullet_speed_) < 0.5 || abs(src.bullet_speed - last_bullet_speed_) > 1.5)
-                {
-                    bullet_speed = src.bullet_speed;
-                    coordsolver_.setBulletSpeed(bullet_speed);
-                    last_bullet_speed_ = bullet_speed;
-                    RCLCPP_INFO(logger_, "bullet speed: %lfm/s", bullet_speed);
-                }
-            }
-        }
+        // if(!debug_param_.using_imu)
+        // {
+        //     if (src.bullet_speed > 10)
+        //     {
+        //         double bullet_speed = 0.0;
+        //         if (abs(src.bullet_speed - last_bullet_speed_) < 0.5 || abs(src.bullet_speed - last_bullet_speed_) > 1.5)
+        //         {
+        //             bullet_speed = src.bullet_speed;
+        //             coordsolver_.setBulletSpeed(bullet_speed);
+        //             last_bullet_speed_ = bullet_speed;
+        //             RCLCPP_INFO(logger_, "bullet speed: %lfm/s", bullet_speed);
+        //         }
+        //     }
+        // }
 
-        if(debug_param_.using_imu)
-        {
+        // if(debug_param_.using_imu)
+        // {
             rmat_imu_ = src.quat.toRotationMatrix();
-            RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 5000, "Using imu...");
-        }
-        else
-        {
-            rmat_imu_= Eigen::Matrix3d::Identity();
-            RCLCPP_WARN_THROTTLE(logger_, this->steady_clock_, 1000, "No imu...");
-        }
+        //     RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 5000, "Using imu...");
+        // }
+        // else
+        // {
+        //     rmat_imu_= Eigen::Matrix3d::Identity();
+        //     RCLCPP_WARN_THROTTLE(logger_, this->steady_clock_, 1000, "No imu...");
+        // }
         
         // TODO:修复ROI
         if(debug_param_.using_roi)
@@ -94,6 +94,8 @@ namespace buff_detector
 
         auto time_crop = steady_clock_.now();
 
+        // cout << 666 << endl;
+
         // objects.clear();
         fans_.clear();
         if (!buff_detector_.detect(input, objects))
@@ -105,26 +107,29 @@ namespace buff_detector
             return false;
         }
         auto time_infer = steady_clock_.now();
+        // cout << 777 << endl;
 
         vector<cv::Point2f> center_vec;
         // 创建扇叶对象
         for (auto object : objects)
         {
-            if(debug_param_.detect_red)
-                if (object.color != 1)
+            if (buff_param_.color == RED)
+                if (object.color != RED)
                     continue;
-            if(!debug_param_.detect_red)
-                if (object.color != 0)
+            if (buff_param_.color == BLUE)
+                if (object.color != BLUE)
                     continue;
+
             Fan fan;
             fan.id = object.cls;
             fan.color = object.color;
             fan.conf = object.prob;
             if (object.color == 0)
-                fan.key = "B" + string(object.cls == 0 ? "Activated" : "Target");
+                fan.key = "B" + string(object.cls == 0 ? "Target" : "Activated");
             if (object.color == 1)
-                fan.key = "R" + string(object.cls == 0 ? "Activated" : "Target");
+                fan.key = "R" + string(object.cls == 0 ? "Target" : "Activated");
             // std::cout << 6 << std::endl;
+
             memcpy(fan.apex2d, object.apex, 5 * sizeof(cv::Point2f));
             for(int i = 0; i < 5; i++)
             {
@@ -145,39 +150,39 @@ namespace buff_detector
             cv::RotatedRect r_rect = cv::fitEllipse(points_pic);
             cv::RotatedRect armor_rect = cv::minAreaRect(points_rect);
 
-            if(debug_param_.show_img)
-            {
-                // last_angle_ = cur_angle_;
-                cv::Point2f vertex[4];
-                r_rect.points(vertex);
-                cv::Point2f vertex_sum;
-                for(int ii = 0; ii < 4; ii++)
-                {
-                    vertex_sum += vertex[ii];
-                    cv::line(src.img, vertex[ii % 4], vertex[(ii+1)%4], {255, 0, 255}, 4);
-                }
-                char ch[20];
-                sprintf(ch, "%.2f", r_rect.angle);
-                std::string angle_str = ch;
-                putText(src.img, "Angle:" + angle_str, (vertex_sum / 4.0), FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
+            // if(debug_param_.show_img)
+            // {
+            //     // last_angle_ = cur_angle_;
+            //     cv::Point2f vertex[4];
+            //     r_rect.points(vertex);
+            //     cv::Point2f vertex_sum;
+            //     for(int ii = 0; ii < 4; ii++)
+            //     {
+            //         vertex_sum += vertex[ii];
+            //         cv::line(src.img, vertex[ii % 4], vertex[(ii+1)%4], {255, 0, 255}, 4);
+            //     }
+            //     char ch[20];
+            //     sprintf(ch, "%.2f", r_rect.angle);
+            //     std::string angle_str = ch;
+            //     putText(src.img, "Angle:" + angle_str, (vertex_sum / 4.0), FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
                 
-                // cur_angle_ = r_rect.angle;
-                // if(last_angle_ != 0)
-                //     RCLCPP_INFO(logger_, "delta_angle: %f", (cur_angle_ - last_angle_));
+            //     // cur_angle_ = r_rect.angle;
+            //     // if(last_angle_ != 0)
+            //     //     RCLCPP_INFO(logger_, "delta_angle: %f", (cur_angle_ - last_angle_));
 
-                // cv::Point2f armor_vertex[4];
-                // armor_rect.points(armor_vertex);
-                // cv::Point2f armor_vertex_sum;
-                // for(int ii = 0; ii < 4; ii++)
-                // {
-                //     armor_vertex_sum += armor_vertex[ii];
-                //     cv::line(src.img, armor_vertex[ii % 4], armor_vertex[(ii+1)%4], {255, 255, 0}, 3);
-                // }
-                // char ch1[20];
-                // sprintf(ch1, "%.2f", armor_rect.angle);
-                // std::string angle_str1 = ch1;
-                // putText(src.img, "angle:" + angle_str1, (armor_vertex_sum / 4.0), FONT_HERSHEY_TRIPLEX, 1, {255, 0, 255});
-            }
+            //     // cv::Point2f armor_vertex[4];
+            //     // armor_rect.points(armor_vertex);
+            //     // cv::Point2f armor_vertex_sum;
+            //     // for(int ii = 0; ii < 4; ii++)
+            //     // {
+            //     //     armor_vertex_sum += armor_vertex[ii];
+            //     //     cv::line(src.img, armor_vertex[ii % 4], armor_vertex[(ii+1)%4], {255, 255, 0}, 3);
+            //     // }
+            //     // char ch1[20];
+            //     // sprintf(ch1, "%.2f", armor_rect.angle);
+            //     // std::string angle_str1 = ch1;
+            //     // putText(src.img, "angle:" + angle_str1, (armor_vertex_sum / 4.0), FONT_HERSHEY_TRIPLEX, 1, {255, 0, 255});
+            // }
             
             // TODO:迭代法进行PnP解算
             TargetType target_type = BUFF;
@@ -194,7 +199,7 @@ namespace buff_detector
 
             fans_.push_back(fan);
         }
-        std::cout << std::endl;
+        // std::cout << std::endl;
         
         // 维护Tracker队列，删除过旧的Tracker
         if (trackers_.size() != 0)
@@ -204,13 +209,15 @@ namespace buff_detector
             {
                 //删除元素后迭代器会失效，需先行获取下一元素
                 auto next = iter;
-                if (((src.timestamp - (*iter).last_timestamp) / 1e6) > buff_param_.max_delta_t)
+                if (((src.timestamp - (*iter).now_) / 1e6) > buff_param_.max_delta_t)
                     next = trackers_.erase(iter);
                 else
                     ++next;
                 iter = next;
             }
         }
+        cout << "pre_tracker.size:" << trackers_.size() << endl;
+
 
         // 分配或创建扇叶追踪器（fan tracker）
         // TODO:增加防抖
@@ -219,30 +226,34 @@ namespace buff_detector
         {
             if (trackers_.size() == 0)
             {
+                cout << 123 << endl;
+
                 FanTracker fan_tracker((*fan), src.timestamp);
                 trackers_tmp.push_back(fan_tracker);
             }
             else
             {
+                cout << 321 << endl;
+
                 double min_v = 1e9;
                 int min_last_delta_t = 1e9;
                 bool is_best_candidate_exist = false;
                 std::vector<FanTracker>::iterator best_candidate;
                 for (auto iter = trackers_.begin(); iter != trackers_.end(); iter++)
                 {
-                    double delta_t = ((src.timestamp - (*iter).prev_timestamp) / 1e6);
+                    double delta_t = ((src.timestamp - (*iter).now_) / 1e6);
                     Eigen::AngleAxisd angle_axisd;
                     Eigen::AngleAxisd abs_angle_axisd;
                     double rotate_speed;
                     int sign;
                     //----------------------------计算角度,求解转速----------------------------
                     // 若该扇叶完成初始化,且隔一帧时间较短
-                    if ((*iter).is_initialized && delta_t < buff_param_.max_delta_t)
+                    if ((*iter).is_initialized_ && delta_t < buff_param_.max_delta_t)
                     {
                         // delta_t = src.timestamp - (*iter).prev_timestamp;
                         // 目前扇叶到上一次扇叶的旋转矩阵
-                        auto relative_rmat = (*iter).prev_fan.rmat.transpose() * (*fan).rmat;
-                        auto rrmat = (*fan).rmat.inverse() * (*iter).prev_fan.rmat;
+                        auto relative_rmat = (*iter).last_fan_.rmat.transpose() * (*fan).rmat;
+                        auto rrmat = (*fan).rmat.inverse() * (*iter).last_fan_.rmat;
                         
                         // std::cout << std::endl;
                         // std::cout << "relative_rmat:";
@@ -261,7 +272,7 @@ namespace buff_detector
                         angle_axisd = Eigen::AngleAxisd(relative_rmat);
                         // auto axis_angle = Eigen::AngleAxisd(rrmat);
 
-                        auto rotate_axis_world = (*iter).last_fan.rmat * angle_axisd.axis();
+                        auto rotate_axis_world = (*iter).last_fan_.rmat * angle_axisd.axis();
 
                         // std::cout << std::endl;
                         // std::cout << "axisd_world:";
@@ -281,10 +292,10 @@ namespace buff_detector
                     }
                     else
                     {
-                        delta_t = src.timestamp - (*iter).last_timestamp;
+                        delta_t = src.timestamp - (*iter).now_;
                         // 目前扇叶到上一次扇叶的旋转矩阵
-                        auto relative_rmat = (*iter).last_fan.rmat.transpose() * (*fan).rmat;
-                        auto rrmat = (*fan).rmat.inverse() * (*iter).last_fan.rmat;
+                        auto relative_rmat = (*iter).last_fan_.rmat.transpose() * (*fan).rmat;
+                        // auto rrmat = (*fan).rmat.inverse() * (*iter).last_fan_.rmat;
 
                         // std::cout << std::endl;
                         // std::cout << "relative_rmat:";
@@ -302,7 +313,7 @@ namespace buff_detector
 
                         // TODO:使用点乘判断旋转方向
                         angle_axisd = Eigen::AngleAxisd(relative_rmat);
-                        auto axis_angle = Eigen::AngleAxisd(rrmat);
+                        // auto axis_angle = Eigen::AngleAxisd(rrmat);
 
                         // std::cout << std::endl;
                         // std::cout << "axisd_rela_rmat:";
@@ -322,9 +333,13 @@ namespace buff_detector
                     // RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 200, "Rotate direction: %d", sign);
 
                     // 计算角速度(rad/s)
-                    delta_t = ((src.timestamp - (*iter).last_timestamp) / 1e6);
+                    delta_t = ((src.timestamp - (*iter).now_) / 1e6);
+                    double axis_angle = angle_axisd.angle();
                     rotate_speed = sign * (angle_axisd.angle()) / (delta_t / 1e3);
-                    // RCLCPP_INFO(logger_, "Rotate speed: %lf", rotate_speed);
+                    RCLCPP_INFO(logger_, "Rotate speed: %.3f dt: %.3f axis_angle: %.3f armor3d_point_cam: (%.3f %.3f %.3f) armor3d_point_worlds: (%.3f %.3f %.3f)", rotate_speed, delta_t, axis_angle,
+                        (*fan).armor3d_cam(0), (*fan).armor3d_cam(1), (*fan).armor3d_cam(2),
+                        (*fan).armor3d_world(0), (*fan).armor3d_world(1), (*fan).armor3d_world(2)
+                    );
 
                     // std::cout << "angle:" << angle_axisd.angle() << std::endl;
 
@@ -344,11 +359,14 @@ namespace buff_detector
                 }
                 if (is_best_candidate_exist)
                 {
+                    cout << "update" << endl;
                     (*best_candidate).update((*fan), src.timestamp);
-                    (*best_candidate).rotate_speed = min_v;
+                    (*best_candidate).rotate_speed_ = min_v;
                 }
                 else
                 {
+                    cout << "new tracker..." << endl;
+
                     FanTracker fan_tracker((*fan), src.timestamp);
                     trackers_tmp.push_back(fan_tracker);
                 }
@@ -357,6 +375,8 @@ namespace buff_detector
         for (auto new_tracker : trackers_tmp)
             trackers_.push_back(new_tracker);
         
+        cout << "post_tracker.size:" << trackers_.size() << endl;
+
         // std::cout << 3 << std::endl;
         // 检查待激活扇叶是否存在
         Fan target;
@@ -414,13 +434,17 @@ namespace buff_detector
         // 计算平均转速与平均R字中心坐标
         for(auto tracker : trackers_)
         {
+            cout << 222 << endl;
+
             // std::cout << "is_last_fan_exists:" << tracker.is_last_fan_exists << std::endl;
             // std::cout << "tracker.last_timestamp:" << tracker.last_timestamp << std::endl;
             // std::cout << "src.timestamp:" << src.timestamp << std::endl;
-            if (tracker.is_last_fan_exists && tracker.last_timestamp == src.timestamp)
+            if (tracker.is_last_fan_exists_ && tracker.now_ == src.timestamp)
             {
-                rotate_speed_sum += tracker.rotate_speed;
-                r_center_sum += tracker.last_fan.centerR3d_world;
+                cout << 333 << endl;
+
+                rotate_speed_sum += tracker.rotate_speed_;
+                r_center_sum += tracker.last_fan_.centerR3d_world;
                 avail_tracker_cnt++;
             }
         }
@@ -428,6 +452,7 @@ namespace buff_detector
         // 若不存在可用的扇叶则返回false
         if (avail_tracker_cnt == 0)
         {
+            cout << 111 << endl;
             if(debug_param_.show_all_fans)
             {
                 showFans(src);
@@ -443,10 +468,12 @@ namespace buff_detector
         auto angle = coordsolver_.getAngle(target.armor3d_cam, rmat_imu_);
 
         target_info.rotate_speed = mean_rotate_speed;
+        cout << "mean_vel:" << mean_rotate_speed << endl;
         target_info.r_center = mean_r_center;
         target_info.rmat = target.rmat;
         target_info.armor3d_world = target.armor3d_world;
         target_info.armor3d_cam = target.armor3d_cam;
+        target_info.find_target = true;
 
         RCLCPP_INFO(logger_, "r_center_cam: %lf %lf %lf", r_center_cam[0], r_center_cam[1], r_center_cam[2]);
         RCLCPP_INFO_THROTTLE(logger_, this->steady_clock_, 200, "Target mean_rotate_speed: %lf mean_r_center: {x:%lf y:%lf z:%lf}",
@@ -480,11 +507,11 @@ namespace buff_detector
         // double dr_crop_ns = (time_crop - time_start).nanoseconds();
         // double dr_infer_ns = (time_infer - time_start).nanoseconds();
 
-        // if(debug_param_.show_all_fans)
-        // {
-        //     RCLCPP_DEBUG_ONCE(logger_, "Show all fans...");
-        //     showFans(src);
-        // }
+        if(debug_param_.show_all_fans)
+        {
+            RCLCPP_DEBUG_ONCE(logger_, "Show all fans...");
+            showFans(src);
+        }
 
         // if(debug_param_.show_fps)
         // {
@@ -527,12 +554,12 @@ namespace buff_detector
             char ch[20];
             sprintf(ch, "%.2f", fan.conf);
             std::string conf_str = ch;
-            putText(src.img, conf_str, fan.apex2d[4], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
+            putText(src.img, conf_str, fan.apex2d[2], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
 
             if (fan.color == 0)
-                putText(src.img, fan.key, fan.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
+                putText(src.img, fan.key, fan.apex2d[1], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
             if (fan.color == 1)
-                putText(src.img, fan.key, fan.apex2d[0], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
+                putText(src.img, fan.key, fan.apex2d[1], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
             for(int i = 0; i < 5; i++)
                 line(src.img, fan.apex2d[i % 5], fan.apex2d[(i + 1) % 5], Scalar(0,255,0), 1);
             auto fan_armor_center = coordsolver_.reproject(fan.armor3d_cam);
@@ -547,7 +574,7 @@ namespace buff_detector
         int target_fan_cnt = 0;
         for (auto fan : fans_)
         {
-            if (fan.id == 1)
+            if (fan.id == 0)
             {
                 target = fan;
                 target_fan_cnt++;

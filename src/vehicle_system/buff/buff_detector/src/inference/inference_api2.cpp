@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-05-31 22:18:30
+ * @LastEditTime: 2023-06-01 17:08:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -21,7 +21,7 @@ namespace buff_detector
     static constexpr int NUM_COLORS = 2;       // Number of color
     static constexpr int TOPK = 128;           // TopK
     static constexpr float NMS_THRESH  = 0.1;
-    static constexpr float BBOX_CONF_THRESH = 0.60;
+    static constexpr float BBOX_CONF_THRESH = 0.50;
     static constexpr float MERGE_CONF_ERROR = 0.15;
     static constexpr float MERGE_MIN_IOU = 0.2;
 
@@ -362,6 +362,8 @@ namespace buff_detector
         // }
 
         std::cout << "Start initialize model..." << std::endl;
+
+        // cout << "model_path:" << path << endl;
         
         // Setting Configuration Values.
         core.set_property("CPU", ov::enable_profiling(true));
@@ -382,12 +384,12 @@ namespace buff_detector
         // Step 2. Compile the model
         compiled_model = core.compile_model(
             model,
-            "CPU",
+            "GPU",
             ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
             // "AUTO:GPU,CPU", 
             // ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
             // ov::hint::inference_precision(ov::element::u8)
-        );
+            );
 
         // compiled_model.set_property(ov::device::priorities("GPU"));
 
@@ -429,7 +431,8 @@ namespace buff_detector
             cout << "[DETECT] ERROR: 传入了空的src";
             return false;
         }
-
+        // cout << 123 << endl;
+        
         cv::Mat pr_img = scaledResize(src, transfrom_matrix);
         // dw = this->dw;
 
@@ -438,11 +441,15 @@ namespace buff_detector
         pr_img.convertTo(pre, CV_32F);
         cv::split(pre, pre_split);
 
+        // cout << 789 << endl;
+
         // Get input tensor by index
         input_tensor = infer_request.get_input_tensor(0);
         
         // 准备输入
         infer_request.set_input_tensor(input_tensor);
+
+        // cout << 000 << endl;
 
         float* tensor_data = input_tensor.data<float_t>();
         
@@ -454,6 +461,8 @@ namespace buff_detector
             tensor_data += img_offset;
         }
 
+        // cout << 345 << endl;
+
         // ov::element::Type input_type = ov::element::f32;
         // ov::Shape input_shape = {1, 3, 416, 416};
 
@@ -464,8 +473,10 @@ namespace buff_detector
         // input_tensor = ov::Tensor(input_type, input_shape, input_data_ptr);
 
         // auto st = std::chrono::steady_clock::now();
+
         // 推理
         infer_request.infer();
+
         // auto end = std::chrono::steady_clock::now();
         // double infer_dt = std::chrono::duration<double,std::milli>(end - st).count();
         // cout << "infer_time:" << infer_dt << endl;

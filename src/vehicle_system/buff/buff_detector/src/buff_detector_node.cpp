@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-06-01 02:26:39
+ * @LastEditTime: 2023-06-01 13:48:51
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -35,8 +35,11 @@ namespace buff_detector
         // QoS    
         rclcpp::QoS qos(0);
         qos.keep_last(5);
+        // qos.best_effort();
         qos.reliable();
         qos.durability();
+        // qos.durability_volatile();
+        // qos.best_effort();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
@@ -79,11 +82,6 @@ namespace buff_detector
         if(debug)
         {
             RCLCPP_INFO(this->get_logger(), "debug...");
-            
-            // marker pub.
-            marker_array_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/buff_detector/visualization_marker_array", 1);
-            shape_ = visualization_msgs::msg::Marker::CUBE;
-            
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffDetectorNode::paramsCallback, this, _1));
         }
     }
@@ -105,35 +103,27 @@ namespace buff_detector
     
     void BuffDetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {   
-        if(!img_msg || (mode_ != SMALL_BUFF && mode_ != BIG_BUFF))
-            return;
-
         RCLCPP_INFO_THROTTLE(
             this->get_logger(),
             *this->get_clock(),
-            100, 
-            "buff_mode: %d",
+            200, 
+            "mode: %d",
             mode_
         );
 
-        rclcpp::Time img_stamp = img_msg->header.stamp;
-        rclcpp::Time now = this->get_clock()->now();
-        double duration = (now.nanoseconds() - img_stamp.nanoseconds()) / 1e6;
-        if (duration > 20.0)
+        if(!img_msg || (mode_ != SMALL_BUFF && mode_ != BIG_BUFF))
             return;
         
         TaskData src;
-        BuffMsg buff_msg;
-        double shoot_delay = 0.0;
-        double bullet_speed = 0.0;
-        vector<geometry_msgs::msg::Transform> armor3d_transform_vec_;
-        int flag = 0;
-
         auto img = cv_bridge::toCvShare(img_msg, "bgr8")->image;
         img.copyTo(src.img);
         
         rclcpp::Time stamp = img_msg->header.stamp;
         src.timestamp = stamp.nanoseconds();
+
+        BuffMsg buff_msg;
+        double shoot_delay = 0.0;
+        double bullet_speed = 0.0;
 
         serial_mutex_.lock();
         src.mode = serial_msg_.mode;
@@ -156,7 +146,7 @@ namespace buff_detector
         
         TargetInfo target_info;
         param_mutex_.lock();
-        if(detector_->run(src, target_info, armor3d_transform_vec_, flag))
+        if(detector_->run(src, target_info))
         {
             buff_msg.r_center.x = target_info.r_center[0];
             buff_msg.r_center.y = target_info.r_center[1];
@@ -180,6 +170,10 @@ namespace buff_detector
             buff_msg.armor3d_cam.x = target_info.armor3d_cam[0];
             buff_msg.armor3d_cam.y = target_info.armor3d_cam[1];
             buff_msg.armor3d_cam.z = target_info.armor3d_cam[2];
+
+            last_detect_point3d_(0) = buff_msg.armor3d_world.x;
+            last_detect_point3d_(1) = buff_msg.armor3d_world.y;
+            last_detect_point3d_(2) = buff_msg.armor3d_world.z;
             
             buff_msg.points2d[0].x = target_info.points2d[0].x;
             buff_msg.points2d[0].y = target_info.points2d[0].y;
@@ -191,11 +185,12 @@ namespace buff_detector
             buff_msg.points2d[3].y = target_info.points2d[3].y;
             buff_msg.points2d[4].x = target_info.points2d[4].x;
             buff_msg.points2d[4].y = target_info.points2d[4].y;
-
-            if (this->debug_param_.show_marker)
-            {
-                pubMarkerArray(armor3d_transform_vec_, flag, stamp);
-            }
+        }
+        else
+        {
+            buff_msg.armor3d_world.x = last_detect_point3d_(0);
+            buff_msg.armor3d_world.y = last_detect_point3d_(1);
+            buff_msg.armor3d_world.z = last_detect_point3d_(2);
         }
         param_mutex_.unlock();
 
@@ -213,99 +208,16 @@ namespace buff_detector
         buff_msg.is_target_lost = target_info.find_target ? false : true;
         buff_msg_pub_->publish(std::move(buff_msg));
 
-        rclcpp::Time end = this->get_clock()->now();
-        RCLCPP_WARN_THROTTLE(
-            this->get_logger(), 
-            *this->get_clock(), 
-            100, 
-            "detect_delay:%.2fms",
-            (end - now).nanoseconds() / 1e6
-        );
-
-        RCLCPP_WARN_THROTTLE(
-            this->get_logger(), 
-            *this->get_clock(), 
-            200,
-            "buff_mode: %d", 
-            buff_msg.mode
-        );
-        
+        // RCLCPP_WARN(this->get_logger(), "mode: %d", buff_msg.mode);
         bool show_img = this->get_parameter("show_img").as_bool();
         if (show_img)
         {
-            cv::namedWindow("buff_dst", cv::WINDOW_NORMAL);
-            cv::imshow("buff_dst", src.img);
+            putText(src.img, target_info.find_target ? "State:Detected" : "State:Lost" , {5, 55}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
+
+            cv::namedWindow("dst", cv::WINDOW_NORMAL);
+            cv::imshow("dst", src.img);
             cv::waitKey(1);
         }
-    }
-
-    void BuffDetectorNode::pubMarkerArray(vector<geometry_msgs::msg::Transform> armor3d_transform_vec, int flag, rclcpp::Time stamp)
-    {
-        visualization_msgs::msg::MarkerArray marker_array;
-        visualization_msgs::msg::Marker marker;
-        int marker_id = 0;
-        
-        // Set the frame ID and timestamp.
-        marker.header.frame_id = "base_link";
-        marker.header.stamp = stamp;
-
-        // Set the namespace and id for this marker.  This serves to create a unique ID
-        // Any marker sent with the same namespace and id will overwrite the old one
-        marker.ns = "basic_shapes";
-
-        // Set the marker type.  
-        // Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
-        marker.type = shape_;
-
-        // Set the marker action.
-        // Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
-        marker.action = visualization_msgs::msg::Marker::ADD;
-
-        marker.lifetime = rclcpp::Duration::from_nanoseconds((rcl_duration_value_t)1e4);
-
-        int idx = 0;
-        for (auto armor3d_transform : armor3d_transform_vec)
-        {
-            marker.id = marker_id;
-            
-            marker.type = (idx != (armor3d_transform_vec.size() - 1) ? shape_ : visualization_msgs::msg::Marker::SPHERE);
-
-            // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-            marker.pose.position.x = armor3d_transform.translation.x;
-            marker.pose.position.y = armor3d_transform.translation.y;
-            marker.pose.position.z = armor3d_transform.translation.z;
-
-            marker.pose.orientation.x = armor3d_transform.rotation.x;
-            marker.pose.orientation.y = armor3d_transform.rotation.y;
-            marker.pose.orientation.z = armor3d_transform.rotation.z;
-            marker.pose.orientation.w = armor3d_transform.rotation.w;
-
-            // Set the scale of the marker -- 1x1x1 here means 1m on a side
-            if (idx != (armor3d_transform_vec.size() - 1))
-            {
-                marker.scale.x = 0.22;
-                marker.scale.y = 0.22;
-                marker.scale.z = 0.22;
-            }
-            else
-            {
-                marker.scale.x = 0.05;
-                marker.scale.y = 0.05;
-                marker.scale.z = 0.05;
-            }
-
-            // Set the color -- be sure to set alpha to something non-zero!
-            marker.color.r = flag == idx ? 1.0f : 0.0f;
-            marker.color.g = 0.5f;
-            marker.color.b = 1.0f;
-            marker.color.a = 1.0;
-
-            marker_array.markers.emplace_back(marker);                     
-            ++marker_id;
-            ++idx;
-        }
-        // Publish the marker_array
-        marker_array_pub_->publish(marker_array);
     }
 
     rcl_interfaces::msg::SetParametersResult BuffDetectorNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
@@ -350,14 +262,12 @@ namespace buff_detector
 
         this->declare_parameter<bool>("use_imu", false);
         this->declare_parameter<bool>("use_roi", false);
-        
         this->declare_parameter<bool>("show_img", false);
         this->declare_parameter<bool>("show_all_fans", true);
         this->declare_parameter<bool>("show_fps", true);
         this->declare_parameter<bool>("assist_label", false);
         this->declare_parameter<bool>("prinf_latency", false);
         this->declare_parameter<bool>("print_target_info", false);
-        this->declare_parameter<bool>("show_marker", false);
 
         bool success = updateParam();
         if(success)
@@ -385,14 +295,12 @@ namespace buff_detector
         //Debug param.
         this->get_parameter("use_imu", this->debug_param_.using_imu);
         this->get_parameter("use_roi", this->debug_param_.using_roi);
-
         this->get_parameter("show_img", this->debug_param_.show_img);
         this->get_parameter("show_all_fans", this->debug_param_.show_all_fans);
         this->get_parameter("show_fps", this->debug_param_.show_fps);
         this->get_parameter("assist_label", this->debug_param_.assist_label);
         this->get_parameter("prinf_latency", this->debug_param_.prinf_latency);
         this->get_parameter("print_target_info", this->debug_param_.print_target_info);
-        this->get_parameter("show_marker", this->debug_param_.show_marker);
 
         return true;
     }

@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-05-31 19:30:54
+LastEditTime: 2023-06-01 11:08:06
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/autoaim_bringup.launch.py
 '''
 import os
@@ -28,12 +28,12 @@ def generate_launch_description():
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
     camera_type = 'daheng' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
-    camera_name = 'KE0200110076'
+    camera_name = 'KE0200110074'
     use_serial = True
     use_imu = True
-    bullet_speed = 14.5 # 弹速
-    shoot_delay = 150.0 # 发弹延迟
-    delay_coeff = 1.0   # 延迟系数（放大时间提前量，缓解云台跟随滞后问题)
+    shoot_delay = 80.0 # 发弹延迟
+    bullet_speed = 25.5 # 弹速
+    delay_coeff = 1.0   # 延迟系数（放大时间提前量，缓解云台跟随滞后问题
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
 
@@ -55,14 +55,6 @@ def generate_launch_description():
         armor_detector_params = yaml.safe_load(f)['/armor_detector']['ros__parameters']
     with open(autoaim_param_file, 'r') as f:
         armor_processor_params = yaml.safe_load(f)['/armor_processor']['ros__parameters']
-
-    #---------------------------tf2_static_publisher------------------------------------------
-    tf_static_node = Node(package='tf2_ros',
-                            executable='static_transform_publisher',
-                            output='screen',
-                            arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373',
-                                        '-1.5249719', '1.408214', 'imu_link', 'camera_link'])
-   
     #---------------------------------Serial Node--------------------------------------------
     if use_serial:
         serial_node = Node(package='serialport',
@@ -72,51 +64,50 @@ def generate_launch_description():
                             emulate_tty=True,
                             parameters=[{
                                 'using_port': True,
-                                'tracking_target': False,
+                                'tracking_target': True,
                                 'print_serial_info': False,
                                 'print_referee_info': False
                             }],
                             respawn=True,
                             respawn_delay=1)
         
+    #---------------------------tf2_static_publisher------------------------------------------
+    tf_static_node = Node(package='tf2_ros',
+                            executable='static_transform_publisher',
+                            output='screen',
+                            arguments=['-0.07705601', '-0.00966292', '0.01103587', '-0.2453373',
+                                        '-1.5249719', '1.408214', 'imu_link', 'camera_link'])
     #---------------------------------Detector Node--------------------------------------------
     camera_params = []
     camera_plugin = ""
     camera_node = ""
-    
-    armor_camera_remappings = []
-    buff_camera_remappings = []
+    camera_remappings = []
     if camera_type == "daheng":
         camera_params = daheng_cam_params
         camera_plugin = "camera_driver::DahengCamNode"
         camera_node = "daheng_driver"
-        armor_camera_remappings = [("/image", "/daheng_img_armor_node")]
-        buff_camera_remappings = [("/image", "/daheng_img_buff_node")]
+        camera_remappings = [("/image", "/daheng_img")]
 
     elif camera_type == "usb":
         camera_params = usb_cam_params
         camera_plugin = "camera_driver::UsbCamNode"
         camera_node = "usb_driver"
-        armor_camera_remappings = [("/image", "/usb_img_armor_node")]
-        buff_camera_remappings = [("/image", "/usb_img_buff_node")]
+        camera_remappings = [("/image", "/usb_img")]
 
     elif camera_type == "mvs":
         camera_params = mvs_cam_params
         camera_plugin = "camera_driver::MvsCamNode"
         camera_node = "mvs_driver"
-        armor_camera_remappings = [("/image", "/mvs_img_armor_node")]
-        buff_camera_remappings = [("/image", "/mvs_img_buff_node")]
+        camera_remappings = [("/image", "/mvs_img")]
 
     elif camera_type == "hik":
         camera_params = hik_cam_params
         camera_plugin = "camera_driver::HikCamNode"
         camera_node = "hik_driver"
-        armor_camera_remappings = [("/image", "/hik_img_armor_node")]
-        buff_camera_remappings = [("/image", "/hik_img_buff_node")]
+        camera_remappings = [("/image", "/hik_img")]
 
     else:
         raise BaseException("Invalid Cam Type!!!") 
-    
     detector_container = ComposableNodeContainer(
         name='armor_detector_container',
         namespace='',
@@ -142,7 +133,7 @@ def generate_launch_description():
                     'camera_name': camera_name,
                     'use_imu': use_imu,
                 }],
-                remappings = armor_camera_remappings,
+                remappings = camera_remappings,
                 extra_arguments=[{
                     'use_intra_process_comms': True
                 }]
@@ -170,7 +161,7 @@ def generate_launch_description():
                     'bullet_speed': bullet_speed,
                     'delay_coeff': delay_coeff
                 }],
-                remappings = armor_camera_remappings,
+                remappings = camera_remappings,
                 extra_arguments=[{
                     'use_intra_process_comms':True
                 }]

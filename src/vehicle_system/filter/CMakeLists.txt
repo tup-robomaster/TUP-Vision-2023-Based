@@ -34,17 +34,38 @@ include_directories(
   ${EIGEN3_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
+  
 
 # 添加源文件，生成库
 add_library(${PROJECT_NAME} SHARED
-  src/kalman_filter.cpp
+# Utils
+  include/filter/filter.hpp
+  
+  # Base
+  include/motion_model/kalman_filter_base.hpp
+  
+  # Models
+  include/motion_model/measurement_model.hpp
+  include/motion_model/system_model.hpp
+  include/motion_model/linear_measurement_model.hpp
+  include/motion_model/linear_system_model.hpp
+  
+  # KF
+  include/kalman_filter.hpp
+  src/kalman_filter.cpp 
+  
+  # EKF
+  include/extend_kalman_filter.hpp
+  
+  # PF
+  include/particle_filter.hpp
   src/particle_filter.cpp
-  src/imm.cpp 
-  src/motion_model.cpp 
-  src/model_generator.cpp 
+  
+  # UKF
 )
   
 target_link_libraries(${PROJECT_NAME}
+  # ${dependencies}
   ${OpenCV_LIBRARIES}
   yaml-cpp
   fmt 
@@ -52,10 +73,13 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 add_executable(testing 
-  test/test/system_model.cpp 
-  test/test/system_model.hpp
-  test/test/measurement_model.cpp
-  test/test//main.cpp
+  # test/imm_system_model.hpp
+  # test/imm.hpp
+  # test/imm.cpp
+  test/system_model.cpp 
+  test/system_model.hpp
+  test/measurement_model.cpp
+  test/main.cpp
 )
 
 target_link_libraries(testing
@@ -66,13 +90,25 @@ target_link_libraries(testing
 )
 
 add_executable(figure
-  test/test/figure.cpp
+  test/figure.cpp
 )
 
 target_link_libraries(figure
   matplotlib_cpp::matplotlib_cpp
 )
 
+# add_executable(imm_testing 
+#   test/imm.hpp
+#   test/imm.cpp 
+#   test/imm_system_model.hpp  
+#   test/ekf_based_imm.cpp 
+# )
+
+# target_link_libraries(imm_testing 
+#   ${PROJECT_NAME}
+#   ceres
+# )
+      
 # 添加头文件地址
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -98,6 +134,13 @@ install(TARGETS
   figure
   DESTINATION lib/${PROJECT_NAME}
 )
+
+## TODO:
+# install(DIRECTORY
+#   # launch
+#   # config 
+#   DESTINATION share/${PROJECT_NAME}
+# )
 
 # 注册 导出库文件
 install(

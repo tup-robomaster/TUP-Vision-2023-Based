@@ -2,14 +2,11 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2023-05-29 18:09:13
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/buff_detector.hpp
+ * @LastEditTime: 2023-03-10 15:58:42
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
 #define BUFF_DETECTOR_HPP_
-
-//ros
-#include <geometry_msgs/msg/transform_stamped.hpp>
 
 #include "../include/fan_tracker/fan_tracker.hpp"
 #include "../include/inference/inference_api2.hpp"
@@ -34,11 +31,7 @@ namespace buff_detector
         Detector(const BuffParam& buff_param, const PathParam& path_param, const DebugParam& debug_param);
         ~Detector();
     
-        //能量机关检测主函数
-        bool run(TaskData& src, TargetInfo& target_info, vector<geometry_msgs::msg::Transform>& armor3d_transform_vec, int& flag); 
-        bool chooseTarget(std::vector<Fan> &fans, Fan &target);
-        cv::Point2i cropImageByROI(cv::Mat &img); //roi裁剪
-        void showFans(TaskData& src);
+        bool run(TaskData& src, TargetInfo& target_info); //能量机关检测主函数
     
     public:
         BuffParam buff_param_;
@@ -71,19 +64,23 @@ namespace buff_detector
         float cur_angle_;
         
         Eigen::Matrix3d rmat_imu_;
-        vector<double> delta_angle_vec_;
-        rclcpp::Logger logger_;
-    
-    private:
+
+        bool chooseTarget(std::vector<Fan> &fans, Fan &target);
+        cv::Point2i cropImageByROI(cv::Mat &img); //roi裁剪
+        void showFans(TaskData& src);
+
         // double normalizeAngle(double angle, double dz);
         // double last_angle;
-
+    private:
         // deque<Eigen::Vector2d> yaw_pitch_vec_;
         // deque<Eigen::Vector2d> center_yaw_pitch_vec_;
         // deque<double> yaw_vec_;
         // deque<Eigen::Vector3d> armor3d_vec_;
         // deque<Eigen::Vector3d> centerR3d_vec_; 
         // deque<Eigen::Vector3d> rectify3d_vec_;
+
+        vector<double> delta_angle_vec_;
+        rclcpp::Logger logger_;
     };
 } // namespace buff_detector
 

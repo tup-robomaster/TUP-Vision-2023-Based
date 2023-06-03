@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-05-31 19:53:35
+ * @LastEditTime: 2023-05-28 22:00:37
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -93,6 +93,9 @@ namespace armor_detector
             is_last_target_exists_ = false;
             last_target_area_ = 0.0;
 
+            // rclcpp::Time end = steady_clock_.now();
+            // RCLCPP_WARN(logger_, "infer_time: %.3fms", (end - st).nanoseconds() / 1e6);
+
             return false;
         }
         time_infer_ = steady_clock_.now();
@@ -107,7 +110,6 @@ namespace armor_detector
         if ((int)(objects_.size()) > this->detector_params_.max_armors_cnt)
             objects_.resize(this->detector_params_.max_armors_cnt);
         
-
         //生成装甲板对象
         for (auto object : objects_)
         {
@@ -348,7 +350,6 @@ namespace armor_detector
             autoaim_msg.is_target_lost = true;
             lost_cnt_++;
             is_last_target_exists_ = false;
-            last_target_area_ = 0;
             RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "No available tracker exists!");
             return false;
         }
@@ -554,6 +555,7 @@ namespace armor_detector
             double delta_dist = (target.armor3d_world - last_armor_.armor3d_world).norm();
             if (target.id != last_armor_.id || delta_dist >= 1.5)
             {
+                // cout << "delta_dist:" << delta_dist << endl;
                 cout << "target_switched..." << endl;
                 is_target_switched_ = true;
                 autoaim_msg.target_switched = true;
@@ -758,7 +760,7 @@ namespace armor_detector
     {
         std::vector<Armor> new_armors;
         cv::Point2d img_center = cv::Point2d(src.img.size().width / 2, src.img.size().height / 2);
-        if (src.mode == SENTRY_NORMAL)
+        if (src.mode == SENTRY_NORMAL && decision_msg.mode == AUTOAIM)
         {
             for (auto& armor : armors)
             {
@@ -816,7 +818,7 @@ namespace armor_detector
             else
                 return -1;
         }
-        else if (src.mode == AUTOAIM_TRACKING || src.mode == AUTOAIM_NORMAL || src.mode == AUTOAIM_SLING)
+        else if (src.mode == AUTOAIM || src.mode == HERO_SLING)
         {
             return chooseTargetID(src, armors);
         }
@@ -945,7 +947,7 @@ namespace armor_detector
             float rrangle = armor.rrect.angle;
             double dist_3d = armor.armor3d_world.norm();
 
-            if (armor.id == 6 && src.mode == AUTOAIM_SLING)
+            if (armor.id == 6 && src.mode == HERO_SLING)
             {
                 return armor.id;
             }

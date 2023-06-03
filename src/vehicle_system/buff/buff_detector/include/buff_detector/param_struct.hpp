@@ -2,15 +2,20 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:35:11
- * @LastEditTime: 2023-05-29 18:14:01
+ * @LastEditTime: 2023-06-01 17:35:41
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/param_struct.hpp
  */
 //c++
 #include <future>
 #include <vector>
 //eigen
+#include <Eigen/Dense>
 #include <Eigen/Core>
 
+#include <opencv2/opencv.hpp>
+
+using namespace std;
+using namespace cv;
 namespace buff_detector
 {
     struct DebugParam
@@ -23,7 +28,6 @@ namespace buff_detector
         bool print_target_info;
         bool assist_label;
         bool prinf_latency;
-        bool show_marker;
 
         DebugParam()
         {
@@ -35,7 +39,6 @@ namespace buff_detector
             print_target_info = false; 
             prinf_latency = false;
             assist_label = false;
-            show_marker = false;
         }
     };
 
@@ -52,9 +55,9 @@ namespace buff_detector
         BuffParam()
         {
             color = 1;
-            max_lost_cnt = 4; 
+            max_lost_cnt = 10; 
             max_v = 4.0;   
-            max_delta_t = 100; 
+            max_delta_t = 200; 
             fan_length = 0.7;
             no_crop_thres = 2e-3;
             max_angle = 0.25;
@@ -91,7 +94,7 @@ namespace buff_detector
         Eigen::Vector3d armor3d_cam;
         Eigen::Vector3d armor3d_world;
         Eigen::Matrix3d rmat;
-        Eigen::Quaterniond quat_cam;
+        Eigen::Quaterniond quat_world;
         cv::Point2f points2d[5];
         TargetInfo()
         {

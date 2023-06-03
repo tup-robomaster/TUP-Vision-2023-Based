@@ -2,7 +2,7 @@
  * @Description: This is a ros_control learning project!
  * @Author: Liu Biao
  * @Date: 2022-09-06 00:29:49
- * @LastEditTime: 2023-05-31 22:03:22
+ * @LastEditTime: 2023-05-31 18:52:16
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/include/camera_driver/camera_driver_node.hpp
  */
 #ifndef CAMERA_DRIVER_NODE_HPP_
@@ -53,6 +53,7 @@ namespace camera_driver
         typedef global_interface::msg::Serial SerialMsg;
 
     public:
+        // explicit CameraBaseNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         CameraBaseNode(string node_name, const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
         ~CameraBaseNode();
         
@@ -76,25 +77,25 @@ namespace camera_driver
         }
 
     public:
+        ImageInfo image_info_;
+        ImageSize image_size_;
         CameraParam camera_params_;
         std::unique_ptr<T> cam_driver_;
-        std::thread img_callback_thread_;
         rclcpp::TimerBase::SharedPtr camera_watcher_timer_;
-        // rclcpp::TimerBase::SharedPtr img_callback_timer_;
+        rclcpp::TimerBase::SharedPtr img_callback_timer_;
+        std::thread img_callback_thread_;
 
         Mutex cam_mutex_;
         std::map<std::string, int> param_map_;
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;
-        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_msg_pub_;
-        image_transport::CameraPublisher camera_pub2buff_node_;
-        image_transport::CameraPublisher camera_pub2armor_node_;
-
+        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_;
+        image_transport::CameraPublisher camera_pub_;
         sensor_msgs::msg::CameraInfo camera_info_msg_;
         sensor_msgs::msg::Image image_msg_;
-
-        string camera_topic_;
         cv::Mat frame_;
         atomic<bool> is_cam_open_;
+        int camera_type_;
+        string camera_topic_;
 
         // 图像保存
         bool save_video_;
@@ -129,16 +130,22 @@ namespace camera_driver
         qos.keep_last(5);
         qos.best_effort();
         qos.durability();
+        // qos.reliable();
+        // qos.transient_local();
+        // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 5;
 
-        // Camera topic.
-        this->declare_parameter<string>("camera_topic", "daheng_img");
-        camera_topic_ = this->get_parameter("camera_topic").as_string();
+        // Camera type.
+        this->declare_parameter<int>("camera_type", MVSCam);
+        camera_type_ = this->get_parameter("camera_type").as_int();
 
         // Subscriptions transport type.
         string transport_type = "raw";
+    
+        image_size_ = image_info_.image_size_map[camera_type_];
+        camera_topic_ = image_info_.camera_topic_map[camera_type_];
         
         if(save_video_)
         {   // Video save.
@@ -172,10 +179,7 @@ namespace camera_driver
             RCLCPP_WARN_ONCE(this->get_logger(), "No save video...");
 
         // Create img publisher.
-        string camera_pub2armor_topic = camera_topic_ + "_armor_node";
-        string camera_pub2buff_topic = camera_topic_ + "_buff_node";
-        this->camera_pub2armor_node_ = image_transport::create_camera_publisher(this, camera_pub2armor_topic, rmw_qos);
-        this->camera_pub2buff_node_ = image_transport::create_camera_publisher(this, camera_pub2buff_topic, rmw_qos);
+        this->camera_pub_ = image_transport::create_camera_publisher(this, camera_topic_, rmw_qos);
 
         // Open camera.
         if(!cam_driver_->open())
@@ -190,20 +194,12 @@ namespace camera_driver
 
         image_msg_.header.frame_id = camera_topic_;
         image_msg_.encoding = "bgr8";
-        camera_watcher_timer_ = rclcpp::create_timer(
-            this, 
-            this->get_clock(), 
-            100ms, 
-            std::bind(&CameraBaseNode::cameraWatcher, this)
-        );
+        camera_watcher_timer_ = rclcpp::create_timer(this, this->get_clock(), 100ms, std::bind(&CameraBaseNode::cameraWatcher, this));
+        // img_callback_timer_ = this->create_wall_timer(1ms, std::bind(&CameraBaseNode::imageCallback, this));
+        img_callback_thread_ = std::thread(std::bind(&CameraBaseNode::imageCallback, this));
 
-        img_callback_thread_ = std::thread(
-            std::bind(&CameraBaseNode::imageCallback, this)
-        );
-
-        this->declare_parameter("use_port", false);
-        use_serial_ = this->get_parameter("use_port").as_bool();
-        serial_msg_.mode = AUTOAIM_NORMAL;
+        this->declare_parameter("using_port", false);
+        use_serial_ = this->get_parameter("using_port").as_bool();
         if (use_serial_)
         {
             //串口消息订阅
@@ -255,6 +251,14 @@ namespace camera_driver
     {
         while (1)
         {
+            // if (use_serial_)
+            // {
+            //     if (decision_msg_.mode == CLOSE_VISION || serial_msg_.mode == CLOSE_VISION)
+            //     {
+            //         continue;
+            //     }
+            // }
+            
             cam_mutex_.lock();
             is_cam_open_ = cam_driver_->getImage(frame_, image_msg_);
             cam_mutex_.unlock();
@@ -268,29 +272,14 @@ namespace camera_driver
             rclcpp::Time now = this->get_clock()->now();
             image_msg_.header.stamp = now;
             camera_info_msg_.header = image_msg_.header;
-            image_msg_.width = frame_.size().width;
-            image_msg_.height = frame_.size().height;
-
-            serial_mutex_.lock();
-            int mode = serial_msg_.mode;
-            serial_mutex_.unlock();
-
-            if (mode == AUTOAIM_TRACKING || mode == AUTOAIM_NORMAL ||
-                mode == AUTOAIM_SLING || mode == OUTPOST_ROTATION_MODE ||
-                mode == SENTRY_NORMAL
-            )
-            {
-                camera_pub2armor_node_.publish(image_msg_, camera_info_msg_);
-            }
-            else if (mode == SMALL_BUFF || mode == BIG_BUFF)
-            {
-                camera_pub2buff_node_.publish(image_msg_, camera_info_msg_);
-            }
-
+            image_msg_.width = this->image_size_.width;
+            image_msg_.height = this->image_size_.height;
+            camera_pub_.publish(image_msg_, camera_info_msg_);
+                
             if (save_video_)
             {   // Video recorder.
                 ++frame_cnt_;
-                if (frame_cnt_ % 25 == 0)
+                if (frame_cnt_ % 50 == 0)
                 {
                     sensor_msgs::msg::Image image_msg = image_msg_;
                     auto serializer = rclcpp::Serialization<sensor_msgs::msg::Image>();

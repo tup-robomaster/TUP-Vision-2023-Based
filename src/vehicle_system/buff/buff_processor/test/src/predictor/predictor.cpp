@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-02-10 00:01:08
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
+ * @LastEditTime: 2023-06-01 18:56:42
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
 
@@ -54,6 +54,7 @@ namespace buff_processor
             pf.initParam(pf_param_loader);
             is_params_confirmed = false;
         }
+        
         if((history_info.size() < 1) || (((target.timestamp - history_info.front().timestamp) / 1e6) >= predictor_param_.max_timespan))
         {   //当时间跨度过长视作目标已更新，需清空历史信息队列
             history_info.clear();
@@ -77,6 +78,7 @@ namespace buff_processor
 
         if (is_ready)
         {
+            cout << "is_ready:" << is_ready << endl;
             auto predict = pf.predict();
             target.speed = predict[0];
         }
@@ -113,9 +115,11 @@ namespace buff_processor
         double rotate_speed_sum = 0;
         int rotate_sign = 0;
         for (auto target_info : history_info)
+        {
             rotate_speed_sum += target_info.speed;
+            // cout << "taret_speed:" << target_info.speed << endl;
+        }
         auto mean_velocity = rotate_speed_sum / history_info.size();
-        // cout << "mode:" << mode << endl;
         // cout << endl;
 
         if (mode == 0)
@@ -148,7 +152,7 @@ namespace buff_processor
                         new ceres::AutoDiffCostFunction<CURVE_FITTING_COST, 1, 4> ( 
                             new CURVE_FITTING_COST (target_info.speed  * rotate_sign, (double)(target_info.timestamp) / 1e9)
                         ),
-                        new ceres::CauchyLoss(0.5),
+                        new ceres::CauchyLoss(1.0),
                         params_fitting                 // 待估计参数
                     );
                 }
@@ -162,8 +166,8 @@ namespace buff_processor
                 problem.SetParameterUpperBound(params_fitting, 1, 2.2);
                 problem.SetParameterLowerBound(params_fitting, 2, -CV_PI);
                 problem.SetParameterUpperBound(params_fitting, 2, CV_PI);
-                problem.SetParameterLowerBound(params_fitting, 3, 0.5);
-                problem.SetParameterUpperBound(params_fitting, 3, 2.5);
+                problem.SetParameterLowerBound(params_fitting, 3, 1.0);
+                problem.SetParameterUpperBound(params_fitting, 3, 1.3);
 
                 ceres::Solve(options, &problem, &summary);
                 double params_tmp[4] = {params_fitting[0] * rotate_sign, params_fitting[1], params_fitting[2], params_fitting[3] * rotate_sign};
@@ -214,24 +218,26 @@ namespace buff_processor
                 double params_new[4] = {params[0], params[1], phase, params[3]};
                 auto old_rmse = evalRMSE(params);
                 auto new_rmse = evalRMSE(params_new);
-                if (new_rmse < old_rmse)
+                if (new_rmse < old_rmse && new_rmse <= 2.0)
                 {   
                     params[2] = phase;
                 }
+                cout << "rmse_new:" << new_rmse << " old_rmse:" << old_rmse << endl;
             }
         }
 
         for (auto param : params)
             cout << param << " ";
         std::cout << std::endl;
-
+        
         int delay = (mode == 1 ? predictor_param_.delay_big : predictor_param_.delay_small);
         float delta_time_estimate = ((double)dist / predictor_param_.bullet_speed) * 1e3 + delay;
-        delta_time_estimate = 500;
+        // delta_time_estimate = 500;
         float timespan = history_info.back().timestamp / 1e6;
         float time_estimate = delta_time_estimate + timespan;
 
         result = calcAimingAngleOffset(params, timespan / 1e3, time_estimate / 1e3, mode);
+        cout << "result:" << result << " omega:" << params[3] << endl;
         last_target = target;
         
         return true;

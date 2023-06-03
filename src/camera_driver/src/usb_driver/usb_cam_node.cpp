@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2023-06-03 03:09:19
+ * @LastEditTime: 2023-04-28 15:24:56
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -26,7 +26,7 @@ namespace camera_driver
         }        
         
         rclcpp::QoS qos(0);
-        qos.keep_last(5);
+        qos.keep_last(1);
         qos.reliable();
         qos.durability_volatile();
         // qos.durability();
@@ -36,14 +36,7 @@ namespace camera_driver
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 5;
 
-        if (usb_cam_params_.debug_mode == 0 || usb_cam_params_.debug_mode == 1 || usb_cam_params_.debug_mode == 2)
-        {
-            image_msg_pub_ = this->create_publisher<sensor_msgs::msg::Image>("usb_img_armor_node", qos);
-        }
-        else if (usb_cam_params_.debug_mode == 3 || usb_cam_params_.debug_mode == 4)
-        {
-            image_msg_pub_ = this->create_publisher<sensor_msgs::msg::Image>("usb_img_buff_node", qos);
-        }
+        image_msg_pub_ = this->create_publisher<sensor_msgs::msg::Image>("usb_img", qos);
         
         // rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_sensor_data;
         // camera_info_pub = image_transport::create_camera_publisher(this, "image");
@@ -248,6 +241,7 @@ namespace camera_driver
                 //     cv::resize(frame_, frame_, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
                 //     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Resize frame...");
                 // }
+
                 // if(!is_filpped)
                 // {
                 //     RCLCPP_INFO(this->get_logger(), "is_filpped...");
@@ -371,15 +365,12 @@ namespace camera_driver
             {"fps", 2}
         };
 
-        this->declare_parameter<int>("debug_mode", 1);
-        this->declare_parameter<int>("camera_id", 0);
-        this->declare_parameter<string>("frame_id", "usb_camera_link");
-        this->declare_parameter<int>("image_width", 640);
-        this->declare_parameter<int>("image_height", 480);
-        this->declare_parameter<int>("fps", 30);
+        this->declare_parameter("camera_id", 0);
+        this->declare_parameter("frame_id", "usb_camera_link");
+        this->declare_parameter("image_width", 640);
+        this->declare_parameter("image_height", 480);
+        this->declare_parameter("fps", 30);
         this->declare_parameter<bool>("show_img", false);
-
-        usb_cam_params_.debug_mode = this->get_parameter("debug_mode").as_int();
         usb_cam_params_.camera_id = this->get_parameter("camera_id").as_int();
         usb_cam_params_.frame_id = this->get_parameter("frame_id").as_string();
         usb_cam_params_.image_width = this->get_parameter("image_width").as_int();
