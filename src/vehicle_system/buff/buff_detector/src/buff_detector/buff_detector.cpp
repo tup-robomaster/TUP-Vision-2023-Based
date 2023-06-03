@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-06-03 01:45:27
+ * @LastEditTime: 2023-06-03 20:33:21
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -382,8 +382,13 @@ namespace buff_detector
         if (!is_switched)
         {
             if (abs(delta_angle) >= buff_param_.max_angle)
+            {
                 is_switched = true;
-            target_info.angle_offset = 0.0;
+            }
+            else
+            {
+                target_info.angle_offset = 0.0;
+            }
         }
         else
         {
