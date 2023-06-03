@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-05-31 20:02:05
+ * @LastEditTime: 2023-06-03 01:45:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -163,13 +163,15 @@ namespace buff_detector
             {
                 //删除元素后迭代器会失效，需先行获取下一元素
                 auto next = iter;
-                if (((src.timestamp - (*iter).last_timestamp_) / 1e6) > buff_param_.max_delta_t)
+                if (((src.timestamp - (*iter).now_) / 1e6) > buff_param_.max_delta_t)
                     next = trackers_.erase(iter);
                 else
                     ++next;
                 iter = next;
             }
         }
+
+        delta_angle_vec_.clear();
 
         // 分配或创建扇叶追踪器（fan tracker）
         // TODO:增加防抖
@@ -215,9 +217,9 @@ namespace buff_detector
                     int sign = 0;
                     //----------------------------计算角度,求解转速----------------------------
                     // 若该扇叶完成初始化,且隔一帧时间较短
-                    if ((*iter).is_initialized_ && (src.timestamp - (*iter).last_timestamp_) / 1e6 < buff_param_.max_delta_t)
+                    if ((*iter).is_initialized_ && (src.timestamp - (*iter).now_) / 1e6 < buff_param_.max_delta_t)
                     {
-                        delta_t = src.timestamp - (*iter).last_timestamp_;
+                        delta_t = src.timestamp - (*iter).now_;
                         bool flag = (((*fan).dz / (*iter).last_fan_.dz) > 0 && (*fan).dx / (*iter).last_fan_.dx > 0) ? 1 : 0; 
                         if (!flag)
                             continue;
@@ -234,7 +236,7 @@ namespace buff_detector
                     }
                     else
                     {
-                        delta_t = src.timestamp - (*iter).last_timestamp_;
+                        delta_t = src.timestamp - (*iter).now_;
                         bool flag = (((*fan).dz / (*iter).last_fan_.dz) > 0 && (*fan).dx / (*iter).last_fan_.dx > 0) ? 1 : 0; 
                         if (!flag)
                             continue;
@@ -250,7 +252,7 @@ namespace buff_detector
                         }
                     }
 
-                    delta_t = ((src.timestamp - (*iter).last_timestamp_) / 1e6);
+                    delta_t = ((src.timestamp - (*iter).now_) / 1e6);
                     if (abs(delta_angle) <= abs(min_angle) && abs(delta_angle) < buff_param_.max_angle && delta_t <= min_last_delta_t)
                     {
                         min_last_delta_t = delta_t;
@@ -310,7 +312,7 @@ namespace buff_detector
         // 计算平均转速与平均R字中心坐标
         for (auto tracker : trackers_)
         {
-            if (tracker.is_last_fan_exists_ && tracker.last_timestamp_ == src.timestamp)
+            if (tracker.is_last_fan_exists_ && tracker.now_ == src.timestamp)
             {
                 delta_angle_sum += tracker.delta_angle_;
                 r_center_sum += tracker.last_fan_.centerR3d_world;
@@ -354,8 +356,9 @@ namespace buff_detector
 
         // 判断扇叶是否发生切换
         bool is_switched = false;
-        is_switched = ((target.dz / last_fan_.dz) > 0 && target.dx / last_fan_.dx > 0) ? 0 : 1;
         double delta_angle = (target.angle - last_fan_.angle);
+        is_switched = ((target.dz / last_fan_.dz) > 0 && target.dx / last_fan_.dx > 0) ? 0 : 1;
+
         if ((target.dx > 0 && target.dz > 0) || (target.dx < 0 && target.dz < 0))
             delta_angle = (delta_angle < 0) ? abs(delta_angle) : (delta_angle > 0 ? (-delta_angle) : delta_angle);
         
@@ -368,37 +371,40 @@ namespace buff_detector
         if (delta_angle_vec_.size() > 1)
         {
             double angle_sum = 0.0;
-            for(auto& angle : delta_angle_vec_)
-                angle_sum += angle;
-            // angle_sum += delta_angle;
+            int num = 0;
+            for(auto& dAngle : delta_angle_vec_)
+            {
+                angle_sum += dAngle;
+            }
             delta_angle = angle_sum / (int)(delta_angle_vec_.size());
         }
-        delta_angle_vec_.clear();
 
         if (!is_switched)
         {
-            if (abs(delta_angle) > buff_param_.max_angle)
+            if (abs(delta_angle) >= buff_param_.max_angle)
                 is_switched = true;
+            target_info.angle_offset = 0.0;
         }
-        
-        if (is_switched)
+        else
         {
             target_info.angle_offset = target.angle - last_fan_.angle;
             double delta_angle_sum = 0.0;
-            if (delta_angle_vec_.size() > 1)
+            if ((int)delta_angle_vec_.size() > 1)
             {
                 for(auto angle : delta_angle_vec_)
                    delta_angle_sum += angle;
                 delta_angle_sum -= delta_angle;
                 delta_angle = delta_angle_sum / (int)(delta_angle_vec_.size() - 1);
             }
-            else
+            else if ((int)delta_angle_vec_.size() == 0)
             {
-                delta_angle = (src.timestamp - last_timestamp_) / (last_timestamp_ - last_last_timestamp_) * last_delta_angle_;
+                double pred_delta_angle = (src.timestamp - last_timestamp_) / (last_timestamp_ - last_last_timestamp_) * last_delta_angle_;
+                if (abs(pred_delta_angle) < 0.1)
+                {
+                    delta_angle = pred_delta_angle;
+                }
             }
         }
-        else
-            target_info.angle_offset = 0.0;
 
         target_info.rmat = target.rmat;
         target_info.angle = target.angle;

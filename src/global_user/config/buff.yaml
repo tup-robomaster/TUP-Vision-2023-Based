@@ -1,7 +1,7 @@
 /buff_detector:
   ros__parameters:
   # Detector params.
-    buff_mode: 4
+    buff_mode: 3
     color: 1 # 0: blue / 1: red
     max_lost_cnt: 4 
     max_v: 4.0  
