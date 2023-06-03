@@ -68,8 +68,8 @@ namespace armor_processor
         SingerModel singer_ekf_;
         
         PredictorState predictor_state_ = LOST;
-        Vector6d last_state_;
-        Vector4d last_meas_;
+        Vector6d last_state_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        Vector4d last_meas_ = {0.0, 0.0, 0.0, 0.0};
         SpinHeading last_spin_state_;
         deque<Vector6d> history_switched_state_vec_;
         deque<Vector4d> pred_state_vec_;

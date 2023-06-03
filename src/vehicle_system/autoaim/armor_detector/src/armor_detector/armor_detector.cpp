@@ -93,9 +93,6 @@ namespace armor_detector
             is_last_target_exists_ = false;
             last_target_area_ = 0.0;
 
-            // rclcpp::Time end = steady_clock_.now();
-            // RCLCPP_WARN(logger_, "infer_time: %.3fms", (end - st).nanoseconds() / 1e6);
-
             return false;
         }
         time_infer_ = steady_clock_.now();
@@ -110,6 +107,7 @@ namespace armor_detector
         if ((int)(objects_.size()) > this->detector_params_.max_armors_cnt)
             objects_.resize(this->detector_params_.max_armors_cnt);
         
+
         //生成装甲板对象
         for (auto object : objects_)
         {
@@ -350,6 +348,7 @@ namespace armor_detector
             autoaim_msg.is_target_lost = true;
             lost_cnt_++;
             is_last_target_exists_ = false;
+            last_target_area_ = 0;
             RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "No available tracker exists!");
             return false;
         }

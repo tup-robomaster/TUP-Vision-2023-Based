@@ -86,7 +86,6 @@ namespace armor_processor
                 Eigen::VectorXd pred_state = pred_state_vec_.back();
                 int scale = pred_state(3) / (2 * CV_PI);
                 double pred_rangle = pred_state(3) - scale * (2 * CV_PI);
-                
                 uniform_ekf_.x_(2) = pred_state(2);
                 uniform_ekf_.x_(4) = pred_rangle;
 
