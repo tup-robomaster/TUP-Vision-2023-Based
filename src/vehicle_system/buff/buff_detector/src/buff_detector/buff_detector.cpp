@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-06-03 20:33:21
+ * @LastEditTime: 2023-06-03 22:45:06
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -557,21 +557,30 @@ namespace buff_detector
         }
 
         // 若目标大小大于阈值
-        if ((last_target_area_ / img.size().area()) > buff_param_.no_crop_thres)
+        if ((last_target_area_ / img.size().area()) >= buff_param_.no_crop_thres)
         {
             return Point2i(0,0);
         }
         
         // 处理X越界
         if (last_roi_center_.x <= input_size_.width / 2)
+        {
             last_roi_center_.x = input_size_.width / 2;
-        else if (last_roi_center_.x > (img.size().width - input_size_.width / 2))
+        }
+        else if (last_roi_center_.x >= (img.size().width - input_size_.width / 2))
+        {
             last_roi_center_.x = img.size().width - input_size_.width / 2;
+        }
+
         // 处理Y越界
         if (last_roi_center_.y <= input_size_.height / 2)
+        {
             last_roi_center_.y = input_size_.height / 2;
-        else if (last_roi_center_.y > (img.size().height - input_size_.height / 2))
+        }
+        else if (last_roi_center_.y >= (img.size().height - input_size_.height / 2))
+        {
             last_roi_center_.y = img.size().height - input_size_.height / 2;
+        }
 
         // 左上角顶点
         auto offset = last_roi_center_ - Point2i(input_size_.width / 2, input_size_.height / 2);

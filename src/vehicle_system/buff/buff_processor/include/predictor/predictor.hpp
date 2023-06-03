@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2023-06-03 02:29:54
+ * @LastEditTime: 2023-06-03 21:23:37
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
@@ -51,7 +51,7 @@ namespace buff_processor
         
         void initPredictor(const vector<double>* kf_params);
         bool curveFitting(BuffMsg& buff_msg);
-        bool predict(BuffMsg buff_msg, double dist, double &result);
+        bool predict(BuffMsg buff_msg, BuffInfo& buff_info, double &result);
         double calPreAngle(double* params, double timestamp);
         bool setBulletSpeed(double speed);
         double evalRMSE(double params[4]);

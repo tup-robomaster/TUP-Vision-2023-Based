@@ -36,6 +36,8 @@
     history_deque_len_phase: 50
     history_deque_len_uniform: 50
     window_size: 2
+    delay_big: 200.0
+    delay_small: 150.0
 
   # Paths.
     pf_path: "/config/filter_param.yaml"
@@ -49,3 +51,4 @@
     debug: true
     show_img: false
     show_marker: true
+    show_fitting_curve: true 

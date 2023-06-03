@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-05-31 19:53:35
+ * @LastEditTime: 2023-06-03 22:35:20
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -66,9 +66,9 @@ namespace armor_detector
         if (debug_params_.use_roi)
         {   //启用roi
             //吊射模式采用固定ROI
-            if (src.mode == 2)
+            if (src.mode == AUTOAIM_SLING)
             {
-                input(Range(600,1024),Range(432,848)).copyTo(input);
+                input(Range(600, 1024), Range(432, 848)).copyTo(input);
                 roi_offset_ = cv::Point2d((float)432, (float)600);
             }
             else
@@ -77,6 +77,7 @@ namespace armor_detector
             }
             RCLCPP_INFO_ONCE(logger_, "Using roi...");
         }
+
         time_crop_ = steady_clock_.now();
 
         objects_.clear();
@@ -834,37 +835,39 @@ namespace armor_detector
      */
     Point2i Detector::cropImageByROI(Mat &img)
     {
+        double area_ratio = last_target_area_ / img.size().area();
+        
         //若上次不存在目标
         if (!is_last_target_exists_)
         {
             //当丢失目标帧数过多或lost_cnt为初值
-            if (lost_cnt_ > detector_params_.max_lost_cnt || lost_cnt_ == 0)
+            if (lost_cnt_ > detector_params_.max_lost_cnt || lost_cnt_ == 0 || area_ratio == 0.0)
             {
                 return Point2i(0,0);
             }
         }
+        
         //若目标大小大于阈值
-        auto area_ratio = last_target_area_ / img.size().area();
-        int max_expand = (img.size().height - input_size_.width) / 32;
-        double cropped_ratio = (detector_params_.no_crop_ratio / detector_params_.full_crop_ratio) / max_expand;
-        int expand_value = ((int)(area_ratio / detector_params_.full_crop_ratio / cropped_ratio)) * 32;
-
-        Size2i cropped_size = input_size_ + Size2i(expand_value, expand_value);
-        // Size2i crooped_size = (input_size + (no_crop_thres / max))
         if (area_ratio > detector_params_.no_crop_ratio)
         {
             return Point2i(0,0);
         }
 
+        int max_expand = (img.size().height - input_size_.width) / 32;
+        double cropped_ratio = (detector_params_.no_crop_ratio / detector_params_.full_crop_ratio) / max_expand;
+        int expand_value = ((int)(area_ratio / detector_params_.full_crop_ratio / cropped_ratio)) * 32;
+        Size2i cropped_size = input_size_ + Size2i(expand_value, expand_value);
+        // Size2i crooped_size = (input_size + (no_crop_thres / max))
+
         //处理X越界
         if (last_roi_center_.x <= cropped_size.width / 2)
             last_roi_center_.x = cropped_size.width / 2;
-        else if (last_roi_center_.x > (img.size().width - cropped_size.width / 2))
+        else if (last_roi_center_.x >= (img.size().width - cropped_size.width / 2))
             last_roi_center_.x = img.size().width - cropped_size.width / 2;
         //处理Y越界
         if (last_roi_center_.y <= cropped_size.height / 2)
             last_roi_center_.y = cropped_size.height / 2;
-        else if (last_roi_center_.y > (img.size().height - cropped_size.height / 2))
+        else if (last_roi_center_.y >= (img.size().height - cropped_size.height / 2))
             last_roi_center_.y = img.size().height - cropped_size.height / 2;
         
         //左上角顶点

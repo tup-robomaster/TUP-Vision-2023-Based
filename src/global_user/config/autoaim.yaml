@@ -6,8 +6,9 @@
     max_delta_t: 50
     max_lost_cnt: 5
     max_armors_cnt: 8
-    hero_danger_zone: 4
-    armor_type_wh_thres: 3
+    
+    hero_danger_zone: 6.0
+    armor_type_wh_thres: 3.0
     no_crop_thres: 0.01
     no_crop_ratio: 0.002
     full_crop_ratio: 0.0001
