@@ -1,7 +1,5 @@
 std_msgs/Header header
 uint8 mode
-float64 abs_meas_angle
-float64 abs_pred_angle
 float64 angle
 float64 delta_angle
 float64 angle_offset
@@ -10,11 +8,14 @@ float64 bullet_speed
 float64 shoot_delay
 bool target_switched
 bool is_target_lost
-int64 timestamp
 Point2f[5] points2d
-geometry_msgs/Point armor3d_world
+float64 abs_meas_angle
+float64 abs_fitting_angle
+float64 abs_pred_angle
 geometry_msgs/Point armor3d_cam
-geometry_msgs/Point predict_point 
+geometry_msgs/Point armor3d_world
+geometry_msgs/Point predict_point3d_cam
+geometry_msgs/Point predict_point3d_world
 geometry_msgs/Point r_center
 geometry_msgs/Quaternion quat_world
 geometry_msgs/Quaternion quat_imu

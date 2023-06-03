@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-06-01 15:50:42
+ * @LastEditTime: 2023-06-04 00:04:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -322,12 +322,18 @@ namespace buff_processor
         return true;
     }
 
-    bool BuffPredictor::predict(BuffMsg buff_msg, double dist, double &result, double& abs_meas_angle, double& abs_pred_angle)
+    bool BuffPredictor::predict(BuffMsg buff_msg, BuffInfo& buff_info, double &result)
     {
-        // double delay = (mode_ == 3 ? predictor_param_.delay_small : predictor_param_.delay_big);
-        // double pred_dt = ((double)dist / predictor_param_.bullet_speed) * 1e3 + delay;
-        double pred_dt = ((double)dist / predictor_param_.bullet_speed) * 1e3 + predictor_param_.shoot_delay;
-        // pred_dt = 500;
+        Eigen::Vector3d xyz = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
+        double dist = xyz.norm();
+        // double pred_dt = ((double)dist / predictor_param_.bullet_speed) * 1e3 + predictor_param_.shoot_delay;
+        // pred_dt *= predictor_param_.delay_coeff;
+
+        double shoot_delay = mode_ == SMALL_BUFF ? predictor_param_.delay_small : predictor_param_.delay_big; 
+        double pred_dt = dist / predictor_param_.bullet_speed * 1e3 + shoot_delay;
+        
+        // 调试使用，实测需注释掉
+        pred_dt = 500;
         
         curveFitting(buff_msg);
         if (is_params_confirmed_)
@@ -349,12 +355,15 @@ namespace buff_processor
             }
             else if (mode_ == 4)
             {
-                double timespan = (buff_msg.timestamp - history_info_.front().timestamp) / 1e6;
+                // double timespan = (buff_msg.timestamp - history_info_.front().timestamp) / 1e6;
+                double timespan = buff_msg.timestamp / 1e6;
 
                 last_pred_angle_ = cur_pred_angle_;
                 double cur_pre_angle = calPreAngle(params_, timespan / 1e3);
                 cur_pred_angle_ = cur_pre_angle;
                 
+                buff_info.abs_fitting_angle = cur_pre_angle;
+
                 //FIXME:测量角度增量需要与预测角度增量的时间戳对齐
                 double delta_pre_angle = abs(cur_pred_angle_ - last_pred_angle_) * (180 / CV_PI);
                 double error = 0.0;
@@ -397,17 +406,11 @@ namespace buff_processor
                     last_pred_angle_ = 0.0;
                 }
 
-                // double meas_v = (delta_meas_angle / (180 / CV_PI)) / (history_info_.back().timestamp - history_info_[history_info_.size() - 2].timestamp) * 1e9;
-                // cout << "meas_v:" << meas_v << endl;
-                
                 double time_estimate = pred_dt + timespan;
                 double pre_dt = (time_estimate / 1e3);
                 double pre_angle = calPreAngle(params_, pre_dt);
 
-                abs_pred_angle = pre_angle;
-                abs_meas_angle = history_info_.back().abs_angle;
-                cout << "abs_pred_angle;" << pre_angle << " dt:" << pred_dt << endl;
-
+                buff_info.abs_pred_angle = pre_angle;
                 if (sign_ == 1)
                     result = abs(pre_angle - cur_pre_angle);
                 else if (sign_ == -1)

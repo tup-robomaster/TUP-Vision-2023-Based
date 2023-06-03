@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:10:59
- * @LastEditTime: 2023-06-01 15:25:00
+ * @LastEditTime: 2023-06-04 00:02:32
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/buff_processor_node.hpp
  */
 #ifndef BUFF_PROCESSOR_NODE_HPP_
@@ -76,7 +76,19 @@ namespace buff_processor
         PathParam path_param_;
         DebugParam debug_param_;
         std::string filter_param_path_;
-    
+
+        // visualization_msgs::Marker
+        rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_pub_;
+        uint64 shape_ = visualization_msgs::msg::Marker::SPHERE;
+
+        double last_abs_meas_angle = 0.0;
+        double last_abs_fitting_angle = 0.0;
+        double last_abs_pred_angle = 0.0;
+        Eigen::Vector3d last_armor3d_cam = {0.0, 0.0, 0.0};
+        Eigen::Vector3d last_armor3d_world = {0.0, 0.0, 0.0};
+        Eigen::Vector3d last_hit3d_cam = {0.0, 0.0, 0.0};
+        Eigen::Vector3d last_hit3d_world = {0.0, 0.0, 0.0};
+
     private:
         // params callback.
         bool updateParam();

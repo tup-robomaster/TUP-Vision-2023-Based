@@ -46,5 +46,6 @@
 
   # Debug.
     debug: true
-    show_marker: false
-    show_predict: false
+    show_img: false
+    show_marker: true
+    show_fitting_curve: true 
