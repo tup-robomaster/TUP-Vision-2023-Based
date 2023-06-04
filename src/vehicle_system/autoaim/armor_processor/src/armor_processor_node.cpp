@@ -97,12 +97,10 @@ namespace armor_processor
         AutoaimMsg target = std::move(target_info);
 
         // target.mode = 2;
-        // target.is_spinning = true;
-        // target.target_switched = false;
-
-        // cout << "is_target_switched:" << target.target_switched << endl;
-        if (target.mode == HERO_SLING)
+        if (target.mode == AUTOAIM_SLING)
         {
+            target.is_spinning = true;
+            target.target_switched = false;
             if (!target.spinning_switched && !target.is_target_lost)
             {
                 if (abs(last_rangle - target.armors.front().rangle) > 0.5)

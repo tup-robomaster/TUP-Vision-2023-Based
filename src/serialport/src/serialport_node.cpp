@@ -263,8 +263,9 @@ namespace serialport
         if (this->using_port_)
         {   
             VisionAimData vision_data;
-            if (mode == AUTOAIM || mode == HERO_SLING || mode == OUTPOST_ROTATION_MODE
-            || mode == SMALL_BUFF || mode == BIG_BUFF || mode == SENTRY_NORMAL)
+            if (mode == AUTOAIM_TRACKING || mode == AUTOAIM_SLING || mode == AUTOAIM_NORMAL ||
+                mode == SMALL_BUFF || mode == BIG_BUFF || mode == SENTRY_NORMAL
+            )
             {
                 // RCLCPP_WARN(this->get_logger(), "Sub autoaim msg!!!");
                 vision_data = 
@@ -292,9 +293,13 @@ namespace serialport
             // Time of entire loop.
             rclcpp::Time now = this->get_clock()->now();
             rclcpp::Time start = target_info->header.stamp;
-            // builtin_interfaces::msg::Time now_timestamp = now;
-            // double dura = (now_timestamp.nanosec - target_info->header.stamp.nanosec) / 1e6;
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "All_delay:%.2fms", (now.nanoseconds() - start.nanoseconds()) / 1e6);
+            RCLCPP_WARN_THROTTLE(
+                this->get_logger(), 
+                *this->get_clock(), 
+                500, 
+                "All_delay:%.2fms", 
+                (now.nanoseconds() - start.nanoseconds()) / 1e6
+            );
             
             //数据发送
             mutex_.lock();
@@ -314,14 +319,13 @@ namespace serialport
     void SerialPortNode::armorMsgCallback(GimbalMsg::SharedPtr target_info) 
     {
         int mode = mode_;
-        if (mode == AUTOAIM || mode == HERO_SLING)
+        if (mode == AUTOAIM_TRACKING || mode == AUTOAIM_NORMAL || mode == AUTOAIM_SLING)
         {
             if (!sendData(target_info))
             {   // Debug without com.
                 RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Sub autoaim msg...");
             }
         }
-        return;
     }
 
     /**

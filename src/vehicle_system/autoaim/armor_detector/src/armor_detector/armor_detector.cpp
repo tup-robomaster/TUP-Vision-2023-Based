@@ -392,12 +392,10 @@ namespace armor_detector
         if (spin_status != UNKNOWN)
         {
             //------------------------------估计目标旋转周期-----------------------------------
-            // auto available_candidates_cnt = 0;
             double w = 0.0;
             double period = 0.0;
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
-                // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "dt:%.8f src.dt:%.8f", ((*iter).second.now / 1e9), (src.timestamp / 1e9));
                 if (((*iter).second.now / 1e9) == (src.timestamp / 1e9))
                 {
                     final_armors.emplace_back((*iter).second.new_armor);
@@ -644,9 +642,16 @@ namespace armor_detector
         int target_hp = car_id_map_[target.key];
         autoaim_msg.vehicle_id = target.key;
         autoaim_msg.vehicle_hp = target_hp;
-        // autoaim_msg.timestamp = now_;
         autoaim_msg.is_target_lost = false;
-        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", autoaim_msg.aiming_point_cam.x, autoaim_msg.aiming_point_cam.y, autoaim_msg.aiming_point_cam.z);
+
+        RCLCPP_INFO_THROTTLE(
+            logger_, 
+            steady_clock_, 
+            200, 
+            "xyz_cam: (%.3f %.3f %.3f) xyz_world: (%.3f %.3f %.3f)", 
+            autoaim_msg.armors.front().point3d_cam.x, autoaim_msg.armors.front().point3d_cam.y, autoaim_msg.armors.front().point3d_cam.z,
+            autoaim_msg.armors.front().point3d_world.x, autoaim_msg.armors.front().point3d_world.y, autoaim_msg.armors.front().point3d_world.z
+        );
 
         //获取装甲板中心与装甲板面积以下一次ROI截取使用
         // last_roi_center_ = Point2i(512,640);
@@ -761,7 +766,7 @@ namespace armor_detector
     {
         std::vector<Armor> new_armors;
         cv::Point2d img_center = cv::Point2d(src.img.size().width / 2, src.img.size().height / 2);
-        if (src.mode == SENTRY_NORMAL && decision_msg.mode == AUTOAIM)
+        if (src.mode == SENTRY_NORMAL)
         {
             for (auto& armor : armors)
             {
@@ -819,7 +824,7 @@ namespace armor_detector
             else
                 return -1;
         }
-        else if (src.mode == AUTOAIM || src.mode == HERO_SLING)
+        else if (src.mode == AUTOAIM_TRACKING || src.mode == AUTOAIM_NORMAL || src.mode == AUTOAIM_SLING)
         {
             return chooseTargetID(src, armors);
         }
@@ -950,7 +955,7 @@ namespace armor_detector
             float rrangle = armor.rrect.angle;
             double dist_3d = armor.armor3d_world.norm();
 
-            if (armor.id == 6 && src.mode == HERO_SLING)
+            if (armor.id == 6)
             {
                 return armor.id;
             }

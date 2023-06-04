@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-06-04 02:06:19
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector_node.cpp
+ * @LastEditTime: 2023-06-04 02:05:14
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
 
@@ -14,7 +14,7 @@ namespace buff_detector
     : Node("buff_detector", options)
     {
         RCLCPP_INFO(this->get_logger(), "buff detector node...");
-        
+
         try
         {
             detector_ = initDetector();
@@ -23,8 +23,7 @@ namespace buff_detector
         {
             RCLCPP_ERROR(this->get_logger(), "Error while initializing detector class: %s", e.what());
         }
-
-        detector_->is_initialized_ = false;
+        
         if (!detector_->is_initialized_)
         {
             RCLCPP_INFO(this->get_logger(), "Initializing detector class");
@@ -36,10 +35,11 @@ namespace buff_detector
         // QoS    
         rclcpp::QoS qos(0);
         qos.keep_last(5);
+        // qos.best_effort();
         qos.reliable();
         qos.durability();
-        // qos.best_effort();
         // qos.durability_volatile();
+        // qos.best_effort();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 1;
@@ -122,8 +122,10 @@ namespace buff_detector
         src.timestamp = stamp.nanoseconds();
 
         BuffMsg buff_msg;
+        int flag = -1;
         double shoot_delay = 0.0;
         double bullet_speed = 0.0;
+        std::vector<geometry_msgs::msg::Transform> armor3d_transform_vec; 
 
         serial_mutex_.lock();
         src.mode = serial_msg_.mode;
@@ -146,7 +148,7 @@ namespace buff_detector
         
         TargetInfo target_info;
         param_mutex_.lock();
-        if(detector_->run(src, target_info))
+        if(detector_->run(src, target_info, armor3d_transform_vec, flag))
         {
             buff_msg.r_center.x = target_info.r_center[0];
             buff_msg.r_center.y = target_info.r_center[1];
@@ -157,8 +159,6 @@ namespace buff_detector
             buff_msg.angle_offset = target_info.angle_offset;
             buff_msg.bullet_speed = target_info.bullet_speed;
             buff_msg.target_switched = target_info.target_switched;
-            buff_msg.rotate_speed = target_info.rotate_speed;
-            last_rotate_speed_ = buff_msg.rotate_speed;
 
             Eigen::Quaterniond quat_world = Eigen::Quaterniond(target_info.rmat);
             buff_msg.quat_world.w = quat_world.w();
@@ -190,13 +190,12 @@ namespace buff_detector
         }
         else
         {
-            buff_msg.rotate_speed = last_rotate_speed_;
             buff_msg.armor3d_world.x = last_detect_point3d_(0);
             buff_msg.armor3d_world.y = last_detect_point3d_(1);
             buff_msg.armor3d_world.z = last_detect_point3d_(2);
         }
         param_mutex_.unlock();
-        
+
         //Publish buff msg.
         buff_msg.header.frame_id = "gimbal_link2";
         buff_msg.header.stamp = img_msg->header.stamp;
@@ -211,14 +210,12 @@ namespace buff_detector
         buff_msg.is_target_lost = target_info.find_target ? false : true;
         buff_msg_pub_->publish(std::move(buff_msg));
 
+        // RCLCPP_WARN(this->get_logger(), "mode: %d", buff_msg.mode);
         bool show_img = this->get_parameter("show_img").as_bool();
         if (show_img)
         {
-            putText(
-                src.img, 
-                target_info.find_target ? "State:Detected" : "State:Lost" , 
-                {5, 55}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0}
-            );
+            putText(src.img, target_info.find_target ? "State:Detected" : "State:Lost" , {5, 55}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
+
             cv::namedWindow("dst", cv::WINDOW_NORMAL);
             cv::imshow("dst", src.img);
             cv::waitKey(1);
@@ -245,6 +242,7 @@ namespace buff_detector
         this->declare_parameter<int>("color", 1);
         this->declare_parameter<int>("max_lost_cnt", 4);
         this->declare_parameter<double>("fan_length", 0.7);
+        this->declare_parameter<double>("max_angle", 0.25);
         this->declare_parameter<double>("max_delta_t", 100.0);
         this->declare_parameter<double>("max_v", 4.0);
         this->declare_parameter<double>("no_crop_thres", 2e-3);
@@ -276,8 +274,11 @@ namespace buff_detector
 
         bool success = updateParam();
         if(success)
+        {
             RCLCPP_INFO(this->get_logger(), "Update param!");
-       
+        }
+
+        cout << "max_angle:" << buff_param_.max_angle << endl;
         return std::make_unique<Detector>(buff_param_, path_param_, debug_param_);
     }
 
@@ -291,6 +292,7 @@ namespace buff_detector
     {
         //Buff param.
         this->get_parameter("color", this->buff_param_.color);
+        this->get_parameter("max_angle", this->buff_param_.max_angle);
         this->get_parameter("max_v", this->buff_param_.max_v);
         this->get_parameter("fan_length", this->buff_param_.fan_length);
         this->get_parameter("max_delta_t", this->buff_param_.max_delta_t);

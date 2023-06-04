@@ -91,6 +91,8 @@ namespace buff_processor
         double rmse_high_thresh;        //拟合rmse高阈值
         double rmse_low_thresh;         //拟合rmse低阈值
 
+        vector<double> params_bound;
+
         PredictorParam()
         {
             pf_path = "src/global_user/config/filter_param.yaml";
@@ -118,8 +120,8 @@ namespace buff_processor
             pred_error_low_thresh = 0.20;
             fitting_error_cnt = 5;
             fitting_error_thresh = 0.20;
-            rmse_high_thresh = 5.5;
-            rmse_low_thresh = 5.5;
+            rmse_high_thresh = 2.0;
+            rmse_low_thresh = 0.5;
         }     
     };
 

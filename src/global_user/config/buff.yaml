@@ -2,8 +2,9 @@
   ros__parameters:
   # Detector params.
     buff_mode: 4
-    color: 0 # 0: blue / 1: red
-    max_lost_cnt: 4 
+    color: 1 # 0: blue / 1: red
+    max_angle: 0.25  # fan switched angle threshhold
+    max_lost_cnt: 5 
     max_v: 4.0  
     max_delta_t: 200.0
     fan_length: 0.7
@@ -16,10 +17,10 @@
     network_path: "/model/buff-05-28-01.xml"
 
   # Debug.
-    use_roi: false
+    use_roi: true
 
-    show_img: true
-    show_all_fans: true
+    show_img: false
+    show_all_fans: false
     show_fps: true
     print_target_info: false 
     prinf_latency: false
@@ -44,8 +45,11 @@
     pf_path: "/config/filter_param.yaml"
     camera_param_path: "/config/camera.yaml"
 
+  # fitting params bound
+    params_bound: [0.7, 1.2, 1.6, 2.2, -3.14, 3.14, 0.5, 1.6]
+    
   # Debug.
     debug: true
-    show_img: false
-    show_marker: true
-    show_fitting_curve: true 
+    show_img: true
+    show_marker: false
+    show_fitting_curve: false

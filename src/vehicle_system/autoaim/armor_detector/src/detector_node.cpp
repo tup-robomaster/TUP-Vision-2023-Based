@@ -124,7 +124,7 @@ namespace armor_detector
      */
     void DetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {
-        if(!img_msg || (mode_ != AUTOAIM && mode_ != HERO_SLING))
+        if(!img_msg || (mode_ != AUTOAIM_TRACKING && mode_ != AUTOAIM_NORMAL && mode_ != AUTOAIM_SLING))
             return;
 
         RCLCPP_INFO_THROTTLE(
