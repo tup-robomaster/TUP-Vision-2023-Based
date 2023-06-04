@@ -77,8 +77,6 @@ namespace camera_driver
         }
 
     public:
-        ImageInfo image_info_;
-        ImageSize image_size_;
         CameraParam camera_params_;
         std::unique_ptr<T> cam_driver_;
         rclcpp::TimerBase::SharedPtr camera_watcher_timer_;
@@ -92,6 +90,7 @@ namespace camera_driver
         image_transport::CameraPublisher camera_pub_;
         sensor_msgs::msg::CameraInfo camera_info_msg_;
         sensor_msgs::msg::Image image_msg_;
+
         cv::Mat frame_;
         atomic<bool> is_cam_open_;
         int camera_type_;
@@ -137,15 +136,12 @@ namespace camera_driver
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
         rmw_qos.depth = 5;
 
-        // Camera type.
-        this->declare_parameter<int>("camera_type", MVSCam);
-        camera_type_ = this->get_parameter("camera_type").as_int();
-
         // Subscriptions transport type.
         string transport_type = "raw";
     
-        image_size_ = image_info_.image_size_map[camera_type_];
-        camera_topic_ = image_info_.camera_topic_map[camera_type_];
+        // Camera topic.
+        this->declare_parameter<string>("camera_topic", "daheng_img");
+        camera_topic_ = this->get_parameter("camera_topic").as_string();
         
         if(save_video_)
         {   // Video save.
