@@ -31,8 +31,8 @@ namespace buff_processor
     bool Processor::predictor(BuffMsg buff_msg, BuffInfo& target_info)
     {
         buff_msg.mode = 4;
-        buff_predictor_.mode = buff_msg.mode;
         buff_predictor_.last_mode = buff_predictor_.mode;
+        buff_predictor_.mode = buff_msg.mode;
 
         double theta_offset = 0.0;
         if(buff_predictor_.mode != -1)

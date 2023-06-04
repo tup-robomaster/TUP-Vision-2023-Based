@@ -83,11 +83,11 @@ namespace buff_detector
             string fan_key = "";
             if (buff_param_.color == RED && object.color == RED)
             {
-                fan_key = "R" + string(object.cls == 0 ? "Target" : "Activated");
+                fan_key = "R" + string(object.cls == UNACTIVATED ? "Target" : "Activated");
             }
             else if(buff_param_.color == BLUE && object.color == BLUE)
             {
-                fan_key = "B" + string(object.cls == 0 ? "Target" : "Activated");
+                fan_key = "B" + string(object.cls == UNACTIVATED ? "Target" : "Activated");
             }
             else
             {
@@ -198,8 +198,8 @@ namespace buff_detector
 
             armor3d_transform_vec.emplace_back(t);
 
-            if (fan->id == 0)
-            {
+            if (fan->id == UNACTIVATED)
+            {   //待激活扇叶目标
                 flag = idx;
             }
 
@@ -525,9 +525,9 @@ namespace buff_detector
             }
             auto fan_armor_center = coordsolver_.reproject(fan.armor3d_cam);
             
-            if (fan.id == 1)
+            if (fan.id == ACTIVATED)
                 circle(src.img, fan_armor_center, 9, {125, 255, 125}, 2);
-            else if (fan.id == 0)
+            else if (fan.id == UNACTIVATED)
                 circle(src.img, fan_armor_center, 9, {0, 0, 255}, 2);
         }
     }
@@ -539,7 +539,7 @@ namespace buff_detector
         int target_fan_cnt = 0;
         for (auto fan : fans)
         {
-            if (fan.id == 0)
+            if (fan.id == UNACTIVATED)
             {
                 target = fan;
                 target_fan_cnt++;

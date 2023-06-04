@@ -18,6 +18,12 @@ using namespace std;
 using namespace cv;
 namespace buff_detector
 {
+    enum BuffStatus
+    {
+        UNACTIVATED,
+        ACTIVATED
+    };
+
     struct DebugParam
     {
         bool using_imu;
