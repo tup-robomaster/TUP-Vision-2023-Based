@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-10 15:53:36
- * @LastEditTime: 2023-05-14 14:16:14
+ * @LastEditTime: 2023-06-03 22:53:00
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/include/param_struct/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -157,12 +157,12 @@ namespace armor_detector
     struct DetectorParam
     {
         int color;
-        int armor_type_wh_thres; //大小装甲板长宽比阈值
         int max_lost_cnt;        //最大丢失目标帧数
         int max_armors_cnt;    //视野中最多装甲板数
 
-        double no_crop_thres; //禁用ROI裁剪的装甲板占图像面积最大面积比值
         double hero_danger_zone; //英雄危险距离阈值，检测到有小于该距离的英雄直接开始攻击
+        double armor_type_wh_thres; //大小装甲板长宽比阈值
+        double no_crop_thres; //禁用ROI裁剪的装甲板占图像面积最大面积比值
         double no_crop_ratio;
         double full_crop_ratio;
         double fire_zone;
@@ -175,14 +175,15 @@ namespace armor_detector
         DetectorParam()
         {
             color = 1; //(Red:1/Blue:0)
-            armor_type_wh_thres = 3;
             max_lost_cnt = 5;
             max_armors_cnt = 8;
+
+            hero_danger_zone = 4.0;
+            armor_type_wh_thres = 3.0;
             no_crop_thres = 2e-3;
             no_crop_ratio = 2e-3;
             full_crop_ratio = 1e-4;
 
-            hero_danger_zone = 4.0;
             fire_zone = 5.0;
             armor_roi_expand_ratio_width = 1.1;
             armor_roi_expand_ratio_height = 1.5;

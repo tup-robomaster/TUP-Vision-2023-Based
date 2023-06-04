@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2023-05-29 18:39:04
+ * @LastEditTime: 2023-06-01 13:45:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector_node.hpp
  */
 #ifndef BUFF_DETECTOR_NODE_HPP_
@@ -22,12 +22,6 @@
 #include <image_transport/subscriber_filter.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include <geometry_msgs/msg/transform_stamped.hpp>
-#include <visualization_msgs/msg/marker.hpp>
-#include <visualization_msgs/msg/marker_array.hpp>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-
 //c++
 #include <atomic>
 #include <thread>
@@ -56,6 +50,7 @@ namespace buff_detector
         BuffParam buff_param_;
         PathParam path_param_;
         DebugParam debug_param_;
+        Eigen::Vector3d last_detect_point3d_;
 
         std::unique_ptr<Detector> detector_;
         std::unique_ptr<Detector> initDetector();
@@ -73,11 +68,6 @@ namespace buff_detector
         // Buff msgs pub.
         rclcpp::Publisher<BuffMsg>::SharedPtr buff_msg_pub_; 
         int mode_ = 1;
-
-        // visualization_msgs::Marker
-        void pubMarkerArray(vector<Eigen::Vector4d> armor3d_vec, int flag, rclcpp::Time stamp);
-        rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_pub_;
-        uint64 shape_ = visualization_msgs::msg::Marker::CUBE;
     
     protected:
         // Params callback.

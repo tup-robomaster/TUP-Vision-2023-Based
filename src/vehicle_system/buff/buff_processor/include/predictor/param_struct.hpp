@@ -2,14 +2,11 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-20 19:46:36
- * @LastEditTime: 2023-05-29 22:43:27
+ * @LastEditTime: 2023-06-04 00:47:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
 #define PARAM_STRUCT_HPP_
-
-#include "../../../filter/include/particle_filter.hpp"
-#include "../../../filter/include/motion_model.hpp"
 
 namespace buff_processor
 {
@@ -33,14 +30,32 @@ namespace buff_processor
     //目标信息
     struct BuffInfo
     {   
+        int buff_mode;
+        bool target_switched;
+        double abs_meas_angle;
+        double abs_fitting_angle;
+        double abs_pred_angle;
         Eigen::Vector3d armor3d_world;
         Eigen::Vector3d hit_point_world;
         Eigen::Vector3d armor3d_cam;
         Eigen::Vector3d hit_point_cam;
         Eigen::Vector2d angle;
         Eigen::Matrix3d rmat_imu;
-        bool target_switched;
-        int buff_mode;
+
+        BuffInfo()
+        {
+            buff_mode = 3;
+            target_switched = true;
+            abs_meas_angle = 0.0;
+            abs_fitting_angle = 0.0;
+            abs_pred_angle = 0.0;
+
+            armor3d_cam = {0.0, 0.0, 0.0};
+            armor3d_world = {0.0, 0.0, 0.0};
+            hit_point_cam = {0.0, 0.0, 0.0};
+            hit_point_world = {0.0, 0.0, 0.0};
+            angle = {0.0, 0.0};
+        }
     };
 
     struct PredictStatus
@@ -53,6 +68,8 @@ namespace buff_processor
         string pf_path;
         double bullet_speed;            //弹速
         double shoot_delay;             //发弹延迟
+        double delay_small;             //小符发弹延迟
+        double delay_big;               //大符发弹延迟
         double delay_coeff;             //延迟系数
         
         double max_timespan;            //最大时间跨度，大于该时间重置预测器(ms)
@@ -63,7 +80,7 @@ namespace buff_processor
         int history_deque_len_cos;      //大符全部参数拟合队列长度
         int history_deque_len_phase;    //大符相位参数拟合队列长度
         int history_deque_len_uniform;  //小符转速求解队列长度
-        
+
         int window_size;                //滑动窗口大小
         double fan_length;              //能量机关旋转半径
         int max_error_cnt;              //预测误差帧数
@@ -76,10 +93,12 @@ namespace buff_processor
 
         PredictorParam()
         {
-            pf_path = "/config/filter_param.yaml";
+            pf_path = "src/global_user/config/filter_param.yaml";
             bullet_speed = 28.0;
             shoot_delay = 100.0;
             delay_coeff = 1.0;
+            delay_big = 200.0;
+            delay_small = 150.0;
 
             max_timespan = 50000;       
             max_rmse = 2.0;
@@ -89,6 +108,8 @@ namespace buff_processor
             history_deque_len_cos = 250;
             history_deque_len_phase = 100;
             history_deque_len_uniform = 100;
+            delay_small = 175.0;
+            delay_big = 100.0;
             
             window_size = 2;
             fan_length = 0.7;
@@ -108,8 +129,8 @@ namespace buff_processor
         string camera_name;
         PathParam()
         {
-            camera_name = "KE0200110076";
-            camera_param_path = "/config/camera.yaml";
+            camera_name = "KE0200110075";
+            camera_param_path = "src/global_user/config/camera.yaml";
         }
     };
 
@@ -117,10 +138,12 @@ namespace buff_processor
     {
         bool show_img;
         bool show_marker;
+        bool show_fitting_curve;
         DebugParam()
         {
             show_img = false;
             show_marker = false;
+            show_fitting_curve = false;
         }
     };
 

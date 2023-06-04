@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 11:28:53
- * @LastEditTime: 2023-05-29 22:26:13
+ * @LastEditTime: 2023-05-28 20:55:01
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/prediction/prediction.hpp
  */
 #ifndef PREDICTION_HPP_
@@ -16,6 +16,9 @@
 //opencv
 #include <opencv2/opencv.hpp>
 
+//IMM Model(CV、CA、CT)
+#include "../filter/model_generator.hpp"
+
 #include "./param_struct.hpp"
 #include "./curve_fitting.hpp"
 
@@ -26,7 +29,6 @@
 using namespace global_user;
 using namespace coordsolver;
 using namespace Eigen;
-using namespace filter;
 namespace armor_processor
 {
     class ArmorPredictor
@@ -68,8 +70,8 @@ namespace armor_processor
         SingerModel singer_ekf_;
         
         PredictorState predictor_state_ = LOST;
-        Vector6d last_state_;
-        Vector4d last_meas_;
+        Vector6d last_state_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; 
+        Vector4d last_meas_ = {0.0, 0.0, 0.0, 0.0};
         SpinHeading last_spin_state_;
         deque<Vector6d> history_switched_state_vec_;
         deque<Vector4d> pred_state_vec_;
@@ -103,12 +105,26 @@ namespace armor_processor
 
         // Uniform Model.
         bool predictBasedUniformModel(bool is_target_lost, SpinHeading spin_state, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Vector6d& post_state);
-        
+
         // 计算车辆中心
         Eigen::Vector2d calcCircleCenter(Eigen::VectorXd meas);
 
         // 计算车辆半径
         double calcCircleRadius(Eigen::Vector3d p1, Eigen::Vector3d p2);
+    
+    private:
+        // 滑窗滤波
+        // Eigen::Vector3d shiftWindowFilter(int start_idx);
+        
+        // int history_deque_lens_ = 50; //历史队列长度
+        // std::deque<TargetInfo> history_info_; //历史测量信息
+        // std::deque<TargetInfo> history_pred_; //历史预测信息
+        // std::deque<TargetInfo> history_losting_pred_; //历史目标losting后预测信息
+        // double evalRMSE(double* params);
+        // double calcError();
+        
+        // 前哨站旋转装甲板曲线拟合预测函数    
+        // bool spinningPredict(bool is_controlled, TargetInfo& target, Eigen::Vector3d& result, int64_t timestamp);
     };
 } //namespace armor_processor
 

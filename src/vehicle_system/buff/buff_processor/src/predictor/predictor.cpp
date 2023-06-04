@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-05-29 23:21:29
+ * @LastEditTime: 2023-06-04 00:04:04
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
@@ -21,18 +21,11 @@ namespace buff_processor
         rmse_error_cnt_ = 0;
         last_pred_angle_ = 0.0;
         
-        params_[0] = 0.0;
-        params_[1] = 0.0; 
-        params_[2] = 0.0; 
-        params_[3] = 0.0;
-    }
+        params_[0] = 0;
+        params_[1] = 0; 
+        params_[2] = 0; 
+        params_[3] = 0;
 
-    BuffPredictor::~BuffPredictor()
-    {
-    }
-
-    void BuffPredictor::initPredictor(const vector<double>* kf_params)
-    {
         try
         {
             YAML::Node config = YAML::LoadFile(predictor_param_.pf_path);
@@ -42,12 +35,10 @@ namespace buff_processor
         {
             RCLCPP_ERROR(logger_, "Error while initializing pf param: %s", e.what());
         }
+    }
 
-        kf_ = KalmanFilter(KFParam{kf_params[0], kf_params[1]});
-        kf_.Init(1, 1, 0);
-        kf_.F_ << 1.0;
-        kf_.Q_ << kf_params[0][0];
-        kf_.R_ << kf_params[1][0];
+    BuffPredictor::~BuffPredictor()
+    {
     }
 
     bool BuffPredictor::curveFitting(BuffMsg& buff_msg)
@@ -96,20 +87,6 @@ namespace buff_processor
         }
 
         //输入数据前进行滤波
-        if (!is_params_confirmed_)
-        {
-            kf_.x_ << buff_msg.delta_angle;
-        }
-        else
-        {
-            kf_.Predict();
-
-            Eigen::VectorXd meas(1);
-            meas << buff_msg.delta_angle;
-            kf_.Update(meas);
-            target.delta_angle = kf_.x_(0);
-        }
-        
         // auto is_ready = pf_.is_ready;
         // Eigen::VectorXd measure(1);
         // measure << buff_msg.delta_angle;
@@ -120,18 +97,19 @@ namespace buff_processor
         //     auto predict = pf_.predict();
         //     target.delta_angle = predict[0];
         // }
-
-        target.delta_angle = (target.delta_angle / buff_msg.delta_angle > 0) ? target.delta_angle : buff_msg.delta_angle;
+        // target.delta_angle = (target.delta_angle / buff_msg.delta_angle > 0) ? target.delta_angle : buff_msg.delta_angle;
         // cout << "target.delta_angle: " << target.delta_angle << endl;
 
-        int fitting_lens = 50;
+        int fitting_lens = 100;
         if (!is_direction_confirmed_)
         {
             if ((int)delta_angle_vec_.size() < 200)
                 delta_angle_vec_.push_back(target.delta_angle);
             else
             {
-                delta_angle_vec_.resize((int)(delta_angle_vec_.size() / 2));
+                // delta_angle_vec_.resize((int)(delta_angle_vec_.size() / 2));
+                delta_angle_vec_.pop_front();
+                delta_angle_vec_.push_back(target.delta_angle);
             }
         }
 
@@ -160,6 +138,9 @@ namespace buff_processor
         
         BuffAngleInfo origin_target = history_info_.front();
         int count = 0;
+
+        // cout << "RSpeed:" << endl;
+
         for (auto target_info : history_info_)
         {
             double dAngle = (target_info.relative_angle - origin_target.relative_angle);
@@ -167,19 +148,25 @@ namespace buff_processor
             if (!iszero(dAngle) && !iszero(dt))
             {
                 double rspeed = (dAngle / dt);
+                // cout << rspeed << " ";
                 rotate_speed_sum += rspeed;
                 ++count;
             }
             origin_target = target_info;
         }
+        // cout << endl;
+
         rotate_speed_ave = rotate_speed_sum / count;
         ave_speed_ = rotate_speed_ave;
 
         int dir_cnt = 0;
         if (!is_direction_confirmed_)
         {
+            // cout << "delta_angle:";
             for (auto delta_angle : delta_angle_vec_)
             {
+                // cout << delta_angle << " ";
+
                 if (delta_angle > 0)
                     dir_cnt += 1;
                 else if (delta_angle < 0)
@@ -246,14 +233,14 @@ namespace buff_processor
                 }
 
                 //设置上下限
-                problem.SetParameterLowerBound(params_fitting, 0, 0.1); //a(0.780~1.045)
-                problem.SetParameterUpperBound(params_fitting, 0, 1.9); 
-                problem.SetParameterLowerBound(params_fitting, 1, 1.0); //w(1.884~2.000)
-                problem.SetParameterUpperBound(params_fitting, 1, 2.8);
-                problem.SetParameterLowerBound(params_fitting, 2, -2 * CV_PI); //θ
-                problem.SetParameterUpperBound(params_fitting, 2, 2 * CV_PI);
-                problem.SetParameterLowerBound(params_fitting, 3, 0.4); //b=2.090-a
-                problem.SetParameterUpperBound(params_fitting, 3, 1.9);
+                // problem.SetParameterLowerBound(params_fitting, 0, 0.2); //a(0.780~1.045)
+                // problem.SetParameterUpperBound(params_fitting, 0, 1.5); 
+                // problem.SetParameterLowerBound(params_fitting, 1, 1.2); //w(1.884~2.000)
+                // problem.SetParameterUpperBound(params_fitting, 1, 2.7);
+                // problem.SetParameterLowerBound(params_fitting, 2, -2 * CV_PI); //θ
+                // problem.SetParameterUpperBound(params_fitting, 2, 2 * CV_PI);
+                // problem.SetParameterLowerBound(params_fitting, 3, 0.4); //b=2.090-a
+                // problem.SetParameterUpperBound(params_fitting, 3, 1.9);
 
                 //参数求解
                 ceres::Solve(options, &problem, &summary);
@@ -335,10 +322,15 @@ namespace buff_processor
         return true;
     }
 
-    bool BuffPredictor::predict(BuffMsg buff_msg, double dist, double &result)
+    bool BuffPredictor::predict(BuffMsg buff_msg, BuffInfo& buff_info, double &result)
     {
-        double pred_dt = ((double)dist / predictor_param_.bullet_speed) * 1e3 + predictor_param_.shoot_delay;
-        pred_dt *= predictor_param_.delay_coeff;
+        Eigen::Vector3d xyz = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
+        double dist = xyz.norm();
+        // double pred_dt = ((double)dist / predictor_param_.bullet_speed) * 1e3 + predictor_param_.shoot_delay;
+        // pred_dt *= predictor_param_.delay_coeff;
+
+        double shoot_delay = mode_ == SMALL_BUFF ? predictor_param_.delay_small : predictor_param_.delay_big; 
+        double pred_dt = dist / predictor_param_.bullet_speed * 1e3 + shoot_delay;
         
         // 调试使用，实测需注释掉
         pred_dt = 500;
@@ -363,12 +355,15 @@ namespace buff_processor
             }
             else if (mode_ == BIG_BUFF)
             {
-                double timespan = (buff_msg.timestamp - history_info_.front().timestamp) / 1e6;
+                // double timespan = (buff_msg.timestamp - history_info_.front().timestamp) / 1e6;
+                double timespan = buff_msg.timestamp / 1e6;
 
                 last_pred_angle_ = cur_pred_angle_;
                 double cur_pre_angle = calPreAngle(params_, timespan / 1e3);
                 cur_pred_angle_ = cur_pre_angle;
                 
+                buff_info.abs_fitting_angle = cur_pre_angle;
+
                 //FIXME:测量角度增量需要与预测角度增量的时间戳对齐
                 double delta_pre_angle = abs(cur_pred_angle_ - last_pred_angle_) * (180 / CV_PI);
                 double error = 0.0;
@@ -411,12 +406,11 @@ namespace buff_processor
                     last_pred_angle_ = 0.0;
                 }
 
-                // double meas_v = (delta_meas_angle / (180 / CV_PI)) / (history_info_.back().timestamp - history_info_[history_info_.size() - 2].timestamp) * 1e9;
-                // cout << "meas_v:" << meas_v << endl;
-                
                 double time_estimate = pred_dt + timespan;
                 double pre_dt = (time_estimate / 1e3);
                 double pre_angle = calPreAngle(params_, pre_dt);
+
+                buff_info.abs_pred_angle = pre_angle;
                 if (sign_ == 1)
                     result = abs(pre_angle - cur_pre_angle);
                 else if (sign_ == -1)
