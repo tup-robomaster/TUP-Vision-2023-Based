@@ -89,9 +89,9 @@ namespace buff_detector
             fan.color = object.color;
             fan.conf = object.prob;
             if (object.color == 0)
-                fan.key = "B" + string(object.cls == 0 ? "Target" : "Activated");
+                fan.key = "B" + string(object.cls == UNACTIVATED ? "Target" : "Activated");
             if (object.color == 1)
-                fan.key = "R" + string(object.cls == 0 ? "Target" : "Activated");
+                fan.key = "R" + string(object.cls == UNACTIVATED ? "Target" : "Activated");
 
             memcpy(fan.apex2d, object.apex, 5 * sizeof(cv::Point2f));
             for(int i = 0; i < 5; i++)
@@ -321,13 +321,13 @@ namespace buff_detector
         double dr_crop_ns = (time_crop - time_start).nanoseconds();
         double dr_infer_ns = (time_infer - time_start).nanoseconds();
 
-        if(debug_param_.show_all_fans)
+        if (debug_param_.show_all_fans)
         {
             RCLCPP_DEBUG_ONCE(logger_, "Show all fans...");
             showFans(src);
         }
 
-        if(debug_param_.show_fps)
+        if (debug_param_.show_fps)
         {
             RCLCPP_DEBUG_ONCE(logger_, "Show fps...");
             char ch[20];
@@ -336,7 +336,7 @@ namespace buff_detector
             putText(src.img, fps_str, {10, 25}, FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0});
         }
 
-        if(debug_param_.prinf_latency)
+        if (debug_param_.prinf_latency)
         {
             RCLCPP_DEBUG_ONCE(logger_, "Print latency...");
             //降低输出频率，避免影响帧率
@@ -348,7 +348,8 @@ namespace buff_detector
                 RCLCPP_INFO(logger_, "Total: %.3fms", (dr_full_ns / 1e6));
             }
         }
-        if(debug_param_.print_target_info)
+
+        if (debug_param_.print_target_info)
         {
             RCLCPP_DEBUG_ONCE(logger_, "Print target_info...");
             RCLCPP_INFO(logger_, "-----------INFO------------");
@@ -365,6 +366,7 @@ namespace buff_detector
     {
         for (auto fan : fans_)
         {
+            // cout << 222 << endl;
             char ch[20];
             sprintf(ch, "%.2f", fan.conf);
             std::string conf_str = ch;
@@ -388,7 +390,7 @@ namespace buff_detector
         int target_fan_cnt = 0;
         for (auto fan : fans_)
         {
-            if (fan.id == 0)
+            if (fan.id == UNACTIVATED)
             {
                 target = fan;
                 target_fan_cnt++;

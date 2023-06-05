@@ -136,7 +136,9 @@ namespace buff_processor
         bool is_shooting = false;
 
         rclcpp::Time stamp = buff_msg.header.stamp;
-        target_msg.timestamp = stamp.nanoseconds() - start_time_.nanoseconds();
+        rclcpp::Time now = this->get_clock()->now();
+        target_msg.timestamp = now.nanoseconds() - start_time_.nanoseconds();
+        // target_msg.timestamp = stamp.nanoseconds() - start_time_.nanoseconds();
 
         if (target_msg.bullet_speed >= 10.0)
         {   //更新弹速

@@ -46,6 +46,8 @@ namespace buff_processor
     bool BuffPredictor::predict(double speed, double dist, uint64_t timestamp, double &result)
     {
         TargetInfo target = {speed, dist, timestamp};
+
+        cout << "timestamp:" << timestamp / 1e9 << endl;
        
         if (mode != last_mode)
         {
@@ -262,15 +264,17 @@ namespace buff_processor
             cout << param << " ";
         std::cout << std::endl;
         
-        int delay = (mode == 1 ? predictor_param_.delay_big : predictor_param_.delay_small);
-        float delta_time_estimate = ((double)dist / predictor_param_.bullet_speed) * 1e3 + delay;
+        int delay = (mode == BIG_BUFF ? predictor_param_.delay_big : predictor_param_.delay_small);
+        float delta_time_estimate = (dist / predictor_param_.bullet_speed) * 1e3 + delay;
         // delta_time_estimate = 500;
 
         float timespan = history_info.back().timestamp / 1e6;
         float time_estimate = delta_time_estimate + timespan;
 
-        result = calcAimingAngleOffset(params, timespan / 1e3, time_estimate / 1e3, mode);
+        result = calcAimingAngleOffset(timespan / 1e3, time_estimate / 1e3, mode);
         last_target = target;
+
+        // cout << "result_angle_offset:" << result << endl;
         return true;
     }
 
@@ -282,14 +286,17 @@ namespace buff_processor
      * @param mode 模式
      * @return 角度提前量(rad)
     */
-    double BuffPredictor::calcAimingAngleOffset(double params[4], double t0, double t1 , int mode)
+    double BuffPredictor::calcAimingAngleOffset(double t0, double t1 , int mode)
     {
         auto a = params[0];
         auto omega = params[1];
         auto theta = params[2];
         auto b = params[3]; 
-        double theta1;
-        double theta0;
+        double theta1 = 0.0;
+        double theta0 = 0.0;
+
+        // cout << "t0:" << t0 << " t1:" << t1 << endl;
+        // cout << "a: " << a << " omega:" << omega << " theta:" << theta << " b:" << b << endl;
        
         //f(t) = a * sin(ω * t + θ) + b
         //对目标函数进行积分

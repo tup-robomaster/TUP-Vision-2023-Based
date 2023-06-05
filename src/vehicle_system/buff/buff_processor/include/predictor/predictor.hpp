@@ -114,7 +114,7 @@ namespace buff_processor
         BuffPredictor();
         ~BuffPredictor();
         bool predict(double speed, double dist, uint64_t timestamp, double &result);
-        double calcAimingAngleOffset(double params[4], double t0, double t1, int mode);
+        double calcAimingAngleOffset(double t0, double t1, int mode);
         double shiftWindowFilter(int start_idx);
         bool setBulletSpeed(double speed);
         double evalRMSE(double params[4]);

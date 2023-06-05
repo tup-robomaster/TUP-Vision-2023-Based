@@ -70,7 +70,7 @@ namespace buff_detector
         int mode_ = 1;
 
         double last_rotate_speed_ = 0.0;
-    
+
     protected:
         // Params callback.
         bool updateParam();

@@ -2,7 +2,7 @@
   ros__parameters:
   # Detector params.
     buff_mode: 4
-    color: 1 # 0: blue / 1: red
+    color: 0 # 0: blue / 1: red
     max_angle: 0.25  # fan switched angle threshhold
     max_lost_cnt: 5 
     max_v: 4.0  
@@ -20,7 +20,7 @@
     use_roi: true
 
     show_img: false
-    show_all_fans: false
+    show_all_fans: true
     show_fps: true
     print_target_info: false 
     prinf_latency: false
@@ -35,8 +35,8 @@
     max_v: 3.0
     max_a: 8.0
     history_deque_len_cos: 150
-    history_deque_len_phase: 100
-    history_deque_len_uniform: 100
+    history_deque_len_phase: 50
+    history_deque_len_uniform: 50
     window_size: 2
     delay_small: 250.0
     delay_big: 170.0
@@ -46,10 +46,11 @@
     camera_param_path: "/config/camera.yaml"
 
   # fitting params bound
-    params_bound: [0.7, 1.2, 1.6, 2.2, -3.14, 3.14, 0.5, 1.6]
+    #               al  ah    wl   wh    pl    ph    bl  bh
+    params_bound: [0.5, 1.2, 1.4, 2.2, -3.14, 3.14, 1.5, 2.5]
     
   # Debug.
     debug: true
-    show_img: true
+    show_img: false
     show_marker: false
-    show_fitting_curve: false
+    show_fitting_curve: true
