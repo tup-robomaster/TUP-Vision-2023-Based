@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-03-20 21:29:58
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor_node.cpp
+ * @LastEditTime: 2023-06-01 15:25:40
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
 
@@ -128,18 +128,25 @@ namespace buff_processor
             if (buff_processor_->predict(buff_msg, predict_info))
             {
                 RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "predict...");
+                gimbal_msg.is_target = true;
                 gimbal_msg.pitch = predict_info.angle[1];
                 gimbal_msg.yaw = predict_info.angle[0];
                 gimbal_msg.distance = predict_info.hit_point_cam.norm();
                 gimbal_msg.is_switched = predict_info.target_switched;
+                gimbal_msg.meas_point_cam.x = buff_msg.armor3d_cam.x;
+                gimbal_msg.meas_point_cam.y = buff_msg.armor3d_cam.y;
+                gimbal_msg.meas_point_cam.z = buff_msg.armor3d_cam.z;
+                gimbal_msg.pred_point_cam.x = predict_info.hit_point_cam(0);
+                gimbal_msg.pred_point_cam.y = predict_info.hit_point_cam(1);
+                gimbal_msg.pred_point_cam.z = predict_info.hit_point_cam(2);
 
-                if (debug_param_.show_predict)
-                {
+                // if (debug_param_.show_predict)
+                // {
                     BuffMsg predict_msg;
                     predict_msg.header.frame_id = "camera_link1";
                     predict_msg.header.stamp = buff_msg.header.stamp;
 
-                    predict_msg.header.stamp.nanosec += (500 * 1e6);
+                    // predict_msg.header.stamp.nanosec += (500 * 1e6);
                     predict_msg.predict_point.x = predict_info.hit_point_cam[0];
                     predict_msg.predict_point.y = predict_info.hit_point_cam[1];
                     predict_msg.predict_point.z = predict_info.hit_point_cam[2];
@@ -147,8 +154,18 @@ namespace buff_processor
                     predict_msg.predict_point.x = predict_info.hit_point_world[0];
                     predict_msg.predict_point.y = predict_info.hit_point_world[1];
                     predict_msg.predict_point.z = predict_info.hit_point_world[2];
+
+                    predict_msg.abs_pred_angle = predict_info.abs_pred_angle;
+                    predict_msg.abs_meas_angle = predict_info.abs_meas_angle;
+                    last_pred_angle_ = predict_msg.abs_pred_angle;
+                    last_meas_angle_ = predict_msg.abs_meas_angle;
+
+                    last_pred_point3d_(0) = predict_msg.predict_point.x;
+                    last_pred_point3d_(1) = predict_msg.predict_point.y;
+                    last_pred_point3d_(2) = predict_msg.predict_point.z;
+
                     predict_msg_pub_->publish(std::move(predict_msg));
-                }
+                // }
 
                 if (debug_param_.show_predict && !dst.empty())
                 {
@@ -192,14 +209,32 @@ namespace buff_processor
         }
         else
         {
+            // cout << "111" << endl;
+            gimbal_msg.is_target = false;
             gimbal_msg.pitch = 0.0;
             gimbal_msg.yaw = 0.0;
+            gimbal_msg.meas_point_cam.x = 0.0;
+            gimbal_msg.meas_point_cam.y = 0.0;
+            gimbal_msg.meas_point_cam.z = 0.0;
             gimbal_msg.is_shooting = false;
+
+            BuffMsg predict_msg;
+            predict_msg.header.frame_id = "camera_link1";
+            predict_msg.header.stamp = buff_msg.header.stamp;
+            predict_msg.predict_point.x = last_pred_point3d_[0];
+            predict_msg.predict_point.y = last_pred_point3d_[1];
+            predict_msg.predict_point.z = last_pred_point3d_[2];
+            predict_msg.abs_pred_angle = last_pred_angle_;
+            predict_msg.abs_meas_angle = last_meas_angle_;
+
+            predict_msg_pub_->publish(std::move(predict_msg));
         }
 
         gimbal_msg.header.frame_id = "barrel_link";
         gimbal_msg.header.stamp = buff_msg.header.stamp;
         gimbal_msg_pub_->publish(std::move(gimbal_msg));
+
+        // cout << "angle:" << gimbal_msg.pitch << " " << gimbal_msg.yaw << endl;
 
         if (debug_param_.show_predict && !dst.empty())
         {
@@ -213,14 +248,19 @@ namespace buff_processor
     {
         if(!img_msg)
             return;
-        auto img = cv_bridge::toCvShare(std::move(img_msg), "bgr8")->image;
+
+        // cout << 888 << endl;
+        cv::Mat img;
+        img = cv_bridge::toCvShare(std::move(img_msg), "bgr8")->image;
 
         if (!img.empty())
         {
             image_mutex_.lock();
-            src_ = img;
+            img.copyTo(src_);
             image_mutex_.unlock();
         }
+        // cout << 999 << endl;
+
     }
 
     rcl_interfaces::msg::SetParametersResult BuffProcessorNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)

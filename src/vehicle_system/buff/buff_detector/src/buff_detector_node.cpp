@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-03-20 12:13:43
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector_node.cpp
+ * @LastEditTime: 2023-06-01 13:48:51
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
 
@@ -170,6 +170,10 @@ namespace buff_detector
             buff_msg.armor3d_cam.x = target_info.armor3d_cam[0];
             buff_msg.armor3d_cam.y = target_info.armor3d_cam[1];
             buff_msg.armor3d_cam.z = target_info.armor3d_cam[2];
+
+            last_detect_point3d_(0) = buff_msg.armor3d_world.x;
+            last_detect_point3d_(1) = buff_msg.armor3d_world.y;
+            last_detect_point3d_(2) = buff_msg.armor3d_world.z;
             
             buff_msg.points2d[0].x = target_info.points2d[0].x;
             buff_msg.points2d[0].y = target_info.points2d[0].y;
@@ -181,6 +185,12 @@ namespace buff_detector
             buff_msg.points2d[3].y = target_info.points2d[3].y;
             buff_msg.points2d[4].x = target_info.points2d[4].x;
             buff_msg.points2d[4].y = target_info.points2d[4].y;
+        }
+        else
+        {
+            buff_msg.armor3d_world.x = last_detect_point3d_(0);
+            buff_msg.armor3d_world.y = last_detect_point3d_(1);
+            buff_msg.armor3d_world.z = last_detect_point3d_(2);
         }
         param_mutex_.unlock();
 
@@ -202,6 +212,8 @@ namespace buff_detector
         bool show_img = this->get_parameter("show_img").as_bool();
         if (show_img)
         {
+            putText(src.img, target_info.find_target ? "State:Detected" : "State:Lost" , {5, 55}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
+
             cv::namedWindow("dst", cv::WINDOW_NORMAL);
             cv::imshow("dst", src.img);
             cv::waitKey(1);

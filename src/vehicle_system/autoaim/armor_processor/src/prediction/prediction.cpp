@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 12:46:41
- * @LastEditTime: 2023-05-28 20:53:43
+ * @LastEditTime: 2023-05-31 18:53:06
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/prediction/prediction.cpp
  */
 #include "../../include/prediction/prediction.hpp"
@@ -114,7 +114,7 @@ namespace armor_processor
             }
 
             Eigen::VectorXd singer_state = singer_ekf_.x();
-            singer_ekf_.x_ << singer_state(0), singer_state(1), uniform_ekf_.x_(2),
+            singer_ekf_.x_ << uniform_ekf_.x_(0), uniform_ekf_.x_(1), uniform_ekf_.x_(2),
                               singer_state(3), singer_state(4), singer_state(5),
                               singer_state(6), singer_state(7), singer_state(8);
         }
@@ -295,8 +295,8 @@ namespace armor_processor
                 uniform_ekf_.x_(2) = (state(2) + last_state_(2)) / 2.0;
                 state(2) = uniform_ekf_.x_(2);
             }
-
             state = uniform_ekf_.x();
+            
             Eigen::Vector3d circle_center3d = {state(0), state(1), state(2)};
             pred_state_vec_.clear();
             

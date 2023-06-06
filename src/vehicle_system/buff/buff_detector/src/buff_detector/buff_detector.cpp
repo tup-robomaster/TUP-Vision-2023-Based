@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-03-20 12:16:22
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
+ * @LastEditTime: 2023-06-01 15:13:13
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
 
@@ -65,13 +65,14 @@ namespace buff_detector
         auto time_crop = steady_clock_.now();
         // objects.clear();
         fans_.clear();
+        
         if (!buff_detector_.detect(input, objects))
         {   //若未检测到目标
             lost_cnt_++;
             is_last_target_exists_ = false;
             last_target_area_ = 0;
             target_info.find_target = false;
-            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "No buff target is detected...");
+            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 100, "No buff target is detected...");
             return false;
         }
         auto time_infer = steady_clock_.now();
@@ -157,19 +158,30 @@ namespace buff_detector
         }
 
         // 维护Tracker队列，删除过旧的Tracker
+        buff_param_.max_delta_t = 1000;
         if (trackers_.size() != 0)
         {
             for (auto iter = trackers_.begin(); iter != trackers_.end();)
             {
                 //删除元素后迭代器会失效，需先行获取下一元素
                 auto next = iter;
-                if (((src.timestamp - (*iter).last_timestamp) / 1e6) > buff_param_.max_delta_t)
+
+                // cout << "src:" << src.timestamp / 1e9 << " last:" << (*iter).now_ / 1e9 << endl;
+                double dt = (src.timestamp - (*iter).now_) / 1e6;
+                if (dt >= buff_param_.max_delta_t)
+                {
+                    // cout << 888 << " dt:" << dt << endl;
                     next = trackers_.erase(iter);
+                }
                 else
+                {
                     ++next;
+                }
                 iter = next;
             }
         }
+        cout << "pre_tracker_sise:" << trackers_.size() << endl;
+
 
         // 分配或创建扇叶追踪器（fan tracker）
         // TODO:增加防抖
@@ -178,6 +190,8 @@ namespace buff_detector
         {
             if (trackers_.size() == 0)
             {
+                // cout << "6666" << endl;
+                
                 FanTracker fan_tracker((*fan), src.timestamp);
                 trackers_tmp.push_back(fan_tracker);
             }
@@ -196,15 +210,15 @@ namespace buff_detector
                     int sign = 0;
                     //----------------------------计算角度,求解转速----------------------------
                     // 若该扇叶完成初始化,且隔一帧时间较短
-                    if ((*iter).is_initialized && (src.timestamp - (*iter).prev_timestamp) / 1e6 < buff_param_.max_delta_t)
+                    if ((*iter).is_initialized_ && (src.timestamp - (*iter).now_) / 1e6 < buff_param_.max_delta_t)
                     {
-                        delta_t = src.timestamp - (*iter).prev_timestamp;
-                        bool flag = (((*fan).dz / (*iter).prev_fan.dz) > 0 && (*fan).dx / (*iter).prev_fan.dx > 0) ? 1 : 0; 
+                        delta_t = src.timestamp - (*iter).now_;
+                        bool flag = (((*fan).dz / (*iter).last_fan_.dz) > 0 && (*fan).dx / (*iter).last_fan_.dx > 0) ? 1 : 0; 
                         if (!flag)
                             continue;
 
                         // 当前扇叶与上一帧扇叶的角度差值
-                        delta_angle = (*fan).angle - (*iter).prev_fan.angle;
+                        delta_angle = (*fan).angle - (*iter).last_fan_.angle;
                         if (((*fan).dx > 0 && (*fan).dz > 0) || ((*fan).dx < 0 && (*fan).dz < 0))
                         {
                             if (delta_angle < 0)
@@ -215,13 +229,13 @@ namespace buff_detector
                     }
                     else
                     {
-                        delta_t = src.timestamp - (*iter).last_timestamp;
-                        bool flag = (((*fan).dz / (*iter).last_fan.dz) > 0 && (*fan).dx / (*iter).last_fan.dx > 0) ? 1 : 0; 
+                        delta_t = src.timestamp - (*iter).now_;
+                        bool flag = (((*fan).dz / (*iter).last_fan_.dz) > 0 && (*fan).dx / (*iter).last_fan_.dx > 0) ? 1 : 0; 
                         if (!flag)
                             continue;
 
                         // 目前扇叶到上一次扇叶的旋转矩阵
-                        delta_angle = (*fan).angle - (*iter).last_fan.angle;
+                        delta_angle = (*fan).angle - (*iter).last_fan_.angle;
                         if (((*fan).dx > 0 && (*fan).dz > 0) || ((*fan).dx < 0 && (*fan).dz < 0))
                         {
                             if (delta_angle < 0)
@@ -231,7 +245,7 @@ namespace buff_detector
                         }
                     }
 
-                    delta_t = ((src.timestamp - (*iter).last_timestamp) / 1e6);
+                    delta_t = ((src.timestamp - (*iter).now_) / 1e6);
                     if (abs(delta_angle) <= abs(min_angle) && abs(delta_angle) < buff_param_.max_angle && delta_t <= min_last_delta_t)
                     {
                         min_last_delta_t = delta_t;
@@ -243,13 +257,16 @@ namespace buff_detector
 
                 if (is_best_candidate_exist)
                 {
+                    // cout << "4444" << endl;
                     (*best_candidate).update((*fan), src.timestamp);
-                    (*best_candidate).delta_angle = min_angle;
+                    (*best_candidate).delta_angle_ = min_angle;
                     delta_angle_vec_.push_back(min_angle);
                     // RCLCPP_INFO(logger_, "delta angle:%lf", min_angle * (180 / CV_PI));
                 }
                 else
                 {
+                    // cout << "5555" << endl;
+
                     FanTracker fan_tracker((*fan), src.timestamp);
                     trackers_tmp.push_back(fan_tracker);
                 }
@@ -258,6 +275,7 @@ namespace buff_detector
         for (auto new_tracker : trackers_tmp)
             trackers_.push_back(new_tracker);
         
+        cout << "post_tracker_sise:" << trackers_.size() << endl;
         // 检查待激活扇叶是否存在
         Fan target;
         bool is_target_exists = chooseTarget(fans_, target);
@@ -286,10 +304,13 @@ namespace buff_detector
         // 计算平均转速与平均R字中心坐标
         for (auto tracker : trackers_)
         {
-            if (tracker.is_last_fan_exists && tracker.last_timestamp == src.timestamp)
+            // cout << 222 << endl;
+            // cout << "is_last_fan_exists:" << tracker.is_last_fan_exists_ << endl;
+            if (tracker.is_last_fan_exists_ && tracker.now_ == src.timestamp)
             {
-                delta_angle_sum += tracker.delta_angle;
-                r_center_sum += tracker.last_fan.centerR3d_world;
+                // cout << 333 << endl;
+                delta_angle_sum += tracker.delta_angle_;
+                r_center_sum += tracker.last_fan_.centerR3d_world;
                 avail_tracker_cnt++;
             }
         }
@@ -308,6 +329,9 @@ namespace buff_detector
         }
 
         //FIXME:用角度变化量的均值对当前待激活扇叶的角度变化进行校正
+        
+        // mean_delta_angle = target.delta_angle;
+        // mean_r_center = target.centerR3d_world;
         mean_delta_angle = delta_angle_sum / avail_tracker_cnt;
         mean_r_center = r_center_sum / avail_tracker_cnt;
 
@@ -337,13 +361,16 @@ namespace buff_detector
         }
         delta_angle_vec_.clear();
 
+        // cout << 333 << endl;
+
         if (!is_switched)
         {
+            // cout << 555 << endl;
             if (abs(delta_angle) > buff_param_.max_angle)
                 is_switched = true;
+            target_info.angle_offset = 0.0;
         }
-        
-        if (is_switched)
+        else 
         {
             target_info.angle_offset = target.angle - last_fan_.angle;
             double delta_angle_sum = 0.0;
@@ -353,14 +380,16 @@ namespace buff_detector
                    delta_angle_sum += angle;
                 delta_angle_sum -= delta_angle;
                 delta_angle = delta_angle_sum / (int)(delta_angle_vec_.size() - 1);
+                // cout << 444 << endl;
             }
             else
             {
                 delta_angle = (src.timestamp - last_timestamp_) / (last_timestamp_ - last_last_timestamp_) * last_delta_angle_;
+                // cout << 111 << endl;
             }
         }
-        else
-            target_info.angle_offset = 0.0;
+        
+        // cout << 222 << endl;
 
         target_info.rmat = target.rmat;
         target_info.angle = target.angle;
@@ -389,6 +418,8 @@ namespace buff_detector
         last_last_delta_angle_ = last_delta_angle_;
         last_delta_angle_ = delta_angle;
         is_last_target_exists_ = true;
+
+        cout << "find_target..." << endl;
 
         // RCLCPP_INFO(logger_, "r_center:(%.3f, %.3f, %.3f)", mean_r_center(0), mean_r_center(1), mean_r_center(2));
         

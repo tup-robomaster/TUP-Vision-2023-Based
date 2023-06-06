@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2023-03-20 19:58:46
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/predictor/predictor.hpp
+ * @LastEditTime: 2023-06-01 15:18:25
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
 #define PREDICTOR_HPP_
@@ -52,7 +52,7 @@ namespace buff_processor
         ~BuffPredictor();
         
         bool curveFitting(BuffMsg& buff_msg);
-        bool predict(BuffMsg buff_msg, double dist, double &result);
+        bool predict(BuffMsg buff_msg, double dist, double &result, double& abs_meas_angle, double& abs_pred_angle);
         double calPreAngle(double* params, double timestamp);
         bool setBulletSpeed(double speed);
         double evalRMSE(double params[4]);
@@ -68,7 +68,7 @@ namespace buff_processor
         PredictorParam predictor_param_;
         std::deque<BuffAngleInfo> history_info_; //目标队列
         bool is_direction_confirmed_;
-        vector<double> delta_angle_vec_;
+        deque<double> delta_angle_vec_;
         queue<PredInfo> pred_info_queue_;
 
         double base_angle_;

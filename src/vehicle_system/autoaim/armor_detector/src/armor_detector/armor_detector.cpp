@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-05-21 23:48:24
+ * @LastEditTime: 2023-05-28 22:00:37
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -555,6 +555,7 @@ namespace armor_detector
             double delta_dist = (target.armor3d_world - last_armor_.armor3d_world).norm();
             if (target.id != last_armor_.id || delta_dist >= 1.5)
             {
+                // cout << "delta_dist:" << delta_dist << endl;
                 cout << "target_switched..." << endl;
                 is_target_switched_ = true;
                 autoaim_msg.target_switched = true;

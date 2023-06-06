@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:47:32
- * @LastEditTime: 2023-03-20 16:21:59
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor/buff_processor.cpp
+ * @LastEditTime: 2023-06-01 15:19:39
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor/buff_processor.cpp
  */
 #include "../../include/buff_processor/buff_processor.hpp"
 
@@ -39,16 +39,17 @@ namespace buff_processor
             double theta_offset = 0.0;
             Eigen::Vector3d r_center = {buff_msg.r_center.x, buff_msg.r_center.y, buff_msg.r_center.z};
             Eigen::Vector3d armor_center = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
-            if (!buff_predictor_.predict(buff_msg, armor_center.norm(), theta_offset))
+            
+            double abs_pred_angle = 0.0;
+            double abs_meas_angle = 0.0;
+            bool is_predicted = buff_predictor_.predict(buff_msg, armor_center.norm(), theta_offset, abs_meas_angle, abs_pred_angle);
+
+            // is_predicted = false;
+            if (!is_predicted)
             {
                 Eigen::Vector3d armor3d_world = {buff_msg.armor3d_world.x, buff_msg.armor3d_world.y, buff_msg.armor3d_world.z};
-                if (debug_param_.using_imu)
-                {
-                    Eigen::Quaterniond imu_quat = {buff_msg.quat_imu.w, buff_msg.quat_imu.x, buff_msg.quat_imu.y, buff_msg.quat_imu.z};
-                    rmat_imu_ = imu_quat.toRotationMatrix();
-                }
-                else
-                    rmat_imu_ = Eigen::Matrix3d::Identity();
+                Eigen::Quaterniond imu_quat = {buff_msg.quat_imu.w, buff_msg.quat_imu.x, buff_msg.quat_imu.y, buff_msg.quat_imu.z};
+                rmat_imu_ = imu_quat.toRotationMatrix();
                 
                 // 转换到相机系
                 Eigen::Vector3d hit_point_cam = coordsolver_.worldToCam(armor3d_world, rmat_imu_);
@@ -98,14 +99,8 @@ namespace buff_processor
                 quat_world.y() = buff_msg.quat_world.y;
                 quat_world.z() = buff_msg.quat_world.z;
                 Eigen::Matrix3d rmat = quat_world.toRotationMatrix();
-
-                if (debug_param_.using_imu)
-                {
-                    Eigen::Quaterniond imu_quat = {buff_msg.quat_imu.w, buff_msg.quat_imu.x, buff_msg.quat_imu.y, buff_msg.quat_imu.z};
-                    rmat_imu_ = imu_quat.toRotationMatrix();
-                }
-                else
-                    rmat_imu_ = Eigen::Matrix3d::Identity();
+                Eigen::Quaterniond imu_quat = {buff_msg.quat_imu.w, buff_msg.quat_imu.x, buff_msg.quat_imu.y, buff_msg.quat_imu.z};
+                rmat_imu_ = imu_quat.toRotationMatrix();
 
                 hit_point_world = rmat * hit_point_world + armor3d_world;
                 
@@ -136,6 +131,10 @@ namespace buff_processor
                 buff_info.hit_point_world = hit_point_world;
                 buff_info.hit_point_cam = hit_point_cam;
                 buff_info.armor3d_cam = coordsolver_.worldToCam(armor3d_world, rmat_imu_);
+                buff_info.abs_meas_angle = abs_meas_angle * (180 / CV_PI);
+                buff_info.abs_pred_angle = abs_pred_angle * (180 / CV_PI);
+                // cout << "buff_info.abs_angle:" << abs_pred_angle << endl;
+
                 buff_info.target_switched = buff_msg.target_switched;
                 return true;
             }

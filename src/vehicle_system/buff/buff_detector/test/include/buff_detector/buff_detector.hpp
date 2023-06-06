@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:55:16
- * @LastEditTime: 2023-03-10 15:37:27
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/buff_detector.hpp
+ * @LastEditTime: 2023-06-01 16:12:04
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/include/buff_detector/buff_detector.hpp
  */
 #ifndef BUFF_DETECTOR_HPP_
 #define BUFF_DETECTOR_HPP_
@@ -18,9 +18,9 @@
 //ros
 #include <rclcpp/rclcpp.hpp>
 
-#include "./param_struct.hpp"
-#include "../fan_tracker/fan_tracker.hpp"
-#include "../inference/inference_api2.hpp"
+#include "../../../include/buff_detector/param_struct.hpp"
+#include "../../../include/fan_tracker/fan_tracker.hpp"
+#include "../../../include/inference/inference_api2.hpp"
 #include "../../global_user/include/global_user/global_user.hpp"
 #include "../../global_user/include/coordsolver.hpp"
 

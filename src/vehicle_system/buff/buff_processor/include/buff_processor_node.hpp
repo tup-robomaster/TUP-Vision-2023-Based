@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:10:59
- * @LastEditTime: 2023-03-19 21:46:58
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/buff_processor_node.hpp
+ * @LastEditTime: 2023-06-01 15:25:00
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/buff_processor_node.hpp
  */
 #ifndef BUFF_PROCESSOR_NODE_HPP_
 #define BUFF_PROCESSOR_NODE_HPP_
@@ -63,6 +63,10 @@ namespace buff_processor
         Mutex image_mutex_;
         std::shared_ptr<image_transport::Subscriber> img_msg_sub_;
         cv::Mat src_;
+        Eigen::Vector3d last_pred_point3d_ = {0.0, 0.0, 0.0};
+        Eigen::Vector3d last_meas_point3d_ = {0.0, 0.0, 0.0};
+        double last_pred_angle_ = 0.0;
+        double last_meas_angle_ = 0.0;
         
         void imageCallback(const ImageMsg::ConstSharedPtr &img_msg);
         

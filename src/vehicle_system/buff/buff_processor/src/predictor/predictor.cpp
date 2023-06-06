@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:50:43
- * @LastEditTime: 2023-03-22 16:11:23
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/predictor/predictor.cpp
+ * @LastEditTime: 2023-06-01 15:50:42
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/predictor/predictor.cpp
  */
 #include "../../include/predictor/predictor.hpp"
 
@@ -100,14 +100,16 @@ namespace buff_processor
         // target.delta_angle = (target.delta_angle / buff_msg.delta_angle > 0) ? target.delta_angle : buff_msg.delta_angle;
         // cout << "target.delta_angle: " << target.delta_angle << endl;
 
-        int fitting_lens = 50;
+        int fitting_lens = 100;
         if (!is_direction_confirmed_)
         {
             if ((int)delta_angle_vec_.size() < 200)
                 delta_angle_vec_.push_back(target.delta_angle);
             else
             {
-                delta_angle_vec_.resize((int)(delta_angle_vec_.size() / 2));
+                // delta_angle_vec_.resize((int)(delta_angle_vec_.size() / 2));
+                delta_angle_vec_.pop_front();
+                delta_angle_vec_.push_back(target.delta_angle);
             }
         }
 
@@ -136,6 +138,9 @@ namespace buff_processor
         
         BuffAngleInfo origin_target = history_info_.front();
         int count = 0;
+
+        // cout << "RSpeed:" << endl;
+
         for (auto target_info : history_info_)
         {
             double dAngle = (target_info.relative_angle - origin_target.relative_angle);
@@ -143,19 +148,25 @@ namespace buff_processor
             if (!iszero(dAngle) && !iszero(dt))
             {
                 double rspeed = (dAngle / dt);
+                // cout << rspeed << " ";
                 rotate_speed_sum += rspeed;
                 ++count;
             }
             origin_target = target_info;
         }
+        // cout << endl;
+
         rotate_speed_ave = rotate_speed_sum / count;
         ave_speed_ = rotate_speed_ave;
 
         int dir_cnt = 0;
         if (!is_direction_confirmed_)
         {
+            // cout << "delta_angle:";
             for (auto delta_angle : delta_angle_vec_)
             {
+                // cout << delta_angle << " ";
+
                 if (delta_angle > 0)
                     dir_cnt += 1;
                 else if (delta_angle < 0)
@@ -222,14 +233,14 @@ namespace buff_processor
                 }
 
                 //设置上下限
-                problem.SetParameterLowerBound(params_fitting, 0, 0.1); //a(0.780~1.045)
-                problem.SetParameterUpperBound(params_fitting, 0, 1.9); 
-                problem.SetParameterLowerBound(params_fitting, 1, 1.0); //w(1.884~2.000)
-                problem.SetParameterUpperBound(params_fitting, 1, 2.8);
-                problem.SetParameterLowerBound(params_fitting, 2, -2 * CV_PI); //θ
-                problem.SetParameterUpperBound(params_fitting, 2, 2 * CV_PI);
-                problem.SetParameterLowerBound(params_fitting, 3, 0.4); //b=2.090-a
-                problem.SetParameterUpperBound(params_fitting, 3, 1.9);
+                // problem.SetParameterLowerBound(params_fitting, 0, 0.2); //a(0.780~1.045)
+                // problem.SetParameterUpperBound(params_fitting, 0, 1.5); 
+                // problem.SetParameterLowerBound(params_fitting, 1, 1.2); //w(1.884~2.000)
+                // problem.SetParameterUpperBound(params_fitting, 1, 2.7);
+                // problem.SetParameterLowerBound(params_fitting, 2, -2 * CV_PI); //θ
+                // problem.SetParameterUpperBound(params_fitting, 2, 2 * CV_PI);
+                // problem.SetParameterLowerBound(params_fitting, 3, 0.4); //b=2.090-a
+                // problem.SetParameterUpperBound(params_fitting, 3, 1.9);
 
                 //参数求解
                 ceres::Solve(options, &problem, &summary);
@@ -311,12 +322,12 @@ namespace buff_processor
         return true;
     }
 
-    bool BuffPredictor::predict(BuffMsg buff_msg, double dist, double &result)
+    bool BuffPredictor::predict(BuffMsg buff_msg, double dist, double &result, double& abs_meas_angle, double& abs_pred_angle)
     {
         // double delay = (mode_ == 3 ? predictor_param_.delay_small : predictor_param_.delay_big);
         // double pred_dt = ((double)dist / predictor_param_.bullet_speed) * 1e3 + delay;
         double pred_dt = ((double)dist / predictor_param_.bullet_speed) * 1e3 + predictor_param_.shoot_delay;
-        pred_dt = 500;
+        // pred_dt = 500;
         
         curveFitting(buff_msg);
         if (is_params_confirmed_)
@@ -392,6 +403,11 @@ namespace buff_processor
                 double time_estimate = pred_dt + timespan;
                 double pre_dt = (time_estimate / 1e3);
                 double pre_angle = calPreAngle(params_, pre_dt);
+
+                abs_pred_angle = pre_angle;
+                abs_meas_angle = history_info_.back().abs_angle;
+                cout << "abs_pred_angle;" << pre_angle << " dt:" << pred_dt << endl;
+
                 if (sign_ == 1)
                     result = abs(pre_angle - cur_pre_angle);
                 else if (sign_ == -1)

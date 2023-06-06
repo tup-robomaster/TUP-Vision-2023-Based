@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2023-03-17 19:28:29
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/include/buff_detector_node.hpp
+ * @LastEditTime: 2023-06-01 13:45:27
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector_node.hpp
  */
 #ifndef BUFF_DETECTOR_NODE_HPP_
 #define BUFF_DETECTOR_NODE_HPP_
@@ -50,6 +50,7 @@ namespace buff_detector
         BuffParam buff_param_;
         PathParam path_param_;
         DebugParam debug_param_;
+        Eigen::Vector3d last_detect_point3d_;
 
         std::unique_ptr<Detector> detector_;
         std::unique_ptr<Detector> initDetector();

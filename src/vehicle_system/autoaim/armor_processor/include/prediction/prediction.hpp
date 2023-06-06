@@ -105,8 +105,6 @@ namespace armor_processor
 
         // Uniform Model.
         bool predictBasedUniformModel(bool is_target_lost, SpinHeading spin_state, Eigen::VectorXd meas, double dt, double pred_dt, double spinning_period, Vector6d& post_state);
-        
-        
 
         // 计算车辆中心
         Eigen::Vector2d calcCircleCenter(Eigen::VectorXd meas);

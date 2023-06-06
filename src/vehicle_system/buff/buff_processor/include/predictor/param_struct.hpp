@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-20 19:46:36
- * @LastEditTime: 2023-03-20 21:29:10
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/predictor/param_struct.hpp
+ * @LastEditTime: 2023-06-01 16:30:47
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
 #define PARAM_STRUCT_HPP_
@@ -38,6 +38,8 @@ namespace buff_processor
         Eigen::Matrix3d rmat_imu;
         bool target_switched;
         int buff_mode;
+        double abs_meas_angle;
+        double abs_pred_angle;
     };
 
     struct PredictStatus
@@ -60,8 +62,8 @@ namespace buff_processor
         int history_deque_len_phase;    //大符相位参数拟合队列长度
         int history_deque_len_uniform;  //小符转速求解队列长度
         
-        // double delay_small;             //小符发弹延迟
-        // double delay_big;               //大符发弹延迟
+        double delay_small;             //小符发弹延迟
+        double delay_big;               //大符发弹延迟
 
         int window_size;                //滑动窗口大小
         double fan_length;              //能量机关旋转半径
@@ -87,8 +89,8 @@ namespace buff_processor
             history_deque_len_cos = 250;
             history_deque_len_phase = 100;
             history_deque_len_uniform = 100;
-            // delay_small = 175.0;
-            // delay_big = 100.0;
+            delay_small = 175.0;
+            delay_big = 100.0;
             
             window_size = 2;
             fan_length = 0.7;

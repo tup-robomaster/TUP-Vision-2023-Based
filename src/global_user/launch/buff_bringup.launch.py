@@ -2,7 +2,7 @@
 Description: This is a ros-based project!
 Author: Liu Biao
 Date: 2022-12-22 01:49:00
-LastEditTime: 2023-05-14 15:39:42
+LastEditTime: 2023-06-01 17:17:24
 FilePath: /TUP-Vision-2023-Based/src/global_user/launch/buff_bringup.launch.py
 '''
 import os
@@ -27,12 +27,12 @@ def generate_launch_description():
     
     #-------------------------------------------------------------------------------------------
     #--------------------------------------Configs----------------------------------------------
-    camera_type = 'usb' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
-    camera_name = 'KE0200110073'
-    use_serial = False
-    use_imu = False
+    camera_type = 'daheng' # (daheng: 0 / hik: 1 / mvs: 2 / usb: 3)
+    camera_name = 'KE0200110074'
+    use_serial = True
+    use_imu = True
     shoot_delay = 150.0
-    bullet_speed = 12.7
+    bullet_speed = 25.0
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
     
@@ -74,7 +74,7 @@ def generate_launch_description():
                             output='screen', # log/screen/both
                             emulate_tty=True,
                             parameters=[{
-                                'using_port': False,
+                                'using_port': True,
                                 'tracking_target': True,
                                 'print_serial_info': False,
                                 'print_referee_info': False

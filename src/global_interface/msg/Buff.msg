@@ -1,5 +1,7 @@
 std_msgs/Header header
 uint8 mode
+float64 abs_meas_angle
+float64 abs_pred_angle
 float64 angle
 float64 delta_angle
 float64 angle_offset
