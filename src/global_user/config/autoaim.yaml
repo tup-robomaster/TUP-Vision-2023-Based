@@ -6,25 +6,25 @@
     max_delta_t: 50
     max_lost_cnt: 5
     max_armors_cnt: 8
-    hero_danger_zone: 4
-    # armor_type_wh_thresh: 3.0
+    max_dead_buffer: 10
+
+    hero_danger_zone: 4.0
     armor_type_wh_high_thresh: 3.0
     armor_type_wh_low_thresh: 2.5
 
-    no_crop_thres: 0.01
+    no_crop_thresh: 0.01
     no_crop_ratio: 0.002
     full_crop_ratio: 0.0001
     armor_roi_expand_ratio_width: 1.2
     armor_roi_expand_ratio_height: 1.8
-    armor_conf_high_thres: 0.82
+    armor_conf_high_thresh: 0.82
 
   # Spinning params.
-    max_dead_buffer: 10
     max_delta_dist: 0.5
     switch_max_dt: 2000.0
     anti_spin_max_r_multiple: 4.5
-    anti_spin_judge_low_thres: 2000.0
-    anti_spin_judge_high_thres: 20000.0
+    anti_spin_judge_low_thresh: 2000.0
+    anti_spin_judge_high_thresh: 20000.0
     
     delta_x_3d_high_thresh: 0.18
     delta_x_3d_higher_thresh: 0.25
@@ -50,7 +50,7 @@
     use_roi: true
     
     debug: true
-    show_img: true
+    show_img: false
     show_crop_img: false
     show_fps: true
     show_aim_cross: true
@@ -95,7 +95,7 @@
     
   # Singer model
     # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)
-    singer_model_process_param: [1.00, 1.00, 1.0, 2.65, 30.45, 2.65]
+    singer_model_process_param: [1.00, 1.00, 1.0, 2.65, 15.45, 2.65]
     # r:观测协方差系数(r1/r2/r3)
     singer_model_measure_param: [1.0, 1.0, 1.0]
 

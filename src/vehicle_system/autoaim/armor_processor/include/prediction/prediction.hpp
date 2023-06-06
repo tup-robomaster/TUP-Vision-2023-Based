@@ -78,6 +78,8 @@ namespace armor_processor
         bool is_outpost_mode_ = false;
         double outpost_angular_speed_ = (0.8 * CV_PI);
 
+        bool is_reversed_ = false;
+
     public:
         double now_ = 0.0;
         bool is_init_;

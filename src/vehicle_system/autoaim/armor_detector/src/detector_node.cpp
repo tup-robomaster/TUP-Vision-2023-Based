@@ -64,14 +64,13 @@ namespace armor_detector
         // serial msg sub.
         serial_msg_sub_ = this->create_subscription<SerialMsg>(
             "/serial_msg",
-                    qos,
-                    std::bind(&DetectorNode::sensorMsgCallback, this, _1)
-                );
+            qos,
+            std::bind(&DetectorNode::sensorMsgCallback, this, _1)
+        );
 
         // Subscriptions transport type.
         std::string transport_type = "raw";
         std::string camera_topic = "/image";
-
         img_msg_sub_ = std::make_shared<image_transport::Subscriber>(
             image_transport::create_subscription(
                 this, 
@@ -109,16 +108,15 @@ namespace armor_detector
         serial_msg_.header.stamp = this->get_clock()->now();
         serial_msg_mutex_.unlock();
         mode_ = serial_msg.mode;
-            return;
-        }
-        
+    }
+
     /**
      * @brief 图像数据回调
      * 
      * @param img_msg 图像传感器数据
      */
     void DetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
-        {
+    {
         RCLCPP_INFO_THROTTLE(
             this->get_logger(),
             *this->get_clock(),
@@ -140,7 +138,7 @@ namespace armor_detector
         double duration = (now.nanoseconds() - img_stamp.nanoseconds()) / 1e6;
         if (duration > 20.0)
             return;
-        
+
         TaskData src;
         AutoaimMsg armor_msg;
         double bullet_speed = 0.0; 
@@ -155,20 +153,20 @@ namespace armor_detector
 
         serial_msg_mutex_.lock();
         rclcpp::Time serial_stamp = serial_msg_.header.stamp;
-                src.mode = serial_msg_.mode;
+        src.mode = serial_msg_.mode;
         bullet_speed = serial_msg_.bullet_speed;
         shoot_delay = serial_msg_.shoot_delay;
         if (debug_.use_imu)
         {
-                src.quat.w() = serial_msg_.imu.orientation.w;
-                src.quat.x() = serial_msg_.imu.orientation.x;
-                src.quat.y() = serial_msg_.imu.orientation.y;
-                src.quat.z() = serial_msg_.imu.orientation.z;
+            src.quat.w() = serial_msg_.imu.orientation.w;
+            src.quat.x() = serial_msg_.imu.orientation.x;
+            src.quat.y() = serial_msg_.imu.orientation.y;
+            src.quat.z() = serial_msg_.imu.orientation.z;
             
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Using imu data...");
         }
         serial_msg_mutex_.unlock(); 
-        
+
         RCLCPP_WARN_THROTTLE(
             this->get_logger(), 
             *this->get_clock(), 
@@ -216,6 +214,7 @@ namespace armor_detector
             "detect_delay:%.2fms",
             (end - now).nanoseconds() / 1e6
         );
+
         armor_msg_pub_->publish(std::move(armor_msg));
 
         debug_.show_img = this->get_parameter("show_img").as_bool();
@@ -225,7 +224,7 @@ namespace armor_detector
             sprintf(ch1, "img_trans_delay:%.2fms", duration);
             std::string delay_str1 = ch1;
             putText(src.img, delay_str1, {src.img.size().width / 5 - 40, 30}, cv::FONT_HERSHEY_SIMPLEX, 1, {0, 125, 255});
-
+        
             char ch2[50];
             sprintf(ch2, "pitch_angle:%.2f yaw_angle:%.2f", tracking_angle[1], tracking_angle[0]);
             std::string angle_str2 = ch2;
@@ -272,16 +271,18 @@ namespace armor_detector
         this->declare_parameter<int>("color", 1);
         this->declare_parameter<int>("max_lost_cnt", 5);
         this->declare_parameter<int>("max_armors_cnt", 8);
-        this->declare_parameter<int>("hero_danger_zone", 4);
-        this->declare_parameter<double>("no_crop_thres", 1e-2);
-        this->declare_parameter<double>("no_crop_ratio", 2e-3);
-        this->declare_parameter<double>("full_crop_ratio", 1e-4);
-        this->declare_parameter<double>("armor_type_wh_thresh", 3.0);
+        this->declare_parameter<int>("max_dead_buffer", 5) ;
+        this->declare_parameter<int>("max_delta_t", 100);
+        
         this->declare_parameter<double>("armor_type_wh_high_thresh", 3.0);
         this->declare_parameter<double>("armor_type_wh_low_thresh", 2.5);
+        this->declare_parameter<double>("hero_danger_zone", 4.0);
+        this->declare_parameter<double>("no_crop_thresh", 1e-2);
+        this->declare_parameter<double>("no_crop_ratio", 2e-3);
+        this->declare_parameter<double>("full_crop_ratio", 1e-4);
         this->declare_parameter<double>("armor_roi_expand_ratio_width", 1.1);
         this->declare_parameter<double>("armor_roi_expand_ratio_height", 1.5);
-        this->declare_parameter<double>("armor_conf_high_thres", 0.82);
+        this->declare_parameter<double>("armor_conf_high_thresh", 0.82);
         
         //TODO:Set by your own path.
         this->declare_parameter("camera_name", "KE0200110075"); //相机型号
@@ -303,12 +304,10 @@ namespace armor_detector
         this->declare_parameter("save_dataset", false);
         
         //Gyro params.
-        this->declare_parameter<int>("max_dead_buffer", 2) ;
-        this->declare_parameter<int>("max_delta_t", 100);
         this->declare_parameter<double>("switch_max_dt", 10000.0);
         this->declare_parameter<double>("max_delta_dist", 0.3);
-        this->declare_parameter<double>("anti_spin_judge_high_thres", 2e4);
-        this->declare_parameter<double>("anti_spin_judge_low_thres", 2e3);
+        this->declare_parameter<double>("anti_spin_judge_high_thresh", 2e4);
+        this->declare_parameter<double>("anti_spin_judge_low_thresh", 2e3);
         this->declare_parameter<double>("anti_spin_max_r_multiple", 4.5);
         
         //Update param from param server.
@@ -326,16 +325,18 @@ namespace armor_detector
     bool DetectorNode::updateParam()
     {
         detector_params_.color = this->get_parameter("color").as_int();
+        gyro_params_.max_delta_t = this->get_parameter("max_delta_t").as_int();
         detector_params_.max_lost_cnt = this->get_parameter("max_lost_cnt").as_int();
+        gyro_params_.max_dead_buffer = this->get_parameter("max_dead_buffer").as_int();
         detector_params_.max_armors_cnt = this->get_parameter("max_armors_cnt").as_int();
-        detector_params_.hero_danger_zone = this->get_parameter("hero_danger_zone").as_int();
-        detector_params_.no_crop_thres = this->get_parameter("no_crop_thres").as_double();
+
+        detector_params_.no_crop_thresh = this->get_parameter("no_crop_thresh").as_double();
+        detector_params_.hero_danger_zone = this->get_parameter("hero_danger_zone").as_double();
         detector_params_.armor_type_wh_high_thresh = this->get_parameter("armor_type_wh_high_thresh").as_double();
         detector_params_.armor_type_wh_low_thresh = this->get_parameter("armor_type_wh_low_thresh").as_double();
-        
         detector_params_.no_crop_ratio = this->get_parameter("no_crop_ratio").as_double();
         detector_params_.full_crop_ratio = this->get_parameter("full_crop_ratio").as_double();
-        detector_params_.armor_conf_high_thres = this->get_parameter("armor_conf_high_thres").as_double();
+        detector_params_.armor_conf_high_thresh = this->get_parameter("armor_conf_high_thresh").as_double();
         detector_params_.armor_roi_expand_ratio_width = this->get_parameter("armor_roi_expand_ratio_width").as_double();
         detector_params_.armor_roi_expand_ratio_height = this->get_parameter("armor_roi_expand_ratio_height").as_double();
 
@@ -351,13 +352,11 @@ namespace armor_detector
         debug_.save_data = this->get_parameter("save_data").as_bool();
         debug_.save_dataset = this->get_parameter("save_dataset").as_bool();
 
-        gyro_params_.anti_spin_judge_high_thres = this->get_parameter("anti_spin_judge_high_thres").as_double();
-        gyro_params_.anti_spin_judge_low_thres = this->get_parameter("anti_spin_judge_low_thres").as_double();
+        gyro_params_.anti_spin_judge_high_thresh = this->get_parameter("anti_spin_judge_high_thresh").as_double();
+        gyro_params_.anti_spin_judge_low_thresh = this->get_parameter("anti_spin_judge_low_thresh").as_double();
         gyro_params_.anti_spin_max_r_multiple = this->get_parameter("anti_spin_max_r_multiple").as_double();
-        gyro_params_.hero_danger_zone = this->get_parameter("hero_danger_zone").as_int();
-        gyro_params_.max_dead_buffer = this->get_parameter("max_dead_buffer").as_int() ;
+        gyro_params_.hero_danger_zone = this->get_parameter("hero_danger_zone").as_double();
         gyro_params_.max_delta_dist = this->get_parameter("max_delta_dist").as_double();
-        gyro_params_.max_delta_t = this->get_parameter("max_delta_t").as_int();
         gyro_params_.switch_max_dt = this->get_parameter("switch_max_dt").as_double();
 
         string pkg_share_directory[2] = 

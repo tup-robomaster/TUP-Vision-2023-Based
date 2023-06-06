@@ -95,6 +95,21 @@ namespace armor_processor
     {
         double sleep_time = 0.0;
         AutoaimMsg target = std::move(target_info);
+
+        // target.mode = 2;
+        if (target.mode == AUTOAIM_SLING)
+        {
+            target.is_spinning = true;
+            target.target_switched = false;
+            if (!target.spinning_switched && !target.is_target_lost)
+            {
+                if (abs(last_rangle_ - target.armors.front().rangle) > 0.5)
+                {
+                    target.is_target_lost = true;
+                }
+            }
+        }
+
         Eigen::Vector2d angle = {0.0, 0.0};
         Eigen::Vector2d tracking_angle = {0.0, 0.0};
         Eigen::Vector3d aiming_point_world = {0.0, 0.0, 0.0};
@@ -108,20 +123,6 @@ namespace armor_processor
         int idx = 0, flag = -1;
         bool is_shooting = false;
         ShootingMode shoot_mode = BLOCKING;
-
-        // target.mode = AUTOAIM_SLING;
-        if (target.mode == AUTOAIM_SLING)
-        {
-            target.is_spinning = true;
-            target.target_switched = false;
-            if (!target.spinning_switched && !target.is_target_lost)
-            {
-                if (abs(last_rangle_ - target.armors.front().rangle) > 0.5)
-                {
-                    target.is_target_lost = true;
-                }
-            }
-        }
 
         quat_imu = std::move(Eigen::Quaterniond{target.quat_imu.w, target.quat_imu.x, target.quat_imu.y, target.quat_imu.z});
         rmat_imu = quat_imu.toRotationMatrix();
@@ -140,7 +141,7 @@ namespace armor_processor
             processor_->coordsolver_.setBulletSpeed(cur_bullet_speed);
         }
 
-        if (target.shoot_delay >= 50 && target.shoot_delay <= 300)
+        if (target.shoot_delay >= 10 && target.shoot_delay <= 300)
         {
             processor_->predict_param_.shoot_delay = (processor_->predict_param_.shoot_delay + target.shoot_delay) / 2.0;
         }
@@ -348,12 +349,13 @@ namespace armor_processor
 
         processor_->is_last_exists_ = !target.is_target_lost;
         last_rangle_ = target.is_target_lost ? 0.0 : target.armors.front().rangle;
+        
+        if (show_marker_)
+        {
+            pubMarkerArray(armor3d_vec, target.is_spinning, target.is_clockwise, flag);
+        }
         if (debug_param_.show_img && !dst.empty()) 
         {
-            if (show_marker_)
-            {
-                pubMarkerArray(armor3d_vec, target.is_spinning, target.is_clockwise, flag);
-            }
 
             if (!target.is_target_lost)
             {
@@ -705,6 +707,8 @@ namespace armor_processor
         debug_param_.print_delay = this->get_parameter("print_delay").as_bool();
         debug_param_.show_aim_cross = this->get_parameter("show_aim_cross").as_bool();
         show_marker_ = this->get_parameter("show_marker").as_bool();
+
+        cout << "show_marker:" << show_marker_ << endl;
 
         return true;
     }

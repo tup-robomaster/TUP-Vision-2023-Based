@@ -69,8 +69,8 @@ namespace armor_detector
         double switch_max_dt;    //目标陀螺状态未更新的时间上限，过久则删除
         double hero_danger_zone; //英雄危险距离
 
-        double anti_spin_judge_high_thres; //大于该阈值认为该车已开启陀螺
-        double anti_spin_judge_low_thres;  //小于该阈值认为该车已关闭陀螺
+        double anti_spin_judge_high_thresh; //大于该阈值认为该车已开启陀螺
+        double anti_spin_judge_low_thresh;  //小于该阈值认为该车已关闭陀螺
         double anti_spin_max_r_multiple;
 
         double delta_x_3d_high_thresh;
@@ -169,14 +169,14 @@ namespace armor_detector
     struct DetectorParam
     {
         int color;
+        int max_lost_cnt;        //最大丢失目标帧数
+        int max_armors_cnt;    //视野中最多装甲板数
+
         double armor_type_wh_high_thresh; //大小装甲板长宽比高阈值
         double armor_type_wh_low_thresh;  //大小装甲板长宽比低阈值
         double armor_type_wh_thresh;  //大小装甲板长宽比阈值
 
-        int max_lost_cnt;        //最大丢失目标帧数
-        int max_armors_cnt;    //视野中最多装甲板数
-
-        double no_crop_thres; //禁用ROI裁剪的装甲板占图像面积最大面积比值
+        double no_crop_thresh; //禁用ROI裁剪的装甲板占图像面积最大面积比值
         double hero_danger_zone; //英雄危险距离阈值，检测到有小于该距离的英雄直接开始攻击
         double no_crop_ratio;
         double full_crop_ratio;
@@ -185,18 +185,19 @@ namespace armor_detector
         // double max_delta_dist;
         double armor_roi_expand_ratio_width;
         double armor_roi_expand_ratio_height;
-        double armor_conf_high_thres;
+        double armor_conf_high_thresh;
 
         DetectorParam()
         {
             color = 1; //(Red:1/Blue:0)
+            max_lost_cnt = 5;
+            max_armors_cnt = 8;
+            
             armor_type_wh_thresh = 3.0;
             armor_type_wh_high_thresh = 3.0;
             armor_type_wh_low_thresh = 2.5;  
              
-            max_lost_cnt = 5;
-            max_armors_cnt = 8;
-            no_crop_thres = 2e-3;
+            no_crop_thresh = 2e-3;
             no_crop_ratio = 2e-3;
             full_crop_ratio = 1e-4;
 
@@ -204,7 +205,7 @@ namespace armor_detector
             fire_zone = 5.0;
             armor_roi_expand_ratio_width = 1.1;
             armor_roi_expand_ratio_height = 1.5;
-            armor_conf_high_thres = 0.82;
+            armor_conf_high_thresh = 0.82;
         }
     };
 

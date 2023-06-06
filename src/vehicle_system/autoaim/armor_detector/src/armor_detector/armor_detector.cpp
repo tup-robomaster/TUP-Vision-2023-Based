@@ -66,9 +66,9 @@ namespace armor_detector
         if (debug_params_.use_roi)
         {   //启用roi
             //吊射模式采用固定ROI
-            if (src.mode == 2)
+            if (src.mode == AUTOAIM_SLING)
             {
-                input(Range(600,1024),Range(432,848)).copyTo(input);
+                input(Range(600, 1024), Range(432, 848)).copyTo(input);
                 roi_offset_ = cv::Point2d((float)432, (float)600);
             }
             else
@@ -77,6 +77,7 @@ namespace armor_detector
             }
             RCLCPP_INFO_ONCE(logger_, "Using roi...");
         }
+
         time_crop_ = steady_clock_.now();
 
         objects_.clear();
@@ -107,7 +108,6 @@ namespace armor_detector
         if ((int)(objects_.size()) > this->detector_params_.max_armors_cnt)
             objects_.resize(this->detector_params_.max_armors_cnt);
         
-
         //生成装甲板对象
         for (auto object : objects_)
         {
@@ -178,7 +178,7 @@ namespace armor_detector
                 apex_sum += apex;
             armor.center2d = apex_sum / 4.f;
             //若装甲板置信度小于高阈值，需要相同位置存在过装甲板才放行
-            if (armor.conf < this->detector_params_.armor_conf_high_thres)
+            if (armor.conf <= this->detector_params_.armor_conf_high_thresh)
             {
                 if (!last_armors_.empty())
                 {
@@ -348,8 +348,8 @@ namespace armor_detector
         //Choose target vehicle
         //此处首先根据哨兵发来的ID指令进行目标车辆追踪
         int target_id = -1;
-            target_id = chooseTargetID(src);
-
+        target_id = chooseTargetID(src);
+        
         //未检索到有效车辆ID，直接退出
         if(target_id == -1)
         {
@@ -369,7 +369,7 @@ namespace armor_detector
         {
             target_key = "R" + to_string(target_id);
         }
- 
+        
         RCLCPP_INFO_THROTTLE(
             logger_, 
             this->steady_clock_, 
@@ -436,12 +436,10 @@ namespace armor_detector
         if (spin_status != UNKNOWN)
         {
             //------------------------------估计目标旋转周期-----------------------------------
-            // auto available_candidates_cnt = 0;
             double w = 0.0;
             double period = 0.0;
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
-                // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "dt:%.8f src.dt:%.8f", ((*iter).second.now / 1e9), (src.timestamp / 1e9));
                 if (((*iter).second.now / 1e9) == (src.timestamp / 1e9))
                 {
                     final_armors.emplace_back((*iter).second.new_armor);
@@ -636,17 +634,17 @@ namespace armor_detector
             armor_msg.point3d_world.z = target.armor3d_world[2];
             armor_msg.is_last_exists = false;
             for (auto last_armor : last_armors_)
-                {
+            {
                 if (last_armor.id == target.id && last_armor.roi.contains(target.center2d))
-                    {
+                {
                     armor_msg.is_last_exists = true;
-                    }
                 }
+            }
             armor_msg.is_front = target.is_front;
             armor_msg.rangle = target.rangle;
             // armor_msg.rangle = 0.0;
             // cout << "armor_rangle:" << armor_msg.rangle << endl;
-                    
+
             autoaim_msg.armors.emplace_back(armor_msg);
 
             // for (auto armor : final_armors)
@@ -674,24 +672,32 @@ namespace armor_detector
             //     armor_msg.is_front = armor.is_front;
             //     // autoaim_msg.armors.emplace_back(armor_msg);
             // }
-                    }
-                    else
-                    {
+        }
+        else
+        {
             autoaim_msg.is_target_lost = true;
             return false;
         }
 
         if(last_status_ == SINGER && cur_status_ == DOUBLE)
             autoaim_msg.spinning_switched = true;
-
-        autoaim_msg.is_target_lost = false;
+        
         int target_hp = car_id_map_[target.key];
-        // autoaim_msg.vehicle_id = target.key;
-        // autoaim_msg.vehicle_hp = target_hp;
-        // autoaim_msg.timestamp = now_;
-        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", autoaim_msg.aiming_point_cam.x, autoaim_msg.aiming_point_cam.y, autoaim_msg.aiming_point_cam.z);
+        autoaim_msg.vehicle_id = target.key;
+        autoaim_msg.vehicle_hp = target_hp;
+        autoaim_msg.is_target_lost = false;
+
+        RCLCPP_INFO_THROTTLE(
+            logger_, 
+            steady_clock_, 
+            200, 
+            "xyz_cam: (%.3f %.3f %.3f) xyz_world: (%.3f %.3f %.3f)", 
+            autoaim_msg.armors.front().point3d_cam.x, autoaim_msg.armors.front().point3d_cam.y, autoaim_msg.armors.front().point3d_cam.z,
+            autoaim_msg.armors.front().point3d_world.x, autoaim_msg.armors.front().point3d_world.y, autoaim_msg.armors.front().point3d_world.z
+        );
 
         //获取装甲板中心与装甲板面积以下一次ROI截取使用
+        // last_roi_center_ = Point2i(512,640);
         last_roi_center_ = target.center2d;
         last_armor_ = target;
         lost_cnt_ = 0;
@@ -888,37 +894,39 @@ namespace armor_detector
      */
     Point2i Detector::cropImageByROI(Mat &img)
     {
+        double area_ratio = last_target_area_ / img.size().area();
+        
         //若上次不存在目标
         if (!is_last_target_exists_)
         {
             //当丢失目标帧数过多或lost_cnt为初值
-            if (lost_cnt_ > detector_params_.max_lost_cnt || lost_cnt_ == 0)
+            if (lost_cnt_ > detector_params_.max_lost_cnt || lost_cnt_ == 0 || area_ratio == 0.0)
             {
                 return Point2i(0,0);
             }
         }
+        
         //若目标大小大于阈值
-        auto area_ratio = last_target_area_ / img.size().area();
-        int max_expand = (img.size().height - input_size_.width) / 32;
-        double cropped_ratio = (detector_params_.no_crop_ratio / detector_params_.full_crop_ratio) / max_expand;
-        int expand_value = ((int)(area_ratio / detector_params_.full_crop_ratio / cropped_ratio)) * 32;
-
-        Size2i cropped_size = input_size_ + Size2i(expand_value, expand_value);
-        // Size2i crooped_size = (input_size + (no_crop_thres / max))
         if (area_ratio > detector_params_.no_crop_ratio)
         {
             return Point2i(0,0);
         }
 
+        int max_expand = (img.size().height - input_size_.width) / 32;
+        double cropped_ratio = (detector_params_.no_crop_ratio / detector_params_.full_crop_ratio) / max_expand;
+        int expand_value = ((int)(area_ratio / detector_params_.full_crop_ratio / cropped_ratio)) * 32;
+        Size2i cropped_size = input_size_ + Size2i(expand_value, expand_value);
+        // Size2i crooped_size = (input_size + (no_crop_thres / max))
+
         //处理X越界
         if (last_roi_center_.x <= cropped_size.width / 2)
             last_roi_center_.x = cropped_size.width / 2;
-        else if (last_roi_center_.x > (img.size().width - cropped_size.width / 2))
+        else if (last_roi_center_.x >= (img.size().width - cropped_size.width / 2))
             last_roi_center_.x = img.size().width - cropped_size.width / 2;
         //处理Y越界
         if (last_roi_center_.y <= cropped_size.height / 2)
             last_roi_center_.y = cropped_size.height / 2;
-        else if (last_roi_center_.y > (img.size().height - cropped_size.height / 2))
+        else if (last_roi_center_.y >= (img.size().height - cropped_size.height / 2))
             last_roi_center_.y = img.size().height - cropped_size.height / 2;
         
         //左上角顶点
@@ -994,53 +1002,53 @@ namespace armor_detector
         double min_3d_dist = 1e2;
         for (auto& armor : new_armors_)
         {   
-                // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "armor_area:%d", armor.area);
-                // double dist_2d = abs((src.img.size().width / 2.0) - armor.center2d.x);
-                float rrangle = armor.rrect.angle;
-                double dist_3d = armor.armor3d_world.norm();
+            // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 500, "armor_area:%d", armor.area);
+            // double dist_2d = abs((src.img.size().width / 2.0) - armor.center2d.x);
+            float rrangle = armor.rrect.angle;
+            double dist_3d = armor.armor3d_world.norm();
 
-            if (armor.id == 6 && src.mode == AUTOAIM_SLING)
-                {
-                    return armor.id;
-                }
-                else if (armor.id == 1 && armor.armor3d_world.norm() <= detector_params_.hero_danger_zone)
-                {
-                    return armor.id;
-                }
-                else if ((armor.id == last_armor_.id 
-                || last_armor_.roi.contains(armor.center2d)
-                )
-                && abs(armor.area - last_armor_.area) / (float)armor.area < 0.40
-                && abs(now_ - last_timestamp_) / 1e6 <= 100
-                && (abs(rrangle) <= 16.0 || abs(rrangle) >= 74.0))
-                {
-                    armor.id = last_armor_.id;
-                    is_last_id_exists = true;
-                    target_id = armor.id;
-                    break;
-                }
-                else if (abs(rrangle) >= 13.0 && abs(rrangle) <= 77.0)
-                {
-                    continue;
-                }
-                else if ((abs(rrangle) > 77.0 || abs(rrangle) < 13.0) && (abs(rrangle) > abs(max_rrangle) || abs(rrangle) < abs(min_rrangle)))
-                {
-                    min_rrangle = abs(rrangle) < 13.0 ? rrangle : 1e2;
-                    max_rrangle = abs(rrangle) > 77.0 ? rrangle : 0.0; 
-                    is_last_id_exists = true;
-                    target_id = armor.id;
-                }
-                // else if (dist_2d < min_2d_dist && dist_3d / min_3d_dist >= 0.6 && dist_3d <= detector_params_.fire_zone)
-                // {
-                //     is_last_id_exists = true;
-                //     target_id = armor.id;
-                // }   
-                else if (dist_3d < min_3d_dist && dist_3d <= detector_params_.fire_zone)
-                {
-                    is_last_id_exists = true;
-                    target_id = armor.id;
-                }
+            if (armor.id == 6)
+            {
+                return armor.id;
             }
+            else if (armor.id == 1 && armor.armor3d_world.norm() <= detector_params_.hero_danger_zone)
+            {
+                return armor.id;
+            }
+            else if ((armor.id == last_armor_.id 
+            || last_armor_.roi.contains(armor.center2d)
+            )
+            && abs(armor.area - last_armor_.area) / (float)armor.area < 0.40
+            && abs(now_ - last_timestamp_) / 1e6 <= 100
+            && (abs(rrangle) <= 16.0 || abs(rrangle) >= 74.0))
+            {
+                armor.id = last_armor_.id;
+                is_last_id_exists = true;
+                target_id = armor.id;
+                break;
+            }
+            else if (abs(rrangle) >= 13.0 && abs(rrangle) <= 77.0)
+            {
+                continue;
+            }
+            else if ((abs(rrangle) > 77.0 || abs(rrangle) < 13.0) && (abs(rrangle) > abs(max_rrangle) || abs(rrangle) < abs(min_rrangle)))
+            {
+                min_rrangle = abs(rrangle) < 13.0 ? rrangle : 1e2;
+                max_rrangle = abs(rrangle) > 77.0 ? rrangle : 0.0; 
+                is_last_id_exists = true;
+                target_id = armor.id;
+            }
+            // else if (dist_2d < min_2d_dist && dist_3d / min_3d_dist >= 0.6 && dist_3d <= detector_params_.fire_zone)
+            // {
+            //     is_last_id_exists = true;
+            //     target_id = armor.id;
+            // }   
+            else if (dist_3d < min_3d_dist && dist_3d <= detector_params_.fire_zone)
+            {
+                is_last_id_exists = true;
+                target_id = armor.id;
+            }
+        }
         
         //若不存在则返回面积最大的装甲板序号，即队列首元素序号
         if (is_last_id_exists)

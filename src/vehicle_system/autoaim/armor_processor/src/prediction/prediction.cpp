@@ -122,6 +122,7 @@ namespace armor_processor
         outpost_angular_speed_ = spin_state == CLOCKWISE ? -outpost_angular_speed_ : outpost_angular_speed_;
 
         // cout << "meas_world:" << meas(0) << " " << meas(1) << " " << meas(2) << " " << meas(3) << endl;
+
         RCLCPP_WARN_ONCE(
             logger_, 
             "delay_coeff:%.3f", 
@@ -160,12 +161,24 @@ namespace armor_processor
         else
         {
             Vector6d post_state = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+            if (meas(0) < 0.0)
+            {
+                is_reversed_ = false;
+            }
+            else if (meas(0) > 0.0)
+            {
+                meas(0) = -meas(0);
+                meas(1) = -meas(1);
+                meas(3) = CV_PI + meas(3);
+                is_reversed_ = true;
+            }
+
             if (predictBasedUniformModel(is_target_lost, spin_state, meas, dt, pred_dt, target.period, post_state))
             {
                 Eigen::Vector3d center3d = {post_state(0), post_state(1), post_state(2)}; 
-                pred_point3d = center3d;
                 double radius = post_state(3);
                 double pred_rangle = post_state(4);
+
                 if (!is_outpost_mode_)
                 {
                     if (predictBasedSinger(is_target_lost, center3d, pred_point3d, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, dt, pred_dt))
@@ -188,7 +201,7 @@ namespace armor_processor
                     }
                 }
 
-                Eigen::Vector4d circle_center3d = {pred_point3d(0), pred_point3d(1), pred_point3d(2), 0.0};
+                Eigen::Vector4d circle_center3d = {is_reversed_ ? -pred_point3d(0) : pred_point3d(0), is_reversed_ ? -pred_point3d(1) : pred_point3d(1), pred_point3d(2), 0.0};
                 armor3d_vec.emplace_back(circle_center3d);
                 if (!is_outpost_mode_)
                 {
@@ -207,7 +220,7 @@ namespace armor_processor
                             pred_y = pred_point3d(1) - pred_radius * cos(pred_next_rangle);
                             pred_z = (ii % 2 == 0) ? pred_point3d(2) : history_switched_state_vec_.front()(2);
                         }
-                        armor3d = {pred_x, pred_y, pred_z, pred_next_rangle};
+                        armor3d = {is_reversed_ ? -pred_x : pred_x, is_reversed_ ? -pred_y : pred_y, pred_z, pred_next_rangle};
                         armor3d_vec.emplace_back(armor3d);
                     }
                 }
@@ -221,10 +234,11 @@ namespace armor_processor
                         double pred_x = pred_point3d(0) + pred_radius * sin(pred_next_rangle);
                         double pred_y = pred_point3d(1) - pred_radius * cos(pred_next_rangle);
                         double pred_z = pred_point3d(2);
-                        armor3d = {pred_x, pred_y, pred_z, pred_next_rangle};
+                        armor3d = {is_reversed_ ? -pred_x : pred_x, is_reversed_ ? -pred_y : pred_y, pred_z, pred_next_rangle};
                         armor3d_vec.emplace_back(armor3d);
                     }
                 }
+                pred_point3d = {is_reversed_ ? -center3d(0) : center3d(0), is_reversed_ ? -center3d(1) : center3d(1), center3d(2)};
             }
         }
         return true;

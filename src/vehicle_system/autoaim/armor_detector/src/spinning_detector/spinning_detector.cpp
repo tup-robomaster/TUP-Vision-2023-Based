@@ -19,8 +19,8 @@ namespace armor_detector
         this->gyro_params_.max_delta_dist = 3.0;
         this->gyro_params_.max_delta_t = 30.0;
         this->gyro_params_.hero_danger_zone = 4.0;
-        this->gyro_params_.anti_spin_judge_high_thres = 4e3;
-        this->gyro_params_.anti_spin_judge_low_thres = 2e3;
+        this->gyro_params_.anti_spin_judge_high_thresh = 4e3;
+        this->gyro_params_.anti_spin_judge_low_thresh = 2e3;
         this->gyro_params_.anti_spin_max_r_multiple = 3;
         last_timestamp_ = 0.0;
         max_hop_period_ = 1500.0;
@@ -36,8 +36,8 @@ namespace armor_detector
         this->gyro_params_.max_delta_dist = gyro_params.max_delta_dist;
         this->gyro_params_.max_delta_t = gyro_params.max_delta_t;
         this->gyro_params_.hero_danger_zone = gyro_params.hero_danger_zone;
-        this->gyro_params_.anti_spin_judge_high_thres = gyro_params.anti_spin_judge_high_thres;
-        this->gyro_params_.anti_spin_judge_low_thres = gyro_params.anti_spin_judge_low_thres;
+        this->gyro_params_.anti_spin_judge_high_thresh = gyro_params.anti_spin_judge_high_thresh;
+        this->gyro_params_.anti_spin_judge_low_thresh = gyro_params.anti_spin_judge_low_thresh;
         this->gyro_params_.anti_spin_max_r_multiple = gyro_params.anti_spin_max_r_multiple;
         last_timestamp_ = 0.0;
         max_hop_period_ = 1500.0;
