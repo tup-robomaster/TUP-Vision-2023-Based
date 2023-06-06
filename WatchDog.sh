@@ -29,7 +29,7 @@ watch_commands() {
       if ! pgrep -f "$cmd" > /dev/null
       then
         echo "$cmd 未在运行, 重新启动"
-	gnome-terminal -- bash -c "source /opt/openvino/setupvars.sh;source /opt/ros/galactic/setup.bash;cd $(pwd);source install/setup.bash;$cmd;exec bash;"
+	gnome-terminal -- bash -c "source /opt/intel/openvino_2022/setupvars.sh;source /opt/ros/galactic/setup.bash;cd $(pwd);source install/setup.bash;$cmd;exec bash;"
       fi
     done
     sleep 1 # 设置睡眠时间，以便在下一次检查之前给进程足够的时间运行
