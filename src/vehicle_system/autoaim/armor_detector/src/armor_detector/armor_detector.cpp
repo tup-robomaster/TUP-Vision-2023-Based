@@ -250,7 +250,7 @@ namespace armor_detector
             // {   //FIXME：若存在平衡步兵需要对此处步兵装甲板类型进行修改
             //     target_type = SMALL;
             // }
-            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 50, "target_type:%s", target_type == 0 ? "SMALL_ARMOR" : "BIG_ARMOR");
+            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 50, "ID: %d target_type: %s", armor.id, target_type == 0 ? "SMALL_ARMOR" : "BIG_ARMOR");
 
             // 单目PnP
             auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, pnp_method);
@@ -339,16 +339,16 @@ namespace armor_detector
      */
     bool Detector::gyro_detector(TaskData &src, global_interface::msg::Autoaim& autoaim_msg, ObjHPMsg hp, DecisionMsg decision_msg)
     {
+        //Choose target vehicle
+        //此处首先根据哨兵发来的ID指令进行目标车辆追踪
+        int target_id = -1;
+        target_id = chooseTargetID(src);
+
         //Create ArmorTracker for new armors 
         spinning_detector_.createArmorTracker(trackers_map_, new_armors_, new_armors_cnt_map_, now_);
         
         //Detect armors status
         spinning_detector_.isSpinning(trackers_map_, new_armors_cnt_map_, now_);
-
-        //Choose target vehicle
-        //此处首先根据哨兵发来的ID指令进行目标车辆追踪
-        int target_id = -1;
-        target_id = chooseTargetID(src);
         
         //未检索到有效车辆ID，直接退出
         if(target_id == -1)
@@ -598,7 +598,12 @@ namespace armor_detector
             double delta_dist = (target.armor3d_world - last_armor_.armor3d_world).norm();
             if (target.id != last_armor_.id || delta_dist >= 1.5)
             {
-                cout << "target_switched..." << endl;
+                RCLCPP_INFO_THROTTLE(
+                    logger_,
+                    steady_clock_,
+                    50,
+                    "Target_switched..."
+                );
                 is_target_switched_ = true;
                 autoaim_msg.target_switched = true;
             }
@@ -611,7 +616,12 @@ namespace armor_detector
             double x_2d_dis = abs(last_armor_.center2d.x - target.center2d.x);
             if (target_id != last_armor_.id || (!last_armor_.roi.contains(target.center2d) && (x_2d_dis >= 250 || delta_dist >= 0.35)))
             {
-                cout << "spinning_switched" << endl;
+                RCLCPP_INFO_THROTTLE(
+                    logger_,
+                    steady_clock_,
+                    50,
+                    "Spinning switched..."
+                );
                 autoaim_msg.spinning_switched = true;
             }
         }

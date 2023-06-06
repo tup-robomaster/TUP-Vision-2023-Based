@@ -66,7 +66,7 @@ namespace armor_detector
         {
             //当装甲板颜色为灰色且当前dead_buffer小于max_dead_buffer
             string tracker_key;
-            if ((*armor).color == GRAY)
+            if ((*armor).color == GRAY_SMALL || (*armor).color == GRAY_BIG)
             {   
                 if (detect_color_ == RED)
                     tracker_key = "R" + to_string((*armor).id);
@@ -79,7 +79,7 @@ namespace armor_detector
             }
 
             int predictors_with_same_key = trackers_map.count(tracker_key);
-            if (predictors_with_same_key == 0 && (*armor).color != GRAY)
+            if (predictors_with_same_key == 0 && (*armor).color != GRAY_SMALL && (*armor).color != GRAY_BIG)
             {   // 当不存在该类型装甲板ArmorTracker且该装甲板Tracker类型不为灰色装甲板
                 ArmorTracker tracker((*armor), now);
                 auto target_predictor = trackers_map.insert(make_pair((*armor).key, tracker));
@@ -97,7 +97,7 @@ namespace armor_detector
                 {   // 若当前装甲板与上一次的距离小于阈值，并且当前装甲板的中心在上一次装甲板的roi范围内则视为同一装甲板目标，对此tracker进行更新
                     (*candidate).second.update((*armor), now);
                 }
-                else if ((*armor).color != GRAY)
+                else if ((*armor).color != GRAY_SMALL && (*armor).color != GRAY_BIG) 
                 {   // 若不匹配且不为灰色装甲板则创建新ArmorTracker（不为灰色装甲板分配新的追踪器）
                     ArmorTracker tracker((*armor), now);
                     trackers_map.insert(make_pair((*armor).key, tracker));
@@ -129,7 +129,7 @@ namespace armor_detector
                     }
                 }
 
-                if ((*armor).color != GRAY)
+                if ((*armor).color != GRAY_SMALL && (*armor).color != GRAY_BIG)
                 {
                     if (is_best_candidate_exist)
                     {   // 若找到速度最小且更新时间最近的tracker，则更新

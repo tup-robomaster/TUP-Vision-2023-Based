@@ -11,14 +11,6 @@ namespace armor_detector
 {
     ArmorTracker::ArmorTracker()
     {
-        // this->last_yaw_diff_ = 0.0;
-        // this->last_pitch_diff_ = 0.0;
-        // this->hop_timestamp_ = 0.0;
-        // normal_gyro_status_counter_ = 0;
-        // switch_gyro_status_counter_ = 0;
-        // spin_status_ = UNKNOWN;
-        // flag_ = 0;
-
         relative_angle = 0.0;
         this->now = 0;
         this->last_timestamp = 0;
@@ -45,15 +37,6 @@ namespace armor_detector
         this->calcTargetScore();
         
         this->is_initialized = false;
-        
-        // normal_gyro_status_counter_ = 0;
-        // switch_gyro_status_counter_ = 0;
-        // spin_status_ = UNKNOWN;
-        // flag_ = 0;
-        // this->last_yaw_diff_ = 0.0;
-        // this->last_pitch_diff_ = 0.0;
-        // this->hop_timestamp_ = 0.0;
-        // cout << "init_dt:" << now_timestamp / 1e6 << endl;
     }
 
     /**
@@ -81,7 +64,7 @@ namespace armor_detector
         this->last_armor = this->new_armor; //上一帧目标装甲板信息
         this->new_armor = new_add_armor;    //当前装甲板信息
 
-        if (new_add_armor.color == GRAY)
+        if (new_add_armor.color == GRAY_SMALL || new_add_armor.color == GRAY_BIG)
         {
             ++gray_armor_cnt_;
             cout << "gray_cnt:" <<gray_armor_cnt_ << endl;
