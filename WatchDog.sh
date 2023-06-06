@@ -15,7 +15,7 @@ declare -a commands=("ros2 launch global_user vision_bringup.launch.py")
 start_commands() {
   for cmd in "${commands[@]}"
   do
-	gnome-terminal -- bash -c "source /opt/openvino/setupvars.sh;source /opt/ros/galactic/setup.bash;cd $(pwd);source install/setup.bash;$cmd;exec bash;"
+	gnome-terminal -- bash -c "source /opt/intel/openvino_2022/setupvars.sh;source /opt/ros/galactic/setup.bash;cd $(pwd);source install/setup.bash;$cmd;exec bash;"
   done
 }
 
