@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-17 00:27:33
- * @LastEditTime: 2023-05-29 17:12:03
+ * @LastEditTime: 2023-05-28 20:53:22
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/armor_processor/armor_processor.hpp
  */
 #ifndef ARMOR_PRECESSOR_HPP_
@@ -44,7 +44,6 @@ namespace armor_processor
         
         //预测器
         ArmorPredictor armor_predictor_;
-        //坐标解算
         CoordSolver coordsolver_;
 
         PredictParam predict_param_;

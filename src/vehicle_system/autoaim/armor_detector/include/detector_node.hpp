@@ -14,6 +14,9 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
+#include <message_filters/time_synchronizer.h>
+#include <message_filters/subscriber.h>
+#include <message_filters/sync_policies/approximate_time.h>
 #include <image_transport/image_transport.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <tf2/LinearMath/Quaternion.h>
@@ -28,6 +31,7 @@
 
 using namespace global_user;
 using namespace coordsolver;
+using namespace message_filters;
 using namespace ament_index_cpp;
 namespace armor_detector
 {

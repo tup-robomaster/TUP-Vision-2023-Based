@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2023-03-12 20:56:01
+ * @LastEditTime: 2023-06-01 13:45:27
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector_node.hpp
  */
 #ifndef BUFF_DETECTOR_NODE_HPP_
@@ -22,6 +22,11 @@
 #include <image_transport/subscriber_filter.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 
 //c++
 #include <atomic>
@@ -51,28 +56,27 @@ namespace buff_detector
         BuffParam buff_param_;
         PathParam path_param_;
         DebugParam debug_param_;
+        Eigen::Vector3d last_detect_point3d_;
 
         std::unique_ptr<Detector> detector_;
         std::unique_ptr<Detector> initDetector();
     
     private:
-        ImageInfo image_info_;
-        ImageSize image_size_;
         // Subscribe images from camera node.
-        std::shared_ptr<image_transport::Subscriber> img_sub_; 
-        void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info);
+        std::shared_ptr<image_transport::Subscriber> img_msg_sub_; 
+        void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg);
 
         Mutex serial_mutex_;
         SerialMsg serial_msg_;
         rclcpp::Subscription<SerialMsg>::SharedPtr serial_msg_sub_;
         void sensorMsgCallback(const SerialMsg& serial_msg);
 
-    private:
-        rclcpp::Time time_start_;
-        rclcpp::Publisher<BuffMsg>::SharedPtr buff_info_pub_; //buff msgs pub.
+        // Buff msgs pub.
+        rclcpp::Publisher<BuffMsg>::SharedPtr buff_msg_pub_; 
+        int mode_ = 1;
     
     protected:
-        // params callback.
+        // Params callback.
         bool updateParam();
         rcl_interfaces::msg::SetParametersResult paramsCallback(const std::vector<rclcpp::Parameter>& params);
         OnSetParametersCallbackHandle::SharedPtr callback_handle_;

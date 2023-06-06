@@ -32,17 +32,17 @@
     debug: true
     using_video: true
     using_ros2bag: false
-    video_path: "/recorder/video/new_buff1.mp4"
+    video_path: "/recorder/video/big_buff1.mp4"
     save_video: false
     save_path: "/recorder/video/"
-    use_port: true
+    use_port: false
     show_img: false
-    debug_mode: 3
+    debug_mode: 4
     
 /hik_cam_driver:
   ros__parameters:
     cam_id: 0
-    camera_topic: hik_img
+    camera_type: 1
     frame_id: hik_cam
     image_width: 1440
     image_height: 1080
@@ -57,6 +57,11 @@
     debug: true
     save_video: false
     save_path: "/recorder/video/"
-    use_port: true
-    show_img: false
+    using_port: false
 
+
+/serialport:
+  ros__parameters:
+    debug_without_com: false
+    baud: 115200
+    using_port: false

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-28 17:12:53
- * @LastEditTime: 2023-06-03 03:09:19
+ * @LastEditTime: 2023-04-28 15:24:56
  * @FilePath: /TUP-Vision-2023-Based/src/camera_driver/src/usb_driver/usb_cam_node.cpp
  */
 #include "../../include/usb_driver/usb_cam_node.hpp"
@@ -248,6 +248,7 @@ namespace camera_driver
                 //     cv::resize(frame_, frame_, cv::Size(usb_cam_params_.image_width, usb_cam_params_.image_height));
                 //     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Resize frame...");
                 // }
+
                 // if(!is_filpped)
                 // {
                 //     RCLCPP_INFO(this->get_logger(), "is_filpped...");
@@ -326,8 +327,8 @@ namespace camera_driver
             cv::waitKey(1);
         }
 
-        // if(using_video_)
-        //     usleep(2000);
+        if(using_video_)
+            usleep(5000);
     }
 
     bool UsbCamNode::setParam(rclcpp::Parameter param)

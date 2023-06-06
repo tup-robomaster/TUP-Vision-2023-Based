@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 10:49:05
- * @LastEditTime: 2023-05-31 17:09:45
+ * @LastEditTime: 2023-05-31 18:55:09
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor/armor_processor.cpp
  */
 #include "../../include/armor_processor/armor_processor.hpp"
@@ -158,13 +158,6 @@ namespace armor_processor
                 }
                 is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);
                 lost_cnt_ = 0;
-
-                RCLCPP_INFO_THROTTLE(
-                    logger_,
-                    steady_clock_,
-                    50,
-                    "Losting appearing..."  
-                );
             }
             else if (target.is_target_switched && !target.is_target_lost)
             {
@@ -181,6 +174,7 @@ namespace armor_processor
                 // target_period_ = target.period;
                 armor_predictor_.predictor_state_ = PREDICTING;
 
+                // Eigen::Vector4d meas = {xyz(1), -xyz(0), xyz(2), (rangle > 0 ? (rangle - CV_PI / 2) : (CV_PI * 1.5 + rangle))};
                 Eigen::Vector4d meas = {xyz(0), xyz(1), xyz(2), rangle};
                 armor_predictor_.updatePredictor(target.is_spinning, meas);
                 is_success = armor_predictor_.predict(target, dt, pred_dt, sleep_time, pred_result, armor3d_vec);

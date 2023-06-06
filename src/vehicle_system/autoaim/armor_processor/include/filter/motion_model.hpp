@@ -2,12 +2,14 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 12:13:56
- * @LastEditTime: 2023-05-29 22:21:14
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/motion_model.hpp
+ * @LastEditTime: 2023-05-04 02:29:20
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/motion_model.hpp
  */
 #include "./kalman_filter.hpp"
+#include "../prediction/param_struct.hpp"
+//常速、加速和匀加速模型,SingerModel使用的是Singer运动模型，UniformModel使用的是匀速直线运动模型
 
-namespace filter
+namespace armor_processor
 {
     class CV : public KalmanFilter
     {
@@ -70,7 +72,7 @@ namespace filter
         void init();
     public:
         void updateC(); 
-        void updateC(Eigen::MatrixXd& C, const double dt);
+        void updateC(MatrixXd& C, const double dt);
         void updateQ();
         void updateQ(double dt);
         
@@ -104,5 +106,5 @@ namespace filter
         double radius_ = 0.20;
         double rangle_ = 0.0;
     };
-} // filter
+} // armor_processor
 

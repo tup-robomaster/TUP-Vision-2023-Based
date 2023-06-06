@@ -48,7 +48,7 @@
     use_roi: true
     
     debug: true
-    show_img: true
+    show_img: false
     show_crop_img: false
     show_fps: true
     show_aim_cross: true
@@ -70,7 +70,7 @@
 
   # Debug params.
     debug: true
-    show_img: false
+    show_img: true
     draw_predict: true
     show_predict: true
     show_aim_cross: true
@@ -89,21 +89,24 @@
     #----------------------------------Xc------Yc----Zc-----r---theta--omega
     uniform_ekf_process_noise_param: [0.00005, 0.0001, 0.002, 0.0005, 0.002, 0.001]
     #----------------------------------X----Y---Z---theta
-    uniform_ekf_measure_noise_param: [5.0, 12.0, 1.0, 1.0]
+    uniform_ekf_measure_noise_param: [5.0, 1.0, 1.0, 1.0]
     
   # Singer model
     # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)
-    singer_model_process_param: [1.00, 1.00, 1.0, 2.65, 30.45, 2.65]
+    singer_model_process_param: [1.00, 1.00, 1.0, 5.0, 10.0, 5.0]
     # r:观测协方差系数(r1/r2/r3)
     singer_model_measure_param: [1.0, 1.0, 1.0]
 
     # IMM model.
-    #状态转移概率
+    #状态转移概率，即在不同模型之间转移的概率。该矩阵是一个4x4的矩阵，表示4个不同的模型之间的转移概率。
     trans_prob_matrix: [0.6, 0.3, 0.05, 0.05, #row prob sum = 1
                         0.5, 0.4, 0.05, 0.05,
                         0.1, 0.1, 0.75, 0.05,
                         0.1, 0.1, 0.05, 0.75]
     #模型概率
     model_prob_vector: [0.4, 0.3, 0.15, 0.15] #prob sum = 1
+    #模型概率，即每个模型被选中的概率。该向量是一个长度为4的向量，表示4个不同模型的概率。各模型概率向量
     process_noise: [0.4, 0.4, 0.3, 0.3, 0.2, 0.2]
+    #过程噪声，包括系统状态变量的噪声标准差（X、Y、Z、theta、omega）。
     measure_noise: [60.0, 60.0, 30.0, 30.0]
+    #测量噪声，包括对三个位置变量（X、Y、Z）和角度变量（theta）的测量噪声标准差。

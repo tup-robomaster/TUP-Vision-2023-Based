@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:45:06
- * @LastEditTime: 2023-05-29 22:49:58
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/buff_processor/buff_processor.hpp
+ * @LastEditTime: 2023-06-01 16:31:38
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/buff_processor/buff_processor.hpp
  */
 #ifndef BUFF_PROCESSOR_HPP_
 #define BUFF_PROCESSOR_HPP_
@@ -28,7 +28,7 @@ namespace buff_processor
 
     public:
         Processor();
-        Processor(const PredictorParam& predict_param, vector<double>* kf_param, const DebugParam& debug_param);
+        Processor(const PredictorParam& predict_param, const PathParam& path_param, const DebugParam& debug_param);
         ~Processor();
 
         PathParam path_param_;
@@ -46,7 +46,7 @@ namespace buff_processor
         CoordSolver coordsolver_;
         BuffPredictor buff_predictor_;
         
-        bool predict(BuffMsg buff_msg, BuffInfo& buff_info);
+        bool predictor(BuffMsg buff_msg, BuffInfo& target_info);
     };
 } //namespace buff_processor
 

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-06-03 22:35:20
+ * @LastEditTime: 2023-06-03 23:44:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -94,6 +94,9 @@ namespace armor_detector
             is_last_target_exists_ = false;
             last_target_area_ = 0.0;
 
+            // rclcpp::Time end = steady_clock_.now();
+            // RCLCPP_WARN(logger_, "infer_time: %.3fms", (end - st).nanoseconds() / 1e6);
+
             return false;
         }
         time_infer_ = steady_clock_.now();
@@ -108,7 +111,6 @@ namespace armor_detector
         if ((int)(objects_.size()) > this->detector_params_.max_armors_cnt)
             objects_.resize(this->detector_params_.max_armors_cnt);
         
-
         //生成装甲板对象
         for (auto object : objects_)
         {
@@ -349,7 +351,6 @@ namespace armor_detector
             autoaim_msg.is_target_lost = true;
             lost_cnt_++;
             is_last_target_exists_ = false;
-            last_target_area_ = 0;
             RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "No available tracker exists!");
             return false;
         }
@@ -391,12 +392,10 @@ namespace armor_detector
         if (spin_status != UNKNOWN)
         {
             //------------------------------估计目标旋转周期-----------------------------------
-            // auto available_candidates_cnt = 0;
             double w = 0.0;
             double period = 0.0;
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
-                // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "dt:%.8f src.dt:%.8f", ((*iter).second.now / 1e9), (src.timestamp / 1e9));
                 if (((*iter).second.now / 1e9) == (src.timestamp / 1e9))
                 {
                     final_armors.emplace_back((*iter).second.new_armor);
@@ -555,6 +554,7 @@ namespace armor_detector
             double delta_dist = (target.armor3d_world - last_armor_.armor3d_world).norm();
             if (target.id != last_armor_.id || delta_dist >= 1.5)
             {
+                // cout << "delta_dist:" << delta_dist << endl;
                 cout << "target_switched..." << endl;
                 is_target_switched_ = true;
                 autoaim_msg.target_switched = true;
@@ -642,9 +642,16 @@ namespace armor_detector
         int target_hp = car_id_map_[target.key];
         autoaim_msg.vehicle_id = target.key;
         autoaim_msg.vehicle_hp = target_hp;
-        // autoaim_msg.timestamp = now_;
         autoaim_msg.is_target_lost = false;
-        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", autoaim_msg.aiming_point_cam.x, autoaim_msg.aiming_point_cam.y, autoaim_msg.aiming_point_cam.z);
+
+        RCLCPP_INFO_THROTTLE(
+            logger_, 
+            steady_clock_, 
+            200, 
+            "xyz_cam: (%.3f %.3f %.3f) xyz_world: (%.3f %.3f %.3f)", 
+            autoaim_msg.armors.front().point3d_cam.x, autoaim_msg.armors.front().point3d_cam.y, autoaim_msg.armors.front().point3d_cam.z,
+            autoaim_msg.armors.front().point3d_world.x, autoaim_msg.armors.front().point3d_world.y, autoaim_msg.armors.front().point3d_world.z
+        );
 
         //获取装甲板中心与装甲板面积以下一次ROI截取使用
         // last_roi_center_ = Point2i(512,640);
@@ -948,7 +955,7 @@ namespace armor_detector
             float rrangle = armor.rrect.angle;
             double dist_3d = armor.armor3d_world.norm();
 
-            if (armor.id == 6 && src.mode == AUTOAIM_SLING)
+            if (armor.id == 6)
             {
                 return armor.id;
             }

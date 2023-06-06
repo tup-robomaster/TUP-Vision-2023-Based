@@ -77,9 +77,11 @@ add_library(${PROJECT_NAME} SHARED
   # test/src/buff_detector/buff_detector.cpp
   # test/src/buff_detector_node.cpp
 )
+
 ament_target_dependencies(${PROJECT_NAME}
   ${dependencies}
 )
+
 target_link_libraries(${PROJECT_NAME}
   openvino::runtime
 )
@@ -93,9 +95,11 @@ add_executable(${PROJECT_NAME}_node
   # test/src/buff_detector/buff_detector.cpp
   # test/src/buff_detector_node.cpp
 )
+
 ament_target_dependencies(${PROJECT_NAME}_node 
   ${dependencies}
 )
+
 target_link_libraries(${PROJECT_NAME}_node 
   openvino::runtime 
   yaml-cpp

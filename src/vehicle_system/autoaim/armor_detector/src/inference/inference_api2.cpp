@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-05-31 22:14:25
+ * @LastEditTime: 2023-04-05 16:02:34
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -15,7 +15,7 @@ static constexpr int NUM_CLASSES = 8;  // Number of classes
 static constexpr int NUM_COLORS = 4;   // Number of color
 static constexpr int TOPK = 128;       // TopK
 static constexpr float NMS_THRESH = 0.3;
-static constexpr float BBOX_CONF_THRESH = 0.75;
+static constexpr float BBOX_CONF_THRESH = 0.85;
 static constexpr float MERGE_CONF_ERROR = 0.15;
 static constexpr float MERGE_MIN_IOU = 0.9;
 

@@ -2,14 +2,11 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-20 19:46:36
- * @LastEditTime: 2023-06-03 21:31:10
+ * @LastEditTime: 2023-06-04 00:47:02
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
 #define PARAM_STRUCT_HPP_
-
-#include "../../../filter/include/particle_filter.hpp"
-#include "../../../filter/include/motion_model.hpp"
 
 namespace buff_processor
 {
@@ -71,9 +68,9 @@ namespace buff_processor
         string pf_path;
         double bullet_speed;            //弹速
         double shoot_delay;             //发弹延迟
+        double delay_small;             //小符发弹延迟
+        double delay_big;               //大符发弹延迟
         double delay_coeff;             //延迟系数
-        double delay_big;
-        double delay_small;
         
         double max_timespan;            //最大时间跨度，大于该时间重置预测器(ms)
         double max_rmse;                //TODO:回归函数最大Cost
@@ -83,7 +80,7 @@ namespace buff_processor
         int history_deque_len_cos;      //大符全部参数拟合队列长度
         int history_deque_len_phase;    //大符相位参数拟合队列长度
         int history_deque_len_uniform;  //小符转速求解队列长度
-        
+
         int window_size;                //滑动窗口大小
         double fan_length;              //能量机关旋转半径
         int max_error_cnt;              //预测误差帧数
@@ -94,9 +91,11 @@ namespace buff_processor
         double rmse_high_thresh;        //拟合rmse高阈值
         double rmse_low_thresh;         //拟合rmse低阈值
 
+        vector<double> params_bound;
+
         PredictorParam()
         {
-            pf_path = "/config/filter_param.yaml";
+            pf_path = "src/global_user/config/filter_param.yaml";
             bullet_speed = 28.0;
             shoot_delay = 100.0;
             delay_coeff = 1.0;
@@ -111,6 +110,8 @@ namespace buff_processor
             history_deque_len_cos = 250;
             history_deque_len_phase = 100;
             history_deque_len_uniform = 100;
+            delay_small = 175.0;
+            delay_big = 100.0;
             
             window_size = 2;
             fan_length = 0.7;
@@ -119,8 +120,8 @@ namespace buff_processor
             pred_error_low_thresh = 0.20;
             fitting_error_cnt = 5;
             fitting_error_thresh = 0.20;
-            rmse_high_thresh = 5.5;
-            rmse_low_thresh = 5.5;
+            rmse_high_thresh = 2.0;
+            rmse_low_thresh = 0.5;
         }     
     };
 
@@ -130,8 +131,8 @@ namespace buff_processor
         string camera_name;
         PathParam()
         {
-            camera_name = "KE0200110076";
-            camera_param_path = "/config/camera.yaml";
+            camera_name = "KE0200110075";
+            camera_param_path = "src/global_user/config/camera.yaml";
         }
     };
 

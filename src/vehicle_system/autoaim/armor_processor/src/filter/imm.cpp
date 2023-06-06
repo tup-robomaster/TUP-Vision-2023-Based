@@ -2,12 +2,12 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 16:30:16
- * @LastEditTime: 2023-05-29 22:23:30
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/src/imm.cpp
+ * @LastEditTime: 2023-03-17 19:19:24
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/filter/imm.cpp
  */
-#include "../include/imm.hpp"
+#include "../../include/filter/imm.hpp"
 
-namespace filter
+namespace armor_processor
 {
     IMM::IMM():model_num_(0){}
     IMM::~IMM(){}
@@ -98,6 +98,7 @@ namespace filter
     void IMM::stateInteraction()
     {
         //计算交互后各模型概率
+        //用于实现状态交互，即计算交互后各模型概率。具体地，该函数首先计算每个运动模型的交互系数`U`和状态向量`X`，然后计算每个模型的状态协方差矩阵`P`，并更新模型的状态。
         //step1
         this->c_ = Eigen::VectorXd::Zero(this->model_num_);
         for(int j = 0; j < this->model_num_; j++)
@@ -142,7 +143,7 @@ namespace filter
 
     void IMM::updateState()
     {
-
+        //用于对各模型进行滤波，并进行状态更新。该函数的输入参数包括观测向量`z`和时间量`dt`。
     }
 
     /**
@@ -165,7 +166,7 @@ namespace filter
      * @brief 更新模型概率
      * 
      */
-    void IMM::updateModelProb()
+    void IMM::updateModelProb()//用于更新模型概率，即根据各个运动模型的似然值和交互系数，计算每个模型的概率。
     {
         //模型概率更新
         double c_sum = 0;
@@ -184,7 +185,7 @@ namespace filter
      * @brief 各模型状态估计融合
      * 
      */
-    void IMM::estimateFusion()
+    void IMM::estimateFusion()//用于实现各模型状态估计融合，即计算每个模型的状态向量和状态协方差矩阵，并进行融合。
     {
         this->x_ = this->X_ * this->model_prob_;
 
@@ -197,6 +198,7 @@ namespace filter
     }
 
     void IMM::updateOnce(const Eigen::VectorXd& z, const double& dt)
+    //用于执行一次完整的目标跟踪，包括对状态进行交互、更新和估计融合。如果观测向量`z`为0，则只进行状态交互和状态更新；否则，还需要更新模型概率，并进行状态估计融合。
     {
         if(z.isZero())
         {
@@ -212,4 +214,4 @@ namespace filter
             estimateFusion();
         }
     }
-} //filter
+} //armor_processor

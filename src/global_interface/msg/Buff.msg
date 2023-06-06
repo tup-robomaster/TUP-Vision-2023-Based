@@ -1,6 +1,6 @@
 std_msgs/Header header
 uint8 mode
-int64 timestamp
+uint64 timestamp
 float64 angle
 float64 delta_angle
 float64 angle_offset

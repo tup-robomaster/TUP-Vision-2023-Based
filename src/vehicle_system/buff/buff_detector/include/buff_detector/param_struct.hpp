@@ -1,18 +1,32 @@
 /*
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
- * @Date: 2023-03-10 15:35:11
- * @LastEditTime: 2023-05-29 18:14:01
+ * @Date: 2023-03-10 15:32:40
+ * @LastEditTime: 2023-03-10 15:33:54
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/param_struct.hpp
  */
+#ifndef PARAM_STRUCT_HPP_
+#define PARAM_STRUCT_HPP_
+
 //c++
 #include <future>
 #include <vector>
 //eigen
+#include <Eigen/Dense>
 #include <Eigen/Core>
 
+#include <opencv2/opencv.hpp>
+
+using namespace std;
+using namespace cv;
 namespace buff_detector
 {
+    enum BuffStatus
+    {
+        UNACTIVATED,
+        ACTIVATED
+    };
+
     struct DebugParam
     {
         bool using_imu;
@@ -23,7 +37,6 @@ namespace buff_detector
         bool print_target_info;
         bool assist_label;
         bool prinf_latency;
-        bool show_marker;
 
         DebugParam()
         {
@@ -35,7 +48,6 @@ namespace buff_detector
             print_target_info = false; 
             prinf_latency = false;
             assist_label = false;
-            show_marker = false;
         }
     };
 
@@ -52,9 +64,9 @@ namespace buff_detector
         BuffParam()
         {
             color = 1;
-            max_lost_cnt = 4; 
+            max_lost_cnt = 10; 
             max_v = 4.0;   
-            max_delta_t = 100; 
+            max_delta_t = 200; 
             fan_length = 0.7;
             no_crop_thres = 2e-3;
             max_angle = 0.25;
@@ -91,7 +103,7 @@ namespace buff_detector
         Eigen::Vector3d armor3d_cam;
         Eigen::Vector3d armor3d_world;
         Eigen::Matrix3d rmat;
-        Eigen::Quaterniond quat_cam;
+        Eigen::Quaterniond quat_world;
         cv::Point2f points2d[5];
         TargetInfo()
         {
@@ -104,3 +116,5 @@ namespace buff_detector
         }
     };
 } //namespace buff_detector
+
+#endif

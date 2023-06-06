@@ -39,6 +39,7 @@ find_package(filter REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(matplotlib_cpp REQUIRED)
 
 include_directories(include 
   ${OpenCV_INCLUDE_DIRS}
@@ -62,6 +63,7 @@ set(dependencies
   visualization_msgs
   tf2_geometry_msgs
   tf2_ros
+  matplotlib_cpp
 )
   
 include_directories(include)
@@ -69,6 +71,10 @@ add_library(${PROJECT_NAME} SHARED
   src/predictor/predictor.cpp
   src/buff_processor/buff_processor.cpp
   src/buff_processor_node.cpp
+
+  # test/src/predictor/predictor.cpp
+  # test/src/buff_processor/buff_processor.cpp
+  # test/src/buff_processor_node.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME} 
@@ -81,6 +87,7 @@ target_link_libraries(${PROJECT_NAME}
   yaml-cpp 
   ceres
   lapack
+  matplotlib_cpp::matplotlib_cpp
 )
   
 rclcpp_components_register_nodes(${PROJECT_NAME}
@@ -92,6 +99,10 @@ add_executable(${PROJECT_NAME}_node
   src/predictor/predictor.cpp
   src/buff_processor/buff_processor.cpp
   src/buff_processor_node.cpp
+
+  # test/src/predictor/predictor.cpp
+  # test/src/buff_processor/buff_processor.cpp
+  # test/src/buff_processor_node.cpp
 )
 
 # ament_target_dependencies(${PROJECT_NAME}_node 

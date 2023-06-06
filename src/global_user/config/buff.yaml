@@ -1,9 +1,10 @@
 /buff_detector:
   ros__parameters:
   # Detector params.
-    buff_mode: 3
-    color: 1 # 0: blue / 1: red
-    max_lost_cnt: 4 
+    buff_mode: 4
+    color: 0 # 0: blue / 1: red
+    max_angle: 0.25  # fan switched angle threshhold
+    max_lost_cnt: 5 
     max_v: 4.0  
     max_delta_t: 200.0
     fan_length: 0.7
@@ -12,18 +13,19 @@
   # Paths.
     camera_param_path: "/config/camera.yaml"
     path_prefix: "/recorder/dataset/"
+    
     network_path: "/model/buff-05-28-01.xml"
 
   # Debug.
-    use_roi: false
+    use_roi: true
 
-    show_img: true
+    show_img: false
     show_all_fans: true
     show_fps: true
     print_target_info: false 
     prinf_latency: false
     assist_label: false
-    show_marker: true
+    show_marker: false
 
 /buff_processor:
   ros__parameters:
@@ -32,23 +34,23 @@
     max_rmse: 3.5
     max_v: 3.0
     max_a: 8.0
-    history_deque_len_cos: 100
+    history_deque_len_cos: 150
     history_deque_len_phase: 50
     history_deque_len_uniform: 50
     window_size: 2
-    delay_big: 200.0
-    delay_small: 150.0
+    delay_small: 250.0
+    delay_big: 170.0
 
   # Paths.
     pf_path: "/config/filter_param.yaml"
     camera_param_path: "/config/camera.yaml"
 
-  # Filter params.
-    kf_process_noise: [2.0]
-    kf_measure_noise: [2.0]
-
+  # fitting params bound
+    #               al  ah    wl   wh    pl    ph    bl  bh
+    params_bound: [0.5, 1.2, 1.4, 2.2, -3.14, 3.14, 1.5, 2.5]
+    
   # Debug.
     debug: true
     show_img: false
-    show_marker: true
-    show_fitting_curve: true 
+    show_marker: false
+    show_fitting_curve: true

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(camera_driver)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+add_compile_options(-Wall -Wextra -Wpedantic -std=c++17)
 endif()
 
 set(CMAKE_BUILD_TYPE=Release)
@@ -28,7 +28,7 @@ find_package(global_interface REQUIRED)
 
 include_directories("dependencies/hik_sdk/include")
 include_directories("dependencies/daheng_sdk/include")
-include_directories("dependencies/mvs_sdk/include")
+# include_directories("dependencies/mvs_sdk/include")
 include_directories(
   include
   ${OpenCV_INCLUDE_DIRS}
@@ -36,7 +36,7 @@ include_directories(
   ${cv_bridge_INCLUDE_DIRS}
 )
 
-link_directories(/opt/MVS/lib/64/)
+link_directories(/opt/MvCamCtrlSDK/lib/64)
 
 set(dependencies 
   rclcpp
@@ -62,8 +62,8 @@ add_library(${PROJECT_NAME} SHARED
   src/hik_driver/hik_cam_node.cpp
   src/daheng_driver/daheng_camera.cpp
   src/daheng_driver/daheng_cam_node.cpp
-  src/mvs_driver/mvs_camera.cpp 
-  src/mvs_driver/mvs_cam_node.cpp
+  # src/mvs_driver/mvs_camera.cpp 
+  # src/mvs_driver/mvs_cam_node.cpp
 )
 
 target_compile_definitions(${PROJECT_NAME}
@@ -78,7 +78,7 @@ target_link_libraries(${PROJECT_NAME}
   FormatConversion
   MediaProcess
   gxiapi
-  MVSDK
+  # MVSDK
   yaml-cpp
 )
 
@@ -102,11 +102,11 @@ target_link_libraries(daheng_cam_driver_node
 )
 
 # Add executable
-add_executable(mvs_cam_driver_node src/mvs_driver/mvs_cam_node_main.cpp)
-ament_target_dependencies(mvs_cam_driver_node ${dependencies})
-target_link_libraries(mvs_cam_driver_node 
-  ${PROJECT_NAME}
-)
+# add_executable(mvs_cam_driver_node src/mvs_driver/mvs_cam_node_main.cpp)
+# ament_target_dependencies(mvs_cam_driver_node ${dependencies})
+# target_link_libraries(mvs_cam_driver_node 
+#   ${PROJECT_NAME}
+# )
 
 rclcpp_components_register_nodes(${PROJECT_NAME} 
   PLUGIN "camera_driver::UsbCamNode"
@@ -121,10 +121,10 @@ rclcpp_components_register_nodes(${PROJECT_NAME}
   EXECUTABLE daheng_cam_driver_node
 )
 
-rclcpp_components_register_nodes(${PROJECT_NAME}
-  PLUGIN "camera_driver::MvsCamNode"
-  EXECUTABLE mvs_cam_driver_node
-)
+# rclcpp_components_register_nodes(${PROJECT_NAME}
+#   PLUGIN "camera_driver::MvsCamNode"
+#   EXECUTABLE mvs_cam_driver_node
+# )
     
 install(TARGETS 
   ${PROJECT_NAME}
@@ -137,7 +137,7 @@ install(TARGETS
   usb_cam_driver_node 
   hik_cam_driver_node
   daheng_cam_driver_node
-  mvs_cam_driver_node
+  # mvs_cam_driver_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

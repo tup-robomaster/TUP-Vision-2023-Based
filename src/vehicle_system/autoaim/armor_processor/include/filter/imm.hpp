@@ -2,15 +2,15 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-11-26 16:29:25
- * @LastEditTime: 2023-05-29 22:22:30
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/filter/include/imm.hpp
+ * @LastEditTime: 2023-03-17 19:14:38
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/include/filter/imm.hpp
  */
 #ifndef IMM_HPP_
 #define IMM_HPP_
 
 #include "./motion_model.hpp"
 
-namespace filter
+namespace armor_processor
 {
     struct IMMParam
     {
@@ -71,5 +71,5 @@ namespace filter
         // step4:估计融合
         void estimateFusion();
     };
-} //filter
+} //armor processor
 #endif

@@ -136,7 +136,7 @@ namespace camera_driver
         // Camera topic.
         this->declare_parameter<string>("camera_topic", "daheng_img");
         camera_topic_ = this->get_parameter("camera_topic").as_string();
-
+        
         // Subscriptions transport type.
         string transport_type = "raw";
         
@@ -286,7 +286,7 @@ namespace camera_driver
             {
                 camera_pub2buff_node_.publish(image_msg_, camera_info_msg_);
             }
-
+                
             if (save_video_)
             {   // Video recorder.
                 ++frame_cnt_;
