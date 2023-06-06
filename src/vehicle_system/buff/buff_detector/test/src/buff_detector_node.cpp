@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-06-02 22:18:12
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector_node.cpp
+ * @LastEditTime: 2023-06-04 02:05:14
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
 
@@ -24,7 +24,7 @@ namespace buff_detector
             RCLCPP_ERROR(this->get_logger(), "Error while initializing detector class: %s", e.what());
         }
         
-        if(!detector_->is_initialized_)
+        if (!detector_->is_initialized_)
         {
             RCLCPP_INFO(this->get_logger(), "Initializing detector class");
             detector_->buff_detector_.initModel(path_param_.network_path);
@@ -32,11 +32,10 @@ namespace buff_detector
             detector_->is_initialized_ = true;
         }
 
-        time_start_ = detector_->steady_clock_.now();
-
         // QoS    
         rclcpp::QoS qos(0);
-        qos.keep_last(1);
+        qos.keep_last(5);
+        // qos.best_effort();
         qos.reliable();
         qos.durability();
         // qos.durability_volatile();
@@ -46,28 +45,36 @@ namespace buff_detector
         rmw_qos.depth = 1;
 
         // buff info pub.
-        buff_info_pub_ = this->create_publisher<BuffMsg>("/buff_detector/buff_msg", qos);
+        buff_msg_pub_ = this->create_publisher<BuffMsg>("/buff_detector/buff_msg", qos);
 
-        if(debug_param_.using_imu)
-        {
-            RCLCPP_INFO(this->get_logger(), "Using imu...");
-            serial_msg_.imu.header.frame_id = "imu_link";
-            serial_msg_.bullet_speed = this->declare_parameter<double>("bullet_speed", 28.0);
-            serial_msg_.mode = this->declare_parameter<int>("buff_mode", 3);
-            // imu msg sub.
-            imu_info_sub_ = this->create_subscription<SerialMsg>("/serial_msg", rclcpp::SensorDataQoS(),
-                std::bind(&BuffDetectorNode::sensorMsgCallback, this, _1));
-        }
+        // initialize serial msg. 
+        serial_msg_.imu.header.frame_id = "imu_link2";
+        this->declare_parameter<int>("buff_mode", 3);
+        serial_msg_.mode = this->get_parameter("buff_mode").as_int();
+        serial_msg_.bullet_speed = 0.0;
+        serial_msg_.shoot_delay = 0.0;
+        mode_ = serial_msg_.mode;
 
-        this->declare_parameter<int>("camera_type", DaHeng);
-        int camera_type = this->get_parameter("camera_type").as_int();
+        // serial msg sub.
+        serial_msg_sub_= this->create_subscription<SerialMsg>(
+            "/serial_msg", 
+            rclcpp::SensorDataQoS(),
+            std::bind(&BuffDetectorNode::sensorMsgCallback, this, _1)
+        );
+
         std::string transport_type = "raw";
+        std::string image_topic = "/image";
 
-        image_size_ = image_info_.image_size_map[camera_type];
         // image sub.
-        std::string image_topic = image_info_.camera_topic_map[camera_type];
-        img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, image_topic,
-            std::bind(&BuffDetectorNode::imageCallback, this, _1), transport_type, rmw_qos));
+        img_msg_sub_ = std::make_shared<image_transport::Subscriber>(
+            image_transport::create_subscription(
+                this, 
+                image_topic,
+                std::bind(&BuffDetectorNode::imageCallback, this, _1), 
+                transport_type, 
+                rmw_qos
+            )
+        );
 
         bool debug = false;
         this->declare_parameter<bool>("debug", true);
@@ -87,36 +94,39 @@ namespace buff_detector
     void BuffDetectorNode::sensorMsgCallback(const SerialMsg& serial_msg)
     {
         serial_mutex_.lock();
-        serial_msg_.imu.header.stamp = this->get_clock()->now();
-        if(serial_msg.bullet_speed > 10)
-            serial_msg_.bullet_speed = serial_msg.bullet_speed;
-        if(serial_msg.mode == 3 || serial_msg.mode == 4)
-            serial_msg_.mode = serial_msg.mode;
-        serial_msg_.imu = serial_msg.imu;
+        serial_msg_ = serial_msg;
+        serial_msg_.header.stamp = this->get_clock()->now();
         serial_mutex_.unlock();
-
-        RCLCPP_INFO(this->get_logger(), "bullet speed: %lfm/s mode: %d", serial_msg_.bullet_speed, serial_msg_.mode);
+        mode_ = serial_msg.mode;
         return;
     }
     
-    void BuffDetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_info)
+    void BuffDetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {   
-        // RCLCPP_INFO(this->get_logger(), "Image callback...");
+        RCLCPP_INFO_THROTTLE(
+            this->get_logger(),
+            *this->get_clock(),
+            200, 
+            "mode: %d",
+            mode_
+        );
 
-        if(!img_info)
+        if(!img_msg || (mode_ != SMALL_BUFF && mode_ != BIG_BUFF))
             return;
-
+        
         TaskData src;
+        auto img = cv_bridge::toCvShare(img_msg, "bgr8")->image;
+        img.copyTo(src.img);
+        
+        rclcpp::Time stamp = img_msg->header.stamp;
+        src.timestamp = stamp.nanoseconds();
+
         BuffMsg buff_msg;
+        int flag = -1;
         double shoot_delay = 0.0;
         double bullet_speed = 0.0;
+        std::vector<geometry_msgs::msg::Transform> armor3d_transform_vec; 
 
-        auto img = cv_bridge::toCvShare(img_info, "bgr8")->image;
-        img.copyTo(src.img);
-
-        rclcpp::Time stamp = img_info->header.stamp;
-        src.timestamp = stamp.nanoseconds();
-        
         serial_mutex_.lock();
         src.mode = serial_msg_.mode;
         bullet_speed = serial_msg_.bullet_speed;
@@ -138,9 +148,8 @@ namespace buff_detector
         
         TargetInfo target_info;
         param_mutex_.lock();
-        if(detector_->run(src, target_info))
+        if(detector_->run(src, target_info, armor3d_transform_vec, flag))
         {
-            param_mutex_.unlock();
             buff_msg.r_center.x = target_info.r_center[0];
             buff_msg.r_center.y = target_info.r_center[1];
             buff_msg.r_center.z = target_info.r_center[2];
@@ -150,8 +159,8 @@ namespace buff_detector
             buff_msg.angle_offset = target_info.angle_offset;
             buff_msg.bullet_speed = target_info.bullet_speed;
             buff_msg.target_switched = target_info.target_switched;
-            
-            Eigen::Quaterniond quat_world(target_info.rmat);
+
+            Eigen::Quaterniond quat_world = Eigen::Quaterniond(target_info.rmat);
             buff_msg.quat_world.w = quat_world.w();
             buff_msg.quat_world.x = quat_world.x();
             buff_msg.quat_world.y = quat_world.y();
@@ -163,6 +172,11 @@ namespace buff_detector
             buff_msg.armor3d_cam.x = target_info.armor3d_cam[0];
             buff_msg.armor3d_cam.y = target_info.armor3d_cam[1];
             buff_msg.armor3d_cam.z = target_info.armor3d_cam[2];
+
+            last_detect_point3d_(0) = buff_msg.armor3d_world.x;
+            last_detect_point3d_(1) = buff_msg.armor3d_world.y;
+            last_detect_point3d_(2) = buff_msg.armor3d_world.z;
+            
             buff_msg.points2d[0].x = target_info.points2d[0].x;
             buff_msg.points2d[0].y = target_info.points2d[0].y;
             buff_msg.points2d[1].x = target_info.points2d[1].x;
@@ -174,11 +188,17 @@ namespace buff_detector
             buff_msg.points2d[4].x = target_info.points2d[4].x;
             buff_msg.points2d[4].y = target_info.points2d[4].y;
         }
+        else
+        {
+            buff_msg.armor3d_world.x = last_detect_point3d_(0);
+            buff_msg.armor3d_world.y = last_detect_point3d_(1);
+            buff_msg.armor3d_world.z = last_detect_point3d_(2);
+        }
         param_mutex_.unlock();
 
         //Publish buff msg.
         buff_msg.header.frame_id = "gimbal_link2";
-        buff_msg.header.stamp = img_info->header.stamp;
+        buff_msg.header.stamp = img_msg->header.stamp;
         buff_msg.mode = src.mode;
         buff_msg.timestamp = src.timestamp;
         buff_msg.bullet_speed = bullet_speed;
@@ -188,11 +208,14 @@ namespace buff_detector
         buff_msg.quat_imu.y = src.quat.y();
         buff_msg.quat_imu.z = src.quat.z();
         buff_msg.is_target_lost = target_info.find_target ? false : true;
-        buff_info_pub_->publish(std::move(buff_msg));
+        buff_msg_pub_->publish(std::move(buff_msg));
 
+        // RCLCPP_WARN(this->get_logger(), "mode: %d", buff_msg.mode);
         bool show_img = this->get_parameter("show_img").as_bool();
         if (show_img)
         {
+            putText(src.img, target_info.find_target ? "State:Detected" : "State:Lost" , {5, 55}, cv::FONT_HERSHEY_TRIPLEX, 1, {255, 255, 0});
+
             cv::namedWindow("dst", cv::WINDOW_NORMAL);
             cv::imshow("dst", src.img);
             cv::waitKey(1);
@@ -216,9 +239,11 @@ namespace buff_detector
 
     std::unique_ptr<Detector> BuffDetectorNode::initDetector()
     {
-        this->declare_parameter<double>("fan_length", 0.7);
-        this->declare_parameter<double>("max_delta_t", 100.0);
+        this->declare_parameter<int>("color", 1);
         this->declare_parameter<int>("max_lost_cnt", 4);
+        this->declare_parameter<double>("fan_length", 0.7);
+        this->declare_parameter<double>("max_angle", 0.25);
+        this->declare_parameter<double>("max_delta_t", 100.0);
         this->declare_parameter<double>("max_v", 4.0);
         this->declare_parameter<double>("no_crop_thres", 2e-3);
 
@@ -238,21 +263,22 @@ namespace buff_detector
         this->path_param_.network_path = pkg_share_pth[1] + this->get_parameter("network_path").as_string();
         this->path_param_.path_prefix = pkg_share_pth[2] + this->get_parameter("path_prefix").as_string();
 
-        this->declare_parameter<int>("debug_mode", 3);
-        this->declare_parameter<bool>("assist_label", false);
-        this->declare_parameter<bool>("detect_red", true);
-        this->declare_parameter<bool>("prinf_latency", false);
-        this->declare_parameter<bool>("print_target_info", false);
+        this->declare_parameter<bool>("use_imu", false);
+        this->declare_parameter<bool>("use_roi", false);
+        this->declare_parameter<bool>("show_img", false);
         this->declare_parameter<bool>("show_all_fans", true);
         this->declare_parameter<bool>("show_fps", true);
-        this->declare_parameter<bool>("using_imu", false);
-        this->declare_parameter<bool>("using_roi", false);
-        this->declare_parameter<bool>("show_img", false);
+        this->declare_parameter<bool>("assist_label", false);
+        this->declare_parameter<bool>("prinf_latency", false);
+        this->declare_parameter<bool>("print_target_info", false);
 
         bool success = updateParam();
         if(success)
+        {
             RCLCPP_INFO(this->get_logger(), "Update param!");
-       
+        }
+
+        cout << "max_angle:" << buff_param_.max_angle << endl;
         return std::make_unique<Detector>(buff_param_, path_param_, debug_param_);
     }
 
@@ -265,6 +291,8 @@ namespace buff_detector
     bool BuffDetectorNode::updateParam()
     {
         //Buff param.
+        this->get_parameter("color", this->buff_param_.color);
+        this->get_parameter("max_angle", this->buff_param_.max_angle);
         this->get_parameter("max_v", this->buff_param_.max_v);
         this->get_parameter("fan_length", this->buff_param_.fan_length);
         this->get_parameter("max_delta_t", this->buff_param_.max_delta_t);
@@ -272,15 +300,14 @@ namespace buff_detector
         this->get_parameter("no_crop_thres", this->buff_param_.no_crop_thres);
 
         //Debug param.
-        this->get_parameter("assist_label", this->debug_param_.assist_label);
-        this->get_parameter("detect_red", this->debug_param_.detect_red);
-        this->get_parameter("prinf_latency", this->debug_param_.prinf_latency);
-        this->get_parameter("print_target_info", this->debug_param_.print_target_info);
+        this->get_parameter("use_imu", this->debug_param_.using_imu);
+        this->get_parameter("use_roi", this->debug_param_.using_roi);
+        this->get_parameter("show_img", this->debug_param_.show_img);
         this->get_parameter("show_all_fans", this->debug_param_.show_all_fans);
         this->get_parameter("show_fps", this->debug_param_.show_fps);
-        this->get_parameter("using_imu", this->debug_param_.using_imu);
-        this->get_parameter("using_roi", this->debug_param_.using_roi);
-        this->get_parameter("show_img", this->debug_param_.show_img);
+        this->get_parameter("assist_label", this->debug_param_.assist_label);
+        this->get_parameter("prinf_latency", this->debug_param_.prinf_latency);
+        this->get_parameter("print_target_info", this->debug_param_.print_target_info);
 
         return true;
     }
