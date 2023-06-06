@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-06-04 00:13:35
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
+ * @LastEditTime: 2023-06-06 21:02:10
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
 
@@ -73,50 +73,45 @@ namespace buff_detector
         }
         auto time_infer = steady_clock_.now();
 
-        vector<cv::Point2f> center_vec;
+        // vector<cv::Point2f> center_vec;
         // 创建扇叶对象
         for (auto object : objects)
         {
             if (buff_param_.color == RED)
+            {
                 if (object.color != RED)
                     continue;
-            if (buff_param_.color == BLUE)
+            }
+            else if (buff_param_.color == BLUE)
+            {
                 if (object.color != BLUE)
                     continue;
+            }
 
             Fan fan;
             fan.id = object.cls;
             fan.color = object.color;
             fan.conf = object.prob;
             if (object.color == 0)
+            {
                 fan.key = "B" + string(object.cls == UNACTIVATED ? "Target" : "Activated");
-            if (object.color == 1)
+            }
+            else if (object.color == 1)
+            {
                 fan.key = "R" + string(object.cls == UNACTIVATED ? "Target" : "Activated");
+            }
 
             memcpy(fan.apex2d, object.apex, 5 * sizeof(cv::Point2f));
-            for(int i = 0; i < 5; i++)
+            for (int i = 0; i < 5; i++)
             {
                 fan.apex2d[i] += Point2f((float)roi_offset_.x, (float)roi_offset_.y);
             }
             
             std::vector<Point2f> points_pic(fan.apex2d, fan.apex2d + 5);
-            std::vector<cv::Point2f> points_rect;
-            cv::Point2f center_r;
-            for(int ii = 0; ii < 5; ii++)
-            {
-                if(ii == 0)
-                    center_r = fan.apex2d[ii];
-                else
-                    points_rect.push_back(fan.apex2d[ii]);
-            }
-            center_vec.push_back(center_r);
-            cv::RotatedRect r_rect = cv::fitEllipse(points_pic);
-            cv::RotatedRect armor_rect = cv::minAreaRect(points_rect);
-
+            
             // TODO:迭代法进行PnP解算
             TargetType target_type = BUFF;
             auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
-            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
 
             fan.armor3d_cam = pnp_result.armor_cam;
             fan.armor3d_world = pnp_result.armor_world;
@@ -124,9 +119,7 @@ namespace buff_detector
             fan.centerR3d_world = pnp_result.R_world;
             fan.euler = pnp_result.euler;
             fan.rmat = pnp_result.rmat;
-            // RCLCPP_INFO(logger_, "r_center: %lf %lf %lf", fan.centerR3d_cam[0], fan.centerR3d_cam[1], fan.centerR3d_cam[2]);
-
-            fans_.push_back(fan);
+            fans_.emplace_back(fan);
         }
         
         // 维护Tracker队列，删除过旧的Tracker
@@ -136,10 +129,14 @@ namespace buff_detector
             {
                 //删除元素后迭代器会失效，需先行获取下一元素
                 auto next = iter;
-                if (((src.timestamp - (*iter).now_) / 1e6) > buff_param_.max_delta_t)
+                if (((src.timestamp - (*iter).now_) / 1e6) >= buff_param_.max_delta_t)
+                {
                     next = trackers_.erase(iter);
+                }
                 else
+                {
                     ++next;
+                }
                 iter = next;
             }
         }
@@ -152,7 +149,7 @@ namespace buff_detector
             if (trackers_.size() == 0)
             {
                 FanTracker fan_tracker((*fan), src.timestamp);
-                trackers_tmp.push_back(fan_tracker);
+                trackers_tmp.emplace_back(fan_tracker);
             }
             else
             {
@@ -207,12 +204,15 @@ namespace buff_detector
                 else
                 {
                     FanTracker fan_tracker((*fan), src.timestamp);
-                    trackers_tmp.push_back(fan_tracker);
+                    trackers_tmp.emplace_back(fan_tracker);
                 }
             }
         }
+        
         for (auto new_tracker : trackers_tmp)
-            trackers_.push_back(new_tracker);
+        {
+            trackers_.emplace_back(new_tracker);
+        }
         
         // 检查待激活扇叶是否存在
         Fan target;
@@ -229,7 +229,18 @@ namespace buff_detector
             lost_cnt_++;
             is_last_target_exists_ = false;
 
-            RCLCPP_WARN(logger_, "No active target...");
+            RCLCPP_WARN_THROTTLE(
+                logger_,
+                steady_clock_,
+                40,
+                "No active target..."
+            );
+            return false;
+        }
+        
+        Eigen::Vector2d angle = coordsolver_.getAngle(target.armor3d_cam, rmat_imu_);
+        if (isnan(angle[0]) || isnan(angle[1]) || abs(angle[0]) >= 45.0 || abs(angle[1]) >= 45.0)
+        {
             return false;
         }
 
@@ -253,7 +264,7 @@ namespace buff_detector
         // 若不存在可用的扇叶则返回false
         if (avail_tracker_cnt == 0)
         {
-            if(debug_param_.show_all_fans)
+            if (debug_param_.show_all_fans)
             {
                 showFans(src);
             }
@@ -265,8 +276,27 @@ namespace buff_detector
         mean_r_center = r_center_sum / avail_tracker_cnt;
         auto r_center_cam = coordsolver_.worldToCam(target.centerR3d_world, rmat_imu_);
         auto center2d_src = coordsolver_.reproject(r_center_cam);
-        auto angle = coordsolver_.getAngle(target.armor3d_cam, rmat_imu_);
-
+        
+        // 判断扇叶是否发生切换
+        bool is_switched = false;
+        double delta_t = (src.timestamp - last_timestamp_);
+        auto relative_rmat = last_fan_.rmat.transpose() * target.rmat;
+        auto angle_axisd = Eigen::AngleAxisd(relative_rmat);
+        double rotate_spd = angle_axisd.angle() / delta_t * 1e9;
+        if (abs(rotate_spd) >= buff_param_.max_v)
+        {
+            is_switched = true;
+        }
+        
+        // frame info.
+        lost_cnt_ = 0;
+        last_roi_center_ = center2d_src;
+        last_timestamp_ = src.timestamp;
+        last_fan_ = target;
+        is_last_target_exists_ = true;
+        
+        // buff info.
+        target_info.target_switched = is_switched;
         target_info.rotate_speed = mean_rotate_speed;
         target_info.r_center = mean_r_center;
         target_info.rmat = target.rmat;
@@ -283,40 +313,18 @@ namespace buff_detector
         target_info.points2d[4].x = target.apex2d[4].x;
         target_info.points2d[4].y = target.apex2d[4].y;
         target_info.find_target = true;
-
+        
         RCLCPP_INFO_THROTTLE(
             logger_, 
             steady_clock_,
-            100,
+            50,
             "mean_rotate_speed: %.3f r_center_cam: (%.3f %.3f %.3f) mean_r_center: (%.3f %.3f %.3f)", 
             mean_rotate_speed,
             r_center_cam(0), r_center_cam(1), r_center_cam(2),
             mean_r_center(0), mean_r_center(1), mean_r_center(2)
         );
-        
-        // 判断扇叶是否发生切换
-        bool is_switched = false;
-        double delta_t = (src.timestamp - last_timestamp_);
-        auto relative_rmat = last_fan_.rmat.transpose() * target.rmat;
-        auto angle_axisd = Eigen::AngleAxisd(relative_rmat);
 
-        double rotate_spd = angle_axisd.angle() / delta_t * 1e9;
-        if (abs(rotate_spd) >= buff_param_.max_v)
-            is_switched = true;
-        target_info.target_switched = is_switched;
-
-        lost_cnt_ = 0;
-        last_roi_center_ = center2d_src;
-        last_timestamp_ = src.timestamp;
-        last_fan_ = target;
-        is_last_target_exists_ = true;
-
-        if (isnan(angle[0]) || isnan(angle[1]) || abs(angle[0]) >= 45.0 || abs(angle[1]) >= 45.0)
-        {
-            return false;
-        }
-        
-        auto time_detect = steady_clock_.now();
+        rclcpp::Time time_detect = steady_clock_.now();
         double dr_full_ns = (time_detect - time_start).nanoseconds();
         double dr_crop_ns = (time_crop - time_start).nanoseconds();
         double dr_infer_ns = (time_infer - time_start).nanoseconds();

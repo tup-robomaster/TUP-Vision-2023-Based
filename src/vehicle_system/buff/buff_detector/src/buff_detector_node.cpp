@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-06-04 02:06:19
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector_node.cpp
+ * @LastEditTime: 2023-06-06 21:14:07
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
 
@@ -111,7 +111,7 @@ namespace buff_detector
             mode_
         );
 
-        if(!img_msg || (mode_ != SMALL_BUFF && mode_ != BIG_BUFF))
+        if (!img_msg || (mode_ != SMALL_BUFF && mode_ != BIG_BUFF))
             return;
         
         TaskData src;
@@ -129,7 +129,7 @@ namespace buff_detector
         src.mode = serial_msg_.mode;
         bullet_speed = serial_msg_.bullet_speed;
         shoot_delay = serial_msg_.shoot_delay;
-        if(debug_param_.using_imu)
+        if (debug_param_.using_imu)
         {
             src.quat.w() = serial_msg_.imu.orientation.w;
             src.quat.x() = serial_msg_.imu.orientation.x;
@@ -144,22 +144,13 @@ namespace buff_detector
         }
         serial_mutex_.unlock();
         
-        // cout << 111 << endl;
         TargetInfo target_info;
         param_mutex_.lock();
-        if(detector_->run(src, target_info))
+        if (detector_->run(src, target_info))
         {
-            buff_msg.r_center.x = target_info.r_center[0];
-            buff_msg.r_center.y = target_info.r_center[1];
-            buff_msg.r_center.z = target_info.r_center[2];
             buff_msg.timestamp = src.timestamp;
-            buff_msg.angle = target_info.angle;
-            buff_msg.delta_angle = target_info.delta_angle;
-            buff_msg.angle_offset = target_info.angle_offset;
-            buff_msg.bullet_speed = target_info.bullet_speed;
-            buff_msg.target_switched = target_info.target_switched;
             buff_msg.rotate_speed = target_info.rotate_speed;
-            last_rotate_speed_ = buff_msg.rotate_speed;
+            buff_msg.target_switched = target_info.target_switched;
 
             Eigen::Quaterniond quat_world = Eigen::Quaterniond(target_info.rmat);
             buff_msg.quat_world.w = quat_world.w();
@@ -167,6 +158,9 @@ namespace buff_detector
             buff_msg.quat_world.y = quat_world.y();
             buff_msg.quat_world.z = quat_world.z();
 
+            buff_msg.r_center.x = target_info.r_center[0];
+            buff_msg.r_center.y = target_info.r_center[1];
+            buff_msg.r_center.z = target_info.r_center[2];
             buff_msg.armor3d_world.x = target_info.armor3d_world[0];
             buff_msg.armor3d_world.y = target_info.armor3d_world[1];
             buff_msg.armor3d_world.z = target_info.armor3d_world[2];
@@ -174,10 +168,7 @@ namespace buff_detector
             buff_msg.armor3d_cam.y = target_info.armor3d_cam[1];
             buff_msg.armor3d_cam.z = target_info.armor3d_cam[2];
 
-            last_detect_point3d_(0) = buff_msg.armor3d_world.x;
-            last_detect_point3d_(1) = buff_msg.armor3d_world.y;
-            last_detect_point3d_(2) = buff_msg.armor3d_world.z;
-            
+            // point2d
             buff_msg.points2d[0].x = target_info.points2d[0].x;
             buff_msg.points2d[0].y = target_info.points2d[0].y;
             buff_msg.points2d[1].x = target_info.points2d[1].x;
@@ -188,18 +179,33 @@ namespace buff_detector
             buff_msg.points2d[3].y = target_info.points2d[3].y;
             buff_msg.points2d[4].x = target_info.points2d[4].x;
             buff_msg.points2d[4].y = target_info.points2d[4].y;
+
+            last_rotate_speed_ = buff_msg.rotate_speed;
+            last_center3d_ = target_info.r_center;
+            last_point3d_cam_ = target_info.armor3d_cam;
+            last_point3d_world_ = target_info.armor3d_world;
         }
         else
         {
             buff_msg.rotate_speed = last_rotate_speed_;
-            buff_msg.armor3d_world.x = last_detect_point3d_(0);
-            buff_msg.armor3d_world.y = last_detect_point3d_(1);
-            buff_msg.armor3d_world.z = last_detect_point3d_(2);
+            buff_msg.r_center.x = last_center3d_(0);
+            buff_msg.r_center.y = last_center3d_(1);
+            buff_msg.r_center.z = last_center3d_(2);
+            buff_msg.armor3d_cam.x = last_point3d_cam_(0);
+            buff_msg.armor3d_cam.y = last_point3d_cam_(1);
+            buff_msg.armor3d_cam.z = last_point3d_cam_(2);
+            buff_msg.armor3d_world.x = last_point3d_world_(0);
+            buff_msg.armor3d_world.y = last_point3d_world_(1);
+            buff_msg.armor3d_world.z = last_point3d_world_(2);
+
+            last_rotate_speed_ = 0.0;
+            last_center3d_ = {0.0, 0.0, 0.0};
+            last_point3d_cam_ = {0.0, 0.0, 0.0};
+            last_point3d_world_ = {0.0, 0.0, 0.0};
         }
         param_mutex_.unlock();
-        // cout << 222 << endl;
         
-        //Publish buff msg.
+        // Publish buff msg.
         buff_msg.header.frame_id = "gimbal_link2";
         buff_msg.header.stamp = img_msg->header.stamp;
         buff_msg.mode = src.mode;

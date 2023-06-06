@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2023-06-01 18:30:22
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/include/buff_detector_node.hpp
+ * @LastEditTime: 2023-06-06 21:08:36
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector_node.hpp
  */
 #ifndef BUFF_DETECTOR_NODE_HPP_
 #define BUFF_DETECTOR_NODE_HPP_
@@ -50,7 +50,6 @@ namespace buff_detector
         BuffParam buff_param_;
         PathParam path_param_;
         DebugParam debug_param_;
-        Eigen::Vector3d last_detect_point3d_;
 
         std::unique_ptr<Detector> detector_;
         std::unique_ptr<Detector> initDetector();
@@ -69,6 +68,9 @@ namespace buff_detector
         rclcpp::Publisher<BuffMsg>::SharedPtr buff_msg_pub_; 
         int mode_ = 1;
 
+        Eigen::Vector3d last_center3d_ = {0.0, 0.0, 0.0};
+        Eigen::Vector3d last_point3d_cam_ = {0.0, 0.0, 0.0};
+        Eigen::Vector3d last_point3d_world_ = {0.0, 0.0, 0.0};
         double last_rotate_speed_ = 0.0;
 
     protected:
