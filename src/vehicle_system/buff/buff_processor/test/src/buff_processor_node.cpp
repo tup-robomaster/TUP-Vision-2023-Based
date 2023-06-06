@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-04-15 19:58:38
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/src/buff_processor_node.cpp
+ * @LastEditTime: 2023-06-04 00:22:15
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
 
@@ -31,8 +31,6 @@ namespace buff_processor
             buff_processor_->is_initialized_ = true;
         }
 
-        pred_point3d_ = {0, 0, 0};
-
         // QoS
         rclcpp::QoS qos(0);
         qos.keep_last(1);
@@ -43,48 +41,39 @@ namespace buff_processor
         // qos.durability_volatile();
 
         rmw_qos_profile_t rmw_qos(rmw_qos_profile_default);
-        rmw_qos.depth = 1;
+        rmw_qos.depth = 3;
 
         // 发布云台转动信息（pitch、yaw角度）
-        gimbal_info_pub_ = this->create_publisher<GimbalMsg>("/buff_processor/gimbal_msg", qos);
+        gimbal_msg_pub_ = this->create_publisher<GimbalMsg>("/buff_processor/gimbal_msg", qos);
 
         // 发布预测点信息
-        predict_info_pub_ = this->create_publisher<BuffMsg>("/buff_processor/predict_msg", qos);
+        predict_msg_pub_ = this->create_publisher<BuffMsg>("/buff_processor/predict_msg", qos);
 
         // 订阅待打击目标信息
-        // target_fitting_sub_ = this->create_subscription<BuffMsg>("/buff_detector/buff_msg", qos,
-        //     std::bind(&BuffProcessorNode::targetFittingCallback, this, _1));
-        target_predictor_sub_ = this->create_subscription<BuffMsg>("/buff_detector/buff_msg", qos,
-            std::bind(&BuffProcessorNode::targetPredictorCallback, this, _1));
+        buff_msg_sub_ = this->create_subscription<BuffMsg>("/buff_detector/buff_msg", qos,
+            std::bind(&BuffProcessorNode::predictorCallback, this, _1));
 
-        // 相机类型
-        this->declare_parameter<int>("camera_type", USBCam);
-        int camera_type = this->get_parameter("camera_type").as_int();
-        
-        // 图像的传输方式
-        std::string transport_type = "raw";
-        
         bool debug = false;
         this->declare_parameter<bool>("debug", false);
         this->get_parameter("debug", debug);
         if(debug)
         {
             callback_handle_ = this->add_on_set_parameters_callback(std::bind(&BuffProcessorNode::paramsCallback, this, _1));
-
-            sleep(2);
-            image_size_ = image_info_.image_size_map[camera_type];
-            // image sub.
-            std::string camera_topic = image_info_.camera_topic_map[camera_type];
-            img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic, 
-                std::bind(&BuffProcessorNode::imageCallback, this, _1), transport_type, rmw_qos));
-            if(debug_param_.show_predict)
+            if(debug_param_.show_img)
             {
-                // sleep(5);
-                image_size_ = image_info_.image_size_map[camera_type];
+                // 图像的传输方式
+                std::string transport_type = "raw";
+                std::string camera_topic = "/image";
                 // image sub.
-                std::string camera_topic = image_info_.camera_topic_map[camera_type];
-                img_sub_ = std::make_shared<image_transport::Subscriber>(image_transport::create_subscription(this, camera_topic, 
-                    std::bind(&BuffProcessorNode::imageCallback, this, _1), transport_type, rmw_qos));
+                img_msg_sub_ = std::make_shared<image_transport::Subscriber>(
+                    image_transport::create_subscription(
+                        this, 
+                        camera_topic, 
+                        std::bind(&BuffProcessorNode::imageCallback, this, _1), 
+                        transport_type, 
+                        rmw_qos
+                    )
+                );
             }
         }
     }
@@ -92,185 +81,250 @@ namespace buff_processor
     BuffProcessorNode::~BuffProcessorNode()
     {}
 
-    void BuffProcessorNode::targetFittingCallback(const BuffMsg& target_info)
+    void BuffProcessorNode::predictorCallback(const BuffMsg& buff_msg)
     {
-        if(buff_processor_->fittingThread(target_info))
-        {
-            
-        }
-        else
-        {
+        cv::Mat dst;
+        BuffInfo predict_info;
+        GimbalMsg gimbal_msg;
+        bool is_shooting = false;
 
+        if (buff_msg.bullet_speed >= 10.0)
+        {   //更新弹速
+            double cur_bullet_speed = buff_processor_->coordsolver_.getBulletSpeed();
+            if (abs(buff_msg.bullet_speed - cur_bullet_speed) <= 0.5)
+            {
+                cur_bullet_speed = (buff_msg.bullet_speed + cur_bullet_speed) / 2.0;
+            }
+            else
+            {
+                cur_bullet_speed = buff_msg.bullet_speed;
+            }
+            buff_processor_->coordsolver_.setBulletSpeed(cur_bullet_speed);
         }
-    }
-        
-    void BuffProcessorNode::targetPredictorCallback(const BuffMsg& target_info)
-    {
-        TargetInfo predict_info;
-        cv::Point2f point_2d = cv::Point2f(0, 0);
 
-        cv::Mat dst = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
-        if (debug_param_.show_predict)
+        if (buff_msg.shoot_delay >= 50 && buff_msg.shoot_delay <= 300)
+        {
+            buff_processor_->predictor_param_.shoot_delay = (buff_processor_->predictor_param_.shoot_delay + buff_msg.shoot_delay) / 2.0;
+        }
+
+        RCLCPP_WARN_THROTTLE(
+            this->get_logger(), 
+            *this->get_clock(), 
+            100, 
+            "rec_bullet_speed:%.3f cur_bullet_speed:%.3f cur_shoot_delay:%.3f", 
+            buff_msg.bullet_speed, buff_processor_->coordsolver_.getBulletSpeed(), buff_processor_->predictor_param_.shoot_delay
+        );
+
+        if (debug_param_.show_img)
         {
             image_mutex_.lock();
             src_.copyTo(dst);
             image_mutex_.unlock();
         }
 
-        if (target_info.is_target_lost)
+        bool is_predicted = false;        
+        debug_param_.show_img = this->get_parameter("show_img").as_bool();
+        if (!buff_msg.is_target_lost)
         {
-            
-        }
-        else if (buff_processor_->predictorThread(target_info, predict_info))
-        {
-            RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "predict...");
-            GimbalMsg gimbal_msg;
-            gimbal_msg.header.frame_id = "barrel_link";
-            gimbal_msg.header.stamp = target_info.header.stamp;
-            gimbal_msg.pitch = predict_info.angle[1];
-            gimbal_msg.yaw = predict_info.angle[0];
-            gimbal_msg.distance = predict_info.hit_point_cam.norm();
-            gimbal_msg.is_switched = predict_info.target_switched;
-            
-            gimbal_info_pub_->publish(std::move(gimbal_msg));
-
-            debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
-            if (debug_param_.show_predict)
+            if (buff_processor_->predict(buff_msg, predict_info))
             {
-                BuffMsg predict_msg;
-                predict_msg.header.frame_id = "camera_link";
-                predict_msg.header.stamp = target_info.header.stamp;
-                predict_msg.header.stamp.nanosec += (500 * 1e6);
-                // predict_msg.predict_point.x = predict_info.hit_point_cam[0];
-                // predict_msg.predict_point.y = predict_info.hit_point_cam[1];
-                // predict_msg.predict_point.z = predict_info.hit_point_cam[2];
-                predict_msg.predict_point.x = predict_info.hit_point_world[0];
-                predict_msg.predict_point.y = predict_info.hit_point_world[1];
-                predict_msg.predict_point.z = predict_info.hit_point_world[2];
-            
-                predict_info_pub_->publish(std::move(predict_msg));
+                RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "predict...");
+                gimbal_msg.is_target = true;
+                gimbal_msg.pitch = predict_info.angle[1];
+                gimbal_msg.yaw = predict_info.angle[0];
+                gimbal_msg.distance = predict_info.hit_point_cam.norm();
+                gimbal_msg.is_switched = predict_info.target_switched;
+                gimbal_msg.is_target = true;
+                is_predicted = true;
             }
+        }
+        else
+        {
+            gimbal_msg.pitch = 0.0;
+            gimbal_msg.yaw = 0.0;
+            gimbal_msg.is_shooting = false;
+            gimbal_msg.is_target = false;
+        }
+        gimbal_msg.header.frame_id = "barrel_link2";
+        gimbal_msg.header.stamp = buff_msg.header.stamp;
+        gimbal_msg_pub_->publish(std::move(gimbal_msg));
 
-            if (debug_param_.show_predict && !dst.empty())
+        if (is_predicted)
+        {
+            if (debug_param_.show_marker)
             {
-                cv::Point2f r_center;
-                cv::Point2f vertex_sum;
-                cv::Point2f armor_center;
-                for (int i = 0; i < 5; i++)
+                visualization_msgs::msg::MarkerArray marker_array;
+                visualization_msgs::msg::Marker marker;
+                
+                // Set the frame ID and timestamp.
+                marker.header.frame_id = "base_link";
+                marker.header.stamp = buff_msg.header.stamp;
+                marker.header.stamp.nanosec += (500 * 1e6);
+                marker.id = 7;
+
+                // Set the namespace and id for this marker.  This serves to create a unique ID
+                // Any marker sent with the same namespace and id will overwrite the old one
+                marker.ns = "basic_shapes";
+
+                // Set the marker type.  
+                // Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
+                marker.type = shape_;
+
+                // Set the marker action.
+                // Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
+                marker.action = visualization_msgs::msg::Marker::ADD;
+
+                marker.lifetime = rclcpp::Duration::from_nanoseconds((rcl_duration_value_t)1e4);
+
+                // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+                tf2::Quaternion q;
+                q.setRPY(0, 0, 0);
+                
+                marker.pose.position.x = predict_info.hit_point_world(0);
+                marker.pose.position.y = predict_info.hit_point_world(1);
+                marker.pose.position.z = predict_info.hit_point_world(2);
+
+                marker.pose.orientation.w = q.w();
+                marker.pose.orientation.x = q.x();
+                marker.pose.orientation.y = q.y();
+                marker.pose.orientation.z = q.z();
+
+                marker.scale.x = 0.05;
+                marker.scale.y = 0.05;
+                marker.scale.z = 0.05;
+
+                // Set the color -- be sure to set alpha to something non-zero!
+                marker.color.r = 0.5f;
+                marker.color.g = 0.5f;
+                marker.color.b = 1.0f;
+                marker.color.a = 1.0;
+
+                marker_array.markers.emplace_back(marker);                     
+                // Publish the marker_array
+                marker_array_pub_->publish(marker_array);
+            }
+        }
+
+        if (debug_param_.show_fitting_curve)
+        {
+            BuffMsg predict_msg;
+            predict_msg.header.frame_id = "camera_link1";
+            predict_msg.header.stamp = buff_msg.header.stamp;
+            predict_msg.header.stamp.nanosec += (500 * 1e6);
+
+            if (is_predicted)
+            {
+                // Visual info.
+                predict_msg.armor3d_cam = buff_msg.armor3d_cam;
+                predict_msg.armor3d_world = buff_msg.armor3d_world;
+
+                predict_msg.predict_point3d_cam.x = predict_info.hit_point_cam[0];
+                predict_msg.predict_point3d_cam.y = predict_info.hit_point_cam[1];
+                predict_msg.predict_point3d_cam.z = predict_info.hit_point_cam[2];
+                
+                predict_msg.predict_point3d_world.x = predict_info.hit_point_world[0];
+                predict_msg.predict_point3d_world.y = predict_info.hit_point_world[1];
+                predict_msg.predict_point3d_world.z = predict_info.hit_point_world[2];
+
+                predict_msg.abs_meas_angle = predict_info.abs_meas_angle;
+                predict_msg.abs_fitting_angle = predict_info.abs_fitting_angle;
+                predict_msg.abs_pred_angle = predict_info.abs_pred_angle;
+                
+                last_armor3d_cam(0) = buff_msg.armor3d_cam.x;
+                last_armor3d_cam(1) = buff_msg.armor3d_cam.y;
+                last_armor3d_cam(2) = buff_msg.armor3d_cam.z;
+                last_armor3d_world(0) = buff_msg.armor3d_world.x;
+                last_armor3d_world(1) = buff_msg.armor3d_world.y;
+                last_armor3d_world(2) = buff_msg.armor3d_world.z;
+                last_hit3d_cam = predict_info.hit_point_cam;
+                last_hit3d_world = predict_info.hit_point_world;
+                last_abs_meas_angle = predict_info.abs_meas_angle;
+                last_abs_fitting_angle = predict_info.abs_fitting_angle;
+                last_abs_pred_angle = predict_info.abs_pred_angle;
+            }
+            else
+            {
+                predict_msg.armor3d_cam.x = last_armor3d_cam(0);
+                predict_msg.armor3d_cam.y = last_armor3d_cam(1);
+                predict_msg.armor3d_cam.z = last_armor3d_cam(2);
+
+                predict_msg.armor3d_world.x = last_armor3d_world(0);
+                predict_msg.armor3d_world.y = last_armor3d_world(1);
+                predict_msg.armor3d_world.z = last_armor3d_world(2);
+
+                predict_msg.predict_point3d_cam.x = last_hit3d_cam(0);
+                predict_msg.predict_point3d_cam.y = last_hit3d_cam(1);
+                predict_msg.predict_point3d_cam.z = last_hit3d_cam(2);
+                
+                predict_msg.predict_point3d_world.x = last_hit3d_world(0);
+                predict_msg.predict_point3d_world.y = last_hit3d_world(1);
+                predict_msg.predict_point3d_world.z = last_hit3d_world(2);
+                
+                predict_msg.abs_meas_angle = last_abs_meas_angle;
+                predict_msg.abs_fitting_angle = last_abs_fitting_angle;
+                predict_msg.abs_pred_angle = last_abs_pred_angle;
+            }
+            predict_msg_pub_->publish(std::move(predict_msg));
+        }
+
+        if (debug_param_.show_img && !dst.empty())
+        {
+            cv::Point2f r_center;
+            cv::Point2f vertex_sum;
+            cv::Point2f armor_center;
+            for (int ii = 0; ii < 5; ii++)
+            {
+                if(ii != 0)
                 {
-                    // if(i != 0)
-                    //     vertex_sum += apex2d[i];
-                    // else
-                    //     r_center = apex2d[i];
-                    cv::line(dst, cv::Point2i(target_info.points2d[i % 5].x, target_info.points2d[i % 5].y),
-                        cv::Point2i(target_info.points2d[(i+1)%5].x, target_info.points2d[(i+1)%5].y), {125, 0, 255}, 2);
+                    vertex_sum.x += buff_msg.points2d[ii].x;
+                    vertex_sum.y += buff_msg.points2d[ii].y;
                 }
-                point_2d = buff_processor_->coordsolver_.reproject(predict_info.hit_point_cam);
-            
-                // armor_center = (vertex_sum / 4.0);
-                // cv::line(dst, r_center, armor_center, {125,125, 0}, 4);
-                // cv::line(dst, armor_center, point_2d, {125, 125, 0}, 4);
-                // cv::line(dst, r_center, point_2d, {125, 125, 0}, 4);
-                cv::circle(dst, point_2d, 6, {0, 0, 255}, 2);
-                // for(int i = 0; i < 5; i++)
-                //     cv::line(dst, apex2d[i % 5], apex2d[(i + 1) % 5], {0, 255, 255}, 5);
-            }
-        }
+                else
+                {
+                    r_center.x = buff_msg.points2d[ii].x;
+                    r_center.y = buff_msg.points2d[ii].y;
+                }
 
-        if (debug_param_.show_predict && !dst.empty())
-        {
+                cv::line(
+                    dst, 
+                    cv::Point2i(
+                        buff_msg.points2d[ii % 5].x, 
+                        buff_msg.points2d[ii % 5].y), 
+                        cv::Point2i(buff_msg.points2d[(ii + 1) % 5].x, 
+                        buff_msg.points2d[(ii + 1) % 5].y
+                    ), 
+                    {0, 0, 255}, 
+                    1
+                );
+            }
+            armor_center = (vertex_sum / 4.0);
+            cv::Point2f point_2d = buff_processor_->coordsolver_.reproject(predict_info.hit_point_cam);
+            
+            cv::line(dst, r_center, armor_center, {125, 0, 125}, 1);
+            cv::line(dst, armor_center, point_2d, {125, 125, 0}, 1);
+            cv::line(dst, r_center, point_2d, {0, 125, 125}, 1);
+            cv::circle(dst, point_2d, 8, {255, 0, 125}, 2);
+
             cv::namedWindow("pred_img", cv::WINDOW_NORMAL);
             cv::imshow("pred_img", dst);
             cv::waitKey(1);
         }
     }
 
-    // void BuffProcessorNode::target_info_callback(const BuffMsg& target_info)
-    // {
-    //     if(target_info.target_switched)
-    //     {
-    //         RCLCPP_INFO(this->get_logger(), "Target switched...");    
-    //     }
-        
-    //     TargetInfo target;
-    //     // rclcpp::Time now = this->get_clock()->now();
-    //     // Eigen::Vector3d armor_world = {target_info.armor3d_world.x, target_info.armor3d_world.y, target_info.armor3d_world.z};
-    //     if(buff_processor_->predictor(target_info, target))
-    //     {
-    //         // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "predict...");
-    //         // GimbalMsg gimbal_msg;
-    //         // gimbal_msg.header.frame_id = "barrel_link";
-    //         // gimbal_msg.header.stamp = target_info.header.stamp;
-    //         // gimbal_msg.pitch = target.angle[0];
-    //         // gimbal_msg.yaw = target.angle[1];
-    //         // gimbal_msg.distance = target.hit_point_cam.norm();
-    //         // gimbal_msg.is_switched = target.target_switched;
-            
-    //         // gimbal_info_pub_->publish(std::move(gimbal_msg));
-
-    //         // debug_param_.show_predict = this->get_parameter("show_predict").as_bool();
-    //         // if(debug_param_.show_predict)
-    //         // {
-    //         //     BuffMsg predict_info;
-    //         //     predict_info.header.frame_id = "camera_link";
-    //         //     predict_info.header.stamp = target_info.header.stamp;
-    //         //     predict_info.predict_point.x = target.hit_point_cam[0];
-    //         //     predict_info.predict_point.y = target.hit_point_cam[1];
-    //         //     predict_info.predict_point.z = target.hit_point_cam[2];
-            
-    //         //     predict_info_pub_->publish(std::move(predict_info));
-    //         // }
-
-    //         // mutex_.lock();
-    //         // pred_point3d_ = target.hit_point_cam;
-    //         // mutex_.unlock();
-    //         // RCLCPP_INFO(this->get_logger(), "hit point in cam: %lf %lf %lf", target.hit_point_cam[0], target.hit_point_cam[1], target.hit_point_cam[2]);
-    //     }
-    // }
-
-    void BuffProcessorNode::imageCallback(const ImageMsg::ConstSharedPtr &img_info)
+    void BuffProcessorNode::imageCallback(const ImageMsg::ConstSharedPtr &img_msg)
     {
-        if(!img_info)
+        if(!img_msg)
             return;
-        auto img = cv_bridge::toCvShare(std::move(img_info), "bgr8")->image;
+
+        cv::Mat img;
+        img = cv_bridge::toCvShare(std::move(img_msg), "bgr8")->image;
 
         if (!img.empty())
         {
             image_mutex_.lock();
-            src_ = cv::Mat(image_size_.width, image_size_.height, CV_8UC3);
             img.copyTo(src_);
             image_mutex_.unlock();
         }
-        // if(!img.empty())
-        // {
-        //     image_mutex_.lock();
-        //     cv::Point2f r_center;
-        //     cv::Point2f vertex_sum;
-        //     cv::Point2f armor_center;
-        //     for(int i = 0; i < 5; i++)
-        //     {
-        //         if(i != 2)
-        //             vertex_sum += apex2d[i];
-        //         else
-        //             r_center = apex2d[i];
-        //         // cv::line(img, apex2d[i % 5], apex2d[(i + 1) % 5], {0, 0, 255}, 3);
-        //     }
-        //     armor_center = (vertex_sum / 4.0);
-
-        //     Eigen::Vector3d point3d = pred_point3d_;
-        //     image_mutex_.unlock();
-           
-        //     cv::Point2f point_2d = buff_processor_->coordsolver_.reproject(point3d);
-        //     cv::line(img, r_center, armor_center, {125,125, 0}, 4);
-        //     cv::line(img, armor_center, point_2d, {125, 125, 0}, 4);
-        //     cv::line(img, r_center, point_2d, {125, 125, 0}, 4);
-        //     cv::circle(img, point_2d, 4, {0, 0, 255}, -1);
-        //     // for(int i = 0; i < 5; i++)
-        //     //     cv::line(img, apex2d[i % 5], apex2d[(i + 1) % 5], {0, 255, 255}, 5);
-        //     cv::namedWindow("pred_img", cv::WINDOW_NORMAL);
-        //     cv::imshow("pred_img", img);
-        //     cv::waitKey(1);
-        // }
     }
 
     rcl_interfaces::msg::SetParametersResult BuffProcessorNode::paramsCallback(const std::vector<rclcpp::Parameter>& params)
@@ -291,8 +345,11 @@ namespace buff_processor
     {
         //Prediction param.
         this->get_parameter("bullet_speed", predict_param_.bullet_speed);
+        this->get_parameter("shoot_delay", predict_param_.shoot_delay);
+        this->get_parameter("delay_coeff", predict_param_.delay_coeff);
         this->get_parameter("delay_big", predict_param_.delay_big);
         this->get_parameter("delay_small", predict_param_.delay_small);
+
         this->get_parameter("history_deque_len_cos", predict_param_.history_deque_len_cos);
         this->get_parameter("history_deque_len_phase", predict_param_.history_deque_len_phase);
         this->get_parameter("history_deque_len_uniform", predict_param_.history_deque_len_uniform);
@@ -304,8 +361,9 @@ namespace buff_processor
         this->get_parameter("window_size", predict_param_.window_size);
         
         //Debug param.
-        this->get_parameter("show_predict", this->debug_param_.show_predict);
-        this->get_parameter("using_imu", this->debug_param_.using_imu);
+        this->get_parameter("show_img", this->debug_param_.show_img);
+        this->get_parameter("show_marker", this->debug_param_.show_marker);
+        this->get_parameter("show_fitting_curve", this->debug_param_.show_fitting_curve);
 
         return true;
     }
@@ -314,8 +372,12 @@ namespace buff_processor
     {
         //Prediction param.
         this->declare_parameter<double>("bullet_speed", 28.0);
-        this->declare_parameter<double>("delay_big", 175.0);
-        this->declare_parameter<double>("delay_small", 100.0);
+        this->declare_parameter<double>("shoot_delay", 100.0);
+        this->declare_parameter<double>("delay_coeff", 1.0);
+
+        this->declare_parameter<double>("delay_big", 200.0);
+        this->declare_parameter<double>("delay_small", 150.0);
+
         this->declare_parameter<int>("history_deque_len_cos", 250);
         this->declare_parameter<int>("history_deque_len_phase", 100);
         this->declare_parameter<int>("history_deque_len_uniform", 100);
@@ -324,6 +386,9 @@ namespace buff_processor
         this->declare_parameter<double>("max_timespan", 20000.0);
         this->declare_parameter<double>("max_v", 3.0);
         this->declare_parameter<int>("window_size", 2);
+
+        // this->declare_parameter<double>("delay_big", 175.0);
+        // this->declare_parameter<double>("delay_small", 100.0);
 
         //Path param.
         this->declare_parameter<std::string>("camera_name", "KE0200110075");
@@ -336,8 +401,9 @@ namespace buff_processor
         this->path_param_.camera_param_path = pkg_share_pth + this->get_parameter("camera_param_path").as_string();
 
         //Debug param.
-        this->declare_parameter<bool>("show_predict", true);
-        this->declare_parameter<bool>("using_imu", false);
+        this->declare_parameter<bool>("show_img", false);
+        this->declare_parameter<bool>("show_marker", false);
+        this->declare_parameter<bool>("show_fitting_curve", false);
 
         auto success = updateParam();
         if(success)

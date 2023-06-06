@@ -37,6 +37,7 @@ namespace buff_processor
     
     private:
         rclcpp::Logger logger_;
+        rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
 
     public:
         // Mutex mutex_;
@@ -45,9 +46,7 @@ namespace buff_processor
         CoordSolver coordsolver_;
         BuffPredictor buff_predictor_;
         
-        bool fittingThread(BuffMsg buff_msg);
-        bool predictorThread(BuffMsg buff_msg, TargetInfo& target_info);
-        bool predictor(BuffMsg buff_msg, TargetInfo& target_info);
+        bool predict(BuffMsg buff_msg, BuffInfo& buff_info);
     };
 } //namespace buff_processor
 

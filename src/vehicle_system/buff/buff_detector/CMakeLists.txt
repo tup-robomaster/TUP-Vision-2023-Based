@@ -38,6 +38,9 @@ find_package(yaml-cpp REQUIRED)
 find_package(filter REQUIRED)
 find_package(global_user REQUIRED)
 find_package(global_interface REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 include_directories(include 
   ${OpenCV_INCLUDE_DIRS}
@@ -60,19 +63,25 @@ set(dependencies
   global_user
   global_interface
   filter
+  visualization_msgs
+  tf2_geometry_msgs
+  tf2_ros
 )
 
 add_library(${PROJECT_NAME} SHARED
   src/fan_tracker/fan_tracker.cpp
   src/inference/inference_api2.cpp
-  test/src/buff_detector/buff_detector.cpp
-  test/src/buff_detector_node.cpp
-  # src/buff_detector/buff_detector.cpp
-  # src/buff_detector_node.cpp
+  src/buff_detector/buff_detector.cpp
+  src/buff_detector_node.cpp
+
+  # test/src/buff_detector/buff_detector.cpp
+  # test/src/buff_detector_node.cpp
 )
+
 ament_target_dependencies(${PROJECT_NAME}
   ${dependencies}
 )
+
 target_link_libraries(${PROJECT_NAME}
   openvino::runtime
 )
@@ -80,14 +89,17 @@ target_link_libraries(${PROJECT_NAME}
 add_executable(${PROJECT_NAME}_node 
   src/fan_tracker/fan_tracker.cpp
   src/inference/inference_api2.cpp 
-  # src/buff_detector/buff_detector.cpp 
-  # src/buff_detector_node.cpp
-  test/src/buff_detector/buff_detector.cpp
-  test/src/buff_detector_node.cpp
+  src/buff_detector/buff_detector.cpp 
+  src/buff_detector_node.cpp
+  
+  # test/src/buff_detector/buff_detector.cpp
+  # test/src/buff_detector_node.cpp
 )
+
 ament_target_dependencies(${PROJECT_NAME}_node 
   ${dependencies}
 )
+
 target_link_libraries(${PROJECT_NAME}_node 
   openvino::runtime 
   yaml-cpp
@@ -113,7 +125,6 @@ install(TARGETS
 
 install(DIRECTORY 
   launch
-  model
   model
   DESTINATION share/${PROJECT_NAME}
 )

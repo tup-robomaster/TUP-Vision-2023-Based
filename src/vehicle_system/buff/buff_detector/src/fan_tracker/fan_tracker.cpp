@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-10 21:54:32
- * @LastEditTime: 2023-01-03 21:15:35
+ * @LastEditTime: 2023-05-28 21:07:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/fan_tracker/fan_tracker.cpp
  */
 #include "../../include/fan_tracker/fan_tracker.hpp"
@@ -14,35 +14,34 @@ namespace buff_detector
      * 
      * @param src Armor对象
      */
-    FanTracker::FanTracker(Fan src, double src_timestamp)
+    FanTracker::FanTracker(Fan new_buff, uint64_t now)
     {
-        last_fan = src;
-        last_timestamp = src_timestamp;
-        is_initialized = false;
-        is_last_fan_exists = false;
-        history_info.push_back(src);
+        new_fan_ = new_buff;
+        now_ = now;
+        is_initialized_ = false;
+        is_last_fan_exists_ = false;
+        history_info_.push_back(new_buff);
     }
 
-    bool FanTracker::update(Fan new_fan, double new_timestamp)
+    bool FanTracker::update(Fan new_fan, uint64_t now)
     {
-        is_last_fan_exists = true;
-        if (history_info.size() < max_history_len)
+        is_last_fan_exists_ = true;
+        if (history_info_.size() < max_history_len_)
         {
-            history_info.push_back(new_fan);
+            history_info_.push_back(new_fan);
         }
         else
         {
-            is_initialized = true;
-            history_info.pop_front();
-            history_info.push_back(new_fan);
+            is_initialized_ = true;
+            history_info_.pop_front();
+            history_info_.push_back(new_fan);
         }
 
-        prev_fan = last_fan;
-        prev_timestamp = last_timestamp;
-        
-        last_fan = new_fan;
-        last_timestamp = new_timestamp;
+        last_fan_ = new_fan_;
+        last_timestamp_ = now_;
 
+        new_fan_ = new_fan;
+        now_ = now;
         return true;
     }
 } //namespace buff_detector

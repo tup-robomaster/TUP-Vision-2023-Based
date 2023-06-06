@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2023-01-07 00:38:04
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/predictor.hpp
+ * @LastEditTime: 2023-06-04 02:07:18
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
 #define PREDICTOR_HPP_
@@ -24,76 +24,28 @@
 #include <Eigen/Core>
 
 #include <yaml-cpp/yaml.h>
+// #include <matplotlibcpp.h>
 
 //ros
 #include <rclcpp/rclcpp.hpp>
 
 #include "../../../filter/include/particle_filter.hpp"
 #include "../../../../global_user/include/global_user/global_user.hpp"
+#include "./param_struct.hpp"
 
 using namespace std;
 using namespace cv;
 using namespace filter;
-
+using namespace global_user;
 namespace buff_processor
 {
-    struct PredictorParam
+    //目标信息
+    struct TargetInfo
     {
-        string pf_path;
-        double bullet_speed;
-        double max_timespan;            //最大时间跨度，大于该时间重置预测器(ms)
-        double max_rmse;                //TODO:回归函数最大Cost
-        double max_v;                   //设置最大速度,单位rad/s
-        double max_a;                   //设置最大角加速度,单位rad/s^2
-        int history_deque_len_cos;      //大符全部参数拟合队列长度
-        int history_deque_len_phase;    //大符相位参数拟合队列长度
-        int history_deque_len_uniform;  //小符转速求解队列长度
-        double delay_small;             //小符发弹延迟
-        double delay_big;               //大符发弹延迟
-        int window_size;                //滑动窗口大小
-        double fan_length;              //能量机关旋转半径
-
-        PredictorParam()
-        {
-            pf_path = "src/global_user/config/filter_param.yaml";
-            bullet_speed = 28.0;
-            max_timespan = 20000;       
-            max_rmse = 0.5;
-            max_v = 3.0;
-            max_a = 8.0;
-            history_deque_len_cos = 250;
-            history_deque_len_phase = 100;
-            history_deque_len_uniform = 100;
-            delay_small = 175.0;
-            delay_big = 100.0;
-            window_size = 2;
-            fan_length = 0.7;
-        }     
+        double speed;
+        double dist;
+        uint64_t timestamp;
     };
-
-    struct PathParam
-    {
-        string camera_param_path;
-        string camera_name;
-        PathParam()
-        {
-            camera_name = "KE0200110075";
-            camera_param_path = "src/global_user/config/camera.yaml";
-        }
-    };
-
-    struct DebugParam
-    {
-        bool using_imu;
-        bool show_predict;
-
-        DebugParam()
-        {
-            using_imu = false;
-            show_predict = true;
-        }
-    };
-
 
     class BuffPredictor
     {
@@ -136,13 +88,6 @@ namespace buff_processor
             const double _x, _t, _a, _omega, _dc;    // x,t数据
         };
 
-        //目标信息
-        struct TargetInfo
-        {
-            double speed;
-            double dist;
-            double timestamp;
-        };
 
         struct PredictStatus
         {
@@ -152,10 +97,11 @@ namespace buff_processor
     public:
         PredictorParam predictor_param_;
         std::deque<TargetInfo> history_info;                                    //目标队列
+        double params[4] = {0.01, 0.01, 0.01, 0.01};
     
     private:
-        double params[4] = {0.01, 0.01, 0.01, 0.01};
         rclcpp::Logger logger_;
+        rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
 
     public:
         TargetInfo last_target;                                                  //最后目标
@@ -167,8 +113,8 @@ namespace buff_processor
 
         BuffPredictor();
         ~BuffPredictor();
-        bool predict(double speed, double dist, double timestamp, double &result);
-        double calcAimingAngleOffset(double params[4], double t0, double t1, int mode);
+        bool predict(double speed, double dist, uint64_t timestamp, double &result);
+        double calcAimingAngleOffset(double t0, double t1, int mode);
         double shiftWindowFilter(int start_idx);
         bool setBulletSpeed(double speed);
         double evalRMSE(double params[4]);
