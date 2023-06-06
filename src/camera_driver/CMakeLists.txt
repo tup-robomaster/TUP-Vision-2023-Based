@@ -36,7 +36,7 @@ include_directories(
   ${cv_bridge_INCLUDE_DIRS}
 )
 
-link_directories(/opt/MvCamCtrlSDK/lib/64/)
+link_directories(/opt/MVS/lib/64/)
 
 set(dependencies 
   rclcpp

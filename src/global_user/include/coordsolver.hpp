@@ -83,7 +83,7 @@ namespace coordsolver
         Eigen::Matrix4d transform_ic;
         Eigen::Matrix4d transform_ci;
 
-        double bullet_speed = 16.0;   
+        double bullet_speed = 15.0;   
         const double k = 0.01903;                //25°C,1atm,小弹丸
         const double g = 9.781;
 

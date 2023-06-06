@@ -276,6 +276,12 @@ namespace armor_processor
             param_mutex_.unlock();
         }
 
+        if (!target.is_target_lost)
+        {
+            tracking_point_cam = {target.armors[0].point3d_cam.x, target.armors[0].point3d_cam.y, target.armors[0].point3d_cam.z};
+            tracking_angle = processor_->coordsolver_.getAngle(tracking_point_cam, rmat_imu);
+        }
+
         if (!is_aimed_)
         {
             angle = tracking_angle;
@@ -314,6 +320,7 @@ namespace armor_processor
                 shoot_flag_ = true;
             }
         }
+        // is_shooting = false;
 
         RCLCPP_WARN_EXPRESSION(this->get_logger(), is_shooting, "Shooting...");
         

@@ -146,7 +146,7 @@ namespace armor_processor
             if (predictBasedSinger(is_target_lost, armor3d, post_state, {0, 0, 0}, {0, 0, 0}, dt, pred_dt))
             {
                 pred_point3d = post_state;
-                if (target.xyz.norm() >= 5.0)
+                if (target.xyz.norm() >= 4.0)
                 {
                     pred_point3d(0) = meas(0);
                     pred_point3d(2) = meas(2);
@@ -181,6 +181,7 @@ namespace armor_processor
 
                 if (!is_outpost_mode_)
                 {
+                    pred_dt *= 0.25;
                     if (predictBasedSinger(is_target_lost, center3d, pred_point3d, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, dt, pred_dt))
                     {
                         if (target.xyz.norm() >= 4.0)
@@ -189,7 +190,7 @@ namespace armor_processor
                             pred_point3d(1) = post_state(1);
                             pred_point3d(2) = post_state(2);        
                         }
-                        else if (target.xyz.norm() >= 3.0)
+                        else if (target.xyz.norm() >= 2.5)
                         {
                             pred_point3d(0) = post_state(0);
                             pred_point3d(2) = post_state(2);        

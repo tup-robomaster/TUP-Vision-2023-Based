@@ -117,12 +117,13 @@ namespace armor_detector
      */
     void DetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {
+        int mode = mode_;
         RCLCPP_INFO_THROTTLE(
             this->get_logger(),
             *this->get_clock(),
             200, 
             "Autoaim mode: %d",
-            mode_
+            mode
         );
 
         if(!img_msg || (mode_ != AUTOAIM_NORMAL && mode_ != AUTOAIM_SLING &&
@@ -203,6 +204,7 @@ namespace armor_detector
         armor_msg.quat_imu.x = src.quat.x();
         armor_msg.quat_imu.y = src.quat.y();
         armor_msg.quat_imu.z = src.quat.z();
+        armor_msg.mode = mode;
         armor_msg.bullet_speed = bullet_speed;
         armor_msg.shoot_delay = shoot_delay;
 

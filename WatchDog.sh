@@ -6,10 +6,10 @@
  # @LastEditTime: 2023-05-05 15:23:45
  # @FigtPath: /TUP-Vision-2023-Based/WatchDog.sh
 ### 
-export ROS_HOME="/home/tup/ros2_ws"
-cd /home/tup/ros2_ws
+export ROS_HOME="/home/tup/Desktop/TUP-Vision-2023-Based/"
+cd /home/tup/Desktop/TUP-Vision-2023-Based/
 # 设置需要启动和监视的ros命令
-declare -a commands=("ros2 launch global_user autoaim_bringup.launch.py")
+declare -a commands=("ros2 launch global_user vision_bringup.launch.py")
 
 # 定义函数来启动ros命令
 start_commands() {
