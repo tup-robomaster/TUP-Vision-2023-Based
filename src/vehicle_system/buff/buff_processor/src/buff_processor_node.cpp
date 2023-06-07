@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-06-07 02:15:43
+ * @LastEditTime: 2023-06-07 13:51:45
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -214,8 +214,15 @@ namespace buff_processor
                 gimbal_msg.pred_point_cam.z = target_msg.armor3d_cam.z;
                 gimbal_msg.is_target = true;
                 is_predicted = false;
+
             }
             plot_mutex_.unlock();
+
+            last_gimabl_angle_ = predict_info.angle;
+            last_meas_point3d_cam_ = predict_info.armor3d_cam;
+            last_meas_point3d_world_ = predict_info.armor3d_world;
+            last_pred_point3d_cam_ = predict_info.hit_point_cam;
+            last_pred_point3d_world_ = predict_info.hit_point_world;
         }
         else
         {
@@ -226,6 +233,14 @@ namespace buff_processor
             gimbal_msg.meas_point_cam.z = 0.0;
             gimbal_msg.is_shooting = false;
             gimbal_msg.is_target = false;
+            gimbal_msg.is_switched = buff_msg.target_switched;
+            gimbal_msg.meas_point_cam.x = last_meas_point3d_cam_(0);
+            gimbal_msg.meas_point_cam.y = last_meas_point3d_cam_(1);
+            gimbal_msg.meas_point_cam.z = last_meas_point3d_cam_(2);
+            gimbal_msg.pred_point_cam.x = last_pred_point3d_cam_(0);
+            gimbal_msg.pred_point_cam.y = last_pred_point3d_cam_(1);
+            gimbal_msg.pred_point_cam.z = last_pred_point3d_cam_(2);
+
             is_predicted = false;
         }
 
@@ -313,7 +328,6 @@ namespace buff_processor
                 cv::Point2f r_center;
                 cv::Point2f vertex_sum;
                 cv::Point2f armor_center;
-                // cout << "point: ";
                 for (int ii = 0; ii < 5; ii++)
                 {
                     if(ii != 0)
@@ -326,7 +340,6 @@ namespace buff_processor
                         r_center.x = target_msg.points2d[ii].x;
                         r_center.y = target_msg.points2d[ii].y;
                     }
-                    // cout << "(" << target_msg.points2d[ii].x << " " << target_msg.points2d[ii].y << ") ";
                     cv::line(
                         dst, 
                         cv::Point2i(
@@ -339,7 +352,6 @@ namespace buff_processor
                         2
                     );
                 }
-                // cout << endl;
 
                 armor_center = (vertex_sum / 4.0);
                 cv::line(dst, r_center, armor_center, {125, 0, 125}, 2);

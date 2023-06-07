@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:10:59
- * @LastEditTime: 2023-06-06 11:53:42
+ * @LastEditTime: 2023-06-07 13:51:30
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/buff_processor_node.hpp
  */
 #ifndef BUFF_PROCESSOR_NODE_HPP_
@@ -79,6 +79,7 @@ namespace buff_processor
         Eigen::Vector3d last_meas_point3d_world_ = {0.0, 0.0, 0.0};
         double last_pred_angle_ = 0.0;
         double last_meas_angle_ = 0.0;
+        Eigen::Vector2d last_gimabl_angle_ = {0.0, 0.0};
         
         void imageCallback(const ImageMsg::ConstSharedPtr &img_msg);
         void drawCurve();

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-06-07 03:26:59
+ * @LastEditTime: 2023-06-07 13:51:19
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
@@ -74,50 +74,45 @@ namespace buff_detector
         }
         auto time_infer = steady_clock_.now();
 
-        vector<cv::Point2f> center_vec;
+        // vector<cv::Point2f> center_vec;
         // 创建扇叶对象
         for (auto object : objects)
         {
             if (buff_param_.color == RED)
+            {
                 if (object.color != RED)
                     continue;
-            if (buff_param_.color == BLUE)
+            }
+            else if (buff_param_.color == BLUE)
+            {
                 if (object.color != BLUE)
                     continue;
+            }
 
             Fan fan;
             fan.id = object.cls;
             fan.color = object.color;
             fan.conf = object.prob;
             if (object.color == 0)
+            {
                 fan.key = "B" + string(object.cls == UNACTIVATED ? "Target" : "Activated");
-            if (object.color == 1)
+            }
+            else if (object.color == 1)
+            {
                 fan.key = "R" + string(object.cls == UNACTIVATED ? "Target" : "Activated");
+            }
 
             memcpy(fan.apex2d, object.apex, 5 * sizeof(cv::Point2f));
-            for(int i = 0; i < 5; i++)
+            for (int i = 0; i < 5; i++)
             {
                 fan.apex2d[i] += Point2f((float)roi_offset_.x, (float)roi_offset_.y);
             }
             
             std::vector<Point2f> points_pic(fan.apex2d, fan.apex2d + 5);
-            std::vector<cv::Point2f> points_rect;
-            cv::Point2f center_r;
-            for(int ii = 0; ii < 5; ii++)
-            {
-                if(ii == 0)
-                    center_r = fan.apex2d[ii];
-                else
-                    points_rect.push_back(fan.apex2d[ii]);
-            }
-            center_vec.push_back(center_r);
-            cv::RotatedRect r_rect = cv::fitEllipse(points_pic);
-            cv::RotatedRect armor_rect = cv::minAreaRect(points_rect);
-
+            
             // TODO:迭代法进行PnP解算
             TargetType target_type = BUFF;
             auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
-            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
 
             fan.armor3d_cam = pnp_result.armor_cam;
             fan.armor3d_world = pnp_result.armor_world;
@@ -125,9 +120,7 @@ namespace buff_detector
             fan.centerR3d_world = pnp_result.R_world;
             fan.euler = pnp_result.euler;
             fan.rmat = pnp_result.rmat;
-            // RCLCPP_INFO(logger_, "r_center: %lf %lf %lf", fan.centerR3d_cam[0], fan.centerR3d_cam[1], fan.centerR3d_cam[2]);
-
-            fans_.push_back(fan);
+            fans_.emplace_back(fan);
         }
         
         // 维护Tracker队列，删除过旧的Tracker
@@ -141,9 +134,12 @@ namespace buff_detector
                 {
                     next = trackers_.erase(iter);
                 }
+                }
                 else
                 {
+                {
                     ++next;
+                }
                 }
                 iter = next;
             }
@@ -160,7 +156,7 @@ namespace buff_detector
             {
                 
                 FanTracker fan_tracker((*fan), src.timestamp);
-                trackers_tmp.push_back(fan_tracker);
+                trackers_tmp.emplace_back(fan_tracker);
             }
             else
             {
@@ -225,12 +221,15 @@ namespace buff_detector
                 else
                 {
                     FanTracker fan_tracker((*fan), src.timestamp);
-                    trackers_tmp.push_back(fan_tracker);
+                    trackers_tmp.emplace_back(fan_tracker);
                 }
             }
         }
+        
         for (auto new_tracker : trackers_tmp)
-            trackers_.push_back(new_tracker);
+        {
+            trackers_.emplace_back(new_tracker);
+        }
         
         cout << "post_tracker_size:" << trackers_.size() << endl;
         // 检查待激活扇叶是否存在
@@ -269,8 +268,27 @@ namespace buff_detector
         mean_r_center = r_center_sum / avail_tracker_cnt;
         auto r_center_cam = coordsolver_.worldToCam(target.centerR3d_world, rmat_imu_);
         auto center2d_src = coordsolver_.reproject(r_center_cam);
-        auto angle = coordsolver_.getAngle(target.armor3d_cam, rmat_imu_);
-
+        
+        // 判断扇叶是否发生切换
+        bool is_switched = false;
+        double delta_t = (src.timestamp - last_timestamp_);
+        auto relative_rmat = last_fan_.rmat.transpose() * target.rmat;
+        auto angle_axisd = Eigen::AngleAxisd(relative_rmat);
+        double rotate_spd = angle_axisd.angle() / delta_t * 1e9;
+        if (abs(rotate_spd) >= buff_param_.max_v)
+        {
+            is_switched = true;
+        }
+        
+        // frame info.
+        lost_cnt_ = 0;
+        last_roi_center_ = center2d_src;
+        last_timestamp_ = src.timestamp;
+        last_fan_ = target;
+        is_last_target_exists_ = true;
+        
+        // buff info.
+        target_info.target_switched = is_switched;
         target_info.rotate_speed = mean_rotate_speed;
         target_info.r_center = mean_r_center;
         target_info.rmat = target.rmat;
@@ -287,11 +305,11 @@ namespace buff_detector
         target_info.points2d[4].x = target.apex2d[4].x;
         target_info.points2d[4].y = target.apex2d[4].y;
         target_info.find_target = true;
-
+        
         RCLCPP_INFO_THROTTLE(
             logger_, 
             steady_clock_,
-            100,
+            50,
             "mean_rotate_speed: %.3f r_center_cam: (%.3f %.3f %.3f) mean_r_center: (%.3f %.3f %.3f)", 
             mean_rotate_speed,
             r_center_cam(0), r_center_cam(1), r_center_cam(2),
