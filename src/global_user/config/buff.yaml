@@ -3,10 +3,10 @@
   # Detector params.
     buff_mode: 4
     color: 0 # 0: blue / 1: red
-    max_angle: 0.25  # fan switched angle threshhold
+    max_angle: 0.50  # fan switched angle threshhold
     max_lost_cnt: 5 
-    max_v: 4.0  
-    max_delta_t: 200.0
+    max_v: 5.0  
+    max_delta_t: 100.0
     fan_length: 0.7
     no_crop_thres: 0.002
 
@@ -17,13 +17,13 @@
     network_path: "/model/buff-05-28-01.xml"
 
   # Debug.
-    use_roi: true
+    use_roi: false
 
     show_img: true
     show_all_fans: true
     show_fps: true
     print_target_info: false 
-    prinf_latency: false
+    prinf_latency: true
     assist_label: false
     show_marker: false
 
@@ -34,7 +34,7 @@
     max_rmse: 3.5
     max_v: 3.0
     max_a: 8.0
-    history_deque_len_cos: 150
+    history_deque_len_cos: 200
     history_deque_len_phase: 50
     history_deque_len_uniform: 50
     window_size: 2
@@ -47,7 +47,7 @@
 
   # fitting params bound
     #               al  ah    wl   wh    pl    ph    bl  bh
-    params_bound: [0.5, 1.2, 1.4, 2.2, -3.14, 3.14, 1.5, 2.5]
+    params_bound: [0.7, 1.2, 1.4, 2.2, -3.14, 3.14, 1.7, 2.5]
     
   # Debug.
     debug: true

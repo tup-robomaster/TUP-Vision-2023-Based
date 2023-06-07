@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-06-04 00:13:35
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
+ * @LastEditTime: 2023-06-07 03:26:59
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
 
@@ -131,7 +131,6 @@ namespace buff_detector
         }
         
         // 维护Tracker队列，删除过旧的Tracker
-        buff_param_.max_delta_t = 1000;
         if (trackers_.size() != 0)
         {
             for (auto iter = trackers_.begin(); iter != trackers_.end();)
@@ -139,6 +138,7 @@ namespace buff_detector
                 //删除元素后迭代器会失效，需先行获取下一元素
                 auto next = iter;
                 if (((src.timestamp - (*iter).now_) / 1e6) > buff_param_.max_delta_t)
+                {
                     next = trackers_.erase(iter);
                 }
                 else
@@ -158,7 +158,6 @@ namespace buff_detector
         {
             if (trackers_.size() == 0)
             {
-                // cout << "6666" << endl;
                 
                 FanTracker fan_tracker((*fan), src.timestamp);
                 trackers_tmp.push_back(fan_tracker);
@@ -167,6 +166,7 @@ namespace buff_detector
             {
                 double min_v = 1e9;
                 int min_last_delta_t = 1e9;
+                // int insert_timestamp = src.timestamp;
                 bool is_best_candidate_exist = false;
                 std::vector<FanTracker>::iterator best_candidate;
                 for (auto iter = trackers_.begin(); iter != trackers_.end(); iter++)
@@ -180,11 +180,18 @@ namespace buff_detector
                     // 若该扇叶完成初始化,且隔一帧时间较短
                     if ((*iter).is_initialized_ && delta_t <= buff_param_.max_delta_t)
                     {
-                        // 目前扇叶到上一次扇叶的旋转矩阵
                         auto relative_rmat = (*iter).last_fan_.rmat.transpose() * (*fan).rmat;
+                        // TODO:使用点乘判断旋转方向
                         angle_axisd = Eigen::AngleAxisd(relative_rmat);
-                        auto rotate_axis_world = (*iter).last_fan_.rmat * angle_axisd.axis();
+                        auto rotate_axis_world = (*fan).rmat * angle_axisd.axis();
                         sign = ((*fan).centerR3d_world.dot(rotate_axis_world) > 0 ) ? 1 : -1;
+                        // auto prev_fan = (*iter).history_info_.front();
+                        // // 目前扇叶到上一次扇叶的旋转矩阵
+                        // auto relative_rmat = prev_fan.rmat.transpose() * (*fan).rmat;
+                        // angle_axisd = Eigen::AngleAxisd(relative_rmat);
+                        // auto rotate_axis_world = prev_fan.rmat * angle_axisd.axis();
+                        // sign = ((*fan).centerR3d_world.dot(rotate_axis_world) > 0 ) ? 1 : -1;
+                        // insert_timestamp = (src.timestamp + (*iter).last_timestamp_) / 2;
                     }
                     else
                     {
@@ -195,6 +202,7 @@ namespace buff_detector
                         angle_axisd = Eigen::AngleAxisd(relative_rmat);
                         auto rotate_axis_world = (*fan).rmat * angle_axisd.axis();
                         sign = ((*fan).centerR3d_world.dot(rotate_axis_world) > 0 ) ? 1 : -1;
+                        // insert_timestamp = (src.timestamp + (*iter).last_timestamp_) / 2;
                     }
 
                     // 计算角速度(rad/s)
@@ -208,16 +216,14 @@ namespace buff_detector
                         is_best_candidate_exist = true;
                     }
                 }
+
                 if (is_best_candidate_exist)
                 {
-                    // cout << "4444" << endl;
                     (*best_candidate).update((*fan), src.timestamp);
                     (*best_candidate).rotate_speed_ = min_v;
                 }
                 else
                 {
-                    // cout << "5555" << endl;
-
                     FanTracker fan_tracker((*fan), src.timestamp);
                     trackers_tmp.push_back(fan_tracker);
                 }
@@ -226,26 +232,10 @@ namespace buff_detector
         for (auto new_tracker : trackers_tmp)
             trackers_.push_back(new_tracker);
         
-        cout << "post_tracker_sise:" << trackers_.size() << endl;
+        cout << "post_tracker_size:" << trackers_.size() << endl;
         // 检查待激活扇叶是否存在
         Fan target;
         bool is_target_exists = chooseTarget(fans_, target);
-        // 若不存在待击打扇叶则返回false
-        if (!is_target_exists)
-        {
-            if(debug_param_.show_all_fans)
-            {
-                RCLCPP_DEBUG_ONCE(logger_, "Show all fans...");
-                showFans(src);
-            }
-
-            lost_cnt_++;
-            is_last_target_exists_ = false;
-
-            RCLCPP_WARN(logger_, "No active target...");
-            return false;
-        }
-
         int avail_tracker_cnt = 0;
         double rotate_speed_sum = 0;
         double mean_rotate_speed = 0;
@@ -266,6 +256,7 @@ namespace buff_detector
         // 若不存在可用的扇叶则返回false
         if (avail_tracker_cnt == 0)
         {
+            RCLCPP_WARN(logger_, "No available tracker existed.");
             if(debug_param_.show_all_fans)
             {
                 showFans(src);

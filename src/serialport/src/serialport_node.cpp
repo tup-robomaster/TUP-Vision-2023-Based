@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-25 23:42:42
- * @LastEditTime: 2023-05-31 18:52:29
+ * @LastEditTime: 2023-06-07 02:23:07
  * @FilePath: /TUP-Vision-2023-Based/src/serialport/src/serialport_node.cpp
  */
 #include "../include/serialport_node.hpp"
@@ -69,7 +69,7 @@ namespace serialport
         {
             serial_msg_pub_ = this->create_publisher<SerialMsg>("/serial_msg", qos);
             // receive_timer_ = rclcpp::create_timer(this, this->get_clock(), 5ms, std::bind(&SerialPortNode::receiveData, this));
-            watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 500ms, std::bind(&SerialPortNode::serialWatcher, this));
+            watch_timer_ = rclcpp::create_timer(this, this->get_clock(), 200ms, std::bind(&SerialPortNode::serialWatcher, this));
         }
         receive_thread_ = std::make_unique<std::thread>(&SerialPortNode::receiveData, this);
     }

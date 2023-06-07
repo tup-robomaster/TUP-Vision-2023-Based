@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-09-05 17:09:18
- * @LastEditTime: 2023-06-06 11:54:45
+ * @LastEditTime: 2023-06-06 13:51:03
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/predictor/predictor.hpp
  */
 #ifndef PREDICTOR_HPP_
@@ -35,7 +35,7 @@
 #include "../../../filter/include/particle_filter.hpp"
 #include "../../../../global_user/include/global_user/global_user.hpp"
 #include "global_interface/msg/buff.hpp"
-#include "./param_struct.hpp"
+#include "../../../include/predictor/param_struct.hpp"
 
 using namespace std;
 using namespace cv;

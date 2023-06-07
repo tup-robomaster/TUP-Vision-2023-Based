@@ -28,7 +28,7 @@ find_package(global_interface REQUIRED)
 
 include_directories("dependencies/hik_sdk/include")
 include_directories("dependencies/daheng_sdk/include")
-# include_directories("dependencies/mvs_sdk/include")
+include_directories("dependencies/mvs_sdk/include")
 include_directories(
   include
   ${OpenCV_INCLUDE_DIRS}
@@ -36,7 +36,7 @@ include_directories(
   ${cv_bridge_INCLUDE_DIRS}
 )
 
-link_directories(/opt/MvCamCtrlSDK/lib/64)
+link_directories(/opt/MVS/lib/64)
 
 set(dependencies 
   rclcpp

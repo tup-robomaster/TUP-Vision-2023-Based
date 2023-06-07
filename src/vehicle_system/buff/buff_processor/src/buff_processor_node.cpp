@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:11:19
- * @LastEditTime: 2023-06-06 11:50:14
+ * @LastEditTime: 2023-06-07 02:15:43
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/src/buff_processor_node.cpp
  */
 #include "../include/buff_processor_node.hpp"
@@ -82,7 +82,7 @@ namespace buff_processor
 
         if (debug_param_.show_fitting_curve)
         {
-            draw_curve_callback_timer_ = this->create_wall_timer(5ms, std::bind(&BuffProcessorNode::drawCurve, this));
+            draw_curve_callback_timer_ = this->create_wall_timer(500ms, std::bind(&BuffProcessorNode::drawCurve, this));
         }        
     }
 
@@ -104,9 +104,12 @@ namespace buff_processor
                 buff_processor_->buff_predictor_.params[2], 
                 buff_processor_->buff_predictor_.params[3]
             };
-            deque<TargetInfo> his_info(buff_processor_->buff_predictor_.history_info.cbegin(), buff_processor_->buff_predictor_.history_info.cend());
+            std::deque<TargetInfo> his_info = buff_processor_->buff_predictor_.history_info;
+            // deque<TargetInfo> his_info(buff_processor_->buff_predictor_.history_info.cbegin(), buff_processor_->buff_predictor_.history_info.cend());
             plot_mutex_.unlock();
-
+            
+            std::cout<<"SPD:"<<his_info[0].speed<<std::endl;
+            
             // uint64_t st = start_time_.nanoseconds();
             for (int ii = 0; ii < (int)his_info.size(); ii++)
             {
@@ -117,7 +120,6 @@ namespace buff_processor
                 plt_time.push_back(t);
                 plt_speed.push_back(measure);
                 plt_fitted.push_back(pred);
-
                 // cout << "dt:"<< t << " pre:" << pred << " measure:" << measure << endl;
             }
             plt::clf();

@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-06-06 11:53:05
+ * @LastEditTime: 2023-06-07 03:35:12
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -366,7 +366,7 @@ namespace buff_detector
         // cout << "model_path:" << path << endl;
         
         // Setting Configuration Values.
-        core.set_property("CPU", ov::enable_profiling(true));
+        core.set_property("GPU", ov::enable_profiling(true));
 
         // Step 1.Create openvino runtime core
         model = core.read_model(path);
@@ -385,10 +385,10 @@ namespace buff_detector
         compiled_model = core.compile_model(
             model,
             "GPU",
-            ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
+            ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY),
             // "AUTO:GPU,CPU", 
             // ov::hint::performance_mode(ov::hint::PerformanceMode::LATENCY)
-            // ov::hint::inference_precision(ov::element::u8)
+            ov::hint::inference_precision(ov::element::f16)
             );
 
         // compiled_model.set_property(ov::device::priorities("GPU"));

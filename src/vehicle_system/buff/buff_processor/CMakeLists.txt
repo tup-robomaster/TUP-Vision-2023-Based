@@ -68,13 +68,13 @@ set(dependencies
   
 include_directories(include)
 add_library(${PROJECT_NAME} SHARED
-  # src/predictor/predictor.cpp
-  # src/buff_processor/buff_processor.cpp
-  # src/buff_processor_node.cpp
+  src/predictor/predictor.cpp
+  src/buff_processor/buff_processor.cpp
+  src/buff_processor_node.cpp
 
-  test/src/predictor/predictor.cpp
-  test/src/buff_processor/buff_processor.cpp
-  test/src/buff_processor_node.cpp
+  # test/src/predictor/predictor.cpp
+  # test/src/buff_processor/buff_processor.cpp
+  # test/src/buff_processor_node.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME} 
@@ -96,13 +96,13 @@ rclcpp_components_register_nodes(${PROJECT_NAME}
 )
 
 add_executable(${PROJECT_NAME}_node 
-  # src/predictor/predictor.cpp
-  # src/buff_processor/buff_processor.cpp
-  # src/buff_processor_node.cpp
+  src/predictor/predictor.cpp
+  src/buff_processor/buff_processor.cpp
+  src/buff_processor_node.cpp
 
-  test/src/predictor/predictor.cpp
-  test/src/buff_processor/buff_processor.cpp
-  test/src/buff_processor_node.cpp
+  # test/src/predictor/predictor.cpp
+  # test/src/buff_processor/buff_processor.cpp
+  # test/src/buff_processor_node.cpp
 )
 
 # ament_target_dependencies(${PROJECT_NAME}_node 
