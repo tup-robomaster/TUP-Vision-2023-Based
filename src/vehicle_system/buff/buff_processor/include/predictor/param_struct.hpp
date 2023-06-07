@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2023-03-20 19:46:36
- * @LastEditTime: 2023-06-01 16:30:47
+ * @LastEditTime: 2023-06-06 11:53:58
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/predictor/param_struct.hpp
  */
 #ifndef PARAM_STRUCT_HPP_
@@ -30,16 +30,32 @@ namespace buff_processor
     //目标信息
     struct BuffInfo
     {   
+        int buff_mode;
+        bool target_switched;
+        double abs_meas_angle;
+        double abs_fitting_angle;
+        double abs_pred_angle;
         Eigen::Vector3d armor3d_world;
         Eigen::Vector3d hit_point_world;
         Eigen::Vector3d armor3d_cam;
         Eigen::Vector3d hit_point_cam;
         Eigen::Vector2d angle;
         Eigen::Matrix3d rmat_imu;
-        bool target_switched;
-        int buff_mode;
-        double abs_meas_angle;
-        double abs_pred_angle;
+
+        BuffInfo()
+        {
+            buff_mode = 3;
+            target_switched = true;
+            abs_meas_angle = 0.0;
+            abs_fitting_angle = 0.0;
+            abs_pred_angle = 0.0;
+
+            armor3d_cam = {0.0, 0.0, 0.0};
+            armor3d_world = {0.0, 0.0, 0.0};
+            hit_point_cam = {0.0, 0.0, 0.0};
+            hit_point_world = {0.0, 0.0, 0.0};
+            angle = {0.0, 0.0};
+        }
     };
 
     struct PredictStatus
@@ -52,6 +68,9 @@ namespace buff_processor
         string pf_path;
         double bullet_speed;            //弹速
         double shoot_delay;             //发弹延迟
+        double delay_small;             //小符发弹延迟
+        double delay_big;               //大符发弹延迟
+        double delay_coeff;             //延迟系数
         
         double max_timespan;            //最大时间跨度，大于该时间重置预测器(ms)
         double max_rmse;                //TODO:回归函数最大Cost
@@ -61,9 +80,6 @@ namespace buff_processor
         int history_deque_len_cos;      //大符全部参数拟合队列长度
         int history_deque_len_phase;    //大符相位参数拟合队列长度
         int history_deque_len_uniform;  //小符转速求解队列长度
-        
-        double delay_small;             //小符发弹延迟
-        double delay_big;               //大符发弹延迟
 
         int window_size;                //滑动窗口大小
         double fan_length;              //能量机关旋转半径
@@ -75,11 +91,16 @@ namespace buff_processor
         double rmse_high_thresh;        //拟合rmse高阈值
         double rmse_low_thresh;         //拟合rmse低阈值
 
+        vector<double> params_bound;
+
         PredictorParam()
         {
             pf_path = "src/global_user/config/filter_param.yaml";
             bullet_speed = 28.0;
             shoot_delay = 100.0;
+            delay_coeff = 1.0;
+            delay_big = 200.0;
+            delay_small = 150.0;
 
             max_timespan = 50000;       
             max_rmse = 2.0;
@@ -99,8 +120,8 @@ namespace buff_processor
             pred_error_low_thresh = 0.20;
             fitting_error_cnt = 5;
             fitting_error_thresh = 0.20;
-            rmse_high_thresh = 5.5;
-            rmse_low_thresh = 5.5;
+            rmse_high_thresh = 2.0;
+            rmse_low_thresh = 0.5;
         }     
     };
 
@@ -117,12 +138,14 @@ namespace buff_processor
 
     struct DebugParam
     {
-        bool using_imu;
-        bool show_predict;
+        bool show_img;
+        bool show_marker;
+        bool show_fitting_curve;
         DebugParam()
         {
-            using_imu = false;
-            show_predict = true;
+            show_img = false;
+            show_marker = false;
+            show_fitting_curve = false;
         }
     };
 

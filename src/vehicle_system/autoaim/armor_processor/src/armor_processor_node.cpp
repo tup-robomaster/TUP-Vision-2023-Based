@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-24 14:57:52
- * @LastEditTime: 2023-05-28 22:04:46
+ * @LastEditTime: 2023-06-06 11:52:52
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_processor/src/armor_processor_node.cpp
  */
 #include "../include/armor_processor_node.hpp"
@@ -97,12 +97,10 @@ namespace armor_processor
         AutoaimMsg target = std::move(target_info);
 
         // target.mode = 2;
-        // target.is_spinning = true;
-        // target.target_switched = false;
-
-        // cout << "is_target_switched:" << target.target_switched << endl;
-        if (target.mode == HERO_SLING)
+        if (target.mode == AUTOAIM_SLING)
         {
+            target.is_spinning = true;
+            target.target_switched = false;
             if (!target.spinning_switched && !target.is_target_lost)
             {
                 if (abs(last_rangle - target.armors.front().rangle) > 0.5)

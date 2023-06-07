@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:08:00
- * @LastEditTime: 2023-06-01 18:30:39
+ * @LastEditTime: 2023-06-06 11:46:43
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector_node.cpp
  */
 #include "../include/buff_detector_node.hpp"
@@ -24,8 +24,7 @@ namespace buff_detector
         {
             RCLCPP_ERROR(this->get_logger(), "Error while initializing detector class: %s", e.what());
         }
-
-        detector_->is_initialized_ = false;
+        
         if (!detector_->is_initialized_)
         {
             RCLCPP_INFO(this->get_logger(), "Initializing detector class");
@@ -33,7 +32,6 @@ namespace buff_detector
             detector_->coordsolver_.loadParam(path_param_.camera_param_path, path_param_.camera_name);
             detector_->is_initialized_ = true;
         }
-        // cout << 222 << endl;
 
         // QoS    
         rclcpp::QoS qos(0);
@@ -116,7 +114,6 @@ namespace buff_detector
 
         if(!img_msg || (mode_ != SMALL_BUFF && mode_ != BIG_BUFF))
             return;
-        // cout << 333 << endl;
         
         TaskData src;
         auto img = cv_bridge::toCvShare(img_msg, "bgr8")->image;
@@ -126,12 +123,13 @@ namespace buff_detector
         src.timestamp = stamp.nanoseconds();
 
         BuffMsg buff_msg;
+        int flag = -1;
         double shoot_delay = 0.0;
         double bullet_speed = 0.0;
+        std::vector<geometry_msgs::msg::Transform> armor3d_transform_vec; 
 
         serial_mutex_.lock();
         src.mode = serial_msg_.mode;
-        src.mode = 4;
         bullet_speed = serial_msg_.bullet_speed;
         shoot_delay = serial_msg_.shoot_delay;
         if(debug_param_.using_imu)
@@ -149,23 +147,19 @@ namespace buff_detector
         }
         serial_mutex_.unlock();
         
-        // cout << 555 << endl;
-
         TargetInfo target_info;
         param_mutex_.lock();
-        if(detector_->run(src, target_info))
+        if(detector_->run(src, target_info, armor3d_transform_vec, flag))
         {
             buff_msg.r_center.x = target_info.r_center[0];
             buff_msg.r_center.y = target_info.r_center[1];
             buff_msg.r_center.z = target_info.r_center[2];
-            // buff_msg.timestamp = src.timestamp;
+            buff_msg.timestamp = src.timestamp;
             buff_msg.angle = target_info.angle;
             buff_msg.delta_angle = target_info.delta_angle;
             buff_msg.angle_offset = target_info.angle_offset;
             buff_msg.bullet_speed = target_info.bullet_speed;
             buff_msg.target_switched = target_info.target_switched;
-            buff_msg.rotate_speed = target_info.rotate_speed;
-            last_rotate_speed_ = buff_msg.rotate_speed;
 
             Eigen::Quaterniond quat_world = Eigen::Quaterniond(target_info.rmat);
             buff_msg.quat_world.w = quat_world.w();
@@ -197,14 +191,11 @@ namespace buff_detector
         }
         else
         {
-            buff_msg.rotate_speed = last_rotate_speed_;
             buff_msg.armor3d_world.x = last_detect_point3d_(0);
             buff_msg.armor3d_world.y = last_detect_point3d_(1);
             buff_msg.armor3d_world.z = last_detect_point3d_(2);
         }
         param_mutex_.unlock();
-        
-        // cout << 444 << endl;
 
         //Publish buff msg.
         buff_msg.header.frame_id = "gimbal_link2";
@@ -252,6 +243,7 @@ namespace buff_detector
         this->declare_parameter<int>("color", 1);
         this->declare_parameter<int>("max_lost_cnt", 4);
         this->declare_parameter<double>("fan_length", 0.7);
+        this->declare_parameter<double>("max_angle", 0.25);
         this->declare_parameter<double>("max_delta_t", 100.0);
         this->declare_parameter<double>("max_v", 4.0);
         this->declare_parameter<double>("no_crop_thres", 2e-3);
@@ -283,8 +275,11 @@ namespace buff_detector
 
         bool success = updateParam();
         if(success)
+        {
             RCLCPP_INFO(this->get_logger(), "Update param!");
-       
+        }
+
+        cout << "max_angle:" << buff_param_.max_angle << endl;
         return std::make_unique<Detector>(buff_param_, path_param_, debug_param_);
     }
 
@@ -298,6 +293,7 @@ namespace buff_detector
     {
         //Buff param.
         this->get_parameter("color", this->buff_param_.color);
+        this->get_parameter("max_angle", this->buff_param_.max_angle);
         this->get_parameter("max_v", this->buff_param_.max_v);
         this->get_parameter("fan_length", this->buff_param_.fan_length);
         this->get_parameter("max_delta_t", this->buff_param_.max_delta_t);

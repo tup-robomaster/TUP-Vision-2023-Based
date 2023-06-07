@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(camera_driver)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+add_compile_options(-Wall -Wextra -Wpedantic -std=c++17)
 endif()
 
 set(CMAKE_BUILD_TYPE=Release)
@@ -36,7 +36,7 @@ include_directories(
   ${cv_bridge_INCLUDE_DIRS}
 )
 
-link_directories(/opt/MVS/lib/64/)
+link_directories(/opt/MvCamCtrlSDK/lib/64)
 
 set(dependencies 
   rclcpp

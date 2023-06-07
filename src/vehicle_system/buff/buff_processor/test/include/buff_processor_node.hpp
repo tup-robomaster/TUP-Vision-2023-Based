@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 23:10:59
- * @LastEditTime: 2023-06-01 16:23:01
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/buff_processor_node.hpp
+ * @LastEditTime: 2023-06-04 00:02:32
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/include/buff_processor_node.hpp
  */
 #ifndef BUFF_PROCESSOR_NODE_HPP_
 #define BUFF_PROCESSOR_NODE_HPP_
@@ -19,6 +19,11 @@
 #include <image_transport/subscriber_filter.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
 //c++
 #include <mutex>
 #include <thread>
@@ -76,7 +81,19 @@ namespace buff_processor
         PathParam path_param_;
         DebugParam debug_param_;
         std::string filter_param_path_;
-    
+
+        // visualization_msgs::Marker
+        rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_pub_;
+        uint64 shape_ = visualization_msgs::msg::Marker::SPHERE;
+
+        double last_abs_meas_angle = 0.0;
+        double last_abs_fitting_angle = 0.0;
+        double last_abs_pred_angle = 0.0;
+        Eigen::Vector3d last_armor3d_cam = {0.0, 0.0, 0.0};
+        Eigen::Vector3d last_armor3d_world = {0.0, 0.0, 0.0};
+        Eigen::Vector3d last_hit3d_cam = {0.0, 0.0, 0.0};
+        Eigen::Vector3d last_hit3d_world = {0.0, 0.0, 0.0};
+
     private:
         // params callback.
         bool updateParam();

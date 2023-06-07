@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-13 23:26:16
- * @LastEditTime: 2023-05-28 22:00:37
+ * @LastEditTime: 2023-06-06 11:52:29
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/armor_detector/armor_detector.cpp
  */
 #include "../../include/armor_detector/armor_detector.hpp"
@@ -66,9 +66,9 @@ namespace armor_detector
         if (debug_params_.use_roi)
         {   //启用roi
             //吊射模式采用固定ROI
-            if (src.mode == 2)
+            if (src.mode == AUTOAIM_SLING)
             {
-                input(Range(600,1024),Range(432,848)).copyTo(input);
+                input(Range(600, 1024), Range(432, 848)).copyTo(input);
                 roi_offset_ = cv::Point2d((float)432, (float)600);
             }
             else
@@ -77,6 +77,7 @@ namespace armor_detector
             }
             RCLCPP_INFO_ONCE(logger_, "Using roi...");
         }
+
         time_crop_ = steady_clock_.now();
 
         objects_.clear();
@@ -391,12 +392,10 @@ namespace armor_detector
         if (spin_status != UNKNOWN)
         {
             //------------------------------估计目标旋转周期-----------------------------------
-            // auto available_candidates_cnt = 0;
             double w = 0.0;
             double period = 0.0;
             for (auto iter = ID_candiadates.first; iter != ID_candiadates.second; ++iter)
             {
-                // RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "dt:%.8f src.dt:%.8f", ((*iter).second.now / 1e9), (src.timestamp / 1e9));
                 if (((*iter).second.now / 1e9) == (src.timestamp / 1e9))
                 {
                     final_armors.emplace_back((*iter).second.new_armor);
@@ -643,9 +642,16 @@ namespace armor_detector
         int target_hp = car_id_map_[target.key];
         autoaim_msg.vehicle_id = target.key;
         autoaim_msg.vehicle_hp = target_hp;
-        // autoaim_msg.timestamp = now_;
         autoaim_msg.is_target_lost = false;
-        // RCLCPP_INFO_THROTTLE(logger_, steady_clock_, 200, "xyz: %lf %lf %lf", autoaim_msg.aiming_point_cam.x, autoaim_msg.aiming_point_cam.y, autoaim_msg.aiming_point_cam.z);
+
+        RCLCPP_INFO_THROTTLE(
+            logger_, 
+            steady_clock_, 
+            200, 
+            "xyz_cam: (%.3f %.3f %.3f) xyz_world: (%.3f %.3f %.3f)", 
+            autoaim_msg.armors.front().point3d_cam.x, autoaim_msg.armors.front().point3d_cam.y, autoaim_msg.armors.front().point3d_cam.z,
+            autoaim_msg.armors.front().point3d_world.x, autoaim_msg.armors.front().point3d_world.y, autoaim_msg.armors.front().point3d_world.z
+        );
 
         //获取装甲板中心与装甲板面积以下一次ROI截取使用
         // last_roi_center_ = Point2i(512,640);
@@ -760,7 +766,7 @@ namespace armor_detector
     {
         std::vector<Armor> new_armors;
         cv::Point2d img_center = cv::Point2d(src.img.size().width / 2, src.img.size().height / 2);
-        if (src.mode == SENTRY_NORMAL && decision_msg.mode == AUTOAIM)
+        if (src.mode == SENTRY_NORMAL)
         {
             for (auto& armor : armors)
             {
@@ -818,7 +824,7 @@ namespace armor_detector
             else
                 return -1;
         }
-        else if (src.mode == AUTOAIM || src.mode == HERO_SLING)
+        else if (src.mode == AUTOAIM_TRACKING || src.mode == AUTOAIM_NORMAL || src.mode == AUTOAIM_SLING)
         {
             return chooseTargetID(src, armors);
         }
@@ -836,37 +842,39 @@ namespace armor_detector
      */
     Point2i Detector::cropImageByROI(Mat &img)
     {
+        double area_ratio = last_target_area_ / img.size().area();
+        
         //若上次不存在目标
         if (!is_last_target_exists_)
         {
             //当丢失目标帧数过多或lost_cnt为初值
-            if (lost_cnt_ > detector_params_.max_lost_cnt || lost_cnt_ == 0)
+            if (lost_cnt_ > detector_params_.max_lost_cnt || lost_cnt_ == 0 || area_ratio == 0.0)
             {
                 return Point2i(0,0);
             }
         }
+        
         //若目标大小大于阈值
-        auto area_ratio = last_target_area_ / img.size().area();
-        int max_expand = (img.size().height - input_size_.width) / 32;
-        double cropped_ratio = (detector_params_.no_crop_ratio / detector_params_.full_crop_ratio) / max_expand;
-        int expand_value = ((int)(area_ratio / detector_params_.full_crop_ratio / cropped_ratio)) * 32;
-
-        Size2i cropped_size = input_size_ + Size2i(expand_value, expand_value);
-        // Size2i crooped_size = (input_size + (no_crop_thres / max))
         if (area_ratio > detector_params_.no_crop_ratio)
         {
             return Point2i(0,0);
         }
 
+        int max_expand = (img.size().height - input_size_.width) / 32;
+        double cropped_ratio = (detector_params_.no_crop_ratio / detector_params_.full_crop_ratio) / max_expand;
+        int expand_value = ((int)(area_ratio / detector_params_.full_crop_ratio / cropped_ratio)) * 32;
+        Size2i cropped_size = input_size_ + Size2i(expand_value, expand_value);
+        // Size2i crooped_size = (input_size + (no_crop_thres / max))
+
         //处理X越界
         if (last_roi_center_.x <= cropped_size.width / 2)
             last_roi_center_.x = cropped_size.width / 2;
-        else if (last_roi_center_.x > (img.size().width - cropped_size.width / 2))
+        else if (last_roi_center_.x >= (img.size().width - cropped_size.width / 2))
             last_roi_center_.x = img.size().width - cropped_size.width / 2;
         //处理Y越界
         if (last_roi_center_.y <= cropped_size.height / 2)
             last_roi_center_.y = cropped_size.height / 2;
-        else if (last_roi_center_.y > (img.size().height - cropped_size.height / 2))
+        else if (last_roi_center_.y >= (img.size().height - cropped_size.height / 2))
             last_roi_center_.y = img.size().height - cropped_size.height / 2;
         
         //左上角顶点
@@ -947,7 +955,7 @@ namespace armor_detector
             float rrangle = armor.rrect.angle;
             double dist_3d = armor.armor3d_world.norm();
 
-            if (armor.id == 6 && src.mode == HERO_SLING)
+            if (armor.id == 6)
             {
                 return armor.id;
             }

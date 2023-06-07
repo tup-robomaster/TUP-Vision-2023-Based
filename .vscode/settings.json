@@ -111,7 +111,9 @@
         "concepts": "cpp",
         "ranges": "cpp",
         "stop_token": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "*.ipp": "cpp",
+        "specialfunctions": "cpp"
     },
     "python.autoComplete.extraPaths": [
         "/opt/ros/galactic/lib/python3.8/site-packages"

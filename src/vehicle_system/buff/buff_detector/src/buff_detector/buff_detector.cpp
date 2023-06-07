@@ -2,8 +2,8 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 15:56:01
- * @LastEditTime: 2023-06-01 15:13:13
- * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/buff_detector/buff_detector.cpp
+ * @LastEditTime: 2023-06-04 00:13:35
+ * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/test/src/buff_detector/buff_detector.cpp
  */
 #include "../../include/buff_detector/buff_detector.hpp"
 
@@ -12,7 +12,6 @@ namespace buff_detector
     Detector::Detector()
     : logger_(rclcpp::get_logger("buff_detector"))
     {
-        is_initialized_ = false;
         lost_cnt_ = 0;
         is_last_target_exists_ = false;
         // input_size_ = {640,384};
@@ -25,7 +24,6 @@ namespace buff_detector
     : buff_param_(buff_param), path_param_(path_param), debug_param_(debug_param),
     logger_(rclcpp::get_logger("buff_detector"))
     {
-        is_initialized_ = false;
         lost_cnt_ = 0;
         is_last_target_exists_ = false;
         input_size_ = {640, 640};
@@ -45,17 +43,16 @@ namespace buff_detector
         vector<BuffObject> objects;
         // vector<Fan> fans_;
         auto input = src.img;
-
         rmat_imu_ = src.quat.toRotationMatrix();
         
         // TODO:修复ROI
-        if (debug_param_.using_roi)
+        if(debug_param_.using_roi)
         {
             roi_offset_ = cropImageByROI(input);
             RCLCPP_INFO_ONCE(logger_, "Using roi...");
         }
 
-        if (debug_param_.assist_label)
+        if(debug_param_.assist_label)
         {
             auto img_name = path_param_.path_prefix + to_string(src.timestamp) + ".jpg";
             imwrite(img_name, input);
@@ -63,6 +60,7 @@ namespace buff_detector
         }
 
         auto time_crop = steady_clock_.now();
+
         // objects.clear();
         fans_.clear();
         
@@ -71,8 +69,7 @@ namespace buff_detector
             lost_cnt_++;
             is_last_target_exists_ = false;
             last_target_area_ = 0;
-            target_info.find_target = false;
-            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 100, "No buff target is detected...");
+            RCLCPP_WARN(logger_, "No buff target is detected...");
             return false;
         }
         auto time_infer = steady_clock_.now();
@@ -81,30 +78,31 @@ namespace buff_detector
         // 创建扇叶对象
         for (auto object : objects)
         {
-            string fan_key = "";
-            if (buff_param_.color == RED && object.color == RED)
-            {
-                fan_key = "R" + string(object.cls == 0 ? "Target" : "Activated");
-            }
-            else if(buff_param_.color == BLUE && object.color == BLUE)
-            {
-                fan_key = "B" + string(object.cls == 0 ? "Target" : "Activated");
-            }
-            else
-            {
-                continue;
-            }
+            if (buff_param_.color == RED)
+                if (object.color != RED)
+                    continue;
+            if (buff_param_.color == BLUE)
+                if (object.color != BLUE)
+                    continue;
 
             Fan fan;
             fan.id = object.cls;
             fan.color = object.color;
             fan.conf = object.prob;
-            fan.key = fan_key;
+            if (object.color == 0)
+                fan.key = "B" + string(object.cls == UNACTIVATED ? "Target" : "Activated");
+            if (object.color == 1)
+                fan.key = "R" + string(object.cls == UNACTIVATED ? "Target" : "Activated");
 
             memcpy(fan.apex2d, object.apex, 5 * sizeof(cv::Point2f));
+            for(int i = 0; i < 5; i++)
+            {
+                fan.apex2d[i] += Point2f((float)roi_offset_.x, (float)roi_offset_.y);
+            }
+            
             std::vector<Point2f> points_pic(fan.apex2d, fan.apex2d + 5);
-            std::vector<cv::Point2d> points_rect;
-            cv::Point2d center_r;
+            std::vector<cv::Point2f> points_rect;
+            cv::Point2f center_r;
             for(int ii = 0; ii < 5; ii++)
             {
                 if(ii == 0)
@@ -113,12 +111,13 @@ namespace buff_detector
                     points_rect.push_back(fan.apex2d[ii]);
             }
             center_vec.push_back(center_r);
-            cv::RotatedRect r_rect = cv::minAreaRect(points_pic);
-            // cv::RotatedRect armor_rect = cv::minAreaRect(points_rect);
+            cv::RotatedRect r_rect = cv::fitEllipse(points_pic);
+            cv::RotatedRect armor_rect = cv::minAreaRect(points_rect);
 
             // TODO:迭代法进行PnP解算
             TargetType target_type = BUFF;
             auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_ITERATIVE);
+            // auto pnp_result = coordsolver_.pnp(points_pic, rmat_imu_, target_type, SOLVEPNP_IPPE);
 
             fan.armor3d_cam = pnp_result.armor_cam;
             fan.armor3d_world = pnp_result.armor_world;
@@ -126,37 +125,11 @@ namespace buff_detector
             fan.centerR3d_world = pnp_result.R_world;
             fan.euler = pnp_result.euler;
             fan.rmat = pnp_result.rmat;
+            // RCLCPP_INFO(logger_, "r_center: %lf %lf %lf", fan.centerR3d_cam[0], fan.centerR3d_cam[1], fan.centerR3d_cam[2]);
 
-            cv::Point2f r_aver;
-            cv::Point2f r_sum;
-            cv::Point2f tar_center;
-            cv::Point2f tar_sum;
-            
-            // double dx = (tar_center.x - r_aver.x);
-            // double dy = -(tar_center.y - r_aver.y);
-            // double r_dis = sqrt(pow(dy, 2) + pow(dx, 2));
-            // double sin_theta = asin(dy / r_dis);
-            // fan.dx = dx;
-            // fan.dz = dy;
-            // fan.angle = abs(sin_theta);
-            // cur_angle_ = atan2((tar_center.y - r_aver.y), (tar_center.x - r_aver.x)) * (180 / CV_PI);
-
-            double dz = (fan.armor3d_world[2] - fan.centerR3d_world[2]);
-            double dx = (fan.armor3d_world[1] - fan.centerR3d_world[1]);
-            double dy = (fan.armor3d_world[0] - fan.centerR3d_world[0]);
-            double r_dis = sqrt(pow(dy, 2) + pow(dx, 2) + pow(dz, 2));
-            // double sin_theta = asin(dz / r_dis) * (180 / CV_PI);
-            double sin_theta = asin(dz / r_dis);
-
-            fan.dx = dx;
-            fan.dz = dz;
-            fan.angle = abs(sin_theta);
             fans_.push_back(fan);
-
-            // RCLCPP_INFO(logger_, "R_radius: %lf theta: %lf", r_dis, sin_theta);
-            // RCLCPP_INFO(logger_, "dx: %.3f dy: %.3f dz: %.3f", dx, dy, dz);
         }
-
+        
         // 维护Tracker队列，删除过旧的Tracker
         buff_param_.max_delta_t = 1000;
         if (trackers_.size() != 0)
@@ -165,12 +138,7 @@ namespace buff_detector
             {
                 //删除元素后迭代器会失效，需先行获取下一元素
                 auto next = iter;
-
-                // cout << "src:" << src.timestamp / 1e9 << " last:" << (*iter).now_ / 1e9 << endl;
-                double dt = (src.timestamp - (*iter).now_) / 1e6;
-                if (dt >= buff_param_.max_delta_t)
-                {
-                    // cout << 888 << " dt:" << dt << endl;
+                if (((src.timestamp - (*iter).now_) / 1e6) > buff_param_.max_delta_t)
                     next = trackers_.erase(iter);
                 }
                 else
@@ -197,71 +165,54 @@ namespace buff_detector
             }
             else
             {
-                double min_angle = 1e9;
-                double min_last_delta_t = 1e9;
+                double min_v = 1e9;
+                int min_last_delta_t = 1e9;
                 bool is_best_candidate_exist = false;
                 std::vector<FanTracker>::iterator best_candidate;
                 for (auto iter = trackers_.begin(); iter != trackers_.end(); iter++)
                 {
-                    double delta_t;
+                    double delta_t = ((src.timestamp - (*iter).last_timestamp_) / 1e6);
                     Eigen::AngleAxisd angle_axisd;
-                    double delta_angle;
-                    double rotation_angle;
+                    Eigen::AngleAxisd abs_angle_axisd;
+                    double rotate_speed = 0.0;
                     int sign = 0;
                     //----------------------------计算角度,求解转速----------------------------
                     // 若该扇叶完成初始化,且隔一帧时间较短
-                    if ((*iter).is_initialized_ && (src.timestamp - (*iter).now_) / 1e6 < buff_param_.max_delta_t)
+                    if ((*iter).is_initialized_ && delta_t <= buff_param_.max_delta_t)
                     {
-                        delta_t = src.timestamp - (*iter).now_;
-                        bool flag = (((*fan).dz / (*iter).last_fan_.dz) > 0 && (*fan).dx / (*iter).last_fan_.dx > 0) ? 1 : 0; 
-                        if (!flag)
-                            continue;
-
-                        // 当前扇叶与上一帧扇叶的角度差值
-                        delta_angle = (*fan).angle - (*iter).last_fan_.angle;
-                        if (((*fan).dx > 0 && (*fan).dz > 0) || ((*fan).dx < 0 && (*fan).dz < 0))
-                        {
-                            if (delta_angle < 0)
-                                delta_angle = abs(delta_angle);
-                            else if (delta_angle > 0)
-                                delta_angle = -abs(delta_angle);
-                        }
+                        // 目前扇叶到上一次扇叶的旋转矩阵
+                        auto relative_rmat = (*iter).last_fan_.rmat.transpose() * (*fan).rmat;
+                        angle_axisd = Eigen::AngleAxisd(relative_rmat);
+                        auto rotate_axis_world = (*iter).last_fan_.rmat * angle_axisd.axis();
+                        sign = ((*fan).centerR3d_world.dot(rotate_axis_world) > 0 ) ? 1 : -1;
                     }
                     else
                     {
                         delta_t = src.timestamp - (*iter).now_;
-                        bool flag = (((*fan).dz / (*iter).last_fan_.dz) > 0 && (*fan).dx / (*iter).last_fan_.dx > 0) ? 1 : 0; 
-                        if (!flag)
-                            continue;
-
                         // 目前扇叶到上一次扇叶的旋转矩阵
-                        delta_angle = (*fan).angle - (*iter).last_fan_.angle;
-                        if (((*fan).dx > 0 && (*fan).dz > 0) || ((*fan).dx < 0 && (*fan).dz < 0))
-                        {
-                            if (delta_angle < 0)
-                                delta_angle = abs(delta_angle);
-                            else if (delta_angle > 0)
-                                delta_angle = -abs(delta_angle);
-                        }
+                        auto relative_rmat = (*iter).last_fan_.rmat.transpose() * (*fan).rmat;
+                        // TODO:使用点乘判断旋转方向
+                        angle_axisd = Eigen::AngleAxisd(relative_rmat);
+                        auto rotate_axis_world = (*fan).rmat * angle_axisd.axis();
+                        sign = ((*fan).centerR3d_world.dot(rotate_axis_world) > 0 ) ? 1 : -1;
                     }
 
+                    // 计算角速度(rad/s)
                     delta_t = ((src.timestamp - (*iter).now_) / 1e6);
-                    if (abs(delta_angle) <= abs(min_angle) && abs(delta_angle) < buff_param_.max_angle && delta_t <= min_last_delta_t)
+                    rotate_speed = sign * (angle_axisd.angle()) / delta_t * 1e3;
+                    if (abs(rotate_speed) <= abs(min_v) && abs(rotate_speed) <= buff_param_.max_v && delta_t <= min_last_delta_t)
                     {
                         min_last_delta_t = delta_t;
-                        min_angle = delta_angle;
+                        min_v = rotate_speed;
                         best_candidate = iter;
                         is_best_candidate_exist = true;
                     }
                 }
-
                 if (is_best_candidate_exist)
                 {
                     // cout << "4444" << endl;
                     (*best_candidate).update((*fan), src.timestamp);
-                    (*best_candidate).delta_angle_ = min_angle;
-                    delta_angle_vec_.push_back(min_angle);
-                    // RCLCPP_INFO(logger_, "delta angle:%lf", min_angle * (180 / CV_PI));
+                    (*best_candidate).rotate_speed_ = min_v;
                 }
                 else
                 {
@@ -282,7 +233,7 @@ namespace buff_detector
         // 若不存在待击打扇叶则返回false
         if (!is_target_exists)
         {
-            if (debug_param_.show_all_fans)
+            if(debug_param_.show_all_fans)
             {
                 RCLCPP_DEBUG_ONCE(logger_, "Show all fans...");
                 showFans(src);
@@ -290,26 +241,23 @@ namespace buff_detector
 
             lost_cnt_++;
             is_last_target_exists_ = false;
-            target_info.find_target = false;
-            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "No active target...");
+
+            RCLCPP_WARN(logger_, "No active target...");
             return false;
         }
 
         int avail_tracker_cnt = 0;
-        double delta_angle_sum = 0.0;
-        double mean_delta_angle = 0.0; //TODO:先剔除掉错误数据，再对当前待激活扇叶的角度变化进行插值或融合已激活扇叶的角度变化
+        double rotate_speed_sum = 0;
+        double mean_rotate_speed = 0;
         Eigen::Vector3d r_center_sum = {0, 0, 0};
         Eigen::Vector3d mean_r_center = {0, 0, 0};
 
         // 计算平均转速与平均R字中心坐标
-        for (auto tracker : trackers_)
+        for(auto tracker : trackers_)
         {
-            // cout << 222 << endl;
-            // cout << "is_last_fan_exists:" << tracker.is_last_fan_exists_ << endl;
             if (tracker.is_last_fan_exists_ && tracker.now_ == src.timestamp)
             {
-                // cout << 333 << endl;
-                delta_angle_sum += tracker.delta_angle_;
+                rotate_speed_sum += tracker.rotate_speed_;
                 r_center_sum += tracker.last_fan_.centerR3d_world;
                 avail_tracker_cnt++;
             }
@@ -318,84 +266,23 @@ namespace buff_detector
         // 若不存在可用的扇叶则返回false
         if (avail_tracker_cnt == 0)
         {
-            if (debug_param_.show_all_fans)
+            if(debug_param_.show_all_fans)
             {
                 showFans(src);
             }
             lost_cnt_++;
-            target_info.find_target = false;
-            RCLCPP_WARN_THROTTLE(logger_, steady_clock_, 500, "No available target...");
             return false;
         }
 
-        //FIXME:用角度变化量的均值对当前待激活扇叶的角度变化进行校正
-        
-        // mean_delta_angle = target.delta_angle;
-        // mean_r_center = target.centerR3d_world;
-        mean_delta_angle = delta_angle_sum / avail_tracker_cnt;
+        mean_rotate_speed = rotate_speed_sum / avail_tracker_cnt;
         mean_r_center = r_center_sum / avail_tracker_cnt;
-
         auto r_center_cam = coordsolver_.worldToCam(target.centerR3d_world, rmat_imu_);
         auto center2d_src = coordsolver_.reproject(r_center_cam);
+        auto angle = coordsolver_.getAngle(target.armor3d_cam, rmat_imu_);
 
-        // 判断扇叶是否发生切换
-        bool is_switched = false;
-        is_switched = ((target.dz / last_fan_.dz) > 0 && target.dx / last_fan_.dx > 0) ? 0 : 1;
-        double delta_angle = (target.angle - last_fan_.angle);
-        if ((target.dx > 0 && target.dz > 0) || (target.dx < 0 && target.dz < 0))
-            delta_angle = (delta_angle < 0) ? abs(delta_angle) : (delta_angle > 0 ? (-delta_angle) : delta_angle);
-        
-        RCLCPP_INFO(
-            logger_, 
-            "target.angle: %lf last_fan.angle:%lf", 
-            target.angle, last_fan_.angle
-        );
-        
-        if (delta_angle_vec_.size() > 1)
-        {
-            double angle_sum = 0.0;
-            for(auto& angle : delta_angle_vec_)
-                angle_sum += angle;
-            // angle_sum += delta_angle;
-            delta_angle = angle_sum / (int)(delta_angle_vec_.size());
-        }
-        delta_angle_vec_.clear();
-
-        // cout << 333 << endl;
-
-        if (!is_switched)
-        {
-            // cout << 555 << endl;
-            if (abs(delta_angle) > buff_param_.max_angle)
-                is_switched = true;
-            target_info.angle_offset = 0.0;
-        }
-        else 
-        {
-            target_info.angle_offset = target.angle - last_fan_.angle;
-            double delta_angle_sum = 0.0;
-            if (delta_angle_vec_.size() > 1)
-            {
-                for(auto angle : delta_angle_vec_)
-                   delta_angle_sum += angle;
-                delta_angle_sum -= delta_angle;
-                delta_angle = delta_angle_sum / (int)(delta_angle_vec_.size() - 1);
-                // cout << 444 << endl;
-            }
-            else
-            {
-                delta_angle = (src.timestamp - last_timestamp_) / (last_timestamp_ - last_last_timestamp_) * last_delta_angle_;
-                // cout << 111 << endl;
-            }
-        }
-        
-        // cout << 222 << endl;
-
-        target_info.rmat = target.rmat;
-        target_info.angle = target.angle;
+        target_info.rotate_speed = mean_rotate_speed;
         target_info.r_center = mean_r_center;
-        target_info.delta_angle = delta_angle;
-        target_info.target_switched = is_switched;
+        target_info.rmat = target.rmat;
         target_info.armor3d_world = target.armor3d_world;
         target_info.armor3d_cam = target.armor3d_cam;
         target_info.points2d[0].x = target.apex2d[0].x;
@@ -410,16 +297,32 @@ namespace buff_detector
         target_info.points2d[4].y = target.apex2d[4].y;
         target_info.find_target = true;
 
+        RCLCPP_INFO_THROTTLE(
+            logger_, 
+            steady_clock_,
+            100,
+            "mean_rotate_speed: %.3f r_center_cam: (%.3f %.3f %.3f) mean_r_center: (%.3f %.3f %.3f)", 
+            mean_rotate_speed,
+            r_center_cam(0), r_center_cam(1), r_center_cam(2),
+            mean_r_center(0), mean_r_center(1), mean_r_center(2)
+        );
+        
+        // 判断扇叶是否发生切换
+        bool is_switched = false;
+        double delta_t = (src.timestamp - last_timestamp_);
+        auto relative_rmat = last_fan_.rmat.transpose() * target.rmat;
+        auto angle_axisd = Eigen::AngleAxisd(relative_rmat);
+
+        double rotate_spd = angle_axisd.angle() / delta_t * 1e9;
+        if (abs(rotate_spd) >= buff_param_.max_v)
+            is_switched = true;
+        target_info.target_switched = is_switched;
+
         lost_cnt_ = 0;
         last_roi_center_ = center2d_src;
-        last_last_timestamp_ = last_timestamp_;
         last_timestamp_ = src.timestamp;
         last_fan_ = target;
-        last_last_delta_angle_ = last_delta_angle_;
-        last_delta_angle_ = delta_angle;
         is_last_target_exists_ = true;
-
-        cout << "find_target..." << endl;
 
         // RCLCPP_INFO(logger_, "r_center:(%.3f, %.3f, %.3f)", mean_r_center(0), mean_r_center(1), mean_r_center(2));
         
@@ -432,15 +335,6 @@ namespace buff_detector
             target.armor3d_world(0), target.armor3d_world(1), target.armor3d_world(2)
         );
         
-        RCLCPP_INFO_THROTTLE(
-            logger_, 
-            steady_clock_, 
-            50, 
-            "Target is switched: %d delta_angle: %.3f", 
-            (int)(is_switched),
-            delta_angle
-        );
-
         auto time_detect = steady_clock_.now();
         double dr_full_ns = (time_detect - time_start).nanoseconds();
         double dr_crop_ns = (time_crop - time_start).nanoseconds();
@@ -458,7 +352,7 @@ namespace buff_detector
             char ch[20];
             sprintf(ch, "%.2f", (1e9 / dr_full_ns));
             std::string fps_str = ch;
-            putText(src.img, fps_str, {10, 25}, FONT_HERSHEY_SIMPLEX, 1, {0,255,0});
+            putText(src.img, fps_str, {10, 25}, FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0});
         }
 
         if (debug_param_.prinf_latency)
@@ -468,16 +362,19 @@ namespace buff_detector
             if ((int)(src.timestamp) % 10 == 0)
             {
                 RCLCPP_INFO(logger_, "-----------TIME------------");
-                RCLCPP_INFO(logger_, "Crop: %lfms", (dr_crop_ns / 1e6));
-                RCLCPP_INFO(logger_, "Infer: %lfms", (dr_infer_ns / 1e6));
-                RCLCPP_INFO(logger_, "Total: %lfms", (dr_full_ns / 1e6));
+                RCLCPP_INFO(logger_, "Crop: %.3fms", (dr_crop_ns / 1e6));
+                RCLCPP_INFO(logger_, "Infer: %.3fms", (dr_infer_ns / 1e6));
+                RCLCPP_INFO(logger_, "Total: %.3fms", (dr_full_ns / 1e6));
             }
         }
+
         if (debug_param_.print_target_info)
         {
             RCLCPP_DEBUG_ONCE(logger_, "Print target_info...");
             RCLCPP_INFO(logger_, "-----------INFO------------");
-            RCLCPP_INFO(logger_, "Dist: %f m", (float)target.armor3d_cam.norm());
+            RCLCPP_INFO(logger_, "Yaw: %.3f", angle[0]);
+            RCLCPP_INFO(logger_, "Pitch: %.3f", angle[1]);
+            RCLCPP_INFO(logger_, "Dist: %.3f m", (float)target.armor3d_cam.norm());
             RCLCPP_INFO(logger_, "Is switched: %d", (int)(is_switched));
         }
 
@@ -488,34 +385,31 @@ namespace buff_detector
     {
         for (auto fan : fans_)
         {
+            // cout << 222 << endl;
             char ch[20];
             sprintf(ch, "%.2f", fan.conf);
             std::string conf_str = ch;
             putText(src.img, conf_str, fan.apex2d[2], FONT_HERSHEY_SIMPLEX, 1, {0, 255, 0}, 2);
-            putText(src.img, fan.key, fan.apex2d[3], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
 
-            for (int i = 0; i < 5; i++)
-            {
-                line(src.img, fan.apex2d[i % 5], fan.apex2d[(i + 1) % 5], Scalar(125, 0, 255), 2);
-                putText(src.img, to_string(i), fan.apex2d[i], FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 0, 125), 1);
-            }
+            if (fan.color == 0)
+                putText(src.img, fan.key, fan.apex2d[1], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
+            if (fan.color == 1)
+                putText(src.img, fan.key, fan.apex2d[1], FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2);
+            for(int i = 0; i < 5; i++)
+                line(src.img, fan.apex2d[i % 5], fan.apex2d[(i + 1) % 5], Scalar(0,255,0), 1);
             auto fan_armor_center = coordsolver_.reproject(fan.armor3d_cam);
-            
-            if (fan.id == 1)
-                circle(src.img, fan_armor_center, 9, {125, 255, 125}, 2);
-            else if (fan.id == 0)
-                circle(src.img, fan_armor_center, 9, {0, 0, 255}, 2);
+            circle(src.img, fan_armor_center, 4, {0, 0, 255}, 2);
         }
     }
 
-    bool Detector::chooseTarget(std::vector<Fan> &fans, Fan &target)
+    bool Detector::chooseTarget(std::vector<Fan> &fans_, Fan &target)
     {
-        // float max_area = 0;
-        // int target_idx = 0;
+        float max_area = 0;
+        int target_idx = 0;
         int target_fan_cnt = 0;
-        for (auto fan : fans)
+        for (auto fan : fans_)
         {
-            if (fan.id == 0)
+            if (fan.id == UNACTIVATED)
             {
                 target = fan;
                 target_fan_cnt++;

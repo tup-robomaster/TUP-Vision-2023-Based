@@ -1,10 +1,13 @@
 /*
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
- * @Date: 2023-03-10 15:35:11
- * @LastEditTime: 2023-06-01 17:35:41
+ * @Date: 2023-03-10 15:32:40
+ * @LastEditTime: 2023-06-06 11:53:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector/param_struct.hpp
  */
+#ifndef PARAM_STRUCT_HPP_
+#define PARAM_STRUCT_HPP_
+
 //c++
 #include <future>
 #include <vector>
@@ -18,6 +21,12 @@ using namespace std;
 using namespace cv;
 namespace buff_detector
 {
+    enum BuffStatus
+    {
+        UNACTIVATED,
+        ACTIVATED
+    };
+
     struct DebugParam
     {
         bool using_imu;
@@ -107,3 +116,5 @@ namespace buff_detector
         }
     };
 } //namespace buff_detector
+
+#endif

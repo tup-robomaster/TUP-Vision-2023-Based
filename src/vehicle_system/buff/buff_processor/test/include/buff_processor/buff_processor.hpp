@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-20 18:45:06
- * @LastEditTime: 2023-06-01 16:31:38
+ * @LastEditTime: 2023-06-06 11:48:55
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_processor/test/include/buff_processor/buff_processor.hpp
  */
 #ifndef BUFF_PROCESSOR_HPP_
@@ -46,7 +46,7 @@ namespace buff_processor
         CoordSolver coordsolver_;
         BuffPredictor buff_predictor_;
         
-        bool predictor(BuffMsg buff_msg, BuffInfo& target_info);
+        bool predict(BuffMsg buff_msg, BuffInfo& buff_info);
     };
 } //namespace buff_processor
 

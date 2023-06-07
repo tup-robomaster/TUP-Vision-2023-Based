@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-21 16:24:35
- * @LastEditTime: 2023-06-01 17:08:34
+ * @LastEditTime: 2023-06-06 11:53:05
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/src/inference/inference_api2.cpp
  */
 #include "../../include/inference/inference_api2.hpp"
@@ -21,7 +21,7 @@ namespace buff_detector
     static constexpr int NUM_COLORS = 2;       // Number of color
     static constexpr int TOPK = 128;           // TopK
     static constexpr float NMS_THRESH  = 0.1;
-    static constexpr float BBOX_CONF_THRESH = 0.50;
+    static constexpr float BBOX_CONF_THRESH = 0.20;
     static constexpr float MERGE_CONF_ERROR = 0.15;
     static constexpr float MERGE_MIN_IOU = 0.2;
 

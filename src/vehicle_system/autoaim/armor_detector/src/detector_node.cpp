@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-10-14 17:11:03
- * @LastEditTime: 2023-05-31 18:52:40
+ * @LastEditTime: 2023-06-06 11:46:00
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/autoaim/armor_detector/src/detector_node.cpp
  */
 #include "../include/detector_node.hpp"
@@ -124,7 +124,7 @@ namespace armor_detector
      */
     void DetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     {
-        if(!img_msg || (mode_ != AUTOAIM && mode_ != HERO_SLING))
+        if(!img_msg || (mode_ != AUTOAIM_TRACKING && mode_ != AUTOAIM_NORMAL && mode_ != AUTOAIM_SLING))
             return;
 
         RCLCPP_INFO_THROTTLE(
@@ -270,10 +270,11 @@ namespace armor_detector
     {
         //Detector params.
         this->declare_parameter<int>("color", 1);
-        this->declare_parameter<int>("armor_type_wh_thres", 3);
         this->declare_parameter<int>("max_lost_cnt", 5);
         this->declare_parameter<int>("max_armors_cnt", 8);
-        this->declare_parameter<int>("hero_danger_zone", 4);
+        
+        this->declare_parameter<double>("armor_type_wh_thres", 3.0);
+        this->declare_parameter<double>("hero_danger_zone", 4);
         this->declare_parameter<double>("no_crop_thres", 1e-2);
         this->declare_parameter<double>("no_crop_ratio", 2e-3);
         this->declare_parameter<double>("full_crop_ratio", 1e-4);
@@ -327,9 +328,9 @@ namespace armor_detector
         detector_params_.max_lost_cnt = this->get_parameter("max_lost_cnt").as_int();
         detector_params_.max_armors_cnt = this->get_parameter("max_armors_cnt").as_int();
         detector_params_.no_crop_thres = this->get_parameter("no_crop_thres").as_double();
-        detector_params_.hero_danger_zone = this->get_parameter("hero_danger_zone").as_int();
-        detector_params_.armor_type_wh_thres = this->get_parameter("armor_type_wh_thres").as_int();
         
+        detector_params_.hero_danger_zone = this->get_parameter("hero_danger_zone").as_double();
+        detector_params_.armor_type_wh_thres = this->get_parameter("armor_type_wh_thres").as_double();
         detector_params_.no_crop_ratio = this->get_parameter("no_crop_ratio").as_double();
         detector_params_.full_crop_ratio = this->get_parameter("full_crop_ratio").as_double();
         detector_params_.armor_conf_high_thres = this->get_parameter("armor_conf_high_thres").as_double();

@@ -7,6 +7,7 @@
  */
 #include "./kalman_filter.hpp"
 #include "../prediction/param_struct.hpp"
+//常速、加速和匀加速模型,SingerModel使用的是Singer运动模型，UniformModel使用的是匀速直线运动模型
 
 namespace armor_processor
 {

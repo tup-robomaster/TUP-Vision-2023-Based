@@ -2,7 +2,7 @@
  * @Description: This is a ros-based project!
  * @Author: Liu Biao
  * @Date: 2022-12-19 22:57:12
- * @LastEditTime: 2023-06-01 13:45:27
+ * @LastEditTime: 2023-06-06 11:52:15
  * @FilePath: /TUP-Vision-2023-Based/src/vehicle_system/buff/buff_detector/include/buff_detector_node.hpp
  */
 #ifndef BUFF_DETECTOR_NODE_HPP_
@@ -68,7 +68,9 @@ namespace buff_detector
         // Buff msgs pub.
         rclcpp::Publisher<BuffMsg>::SharedPtr buff_msg_pub_; 
         int mode_ = 1;
-    
+
+        double last_rotate_speed_ = 0.0;
+
     protected:
         // Params callback.
         bool updateParam();
