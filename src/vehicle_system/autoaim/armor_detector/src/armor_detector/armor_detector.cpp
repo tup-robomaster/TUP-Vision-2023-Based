@@ -176,7 +176,6 @@ namespace armor_detector
                 armor.key = "N" + to_string(object.cls);
             else if (armor.color == 3)
                 armor.key = "P" + to_string(object.cls);
-
             memcpy(armor.apex2d, object.apex, 4 * sizeof(cv::Point2f));
             for(int i = 0; i < 4; i++)
                 armor.apex2d[i] += cv::Point2f((float)roi_offset_.x,(float)roi_offset_.y);
@@ -852,6 +851,9 @@ namespace armor_detector
             for (auto& armor : armors)
             {
                 int id = car_id_map_[armor.key];
+                //Skip sentry
+                if (armor.id == 0 || armor.id == 2)
+                    continue;
                 if (armor.id == decision_msg.decision_id && armor.armor3d_world.norm() <= detector_params_.fire_zone)
                 {
                     return armor.id;

@@ -33,6 +33,7 @@ def generate_launch_description():
     use_imu = False
     shoot_delay = 150.0
     bullet_speed = 12.7
+    log_dst = 'screen'
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
     
@@ -71,7 +72,7 @@ def generate_launch_description():
         serial_node = Node(package='serialport',
                             executable='serialport_node',
                             name='serialport',
-                            output='screen', # log/screen/both
+                            output=log_dst, # log/screen/both
                             emulate_tty=True,
                             parameters=[{
                                 'using_port': False,

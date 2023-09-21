@@ -162,15 +162,17 @@ namespace global_user
      */
     enum MODE
     {
-        CLOSE_VISION,
-        AUTOAIM,
-        HERO_SLING,
-        SMALL_BUFF,
-        BIG_BUFF,
-        OUTPOST_ROTATION_MODE,
-        SENTRY_NORMAL,
-        SENTRY_SWING,
-        SENTRY_AUTOAIM
+        CLOSE_VISION = 0,
+        AUTOAIM = 1,
+        HERO_SLING = 2,
+        SMALL_BUFF = 3,
+        BIG_BUFF = 4,
+        OUTPOST_ROTATION_MODE = 5,
+        SENTRY_NORMAL = 6,
+        SENTRY_AUTOAIM = 7,
+        SENTRY_ATTACK = 8,
+        SENTRY_ESCAPE = 11,
+        SENTRY_SPIN = 12,
     };
 
     struct TaskData

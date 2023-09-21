@@ -121,8 +121,17 @@ namespace serialport
         // decision_mutex_.lock();
         decision_msg_ = *msg;
         VisionDecisionData vision_data;
-        vision_data.mode = msg->mode;
-        RCLCPP_INFO(this->get_logger(), "MOD:%d",vision_data.mode);
+        decision_mode_ = msg->mode;
+        if (decision_mode_ == SENTRY_ESCAPE)
+        {
+            vision_data.mode = decision_mode_;
+            vision_data.theta_gimbal = 0;
+        }
+        else
+        {
+            vision_data.mode = decision_mode_;
+        }
+        RCLCPP_INFO(this->get_logger(), "Decision Mod: %d",vision_data.mode);
         vision_data.theta_gimbal = msg->theta;
         data_transform_->transformData(vision_data.mode, vision_data, serial_port_->Tdata);
         serial_port_->sendData();
@@ -266,11 +275,17 @@ namespace serialport
                 trans_base_to_imu_msg.header.stamp = now;
                 trans_base_to_imu_msg.header.frame_id = "base_link";
                 trans_base_to_imu_msg.child_frame_id = "imu_link";
+                trans_base_to_imu_msg.transform.translation.x = 0.0;
+                trans_base_to_imu_msg.transform.translation.y = 0.0;
+                trans_base_to_imu_msg.transform.translation.z = 0.0;
                 tf_broadcaster_->sendTransform(trans_base_to_imu_msg);
 
                 geometry_msgs::msg::TransformStamped trans_base_to_virt_msg;
                 geometry_msgs::msg::Transform trans_base_to_virt_msg_nostamp;
                 trans_base_to_virt_msg.transform = tf2::toMsg(trans_base_to_virt);
+                trans_base_to_virt_msg.transform.translation.x = 0.0;
+                trans_base_to_virt_msg.transform.translation.y = 0.0;
+                trans_base_to_virt_msg.transform.translation.z = 0.0;
                 trans_base_to_virt_msg.header.stamp = now;
                 trans_base_to_virt_msg.header.frame_id = "base_link";
                 trans_base_to_virt_msg.child_frame_id = "virt_heading_frame";
@@ -286,6 +301,14 @@ namespace serialport
             }
             else if (flag == 0xB5)
             {
+                string pos_frame_id;
+                float pos_offset[2] = {0,0};
+
+                if (!this->enemy_red_)
+                    pos_frame_id = "map_decision_red";
+                else
+                    pos_frame_id = "map_decision_blue";
+
                 rclcpp::Time now = this->get_clock()->now();
                 //Slow down referee info pub freq.
                 double dt = (now.nanoseconds() - last_pub_referee_stamp_.nanoseconds()) * 1e-9;
@@ -293,22 +316,34 @@ namespace serialport
                     continue;
                 CarPosMsg car_pos_msg;
                 data_transform_->getPosInfo(&serial_port_->serial_data_.rdata[3], vehicle_pos_info);
-
-                for(int ii = 0; ii < 12; ii++)
-                {
-                    car_pos_msg.pos[ii].x = vehicle_pos_info[ii*2] / 10.0;
-                    car_pos_msg.pos[ii].y = vehicle_pos_info[ii*2+1] / 10.0;
-                }
-
+                if (!this->enemy_red_)
+                    for(int ii = 0; ii < 12; ii++)
+                    {
+                        car_pos_msg.pos[ii].x = vehicle_pos_info[ii*2] / 10.0;
+                        car_pos_msg.pos[ii].y = 15 - vehicle_pos_info[ii*2+1] / 10.0;
+                    }
+                else
+                    for(int ii = 0; ii < 12; ii++)
+                    {
+                        car_pos_msg.pos[ii].x = 28 - vehicle_pos_info[ii*2] / 10.0;
+                        car_pos_msg.pos[ii].y = vehicle_pos_info[ii*2+1] / 10.0;
+                    }
                 for(int ii = 0; ii < 12; ii++)
                     RCLCPP_INFO(this->get_logger(), "Robot %i Pos: [%.2f, %.2f]",ii, car_pos_msg.pos[ii].x, car_pos_msg.pos[ii].y);
 
-                car_pos_msg.header.frame_id = "";
+                car_pos_msg.header.frame_id = pos_frame_id;
                 car_pos_msg.header.stamp = now;
                 car_pos_pub_->publish(move(car_pos_msg));
             }
             else if (flag == 0xC5)
             {
+                string pos_frame_id;
+
+                if (!this->enemy_red_)
+                    pos_frame_id = "map_decision_red";
+                else
+                    pos_frame_id = "map_decision_blue";
+
                 rclcpp::Time now = this->get_clock()->now();
                 //Slow down referee info pub freq.
                 double dt = (now.nanoseconds() - last_pub_referee_stamp_.nanoseconds()) * 1e-9;
@@ -319,14 +354,13 @@ namespace serialport
                     
                 vector<ushort> hp;
                 vector<float> goal_pos;
+                uchar mode_set_mode;
                 uchar gamestage;
                 ushort timestamp;
-                vector<float> mode_set_pos;
-                uchar mode_set_mode;
                 // data_transform_->getPosInfo(flag, &serial_port_->serial_data_.rdata[3], vehicle_pos_info);
                 data_transform_->getHPInfo(&serial_port_->serial_data_.rdata[3], hp);
                 data_transform_->getGameInfo(&serial_port_->serial_data_.rdata[35], timestamp, gamestage);
-                data_transform_->getModeSet(&serial_port_->serial_data_.rdata[37], goal_pos);
+                data_transform_->getModeSet(&serial_port_->serial_data_.rdata[41], goal_pos, mode_set_mode);
                 ObjHPMsg obj_hp_msg;
                 GameMsg game_msg;
                 ModeSetMsg mode_set_msg;
@@ -334,12 +368,8 @@ namespace serialport
                 for(int ii = 0; ii < 16; ii++)
                 {
                     obj_hp_msg.hp[ii] = hp[ii];
-                    RCLCPP_INFO(this->get_logger(), "Robot %i HP:%.2f",ii ,hp[ii]);
+                    RCLCPP_INFO(this->get_logger(), "Robot %i HP:%d",ii ,hp[ii]);
                 }
-
-                RCLCPP_INFO(this->get_logger(), "Current timestamp: %.2d, Stage: %d", timestamp, gamestage);
-                RCLCPP_INFO(this->get_logger(), "Current Nav Goal: [%.2f, %.2f]", goal_pos[0], goal_pos[1]);
-
                 
                 obj_hp_msg.header.frame_id = "";
                 obj_hp_msg.header.stamp = now;
@@ -348,16 +378,25 @@ namespace serialport
                 game_msg.header.stamp = now;
                 game_msg.timestamp = timestamp;
                 game_msg.game_stage = (int)gamestage;
-                game_msg.goal.x = goal_pos[0];
-                game_msg.goal.y = goal_pos[1];
+
+                mode_set_msg.header.frame_id = pos_frame_id;
+                if (!this->enemy_red_)
+                    goal_pos[1] = 15 - goal_pos[1];
+                else
+                    goal_pos[0] = 28 - goal_pos[0];
+                    
+
+                RCLCPP_INFO(this->get_logger(), "Current timestamp: %.2d, Stage: %d", timestamp, gamestage);
+                RCLCPP_INFO(this->get_logger(), "Current Manual Mode: %d", (int)mode_set_mode);
+                RCLCPP_INFO(this->get_logger(), "Current Nav Goal: [%.2f, %.2f]", goal_pos[0], goal_pos[1]);
+
+                mode_set_msg.header.stamp = now;
+                mode_set_msg.x = goal_pos[0];
+                mode_set_msg.y = goal_pos[1];                
+                mode_set_msg.mode = (int)mode_set_mode;
 
                 obj_hp_pub_->publish(move(obj_hp_msg));
                 game_msg_pub_->publish(move(game_msg));
-                mode_set_msg.header.frame_id = "";
-                mode_set_msg.header.stamp = now;
-                mode_set_msg.mode = (int)mode_set_mode;
-                mode_set_msg.x = mode_set_pos[0];
-                mode_set_msg.y = mode_set_pos[1];
                 mode_set_msg_pub_->publish(move(mode_set_msg));
             }
         }
@@ -376,20 +415,14 @@ namespace serialport
     bool SerialPortNode::sendData(GimbalMsg::SharedPtr target_info)
     {
         int mode = mode_;
-        // if (mode == SENTRY_NORMAL)
-        // {
-        //     decision_mutex_.lock();
-        //     mode = decision_msg_.mode;
-        //     decision_mutex_.unlock();
-        // }
-        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Mode:%d", mode);
+        int decision_mode = decision_mode_;
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Autoaim Mode:%d", mode);
         if (this->using_port_)
         {   
             VisionAimData vision_data;
-            if (mode == AUTOAIM || mode == HERO_SLING || mode == OUTPOST_ROTATION_MODE
-            || mode == SMALL_BUFF || mode == BIG_BUFF || mode == SENTRY_AUTOAIM)
+            if (decision_mode != SENTRY_ESCAPE)
             {
-                // RCLCPP_WARN(this->get_logger(), "Sub autoaim msg!!!");
+                RCLCPP_WARN(this->get_logger(), "Sub autoaim msg!!!");
                 vision_data = 
                 {
                     (serial_port_->steady_clock_.now().nanoseconds() / 1e6),
@@ -406,8 +439,24 @@ namespace serialport
                 };
                 RCLCPP_WARN_EXPRESSION(this->get_logger(), (target_info->is_switched || target_info->is_spinning_switched), "Target switched!!!");
             }
-            else 
-                return false;
+            else
+            {
+                RCLCPP_WARN(this->get_logger(), "Invalid Mode for sending aim data...");
+                vision_data = 
+                {
+                    (serial_port_->steady_clock_.now().nanoseconds() / 1e6),
+                    (float)target_info->pitch, 
+                    (float)target_info->yaw, 
+                    (float)target_info->distance, 
+                    (target_info->is_switched || target_info->is_spinning_switched), 
+                    0, 
+                    target_info->is_spinning, 
+                    target_info->is_prediction,
+                    target_info->is_shooting,
+                    {target_info->meas_point_cam.x, target_info->meas_point_cam.y, target_info->meas_point_cam.z},
+                    {target_info->pred_point_cam.x, target_info->pred_point_cam.y, target_info->pred_point_cam.z}
+                };
+            }
 
 
             cout << "target.is_shoot："  << target_info->is_shooting << endl;
@@ -441,7 +490,7 @@ namespace serialport
     {
         if (!sendData(target_info))
         {   // Debug without com.
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "armor msg received...");
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500, "armor msg send failed!");
         }
         return;
     }
@@ -473,80 +522,94 @@ namespace serialport
         twist.header.stamp = this->now();
         twist.twist = (*msg);
 
-        rclcpp::Time t1(twist.header.stamp);
-        rclcpp::Time t0(last_twist_.header.stamp);
-        double dt = (t1.nanoseconds() - t0.nanoseconds()) * 1e-9;
-        double dtheta = (twist.twist.angular.z + last_twist_.twist.angular.z) / 2 * dt;
-
-        if (dt > 0.1)
+        int mode = mode_;
+        if (mode == SENTRY_SPIN)
         {
-            last_twist_ = twist;
-            return;
+            RCLCPP_WARN(this->get_logger(), "Spinning mode, ignoring nav msg...");
         }
         else
         {
-            tf2::Transform transform;
-            geometry_msgs::msg::TransformStamped tf_msg;
-            try
+            rclcpp::Time t1(twist.header.stamp);
+            rclcpp::Time t0(last_twist_.header.stamp);
+            double dt = (t1.nanoseconds() - t0.nanoseconds()) * 1e-9;
+            double dtheta = (twist.twist.angular.z + last_twist_.twist.angular.z) / 2 * dt;
+
+            if (dt > 0.1)
             {
-                tf_msg = tf_buffer_->lookupTransform("base_link",
-                                                        "virt_heading_frame",
-                                                        t0,
-                                                        rclcpp::Duration::from_seconds(0.02));
-                tf2::convert(tf_msg.transform, transform);
-            }
-            catch (const tf2::TransformException &ex)
-            {
-                RCLCPP_ERROR(this->get_logger(), "%s",ex.what());
+                last_twist_ = twist;
+                RCLCPP_WARN(this->get_logger(), "Large dt detected, ignoring this msg...");
                 return;
             }
-
-
-            tf2::Transform trans;
-            tf2::Quaternion q;
-            q.setRPY(0,0,dtheta);
-            trans.setRotation(q);
-
-            tf2::Vector3 virt_vel(msg->linear.x,msg->linear.y,1);
-            tf2::Vector3 base_vel = transform * virt_vel;
-
-            tf_lock_.lock();
-            virtual_heading_ = virtual_heading_ * trans;
-            tf_lock_.unlock();
-            int mode = mode_;
-            // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
-            VisionNavData vision_data;
-
-            double delta_yaw = tf2::getYaw(transform.getRotation());
-            //Rotate base_link while delta_yaw is too big
-            if (abs(delta_yaw) < 0.8)
+            else
             {
-                vision_data.linear_velocity[0] = base_vel[0];
-                vision_data.linear_velocity[1] = base_vel[1];
-                vision_data.angular_velocity[2] = 0;
+                tf2::Transform transform;
+                geometry_msgs::msg::TransformStamped tf_msg;
+                try
+                {
+                    tf_msg = tf_buffer_->lookupTransform("base_link",
+                                                            "virt_heading_frame",
+                                                            t0,
+                                                            rclcpp::Duration::from_seconds(0.02));
+                    tf2::convert(tf_msg.transform, transform);
+                }
+                catch (const tf2::TransformException &ex)
+                {
+                    RCLCPP_ERROR(this->get_logger(), "%s",ex.what());
+                    return;
+                }
+
+
+                tf2::Transform trans;
+                tf2::Quaternion q;
+                q.setRPY(0,0,dtheta);
+                trans.setRotation(q);
+
+                tf2::Vector3 virt_vel(msg->linear.x,msg->linear.y,1);
+                tf2::Vector3 base_vel = transform * virt_vel;
+
+                tf_lock_.lock();
+                virtual_heading_ = virtual_heading_ * trans;
+                tf_lock_.unlock();
+                int mode = mode_;
+                // RCLCPP_WARN(this->get_logger(), "Mode:%d", mode);
+                VisionNavData vision_data;
+
+                double delta_yaw = tf2::getYaw(transform.getRotation());
+                //Rotate base_link while delta_yaw is too big
+
+                if (abs(delta_yaw) < 0.6)
+                {
+                    vision_data.linear_velocity[0] = base_vel[0];
+                    vision_data.linear_velocity[1] = base_vel[1];
+                    vision_data.angular_velocity[2] = 0;
+                }
+                else 
+                {
+                    RCLCPP_INFO(this->get_logger(), "Current delta_yaw: %f, attempting rotating...", delta_yaw);
+                    vision_data.linear_velocity[0] = base_vel[0] * 0.35;
+                    vision_data.linear_velocity[1] = base_vel[1] * 0.35;
+                    vision_data.angular_velocity[2] = delta_yaw > 0 ? 0.007 : -0.007;
+                }
+
+
+                // vision_data.linear_velocity[2] = msg->linear.z;
+                // vision_data.angular_velocity[0] = msg->angular.x;
+                // vision_data.angular_velocity[1] = msg->angular.y;
+                // vision_data.angular_velocity[2] = msg->angular.z * 0.003;
+
+                if (isnan(vision_data.linear_velocity[0]) || isnan(vision_data.linear_velocity[1]) || isnan(vision_data.angular_velocity[2]))
+                {
+                    RCLCPP_ERROR(this->get_logger(), "NAN Detected!");
+                }
+                last_twist_ = twist;
+                //根据不同mode进行对应的数据转换
+                data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
+                //数据发送
+                mutex_.lock();
+                serial_port_->sendData();
+                mutex_.unlock();
+
             }
-            else 
-            {
-                RCLCPP_INFO(this->get_logger(), "Current delta_yaw: %f, attempting rotating...", delta_yaw);
-                vision_data.linear_velocity[0] = base_vel[0] * 0.35;
-                vision_data.linear_velocity[1] = base_vel[1] * 0.35;
-                vision_data.angular_velocity[2] = delta_yaw > 0 ? 0.007 : -0.007;
-            }
-
-
-            // vision_data.linear_velocity[2] = msg->linear.z;
-            // vision_data.angular_velocity[0] = msg->angular.x;
-            // vision_data.angular_velocity[1] = msg->angular.y;
-            // vision_data.angular_velocity[2] = msg->angular.z * 0.003;
-
-            last_twist_ = twist;
-            //根据不同mode进行对应的数据转换
-            data_transform_->transformData(mode, vision_data, serial_port_->Tdata);
-            //数据发送
-            mutex_.lock();
-            serial_port_->sendData();
-            mutex_.unlock();
-
         }
         
     }
@@ -638,6 +701,9 @@ namespace serialport
 
         this->declare_parameter<bool>("debug_without_decision_msg", true);
         this->get_parameter("debug_without_decision_msg", this->debug_without_decision_msg_);
+
+        this->declare_parameter<bool>("enemy_red", true);
+        this->get_parameter("enemy_red", this->enemy_red_);
 
         return std::make_unique<SerialPort>(id_, baud_, using_port_);
     }

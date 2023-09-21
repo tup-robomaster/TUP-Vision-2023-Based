@@ -36,6 +36,8 @@ def generate_launch_description():
     camera_type = 'daheng'
     camera_name = 'KE0200110075'
     use_serial = True
+    enemy_red = True
+    log_dst = 'screen'
     #------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------
     
@@ -62,13 +64,15 @@ def generate_launch_description():
         serial_node = Node(package='serialport',
                             executable='serialport_node',
                             name='serialport',
-                            output='screen', # log/screen/both
+                            output=log_dst, # log/screen/both
                             emulate_tty=True,
                             parameters=[{
                                 'using_port': True,
                                 'tracking_target': False,
-                                'print_serial_info': False,
-                                'print_referee_info': False
+                                'print_serial_info': True,
+                                'print_referee_info': False,
+                                'enemy_red': enemy_red
+
                             }],
                             respawn=True,
                             respawn_delay=1)
@@ -107,7 +111,7 @@ def generate_launch_description():
     detector_container = ComposableNodeContainer(
         name='armor_detector_container',
         namespace='',
-        output='screen',
+        output=log_dst,
         package='rclcpp_components',
         executable='component_container',
         composable_node_descriptions=[
@@ -128,6 +132,7 @@ def generate_launch_description():
                 {
                     'camera_name': camera_name,
                     'use_serial': use_serial,
+                    'enemy_red': enemy_red
                 }],
                 remappings= camera_remappings,
                 extra_arguments=[{
@@ -140,11 +145,11 @@ def generate_launch_description():
     )
     #---------------------------------Processor Node--------------------------------------------
     processor_container = ComposableNodeContainer(
-        name='processor_container',
+        name='armor_processor_container',
         package='rclcpp_components',
         executable='component_container',
         namespace='',
-        output='screen',
+        output=log_dst,
         composable_node_descriptions=[
             ComposableNode(
                 package='armor_processor',

@@ -48,7 +48,6 @@
     save_dataset: false
   
   # Debug params.
-    enemy_red: false # red: true / blue: false
     use_roi: true
     debug: true
 
@@ -101,7 +100,7 @@
     
   # Singer model
     # alpha:机动频率(alpha_x/alpha_y/alpha_z) sigma:机动加速度标准差(sigma_x/sigma_y/sigma_z)
-    singer_model_process_param: [1.01, 1.01, 1.01, 5.0, 4.0, 5.0]
+    singer_model_process_param: [1.001, 1.005, 1.0, 5.0, 4.0, 5.0]
     # r:观测协方差系数(r1/r2/r3)
     singer_model_measure_param: [1.0, 1.0, 1.0]
 

@@ -202,6 +202,19 @@ namespace armor_processor
                         {
                             aiming_point_world = {armor3d_vec.at(flag)(0), armor3d_vec.at(flag)(1), armor3d_vec.at(flag)(2)};
                             is_shooting = true;
+                            double fire_dis = aiming_point_world.norm();
+                            if (fire_dis <= 3.0)
+                            {   // 3m以内给与最高射频
+                                shoot_mode = CONTINUOUS;
+                            }
+                            else if (fire_dis <= 5.0)
+                            {   // 5m以内给与射频限制
+                                shoot_mode = LIMITED;
+                            }
+                            else
+                            {   // 4米以外开启单连发模式
+                                shoot_mode = SINGLE;
+                            }
                         }
                         else
                         {
@@ -255,11 +268,11 @@ namespace armor_processor
             {
                 if (judgeShooting(tracking_angle, angle))
                 {   // 开火时机成熟
-                    if (fire_dis <= 2.0 && fire_dis >= 0.5)
-                    {   // 2m以内给与最高射频
+                    if (fire_dis <= 3.0)
+                    {   // 3m以内给与最高射频
                         shoot_mode = CONTINUOUS;
                     }
-                    else if (fire_dis <= 4.0)
+                    else if (fire_dis <= 5.0)
                     {   // 4m以内给与射频限制
                         shoot_mode = LIMITED;
                     }
@@ -336,13 +349,15 @@ namespace armor_processor
         gimbal_info.header.stamp = target.header.stamp;
         gimbal_info.pitch = abs(angle[1]) >= 45.0 ? tracking_angle[1] : angle[1];
         gimbal_info.yaw = abs(angle[0]) >= 45.0 ? tracking_angle[0] : angle[0];
+        gimbal_info.distance = aiming_point_cam.norm();
+        gimbal_info.shooting_mode = shoot_mode;
+        
         gimbal_info.pred_point_cam.x = aiming_point_cam[0];
         gimbal_info.pred_point_cam.y = aiming_point_cam[1];
         gimbal_info.pred_point_cam.z = aiming_point_cam[2];
         gimbal_info.meas_point_cam.x = tracking_point_cam[0];
         gimbal_info.meas_point_cam.y = tracking_point_cam[1];
         gimbal_info.meas_point_cam.z = tracking_point_cam[2];
-        gimbal_info.distance = aiming_point_cam.norm();
         gimbal_info.is_target = !target.is_target_lost;
         gimbal_info.is_switched = target.target_switched;
         gimbal_info.is_spinning = target.is_spinning;

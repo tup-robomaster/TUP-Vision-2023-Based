@@ -163,6 +163,8 @@ namespace armor_processor
                 pred_point3d = center3d;
                 double radius = post_state(3);
                 double pred_rangle = post_state(4);
+                
+                pred_dt *= 0.25;
                 if (predictBasedSinger(target.is_target_lost, center3d, pred_point3d, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, dt, pred_dt))
                 {
                     RCLCPP_WARN(logger_, "KF based singer model prediction failed!!!");

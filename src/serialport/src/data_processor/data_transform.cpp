@@ -93,15 +93,6 @@ namespace serialport
         return;
     }
 
-    void DataTransform::getGoalPosXY(uchar* raw_data, std::vector<float>& xy)
-    {
-        auto x =ucharRaw2Int16(&raw_data[0]);
-        auto y =ucharRaw2Int16(&raw_data[2]);
-        xy.push_back(x / 10.0);
-        xy.push_back(y / 10.0);
-        return;
-    }
-
     void DataTransform::getYawAngle(uchar* raw_data, float& yaw_angle)
     {
         yaw_angle = ucharRaw2Float(raw_data);
@@ -131,7 +122,18 @@ namespace serialport
     void DataTransform::getGameInfo(uchar* raw_data, ushort& timestamp, uchar& gamestate)
     {
         timestamp = ucharRaw2Int16(raw_data);
-        gamestate = raw_data[2];
+        gamestate = raw_data[4];
+        return;
+    }
+
+    void DataTransform::getModeSet(uchar* raw_data, vector<float>& pos, uchar& mode_set)
+    {
+
+        auto x =ucharRaw2Int16(&raw_data[0]);
+        auto y =ucharRaw2Int16(&raw_data[2]);
+        pos.push_back(x / 10.0);
+        pos.push_back(y / 10.0);
+        mode_set = raw_data[4];
         return;
     }
     

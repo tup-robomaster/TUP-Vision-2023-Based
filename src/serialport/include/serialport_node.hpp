@@ -83,6 +83,7 @@ namespace serialport
         CoordSolver coordsolver_;
         bool print_serial_info_;
         bool print_referee_info_;
+        bool enemy_red_;
         std::unique_ptr<std::thread> receive_thread_;
         
         mutex mutex_;
@@ -90,6 +91,7 @@ namespace serialport
         bool using_port_;
         bool tracking_target_;
         atomic<int> mode_;
+        atomic<int> decision_mode_;
         atomic<bool> flag_;
         
         mutex tf_lock_;

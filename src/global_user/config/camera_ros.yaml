@@ -3,9 +3,9 @@
     cam_id: 0
     frame_id: daheng_cam
     camera_topic: /daheng_img
-    image_width: 1440
-    image_height: 1080
-    exposure_time: 3000
+    image_width: 1280
+    image_height: 1024
+    exposure_time: 3500
     exposure_gain: 16
     exposure_gain_b: 0
     exposure_gain_g: 0

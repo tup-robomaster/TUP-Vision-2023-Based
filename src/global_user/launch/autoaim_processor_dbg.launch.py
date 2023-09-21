@@ -93,7 +93,7 @@ def generate_launch_description():
         package='rclcpp_components',
         executable='component_container',
         namespace='',
-        output='screen',
+        output='log',
         composable_node_descriptions=[
             ComposableNode(
                 package='armor_processor',

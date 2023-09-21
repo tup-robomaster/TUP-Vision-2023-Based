@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.8)
 project(armor_detector  LANGUAGES CXX CUDA)
 
 option(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
