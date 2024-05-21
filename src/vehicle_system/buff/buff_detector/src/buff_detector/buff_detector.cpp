@@ -144,71 +144,69 @@ namespace buff_detector
         // 分配或创建扇叶追踪器（fan tracker）
         // TODO:增加防抖
         std::vector<FanTracker> trackers_tmp;
-        for (auto fan = fans_.begin(); fan != fans_.end(); ++fan)
-        {
-            if (trackers_.size() == 0)
-            {
+        for (auto fan = fans_.begin(); fan != fans_.end(); ++fan){
+            if (trackers_.size() == 0){
                 FanTracker fan_tracker((*fan), src.timestamp);
                 trackers_tmp.emplace_back(fan_tracker);
             }
-            else
-            {
+            else{
                 double min_v = 1e9;
                 int min_last_delta_t = 1e9;
                 bool is_best_candidate_exist = false;
                 std::vector<FanTracker>::iterator best_candidate;
-                for (auto iter = trackers_.begin(); iter != trackers_.end(); iter++)
-                {
-                    double delta_t = ((src.timestamp - (*iter).last_timestamp_) / 1e6);
+                for (auto iter = trackers_.begin(); iter != trackers_.end(); iter++){
+                    double delta_t;
                     Eigen::AngleAxisd angle_axisd;
-                    Eigen::AngleAxisd abs_angle_axisd;
                     double rotate_speed = 0.0;
                     int sign = 0;
                     //----------------------------计算角度,求解转速----------------------------
                     // 若该扇叶完成初始化,且隔一帧时间较短
-                    if ((*iter).is_initialized_ && delta_t <= buff_param_.max_delta_t)
-                    {
+                    if ((*iter).is_initialized_ && (src.timestamp - (*iter).last_timestamp_) / 1e6 <= buff_param_.max_delta_t){   
+                        delta_t = src.timestamp - (*iter).last_timestamp_; // ns
                         // 目前扇叶到上一次扇叶的旋转矩阵
                         auto relative_rmat = (*iter).last_fan_.rmat.transpose() * (*fan).rmat;
                         angle_axisd = Eigen::AngleAxisd(relative_rmat);
                         auto rotate_axis_world = (*iter).last_fan_.rmat * angle_axisd.axis();
-                        sign = ((*fan).centerR3d_world.dot(rotate_axis_world) > 0 ) ? 1 : -1;
+                        sign = ((*fan).centerR3d_world.dot(rotate_axis_world) > 0) ? 1 : -1;
                     }
-                    else
-                    {
+                    else{
                         delta_t = src.timestamp - (*iter).now_;
                         // 目前扇叶到上一次扇叶的旋转矩阵
                         auto relative_rmat = (*iter).last_fan_.rmat.transpose() * (*fan).rmat;
                         // TODO:使用点乘判断旋转方向
                         angle_axisd = Eigen::AngleAxisd(relative_rmat);
                         auto rotate_axis_world = (*fan).rmat * angle_axisd.axis();
-                        sign = ((*fan).centerR3d_world.dot(rotate_axis_world) > 0 ) ? 1 : -1;
+                        sign = ((*fan).centerR3d_world.dot(rotate_axis_world) > 0) ? 1 : -1;
                     }
 
                     // 计算角速度(rad/s)
-                    delta_t = ((src.timestamp - (*iter).now_) / 1e6);
-                    rotate_speed = sign * (angle_axisd.angle()) / delta_t * 1e3;
-                    if (abs(rotate_speed) <= abs(min_v) && abs(rotate_speed) <= buff_param_.max_v && delta_t <= min_last_delta_t)
-                    {
-                        min_last_delta_t = delta_t;
+                    rotate_speed = sign * (angle_axisd.angle()) / delta_t * 1e9;
+                    double delta_t1 = delta_t / 1e6;
+                    
+                    if (abs(rotate_speed) <= abs(min_v) && abs(rotate_speed) <= buff_param_.max_v && delta_t1 <= min_last_delta_t){
+                        min_last_delta_t = delta_t1;
                         min_v = rotate_speed;
                         best_candidate = iter;
                         is_best_candidate_exist = true;
+
+                        // 计算图像中的的角速度
+                        // cv::Point2f center_point =  ((*fan).apex2d[0] + (*fan).apex2d[1] + (*fan).apex2d[3] + (*fan).apex2d[4]) / 4;
+                        // cv::Point2f last_center_point =  ((*iter).last_fan_.apex2d[0] + (*iter).last_fan_.apex2d[1] + (*iter).last_fan_.apex2d[3] + (*iter).last_fan_.apex2d[4]) / 4;
+                        // double pic_rotate_speed = cv::norm(center_point - last_center_point) / cv::norm(center_point - (*fan).apex2d[2]) / delta_t * 1e3;
+                        // std::cout << "pic_rotate_speed: " << pic_rotate_speed << std::endl;
                     }
                 }
-                if (is_best_candidate_exist)
-                {
+                if (is_best_candidate_exist){
                     (*best_candidate).update((*fan), src.timestamp);
                     (*best_candidate).rotate_speed_ = min_v;
                 }
-                else
-                {
+                else{
                     FanTracker fan_tracker((*fan), src.timestamp);
                     trackers_tmp.emplace_back(fan_tracker);
                 }
             }
         }
-        
+
         for (auto new_tracker : trackers_tmp)
         {
             trackers_.emplace_back(new_tracker);
